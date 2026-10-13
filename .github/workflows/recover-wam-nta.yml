@@ -18,6 +18,12 @@ jobs:
       - run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
       - run: pip install requests pymupdf pillow pytesseract
       - run: python scripts/ocr_wam_nta.py
+      - name: Upload candidate report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wam-nta-ocr-candidates
+          path: asx-atlas/analysis/wam-nta-ocr-candidates.csv
+          retention-days: 30
       - name: Commit candidate report
         run: |
           git config user.name "github-actions[bot]"
@@ -25,5 +31,9 @@ jobs:
           git add asx-atlas/analysis/wam-nta-ocr-candidates.csv
           if ! git diff --cached --quiet; then
             git commit -m "Automated WAM missing NTA OCR candidate audit"
-            git push
+            for attempt in 1 2 3 4 5; do
+              git pull --rebase origin main
+              if git push origin HEAD:main; then break; fi
+              sleep 3
+            done
           fi
