@@ -82,3 +82,5 @@ with open("asx-atlas/analysis/wam-nta-ocr-candidates.csv","w",newline="") as out
  w=csv.writer(out);w.writerow(["month","title","status","pre_tax","post_tax","evidence","pdf_url","text_excerpt"]);w.writerows(rows)
 from collections import Counter
 print("DONE",Counter(r[2] for r in rows),flush=True)
+
+# Extraction rerun: 2026-10-13 source coverage audit
