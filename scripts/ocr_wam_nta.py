@@ -83,4 +83,4 @@ with open("asx-atlas/analysis/wam-nta-ocr-candidates.csv","w",newline="") as out
 from collections import Counter
 print("DONE",Counter(r[2] for r in rows),flush=True)
 
-# Extraction rerun: 2026-10-13 source coverage audit
+# Extraction rerun: 2026-10-13 source coverage audit, durable artifacts and non-fast-forward retry
