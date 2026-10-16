@@ -36,7 +36,7 @@ h1{font-size:35px;letter-spacing:-1.5px;margin:0 0 3px;line-height:1.2}h2{font-s
 .empty{text-align:center;background:#fff;border:1px dashed #dce5da;border-radius:18px;padding:62px 18px;color:var(--muted)}
 .emptyicon{font-size:34px;background:#edf3ec;display:grid;place-items:center;color:var(--green);width:70px;height:70px;border-radius:50%;margin:0 auto 15px}
 .suggest{border:1px solid #dce9db;background:#f4f9f2;border-radius:15px;padding:16px 20px;margin:15px 0}.suggest h2{font-size:15px}.suggestitem{padding:12px 0;border-top:1px solid #dfebdf;display:flex;align-items:center;justify-content:space-between;gap:12px}.suggestitem:first-of-type{margin-top:9px}.suggestsmall{font-size:12px;color:#748474}
-.dialogoverlay{position:fixed;inset:0;background:#1d2b2380;display:none;align-items:center;justify-content:center;z-index:15;padding:15px}.dialogoverlay.show{display:flex}
+.dialogoverlay{position:fixed;inset:0;background:#1d2b2380;display:none;align-items:center;justify-content:center;z-index:1000;padding:15px;isolation:isolate}.dialogoverlay.show{display:flex}
 .dialog{background:white;border-radius:22px;padding:28px;width:min(600px,100%);max-height:94vh;overflow:auto;box-shadow:0 22px 70px #0002}
 .dialog h2{font-size:24px}.dialog p{font-size:13px;color:var(--muted);margin:5px 0 19px}
 label.field{display:block;margin-top:15px;font-size:12px;font-weight:700;color:#526557}
@@ -758,6 +758,8 @@ async function markTask(t,done,control){
  finally{control.disabled=false}
 }
 function openDialog(){
+ // The edit dialog owns focus and stacking; no row-level menu may remain visible.
+ document.querySelectorAll('.delegateMenu:not(.hidden)').forEach(menu=>menu.classList.add('hidden'));
  const t=state.edit;const region=$("editDelegation"),slot=$("editDelegationControls");slot.replaceChildren();region.classList.toggle("hidden",!t||!!t.shared);if(t&&!t.shared){const ctl=delegationControl(t);ctl.classList.add("editDelegateControl");slot.append(ctl);const btn=ctl.querySelector(".delegateToggle");if(btn){btn.textContent="Choose collaborator or enter email";btn.classList.add("editDelegateTrigger")}}fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);$("taskWorkspace").disabled=false;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
  $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
  $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskStart").value=t?localDate(t.start_at):"";$("taskContact").value=t?t.contact_name||"":"";const dp=$("taskDependency");dp.replaceChildren(new Option("No dependency",""));for(const other of state.tasks.filter(x=>!x.archived_at&&x.id!==t?.id))dp.add(new Option(other.title,other.id));dp.value=t?(state.dependencies.find(x=>x.task_id===t.id)?.depends_on_id||""):"";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
