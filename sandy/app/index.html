@@ -233,6 +233,14 @@ const missionRefresh=async()=>{
    if(m.metadata?.plan_summary)item.append(el("p","small",m.metadata.plan_summary));
    const state=m.metadata?.execution_state||"awaiting_plan";
    item.append(el("p","small muted","Delivery state: "+state.replaceAll("_"," ")));
+   if((m.runs||[]).some(r=>r.state==="failed")){
+      const canRetry=["awaiting_plan","awaiting_plan_revision","plan_approved_external_actions_still_gated"].includes(state);
+      if(canRetry){
+        const retry=el("button","btn small","Retry failed Sandy run");retry.type="button";
+        retry.addEventListener("click",async()=>{retry.disabled=true;try{await call("mission_resume",{task_id:m.id});await missionRefresh()}catch(err){retry.disabled=false;alert("Could not retry: "+(err.message||"Please try again."))}});
+        item.append(retry);
+      }
+   }
    if(state==="awaiting_client_plan_review"){
      const actions=el("div","sandyMissionReview");
      for(const [label,decision] of [["Approve proposed plan","approve_plan"],["Request revision","request_revision"]]){
