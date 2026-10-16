@@ -118,6 +118,8 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 .agendaSide .sideClose{display:none;position:absolute;right:12px;top:16px;border:0;background:transparent;font-size:22px}
 @media(max-width:850px){.agendaSide .sideClose{display:block}}
 
+/* Timeline must be able to hide the outline; earlier CSS forced the tree visible. */
+.tasklist.hidden{display:none!important}
 /* Outline navigation and discreet cross-company subtask assignment. */
 .outlineControls{display:flex;gap:5px;align-items:center;margin-left:auto;margin-right:8px}
 .outlineSmall{font:inherit;font-size:11px;color:#777;border:0;background:transparent;padding:5px 7px;border-radius:6px;cursor:pointer}
