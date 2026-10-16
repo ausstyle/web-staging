@@ -161,7 +161,10 @@ async function api(action,payload){
 function el(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=text;return n}
 function btn(text,cls,fn){const e=el("button",cls,text);e.type="button";e.addEventListener("click",fn);return e}
 
-function workspaceMatches(t){if(t.shared)return state.workspace==="all"||state.workspace==="assigned";return state.workspace==="all"|| (state.workspace==="personal"?!t.company_id:t.company_id===state.workspace)}
+function workspaceOwnMatches(t){if(t.shared)return state.workspace==="all"||state.workspace==="assigned";return state.workspace==="all"||(state.workspace==="personal"?!t.company_id:t.company_id===state.workspace)}
+function workspaceMatches(t,seen=new Set()){if(t.archived_at||seen.has(t.id))return false;seen.add(t.id);return workspaceOwnMatches(t)||childOf(t.id).some(c=>workspaceMatches(c,seen))}
+function taskWorkspaceLabel(id){return id?(state.companies.find(c=>c.id===id)?.name||"Company"):"Personal"}
+function taskWorkspaceOwners(t,owners=new Set(),seen=new Set()){if(seen.has(t.id))return owners;seen.add(t.id);if(!t.shared)owners.add(taskWorkspaceLabel(t.company_id));childOf(t.id).forEach(c=>taskWorkspaceOwners(c,owners,seen));return owners}
 function normalizeWorkspace(value){return value==="personal"||!value?null:value}
 function fillWorkspaceSelect(target,selected){
  target.replaceChildren(new Option("Personal","personal"));
@@ -194,7 +197,7 @@ async function chooseCompanyFromSelect(e){
 function dateLabel(d){return d?new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):""}
 function fromDate(s){return s?new Date(s+"T12:00:00").toISOString():null}
 function localDate(s){if(!s)return "";const d=new Date(s);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
-function openTasks(){return state.tasks.filter(t=>t.status!=="completed"&&t.status!=="cancelled"&&!t.archived_at&&workspaceMatches(t))}
+function openTasks(){return state.tasks.filter(t=>t.status!=="completed"&&t.status!=="cancelled"&&!t.archived_at&&workspaceOwnMatches(t))}
 function childOf(id){return state.tasks.filter(t=>t.parent_task_id===id&&!t.archived_at).sort((a,b)=>a.position-b.position||a.created_at.localeCompare(b.created_at))}
 function matched(t){
  if(t.archived_at||!workspaceMatches(t))return false;if(state.assigneeFilter==="mine"&&!t.shared)return false;if(state.assigneeFilter==="unassigned"&&(t.shared||state.delegations.some(d=>d.task_id===t.id)))return false;if(!["all","mine","unassigned"].includes(state.assigneeFilter)&&!state.delegations.some(d=>d.task_id===t.id&&d.assignee_customer_id===state.assigneeFilter))return false;
@@ -229,7 +232,7 @@ function inlineEditor(t,focusTarget){
 }
 function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
- const children=childOf(t.id).filter(c=>state.assigneeFilter!=="all"?isVisible(c,new Set()):(state.tab==="open"||state.tab==="all"?true:isVisible(c,new Set())));
+ const children=childOf(t.id).filter(c=>workspaceMatches(c)&&(state.assigneeFilter!=="all"?isVisible(c,new Set()):(state.tab==="open"||state.tab==="all"?true:isVisible(c,new Set()))));
  const row=el("div","taskrow");row.style.paddingLeft=(depth?"5px":"12px");
  const branch=btn(children.length?(collapsed(t)?"▸":"▾"):"·","branchToggle",()=>toggleBranch(t));
  branch.setAttribute("aria-label",(collapsed(t)?"Expand ":"Collapse ")+t.title);
@@ -249,7 +252,7 @@ function renderTask(t,depth){
  if(t.due_at){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.priority==="urgent"||t.priority==="high")meta.append(el("span","tag "+t.priority,t.priority));
- if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(state.workspace==="all")meta.append(el("span","tag",t.company_id?(state.companies.find(c=>c.id===t.company_id)?.name||"Company"):"Personal"));if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
+ if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(state.workspace==="all"&&!t.shared)meta.append(el("span","tag",taskWorkspaceLabel(t.company_id)));const owners=[...taskWorkspaceOwners(t)];if(owners.length>1)meta.append(el("span","tag crossWorkspace","Across "+owners.join(" + ")));if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
  const add=btn("＋","iconbtn",()=>{state.expanded.delete(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();const box=document.querySelector('[data-add-for="'+t.id+'"] input');box?.focus()});
@@ -262,8 +265,9 @@ function renderTask(t,depth){
      const form=el("form","addchild");form.dataset.addFor=t.id;
      const arrow=el("span","plusTiny","＋");form.append(arrow);
      const input=el("input");input.placeholder="Add a step, press Enter…";input.maxLength=240;input.setAttribute("aria-label","Add a step under "+t.title);form.append(input);
+      const companySelect=el("select","subtaskWorkspace");companySelect.title="Workspace for this subtask";companySelect.setAttribute("aria-label","Subtask workspace");companySelect.add(new Option("Personal","personal"));state.companies.forEach(c=>companySelect.add(new Option(c.name,c.id)));companySelect.value=t.company_id||"personal";form.append(companySelect);
      form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;
-       const before=input.value;input.value="";try{await api("create",{title,parent_task_id:t.id});await load();const next=document.querySelector('[data-add-for="'+t.id+'"] input');next?.focus()}catch(err){input.value=before;toast(err.message,true)}});
+       const before=input.value;input.value="";try{await api("create",{title,parent_task_id:t.id,company_id:normalizeWorkspace(companySelect.value)});await load();const next=document.querySelector('[data-add-for="'+t.id+'"] input');next?.focus()}catch(err){input.value=before;toast(err.message,true)}});
      childbox.append(form)
    }
    if(childbox.childNodes.length)outer.append(childbox)
@@ -300,7 +304,7 @@ function renderTimeline(){
  for(let w=0;w<weeks;w++){const d=new Date(monday.getTime()+w*7*86400000);header.append(el("div","week",d.toLocaleDateString(undefined,{month:"short",day:"numeric"})))}box.append(header);
  const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
  function row(t,depth){
-  const children=childOf(t.id);
+  const children=childOf(t.id).filter(workspaceMatches);
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");
   const label=el("button","timelineLabel",("  ".repeat(Math.min(depth,5)))+(depth?"↳ ":"")+t.title);
@@ -407,7 +411,7 @@ async function markTask(t,done,control){
  finally{control.disabled=false}
 }
 function openDialog(){
- const t=state.edit;$("delegateField").classList.toggle("hidden",!t);renderDelegationList(t);fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);$("taskWorkspace").disabled=!!state.parent;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
+ const t=state.edit;$("delegateField").classList.toggle("hidden",!t);renderDelegationList(t);fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);$("taskWorkspace").disabled=false;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
  $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
  $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskStart").value=t?localDate(t.start_at):"";$("taskContact").value=t?t.contact_name||"":"";const dp=$("taskDependency");dp.replaceChildren(new Option("No dependency",""));for(const other of state.tasks.filter(x=>!x.archived_at&&x.id!==t?.id))dp.add(new Option(other.title,other.id));dp.value=t?(state.dependencies.find(x=>x.task_id===t.id)?.depends_on_id||""):"";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
  $("subtaskField").classList.toggle("hidden",!!t||!!state.parent);$("statusField").classList.toggle("hidden",!t);
