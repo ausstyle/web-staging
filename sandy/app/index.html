@@ -89,6 +89,11 @@ $("refresh").addEventListener("click",async()=>{try{profile=await call("overview
 $("passkey").addEventListener("click",async()=>{const b=$("passkey");b.disabled=true;authStatus("Confirm sign-in with your device…");try{if(!window.PublicKeyCredential||!sb.auth.signInWithPasskey)throw Error("Passkey is not available. Use your email link.");const {error}=await sb.auth.signInWithPasskey();if(error)throw error;await enter()}catch(e){authStatus(e.message||"Passkey unavailable. Use your email link.")}finally{b.disabled=false}});
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("sendEmail");b.disabled=true;authStatus("Sending your sign-in link…");try{const email=$("email").value.trim().toLowerCase();const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(error)throw error;authStatus("Check your email for the secure link. Once signed in, you can add a passkey from Memory settings.")}catch(e){authStatus("Could not send sign-in link: "+(e.message||"Please retry."))}finally{b.disabled=false}});
 sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_IN"&&s?.access_token&&!profile)queueMicrotask(enter);if(event==="SIGNED_OUT")showLogin()});
+try{
+ const r=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/auth/v1/settings",{headers:{apikey:"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"}});
+ const settings=await r.json();
+ if(settings.passkeys_enabled===false){$("passkey").disabled=true;$("passkey").textContent="Passkeys · activation pending";authStatus("Passkeys are not yet enabled. Use the secure email sign-in link for now.");}
+}catch{}
 const params=new URLSearchParams(location.search);if(["email","whatsapp","voice"].includes(params.get("channel")))filter=params.get("channel"),view="history";
 const {data}=await sb.auth.getSession();if(data.session)await enter();else showLogin();
 </script></body></html>
