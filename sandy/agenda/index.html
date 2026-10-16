@@ -650,7 +650,7 @@ function editingAgenda(){
  if(state.outlineBusy||document.querySelector(".outlineDraft,.inlineTitle:not(.outlineDraft .inlineTitle)"))return true;
  if($("dialogOverlay")?.classList.contains("show"))return true;
  const active=document.activeElement;
- return !!(active?.matches("input,textarea,select,[contenteditable=true]")&&active?.closest("#app"));
+ return !!(active?.matches("input,textarea,[contenteditable=true]")&&active?.closest("#app")&&!active?.matches("#search"));
 }
 function applyAgendaData(data){
  state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.delegations=data.delegations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
