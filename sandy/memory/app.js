@@ -152,7 +152,7 @@ function knowledge(){
   subjects.filter(s=>!s.parent_id||!subjects.some(p=>p.id===s.parent_id)).forEach(s=>groups.append(renderSubject(s)));
   const unassigned=chosen.filter(f=>!assigned.has(f.id));if(unassigned.length)section("Other saved facts",unassigned)
  }
- api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;drawFacts()}}).catch(()=>{});
+ api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;drawFacts()}}).catch(e=>{notify("Topic grouping unavailable: "+e.message);});
  filter.addEventListener("input",drawFacts);drawFacts();root.append(panelRoot);
  const rejects=state.rejected_facts||[];
  const rejections=h("section","memoryRejectedSection");rejections.id="memoryCorrectionsList";
