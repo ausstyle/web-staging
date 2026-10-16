@@ -144,11 +144,12 @@ function knowledge(){
    const head=h("button","factGroupHead");head.type="button";head.style.width="100%";head.style.textAlign="left";
    head.append(h("h3","",subject.title),h("span","factCount",(local.length+children.length)+" items ▾"));
    const body=h("div","");local.forEach(f=>body.append(factRow(f)));
-   group.append(head,body);groups.append(group);
+   group.append(head,body);
    head.addEventListener("click",()=>{body.hidden=!body.hidden;head.lastChild.textContent=(local.length+children.length)+" items "+(body.hidden?"▸":"▾")});
-   for(const child of children){renderSubject(child,depth+1);const last=groups.lastElementChild;if(last&&last!==group)body.append(last)}
+   for(const child of children)body.append(renderSubject(child,depth+1));
+   return group
   }
-  subjects.filter(s=>!s.parent_id||!subjects.some(p=>p.id===s.parent_id)).forEach(s=>renderSubject(s));
+  subjects.filter(s=>!s.parent_id||!subjects.some(p=>p.id===s.parent_id)).forEach(s=>groups.append(renderSubject(s)));
   const unassigned=chosen.filter(f=>!assigned.has(f.id));if(unassigned.length)section("Other saved facts",unassigned)
  }
  api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;drawFacts()}}).catch(()=>{});
