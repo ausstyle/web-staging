@@ -30,14 +30,16 @@
  <button class="nav" data-channel="voice"><span class="sym">♫</span> Voice transcripts</button>
  <div class="sidefoot"><div class="sideuser" id="sideEmail"></div><button class="nav" id="signOut"><span class="sym">↗</span> Sign out</button></div>
  </aside>
- <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm" id="refresh">↻ Refresh</button></div></div>
+ <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm hide" id="addPasskey" type="button">＋ Set up passkey</button><button class="btn sm" id="refresh">↻ Refresh</button></div></div>
  <div id="content" class="content"></div></main>
  <nav class="mobileNav"><button data-view="home" class="active">Home</button><button data-view="history">History</button><button data-channel="email">Email</button><button data-channel="whatsapp">WhatsApp</button><button data-channel="voice">Voice</button><button id="mobileMenu">⋯</button></nav>
 </div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+import {installSandyIdleLock} from "../security-lock.js";
 const $=id=>document.getElementById(id);
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
+const idle=installSandyIdleLock(sb.auth);
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-workspace";
 let profile=null,view="home",filter="all",search="",cursor=null,items=[],selected=null,busy=false;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n}
@@ -117,11 +119,12 @@ function select(x){
  d.append(list);
 }
 async function loadMore(){if(busy)return;busy=true;const list=$("histList");if(list&&!items.length)list.replaceChildren(el("div","loading","Loading conversations…"));try{const j=await call("history",{channel:filter,query:search,cursor,limit:40});if(items.length&&j.items?.length){const existing=new Set(items.map(x=>x.id));items.push(...j.items.filter(x=>!existing.has(x.id)))}else if(!items.length)items=j.items||[];cursor=j.next_cursor||null;if(!selected&&items.length)selected=items[0];paintEntries();if(selected)select(selected)}catch(e){if(list)list.replaceChildren(el("div","empty",e.message))}finally{busy=false;const load=document.querySelector(".pagefoot button");if(load)load.disabled=false}}
-async function enter(){try{profile=await call("overview");showWorkspace();changeView(view,filter==="all"?undefined:filter)}catch(e){showLogin(e.message)}}
+async function enter(){if(await idle.check())return;try{profile=await call("overview");showWorkspace();changeView(view,filter==="all"?undefined:filter)}catch(e){showLogin(e.message)}}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>changeView(b.dataset.view)));
 document.querySelectorAll("[data-channel]").forEach(b=>b.addEventListener("click",()=>changeView("history",b.dataset.channel)));
 $("mobileMenu").addEventListener("click",()=>location.assign("../memory/"));
 $("signOut").addEventListener("click",async()=>{await sb.auth.signOut();showLogin("Signed out.");});
+$("addPasskey").addEventListener("click",async()=>{const b=$("addPasskey");b.disabled=true;try{if(!window.PublicKeyCredential)throw Error("Your device does not support passkeys.");const {error}=await sb.auth.registerPasskey();if(error)throw error;b.textContent="✓ Passkey ready";}catch(e){alert(e.message||"Passkey setup could not finish.");}finally{b.disabled=false}});
 $("refresh").addEventListener("click",async()=>{try{profile=await call("overview");changeView(view,filter==="all"?undefined:filter)}catch(e){alert(e.message)}});
 $("passkey").addEventListener("click",async()=>{const b=$("passkey");b.disabled=true;authStatus("Confirm sign-in with your device…");try{if(!window.PublicKeyCredential||!sb.auth.signInWithPasskey)throw Error("Passkey is not available. Use your email link.");const {error}=await sb.auth.signInWithPasskey();if(error)throw error;await enter()}catch(e){authStatus(e.message||"Passkey unavailable. Use your email link.")}finally{b.disabled=false}});
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const b=$("sendEmail");b.disabled=true;authStatus("Sending your sign-in link…");try{const email=$("email").value.trim().toLowerCase();const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(error)throw error;authStatus("Check your email for the secure link. Once signed in, you can add a passkey from Memory settings.")}catch(e){authStatus("Could not send sign-in link: "+(e.message||"Please retry."))}finally{b.disabled=false}});
@@ -129,8 +132,10 @@ sb.auth.onAuthStateChange((event,s)=>{if(event==="SIGNED_IN"&&s?.access_token&&!
 try{
  const r=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/auth/v1/settings",{headers:{apikey:"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"}});
  const settings=await r.json();
- if(settings.passkeys_enabled===false){$("passkey").disabled=true;$("passkey").textContent="Passkeys · activation pending";authStatus("Passkeys are not yet enabled. Use the secure email sign-in link for now.");}
+ if(settings.passkeys_enabled===true){$("addPasskey").classList.remove("hide");}
+  if(settings.passkeys_enabled===false){$("passkey").disabled=true;$("passkey").textContent="Passkeys · activation pending";authStatus("Passkeys are not yet enabled. Use the secure email sign-in link for now.");}
 }catch{}
 const params=new URLSearchParams(location.search);if(["email","whatsapp","voice"].includes(params.get("channel")))filter=params.get("channel"),view="history";
-const {data}=await sb.auth.getSession();if(data.session)await enter();else showLogin();
+if(!(await idle.check())){const {data}=await sb.auth.getSession();if(data.session)await enter();else showLogin();}
+if(new URLSearchParams(location.search).has("locked")){authStatus("Sandy locked after 10 minutes of inactivity. Unlock with a passkey or secure email link.");history.replaceState(null,"",location.pathname);}
 </script></body></html>
