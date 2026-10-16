@@ -48,16 +48,48 @@ label.field{display:block;margin-top:15px;font-size:12px;font-weight:700;color:#
 .message{font-size:13px;color:var(--green);margin-top:12px}.error{color:#ad5148}
 .hidden{display:none!important}#toast{position:fixed;bottom:22px;right:22px;background:#28392e;color:white;padding:13px 20px;border-radius:11px;box-shadow:0 8px 30px #0003;display:none;z-index:30;font-size:13px}
 @media(max-width:680px){.shell{padding:0 14px 35px}header{height:67px}.top{margin:27px 0 20px;align-items:flex-start}h1{font-size:28px}.summary{grid-template-columns:repeat(2,1fr);gap:8px}.metric{padding:13px}.metric b{font-size:24px}.panel{padding:12px}.toolbar{margin-top:24px}.search{width:100%}.taskrow{padding:13px 11px;gap:10px}.children{margin-left:24px;padding-left:8px;margin-right:8px}.right{gap:0}.iconbtn{padding:5px}.top .btn{font-size:12px;padding:10px}.dialog{padding:18px}.two{grid-template-columns:1fr;gap:0}}
-.attention{background:#fff8f0;border:1px solid #f0e1d2;border-radius:16px;margin:18px 0;padding:17px 19px}.attentionhead{display:flex;gap:12px;align-items:center;margin-bottom:5px}.attentionhead h2{font-size:16px}.attentionicon{display:grid;place-items:center;background:#f5e5d4;color:#ab743d;width:33px;height:33px;border-radius:10px;font-weight:850}.attentionrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #f2e7db;font-size:13px}.attentionrow strong{font-weight:650}</style></head><body>
+.attention{background:#fff8f0;border:1px solid #f0e1d2;border-radius:16px;margin:18px 0;padding:17px 19px}.attentionhead{display:flex;gap:12px;align-items:center;margin-bottom:5px}.attentionhead h2{font-size:16px}.attentionicon{display:grid;place-items:center;background:#f5e5d4;color:#ab743d;width:33px;height:33px;border-radius:10px;font-weight:850}.attentionrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #f2e7db;font-size:13px}.attentionrow strong{font-weight:650}
+/* OmniFocus-inspired outline: compact, fluid and nested */
+body{background:#fafbf8;color:#253a2c}
+.shell{max-width:1170px}.top{margin-bottom:23px}
+.panel.quickPanel{border:1px solid #d9e7da;box-shadow:0 4px 24px #3453380a;background:#fff}
+.quick input{font-size:17px}.helper{letter-spacing:.01em}
+.tasklist{display:block!important;background:white;border:1px solid #e5ece5;border-radius:16px;overflow:hidden}
+.task{border:0!important;border-bottom:1px solid #eef1ec!important;border-radius:0!important;box-shadow:none!important}
+.task:last-child{border-bottom:0!important}
+.taskrow{display:flex;align-items:flex-start;gap:9px;padding:12px 13px!important;min-height:53px;transition:background .12s}
+.taskrow:hover{background:#f8faf7}.taskmain{padding-top:1px}
+.branchToggle{width:22px;flex-shrink:0;font-size:20px;color:#8d9b8d;border-radius:5px;line-height:26px;height:27px;text-align:center;padding:0}
+.branchToggle:disabled{color:#dce4dd;opacity:1}.branchToggle:hover:not(:disabled){background:#e8f0e8;color:var(--green)}
+.taskcheck{width:20px;height:20px;margin-top:3px}
+.tasktitle{font-size:14px;line-height:24px;cursor:text}.titleArea{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.stepCount{font-size:11px;color:#5c8b6e;background:#edf5ec;border-radius:7px;padding:2px 7px}
+.meta{margin-top:5px;gap:5px}.tag{font-size:10px;padding:2px 7px}
+.taskdesc{font-size:12px;margin:3px 0 0}.right{opacity:.2;transition:opacity .15s}.taskrow:hover .right,.taskrow:focus-within .right{opacity:1}
+.iconbtn{font-size:18px;padding:3px 8px}.children{margin:0 0 0 36px!important;padding:0 0 0 13px!important;border-left:1px solid #e1eae0!important}
+.childrow{border-bottom:1px solid #f0f2ef}.childrow:last-of-type{border:0}
+.childrow .taskrow{padding:8px 8px!important;min-height:42px}
+.addchild{padding:5px 8px 9px;opacity:.75;gap:4px}.addchild:focus-within{opacity:1}
+.addchild input{background:transparent;font-size:13px;padding:7px 5px;outline:none}
+.plusTiny{font-size:18px;color:#86a38e}.inlineTitle{font-weight:650;font-size:14px;outline:none;background:#f0f7ef;border:1px solid #a1c0a6;border-radius:6px;padding:3px 7px;width:min(420px,100%)}
+.outlineHeader{display:flex;align-items:center;justify-content:space-between;padding:0 4px 12px;color:#526957;font-size:13px}
+.outlineHeader span{color:#94a198;font-size:11px}.empty{border:none;border-radius:0}
+.summary .metric{box-shadow:0 2px 13px #354b3605}
+@media(max-width:680px){
+ .shell{padding:0 10px 38px}.taskrow{gap:6px;padding:10px 8px!important}.children{margin-left:16px!important;padding-left:6px!important}
+ .right{opacity:1}.branchToggle{width:20px}.outlineHeader span{display:none}
+ .quick input{font-size:15px}.tasktitle{font-size:13px}.taskcheck{width:21px;height:21px}
+}
+</style></head><body>
 <div id="loginScreen" class="loginscreen"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden">
 <header><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
-<div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
+<div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New project</button></div>
 <div class="summary"><div class="metric"><span>Open tasks</span><b id="countOpen">0</b></div><div class="metric"><span>In progress</span><b id="countDoing">0</b></div><div class="metric"><span>Waiting on someone</span><b id="countWaiting">0</b></div><div class="metric"><span>Completed</span><b id="countDone">0</b></div></div>
-<div class="panel"><form id="quickForm" class="quick"><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Start with a task, or choose New task to add subtasks, details and a deadline.</div></div>
+<div class="panel quickPanel"><form id="quickForm" class="quick"><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Press Enter to add. Expand any task to add steps underneath. Use ⌘/Ctrl + K to focus quick-add.</div></div>
 <div id="attention" class="attention hidden"></div><div id="suggestions" class="suggest hidden"></div>
 <div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
-<div id="tasks" class="tasklist"></div></div>
+<div class="outlineHeader"><strong>Tasks & projects</strong><span>Click to expand · Double-click to rename</span></div><div id="tasks" class="tasklist"></div></div>
 <div id="dialogOverlay" class="dialogoverlay" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogHeading"><h2 id="dialogHeading">Create a task</h2><p>Give Sandy the outcome you want. Add smaller steps if it helps.</p><form id="taskForm">
 <label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
 <label class="field">Details (optional)<textarea id="taskDetails" placeholder="What does done look like?"></textarea></label>
@@ -69,7 +101,7 @@ label.field{display:block;margin-top:15px;font-size:12px;font-weight:700;color:#
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const state={tasks:[],suggestions:[],attention:[],tab:"open",search:"",edit:null,parent:null,email:""};
+const state={tasks:[],suggestions:[],attention:[],tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const getToken=()=>sessionStorage.getItem("sandy_agenda_token")||"";
 function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
@@ -107,34 +139,61 @@ function countDesc(t){
  for(const c of children){total++;if(c.status==="completed")done++;const nested=countDesc(c);done+=nested.done;total+=nested.total}
  return {done,total}
 }
+function collapsed(t){return state.expanded.has(t.id)}
+function toggleBranch(t){if(collapsed(t))state.expanded.delete(t.id);else state.expanded.add(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render()}
+function inlineEditor(t,focusTarget){
+ const value=el("input","inlineTitle");value.value=t.title;value.maxLength=240;value.setAttribute("aria-label","Rename "+t.title);
+ let saving=false;
+ async function save(){if(saving)return;const title=value.value.trim();if(!title){value.value=t.title;value.blur();return}if(title===t.title){value.blur();return}
+ saving=true;value.disabled=true;try{await api("update",{id:t.id,title});await load()}catch(err){toast(err.message,true);value.disabled=false;saving=false}}
+ value.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}if(e.key==="Escape"){value.value=t.title;value.blur()}if(e.key==="Tab")save()});
+ value.addEventListener("blur",save);
+ if(focusTarget)queueMicrotask(()=>{value.focus();value.select()});return value
+}
 function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
- const row=el("div","taskrow");const check=el("input","taskcheck");check.type="checkbox";check.checked=t.status==="completed";
- check.setAttribute("aria-label","Mark "+t.title+" complete");check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
- const main=el("div","taskmain");main.append(el("div","tasktitle"+(t.status==="completed"?" done":""),t.title));
- if(t.details)main.append(el("p","taskdesc",t.details.slice(0,260)));
- const meta=el("div","meta");
- if(t.due_at){const overdue=new Date(t.due_at).getTime()<Date.now()&&t.status!=="completed";meta.append(el("span","tag"+(overdue?" overdue":""),(overdue?"Overdue · ":"Due ")+dateLabel(t.due_at)))}
- if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
- if(["high","urgent"].includes(t.priority))meta.append(el("span","tag "+t.priority,t.priority));
- const progress=countDesc(t);if(progress.total){meta.append(el("span","tag",progress.done+" of "+progress.total+" steps complete"));const p=el("div","progress");const fill=el("span");fill.style.width=Math.round(progress.done/progress.total*100)+"%";p.append(fill);meta.append(p)}
- main.append(meta);row.append(main);
- const right=el("div","right");right.append(btn("＋","iconbtn",()=>{state.parent=t.id;state.edit=null;openDialog()}));
- right.append(btn("⋯","iconbtn",()=>{state.parent=null;state.edit=t;openDialog()}));row.append(right);outer.append(row);
  const children=childOf(t.id).filter(c=>(state.tab==="open"||state.tab==="all")?true:isVisible(c,new Set()));
- if(children.length||((state.tab==="open"||state.tab==="all")&&t.status!=="completed"&&t.status!=="cancelled")){
-   const box=el("div","children");
-   children.forEach(c=>box.append(renderTask(c,depth+1)));
+ const row=el("div","taskrow");row.style.paddingLeft=(depth?"5px":"12px");
+ const branch=btn(children.length?(collapsed(t)?"▸":"▾"):"·","branchToggle",()=>toggleBranch(t));
+ branch.setAttribute("aria-label",(collapsed(t)?"Expand ":"Collapse ")+t.title);
+ if(!children.length)branch.disabled=true;
+ row.append(branch);
+ const check=el("input","taskcheck");check.type="checkbox";check.checked=t.status==="completed";check.setAttribute("aria-label","Complete "+t.title);
+ check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
+ const main=el("div","taskmain");
+ const titleArea=el("div","titleArea");const title=el("span","tasktitle"+(t.status==="completed"?" done":""),t.title);
+ title.title="Double click to rename";title.addEventListener("dblclick",()=>{title.replaceWith(inlineEditor(t,true))});
+ titleArea.append(title);
+ const progress=countDesc(t);
+ if(progress.total){titleArea.append(el("span","stepCount",progress.done+"/"+progress.total))}
+ main.append(titleArea);
+ if(t.details)main.append(el("div","taskdesc",t.details.slice(0,130)));
+ const meta=el("div","meta");
+ if(t.due_at){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}
+ if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
+ if(t.priority==="urgent"||t.priority==="high")meta.append(el("span","tag "+t.priority,t.priority));
+ if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
+ main.append(meta);row.append(main);
+ const right=el("div","right");
+ const add=btn("＋","iconbtn",()=>{state.expanded.delete(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();const box=document.querySelector('[data-add-for="'+t.id+'"] input');box?.focus()});
+ add.title="Add a subtask";right.append(add);
+ const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";right.append(edit);row.append(right);outer.append(row);
+ if(!collapsed(t)){
+   const childbox=el("div","children");
+   for(const child of children)childbox.append(renderTask(child,depth+1));
    if(t.status!=="completed"&&t.status!=="cancelled"&&(state.tab==="open"||state.tab==="all")){
-     const form=el("form","addchild");const input=el("input");input.placeholder="＋ Add a step…";input.maxLength=240;input.setAttribute("aria-label","Add subtask to "+t.title);form.append(input);
-     const add=el("button","","Add step");add.type="submit";form.append(add);
-     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;add.disabled=true;try{await api("create",{title,parent_task_id:t.id});input.value="";await load()}catch(err){toast(err.message,true)}finally{add.disabled=false}});
-     box.append(form);
+     const form=el("form","addchild");form.dataset.addFor=t.id;
+     const arrow=el("span","plusTiny","＋");form.append(arrow);
+     const input=el("input");input.placeholder="Add a step, press Enter…";input.maxLength=240;input.setAttribute("aria-label","Add a step under "+t.title);form.append(input);
+     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;
+       const before=input.value;input.value="";try{await api("create",{title,parent_task_id:t.id});await load();const next=document.querySelector('[data-add-for="'+t.id+'"] input');next?.focus()}catch(err){input.value=before;toast(err.message,true)}});
+     childbox.append(form)
    }
-   outer.append(box)
+   if(childbox.childNodes.length)outer.append(childbox)
  }
  return outer
 }
+
 function render(){
  const open=openTasks();
  $("countOpen").textContent=String(open.length);
@@ -219,6 +278,11 @@ $("cancelDialog").addEventListener("click",closeDialog);
 $("dialogOverlay").addEventListener("click",e=>{if(e.target===$("dialogOverlay"))closeDialog()});
 $("newTask").addEventListener("click",()=>{state.parent=null;state.edit=null;openDialog()});
 $("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;try{await api("create",{title});$("quickTitle").value="";await load();toast("Task added")}catch(err){toast(err.message,true)}});
+
+document.addEventListener("keydown",e=>{
+ if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("quickTitle").focus();$("quickTitle").select()}
+ if(e.key==="Escape"&&$("dialogOverlay").classList.contains("show"))closeDialog()
+});
 $("search").addEventListener("input",e=>{state.search=e.target.value;render()});
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{state.tab=b.dataset.tab;render()}));
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;const email=$("loginEmail").value.trim();try{await api("request-code",{email});$("loginMessage").textContent="If this address is registered with Sandy, your six-digit code is on its way.";$("loginMessage").className="message";$("codeForm").classList.remove("hidden");$("loginForm").classList.add("hidden");$("loginCode").focus()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
