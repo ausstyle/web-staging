@@ -161,7 +161,8 @@ async function loadMore(){
   }
  }
 }
-async function enter(){if(await idle.check())return;try{profile=await call("overview");showWorkspace();changeView(view,filter==="all"?undefined:filter);await offerPasskeySetup()}catch(e){showLogin(e.message)}}
+let entering=null;
+async function enter(){if(entering)return entering;entering=(async()=>{if(await idle.check())return;try{profile=await call("overview");showWorkspace();changeView(view,filter==="all"?undefined:filter);await offerPasskeySetup()}catch(e){const {data}=await sb.auth.getSession();if(data?.session){showWorkspace();$("content").replaceChildren(el("div","empty","Signed in successfully, but Sandy could not load your workspace. "+(e.message||"Please try Refresh.")));}else showLogin(e.message||"Authentication failed.")}})();try{return await entering}finally{entering=null}}
 async function offerPasskeySetup(){if(!passkeysEnabled||!window.PublicKeyCredential||!sb.auth.registerPasskey)return;const {data:{user}}=await sb.auth.getUser();if(!user)return;const key="sandy_passkey_setup_prompted_"+user.id;if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,"true");try{const {data}=await sb.auth.passkey.list();if(Array.isArray(data)&&data.length){localStorage.setItem("sandy_passkey_enrolled_on_device","true");return}}catch{}if(!confirm("Make next sign-in easier? Set up a passkey using your device or password manager. You can also do this later using Set up passkey."))return;await registerSandyPasskey()}
 async function registerSandyPasskey(){if(!window.PublicKeyCredential||!sb.auth.registerPasskey)throw Error("Your browser does not support passkeys.");const {error}=await sb.auth.registerPasskey();if(error)throw error;localStorage.setItem("sandy_passkey_enrolled_on_device","true");$("addPasskey").textContent="✓ Passkey ready";setLoginPasskeyState()}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>changeView(b.dataset.view)));
@@ -183,5 +184,5 @@ try{
 setLoginPasskeyState();
 const params=new URLSearchParams(location.search);if(["email","whatsapp","voice"].includes(params.get("channel")))filter=params.get("channel"),view="history";
 if(!(await idle.check())){const {data}=await sb.auth.getSession();if(data.session)await enter();else showLogin();}
-if(new URLSearchParams(location.search).has("locked")){authStatus("Sandy locked after 10 minutes of inactivity. Unlock with a passkey or secure email link.");history.replaceState(null,"",location.pathname);}
+if(new URLSearchParams(location.search).has("locked")){authStatus("Sandy locked after 1 hour of inactivity. Unlock with a passkey or secure email link.");history.replaceState(null,"",location.pathname);}
 </script></body></html>
