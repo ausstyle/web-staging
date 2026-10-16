@@ -104,3 +104,12 @@ a.workspaceBack:hover{background:#ececec}
 
 /* Click-through counts in the Memory Centre */
 button.memoryStat{font:inherit;color:inherit;cursor:pointer}button.memoryStat:hover{border-color:#999;background:#fafafa}button.memoryStat:focus-visible{outline:2px solid #111;outline-offset:3px}
+
+/* Keep fact details readable when an inline improvement editor opens. */
+.memoryFactRow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:18px;row-gap:12px}
+.memoryFactRow>.factBody{min-width:0;grid-column:1;grid-row:1;overflow-wrap:anywhere}
+.memoryFactRow>.factControls{grid-column:2;grid-row:1;flex-wrap:wrap;justify-content:flex-end;max-width:100%}
+.memoryFactRow>.factEditor{grid-column:1/-1;grid-row:2;display:flex;flex-direction:column;align-items:stretch;min-width:0;width:100%;margin:4px 0 0;padding:14px;background:#fafafa;border:1px solid #eee;border-radius:12px;gap:10px}
+.memoryFactRow>.factEditor>.factInput{width:100%;min-width:0;resize:vertical}
+.memoryFactRow>.factEditor>.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+@media(max-width:760px){.memoryFactRow{grid-template-columns:minmax(0,1fr)}.memoryFactRow>.factBody,.memoryFactRow>.factControls,.memoryFactRow>.factEditor{grid-column:1;grid-row:auto}.memoryFactRow>.factControls{justify-content:flex-start}}
