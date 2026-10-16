@@ -3,13 +3,29 @@
 <title>Sandy | Memory Centre</title><link rel="stylesheet" href="./style.css"></head>
 <body>
 <div class="authgate" id="authgate">
- <div class="authcard">
-  <div class="monogram">s<span>.</span></div>
-  <div class="eyebrow">YOUR PRIVATE ASSISTANT</div><h1>Your mind,<br>in good hands.</h1>
-  <p>A private place for everything Sandy knows, every task she's tracking, and what deserves your attention.</p>
-  <form id="loginForm"><label for="email">Your Sandy email address</label><input type="email" id="email" autocomplete="email" placeholder="you@company.com" required>
-    <button class="primary wide" type="submit" id="sendLink">Email me a sign-in link <span>→</span></button></form>
-  <p class="authmessage" id="authMessage" role="status">No password needed. We’ll email you one secure sign-in link.</p>
+ <div class="authlayout">
+  <section class="authstory" aria-label="About Sandy">
+   <div class="authstory-brand"><span class="authstory-mark">s<span>.</span></span> Sandy <small>YOUR PRIVATE ASSISTANT</small></div>
+   <div class="authstory-content"><div class="eyebrow">A QUIETER WAY TO STAY ON TOP OF EVERYTHING</div><h2>Your life, better organised.</h2>
+    <p>Every conversation, task, document and important detail — thoughtfully connected, and only yours.</p>
+    <div class="authstory-detail"><span>✦</span> One place for all that matters</div>
+    <div class="authstory-detail"><span>✧</span> Private by design</div>
+   </div>
+   <small class="authstory-foot">SANDY MEMORY CENTRE</small>
+  </section>
+  <section class="authcard">
+   <div class="authmobilebrand"><span class="authstory-mark">s<span>.</span></span> Sandy</div>
+   <div class="eyebrow">WELCOME BACK</div><h1>Hello again.</h1>
+   <p class="authintro">Your space is ready. Sign in securely without hunting through your inbox.</p>
+   <button type="button" id="passkeyLogin" class="passkeybutton"><span class="passkeyicon" aria-hidden="true">◎</span><span>Continue with passkey <small>Face ID, Touch ID or device PIN</small></span><span class="passkeyarrow" aria-hidden="true">→</span></button>
+   <p class="authhint">Already set up a passkey? Just one touch. First time? Sign in once by email and add your passkey in Memory settings.</p>
+   <div class="authsep"><span>OR</span></div>
+   <button type="button" id="emailToggle" class="authswitch" aria-expanded="false" aria-controls="loginForm">Use a secure email link <span aria-hidden="true">⌄</span></button>
+   <form id="loginForm" class="hide"><label for="email">Your registered email</label><input type="email" id="email" autocomplete="email" placeholder="you@company.com" required>
+    <button class="primary wide" type="submit" id="sendLink">Send sign-in link <span aria-hidden="true">→</span></button></form>
+   <p class="authmessage" id="authMessage" role="status" aria-live="polite">Your sign-in is protected by Sandy's authentication service.</p>
+   <div class="authcardfoot"><span>⌁</span> Secure sign-in · No password to remember</div>
+  </section>
  </div>
 </div>
 <div id="app" class="app hide">
