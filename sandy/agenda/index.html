@@ -813,6 +813,7 @@ function openDialog(){
   const share=shareTaskControl(t);share.classList.add("editDelegateControl","embeddedAccessControl");sharing.append(share);
   const sButton=share.querySelector(".shareTaskToggle");if(sButton)sButton.click();
   if(sButton)sButton.classList.add("hidden");
+  const delegationPanel=delegate.querySelector(".delegateMenu");if(delegationPanel)delegationPanel.classList.remove("hidden");
  }fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);$("taskWorkspace").disabled=false;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
  $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
  $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskStart").value=t?localDate(t.start_at):"";$("taskContact").value=t?t.contact_name||"":"";const dp=$("taskDependency");dp.replaceChildren(new Option("No dependency",""));for(const other of state.tasks.filter(x=>!x.archived_at&&x.id!==t?.id))dp.add(new Option(other.title,other.id));dp.value=t?(state.dependencies.find(x=>x.task_id===t.id)?.depends_on_id||""):"";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
