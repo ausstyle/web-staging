@@ -156,7 +156,7 @@ function knowledge(){
   function factRow(f){
    const row=h("div","memoryFactRow");row.dataset.factId=f.id;
    const info=h("div","factBody");
-   info.append(h("div","factLabel",String(f.fact_key).replaceAll("_"," ")));
+   info.append(h("div","factLabel",String(f.fact_key).startsWith("manual_")?"What you told Sandy":String(f.fact_key).replaceAll("_"," ")));
    info.append(h("p","factValue",f.fact_value));row.append(info);
    const controls=h("div","factControls");
    controls.append(aBtn("Improve this topic",()=>improveFact(f),"factAction"));
@@ -196,9 +196,9 @@ function knowledge(){
    return group
   }
   subjects.filter(s=>!s.parent_id||!subjects.some(p=>p.id===s.parent_id)).forEach(s=>groups.append(renderSubject(s)));
-  const unassigned=chosen.filter(f=>!assigned.has(f.id));if(unassigned.length)section("Other saved facts",unassigned)
+  const unassigned=chosen.filter(f=>!assigned.has(f.id));if(unassigned.length){const byCategory=new Map();for(const f of unassigned){const k=(f.category||"Personal").replaceAll("_"," ");if(!byCategory.has(k))byCategory.set(k,[]);byCategory.get(k).push(f)}for(const [k,v] of byCategory)section(k.charAt(0).toUpperCase()+k.slice(1),v)}
  }
- api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;drawFacts()}}).catch(e=>{notify("Topic grouping unavailable: "+e.message);});
+ api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;if(!root.querySelector(".factEditor"))drawFacts()}}).catch(e=>{notify("Topic grouping unavailable: "+e.message);});
  filter.addEventListener("input",drawFacts);drawFacts();root.append(panelRoot);
  const rejects=state.rejected_facts||[];
  const rejections=h("section","memoryRejectedSection");rejections.id="memoryCorrectionsList";
