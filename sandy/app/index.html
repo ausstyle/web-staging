@@ -121,6 +121,20 @@
 .sandyMissionStep>span:last-child{flex-shrink:0}
 .sandyMissionItem a{display:inline-flex;margin-top:10px}
 @media(max-width:750px){.sandyMissionPanel{padding:13px}.sandyMissionTop,.sandyMissionStep{flex-direction:column;gap:2px}}
+</style><style>
+.sandyCommandPanel{border:1px solid #ddd;background:#fff;border-radius:14px;padding:18px;margin:22px 0;color:#111}
+.sandyCommandHeading h2{margin:0}.sandyCommandHeading p{margin:2px 0 12px}
+.sandyGlobalSearch{display:flex;gap:8px}.sandyGlobalSearch input{flex:1;min-width:0;font:inherit;padding:10px;border:1px solid #bbb;border-radius:8px;background:white;color:black}
+.sandyGlobalResults{display:grid;gap:5px;margin-top:7px}.sandySearchResult{padding:8px;border-bottom:1px solid #eee;color:#111;text-decoration:none}
+.sandyCommandMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:15px 0}
+.sandyCommandMetric{border:1px solid #ddd;border-radius:9px;padding:9px;display:flex;flex-direction:column}
+.sandyCommandMetric strong{font-size:23px}.sandyCommandMetric span{font-size:11px}
+.sandyQuickActions{display:flex;gap:8px;flex-wrap:wrap}
+.sandyCommandAreas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:15px}
+.sandyCommandSection{min-width:0;border:1px solid #eee;border-radius:9px;padding:10px}
+.sandyCommandSection h3{font-size:14px;margin:0 0 8px}
+.sandyCommandTask{display:block;text-decoration:none;color:#111;padding:7px 0;font-size:12px;border-top:1px solid #eee;overflow-wrap:anywhere}
+@media(max-width:750px){.sandyCommandPanel{padding:12px}.sandyCommandMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sandyCommandAreas{grid-template-columns:1fr}.sandyGlobalSearch{flex-wrap:wrap}.sandyGlobalSearch input{flex:1 1 100%}}
 </style></head><body>
 <div id="authScreen" class="hide">
  <div class="authSide"><div class="logo">sandy<span>.</span></div><div><div class="eyebrow" style="color:#aaa">YOUR PRIVATE WORKSPACE</div><h1>Everything in one place.</h1><p>One Sandy account for your conversations, memory, tasks and everyday work.</p></div><div class="small" style="color:#999">SANDY AI · PRIVATE BY DESIGN</div></div>
@@ -186,6 +200,16 @@ askButton.type="submit";
 add(askActions,askStatus,askButton);
 add(askForm,askInput,askActions);
 add(askPanel,askHeading,askThread,askForm);c.append(askPanel);
+const commandPanel=el("section","sandyCommandPanel");
+const commandHeading=el("div","sandyCommandHeading");add(commandHeading,el("h2","","Your command centre"),el("p","small muted","Tasks, approvals and commitments that need attention."));
+const globalForm=el("form","sandyGlobalSearch");const globalInput=el("input");globalInput.placeholder="Search tasks and web conversations…";globalInput.setAttribute("aria-label","Search Sandy");globalInput.required=true;const globalBtn=el("button","btn","Search");globalBtn.type="submit";add(globalForm,globalInput,globalBtn);
+const globalResults=el("div","sandyGlobalResults");const commandMetrics=el("div","sandyCommandMetrics");const commandAreas=el("div","sandyCommandAreas");
+const quick=el("div","sandyQuickActions");for(const [label,href] of [["New task","../agenda/"],["Calendar","../agenda/?view=calendar"],["Memory","../memory/"],["Email Sandy","mailto:ai@email.com.au"]]){const link=el("a","btn small",label);link.href=href;quick.append(link)}
+add(commandPanel,commandHeading,globalForm,globalResults,commandMetrics,quick,commandAreas);c.append(commandPanel);
+globalForm.addEventListener("submit",async e=>{e.preventDefault();globalBtn.disabled=true;globalResults.textContent="Searching…";try{const v=await call("global_search",{query:globalInput.value.trim()});globalResults.replaceChildren();if(!v.results.length)globalResults.textContent="No matching tasks or web conversations.";for(const t of v.results){const a=el("a","sandySearchResult",t.kind+" · "+t.title);a.href=t.url;globalResults.append(a)}globalResults.append(el("p","small muted","Currently searches tasks and web chat questions only."))}catch(e){globalResults.textContent="Search failed: "+(e.message||"Please retry")}finally{globalBtn.disabled=false}});
+call("command_centre").then(v=>{if(!commandPanel.isConnected)return;commandMetrics.replaceChildren();for(const [n,k] of [["Open tasks","open"],["Need you","approvals"],["Due soon / overdue","alerts"],["Sandy assigned","working"]]){const item=el("div","sandyCommandMetric");add(item,el("strong","",String(v.counts[k]||0)),el("span","",n));commandMetrics.append(item)}
+commandAreas.replaceChildren();for(const [heading,rows] of [["Needs your attention",v.approvals],["Deadlines and alerts",v.alerts],["Sandy's assigned work",v.working]]){const sec=el("section","sandyCommandSection");sec.append(el("h3","",heading));if(!rows?.length)sec.append(el("p","small muted","Nothing recorded here."));else for(const t of rows.slice(0,5)){const a=el("a","sandyCommandTask",t.title+" · "+t.status.replaceAll("_"," "));a.href="../agenda/?tab=all";sec.append(a)}commandAreas.append(sec)}
+}).catch(e=>{commandAreas.textContent="Command centre unavailable: "+(e.message||"Please retry")});
 const missionPanel=el("section","sandyMissionPanel");
 const missionHead=el("div","sandyMissionHead");
 add(missionHead,el("h2","","Sandy missions"),el("p","small muted","Delegate a project to Sandy and track it alongside your other tasks."));
