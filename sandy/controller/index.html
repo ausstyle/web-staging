@@ -33,7 +33,21 @@ function panel(title){return add(el("section","panel"),el("h2","",title))}
 function tbl(cols,items,renderCell){const wrap=el("div","tablewrap"),table=el("table"),head=el("thead"),tr=el("tr");cols.forEach(x=>tr.append(el("th","",x)));head.append(tr);table.append(head);const body=el("tbody");items.forEach(item=>{const row=el("tr");cols.forEach((c,i)=>{const cell=el("td");const content=renderCell(item,i);if(content instanceof Node)cell.append(content);else cell.textContent=String(content??"");row.append(cell)});body.append(row)});table.append(body);wrap.append(table);return wrap}
 function sel(value,options,onchange){const n=el("select");options.forEach(x=>{const o=el("option","",x);o.value=x;n.append(o)});n.value=value;n.onchange=async()=>{const old=value;n.disabled=true;try{await onchange(n.value);await load()}catch(e){alert(e.message);n.value=old}finally{n.disabled=false}};return n}
 function searchable(container,records,cols,cell){const box=el("div","toolbar"),input=el("input","search");input.placeholder="Filter records…";box.append(input);const holder=el("div");container.append(box,holder);function draw(){const q=input.value.toLowerCase();holder.replaceChildren(tbl(cols,records.filter(x=>JSON.stringify(x).toLowerCase().includes(q)).slice(0,500),cell))}input.oninput=draw;draw()}
-function showOverview(c){const s=el("div","stats");Object.entries(data.metrics).forEach(([key,n])=>{const card=el("div","stat");add(card,el("span","",key.replaceAll("_"," ").toUpperCase()),el("b","",n));s.append(card)});c.append(s);const p=panel("Needs attention");const unresolved=data.qa.filter(x=>x.status!=="passed");txt(p,unresolved.length+" QA cases are not passed. "+data.errors.length+" stored Memory Centre errors returned in current API window.");p.append(el("p","small muted","Data is sampled to bounded query limits; values are not guaranteed lifetime totals."));c.append(p);const p2=panel("Recent QA cases");p2.append(tbl(["Case","Status","Next action"],data.qa.slice(-12).reverse(),(x,i)=>[x.subject,x.status,x.next_action][i]));c.append(p2)}
+function showOverview(c){
+ const s=el("div","stats");
+ const totals=data.verifiedTotals||{};
+ for(const [label,value] of [["Email messages",totals.email_messages],["QA cases",totals.qa_cases],["Roadmap items",totals.roadmap],["QA failures",data.qaSummary?.failed]]){
+  const card=el("div","stat");add(card,el("span","",label),el("b","",value===null||value===undefined?"—":value));s.append(card)
+ }
+ c.append(s);
+ const p=panel("Needs attention");const summary=data.qaSummary||{};
+ txt(p,(summary.failed||0)+" failed QA cases · "+(summary.retest_pending||0)+" awaiting retest · "+(summary.other||0)+" other unresolved cases.");
+ txt(p,"Counts are from current QA records. Recent activity and calendar execution outcomes are available under Activity & investigations.","small muted");
+ const go=el("button","btn primary","Investigate recent requests →");
+ go.onclick=()=>{view="activity";location.hash=view;render();loadActivity(true)};
+ p.append(go);c.append(p);
+ const p2=panel("Recently updated QA cases");p2.append(tbl(["Case","Status","Next action"],data.qa.slice().sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at))).slice(0,10),(x,i)=>[x.subject,x.status,x.next_action||"—"][i]));c.append(p2);
+}
 let activityRows=[],activityCursor=null;
 async function loadActivity(reset=true){
  const r=await call("activity",{after:reset?"":activityCursor,limit:60});
@@ -50,7 +64,7 @@ function showActivity(c){
  if(!activityRows.length)txt(p,"Select Load recent to retrieve request records.","muted");
  c.append(p);
 }
-function showQA(c){const p=panel("QA cases · "+data.qa.length);searchable(p,data.qa.slice().reverse(),["Subject","Status","Findings / next action","Updated"],(x,i)=>[x.subject,sel(x.status,["needs_review","investigating","retest_pending","failed","passed"],v=>call("qa_update",{id:x.id,status:v})),(x.next_action||x.findings||"").slice(0,400),date(x.updated_at)][i]);c.append(p)}
+function showQA(c){const p=panel("QA cases · "+data.qa.length);searchable(p,data.qa.slice().reverse(),["Subject","Status","Findings / next action","Updated"],(x,i)=>[x.subject,sel(x.status,["pending","needs_review","investigating","retest_pending","failed","passed"],v=>call("qa_update",{id:x.id,status:v})),(x.next_action||x.findings||"").slice(0,400),date(x.updated_at)][i]);c.append(p)}
 function showRoadmap(c){const p=panel("Improvement roadmap · "+data.roadmap.length);searchable(p,data.roadmap,["Feature","Progress","Phase","Acceptance criteria"],(x,i)=>[x.feature_title,sel(x.progress,Array.from(new Set([x.progress,"proposed","planned","pending","in_progress","blocked","testing","completed"])),v=>call("roadmap_update",{key:x.feature_key,progress:v})),x.phase,x.acceptance_criteria][i]);c.append(p);const p2=panel("AI improvement proposals");p2.append(tbl(["Issue","Category","Status"],data.proposals,(x,i)=>[x.failure_description,x.category,x.status][i]));c.append(p2)}
 function showEngagement(c){const p=panel("Customer engagement");searchable(p,data.activity,["Customer","Email records","Voice sessions","First recorded"],(x,i)=>[x.name,x.email,x.voice,date(x.joined)][i]);c.append(p);const p2=panel("WhatsApp channel activity");const by={};data.channel_activity.forEach(x=>{const d=String(x.created_at).slice(0,10);by[d]=(by[d]||0)+1});p2.append(tbl(["Date","Messages"],Object.entries(by).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),(x,i)=>x[i]));c.append(p2)}
 function showIntegrations(c){const p=panel("Integration inventory");searchable(p,data.integrations,["Integration","Provider","Deployment","Enabled","Last verified","Issue"],(x,i)=>[x.product||x.integration_key,x.provider,x.deployment_status,x.enabled?"Yes":"No",date(x.last_verified_at),x.last_error||"—"][i]);c.append(p)}
