@@ -1,0 +1,62 @@
+name: Sandy QA controlled deployment
+on:
+  workflow_dispatch:
+    inputs:
+      function_name:
+        description: Approved function to deploy
+        required: true
+        type: choice
+        options:
+          - email-ai-refresh-profile
+          - sandy-memory-centre
+          - sandy-task-api
+      dry_run:
+        description: Validate only; no production write
+        required: true
+        default: true
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: sandy-qa-deploy-${{ inputs.function_name }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate approved source exists
+        env:
+          FUNCTION: ${{ inputs.function_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f "supabase/functions/$FUNCTION/index.ts" || { echo "Missing version-controlled source"; exit 1; }
+          test -f "supabase/functions/$FUNCTION/deno.json" || true
+          echo "Approved source found for $FUNCTION"
+  deploy:
+    needs: validate
+    if: ${{ !inputs.dry_run }}
+    runs-on: ubuntu-latest
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy approved function
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          FUNCTION: ${{ inputs.function_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "Missing deployment credential"; exit 1; }
+          test "$PROJECT_REF" = "zmqlyygzqoidkcwdysok" || { echo "Unexpected project"; exit 1; }
+          case "$FUNCTION" in
+            email-ai-refresh-profile|sandy-memory-centre|sandy-task-api) ;;
+            *) echo "Function not allowed"; exit 1 ;;
+          esac
+          supabase functions deploy "$FUNCTION" --project-ref "$PROJECT_REF"
+          echo "Deployment command succeeded; end-to-end functional QA still required."
