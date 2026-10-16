@@ -2,7 +2,7 @@
 // All customer-facing apps on this origin use the same last-activity clock.
 const ACTIVITY_KEY = "sandy.idle.last-activity.v1";
 const LOCK_KEY = "sandy.idle.locked-at.v1";
-const MAX_IDLE_MS = 10 * 60 * 1000;
+const MAX_IDLE_MS = 60 * 60 * 1000;
 
 export function installSandyIdleLock(auth, { redirect = "../app/?locked=1" } = {}) {
   let locking = false;
