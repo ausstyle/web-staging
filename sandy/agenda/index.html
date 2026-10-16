@@ -84,18 +84,21 @@ body{background:#fafbf8;color:#253a2c}
 .viewSwitch{display:flex;padding:3px;background:#eef3ec;border-radius:10px;gap:2px}.viewBtn{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:650;color:#7b907e}.viewBtn.chosen{background:#fff;color:#2e6a4b;box-shadow:0 1px 5px #0001}
 .rootLine{display:flex;align-items:center;gap:12px;border:1px solid #dbe8da;border-top:0;background:#f8fbf7;padding:12px 18px;border-radius:0 0 14px 14px}.rootLine span{font-size:20px;color:#538066}.rootLine input{border:0;outline:0;background:transparent;flex:1;font-size:14px;min-width:0;color:#314938}.keyboardHint{font-size:11px;color:#9aaa9b;padding:12px 5px}.timeline{background:white;border:1px solid var(--line);border-radius:14px;overflow-x:auto}.timelineHead{padding:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.timelineHead span{color:#849487;font-size:11px}.timelineGrid{display:grid;grid-template-columns:minmax(170px,240px) repeat(12,minmax(55px,1fr));min-width:860px}.timelineWeeks{background:#f6f9f5;border-block:1px solid #e4ece3}.timelineLabel{text-align:left;padding:10px 12px;border:0;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#38543e}.timelineRow{border-bottom:1px solid #eff3ed;min-height:41px}.timelineRow:hover{background:#fbfdfb}.week{font-size:10px;color:#89998c;padding:11px 5px;text-align:center;border-left:1px solid #ebf0ea}.track{position:relative;grid-row:1;height:40px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(8.333333% - 1px),#edf2ec calc(8.333333% - 1px),#edf2ec 8.333333%)}.ganttBar{position:absolute;top:12px;height:16px;min-width:8px;border-radius:6px;background:#559a72;cursor:pointer}.ganttDone{background:#b4c5b7}.unscheduled{font-size:10px;color:#b2bcb1;margin:12px;display:inline-block}
 @media(max-width:680px){.outlineHeader{align-items:center}.viewBtn{padding:6px 9px}.rootLine{padding:11px}.timelineHead span{display:none}}
+
+.workspaceBar{display:flex;gap:12px;align-items:center;margin:0 0 18px;flex-wrap:wrap}.workspaceLabel{font-size:10px;font-weight:750;letter-spacing:.11em;color:#96a59b}.workspaceTabs{display:flex;gap:5px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}.workspacePill{white-space:nowrap;border:1px solid #e4ebe2;background:#fff;border-radius:99px;padding:8px 14px;color:#6a7d6d;font-size:12px;font-weight:620}.workspacePill.selected{background:#dcebe0;color:#265b41;border-color:#c6dfcc}.addCompany{border:1px dashed #9db6a5;background:#f9fbf8;color:#377253;border-radius:9px;padding:8px 13px;font-size:12px;white-space:nowrap}.entryWorkspace{max-width:145px;flex-shrink:0;border:0;background:#edf4eb;border-radius:9px;padding:7px;color:#37684c;font-size:12px;outline:0}.rootLine .entryWorkspace{max-width:125px}
+@media(max-width:680px){.workspaceBar{gap:8px}.workspaceLabel{width:100%}.workspaceTabs{order:2;flex-basis:100%}.addCompany{margin-left:auto}.entryWorkspace{max-width:105px;font-size:11px;padding:5px}.quick{gap:5px}.quick input{width:80px}}
 </style></head><body>
 <div id="loginScreen" class="loginscreen"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden">
 <header><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
 <div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New project</button></div>
-<div class="summary"><div class="metric"><span>Open tasks</span><b id="countOpen">0</b></div><div class="metric"><span>In progress</span><b id="countDoing">0</b></div><div class="metric"><span>Waiting on someone</span><b id="countWaiting">0</b></div><div class="metric"><span>Completed</span><b id="countDone">0</b></div></div>
-<div class="panel quickPanel"><form id="quickForm" class="quick"><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Press Enter to add. Expand any task to add steps underneath. Use ⌘/Ctrl + K to focus quick-add.</div></div>
+<div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div class="summary"><div class="metric"><span>Open tasks</span><b id="countOpen">0</b></div><div class="metric"><span>In progress</span><b id="countDoing">0</b></div><div class="metric"><span>Waiting on someone</span><b id="countWaiting">0</b></div><div class="metric"><span>Completed</span><b id="countDone">0</b></div></div>
+<div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Press Enter to add. Expand any task to add steps underneath. Use ⌘/Ctrl + K to focus quick-add.</div></div>
 <div id="attention" class="attention hidden"></div><div id="suggestions" class="suggest hidden"></div>
 <div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
-<div class="outlineHeader"><strong>Projects & actions</strong><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><form id="rootLine" class="rootLine"><span>＋</span><input id="rootLineInput" placeholder="New task or project — press Enter…" maxlength="240" aria-label="Add task"></form><div class="keyboardHint">Enter: add a line · Tab: make subtask · Shift+Tab: outdent · ⌘/Ctrl K: quick capture · Details on demand</div></div>
+<div class="outlineHeader"><strong>Projects & actions</strong><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><form id="rootLine" class="rootLine"><select id="rootWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span>＋</span><input id="rootLineInput" placeholder="New task or project — press Enter…" maxlength="240" aria-label="Add task"></form><div class="keyboardHint">Enter: add a line · Tab: make subtask · Shift+Tab: outdent · ⌘/Ctrl K: quick capture · Details on demand</div></div>
 <div id="dialogOverlay" class="dialogoverlay" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogHeading"><h2 id="dialogHeading">Create a task</h2><p>Give Sandy the outcome you want. Add smaller steps if it helps.</p><form id="taskForm">
-<label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
+<label class="field">Belongs to<select id="taskWorkspace"></select></label><label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
 <label class="field">Details (optional)<textarea id="taskDetails" placeholder="What does done look like?"></textarea></label>
 <div class="two"><label class="field">Due date (optional)<input type="date" id="taskDue"></label><label class="field">Priority<select id="taskPriority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option><option value="low">Low</option></select></label></div>
 <div class="two"><label class="field">Next follow-up (optional)<input type="date" id="taskReview"></label><label class="field">Waiting on (optional)<input type="text" maxlength="400" id="taskWaiting" placeholder="Accountant, bank, solicitor…"></label></div><div class="two"><label class="field">Start date (optional)<input type="date" id="taskStart"></label><label class="field">Contact (optional)<input id="taskContact" type="text" maxlength="240" placeholder="Who is involved?"></label></div><label class="field">Depends on<select id="taskDependency"><option value="">No dependency</option></select></label><label class="field" id="subtaskField">Subtasks — one per line (optional)<textarea id="taskSubtasks" rows="4" placeholder="Contact bank for records&#10;Review Xero&#10;Send information to accountant"></textarea></label>
@@ -105,7 +108,7 @@ body{background:#fafbf8;color:#253a2c}
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const state={tasks:[],suggestions:[],attention:[],dependencies:[],view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const getToken=()=>sessionStorage.getItem("sandy_agenda_token")||"";
 function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
@@ -119,13 +122,44 @@ async function api(action,payload){
 }
 function el(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=text;return n}
 function btn(text,cls,fn){const e=el("button",cls,text);e.type="button";e.addEventListener("click",fn);return e}
+
+function workspaceMatches(t){return state.workspace==="all"|| (state.workspace==="personal"?!t.company_id:t.company_id===state.workspace)}
+function normalizeWorkspace(value){return value==="personal"||!value?null:value}
+function fillWorkspaceSelect(target,selected){
+ target.replaceChildren(new Option("Personal","personal"));
+ for(const c of state.companies)target.add(new Option(c.name,c.id));
+ target.add(new Option("＋ Add company…","__new_company"));
+ target.value=selected&&[...target.options].some(x=>x.value===selected)?selected:"personal";
+}
+async function createCompany(){
+ const name=prompt("Company name");if(!name?.trim())return null;
+ try{const result=await api("company-create",{name:name.trim()});state.companies.push(result.company);state.companies.sort((a,b)=>a.name.localeCompare(b.name));state.entryWorkspace=result.company.id;renderWorkspaces();toast("Company added");return result.company.id}
+ catch(e){toast(e.message,true);return null}
+}
+function renderWorkspaces(){
+ const area=$("workspaceTabs");area.replaceChildren();
+ const options=[{id:"all",name:"Everything"},{id:"personal",name:"Personal"},...state.companies];
+ for(const c of options){
+  const b=btn(c.name,"workspacePill"+(state.workspace===c.id?" selected":""),()=>{state.workspace=c.id;if(c.id!=="all")state.entryWorkspace=c.id;render()});
+  area.append(b)
+ }
+ for(const id of ["quickWorkspace","rootWorkspace"]){
+  const select=$(id);const value=select.value&&select.value!=="__new_company"?select.value:state.entryWorkspace;
+  fillWorkspaceSelect(select,value);
+ }
+}
+async function chooseCompanyFromSelect(e){
+ if(e.target.value!=="__new_company"){state.entryWorkspace=e.target.value;return}
+ const id=await createCompany();e.target.value=id||"personal";state.entryWorkspace=e.target.value;
+}
+
 function dateLabel(d){return d?new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):""}
 function fromDate(s){return s?new Date(s+"T12:00:00").toISOString():null}
 function localDate(s){if(!s)return "";const d=new Date(s);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
-function openTasks(){return state.tasks.filter(t=>t.status!=="completed"&&t.status!=="cancelled"&&!t.archived_at)}
+function openTasks(){return state.tasks.filter(t=>t.status!=="completed"&&t.status!=="cancelled"&&!t.archived_at&&workspaceMatches(t))}
 function childOf(id){return state.tasks.filter(t=>t.parent_task_id===id&&!t.archived_at).sort((a,b)=>a.position-b.position||a.created_at.localeCompare(b.created_at))}
 function matched(t){
- if(t.archived_at)return false;
+ if(t.archived_at||!workspaceMatches(t))return false;
  const q=state.search.toLowerCase().trim();
  if(q&&!(t.title+" "+t.details).toLowerCase().includes(q))return false;
  if(state.tab==="open")return t.status!=="completed"&&t.status!=="cancelled";
@@ -176,7 +210,7 @@ function renderTask(t,depth){
  if(t.due_at){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.priority==="urgent"||t.priority==="high")meta.append(el("span","tag "+t.priority,t.priority));
- if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
+ if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(state.workspace==="all")meta.append(el("span","tag",t.company_id?(state.companies.find(c=>c.id===t.company_id)?.name||"Company"):"Personal"));if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
  const add=btn("＋","iconbtn",()=>{state.expanded.delete(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();const box=document.querySelector('[data-add-for="'+t.id+'"] input');box?.focus()});
@@ -198,15 +232,15 @@ function renderTask(t,depth){
  return outer
 }
 
-function render(){
+function render(){renderWorkspaces();
  const open=openTasks();
  $("countOpen").textContent=String(open.length);
  $("countDoing").textContent=String(open.filter(t=>t.status==="in_progress").length);
  $("countWaiting").textContent=String(open.filter(t=>["waiting","blocked"].includes(t.status)).length);
- $("countDone").textContent=String(state.tasks.filter(t=>t.status==="completed"&&!t.archived_at).length);
+ $("countDone").textContent=String(state.tasks.filter(t=>t.status==="completed"&&!t.archived_at&&workspaceMatches(t)).length);
  document.querySelectorAll("[data-tab]").forEach(b=>{b.classList.toggle("active",b.dataset.tab===state.tab)});
  const area=$("tasks");area.replaceChildren();
- const roots=state.tasks.filter(t=>!t.parent_task_id&&!t.archived_at).filter(t=>isVisible(t,new Set())).sort((a,b)=>{
+ const roots=state.tasks.filter(t=>!t.parent_task_id&&!t.archived_at&&workspaceMatches(t)).filter(t=>isVisible(t,new Set())).sort((a,b)=>{
    const ai=a.priority==="urgent"?0:a.priority==="high"?1:2;const bi=b.priority==="urgent"?0:b.priority==="high"?1:2;
    return ai-bi||(a.due_at||"9999").localeCompare(b.due_at||"9999")||b.created_at.localeCompare(a.created_at);
  });
@@ -246,7 +280,7 @@ function renderTimeline(){
   line.append(track);box.append(line);
   if(!collapsed(t))children.forEach(c=>row(c,depth+1))
  }
- const roots=state.tasks.filter(t=>!t.parent_task_id&&!t.archived_at&&t.status!=="cancelled");
+ const roots=state.tasks.filter(t=>!t.parent_task_id&&!t.archived_at&&t.status!=="cancelled"&&workspaceMatches(t));
  if(!roots.length)box.append(el("div","empty","Add a task to build your timeline."));
  roots.forEach(t=>row(t,0));
 }
@@ -279,7 +313,7 @@ function renderSuggestions(){
  actions.append(btn("Dismiss","btn small",async()=>{try{await api("suggestion",{id:s.id,decision:"dismiss"});await load()}catch(e){toast(e.message,true)}}));line.append(actions);area.append(line)}
 }
 async function load(){
- const data=await api("list");state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.email=data.email||"";$("who").textContent=data.display_name||state.email;
+ const data=await api("list");state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.email=data.email||"";$("who").textContent=data.display_name||state.email;
  $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render()
 }
 async function markTask(t,done,control){
@@ -296,7 +330,7 @@ async function markTask(t,done,control){
  finally{control.disabled=false}
 }
 function openDialog(){
- const t=state.edit;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
+ const t=state.edit;fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);$("taskWorkspace").disabled=!!state.parent;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
  $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
  $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskStart").value=t?localDate(t.start_at):"";$("taskContact").value=t?t.contact_name||"":"";const dp=$("taskDependency");dp.replaceChildren(new Option("No dependency",""));for(const other of state.tasks.filter(x=>!x.archived_at&&x.id!==t?.id))dp.add(new Option(other.title,other.id));dp.value=t?(state.dependencies.find(x=>x.task_id===t.id)?.depends_on_id||""):"";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
  $("subtaskField").classList.toggle("hidden",!!t||!!state.parent);$("statusField").classList.toggle("hidden",!t);
@@ -305,7 +339,7 @@ function openDialog(){
 function closeDialog(){$("dialogOverlay").classList.remove("show");state.edit=null;state.parent=null}
 $("taskForm").addEventListener("submit",async e=>{
  e.preventDefault();const save=$("saveTask");save.disabled=true;
- const payload={title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),start_at:fromDate($("taskStart").value),contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
+ const payload={company_id:normalizeWorkspace($("taskWorkspace").value),title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),start_at:fromDate($("taskStart").value),contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
  if(!payload.title){save.disabled=false;return}
  try{
   if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
@@ -317,8 +351,12 @@ $("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!co
 $("cancelDialog").addEventListener("click",closeDialog);
 $("dialogOverlay").addEventListener("click",e=>{if(e.target===$("dialogOverlay"))closeDialog()});
 $("newTask").addEventListener("click",()=>{state.parent=null;state.edit=null;openDialog()});
-$("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;try{await api("create",{title});$("quickTitle").value="";await load();toast("Task added")}catch(err){toast(err.message,true)}});
+$("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;try{await api("create",{title,company_id:normalizeWorkspace($("quickWorkspace").value)});$("quickTitle").value="";await load();toast("Task added")}catch(err){toast(err.message,true)}});
 
+$("addCompany").addEventListener("click",async()=>{const id=await createCompany();if(id){state.workspace=id;render()}});
+$("quickWorkspace").addEventListener("change",chooseCompanyFromSelect);
+$("rootWorkspace").addEventListener("change",chooseCompanyFromSelect);
+$("taskWorkspace").addEventListener("change",async e=>{if(e.target.value==="__new_company"){const id=await createCompany();fillWorkspaceSelect(e.target,id||"personal")}});
 document.addEventListener("keydown",e=>{
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("quickTitle").focus();$("quickTitle").select()}
  if(e.key==="Escape"&&$("dialogOverlay").classList.contains("show"))closeDialog()
@@ -326,7 +364,7 @@ document.addEventListener("keydown",e=>{
 
 $("treeView").addEventListener("click",()=>{state.view="tree";render()});
 $("timelineView").addEventListener("click",()=>{state.view="timeline";render()});
-$("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;field.value="";try{await api("create",{title});await load();field.focus()}catch(e){field.value=title;toast(e.message,true)}});
+$("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;field.value="";try{await api("create",{title,company_id:normalizeWorkspace($("rootWorkspace").value)});await load();field.focus()}catch(e){field.value=title;toast(e.message,true)}});
 document.addEventListener("keydown",async e=>{
  const target=e.target;
  if(!(target instanceof HTMLInputElement)||!target.closest(".addchild"))return;
