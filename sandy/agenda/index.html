@@ -128,6 +128,9 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 .addchild:hover .subtaskWorkspace,.addchild:focus-within .subtaskWorkspace{width:110px;max-width:110px;min-width:0;opacity:1;padding:4px;pointer-events:auto}
 @media(max-width:700px){.outlineHeader{gap:6px;flex-wrap:wrap}.outlineControls{order:3;margin-left:0}.addchild:hover .subtaskWorkspace,.addchild:focus-within .subtaskWorkspace{width:90px;max-width:90px}}
 
+/* Keyboard-first editable outline rows */
+.outlineDraft{background:#fafafa!important}.outlineDraft .inlineTitle{width:100%;max-width:none;background:transparent;border:0;outline:0;padding:2px 3px}
+.outlineDraft .taskcheck{opacity:.5}.outlineDraft .taskrow{border-bottom:1px dashed #ddd}
 /* Compact outline: preserve a single tree line; expand only for metadata. */
 .tasklist{display:block!important}
 .taskrow{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:7px!important;min-height:40px!important;padding:6px 9px!important}
@@ -162,12 +165,12 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
 <header><button type="button" id="agendaMobileNav" aria-label="Open navigation" onclick="document.body.classList.add('agendaNavOpen')">☰</button><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
-<div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New project</button></div>
+<div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div class="summary"><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
-<div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Press Enter to add. Expand any task to add steps underneath. Use ⌘/Ctrl + K to focus quick-add.</div></div>
+<div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Enter creates the next row · Tab indents beneath the task above · Shift+Tab outdents · ⌘/Ctrl K for quick capture.</div></div>
 <div id="attention" class="attention hidden"></div><div id="suggestions" class="suggest hidden"></div>
 <div id="invitations" class="invitations hidden"></div><div class="collabBar"><label for="assigneeFilter">Delegated to</label><select id="assigneeFilter"><option value="all">Everyone</option><option value="unassigned">Not delegated</option><option value="mine">Assigned to me</option></select></div><div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="doing">In progress</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
-<div class="outlineHeader"><strong>Projects & actions</strong><div class="outlineControls"><button class="outlineSmall" id="expandAll" type="button">Expand all</button><button class="outlineSmall" id="collapseAll" type="button">Collapse all</button></div><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><form id="rootLine" class="rootLine"><select id="rootWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span>＋</span><input id="rootLineInput" placeholder="New task or project — press Enter…" maxlength="240" aria-label="Add task"></form><div class="keyboardHint">Enter: add a line · Tab: make subtask · Shift+Tab: outdent · ⌘/Ctrl K: quick capture · Details on demand</div></div>
+<div class="outlineHeader"><strong>Projects & actions</strong><div class="outlineControls"><button class="outlineSmall" id="expandAll" type="button">Expand all</button><button class="outlineSmall" id="collapseAll" type="button">Collapse all</button></div><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><form id="rootLine" class="rootLine"><select id="rootWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span>＋</span><input id="rootLineInput" placeholder="New task or project — press Enter…" maxlength="240" aria-label="Add task"></form><div class="keyboardHint">Click a task to edit · Enter: next row · Tab: indent · Shift+Tab: outdent · Esc: cancel</div></div>
 <div id="dialogOverlay" class="dialogoverlay" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogHeading"><h2 id="dialogHeading">Create a task</h2><p>Give Sandy the outcome you want. Add smaller steps if it helps.</p><form id="taskForm">
 <label class="field">Belongs to<select id="taskWorkspace"></select></label><div id="delegateField" class="delegateField"><label class="field">Delegate to a Sandy user<input id="delegateEmail" type="email" placeholder="Their Sandy email"></label><label class="delegateScope"><input id="delegateSubtree" type="checkbox"> Share subtasks too</label><button type="button" id="delegateSend" class="btn small">Delegate</button><div id="delegationList"></div></div><label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
 <label class="field">Details (optional)<textarea id="taskDetails" placeholder="What does done look like?"></textarea></label>
@@ -183,7 +186,7 @@ import {installSandyIdleLock} from "../security-lock.js";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
 const $ = id => document.getElementById(id);
-const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],receivedDelegations:[],customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 
@@ -413,9 +416,8 @@ function renderTask(t,depth){
  const check=el("input","taskcheck");check.type="checkbox";check.checked=t.status==="completed";check.setAttribute("aria-label","Complete "+t.title);
  check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
  const main=el("div","taskmain");
- const titleArea=el("div","titleArea");const title=el("span","tasktitle"+(t.status==="completed"?" done":""),t.title);
- title.title="Click to edit task name";title.tabIndex=0;title.setAttribute("role","button");title.setAttribute("aria-label","Edit "+t.title);title.addEventListener("click",()=>title.replaceWith(inlineEditor(t,true)));title.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();title.replaceWith(inlineEditor(t,true))}});
- titleArea.append(title);
+ const titleArea=el("div","titleArea");const title=outlineTitle(t);
+  titleArea.append(title);
  const progress=countDesc(t);
  if(progress.total){titleArea.append(el("span","stepCount",progress.done+"/"+progress.total))}
  if(!t.shared){
@@ -435,8 +437,8 @@ function renderTask(t,depth){
  main.append(meta);row.append(main);
  const right=el("div","right");
  if(!t.shared)right.append(quickTaskControls(t));
- const add=btn("＋","iconbtn",()=>{state.expanded.delete(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();const box=document.querySelector('[data-add-for="'+t.id+'"] input');box?.focus()});
- add.title="Add a subtask";if(!t.shared)right.append(add);
+ const add=btn("＋","iconbtn",()=>outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
+  add.title="Add a subtask";if(!t.shared)right.append(add);
  const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";if(!t.shared)right.append(edit);row.append(right);outer.append(row);
  if(!collapsed(t)){
    const childbox=el("div","children");
@@ -446,9 +448,8 @@ function renderTask(t,depth){
      const arrow=el("span","plusTiny","＋");form.append(arrow);
      const input=el("input");input.placeholder="Add a step, press Enter…";input.maxLength=240;input.setAttribute("aria-label","Add a step under "+t.title);form.append(input);
       const companySelect=el("select","subtaskWorkspace");companySelect.title="Workspace for this subtask";companySelect.setAttribute("aria-label","Subtask workspace");companySelect.add(new Option("Personal","personal"));state.companies.forEach(c=>companySelect.add(new Option(c.name,c.id)));companySelect.value=state.workspace==="personal"?"personal":state.companies.some(c=>c.id===state.workspace)?state.workspace:(t.company_id||"personal");form.append(companySelect);
-     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;
-       const before=input.value;input.value="";try{await api("create",{title,parent_task_id:t.id,company_id:normalizeWorkspace(companySelect.value)});await load();const next=document.querySelector('[data-add-for="'+t.id+'"] input');next?.focus()}catch(err){input.value=before;toast(err.message,true)}});
-     childbox.append(form)
+     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;const ok=await outlineCreate(title,t.id,outlinePeers(t.id).at(-1)?.id||null,companySelect.value);if(ok)input.value=""});
+      childbox.append(form)
    }
    if(childbox.childNodes.length)outer.append(childbox)
  }
@@ -465,9 +466,8 @@ function render(){renderWorkspaces();
   document.querySelectorAll("[data-summary-tab]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.summaryTab===state.tab)));
  const area=$("tasks");area.replaceChildren();
  const roots=state.tasks.filter(t=>(!t.parent_task_id||t.shared&&!state.tasks.some(x=>x.id===t.parent_task_id))&&!t.archived_at&&workspaceMatches(t)).filter(t=>isVisible(t,new Set())).sort((a,b)=>{
-   const ai=a.priority==="urgent"?0:a.priority==="high"?1:2;const bi=b.priority==="urgent"?0:b.priority==="high"?1:2;
-   return ai-bi||(a.due_at||"9999").localeCompare(b.due_at||"9999")||b.created_at.localeCompare(a.created_at);
- });
+   return a.position-b.position||a.created_at.localeCompare(b.created_at)||a.id.localeCompare(b.id);
+  });
  if(!roots.length){const empty=el("div","empty");empty.append(el("div","emptyicon","✓"));empty.append(el("h2","",state.tab==="done"?"No completed tasks yet":"All clear here"));empty.append(el("p","",state.tab==="open"?"Add a task above, or let Sandy suggest the next useful step.":"Nothing matches this view."));area.append(empty)}
  roots.forEach(t=>area.append(renderTask(t,0)));
  renderSuggestions();renderAttention();renderTimeline();renderInvitations();renderAssigneeFilter();$("tasks").classList.toggle("hidden",state.view!=="tree");$("rootLine").classList.toggle("hidden",state.view!=="tree");$("timeline").classList.toggle("hidden",state.view!=="timeline");$("treeView").classList.toggle("chosen",state.view==="tree");$("timelineView").classList.toggle("chosen",state.view==="timeline")
@@ -611,10 +611,10 @@ $("taskForm").addEventListener("submit",async e=>{
 $("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!confirm("Archive this task and all of its subtasks? You will no longer see them in your active agenda."))return;try{await api("archive-tree",{id:state.edit.id,confirm_all:true});closeDialog();await load();toast("Task archived")}catch(e){toast(e.message,true)}});
 $("cancelDialog").addEventListener("click",closeDialog);
 $("dialogOverlay").addEventListener("click",e=>{if(e.target===$("dialogOverlay"))closeDialog()});
-$("newTask").addEventListener("click",()=>{state.parent=null;state.edit=null;openDialog()});
-$("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;try{await api("create",{title,company_id:normalizeWorkspace($("quickWorkspace").value)});$("quickTitle").value="";await load();toast("Task added")}catch(err){toast(err.message,true)}});
+$("newTask").addEventListener("click",()=>outlineDraft(null,outlineLast(null),state.entryWorkspace));
+ $("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;const ok=await outlineCreate(title,null,outlineLast(null),$("quickWorkspace").value);if(ok)$("quickTitle").value=""});
 
-$("addCompany").addEventListener("click",async()=>{const id=await createCompany();if(id){state.workspace=id;render()}});
+ $("addCompany").addEventListener("click",async()=>{const id=await createCompany();if(id){state.workspace=id;render()}});
 $("quickWorkspace").addEventListener("change",chooseCompanyFromSelect);
 $("rootWorkspace").addEventListener("change",chooseCompanyFromSelect);
 $("taskWorkspace").addEventListener("change",async e=>{if(e.target.value==="__new_company"){const id=await createCompany();fillWorkspaceSelect(e.target,id||"personal")}});
@@ -627,15 +627,8 @@ $("expandAll").addEventListener("click",()=>{state.expanded.clear();localStorage
  $("collapseAll").addEventListener("click",()=>{state.expanded=new Set(state.tasks.filter(t=>childOf(t.id).length>0).map(t=>t.id));localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));state.view="tree";render()});
  $("treeView").addEventListener("click",()=>{state.view="tree";render()});
 $("timelineView").addEventListener("click",()=>{state.view="timeline";render()});
-$("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;field.value="";try{await api("create",{title,company_id:normalizeWorkspace($("rootWorkspace").value)});await load();field.focus()}catch(e){field.value=title;toast(e.message,true)}});
-document.addEventListener("keydown",async e=>{
- const target=e.target;
- if(!(target instanceof HTMLInputElement)||!target.closest(".addchild"))return;
- const form=target.closest(".addchild");const parentId=form.dataset.addFor;
- if(e.key==="Tab"&&!e.shiftKey){e.preventDefault();const value=target.value.trim();if(!value)return;target.value="";try{await api("create",{title:value,parent_task_id:parentId,company_id:normalizeWorkspace(form.querySelector(".subtaskWorkspace")?.value||"personal")});await load();const items=childOf(parentId);const last=items[items.length-1];if(last){state.expanded.delete(last.id);render();document.querySelector('[data-add-for="'+last.id+'"] input')?.focus()}}catch(err){target.value=value;toast(err.message,true)}}
- if(e.key==="Escape")target.blur()
-});
-$("search").addEventListener("input",e=>{state.search=e.target.value;render()});
+$("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;const ok=await outlineCreate(title,null,outlineLast(null),$("rootWorkspace").value);if(ok)field.value=""});
+ $("search").addEventListener("input",e=>{state.search=e.target.value;render()});
 function openTaskTab(tab){state.tab=tab;state.view="tree";state.search="";$("search").value="";const url=new URL(location.href);url.searchParams.set("tab",tab);history.replaceState(null,"",url);render();$("tasks").scrollIntoView({behavior:"smooth",block:"start"})}
  document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>openTaskTab(b.dataset.tab)));
  document.querySelectorAll("[data-summary-tab]").forEach(b=>b.addEventListener("click",()=>openTaskTab(b.dataset.summaryTab)));
