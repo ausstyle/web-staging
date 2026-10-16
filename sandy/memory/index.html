@@ -31,12 +31,12 @@
 <div id="app" class="app hide">
   <aside class="side">
     <div class="brand"><div class="brandmark">s<span>.</span></div><div><strong>Sandy</strong><small>MEMORY CENTRE</small></div></div>
-    <div class="sidenav">
+    <div class="sidenav"><a class="workspaceBack" href="../app/">← &nbsp; Sandy workspace</a>
       <button data-view="home" class="navitem active"><span class="navico">◫</span> Overview</button>
       <button data-view="life" class="navitem"><span class="navico">◈</span> My life</button>
       <button data-view="knowledge" class="navitem"><span class="navico">◇</span> What she knows</button>
       <button data-view="tasks" class="navitem"><span class="navico">☑</span> Your tasks</button>
-      <a href="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda" class="navitem" style="text-decoration:none;display:block;margin-top:7px">↗ &nbsp;Full Agenda</a>
+      <a href="../agenda/" class="navitem" style="text-decoration:none;display:block;margin-top:7px">↗ &nbsp;Full Agenda</a>
       <button data-view="attention" class="navitem"><span class="navico">✦</span> Needs attention <span id="attentionCount" class="countbadge hide">0</span></button>
       <button data-view="search" class="navitem"><span class="navico">⌕</span> Search history</button>
     </div>
@@ -46,7 +46,7 @@
     </div>
   </aside>
   <main class="main">
-    <header class="top"><div class="topmobile"><strong>Sandy<span class="dot">.</span></strong> <span>Memory Centre</span></div><span id="liveMark" class="live">● &nbsp; Private &amp; connected</span><button id="refresh" class="textbutton">↻ &nbsp; Refresh</button></header>
+    <header class="top"><a class="workspaceBack" href="../app/">← Workspace</a><div class="topmobile"><strong>Sandy<span class="dot">.</span></strong> <span>Memory Centre</span></div><span id="liveMark" class="live">● &nbsp; Private &amp; connected</span><button id="refresh" class="textbutton">↻ &nbsp; Refresh</button></header>
     <div class="content">
       <div class="pageintro"><div class="eyebrow" id="sectionTop">YOUR PERSONAL KNOWLEDGE</div><h1 id="pageHeading">Good morning.</h1><p id="pageSubtitle">Everything Sandy remembers, and everything still in motion.</p></div>
       <section class="askcard"><div class="askhead"><span class="sparkle">✦</span><div><strong>Ask Sandy</strong><p>Ask about your history, your work, or what to deal with next.</p></div></div>
