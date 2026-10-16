@@ -190,7 +190,7 @@ function inlineEditor(t,focusTarget){
 }
 function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
- const children=childOf(t.id).filter(c=>(state.tab==="open"||state.tab==="all")?true:isVisible(c,new Set()));
+ const children=childOf(t.id).filter(c=>state.assigneeFilter!=="all"?isVisible(c,new Set()):(state.tab==="open"||state.tab==="all"?true:isVisible(c,new Set())));
  const row=el("div","taskrow");row.style.paddingLeft=(depth?"5px":"12px");
  const branch=btn(children.length?(collapsed(t)?"▸":"▾"):"·","branchToggle",()=>toggleBranch(t));
  branch.setAttribute("aria-label",(collapsed(t)?"Expand ":"Collapse ")+t.title);
@@ -298,7 +298,7 @@ function renderInvitations(){
  const pending=state.receivedDelegations.filter(x=>x.status==="invited");box.classList.toggle("hidden",!pending.length);
  if(!pending.length)return;box.append(el("strong","","Task invitations"));
  for(const d of pending){
-  const line=el("div","inviteRow");line.append(el("span","","Another Sandy user invited you to collaborate on "+(d.scope==="subtree"?"a project":"a task")+"."));
+  const line=el("div","inviteRow");line.append(el("span","","Invitation: "+(d.task_title||"Shared task")+(d.scope==="subtree"?" · including subtasks":"")));
   for(const [label,decision] of [["Accept","accepted"],["Decline","declined"]]){
    line.append(btn(label,"btn small"+(decision==="accepted"?" primary":""),async()=>{try{await api("delegation-response",{id:d.id,decision});await load();toast("Invitation "+decision)}catch(e){toast(e.message,true)}}))
   }
