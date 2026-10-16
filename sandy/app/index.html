@@ -416,7 +416,7 @@ try{
   if(settings.passkeys_enabled===false){passkeysEnabled=false;$("passkey").classList.add("hide");$("passkeyDivider").classList.add("hide");$("showExistingPasskey").classList.add("hide");}
 }catch{}
 setLoginPasskeyState();
-const params=new URLSearchParams(location.search);if(["email","whatsapp","voice","web"].includes(params.get("channel")))filter=params.get("channel"),view="history";
+const params=new URLSearchParams(location.search);if(["email","whatsapp","voice","web"].includes(params.get("channel")))filter=params.get("channel"),view="history";else if(params.get("view")==="history")view="history";
 if(!(await idle.check())){const {data}=await sb.auth.getSession();if(data.session)await enter();else showLogin();}
 if(new URLSearchParams(location.search).has("locked")){authStatus("Sandy locked after 1 hour of inactivity. Unlock with a passkey or secure email link.");history.replaceState(null,"",location.pathname);}
 </script></body></html>
