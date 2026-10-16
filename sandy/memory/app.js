@@ -1,8 +1,8 @@
 
-import {createClient} from "https://esm.sh/@supabase/supabase-js@2.49.9";
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const $=id=>document.getElementById(id),h=(tag,cls,text)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=String(text);return x};
 const API="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-memory-centre",SB="https://zmqlyygzqoidkcwdysok.supabase.co";
-const auth=createClient(SB,"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:sessionStorage,autoRefreshToken:true}});
+const auth=createClient(SB,"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 let state=null,view="home",session=null,noticeTimer=null;
 const fmt=v=>{if(!v)return "No date";const d=new Date(v);return Number.isNaN(d.getTime())?"No date":new Intl.DateTimeFormat("en-AU",{month:"short",day:"numeric",year:"numeric"}).format(d)};
 const clear=x=>{x.replaceChildren();return x},add=(p,...nodes)=>{nodes.forEach(n=>p.append(n));return p};
@@ -44,7 +44,44 @@ const real=panel("Sandy's execution requests");text(real,"These are actual recor
 function attention(){headings("PROACTIVE ASSISTANCE","Needs your attention.","Verified outstanding work and suggestions for review — never automatic external actions.");const root=clear($("pageview"));const p=panel("Tasks needing a decision");const t=state.execution.filter(x=>["awaiting_approval","failed"].includes(x.status));if(!t.length)p.append(h("div","empty","No known blocked or failed execution requests."));t.forEach(x=>p.append(line(x.instruction, "Source: "+x.source_channel+" · "+fmt(x.updated_at),badge(x.status))));root.append(p);const q=panel("Sandy's suggestions");text(q,"These are ideas inferred from stored history. Keeping a suggestion does not instruct Sandy to act.");if(!state.insights.length)q.append(h("div","empty","No outstanding suggestions currently require your review."));state.insights.forEach(x=>{const row=h("div","lineitem");add(row,h("strong","",x.title));text(row,x.detail);const acts=h("div","actions");acts.append(badge(x.insight_type));if(x.evidence_source_id)acts.append(aBtn("See evidence",()=>evidence(x.evidence_source_id)));acts.append(aBtn("Keep on radar",async()=>{try{await api("insight",{id:x.id,status:"approved"});notify("Kept on your radar — no action performed");await load()}catch(e){notify(e.message)}}));acts.append(aBtn("Dismiss",async()=>{try{await api("insight",{id:x.id,status:"dismissed"});await load()}catch(e){notify(e.message)}}));row.append(acts);q.append(row)});root.append(q);
 const due=state.checklist.filter(x=>x.status!=="done"&&x.due_at).sort((a,b)=>new Date(a.due_at)-new Date(b.due_at));if(due.length){const d=panel("Upcoming checklist dates");due.forEach(x=>d.append(line(x.title,"Due "+fmt(x.due_at))));root.append(d)}}
 function search(){headings("SEARCH EVERYTHING","Search your history.","Look across stored emails, voice conversations, messages and document references.");const root=clear($("pageview")),p=panel("Find a memory"),form=h("form","searchbar"),inp=h("input");inp.id="historyQuery";inp.placeholder="Search a person, project, decision or document";const submit=h("button","primary","Search");submit.type="submit";add(form,inp,submit);p.append(form);const results=h("div");p.append(results);form.addEventListener("submit",async e=>{e.preventDefault();clear(results);results.append(h("div","loading","Searching your indexed history…"));try{const j=await api("search",{query:inp.value,limit:20});clear(results);if(!j.matches?.length)results.append(h("div","empty","No matching records found. Try a more specific keyword."));j.matches?.forEach(x=>{const row=h("div","searchhit");add(row,badge(x.channel+" · "+x.role));text(row,x.excerpt);row.append(aBtn("View original indexed record →",()=>evidence(x.id)));results.append(row)})}catch(er){results.textContent=er.message}});root.append(p)}
-function settings(){headings("PRIVATE & USER-CONTROLLED","Memory settings.","You decide what Sandy remembers and how she uses it.");const root=clear($("pageview")),p=panel("Your preferences");const options=[["enabled","Memory access","Allow Sandy to store and retrieve your knowledge for approved channels."],["learning_enabled","Learn from conversations","Index new content and derive useful long-term understanding."],["proactive_enabled","Proactive suggestions","Look for reminders, outstanding commitments and things requiring attention."]];options.forEach(([k,title,desc])=>{const row=h("div","settingrow");const left=h("div");add(left,h("strong","",title),h("p","",desc));const box=h("input","toggle");box.type="checkbox";box.checked=!!state.settings?.[k];box.addEventListener("change",async()=>{try{await api("settings",{[k]:box.checked});notify("Setting saved");await load()}catch(e){box.checked=!box.checked;notify(e.message)}});add(row,left,box);p.append(row)});root.append(p);const about=panel("Your data & permissions");text(about,"Turning memory off stops the Memory Centre from searching your archive. It does not delete original emails, voice transcripts, WhatsApp records or files.");text(about,"Search results offer a Forget indexed copy action. Original messages must be removed separately from their source systems if you want complete deletion.");text(about,"Only your confirmed customer account can open this space. External actions still require the permissions appropriate to the action.");root.append(about)}
+
+function passkeySettingsPanel(){
+ const p=panel("Fast, secure sign-in"),intro=h("p","","Add a passkey on your personal device to sign in with Face ID, Touch ID or your device PIN. Your browser can stay signed in between visits.");p.append(intro);
+ const buttonRow=h("div","actions"),addKey=aBtn("＋ Add a passkey",async()=>{
+   addKey.disabled=true;securityStatus.textContent="Opening your device's secure passkey prompt…";
+   try{
+     if(!auth.auth.registerPasskey)throw Error("Passkeys are not supported by this client.");
+     const {error}=await auth.auth.registerPasskey();
+     if(error)throw error;
+     securityStatus.textContent="Passkey added. Next time, choose Continue with passkey.";
+     await listKeys();
+   }catch(e){securityStatus.textContent=e.code==="passkey_disabled"?"Passkeys are not yet enabled in Sandy's Supabase Auth settings. Your existing login remains available.":(e.message||"Could not add passkey.").slice(0,220)}
+   finally{addKey.disabled=false}
+ },"secondary"),refresh=aBtn("Manage passkeys",async()=>await listKeys(),"smallbutton");
+ add(buttonRow,addKey,refresh);p.append(buttonRow);
+ const securityStatus=h("div","auth-security-status",""),listed=h("div","passkeylist");p.append(securityStatus,listed);
+ async function listKeys(){
+  listed.replaceChildren();securityStatus.textContent="Checking your saved passkeys…";
+  try{
+   if(!auth.auth.passkey?.list)throw Error("Passkey management unavailable.");
+   const {data,error}=await auth.auth.passkey.list();if(error)throw error;
+   const keys=Array.isArray(data)?data:(data?.passkeys||[]);
+   securityStatus.textContent=keys.length?keys.length+" passkey"+(keys.length===1?"":"s")+" registered.":"No passkeys registered yet.";
+   keys.forEach(k=>{
+     const line=h("div","passkeyitem"),info=h("div",""),remove=aBtn("Remove",async()=>{
+       if(!confirm("Remove this passkey? You may need email sign-in on this device afterwards."))return;
+       remove.disabled=true;const {error:e}=await auth.auth.passkey.delete({passkeyId:k.id});
+       if(e){securityStatus.textContent=e.message;remove.disabled=false;return}
+       await listKeys();
+     },"smallbutton danger");
+     add(info,h("strong","",k.friendly_name||"Passkey"),h("small","",k.created_at?"Added "+fmt(k.created_at):"Secure device credential"));add(line,info,remove);listed.append(line);
+   });
+  }catch(e){securityStatus.textContent=e.code==="passkey_disabled"?"Passkeys need to be enabled in Supabase Authentication → Passkeys.":(e.message||"Unable to read passkeys.").slice(0,220)}
+ }
+ p.append(h("p","", "Only add passkeys on devices you own. This temporary site uses the GitHub Pages domain; passkeys must be enrolled again when Sandy moves to a permanent domain."));
+ return p;
+}
+function settings(){headings("PRIVATE & USER-CONTROLLED","Memory settings.","You decide what Sandy remembers and how she uses it.");const root=clear($("pageview")),p=panel("Your preferences");const options=[["enabled","Memory access","Allow Sandy to store and retrieve your knowledge for approved channels."],["learning_enabled","Learn from conversations","Index new content and derive useful long-term understanding."],["proactive_enabled","Proactive suggestions","Look for reminders, outstanding commitments and things requiring attention."]];options.forEach(([k,title,desc])=>{const row=h("div","settingrow");const left=h("div");add(left,h("strong","",title),h("p","",desc));const box=h("input","toggle");box.type="checkbox";box.checked=!!state.settings?.[k];box.addEventListener("change",async()=>{try{await api("settings",{[k]:box.checked});notify("Setting saved");await load()}catch(e){box.checked=!box.checked;notify(e.message)}});add(row,left,box);p.append(row)});root.append(p);const about=panel("Your data & permissions");text(about,"Turning memory off stops the Memory Centre from searching your archive. It does not delete original emails, voice transcripts, WhatsApp records or files.");text(about,"Search results offer a Forget indexed copy action. Original messages must be removed separately from their source systems if you want complete deletion.");text(about,"Only your confirmed customer account can open this space. External actions still require the permissions appropriate to the action.");root.append(about);root.append(passkeySettingsPanel())}
 
 let lifeInfo=null,lifeSpace=null;
 function lf(label,placeholder="",type="text"){
@@ -137,7 +174,33 @@ $("closeDrawer").addEventListener("click",()=>$("drawer").classList.add("hide"))
 $("drawer").addEventListener("click",e=>{if(e.target===$("drawer"))$("drawer").classList.add("hide")});
 $("refresh").addEventListener("click",()=>load().then(()=>notify("Updated")).catch(e=>notify(e.message)));
 $("logout").addEventListener("click",async()=>{await auth.auth.signOut();exit()});
-$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const email=$("email").value.trim().toLowerCase();$("authMessage").textContent="Requesting a secure sign-in email…";try{const {error}=await auth.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:"https://ausstyle.github.io/web-staging/sandy/memory/"}});if(error)throw error;$("authMessage").textContent="Check your inbox for your sign-in link. If it opens localhost, Sandy’s Supabase Auth redirect still needs to be updated."}catch(er){$("authMessage").textContent="Sign-in link not sent: "+er.message}});
+$("emailToggle").addEventListener("click",()=>{
+ const form=$("loginForm"),open=form.classList.toggle("hide")===false;
+ $("emailToggle").setAttribute("aria-expanded",String(open));
+ if(open)$("email").focus();
+});
+$("passkeyLogin").addEventListener("click",async()=>{
+ const btn=$("passkeyLogin");btn.disabled=true;$("authMessage").textContent="Confirm sign-in with your device…";
+ try{
+  if(!window.PublicKeyCredential||!auth.auth.signInWithPasskey)throw Error("Your browser does not support this sign-in method. Use your secure email link.");
+  const {error}=await auth.auth.signInWithPasskey();if(error)throw error;
+  $("authMessage").textContent="Signed in securely.";
+ }catch(er){
+  if(er.code==="passkey_disabled")$("authMessage").textContent="Passkeys are not yet enabled for Sandy. Use email for now; once enabled, you can add a passkey in Settings.";
+  else if(er.code==="webauthn_credential_not_found")$("authMessage").textContent="This device does not have a Sandy passkey yet. Sign in using email once, then add your passkey in Settings.";
+  else $("authMessage").textContent=(er.message||"Passkey sign-in was cancelled or unavailable.").slice(0,240);
+ }finally{btn.disabled=false}
+});
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();const email=$("email").value.trim().toLowerCase(),b=$("sendLink");b.disabled=true;
+ $("authMessage").textContent="Requesting a secure sign-in link…";
+ try{
+  const {error}=await auth.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+window.location.pathname}});
+  if(error)throw error;
+  $("authMessage").textContent="Check your email once to sign in. You can then add a passkey in Settings and avoid emails on future visits.";
+ }catch(er){$("authMessage").textContent="Could not send the sign-in link: "+(er.message||"Try again.").slice(0,200)}
+ finally{b.disabled=false}
+});
 auth.auth.onAuthStateChange((_e,s)=>{if(s?.access_token&&!session)enter();else if(!s?.access_token&&session)exit()});
 const {data}=await auth.auth.getSession();if(data.session)enter();else exit();
 }
