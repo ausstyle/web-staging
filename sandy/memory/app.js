@@ -86,21 +86,40 @@ function knowledge(){
  const groups=h("div","memoryFactGroups");panelRoot.append(groups);
  let memoryTree=null;
  async function improveFact(f){
+  const row=document.querySelector('[data-fact-id="'+f.id+'"]');if(!row)return;
+  row.querySelectorAll(".factEditor").forEach(el=>el.remove());
   const box=h("div","factEditor"),heading=h("strong","","Improve: "+String(f.fact_key).replaceAll("_"," "));
   const conversation=h("div",""),actions=h("div","actions");
-  const answer=h("textarea","factInput");answer.maxLength=1800;answer.rows=3;answer.placeholder="Your answer to Sandy…";answer.style.width="100%";
-  const submit=aBtn("Save answer",async()=>{
+  const answer=h("textarea","factInput");answer.maxLength=1800;answer.rows=3;answer.placeholder="Your answer to Sandy…";
+  let stopped=false,turn=null,saved=0;
+  const stop=aBtn("Stop improving",()=>{stopped=true;box.remove();if(saved)load()},"smallbutton");
+  const submit=aBtn("Save & continue",async()=>{
    const value=answer.value.trim();if(!value)return notify("Please answer Sandy's question.");
-   submit.disabled=true;
-   try{await api("enrich_answer",{turn_id:box.dataset.turnId,answer:value});notify("Answer saved to Sandy's long-term memory");await load()}
-   catch(e){notify(e.message);submit.disabled=false}
+   if(!turn||stopped)return;
+   submit.disabled=true;stop.disabled=true;
+   try{
+    await api("enrich_answer",{turn_id:turn.id,answer:value});
+    saved++;answer.value="";notify("Answer saved to Sandy's memory");
+    text(conversation,"Saved. Sandy is thinking of the next relevant question…");
+    stop.disabled=false;await nextQuestion();
+   }catch(e){notify("Could not save or continue: "+e.message);submit.disabled=false;stop.disabled=false}
   },"smallbutton primary");
-  const cancel=aBtn("Close",()=>box.remove(),"smallbutton");
-  actions.append(cancel,submit);box.append(heading,conversation,answer,actions);
-  document.querySelector('[data-fact-id="'+f.id+'"]')?.append(box);
-  submit.disabled=true;text(conversation,"Sandy is considering what would help her understand this topic…");
-  try{const r=await api("enrich_question",{id:f.id});box.dataset.turnId=r.turn.id;clear(conversation);text(conversation,r.turn.question);submit.disabled=false;answer.focus()}
-  catch(e){clear(conversation);text(conversation,e.message);answer.disabled=true}
+  async function nextQuestion(){
+   if(stopped||!box.isConnected)return;
+   submit.disabled=true;
+   try{
+    const r=await api("enrich_question",{id:f.id});
+    if(stopped||!box.isConnected)return;
+    turn=r.turn;text(conversation,turn.question);submit.disabled=false;answer.focus();
+   }catch(e){
+    if(stopped||!box.isConnected)return;
+    text(conversation,"Sandy could not generate the next question: "+e.message);
+    submit.disabled=true;
+    const retry=aBtn("Try again",()=>{retry.remove();text(conversation,"Sandy is thinking…");nextQuestion()},"smallbutton");actions.prepend(retry);
+   }
+  }
+  actions.append(stop,submit);box.append(heading,conversation,answer,actions);row.append(box);
+  text(conversation,"Sandy is thinking of a relevant question…");await nextQuestion();
  }
  function drawFacts(){
   groups.replaceChildren();
