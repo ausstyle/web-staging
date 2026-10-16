@@ -231,4 +231,8 @@ if(loginHash){
 }
 const {data}=await auth.auth.getSession();if(data.session)enter();else exit();
 }
+
+fetch(SB+"/auth/v1/settings",{headers:{apikey:"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"}}).then(r=>r.json()).then(settings=>{
+ if(settings.passkeys_enabled===false){$("passkeyLogin").disabled=true;$("passkeyLogin").textContent="Passkeys · activation pending";$("authMessage").textContent="Passkeys are not yet enabled. For now, sign in with a secure email link.";}
+}).catch(()=>{});
 start().catch(e=>{$("authMessage").textContent="Could not initialise sign-in: "+e.message});
