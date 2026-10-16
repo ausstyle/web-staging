@@ -1,8 +1,10 @@
 
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+import {installSandyIdleLock} from "../security-lock.js";
 const $=id=>document.getElementById(id),h=(tag,cls,text)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(text!==undefined)x.textContent=String(text);return x};
 const API="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-memory-centre",SB="https://zmqlyygzqoidkcwdysok.supabase.co";
 const auth=createClient(SB,"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
+const idle=installSandyIdleLock(auth);
 let state=null,view="home",session=null,noticeTimer=null;
 const fmt=v=>{if(!v)return "No date";const d=new Date(v);return Number.isNaN(d.getTime())?"No date":new Intl.DateTimeFormat("en-AU",{month:"short",day:"numeric",year:"numeric"}).format(d)};
 const clear=x=>{x.replaceChildren();return x},add=(p,...nodes)=>{nodes.forEach(n=>p.append(n));return p};
@@ -258,9 +260,10 @@ function life(){
 
 function render(){if(!state)return;({home,life,knowledge,tasks,attention,search,settings}[view]||home)()}
 async function question(q){$("askInput").value=q;$("answerBox").classList.remove("hide");$("answerText").textContent="Looking through your records…";clear($("answerSources"));$("askButton").disabled=true;try{const r=await api("ask",{query:q});$("answerText").textContent=r.answer||"Sandy could not form a supported answer.";r.sources?.forEach(s=>$("answerSources").append(sourceButton(s)))}catch(e){$("answerText").textContent=e.message}finally{$("askButton").disabled=false}}
-function enter(){session=true;$("authgate").classList.add("hide");$("app").classList.remove("hide");load().catch(e=>notify(e.message))}
+async function enter(){if(await idle.check())return;session=true;$("authgate").classList.add("hide");$("app").classList.remove("hide");load().catch(e=>notify(e.message))}
 function exit(){session=null;state=null;$("app").classList.add("hide");$("authgate").classList.remove("hide")}
 async function start(){
+if(await idle.check())return;
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>switchView(b.dataset.view)));
 document.querySelectorAll("[data-ask]").forEach(b=>b.addEventListener("click",()=>question(b.dataset.ask)));
 $("askForm").addEventListener("submit",e=>{e.preventDefault();const q=$("askInput").value.trim();if(q.length>3)question(q)});
