@@ -87,10 +87,28 @@ body{background:#fafbf8;color:#253a2c}
 
 .workspaceBar{display:flex;gap:12px;align-items:center;margin:0 0 18px;flex-wrap:wrap}.workspaceLabel{font-size:10px;font-weight:750;letter-spacing:.11em;color:#96a59b}.workspaceTabs{display:flex;gap:5px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}.workspacePill{white-space:nowrap;border:1px solid #e4ebe2;background:#fff;border-radius:99px;padding:8px 14px;color:#6a7d6d;font-size:12px;font-weight:620}.workspacePill.selected{background:#dcebe0;color:#265b41;border-color:#c6dfcc}.addCompany{border:1px dashed #9db6a5;background:#f9fbf8;color:#377253;border-radius:9px;padding:8px 13px;font-size:12px;white-space:nowrap}.entryWorkspace{max-width:145px;flex-shrink:0;border:0;background:#edf4eb;border-radius:9px;padding:7px;color:#37684c;font-size:12px;outline:0}.rootLine .entryWorkspace{max-width:125px}
 @media(max-width:680px){.workspaceBar{gap:8px}.workspaceLabel{width:100%}.workspaceTabs{order:2;flex-basis:100%}.addCompany{margin-left:auto}.entryWorkspace{max-width:105px;font-size:11px;padding:5px}.quick{gap:5px}.quick input{width:80px}}
-.collabBar{display:flex;gap:10px;align-items:center;margin:12px 0;flex-wrap:wrap}.collabBar label{font-size:12px;color:#718474}.collabBar select{background:white;border:1px solid #dce8dd;border-radius:9px;padding:8px;font-size:12px}.delegateField{border:1px solid #dbe8dc;border-radius:12px;padding:13px;margin:14px 0}.delegateScope{display:flex;gap:7px;align-items:center;font-size:12px;margin:10px 0}.delegateScope input{width:auto}.delegateLine,.inviteRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;padding:10px 0;border-top:1px solid #e9f0e8}.delegateLine span,.inviteRow span{flex:1}.invitations{background:#f2f8ef;border:1px solid #d0e5d0;border-radius:13px;margin:12px 0;padding:14px}</style></head><body>
-<div id="loginScreen" class="loginscreen"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
+.collabBar{display:flex;gap:10px;align-items:center;margin:12px 0;flex-wrap:wrap}.collabBar label{font-size:12px;color:#718474}.collabBar select{background:white;border:1px solid #dce8dd;border-radius:9px;padding:8px;font-size:12px}.delegateField{border:1px solid #dbe8dc;border-radius:12px;padding:13px;margin:14px 0}.delegateScope{display:flex;gap:7px;align-items:center;font-size:12px;margin:10px 0}.delegateScope input{width:auto}.delegateLine,.inviteRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;padding:10px 0;border-top:1px solid #e9f0e8}.delegateLine span,.inviteRow span{flex:1}.invitations{background:#f2f8ef;border:1px solid #d0e5d0;border-radius:13px;margin:12px 0;padding:14px}
+/* Shared Sandy monochrome design system */
+:root{color:#111;background:#fff;--ink:#111;--muted:#707070;--line:#e6e6e6;--green:#111;--pale:#f5f5f5;--white:#fff}
+body{color:#111;background:#fff!important}
+.logo,.logo .mark{color:#111!important}.mark{background:#f0f0f0!important}
+.btn.primary{background:#111!important;border-color:#111!important;color:#fff!important}
+.btn.primary:hover{background:#333!important}
+.tab.active,.viewBtn.chosen{background:#ebebeb!important;color:#111!important}
+.taskcheck:checked{background:#111!important;border-color:#111!important}
+.iconbtn:hover,.branchToggle:hover,.addchild button,.tag,.stepCount{background:#f4f4f4!important;color:#222!important}
+.panel,.metric,.tasklist,.task,.dialog{background:white!important;border-color:#e7e7e7!important}
+.panel.quickPanel{border-color:#ddd!important;box-shadow:none!important}
+.taskrow:hover{background:#f8f8f8!important}
+.suggest,.attention{background:#f9f9f9!important;border-color:#e6e6e6!important}
+.rootLine,.outlineHeader,.viewSwitch{background:#f8f8f8!important}
+.iconbtn,.quickicon,.addchild .plusTiny{color:#444!important}
+input:focus,select:focus,textarea:focus{outline-color:#555!important}
+.topnav-link{font-size:12px;border:1px solid #ddd;border-radius:10px;padding:8px 12px;color:#111;text-decoration:none;font-weight:650}
+</style></head><body>
+<div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden">
-<header><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
+<header><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
 <div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New project</button></div>
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div class="summary"><div class="metric"><span>Open tasks</span><b id="countOpen">0</b></div><div class="metric"><span>In progress</span><b id="countDoing">0</b></div><div class="metric"><span>Waiting on someone</span><b id="countWaiting">0</b></div><div class="metric"><span>Completed</span><b id="countDone">0</b></div></div>
 <div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Press Enter to add. Expand any task to add steps underneath. Use ⌘/Ctrl + K to focus quick-add.</div></div>
@@ -105,15 +123,20 @@ body{background:#fafbf8;color:#253a2c}
 <label class="field" id="statusField">Status<select id="taskStatus"><option value="todo">To do</option><option value="in_progress">In progress</option><option value="waiting">Waiting</option><option value="blocked">Blocked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
 <div class="dialogfooter"><button type="button" class="btn hidden" id="archiveTask" style="margin-right:auto;color:#a5544a">Archive task</button><button type="button" class="btn" id="cancelDialog">Cancel</button><button type="submit" class="btn primary" id="saveTask">Save task</button></div></form></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
-<script>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 "use strict";
+const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const $ = id => document.getElementById(id);
 const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],receivedDelegations:[],customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
-const getToken=()=>sessionStorage.getItem("sandy_agenda_token")||"";
+
 function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
 async function api(action,payload){
- const options={credentials:"omit",headers:{"Content-Type":"application/json",...(getToken()?{"Authorization":"Bearer "+getToken()}:{})}};
+ const {data:authData}=await sandyAuth.auth.getSession();
+ const access=authData?.session?.access_token;
+ if(!access)throw new Error("Sign in to Sandy first");
+ const options={credentials:"omit",headers:{"Content-Type":"application/json","Authorization":"Bearer "+access}};
  if(payload!==undefined){options.method="POST";options.body=JSON.stringify(payload)}
  const response=await fetch(base+"?action="+encodeURIComponent(action),options);
  const data=await response.json().catch(()=>({error:"Server returned an unexpected response"}));
@@ -414,6 +437,9 @@ document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;const email=$("loginEmail").value.trim();try{await api("request-code",{email});$("loginMessage").textContent="If this address is registered with Sandy, your six-digit code is on its way.";$("loginMessage").className="message";$("codeForm").classList.remove("hidden");$("loginForm").classList.add("hidden");$("loginCode").focus()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
 $("retryLogin").addEventListener("click",()=>{$("codeForm").classList.add("hidden");$("loginForm").classList.remove("hidden");$("loginMessage").textContent=""});
 $("codeForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;try{const verified=await api("verify-code",{email:$("loginEmail").value.trim(),code:$("loginCode").value.trim()});if(verified.token)sessionStorage.setItem("sandy_agenda_token",verified.token);await load()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
-$("logout").addEventListener("click",async()=>{try{await api("logout",{})}catch(e){}sessionStorage.removeItem("sandy_agenda_token");location.reload()});
-load().catch(()=>{$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden")});
+$("logout").addEventListener("click",async()=>{await sandyAuth.auth.signOut();location.assign("../app/")});
+const initial=await sandyAuth.auth.getSession();
+if(!initial.data.session){location.replace("../app/")}else{
+ load().catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
+}
 </script></body></html>
