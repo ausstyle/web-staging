@@ -1,0 +1,229 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Sandy · Your agenda</title><style>
+:root{font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#29342e;background:#fafaf7;--ink:#27372f;--muted:#7c8980;--line:#e7ebe5;--green:#326b53;--pale:#edf3ec;--white:#fff}
+*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}
+.shell{max-width:1140px;margin:auto;padding:0 30px 70px}
+header{height:80px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.logo{display:flex;align-items:center;gap:10px;font-weight:790;font-size:24px;letter-spacing:-1.1px}.mark{display:grid;place-items:center;border-radius:15px;background:#dcebe0;color:#326b53;width:37px;height:37px;font-size:23px}
+.headright{display:flex;align-items:center;gap:13px;color:var(--muted);font-size:13px}
+h1{font-size:35px;letter-spacing:-1.5px;margin:0 0 3px;line-height:1.2}h2{font-size:18px;letter-spacing:-.35px;margin:0}
+.top{margin:44px 0 27px;display:flex;align-items:center;justify-content:space-between;gap:14px}.intro{color:var(--muted);margin:5px 0 0}
+.btn{border:1px solid var(--line);background:#fff;color:var(--ink);padding:10px 15px;border-radius:11px;font-weight:600;transition:.12s}
+.btn:hover{background:#f4f8f3}.btn.primary{background:#356f55;border-color:#356f55;color:white}.btn.primary:hover{background:#275c44}.btn.plain{background:transparent;border:0;color:var(--green);padding:7px}.btn.small{padding:6px 10px;border-radius:8px;font-size:12px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.metric{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:19px 20px}.metric span{font-size:12px;color:var(--muted);display:block}.metric b{font-size:29px;letter-spacing:-1px;line-height:1.3}
+.panel{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:23px}
+.quick{display:flex;gap:10px;align-items:center}.quick input{flex:1;border:0;outline:0;padding:9px;font-size:16px;min-width:0}
+.quickicon{color:var(--green);font-size:24px;font-weight:300}
+.helper{font-size:12px;color:var(--muted);padding:8px 0 0 35px}
+.toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin:28px 0 13px}
+.tabs{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tab{padding:9px 14px;border:0;background:transparent;border-radius:10px;color:var(--muted);font-weight:600;font-size:13px}.tab.active{background:#eaf2e9;color:#245e45}
+.search{padding:10px 13px;border:1px solid var(--line);border-radius:10px;width:230px;max-width:100%;outline:0}
+.tasklist{display:grid;gap:10px}.task{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden}
+.taskrow{display:flex;align-items:flex-start;gap:13px;padding:17px 18px}.taskrow:hover{background:#fcfdfb}
+.taskcheck{appearance:none;width:23px;height:23px;border:1.7px solid #c8d4ca;border-radius:50%;flex-shrink:0;cursor:pointer;margin:2px 0 0;display:grid;place-items:center;background:white}.taskcheck:checked{background:var(--green);border-color:var(--green)}.taskcheck:checked:after{content:"✓";color:white;font-size:14px}
+.taskmain{flex:1;min-width:0}.tasktitle{font-weight:660;font-size:15px;overflow-wrap:anywhere}.tasktitle.done{color:#89978b;text-decoration:line-through}.taskdesc{font-size:12px;color:#7b887f;margin:3px 0 0;max-width:760px}
+.meta{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.tag{padding:3px 8px;background:#f3f6f2;border-radius:7px;color:#748275;font-size:11px}.tag.urgent{background:#f9e7df;color:#b4563a}.tag.high{background:#fff3dd;color:#a17429}.tag.overdue{background:#fff0e9;color:#ae563c}
+.progress{width:115px;height:5px;border-radius:8px;background:#e9eee7;overflow:hidden;margin-top:6px}.progress>span{display:block;height:100%;background:#6aab87}
+.right{display:flex;gap:4px;align-items:center;flex-shrink:0}
+.iconbtn{border:0;background:transparent;color:#849287;border-radius:8px;padding:6px 9px;font-size:19px}.iconbtn:hover{background:#edf3ec;color:var(--green)}
+.children{margin-left:51px;border-left:1px solid #e3eae3;padding-left:14px;margin-right:15px;margin-bottom:9px}
+.childrow{border-bottom:1px solid #f0f2ef}.childrow:last-of-type{border-bottom:0}
+.childrow .taskrow{padding:10px 5px}.childrow .taskcheck{width:20px;height:20px;margin-top:2px}.childrow .tasktitle{font-size:13px}
+.addchild{display:flex;gap:6px;align-items:center;padding:8px 0 10px}
+.addchild input{border:0;outline:0;padding:7px;flex:1;min-width:0;font-size:13px}.addchild button{border:0;background:#eaf2e9;color:#356f55;border-radius:8px;padding:6px 11px;font-size:12px;font-weight:700}
+.empty{text-align:center;background:#fff;border:1px dashed #dce5da;border-radius:18px;padding:62px 18px;color:var(--muted)}
+.emptyicon{font-size:34px;background:#edf3ec;display:grid;place-items:center;color:var(--green);width:70px;height:70px;border-radius:50%;margin:0 auto 15px}
+.suggest{border:1px solid #dce9db;background:#f4f9f2;border-radius:15px;padding:16px 20px;margin:15px 0}.suggest h2{font-size:15px}.suggestitem{padding:12px 0;border-top:1px solid #dfebdf;display:flex;align-items:center;justify-content:space-between;gap:12px}.suggestitem:first-of-type{margin-top:9px}.suggestsmall{font-size:12px;color:#748474}
+.dialogoverlay{position:fixed;inset:0;background:#1d2b2380;display:none;align-items:center;justify-content:center;z-index:15;padding:15px}.dialogoverlay.show{display:flex}
+.dialog{background:white;border-radius:22px;padding:28px;width:min(600px,100%);max-height:94vh;overflow:auto;box-shadow:0 22px 70px #0002}
+.dialog h2{font-size:24px}.dialog p{font-size:13px;color:var(--muted);margin:5px 0 19px}
+label.field{display:block;margin-top:15px;font-size:12px;font-weight:700;color:#526557}
+.field input,.field textarea,.field select{display:block;width:100%;border:1px solid #dde4dc;border-radius:10px;margin-top:7px;padding:10px 12px;background:white;color:var(--ink);outline-color:#85b59b}
+.field textarea{resize:vertical;min-height:70px}.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.dialogfooter{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+.loginscreen{min-height:100vh;display:grid;place-items:center;padding:20px}.loginbox{width:min(430px,100%);background:white;border:1px solid var(--line);border-radius:22px;padding:34px}.loginbox .logo{margin-bottom:28px}.loginbox h2{font-size:25px}.loginbox p{font-size:14px;color:var(--muted)}
+.loginbox input{border:1px solid var(--line);padding:13px;border-radius:11px;width:100%;margin:12px 0}.loginbox button{width:100%}
+.message{font-size:13px;color:var(--green);margin-top:12px}.error{color:#ad5148}
+.hidden{display:none!important}#toast{position:fixed;bottom:22px;right:22px;background:#28392e;color:white;padding:13px 20px;border-radius:11px;box-shadow:0 8px 30px #0003;display:none;z-index:30;font-size:13px}
+@media(max-width:680px){.shell{padding:0 14px 35px}header{height:67px}.top{margin:27px 0 20px;align-items:flex-start}h1{font-size:28px}.summary{grid-template-columns:repeat(2,1fr);gap:8px}.metric{padding:13px}.metric b{font-size:24px}.panel{padding:12px}.toolbar{margin-top:24px}.search{width:100%}.taskrow{padding:13px 11px;gap:10px}.children{margin-left:24px;padding-left:8px;margin-right:8px}.right{gap:0}.iconbtn{padding:5px}.top .btn{font-size:12px;padding:10px}.dialog{padding:18px}.two{grid-template-columns:1fr;gap:0}}
+.attention{background:#fff8f0;border:1px solid #f0e1d2;border-radius:16px;margin:18px 0;padding:17px 19px}.attentionhead{display:flex;gap:12px;align-items:center;margin-bottom:5px}.attentionhead h2{font-size:16px}.attentionicon{display:grid;place-items:center;background:#f5e5d4;color:#ab743d;width:33px;height:33px;border-radius:10px;font-weight:850}.attentionrow{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:11px 0;border-top:1px solid #f2e7db;font-size:13px}.attentionrow strong{font-weight:650}</style></head><body>
+<div id="loginScreen" class="loginscreen"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
+<div id="app" class="shell hidden">
+<header><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
+<div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
+<div class="summary"><div class="metric"><span>Open tasks</span><b id="countOpen">0</b></div><div class="metric"><span>In progress</span><b id="countDoing">0</b></div><div class="metric"><span>Waiting on someone</span><b id="countWaiting">0</b></div><div class="metric"><span>Completed</span><b id="countDone">0</b></div></div>
+<div class="panel"><form id="quickForm" class="quick"><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Start with a task, or choose New task to add subtasks, details and a deadline.</div></div>
+<div id="attention" class="attention hidden"></div><div id="suggestions" class="suggest hidden"></div>
+<div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
+<div id="tasks" class="tasklist"></div></div>
+<div id="dialogOverlay" class="dialogoverlay" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogHeading"><h2 id="dialogHeading">Create a task</h2><p>Give Sandy the outcome you want. Add smaller steps if it helps.</p><form id="taskForm">
+<label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
+<label class="field">Details (optional)<textarea id="taskDetails" placeholder="What does done look like?"></textarea></label>
+<div class="two"><label class="field">Due date (optional)<input type="date" id="taskDue"></label><label class="field">Priority<select id="taskPriority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option><option value="low">Low</option></select></label></div>
+<div class="two"><label class="field">Next follow-up (optional)<input type="date" id="taskReview"></label><label class="field">Waiting on (optional)<input type="text" maxlength="400" id="taskWaiting" placeholder="Accountant, bank, solicitor…"></label></div><label class="field" id="subtaskField">Subtasks — one per line (optional)<textarea id="taskSubtasks" rows="4" placeholder="Contact bank for records&#10;Review Xero&#10;Send information to accountant"></textarea></label>
+<label class="field" id="statusField">Status<select id="taskStatus"><option value="todo">To do</option><option value="in_progress">In progress</option><option value="waiting">Waiting</option><option value="blocked">Blocked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
+<div class="dialogfooter"><button type="button" class="btn hidden" id="archiveTask" style="margin-right:auto;color:#a5544a">Archive task</button><button type="button" class="btn" id="cancelDialog">Cancel</button><button type="submit" class="btn primary" id="saveTask">Save task</button></div></form></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const state={tasks:[],suggestions:[],attention:[],tab:"open",search:"",edit:null,parent:null,email:""};
+const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
+const getToken=()=>sessionStorage.getItem("sandy_agenda_token")||"";
+function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
+async function api(action,payload){
+ const options={credentials:"omit",headers:{"Content-Type":"application/json",...(getToken()?{"Authorization":"Bearer "+getToken()}:{})}};
+ if(payload!==undefined){options.method="POST";options.body=JSON.stringify(payload)}
+ const response=await fetch(base+"?action="+encodeURIComponent(action),options);
+ const data=await response.json().catch(()=>({error:"Server returned an unexpected response"}));
+ if(!response.ok)throw new Error(data.error||"Something went wrong");
+ return data;
+}
+function el(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=text;return n}
+function btn(text,cls,fn){const e=el("button",cls,text);e.type="button";e.addEventListener("click",fn);return e}
+function dateLabel(d){return d?new Date(d).toLocaleDateString(undefined,{month:"short",day:"numeric",year:"numeric"}):""}
+function fromDate(s){return s?new Date(s+"T12:00:00").toISOString():null}
+function localDate(s){if(!s)return "";const d=new Date(s);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
+function openTasks(){return state.tasks.filter(t=>t.status!=="completed"&&t.status!=="cancelled"&&!t.archived_at)}
+function childOf(id){return state.tasks.filter(t=>t.parent_task_id===id&&!t.archived_at).sort((a,b)=>a.position-b.position||a.created_at.localeCompare(b.created_at))}
+function matched(t){
+ if(t.archived_at)return false;
+ const q=state.search.toLowerCase().trim();
+ if(q&&!(t.title+" "+t.details).toLowerCase().includes(q))return false;
+ if(state.tab==="open")return t.status!=="completed"&&t.status!=="cancelled";
+ if(state.tab==="done")return t.status==="completed";
+ if(state.tab==="waiting")return t.status==="waiting"||t.status==="blocked";
+ if(state.tab==="today")return t.status!=="completed"&&t.status!=="cancelled"&&(t.priority==="urgent"||(t.due_at&&new Date(t.due_at).getTime() <= Date.now()+172800000));
+ return t.status!=="cancelled";
+}
+function isVisible(t,seen){
+ if(seen.has(t.id))return false;seen.add(t.id);
+ return matched(t)||childOf(t.id).some(c=>isVisible(c,new Set(seen)));
+}
+function countDesc(t){
+ const children=childOf(t.id);let done=0,total=0;
+ for(const c of children){total++;if(c.status==="completed")done++;const nested=countDesc(c);done+=nested.done;total+=nested.total}
+ return {done,total}
+}
+function renderTask(t,depth){
+ const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
+ const row=el("div","taskrow");const check=el("input","taskcheck");check.type="checkbox";check.checked=t.status==="completed";
+ check.setAttribute("aria-label","Mark "+t.title+" complete");check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
+ const main=el("div","taskmain");main.append(el("div","tasktitle"+(t.status==="completed"?" done":""),t.title));
+ if(t.details)main.append(el("p","taskdesc",t.details.slice(0,260)));
+ const meta=el("div","meta");
+ if(t.due_at){const overdue=new Date(t.due_at).getTime()<Date.now()&&t.status!=="completed";meta.append(el("span","tag"+(overdue?" overdue":""),(overdue?"Overdue · ":"Due ")+dateLabel(t.due_at)))}
+ if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
+ if(["high","urgent"].includes(t.priority))meta.append(el("span","tag "+t.priority,t.priority));
+ const progress=countDesc(t);if(progress.total){meta.append(el("span","tag",progress.done+" of "+progress.total+" steps complete"));const p=el("div","progress");const fill=el("span");fill.style.width=Math.round(progress.done/progress.total*100)+"%";p.append(fill);meta.append(p)}
+ main.append(meta);row.append(main);
+ const right=el("div","right");right.append(btn("＋","iconbtn",()=>{state.parent=t.id;state.edit=null;openDialog()}));
+ right.append(btn("⋯","iconbtn",()=>{state.parent=null;state.edit=t;openDialog()}));row.append(right);outer.append(row);
+ const children=childOf(t.id).filter(c=>(state.tab==="open"||state.tab==="all")?true:isVisible(c,new Set()));
+ if(children.length||((state.tab==="open"||state.tab==="all")&&t.status!=="completed"&&t.status!=="cancelled")){
+   const box=el("div","children");
+   children.forEach(c=>box.append(renderTask(c,depth+1)));
+   if(t.status!=="completed"&&t.status!=="cancelled"&&(state.tab==="open"||state.tab==="all")){
+     const form=el("form","addchild");const input=el("input");input.placeholder="＋ Add a step…";input.maxLength=240;input.setAttribute("aria-label","Add subtask to "+t.title);form.append(input);
+     const add=el("button","","Add step");add.type="submit";form.append(add);
+     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;add.disabled=true;try{await api("create",{title,parent_task_id:t.id});input.value="";await load()}catch(err){toast(err.message,true)}finally{add.disabled=false}});
+     box.append(form);
+   }
+   outer.append(box)
+ }
+ return outer
+}
+function render(){
+ const open=openTasks();
+ $("countOpen").textContent=String(open.length);
+ $("countDoing").textContent=String(open.filter(t=>t.status==="in_progress").length);
+ $("countWaiting").textContent=String(open.filter(t=>["waiting","blocked"].includes(t.status)).length);
+ $("countDone").textContent=String(state.tasks.filter(t=>t.status==="completed"&&!t.archived_at).length);
+ document.querySelectorAll("[data-tab]").forEach(b=>{b.classList.toggle("active",b.dataset.tab===state.tab)});
+ const area=$("tasks");area.replaceChildren();
+ const roots=state.tasks.filter(t=>!t.parent_task_id&&!t.archived_at).filter(t=>isVisible(t,new Set())).sort((a,b)=>{
+   const ai=a.priority==="urgent"?0:a.priority==="high"?1:2;const bi=b.priority==="urgent"?0:b.priority==="high"?1:2;
+   return ai-bi||(a.due_at||"9999").localeCompare(b.due_at||"9999")||b.created_at.localeCompare(a.created_at);
+ });
+ if(!roots.length){const empty=el("div","empty");empty.append(el("div","emptyicon","✓"));empty.append(el("h2","",state.tab==="done"?"No completed tasks yet":"All clear here"));empty.append(el("p","",state.tab==="open"?"Add a task above, or let Sandy suggest the next useful step.":"Nothing matches this view."));area.append(empty)}
+ roots.forEach(t=>area.append(renderTask(t,0)));
+ renderSuggestions();renderAttention()
+}
+
+function renderAttention(){
+ const area=$("attention");area.replaceChildren();
+ const seen=new Set();const items=[];
+ for(const n of state.attention){if(!seen.has(n.task_id)){const t=state.tasks.find(x=>x.id===n.task_id);if(t){items.push({t,reason:n.reason});seen.add(n.task_id)}}}
+ if(!items.length){area.classList.add("hidden");return}
+ area.classList.remove("hidden");
+ const head=el("div","attentionhead");head.append(el("div","attentionicon","!"));
+ const words=el("div","");words.append(el("h2","","Worth your attention"));words.append(el("div","suggestsmall",items.length+" matter"+(items.length===1?"":"s")+" may need a next step"));head.append(words);area.append(head);
+ for(const item of items.slice(0,5)){
+   const row=el("div","attentionrow");const text=el("div","");
+   text.append(el("strong","",item.t.title));
+   const subtitle={overdue:"Past its deadline",due_soon:"Deadline approaching",follow_up:"Time to follow up",stalled:"Not progressing"}[item.reason]||"Needs review";
+   text.append(el("div","suggestsmall",subtitle));row.append(text);
+   row.append(btn("Review →","btn small",()=>{state.tab="all";state.search="";$("search").value="";render();$("task-"+item.t.id)?.scrollIntoView({behavior:"smooth",block:"center"})}));
+   area.append(row)
+ }
+}
+
+function renderSuggestions(){
+ const area=$("suggestions");area.replaceChildren();const ss=state.suggestions.filter(s=>s.status==="suggested").slice(0,5);
+ if(!ss.length){area.classList.add("hidden");return}
+ area.classList.remove("hidden");area.append(el("h2","","✳  Sandy noticed something"));
+ area.append(el("div","suggestsmall","Potential tasks from your conversations. Review before adding them to your agenda."));
+ for(const s of ss){const line=el("div","suggestitem");line.append(el("div","",s.title));const actions=el("div","right");
+ actions.append(btn("Add","btn small primary",async()=>{try{await api("suggestion",{id:s.id,decision:"accept"});toast("Added to your agenda");await load()}catch(e){toast(e.message,true)}}));
+ actions.append(btn("Dismiss","btn small",async()=>{try{await api("suggestion",{id:s.id,decision:"dismiss"});await load()}catch(e){toast(e.message,true)}}));line.append(actions);area.append(line)}
+}
+async function load(){
+ const data=await api("list");state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.email=data.email||"";$("who").textContent=data.display_name||state.email;
+ $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render()
+}
+async function markTask(t,done,control){
+ control.disabled=true;
+ try{
+  if(done&&countDesc(t).total>countDesc(t).done){
+    if(!confirm("This task has unfinished subtasks. Mark the whole task and every remaining subtask complete?")){control.checked=false;return}
+    await api("complete-tree",{id:t.id,confirm_all:true})
+  }else{
+    await api("update",{id:t.id,status:done?"completed":"todo"})
+  }
+  await load();toast(done?"Marked complete":"Task reopened")
+ }catch(e){control.checked=!done;toast(e.message,true)}
+ finally{control.disabled=false}
+}
+function openDialog(){
+ const t=state.edit;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
+ $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
+ $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
+ $("subtaskField").classList.toggle("hidden",!!t||!!state.parent);$("statusField").classList.toggle("hidden",!t);
+ $("dialogOverlay").classList.add("show");$("taskTitle").focus()
+}
+function closeDialog(){$("dialogOverlay").classList.remove("show");state.edit=null;state.parent=null}
+$("taskForm").addEventListener("submit",async e=>{
+ e.preventDefault();const save=$("saveTask");save.disabled=true;
+ const payload={title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),waiting_on:$("taskWaiting").value.trim()||null};
+ if(!payload.title){save.disabled=false;return}
+ try{
+  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;await api("update",payload)}
+  else{payload.parent_task_id=state.parent;payload.subtasks=state.parent?[]:$("taskSubtasks").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);await api("create",payload)}
+  closeDialog();await load();toast("Task saved")
+ }catch(e){toast(e.message,true)}finally{save.disabled=false}
+});
+$("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!confirm("Archive this task and all of its subtasks? You will no longer see them in your active agenda."))return;try{await api("archive-tree",{id:state.edit.id,confirm_all:true});closeDialog();await load();toast("Task archived")}catch(e){toast(e.message,true)}});
+$("cancelDialog").addEventListener("click",closeDialog);
+$("dialogOverlay").addEventListener("click",e=>{if(e.target===$("dialogOverlay"))closeDialog()});
+$("newTask").addEventListener("click",()=>{state.parent=null;state.edit=null;openDialog()});
+$("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;try{await api("create",{title});$("quickTitle").value="";await load();toast("Task added")}catch(err){toast(err.message,true)}});
+$("search").addEventListener("input",e=>{state.search=e.target.value;render()});
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{state.tab=b.dataset.tab;render()}));
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;const email=$("loginEmail").value.trim();try{await api("request-code",{email});$("loginMessage").textContent="If this address is registered with Sandy, your six-digit code is on its way.";$("loginMessage").className="message";$("codeForm").classList.remove("hidden");$("loginForm").classList.add("hidden");$("loginCode").focus()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
+$("retryLogin").addEventListener("click",()=>{$("codeForm").classList.add("hidden");$("loginForm").classList.remove("hidden");$("loginMessage").textContent=""});
+$("codeForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;try{const verified=await api("verify-code",{email:$("loginEmail").value.trim(),code:$("loginCode").value.trim()});if(verified.token)sessionStorage.setItem("sandy_agenda_token",verified.token);await load()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
+$("logout").addEventListener("click",async()=>{try{await api("logout",{})}catch(e){}sessionStorage.removeItem("sandy_agenda_token");location.reload()});
+load().catch(()=>{$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden")});
+</script></body></html>
