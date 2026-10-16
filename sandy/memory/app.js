@@ -63,10 +63,10 @@ function knowledge(){
  hText.append(h("p","","Review what Sandy believes, correct anything that isn't right, and teach her what to remember. Corrections remain recorded so she doesn't make the same assumption again."));
  hero.append(hText);
  const count=h("div","memoryStats");
- for(const [number,label] of [[state.facts.length,"Active facts"],[(state.rejected_facts||[]).length,"Corrections"],[state.notes?.length||0,"Your notes"]]){
-  const tile=h("div","memoryStat");tile.append(h("strong","",number),h("span","",label));count.append(tile)
+ for(const [number,label,target] of [[state.facts.length,"Active facts","memoryFactsList"],[(state.rejected_facts||[]).length,"Corrections","memoryCorrectionsList"],[state.notes?.length||0,"Your notes","memoryNotesList"]]){
+  const tile=h("button","memoryStat statLink");tile.type="button";tile.setAttribute("aria-label","View "+label.toLowerCase());tile.append(h("strong","",number),h("span","",label+" →"));tile.addEventListener("click",()=>{if(target==="memoryCorrectionsList"&&document.querySelector("#memoryCorrectionsList .rejectedBody")?.hidden)document.querySelector("#memoryCorrectionsList .rejectedHeader")?.click();document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})});count.append(tile)
  }hero.append(count);root.append(hero);
- const notePanel=h("section","memoryNotesBlock");
+ const notePanel=h("section","memoryNotesBlock");notePanel.id="memoryNotesList";
  const noteHead=h("div","memoryBlockTitle");
  noteHead.append(h("div","", "Things you've told Sandy"));
  noteHead.append(aBtn("＋ Remember something",()=>rememberUI(),"smallbutton primary"));
@@ -77,7 +77,7 @@ function knowledge(){
   const row=h("div","memoryNoteRow");row.append(h("div","",n.content));
   row.append(aBtn("See original",()=>evidence(n.id),"smallbutton"));notePanel.append(row)
  }root.append(notePanel);
- const panelRoot=h("section","memoryFactSection");
+ const panelRoot=h("section","memoryFactSection");panelRoot.id="memoryFactsList";
  const bar=h("div","memoryFactTop");const titleWrap=h("div","");
  titleWrap.append(h("h2","","Saved facts"),h("p","memoryHint","Only active facts are used as current information. Mark something incorrect with one click."));
  bar.append(titleWrap);
@@ -110,7 +110,7 @@ function knowledge(){
  }
  filter.addEventListener("input",drawFacts);drawFacts();root.append(panelRoot);
  const rejects=state.rejected_facts||[];
- const rejections=h("section","memoryRejectedSection");
+ const rejections=h("section","memoryRejectedSection");rejections.id="memoryCorrectionsList";
  const rejectHeader=h("button","rejectedHeader");
  rejectHeader.type="button";rejectHeader.setAttribute("aria-expanded","false");
  rejectHeader.append(h("span","","↳ Corrections and rejected claims"),h("span","",rejects.length+" recorded  ▸"));
