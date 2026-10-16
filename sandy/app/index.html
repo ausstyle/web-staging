@@ -173,7 +173,25 @@ function add(parent,...nodes){nodes.forEach(n=>parent.appendChild(n));return par
 function btn(text,fn,cls="btn"){const b=el("button",cls,text);b.type="button";b.addEventListener("click",fn);return b}
 function fmt(t){if(!t)return "";try{return new Intl.DateTimeFormat("en-AU",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(t))}catch{return ""}}
 function safeText(t){return String(t||"").replace(/\s+/g," ").trim()}
-async function call(action,payload={}){const {data}=await sb.auth.getSession();const token=data?.session?.access_token;if(!token)throw Error("Sign in required");const res=await fetch(endpoint+"?action="+encodeURIComponent(action),{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify(payload),cache:"no-store"});const j=await res.json().catch(()=>({}));if(!res.ok)throw Error(j.error||"Request failed");return j}
+async function call(action,payload={}){
+ const {data}=await sb.auth.getSession();
+ let session=data?.session;
+ if(!session?.access_token){showLogin("Your session has expired. Sign in again to continue.");throw Error("Sign in required")}
+ const send=token=>fetch(endpoint+"?action="+encodeURIComponent(action),{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+token},body:JSON.stringify(payload),cache:"no-store"});
+ let res=await send(session.access_token);
+ if(res.status===401){
+   const refreshed=await sb.auth.refreshSession();
+   if(refreshed.error||!refreshed.data?.session?.access_token){showLogin("Your Sandy session expired. Please sign in again.");throw Error("Session expired — sign in again to continue")}
+   session=refreshed.data.session;
+   res=await send(session.access_token);
+ }
+ const j=await res.json().catch(()=>({}));
+ if(!res.ok){
+   if(res.status===401){showLogin("Your account could not be verified. Please sign in again.");throw Error("Sandy could not verify your account. Please sign in again")}
+   throw Error(j.error||"Request failed");
+ }
+ return j;
+}
 function authStatus(t){$("authMessage").textContent=t}
 function showLogin(message=""){profile=null;$("authScreen").classList.remove("hide");$("workspace").classList.add("hide");$("loginForm").classList.remove("hide");$("emailSentPanel").classList.add("hide");setLoginPasskeyState();if(message)authStatus(message)}
 function setLoginPasskeyState(force=false){const enrolled=localStorage.getItem("sandy_passkey_enrolled_on_device")==="true";const enabled=enrolled||force;$("passkey").classList.toggle("hide",!enabled);$("passkeyDivider").classList.toggle("hide",!enabled);$("showExistingPasskey").classList.toggle("hide",enabled);$("loginIntro").textContent=enabled?"Sign in with your saved passkey or use your email link.":"Sign in securely by email. Once signed in, Sandy can help you set up a faster passkey login for next time."}
