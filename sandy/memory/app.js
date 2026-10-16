@@ -84,30 +84,74 @@ function knowledge(){
  const filter=h("input","memoryFind");filter.type="search";filter.placeholder="Search saved facts";filter.setAttribute("aria-label","Search saved facts");
  bar.append(filter);panelRoot.append(bar);
  const groups=h("div","memoryFactGroups");panelRoot.append(groups);
+ let memoryTree=null;
+ async function improveFact(f){
+  const box=h("div","factEditor"),heading=h("strong","","Improve: "+String(f.fact_key).replaceAll("_"," "));
+  const conversation=h("div",""),actions=h("div","actions");
+  const answer=h("textarea","factInput");answer.maxLength=1800;answer.rows=3;answer.placeholder="Your answer to Sandy…";answer.style.width="100%";
+  const submit=aBtn("Save answer",async()=>{
+   const value=answer.value.trim();if(!value)return notify("Please answer Sandy's question.");
+   submit.disabled=true;
+   try{await api("enrich_answer",{turn_id:box.dataset.turnId,answer:value});notify("Answer saved to Sandy's long-term memory");await load()}
+   catch(e){notify(e.message);submit.disabled=false}
+  },"smallbutton primary");
+  const cancel=aBtn("Close",()=>box.remove(),"smallbutton");
+  actions.append(cancel,submit);box.append(heading,conversation,answer,actions);
+  document.querySelector('[data-fact-id="'+f.id+'"]')?.append(box);
+  submit.disabled=true;text(conversation,"Sandy is considering what would help her understand this topic…");
+  try{const r=await api("enrich_question",{id:f.id});box.dataset.turnId=r.turn.id;clear(conversation);text(conversation,r.turn.question);submit.disabled=false;answer.focus()}
+  catch(e){clear(conversation);text(conversation,e.message);answer.disabled=true}
+ }
  function drawFacts(){
   groups.replaceChildren();
   const q=filter.value.trim().toLocaleLowerCase();
   const chosen=state.facts.filter(f=>(String(f.fact_key)+" "+String(f.fact_value)+" "+String(f.category)).toLocaleLowerCase().includes(q));
-  const buckets=new Map();for(const f of chosen){const key=(f.category||"General").replaceAll("_"," ");if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(f)}
   if(!chosen.length){groups.append(h("div","memoryEmpty",q?"No matching facts.":"Sandy has no active saved facts yet."));return}
-  for(const [category,items] of buckets){
-   const section=h("section","factGroup");const head=h("div","factGroupHead");
-   head.append(h("h3","",category.charAt(0).toUpperCase()+category.slice(1)),h("span","factCount",items.length+" facts"));
-   section.append(head);
-   for(const f of items){
-    const row=h("div","memoryFactRow");row.dataset.factId=f.id;
-    const info=h("div","factBody");
-    info.append(h("div","factLabel",String(f.fact_key).replaceAll("_"," ")));
-    info.append(h("p","factValue",f.fact_value));
-    row.append(info);
-    const controls=h("div","factControls");
-    controls.append(aBtn("Edit",()=>correctFact(f,false),"factAction"));
-    controls.append(aBtn("Not correct",()=>correctFact(f,true),"factReject"));
-    row.append(controls);section.append(row)
-   }
-   groups.append(section)
+  function factRow(f){
+   const row=h("div","memoryFactRow");row.dataset.factId=f.id;
+   const info=h("div","factBody");
+   info.append(h("div","factLabel",String(f.fact_key).replaceAll("_"," ")));
+   info.append(h("p","factValue",f.fact_value));row.append(info);
+   const controls=h("div","factControls");
+   controls.append(aBtn("Improve this topic",()=>improveFact(f),"factAction"));
+   controls.append(aBtn("Edit",()=>correctFact(f,false),"factAction"));
+   controls.append(aBtn("Not correct",()=>correctFact(f,true),"factReject"));
+   row.append(controls);return row
   }
+  function section(title,items,depth=0){
+   if(!items.length)return;
+   const node=h("section","factGroup");
+   const head=h("button","factGroupHead");head.type="button";head.style.width="100%";head.style.textAlign="left";
+   head.append(h("h3","",title),h("span","factCount",items.length+" facts  ▾"));
+   const body=h("div","");items.forEach(f=>body.append(factRow(f)));
+   head.addEventListener("click",()=>{body.hidden=!body.hidden;head.lastChild.textContent=items.length+" facts  "+(body.hidden?"▸":"▾")});
+   node.append(head,body);if(depth)node.style.marginLeft=Math.min(depth,4)*12+"px";groups.append(node)
+  }
+  if(!memoryTree){
+   const buckets=new Map();for(const f of chosen){const k=(f.category||"General").replaceAll("_"," ");if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(f)}
+   for(const [k,v] of buckets)section(k.charAt(0).toUpperCase()+k.slice(1),v);return
+  }
+  const subjects=memoryTree.subjects||[],links=memoryTree.links||[];
+  const assigned=new Set(),visited=new Set();
+  const bySubject=new Map();
+  const factById=new Map(chosen.map(f=>[f.id,f]));
+  for(const link of links){const f=factById.get(link.fact_id);if(!f||assigned.has(f.id))continue;assigned.add(f.id);if(!bySubject.has(link.subject_id))bySubject.set(link.subject_id,[]);bySubject.get(link.subject_id).push(f)}
+  function renderSubject(subject,depth=0){
+   if(visited.has(subject.id))return;visited.add(subject.id);
+   const children=subjects.filter(s=>s.parent_id===subject.id);
+   const local=bySubject.get(subject.id)||[];
+   const group=h("section","factGroup");group.style.marginLeft=Math.min(depth,4)*12+"px";
+   const head=h("button","factGroupHead");head.type="button";head.style.width="100%";head.style.textAlign="left";
+   head.append(h("h3","",subject.title),h("span","factCount",(local.length+children.length)+" items ▾"));
+   const body=h("div","");local.forEach(f=>body.append(factRow(f)));
+   group.append(head,body);groups.append(group);
+   head.addEventListener("click",()=>{body.hidden=!body.hidden;head.lastChild.textContent=(local.length+children.length)+" items "+(body.hidden?"▸":"▾")});
+   for(const child of children){renderSubject(child,depth+1);const last=groups.lastElementChild;if(last&&last!==group)body.append(last)}
+  }
+  subjects.filter(s=>!s.parent_id||!subjects.some(p=>p.id===s.parent_id)).forEach(s=>renderSubject(s));
+  const unassigned=chosen.filter(f=>!assigned.has(f.id));if(unassigned.length)section("Other saved facts",unassigned)
  }
+ api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;drawFacts()}}).catch(()=>{});
  filter.addEventListener("input",drawFacts);drawFacts();root.append(panelRoot);
  const rejects=state.rejected_facts||[];
  const rejections=h("section","memoryRejectedSection");rejections.id="memoryCorrectionsList";
