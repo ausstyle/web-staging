@@ -67,7 +67,7 @@
 
 /* Monochrome mobile theme and desktop-equivalent drawer navigation. */
 @media(max-width:750px){
- .mobileNav{grid-template-columns:repeat(4,minmax(0,1fr));z-index:30}
+ .mobileNav{grid-template-columns:repeat(5,minmax(0,1fr));z-index:30}
  .mobileNav button,.mobileNav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;min-height:54px;border:0;background:#fff;color:#111!important;font:600 12px/1.25 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border-radius:10px;text-decoration:none}
  .mobileNav button span,.mobileNav a span{font-size:21px;line-height:1.2}
  .mobileNav button.active,.mobileNav a.active{background:#ededed;color:#111!important}
@@ -104,7 +104,7 @@
  </aside>
  <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm hide" id="addPasskey" type="button">＋ Set up passkey</button><button class="btn sm" id="refresh">↻ Refresh</button></div></div>
  <div id="content" class="content"></div></main>
- <div id="mobileShade" class="mobileShade hide" aria-hidden="true"></div><nav class="mobileNav" aria-label="Mobile primary navigation"><button data-view="home" class="active"><span aria-hidden="true">⌂</span>Home</button><a href="../agenda/"><span aria-hidden="true">☑</span>Tasks</a><button data-channel="email"><span aria-hidden="true">✉</span>Email</button><button id="mobileMenu" type="button" aria-label="Open full navigation" aria-expanded="false"><span aria-hidden="true">☰</span>Menu</button></nav>
+ <div id="mobileShade" class="mobileShade hide" aria-hidden="true"></div><nav class="mobileNav" aria-label="Mobile primary navigation"><button data-view="home" class="active"><span aria-hidden="true">⌂</span>Home</button><a href="../agenda/"><span aria-hidden="true">☑</span>Tasks</a><a href="../calendar/" aria-label="Calendar"><span aria-hidden="true">▦</span>Calendar</a><button data-channel="email"><span aria-hidden="true">✉</span>Email</button><button id="mobileMenu" type="button" aria-label="Open full navigation" aria-expanded="false"><span aria-hidden="true">☰</span>Menu</button></nav>
 </div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
