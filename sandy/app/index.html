@@ -64,6 +64,25 @@
  .metric{padding:12px 9px}
 }
 @media(min-width:751px){.mobileBack{display:none!important}}
+
+/* Monochrome mobile theme and desktop-equivalent drawer navigation. */
+@media(max-width:750px){
+ .mobileNav{grid-template-columns:repeat(4,minmax(0,1fr));z-index:30}
+ .mobileNav button,.mobileNav a{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:2px;min-height:54px;border:0;background:#fff;color:#111!important;font:600 12px/1.25 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border-radius:10px;text-decoration:none}
+ .mobileNav button span,.mobileNav a span{font-size:21px;line-height:1.2}
+ .mobileNav button.active,.mobileNav a.active{background:#ededed;color:#111!important}
+ #workspace .sidebar{display:none}
+ #workspace.mobile-menu-open .sidebar{display:flex;position:fixed;top:0;bottom:0;left:0;height:100dvh;width:min(315px,85vw);z-index:41;padding:24px 14px calc(24px + env(safe-area-inset-bottom));overflow-y:auto;background:#fff;box-shadow:8px 0 40px #0002}
+ .mobileShade{position:fixed;inset:0;background:#0007;z-index:40}
+ #workspace .sidebar .nav{min-height:48px;font-size:15px;color:#111}
+ #workspace .sidebar .navheading{margin-top:15px}
+ #workspace .sidebar .logo{margin-bottom:16px}
+ .content a,.content a:visited,.content .service,.content .service h3,.content .emblem,.content .metricLink,.content button:not(.primary),.content .status{color:#111!important}
+ .content .btn.primary{color:#fff!important}
+ .content button,.content a,.nav{ -webkit-tap-highlight-color:transparent }
+ .content :is(.service,.recentrow,.metricLink){transition:background .15s}
+ .content :is(.service,.recentrow,.metricLink):active{background:#f3f3f3}
+}
 </style></head><body>
 <div id="authScreen">
  <div class="authSide"><div class="logo">sandy<span>.</span></div><div><div class="eyebrow" style="color:#aaa">YOUR PRIVATE WORKSPACE</div><h1>Everything in one place.</h1><p>One Sandy account for your conversations, memory, tasks and everyday work.</p></div><div class="small" style="color:#999">SANDY AI · PRIVATE BY DESIGN</div></div>
@@ -85,7 +104,7 @@
  </aside>
  <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm hide" id="addPasskey" type="button">＋ Set up passkey</button><button class="btn sm" id="refresh">↻ Refresh</button></div></div>
  <div id="content" class="content"></div></main>
- <nav class="mobileNav"><button data-view="home" class="active">Home</button><button data-view="history">History</button><button data-channel="email">Email</button><button data-channel="whatsapp">WhatsApp</button><button data-channel="voice">Voice</button><button id="mobileMenu">⋯</button></nav>
+ <div id="mobileShade" class="mobileShade hide" aria-hidden="true"></div><nav class="mobileNav" aria-label="Mobile primary navigation"><button data-view="home" class="active"><span aria-hidden="true">⌂</span>Home</button><a href="../agenda/"><span aria-hidden="true">☑</span>Tasks</a><button data-channel="email"><span aria-hidden="true">✉</span>Email</button><button id="mobileMenu" type="button" aria-label="Open full navigation" aria-expanded="false"><span aria-hidden="true">☰</span>Menu</button></nav>
 </div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -220,7 +239,11 @@ async function offerPasskeySetup(){if(!passkeysEnabled||!window.PublicKeyCredent
 async function registerSandyPasskey(){if(!window.PublicKeyCredential||!sb.auth.registerPasskey)throw Error("Your browser does not support passkeys.");const {error}=await sb.auth.registerPasskey();if(error)throw error;localStorage.setItem("sandy_passkey_enrolled_on_device","true");$("addPasskey").textContent="✓ Passkey ready";setLoginPasskeyState()}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>changeView(b.dataset.view)));
 document.querySelectorAll("[data-channel]").forEach(b=>b.addEventListener("click",()=>changeView("history",b.dataset.channel)));
-$("mobileMenu").addEventListener("click",()=>location.assign("../memory/"));
+const closeMobileMenu=()=>{$("workspace").classList.remove("mobile-menu-open");$("mobileShade").classList.add("hide");$("mobileMenu").setAttribute("aria-expanded","false");};
+$("mobileMenu").addEventListener("click",()=>{const open=!$("workspace").classList.contains("mobile-menu-open");$("workspace").classList.toggle("mobile-menu-open",open);$("mobileShade").classList.toggle("hide",!open);$("mobileMenu").setAttribute("aria-expanded",String(open));});
+$("mobileShade").addEventListener("click",closeMobileMenu);
+$("workspace").querySelectorAll(".sidebar [data-view],.sidebar [data-channel]").forEach(n=>n.addEventListener("click",closeMobileMenu));
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMobileMenu()});
 $("signOut").addEventListener("click",async()=>{await sb.auth.signOut();showLogin("Signed out.");});
 $("addPasskey").addEventListener("click",async()=>{const b=$("addPasskey");b.disabled=true;try{await registerSandyPasskey()}catch(e){alert(e.message||"Passkey setup could not finish.")}finally{b.disabled=false}});
 $("showExistingPasskey").addEventListener("click",()=>{setLoginPasskeyState(true);authStatus("Use this only if you have already created a passkey. Otherwise request an email link first.")});
