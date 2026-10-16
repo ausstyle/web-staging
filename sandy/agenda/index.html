@@ -140,6 +140,7 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 .rootLine:not(.hidden)+.tasklist{border-radius:0 0 14px 14px!important;border-top:1px solid #e7e7e7!important}
 @media(max-width:600px){.rootLine{gap:7px!important;padding:10px 8px!important}.rootLine .entryWorkspace{max-width:96px;font-size:11px}.rootAdd{padding:6px 8px;font-size:11px}.rootLine input{font-size:12px!important}}
 .task:has(.delegateMenu:not(.hidden)),.childrow:has(.delegateMenu:not(.hidden)){overflow:visible!important;position:relative;z-index:35}.taskDelegate{position:relative;display:inline-flex;align-items:center}.delegateToggle{border:0;background:transparent;color:#555;padding:6px 8px;font-size:17px;border-radius:6px}.delegateToggle:hover{background:#eee}.delegateMenu{position:absolute;z-index:40;right:0;top:100%;width:min(305px,85vw);background:white;border:1px solid #dcdcdc;box-shadow:0 12px 38px #0002;border-radius:12px;padding:14px;color:#111}.delegateMenuHeading{font-size:13px;font-weight:700;margin-bottom:9px}.delegateMenuCaption{font-size:11px;color:#777;margin:8px 0}.delegateChoices{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow:auto}.delegatePerson{padding:9px;text-align:left;font-size:13px;background:#f8f8f8;border:0;border-radius:6px;color:#111}.delegatePerson:hover{background:#eee}.delegateCurrent{font-size:11px;color:#777;padding:5px 3px}.delegateInputRow{display:flex;gap:5px}.delegateEmailInline{min-width:0;flex:1;border:1px solid #ddd;border-radius:7px;padding:8px;font-size:12px}.delegateAction{border:0;border-radius:7px;background:#111;color:white;padding:8px;font-size:12px}.delegateSubInline{display:flex;align-items:center;gap:6px;color:#666;font-size:12px;margin-top:10px}.delegateStatus{font-size:11px;color:#a33;margin-top:5px}.delegateMenu.hidden{display:none}
+.taskFocus{outline:2px solid #555!important;outline-offset:-2px}
 /* Keyboard-first editable outline rows */
 .outlineDraft{background:#fafafa!important}.outlineDraft .inlineTitle{width:100%;max-width:none;background:transparent;border:0;outline:0;padding:2px 3px}
 .outlineDraft .taskcheck{opacity:.5}.outlineDraft .taskrow{border-bottom:1px dashed #ddd}
@@ -356,6 +357,7 @@ function inlineEditor(t,focus){
   if(saving)return;
   const title=field.value.trim();if(!title){toast("Task title is required",true);field.focus();return}
   let parent=t.parent_task_id||null,after=t.id;
+  if(t.shared&&(mode==="indent"||mode==="outdent")){toast("Shared task hierarchy is controlled by the owner; edit the text or add a subtask instead.",true);return}
   if(mode==="indent"){
    const peers=outlinePeers(parent).filter(x=>isVisible(x,new Set())),i=peers.findIndex(x=>x.id===t.id);
    if(i<1){toast("No preceding task to indent beneath",true);return}
@@ -370,8 +372,8 @@ function inlineEditor(t,focus){
    const patch={id:t.id};
    if(title!==t.title)patch.title=title;
    if(mode==="indent"||mode==="outdent"){patch.parent_task_id=parent;patch.position=await outlinePosition(parent,after,t.id)}
-   if(Object.keys(patch).length>1){await api("update",patch);await load()}
-   if(mode==="enter")outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal");
+   if(Object.keys(patch).length>1){await api(t.shared?"shared-update":"update",patch);await load()}
+   if(mode==="enter"){if(t.shared)await createSharedRow(t.parent_task_id||t.id);else outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal")}
    else if(mode==="indent"||mode==="outdent"){
     const label=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
     const updated=state.tasks.find(x=>x.id===t.id);if(label&&updated)label.replaceWith(inlineEditor(updated,true));
@@ -417,6 +419,32 @@ function quickTaskControls(t){
   finally{priority.disabled=false}
  });
  wrap.append(dueWrap,priority);return wrap;
+}
+async function createSharedRow(parentId){
+ if(!parentId)return;
+ const title=prompt("New shared subtask");
+ if(!title?.trim())return;
+ try{await api("shared-create",{parent_task_id:parentId,title:title.trim()});await load();openTaskById(parentId)}
+ catch(e){toast(e.message,true)}
+}
+function openTaskById(taskId){
+ if(!state.tasks.some(t=>t.id===taskId))return false;
+ state.view="tree";state.tab="all";state.search="";$("search").value="";
+ let cursor=state.tasks.find(t=>t.id===taskId),depth=0;
+ while(cursor?.parent_task_id&&depth++<25){state.expanded.delete(cursor.parent_task_id);cursor=state.tasks.find(t=>t.id===cursor.parent_task_id)}
+ localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();
+ const node=document.getElementById("task-"+taskId);
+ if(node){node.scrollIntoView({block:"center",behavior:"smooth"});node.classList.add("taskFocus");return true}
+ return false;
+}
+async function processInvitationLink(){
+ const params=new URLSearchParams(location.search),id=params.get("task");
+ if(!id||!/^[0-9a-f-]{36}$/i.test(id))return;
+ try{
+  if(params.get("accept")==="1"){await api("accept-task-link",{task_id:id});await load()}
+  if(!openTaskById(id))toast("Your task has not yet become available. Refresh your Agenda.",true);
+  params.delete("accept");history.replaceState(null,"",location.pathname+(params.size?"?"+params.toString():""));
+ }catch(e){toast("Unable to open invitation: "+e.message,true)}
 }
 function delegationControl(t){
  const wrap=el("div","taskDelegate"),toggle=btn("↗","delegateToggle",()=>{panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){fill();emailInput.focus()}});
@@ -490,18 +518,18 @@ function renderTask(t,depth){
  main.append(meta);row.append(main);
  const right=el("div","right");
  if(!t.shared){right.append(quickTaskControls(t));right.append(delegationControl(t))}
- const add=btn("＋","iconbtn",()=>outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
-  add.title="Add a subtask";if(!t.shared)right.append(add);
- const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";if(!t.shared)right.append(edit);row.append(right);outer.append(row);
+ const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
+  add.title="Add a subtask";right.append(add);
+ const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";right.append(edit);row.append(right);outer.append(row);
  if(!collapsed(t)){
    const childbox=el("div","children");
    for(const child of children)childbox.append(renderTask(child,depth+1));
-   if(!t.shared&&t.status!=="completed"&&t.status!=="cancelled"&&(state.tab==="open"||state.tab==="all")){
+   if(t.status!=="completed"&&t.status!=="cancelled"&&(state.tab==="open"||state.tab==="all")){
      const form=el("form","addchild");form.dataset.addFor=t.id;
      const arrow=el("span","plusTiny","＋");form.append(arrow);
      const input=el("input");input.placeholder="Add a step, press Enter…";input.maxLength=240;input.setAttribute("aria-label","Add a step under "+t.title);form.append(input);
       const companySelect=el("select","subtaskWorkspace");companySelect.title="Workspace for this subtask";companySelect.setAttribute("aria-label","Subtask workspace");companySelect.add(new Option("Personal","personal"));state.companies.forEach(c=>companySelect.add(new Option(c.name,c.id)));companySelect.value=state.workspace==="personal"?"personal":state.companies.some(c=>c.id===state.workspace)?state.workspace:(t.company_id||"personal");form.append(companySelect);
-     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;const ok=await outlineCreate(title,t.id,outlinePeers(t.id).at(-1)?.id||null,companySelect.value);if(ok)input.value=""});
+     form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;if(t.shared){try{await api("shared-create",{parent_task_id:t.id,title});await load()}catch(err){toast(err.message,true)}}else{const ok=await outlineCreate(title,t.id,outlinePeers(t.id).at(-1)?.id||null,companySelect.value);if(ok)input.value=""}});
       childbox.append(form)
    }
    if(childbox.childNodes.length)outer.append(childbox)
@@ -642,7 +670,7 @@ $("taskForm").addEventListener("submit",async e=>{
  const payload={company_id:normalizeWorkspace($("taskWorkspace").value),title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),start_at:fromDate($("taskStart").value),contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
  if(!payload.title){save.disabled=false;return}
  try{
-  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
+  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;if(state.edit.shared){delete payload.company_id;delete payload.start_at;delete payload.contact_name;delete payload.next_review_at;delete payload.waiting_on;await api("shared-update",payload)}else await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(!state.edit.shared&&previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(!state.edit.shared&&next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
   else{payload.parent_task_id=state.parent;payload.subtasks=state.parent?[]:$("taskSubtasks").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);await api("create",payload)}
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
@@ -677,7 +705,7 @@ $("codeForm").addEventListener("submit",async e=>{e.preventDefault();const butto
 $("logout").addEventListener("click",async()=>{await sandyAuth.auth.signOut();location.assign("../app/")});
 await sandyIdle.check();
 const initial=await sandyAuth.auth.getSession();
-if(!initial.data.session){location.replace("../app/")}else{
- load().catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
+if(!initial.data.session){sessionStorage.setItem("sandy_agenda_return",location.pathname+location.search);location.replace("../app/?return="+encodeURIComponent(location.pathname+location.search))}else{
+ load().then(processInvitationLink).catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
 }
 </script></body></html>
