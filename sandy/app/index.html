@@ -83,6 +83,17 @@
  .content :is(.service,.recentrow,.metricLink){transition:background .15s}
  .content :is(.service,.recentrow,.metricLink):active{background:#f3f3f3}
 }
+
+.askSandy{border:1px solid #dedede;border-radius:19px;padding:24px;background:#fff;margin-bottom:24px;color:#111}
+.askSandyHeading h2{font-size:25px;letter-spacing:-.8px;margin:0 0 3px}
+.askSandyHeading p{color:#666;font-size:13px;margin:0 0 17px}
+.askSandyInput{display:block;width:100%;min-height:94px;max-width:100%;resize:vertical;border:1px solid #d9d9d9;border-radius:12px;padding:15px;font:inherit;font-size:16px;line-height:1.5;background:white;color:#111}
+.askSandyInput:focus{outline:2px solid #111;outline-offset:1px}
+.askSandyActions{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:11px}
+.askSandyActions .btn{min-height:44px}
+.askSandyResponse{padding:19px;border:1px solid #e5e5e5;background:#f8f8f8;border-radius:13px;margin-top:17px}
+.askSandyReply{white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.65;margin-top:9px}
+@media(max-width:750px){.askSandy{padding:18px;margin-bottom:18px}.askSandyHeading h2{font-size:23px}.askSandyActions{align-items:stretch}.askSandyActions .btn{min-width:112px}.askSandyInput{font-size:16px}}
 </style></head><body>
 <div id="authScreen">
  <div class="authSide"><div class="logo">sandy<span>.</span></div><div><div class="eyebrow" style="color:#aaa">YOUR PRIVATE WORKSPACE</div><h1>Everything in one place.</h1><p>One Sandy account for your conversations, memory, tasks and everyday work.</p></div><div class="small" style="color:#999">SANDY AI · PRIVATE BY DESIGN</div></div>
@@ -128,6 +139,7 @@ function changeView(v,c){historyGeneration++;busy=false;view=v;if(c)filter=c;els
 function service(icon,title,desc,action,label){const card=el("button","service");card.type="button";add(card,el("div","emblem",icon),el("h3","",title),el("p","",desc),el("div","status",label+"  →"));card.addEventListener("click",action);return card}
 function stat(n,label,action){const card=el("button","metric metricLink");card.type="button";card.setAttribute("aria-label","View "+label.toLowerCase());add(card,el("strong","",String(n)),el("span","",label),el("span","metricMore","View records  →"));card.addEventListener("click",action);return card}
 function renderHome(){const c=$("content");c.replaceChildren();
+const askPanel=el("section","askSandy");const askHeading=el("div","askSandyHeading");add(askHeading,el("h2","","Ask Sandy"),el("p","","Questions, research or tasks — Sandy can use your relevant history."));const askForm=el("form","askSandyForm");const askInput=el("textarea","askSandyInput");askInput.placeholder="Ask Sandy anything…";askInput.rows=2;askInput.maxLength=12000;askInput.setAttribute("aria-label","Ask Sandy a question");const askActions=el("div","askSandyActions");const askStatus=el("span","small muted","Queries are saved as web requests.");askStatus.setAttribute("role","status");askStatus.setAttribute("aria-live","polite");const askButton=el("button","btn primary","Ask Sandy →");askButton.type="submit";add(askActions,askStatus,askButton);add(askForm,askInput,askActions);const askResponse=el("div","askSandyResponse hide");askResponse.setAttribute("aria-live","polite");add(askPanel,askHeading,askForm,askResponse);c.append(askPanel);askForm.addEventListener("submit",async e=>{e.preventDefault();const question=askInput.value.trim();if(!question||askButton.disabled)return;askButton.disabled=true;askStatus.textContent="Sandy is thinking…";askResponse.classList.add("hide");try{const request_id="web_"+crypto.randomUUID();const result=await call("ask",{question,request_id});askResponse.replaceChildren(el("div","eyebrow","SANDY"),el("div","askSandyReply",result.response||"No response returned."));askResponse.classList.remove("hide");askStatus.textContent="Saved as a web query.";askInput.value="";}catch(error){askStatus.textContent="Request could not be completed.";askResponse.replaceChildren(el("div","askSandyReply",error.message||"Please try again."));askResponse.classList.remove("hide");}finally{askButton.disabled=false;}});
 const hero=el("div","hero"),left=el("div"),acts=el("div","heroactions");add(left,el("div","eyebrow","GOOD TO HAVE YOU BACK"),el("h1","","Your day, simplified."),el("p","","One place to manage everything you work on with Sandy."));add(acts,btn("View conversations  →",()=>changeView("history"),"btn primary"),btn("Open agenda  ↗",()=>location.assign("../agenda/")));add(hero,left,acts);c.append(hero);
 const stats=el("div","summary"),t=profile.counts;add(stats,stat(t.email,"Email messages",()=>changeView("history","email")),stat(t.whatsapp,"WhatsApp messages",()=>{whatsappView="timeline";changeView("history","whatsapp")}),stat(t.voice,"Voice transcript turns",()=>changeView("history","voice")),stat(t.tasks,"Open tasks",()=>location.assign("../agenda/?tab=open")));c.append(stats);
 const sh=add(el("div","sectionhead"),el("h2","","Your Sandy services"),el("p","","Connected to your Sandy account"));c.append(sh);
