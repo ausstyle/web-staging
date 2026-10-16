@@ -7,3 +7,56 @@
 
 #rememberForm{margin:13px 0 22px}#rememberForm textarea{width:100%;min-height:88px;border:1px solid #dce5dd;border-radius:9px;padding:12px;line-height:1.5;background:#fff;resize:vertical}#rememberForm button{margin-top:8px}
 \n.lifespaces{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.lf{display:flex;flex-direction:column;gap:6px;font-size:12px;margin:10px 0}.lfinput{border:1px solid #d9e2d9;border-radius:9px;padding:12px;width:100%;background:#fff}.liferesults{max-height:340px;overflow:auto;margin-top:12px}\n
+
+/* Sandy One-Touch sign-in: readable, touch-friendly and responsive */
+.authgate{padding:30px;background:#e9eee7}
+.authlayout{width:min(1130px,100%);min-height:min(730px,calc(100vh - 60px));display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 25px 100px #203a2924;border:1px solid #dce7de}
+.authstory{padding:49px 53px;background:#214431;color:#f5f8f1;display:flex;flex-direction:column;justify-content:space-between;min-height:650px;position:relative;overflow:hidden}
+.authstory:after{content:"";position:absolute;right:-185px;bottom:-230px;width:530px;height:530px;border-radius:50%;border:1px solid #9eba972d;box-shadow:0 0 0 55px #9eba9707,0 0 0 125px #9eba9707;pointer-events:none}
+.authstory-brand{font-family:Georgia,serif;font-size:27px;display:flex;align-items:center;gap:12px;z-index:1}
+.authstory-brand small{margin-left:auto;font:700 9px Inter,system-ui,sans-serif;letter-spacing:.15em;color:#bdd0c0}
+.authstory-mark{height:43px;width:43px;display:inline-grid;place-items:center;border:1px solid #bbd6b560;border-radius:13px;color:#fff;font:30px Georgia,serif;background:#ffffff12}
+.authstory-mark span{color:#e7cb8c}
+.authstory-content{position:relative;z-index:1;max-width:440px}
+.authstory-content .eyebrow{color:#acc5b0;font-size:10px;line-height:1.6}
+.authstory-content h2{font:400 clamp(40px,4vw,61px)/1.07 Georgia,serif;letter-spacing:-1.9px;margin:23px 0 20px}
+.authstory-content>p{color:#d1e0d1;font-size:15px;line-height:1.85;margin:0 0 38px}
+.authstory-detail{display:flex;gap:13px;align-items:center;font-size:13px;color:#e2ebe0;margin:17px 0}
+.authstory-detail span{display:grid;place-items:center;width:30px;height:30px;border:1px solid #c4d7bd44;border-radius:50%;color:#d5c79b}
+.authstory-foot{position:relative;z-index:1;color:#a9c0ae;font-size:9px;letter-spacing:.19em;font-weight:700}
+.authlayout .authcard{max-width:none;border:0;box-shadow:none;border-radius:0;padding:clamp(32px,6vw,77px);align-self:center;width:100%}
+.authlayout .authcard h1{font:400 50px/1.15 Georgia,serif;letter-spacing:-1.6px;margin:13px 0 14px;color:#243b2b}
+.authlayout .authintro{font-size:14px;line-height:1.7;color:#7c8b81;max-width:350px;margin:0 0 34px}
+.authlayout .passkeybutton{width:100%;padding:16px;border:1px solid #224933;border-radius:14px;background:#244e36;color:#fff;display:flex;align-items:center;gap:14px;min-height:76px;text-align:left;box-shadow:0 7px 22px #21452f20;transition:transform .16s,background .16s}
+.authlayout .passkeybutton:hover{background:#173d29;transform:translateY(-1px)}
+.authlayout .passkeybutton:focus-visible{outline:3px solid #b5d7b8;outline-offset:3px}
+.passkeybutton>span:nth-child(2){font-size:14px;font-weight:700;flex:1;line-height:1.4}
+.passkeybutton small{display:block;color:#c4ddc8;font-size:11px;font-weight:500;margin-top:3px}
+.passkeyicon{font-size:27px;border:1px solid #d4ead08a;border-radius:12px;display:grid;place-items:center;width:43px;height:43px;flex:0 0 43px}
+.passkeyarrow{font-size:20px;color:#cbdcc9}
+.authlayout .authhint{color:#87938a;font-size:11px;line-height:1.7;margin:15px 0 26px}
+.authsep{display:flex;align-items:center;gap:13px;margin:0 0 18px;color:#9aa69c;font-size:10px;letter-spacing:.12em}
+.authsep:before,.authsep:after{content:"";height:1px;flex:1;background:#e3e9e2}
+.authswitch{width:100%;padding:14px 16px;border:1px solid #dae3da;border-radius:12px;background:#fff;color:#2f563a;display:flex;align-items:center;justify-content:space-between;font-size:13px;font-weight:700}
+.authswitch:hover{background:#f8fbf7}
+.authlayout #loginForm{padding-top:18px}
+.authlayout #loginForm input{background:#fff}
+.authlayout .authmessage{min-height:40px;margin:22px 0 0;font-size:12px;line-height:1.6;color:#577361;overflow-wrap:anywhere}
+.authcardfoot{border-top:1px solid #edf0ec;margin-top:20px;padding-top:20px;color:#95a198;font-size:11px;display:flex;align-items:center;gap:8px}
+.authcardfoot span{font-size:21px}
+.authmobilebrand{display:none}
+.passkeylist{display:grid;gap:9px;margin:10px 0}
+.passkeyitem{display:flex;justify-content:space-between;gap:12px;align-items:center;background:#f7faf5;border:1px solid #e5ebe3;border-radius:10px;padding:12px}
+.passkeyitem strong{font-size:12px;display:block}.passkeyitem small{font-size:10px;color:#7f8a81;display:block;margin-top:4px}
+.auth-security-status{font-size:12px;color:#4d7059;margin:15px 0}
+@media(max-width:800px){
+ .authgate{padding:0;background:#fff;place-items:stretch}
+ .authlayout{min-height:100dvh;display:flex;flex-direction:column;border:0;border-radius:0;box-shadow:none}
+ .authstory{display:none}
+ .authlayout .authcard{max-width:520px;margin:auto;padding:35px 25px}
+ .authmobilebrand{display:flex;align-items:center;gap:10px;color:#284c36;font:25px Georgia,serif;margin:0 0 61px}
+ .authmobilebrand .authstory-mark{background:#254b33;border:0}
+ .authlayout .authcard h1{font-size:43px}
+ .authlayout .authintro{margin-bottom:26px}
+}
+@media(prefers-reduced-motion:reduce){.authlayout .passkeybutton{transition:none}.authlayout .passkeybutton:hover{transform:none}}
