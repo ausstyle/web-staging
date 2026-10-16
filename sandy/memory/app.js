@@ -138,7 +138,6 @@ $("drawer").addEventListener("click",e=>{if(e.target===$("drawer"))$("drawer").c
 $("refresh").addEventListener("click",()=>load().then(()=>notify("Updated")).catch(e=>notify(e.message)));
 $("logout").addEventListener("click",async()=>{await auth.auth.signOut();exit()});
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const email=$("email").value.trim().toLowerCase();$("authMessage").textContent="Requesting a secure sign-in email…";try{const {error}=await auth.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:"https://ausstyle.github.io/web-staging/sandy/memory/"}});if(error)throw error;$("authMessage").textContent="Check your inbox for your sign-in link. If it opens localhost, Sandy’s Supabase Auth redirect still needs to be updated."}catch(er){$("authMessage").textContent="Sign-in link not sent: "+er.message}});
-$("authMessage").textContent=error?"Code not accepted: "+error.message:"Signed in."});
 auth.auth.onAuthStateChange((_e,s)=>{if(s?.access_token&&!session)enter();else if(!s?.access_token&&session)exit()});
 const {data}=await auth.auth.getSession();if(data.session)enter();else exit();
 }
