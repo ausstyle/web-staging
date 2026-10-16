@@ -27,8 +27,9 @@ const row=h("div","cards");const know=h("div","card"),working=h("div","card"),at
 know.append(h("div","cardhead","◇  What Sandy knows"),h("h3","","Your story, remembered"));text(know,"Explore what Sandy remembers about your people, companies, projects, preferences and ongoing matters. Review the details by topic, check their sources and correct anything that is incomplete or outdated.");know.append(aBtn("Explore memory →",()=>switchView("knowledge")));
 working.append(h("div","cardhead","☑  Currently in motion"),h("h3","","Real progress, visible"));const live=state.execution.filter(x=>!["completed","failed"].includes(x.status));text(working,live.length?live.length+" execution requests currently need action or resolution.":"No verified agent work is currently running. Personal checklist items are tracked separately.");working.append(aBtn("Review tasks →",()=>switchView("tasks")));
 attention.append(h("div","cardhead","✦  Worth your attention"),h("h3","","Nothing slips through"));const waiting=state.execution.filter(x=>["awaiting_approval","failed"].includes(x.status));text(attention,waiting.length?waiting.length+" recorded execution requests need review.":"Sandy checks recorded commitments and suggestions for anything important.");attention.append(aBtn("See priorities →",()=>switchView("attention")));add(row,know,working,attention);root.append(row);
-const ms=panel("Your active matters");if(!state.matters.length)ms.append(h("div","empty","No active matters are currently recorded."));else state.matters.slice(0,6).forEach(x=>ms.append(line(x.title,para(x.summary),badge(x.status))));ms.style.marginTop="23px";root.append(ms)}
+const current=meaningfulMatters();if(current.length){const ms=panel("Ongoing matters");current.slice(0,6).forEach(x=>ms.append(line(x.title,para(x.summary),badge(x.status))));ms.style.marginTop="23px";root.append(ms)}}
 
+function meaningfulMatters(){return (state?.matters||[]).filter(m=>{const t=String(m.title||"").trim(),v=(t+" "+String(m.summary||"")).toLowerCase();if(/^(what |who |where |when |why |how |check whether |confirm whether |user asks |nick asks |does |did |is )/i.test(t))return false;if(/asks (again |the assistant |whether |for |what |where )|wants the assistant to (answer|recall|tell)|in response to the assistant/i.test(v))return false;return /litigation|legal proceeding|court|dispute|property|villa|business project|refinanc|transaction|operation|construction|ongoing|negotiat|claim|deadline|hearing/i.test(v)})}
 function rememberUI(){document.getElementById("rememberForm")?.querySelector("textarea")?.focus()}
 function rememberForm(){
  const form=h("form","");form.id="rememberForm";
@@ -234,11 +235,11 @@ function knowledge(){
  rejections.append(rejectBody);
  rejectHeader.addEventListener("click",()=>{rejectBody.hidden=!rejectBody.hidden;rejectHeader.setAttribute("aria-expanded",String(!rejectBody.hidden));rejectHeader.lastChild.textContent=rejects.length+" recorded  "+(rejectBody.hidden?"▸":"▾")});
  root.append(rejections);
- const matters=panel("Tracked matters");
+ const matters=panel("Ongoing matters");
  const info=h("p","memoryHint","Ongoing subjects from Sandy's conversations. These are not necessarily tasks or confirmed actions.");
  matters.append(info);
- state.matters.forEach(m=>matters.append(line(m.title,m.summary,badge(m.status))));
- if(!state.matters.length)matters.append(h("div","empty","No tracked matters yet."));
+ const currentMatters=meaningfulMatters();currentMatters.forEach(m=>matters.append(line(m.title,m.summary,badge(m.status))));
+ if(!currentMatters.length)matters.append(h("div","empty","No substantive ongoing matters have been identified."));
  root.append(matters)
 }
 function taskLine(x){const row=h("div","listrow"),main=h("div","rowmain"),check=h("div","checkrow"),box=h("input");box.type="checkbox";box.checked=x.status==="done";box.title="Mark this personal checklist item complete";box.addEventListener("change",async()=>{try{await api("task_status",{id:x.id,status:box.checked?"done":"open"});notify(box.checked?"Marked done":"Reopened");await load()}catch(e){box.checked=!box.checked;notify(e.message)}});const t=h("div");t.append(h("strong",x.status==="done"?"done":"",x.title));if(x.description||x.due_at)text(t,((x.description||"")+(x.due_at?" · Due "+fmt(x.due_at):"")).slice(0,270));add(check,box,t);main.append(check);const right=h("div","rowright");right.append(aBtn("+ Subtask",()=>quickTask(x.id),"smallbutton"));right.append(aBtn("×",async()=>{if(!confirm("Delete this checklist item and its subtasks?"))return;try{await api("task_delete",{id:x.id,confirm:true});await load()}catch(e){notify(e.message)}},"smallbutton danger"));add(row,main,right);return row}
