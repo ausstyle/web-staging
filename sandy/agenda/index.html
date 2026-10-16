@@ -118,16 +118,36 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 .agendaSide .sideClose{display:none;position:absolute;right:12px;top:16px;border:0;background:transparent;font-size:22px}
 @media(max-width:850px){.agendaSide .sideClose{display:block}}
 
-/* Direct editing on every task line: native one-click date picker and priority menu */
-.quickTaskControls{display:flex;align-items:center;gap:5px;flex-shrink:0;opacity:1}
-.inlineDue,.inlinePriority{font:inherit;font-size:11px;font-weight:570;color:#333;background:white;border:1px solid #ddd;border-radius:7px;height:31px;padding:3px 5px;cursor:pointer}
-.inlineDue{width:130px;min-width:0;color-scheme:light}.inlinePriority{width:86px;min-width:0}
-.inlineDue:focus-visible,.inlinePriority:focus-visible{outline:2px solid #111;outline-offset:1px}
-.taskrow>.right{opacity:1!important;gap:5px;align-items:center}
-.subtaskWorkspace{font:inherit;font-size:11px;max-width:135px;color:#555;background:#f8f8f8;border:1px solid #e5e5e5;border-radius:7px;padding:4px 5px}
-.crossWorkspace{color:#3e3e3e!important;background:#ebebeb!important}
-@media(max-width:870px){.taskrow{flex-wrap:wrap}.taskmain{flex:1;min-width:calc(100% - 95px)}.taskrow>.right{width:100%;justify-content:flex-start;padding-left:48px;flex-wrap:wrap}.quickTaskControls{flex-wrap:wrap}.inlineDue{width:139px}}
-@media(max-width:500px){.taskrow>.right{padding-left:27px}.inlineDue{width:128px}.inlinePriority{width:82px}.subtaskWorkspace{max-width:104px}.addchild{flex-wrap:wrap}}
+/* Compact outline: preserve a single tree line; expand only for metadata. */
+.tasklist{display:block!important}
+.taskrow{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:7px!important;min-height:40px!important;padding:6px 9px!important}
+.childrow .taskrow{min-height:36px!important;padding:4px 7px!important}
+.taskmain{min-width:0!important;flex:1 1 auto!important}
+.titleArea{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:7px!important;min-width:0}
+.tasktitle{display:block;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:text}
+.tasktitle:focus-visible{outline:2px solid #111;outline-offset:2px}
+.stepCount,.workspaceHint{flex-shrink:0;font-size:10px;color:#666;white-space:nowrap}
+.workspaceHint{max-width:110px;overflow:hidden;text-overflow:ellipsis;border-radius:5px;background:#f2f2f2;padding:2px 5px}
+.taskrow .meta:empty{display:none}
+.taskrow .meta{margin-top:2px}
+.taskrow>.right{display:flex!important;align-items:center!important;gap:4px!important;flex:0 0 auto!important;width:auto!important;padding:0!important;flex-wrap:nowrap!important;opacity:1!important}
+.quickTaskControls{display:inline-flex;align-items:center;gap:4px;flex-shrink:0;white-space:nowrap}
+.dueWrap{position:relative;display:inline-flex;align-items:center}
+.dueButton,.inlinePriority{border:0;border-radius:6px;background:transparent;color:#676767;font:inherit;font-size:11px;font-weight:560;height:27px;padding:3px 5px;cursor:pointer;white-space:nowrap}
+.dueButton{min-width:43px;max-width:90px}
+.inlinePriority{min-width:65px;max-width:81px;padding-right:2px}
+.dueButton:hover,.inlinePriority:hover,.dueButton:focus-visible,.inlinePriority:focus-visible{color:#111;background:#eee;outline:none}
+.inlinePriority[data-level="high"],.inlinePriority[data-level="urgent"]{color:#111;font-weight:720}
+.datePickerInput{position:absolute;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:none}
+.taskrow .iconbtn{font-size:17px;padding:3px 5px;line-height:22px;min-width:24px}
+.taskrow .branchToggle{width:18px;min-width:18px;flex-shrink:0}
+.taskrow .taskcheck{width:19px;height:19px;min-width:19px;margin:0}
+.children{margin-left:26px!important;padding-left:10px!important;border-left:1px solid #dedede!important}
+.addchild{display:flex;align-items:center;flex-wrap:nowrap;gap:5px;min-height:35px;padding:4px 7px!important}
+.addchild>input{min-width:80px!important;flex:1;font-size:13px}
+.subtaskWorkspace{flex:0 0 auto;width:auto;max-width:116px;font-size:11px;color:#666;background:#fafafa;border:0;padding:4px;border-radius:5px;cursor:pointer}
+.subtaskWorkspace:hover,.subtaskWorkspace:focus{background:#efefef}
+@media(max-width:750px){.taskrow,.childrow .taskrow{gap:4px!important;padding:5px 4px!important}.children{margin-left:13px!important;padding-left:6px!important}.taskrow .iconbtn{min-width:18px;padding:3px 2px}.taskrow>.right{gap:2px!important}.inlinePriority{min-width:55px;max-width:70px;font-size:10px}.dueButton{font-size:10px;max-width:71px;padding:2px}.workspaceHint{max-width:55px}.tasktitle{font-size:12px}.subtaskWorkspace{max-width:89px}}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -243,28 +263,37 @@ function inlineEditor(t,focusTarget){
 }
 function quickTaskControls(t){
  const wrap=el("div","quickTaskControls");
- const date=el("input","inlineDue");date.type="date";date.value=localDate(t.due_at);
- date.title="Set due date for "+t.title;date.setAttribute("aria-label","Due date for "+t.title);
+ const dueWrap=el("span","dueWrap");
+ const date=el("input","datePickerInput");
+ date.type="date";date.value=localDate(t.due_at);date.tabIndex=-1;
+ date.setAttribute("aria-label","Choose due date for "+t.title);
+ const due=btn(t.due_at?dateLabel(t.due_at):"＋ Due","dueButton",()=>{
+  try{date.showPicker()}catch(_){date.focus();date.click()}
+ });
+ due.title="Choose due date for "+t.title;
  date.addEventListener("change",async()=>{
-  const newDate=date.value;date.disabled=true;
-  try{await api("update",{id:t.id,due_at:fromDate(newDate)});await load();toast(newDate?"Due date saved":"Due date cleared")}
-  catch(e){date.value=localDate(t.due_at);toast(e.message,true)}
-  finally{date.disabled=false}
+  const value=date.value;due.disabled=true;
+  try{await api("update",{id:t.id,due_at:fromDate(value)});await load();toast(value?"Due date saved":"Due date cleared")}
+  catch(err){date.value=localDate(t.due_at);toast(err.message,true)}
+  finally{due.disabled=false}
  });
- const prio=el("select","inlinePriority");prio.title="Set priority for "+t.title;prio.setAttribute("aria-label","Priority for "+t.title);
- for(const [value,label] of [["normal","Normal"],["low","Low"],["high","High"],["urgent","Urgent"]])prio.add(new Option(label,value));
- prio.value=t.priority||"normal";
- prio.addEventListener("change",async()=>{
-  prio.disabled=true;
-  try{await api("update",{id:t.id,priority:prio.value});await load();toast("Priority saved")}
-  catch(e){prio.value=t.priority||"normal";toast(e.message,true)}
-  finally{prio.disabled=false}
+ dueWrap.append(due,date);
+ const priority=el("select","inlinePriority");
+ priority.setAttribute("aria-label","Set priority for "+t.title);
+ priority.title="Priority for "+t.title;
+ for(const [value,label] of [["normal","Normal"],["low","Low"],["high","High"],["urgent","Urgent"]])priority.add(new Option(label,value));
+ priority.value=t.priority||"normal";priority.dataset.level=priority.value;
+ priority.addEventListener("change",async()=>{
+  const next=priority.value;priority.disabled=true;
+  try{await api("update",{id:t.id,priority:next});await load();toast("Priority saved")}
+  catch(err){priority.value=t.priority||"normal";toast(err.message,true)}
+  finally{priority.disabled=false}
  });
- wrap.append(date,prio);return wrap;
+ wrap.append(dueWrap,priority);return wrap;
 }
 function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
- const children=childOf(t.id).filter(c=>workspaceMatches(c)&&(state.assigneeFilter!=="all"?isVisible(c,new Set()):(state.tab==="open"||state.tab==="all"?true:isVisible(c,new Set()))));
+ const children=childOf(t.id).filter(c=>(state.tab==="open"||state.tab==="all")&&!state.search&&state.assigneeFilter==="all"?true:isVisible(c,new Set()));
  const row=el("div","taskrow");row.style.paddingLeft=(depth?"5px":"12px");
  const branch=btn(children.length?(collapsed(t)?"▸":"▾"):"·","branchToggle",()=>toggleBranch(t));
  branch.setAttribute("aria-label",(collapsed(t)?"Expand ":"Collapse ")+t.title);
@@ -274,17 +303,24 @@ function renderTask(t,depth){
  check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
  const main=el("div","taskmain");
  const titleArea=el("div","titleArea");const title=el("span","tasktitle"+(t.status==="completed"?" done":""),t.title);
- title.title="Double click to rename";title.addEventListener("dblclick",()=>{title.replaceWith(inlineEditor(t,true))});
+ title.title="Click to edit task name";title.tabIndex=0;title.setAttribute("role","button");title.setAttribute("aria-label","Edit "+t.title);title.addEventListener("click",()=>title.replaceWith(inlineEditor(t,true)));title.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();title.replaceWith(inlineEditor(t,true))}});
  titleArea.append(title);
  const progress=countDesc(t);
  if(progress.total){titleArea.append(el("span","stepCount",progress.done+"/"+progress.total))}
+ if(!t.shared){
+  const owners=[...taskWorkspaceOwners(t)];
+  const hint=owners.length>1?"Multiple workspaces":taskWorkspaceLabel(t.company_id);
+  if(owners.length>1||state.workspace==="all"||(state.workspace==="personal"?Boolean(t.company_id):state.workspace!=="assigned"&&t.company_id!==state.workspace)){
+   const chip=el("span","workspaceHint",hint);chip.title=owners.join(" · ");titleArea.append(chip);
+  }
+ }
  main.append(titleArea);
  if(t.details)main.append(el("div","taskdesc",t.details.slice(0,130)));
  const meta=el("div","meta");
  if(t.due_at&&t.shared){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}else if(t.due_at&&new Date(t.due_at)<new Date()&&t.status!=="completed"){meta.append(el("span","tag overdue","Overdue"))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.shared&&(t.priority==="urgent"||t.priority==="high"))meta.append(el("span","tag "+t.priority,t.priority));
- if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(state.workspace==="all"&&!t.shared)meta.append(el("span","tag",taskWorkspaceLabel(t.company_id)));const owners=[...taskWorkspaceOwners(t)];if(owners.length>1)meta.append(el("span","tag crossWorkspace","Across "+owners.join(" + ")));if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
+ if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
  if(!t.shared)right.append(quickTaskControls(t));
@@ -298,7 +334,7 @@ function renderTask(t,depth){
      const form=el("form","addchild");form.dataset.addFor=t.id;
      const arrow=el("span","plusTiny","＋");form.append(arrow);
      const input=el("input");input.placeholder="Add a step, press Enter…";input.maxLength=240;input.setAttribute("aria-label","Add a step under "+t.title);form.append(input);
-      const companySelect=el("select","subtaskWorkspace");companySelect.title="Workspace for this subtask";companySelect.setAttribute("aria-label","Subtask workspace");companySelect.add(new Option("Personal","personal"));state.companies.forEach(c=>companySelect.add(new Option(c.name,c.id)));companySelect.value=t.company_id||"personal";form.append(companySelect);
+      const companySelect=el("select","subtaskWorkspace");companySelect.title="Workspace for this subtask";companySelect.setAttribute("aria-label","Subtask workspace");companySelect.add(new Option("Personal","personal"));state.companies.forEach(c=>companySelect.add(new Option(c.name,c.id)));companySelect.value=state.workspace==="personal"?"personal":state.companies.some(c=>c.id===state.workspace)?state.workspace:(t.company_id||"personal");form.append(companySelect);
      form.addEventListener("submit",async e=>{e.preventDefault();const title=input.value.trim();if(!title)return;
        const before=input.value;input.value="";try{await api("create",{title,parent_task_id:t.id,company_id:normalizeWorkspace(companySelect.value)});await load();const next=document.querySelector('[data-add-for="'+t.id+'"] input');next?.focus()}catch(err){input.value=before;toast(err.message,true)}});
      childbox.append(form)
@@ -337,7 +373,7 @@ function renderTimeline(){
  for(let w=0;w<weeks;w++){const d=new Date(monday.getTime()+w*7*86400000);header.append(el("div","week",d.toLocaleDateString(undefined,{month:"short",day:"numeric"})))}box.append(header);
  const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
  function row(t,depth){
-  const children=childOf(t.id).filter(workspaceMatches);
+  const children=childOf(t.id);
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");
   const label=el("button","timelineLabel",("  ".repeat(Math.min(depth,5)))+(depth?"↳ ":"")+t.title);
@@ -483,7 +519,7 @@ document.addEventListener("keydown",async e=>{
  const target=e.target;
  if(!(target instanceof HTMLInputElement)||!target.closest(".addchild"))return;
  const form=target.closest(".addchild");const parentId=form.dataset.addFor;
- if(e.key==="Tab"&&!e.shiftKey){e.preventDefault();const value=target.value.trim();if(!value)return;target.value="";try{await api("create",{title:value,parent_task_id:parentId});await load();const items=childOf(parentId);const last=items[items.length-1];if(last){state.expanded.delete(last.id);render();document.querySelector('[data-add-for="'+last.id+'"] input')?.focus()}}catch(err){target.value=value;toast(err.message,true)}}
+ if(e.key==="Tab"&&!e.shiftKey){e.preventDefault();const value=target.value.trim();if(!value)return;target.value="";try{await api("create",{title:value,parent_task_id:parentId,company_id:normalizeWorkspace(form.querySelector(".subtaskWorkspace")?.value||"personal")});await load();const items=childOf(parentId);const last=items[items.length-1];if(last){state.expanded.delete(last.id);render();document.querySelector('[data-add-for="'+last.id+'"] input')?.focus()}}catch(err){target.value=value;toast(err.message,true)}}
  if(e.key==="Escape")target.blur()
 });
 $("search").addEventListener("input",e=>{state.search=e.target.value;render()});
