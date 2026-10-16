@@ -118,6 +118,7 @@ function knowledge(){
     const retry=aBtn("Try again",()=>{retry.remove();text(conversation,"Sandy is thinking…");nextQuestion()},"smallbutton");actions.prepend(retry);
    }
   }
+  answer.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!submit.disabled)submit.click()}});
   actions.append(stop,submit);box.append(heading,conversation,answer,actions);row.append(box);
   text(conversation,"Sandy is thinking of a relevant question…");await nextQuestion();
  }
