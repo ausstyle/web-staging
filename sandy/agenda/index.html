@@ -227,7 +227,7 @@ function renderTimeline(){
  const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
  function row(t,depth){
   const children=childOf(t.id);
-  const a=dates(t),hasDate=Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
+  const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");
   const label=el("button","timelineLabel",("  ".repeat(Math.min(depth,5)))+(depth?"↳ ":"")+t.title);
   label.type="button";label.addEventListener("click",()=>{state.edit=t;state.parent=null;openDialog()});line.append(label);
