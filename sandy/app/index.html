@@ -176,6 +176,7 @@ let webConversationId=null;
 const revealReply=(node)=>{requestAnimationFrame(()=>{if(!node.isConnected)return;const box=askThread;box.scrollTo({top:box.scrollHeight,behavior:"smooth"});node.scrollIntoView({behavior:"smooth",block:"nearest"});});};
 const showTurn=(role,text)=>{const item=el("div","askTurn "+(role==="You"?"askTurnUser":"askTurnSandy"));add(item,el("div","eyebrow",role),el("div","askTurnText",text||""));askThread.append(item);return item;};
 call("web_history").then(data=>{if(!askPanel.isConnected)return;webConversationId=data.conversation_id||null;askThread.replaceChildren();(data.turns||[]).forEach(t=>{showTurn("You",t.question);if(t.response)showTurn("Sandy",t.response);else if(t.status==="failed")showTurn("Sandy","This request could not be completed.");});}).catch(()=>{askStatus.textContent="Previous chat unavailable — new questions can still be submitted.";});
+askInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();if(!askButton.disabled&&askInput.value.trim())askForm.requestSubmit();}});
 askForm.addEventListener("submit",async e=>{
 e.preventDefault();const question=askInput.value.trim();if(!question||askButton.disabled)return;
 askButton.disabled=true;askStatus.textContent="Sandy is thinking…";showTurn("You",question);askInput.value="";
