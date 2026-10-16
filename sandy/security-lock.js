@@ -13,6 +13,11 @@ export function installSandyIdleLock(auth, { redirect = "../app/?locked=1" } = {
   function markActive(force = false) {
     if (locking) return;
     const now = Date.now();
+    const previous = Number(localStorage.getItem(ACTIVITY_KEY)) || 0;
+    if (!force && previous && now - previous >= MAX_IDLE_MS) {
+      void check();
+      return;
+    }
     if (force || now - lastWrite >= 1500) {
       lastWrite = now;
       try { localStorage.setItem(ACTIVITY_KEY, String(now)); } catch {}
