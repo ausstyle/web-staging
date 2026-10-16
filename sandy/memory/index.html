@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sandy | Memory Centre</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<div class="authgate" id="authgate">
+ <div class="authcard">
+  <div class="monogram">s<span>.</span></div>
+  <div class="eyebrow">YOUR PRIVATE ASSISTANT</div><h1>Your mind,<br>in good hands.</h1>
+  <p>A private place for everything Sandy knows, every task she's tracking, and what deserves your attention.</p>
+  <form id="loginForm"><label for="email">Your Sandy email address</label><input type="email" id="email" autocomplete="email" placeholder="you@company.com" required>
+    <button class="primary wide" type="submit" id="sendLink">Continue with email <span>→</span></button></form>
+  <div class="authline">or, if your account has a password</div>
+  <form id="passwordForm"><input type="password" id="password" placeholder="Password" autocomplete="current-password">
+    <button type="submit" class="secondary wide">Sign in with password</button></form>
+  <details><summary>Have a six-digit email code?</summary>
+    <form id="codeForm" class="forminline"><input id="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="000000" maxlength="8"><button type="submit" class="secondary">Verify</button></form>
+  </details>
+  <p class="authmessage" id="authMessage" role="status">Only accounts explicitly linked to Sandy can open private memory.</p>
+ </div>
+</div>
+<div id="app" class="app hide">
+  <aside class="side">
+    <div class="brand"><div class="brandmark">s<span>.</span></div><div><strong>Sandy</strong><small>MEMORY CENTRE</small></div></div>
+    <div class="sidenav">
+      <button data-view="home" class="navitem active"><span class="navico">◫</span> Overview</button>
+      <button data-view="life" class="navitem"><span class="navico">◈</span> My life</button>
+      <button data-view="knowledge" class="navitem"><span class="navico">◇</span> What she knows</button>
+      <button data-view="tasks" class="navitem"><span class="navico">☑</span> Your tasks</button>
+      <a href="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda" class="navitem" style="text-decoration:none;display:block;margin-top:7px">↗ &nbsp;Full Agenda</a>
+      <button data-view="attention" class="navitem"><span class="navico">✦</span> Needs attention <span id="attentionCount" class="countbadge hide">0</span></button>
+      <button data-view="search" class="navitem"><span class="navico">⌕</span> Search history</button>
+    </div>
+    <div class="sidebottom">
+     <button class="navitem" data-view="settings"><span class="navico">⚙</span> Memory settings</button>
+     <div class="userblock"><div class="avatar" id="avatar">S</div><div class="usercopy"><strong id="userName">Your Sandy</strong><small>Private customer space</small></div><button class="outlink" id="logout" title="Sign out">↪</button></div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top"><div class="topmobile"><strong>Sandy<span class="dot">.</span></strong> <span>Memory Centre</span></div><span id="liveMark" class="live">● &nbsp; Private &amp; connected</span><button id="refresh" class="textbutton">↻ &nbsp; Refresh</button></header>
+    <div class="content">
+      <div class="pageintro"><div class="eyebrow" id="sectionTop">YOUR PERSONAL KNOWLEDGE</div><h1 id="pageHeading">Good morning.</h1><p id="pageSubtitle">Everything Sandy remembers, and everything still in motion.</p></div>
+      <section class="askcard"><div class="askhead"><span class="sparkle">✦</span><div><strong>Ask Sandy</strong><p>Ask about your history, your work, or what to deal with next.</p></div></div>
+        <form id="askForm" class="askrow"><input id="askInput" type="text" autocomplete="off" maxlength="600" placeholder="What should I be thinking about today?" aria-label="Ask Sandy about your memory"><button class="primary" id="askButton" type="submit">Ask <span>→</span></button></form>
+        <div class="prompts"><button data-ask="What do you know about me and my current projects?">What do you know about me?</button><button data-ask="What tasks are you actually working on, and what is their verified status?">What are you working on?</button><button data-ask="What important unresolved matters, failed tasks or approvals need my attention?">What needs attention?</button></div>
+        <div id="answerBox" class="answer hide"><div class="answertop"><strong>✦ Sandy's answer</strong><button id="closeAnswer" class="iconbutton">×</button></div><div id="answerText" class="answertext"></div><div class="sources" id="answerSources"></div><div class="answerdisclaimer">Sandy draws from your stored records and may be mistaken. Source links help you check important details.</div></div>
+      </section>
+      <div class="pageview" id="pageview"><div class="loading">Loading your memory…</div></div>
+    </div>
+  </main>
+  <nav class="mobilebar"><button data-view="home">Overview</button><button data-view="life">My life</button><button data-view="knowledge">Memory</button><button data-view="tasks">Tasks</button><button data-view="attention">Attention</button><button data-view="search">Search</button></nav>
+</div>
+<div id="drawer" class="drawerback hide"><div class="drawer" role="dialog" aria-label="Source record"><div class="drawertop"><strong id="drawerTitle">Source record</strong><button class="iconbutton" id="closeDrawer">×</button></div><div id="drawerContent" class="drawerbody"></div></div></div>
+<div class="toast hide" id="toast" role="status"></div>
+<script type="module" src="./app.js"></script>
+</body></html>
