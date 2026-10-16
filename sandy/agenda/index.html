@@ -640,9 +640,49 @@ function renderSuggestions(){
  actions.append(btn("Add","btn small primary",async()=>{try{await api("suggestion",{id:s.id,decision:"accept"});toast("Added to your agenda");await load()}catch(e){toast(e.message,true)}}));
  actions.append(btn("Dismiss","btn small",async()=>{try{await api("suggestion",{id:s.id,decision:"dismiss"});await load()}catch(e){toast(e.message,true)}}));line.append(actions);area.append(line)}
 }
+// Authenticated live sync: reads the same permission-filtered Agenda API used on first load.
+// Never subscribe directly to public task changes or expose other clients' row data.
+let liveTimer=null,liveBusy=false,livePending=null,liveFingerprint="";
+function liveSignature(data){
+ return JSON.stringify([(data.tasks||[]).map(t=>[t.id,t.parent_task_id,t.status,t.title,t.details,t.updated_at,t.version,t.position,t.archived_at,t.due_at,t.priority]),(data.delegations||[]).map(d=>[d.id,d.status,d.scope]),(data.receivedDelegations||[]).map(d=>[d.id,d.status,d.scope])]);
+}
+function editingAgenda(){
+ if(state.outlineBusy||document.querySelector(".outlineDraft,.inlineTitle:not(.outlineDraft .inlineTitle)"))return true;
+ if($("dialogOverlay")?.classList.contains("show"))return true;
+ const active=document.activeElement;
+ return !!(active?.matches("input,textarea,select,[contenteditable=true]")&&active?.closest("#app"));
+}
+function applyAgendaData(data){
+ state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.delegations=data.delegations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
+ $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render();
+ liveFingerprint=liveSignature(data);
+}
+async function pollAgenda(){
+ if(liveBusy||document.hidden||!state.customer_id)return;
+ if(editingAgenda()){return}
+ liveBusy=true;
+ try{
+  const data=livePending||await api("list");
+  livePending=null;
+  if(liveSignature(data)!==liveFingerprint){
+   if(editingAgenda()){livePending=data;return}
+   const earlier=new Map(state.tasks.map(t=>[t.id,t]));
+   applyAgendaData(data);
+   const completed=(data.tasks||[]).filter(t=>t.status==="completed"&&earlier.has(t.id)&&earlier.get(t.id).status!=="completed");
+   if(completed.length)toast(completed.length===1?"Task completed: "+completed[0].title:completed.length+" tasks completed");
+  }
+ }catch(e){console.warn("Sandy Agenda live sync deferred:",e?.message||"network error")}
+ finally{liveBusy=false}
+}
+function startAgendaSync(){
+ if(liveTimer)return;
+ liveTimer=setInterval(pollAgenda,5000);
+ document.addEventListener("visibilitychange",()=>{if(!document.hidden)pollAgenda()});
+ window.addEventListener("focus",pollAgenda);
+}
 async function load(){
- const data=await api("list");state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.delegations=data.delegations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
- $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render()
+ const data=await api("list");
+ applyAgendaData(data);startAgendaSync();
 }
 async function markTask(t,done,control){
  control.disabled=true;
