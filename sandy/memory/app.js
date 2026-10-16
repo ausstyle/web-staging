@@ -29,8 +29,25 @@ working.append(h("div","cardhead","☑  Currently in motion"),h("h3","","Real pr
 attention.append(h("div","cardhead","✦  Worth your attention"),h("h3","","Nothing slips through"));const waiting=state.execution.filter(x=>["awaiting_approval","failed"].includes(x.status));text(attention,waiting.length?waiting.length+" recorded execution requests need review.":"Sandy checks recorded commitments and suggestions for anything important.");attention.append(aBtn("See priorities →",()=>switchView("attention")));add(row,know,working,attention);root.append(row);
 const ms=panel("Your active matters");if(!state.matters.length)ms.append(h("div","empty","No active matters are currently recorded."));else state.matters.slice(0,6).forEach(x=>ms.append(line(x.title,para(x.summary),badge(x.status))));ms.style.marginTop="23px";root.append(ms)}
 
-function rememberUI(){const form=document.getElementById("rememberForm");form.classList.toggle("hide");form.querySelector("textarea")?.focus()}
-function rememberForm(){const form=h("form","hide");form.id="rememberForm";const input=h("textarea");input.style.width="100%";input.style.minHeight="88px";input.style.border="1px solid #dce5dd";input.style.borderRadius="9px";input.style.padding="12px";input.style.marginTop="13px";input.maxLength=5000;input.placeholder="Remember that…";const save=h("button","primary","Save to memory");save.type="submit";add(form,input,save);form.addEventListener("submit",async e=>{e.preventDefault();const note=input.value.trim();if(note.length<3)return;const id=crypto.randomUUID();try{await api("remember",{text:note,request_id:id});notify("Added to Sandy's memory");await load()}catch(e){notify(e.message)}});return form}
+function rememberUI(){document.getElementById("rememberForm")?.querySelector("textarea")?.focus()}
+function rememberForm(){
+ const form=h("form","");form.id="rememberForm";
+ const input=h("textarea","factInput");input.style.width="100%";input.rows=2;input.maxLength=5000;input.placeholder="Tell Sandy something you want her to remember…";
+ const save=h("button","primary","Tell Sandy");save.type="submit";form.append(input,save);
+ form.addEventListener("submit",async e=>{
+  e.preventDefault();const note=input.value.trim();if(note.length<3)return;
+  save.disabled=true;
+  try{
+   const result=await api("remember",{text:note,request_id:crypto.randomUUID()});
+   if(!result.fact_id)throw Error("Sandy saved the note but could not create an editable fact.");
+   notify("Remembered under "+(result.category||"your memory")+". Sandy has a follow-up question.");
+   await load();
+   const fact=state?.facts?.find(f=>f.id===result.fact_id);
+   if(fact){const row=document.querySelector('[data-fact-id="'+fact.id+'"]');if(row){row.scrollIntoView({behavior:"smooth",block:"center"});row.querySelector(".factAction")?.click()}}
+  }catch(err){notify("Could not finish saving: "+err.message)}
+  finally{save.disabled=false}
+ });return form;
+}
 async function correctFact(f,remove){
  if(remove){
   if(window._memoryUpdating)return;window._memoryUpdating=true;
@@ -67,16 +84,9 @@ function knowledge(){
   const tile=h("button","memoryStat statLink");tile.type="button";tile.setAttribute("aria-label","View "+label.toLowerCase());tile.append(h("strong","",number),h("span","",label+" →"));tile.addEventListener("click",()=>{if(target==="memoryCorrectionsList"&&document.querySelector("#memoryCorrectionsList .rejectedBody")?.hidden)document.querySelector("#memoryCorrectionsList .rejectedHeader")?.click();document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})});count.append(tile)
  }hero.append(count);root.append(hero);
  const notePanel=h("section","memoryNotesBlock");notePanel.id="memoryNotesList";
- const noteHead=h("div","memoryBlockTitle");
- noteHead.append(h("div","", "Tell Sandy something"));
- noteHead.append(aBtn("＋ Remember something",()=>rememberUI(),"smallbutton primary"));
- notePanel.append(noteHead,h("p","memoryHint","Information you've explicitly asked Sandy to keep."));
- notePanel.append(rememberForm());
- if(!state.notes?.length)notePanel.append(h("div","memoryEmpty","Nothing added manually yet."));
- else for(const n of state.notes){
-  const row=h("div","memoryNoteRow");row.append(h("div","",n.content));
-  row.append(aBtn("See original",()=>evidence(n.id),"smallbutton"));notePanel.append(row)
- }root.append(notePanel);
+ const noteHead=h("div","memoryBlockTitle");noteHead.append(h("div","","Tell Sandy something"));
+ notePanel.append(noteHead,h("p","memoryHint","Sandy will categorise what you tell her, save it as an editable fact below and ask what else would be useful to know."));
+ notePanel.append(rememberForm());root.append(notePanel);
  const panelRoot=h("section","memoryFactSection");panelRoot.id="memoryFactsList";
  const bar=h("div","memoryFactTop");const titleWrap=h("div","");
  titleWrap.append(h("h2","","Saved facts"),h("p","memoryHint","Only active facts are used as current information. Mark something incorrect with one click."));
@@ -108,7 +118,14 @@ function knowledge(){
    if(stopped||!box.isConnected)return;
    submit.disabled=true;
    try{
-    const r=await api("enrich_question",{id:f.id});
+    let r=null;
+    for(let attempt=0;attempt<3;attempt++){
+     const candidate=await api("enrich_question",{id:f.id});
+     const q=String(candidate?.turn?.question||"").trim();
+     if(q.length>=12&&q.length<=240&&q.endsWith("?")&&!/^(got it|understood|thanks|thank you|noted|i.ll remember|you (have|are|own|attended))/i.test(q)){r=candidate;break}
+     if(candidate?.turn?.id)await api("enrich_skip",{turn_id:candidate.turn.id,reason:"Automatic rejection: response not a question"}).catch(()=>{});
+    }
+    if(!r)throw Error("Sandy returned a statement rather than a question.");
     if(stopped||!box.isConnected)return;
     turn=r.turn;conversation.replaceChildren(document.createTextNode(turn.question));submit.disabled=false;skip.disabled=false;answer.focus();
    }catch(e){
