@@ -107,6 +107,20 @@
 .askSandyThread:empty{display:none}.askTurn{border:1px solid #dedede;border-radius:13px;padding:13px 16px;max-width:94%;min-width:0}
 .askTurnUser{background:#f2f2f2;align-self:flex-end}.askTurnSandy{background:#fff;align-self:flex-start}.askTurnText{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:14px;margin-top:6px}
 @media(max-width:750px){.topbar{padding-top:calc(env(safe-area-inset-top) + 18px)!important;min-height:90px!important}.topbar .topright{display:none!important}.askSandyThread{max-height:360px}.askTurn{max-width:100%}}
+</style><style>
+.sandyMissionPanel{background:#fff;border:1px solid #d9d9d9;border-radius:14px;padding:20px;margin:24px 0;color:#111}
+.sandyMissionHead{display:flex;flex-direction:column;gap:3px;margin-bottom:14px}
+.sandyMissionHead h2{margin:0}.sandyMissionHead p{margin:0}
+.sandyMissionForm{display:grid;gap:10px}
+.sandyMissionForm input,.sandyMissionForm textarea{width:100%;border:1px solid #ccc;border-radius:8px;background:#fff;color:#111;padding:11px;font:inherit;min-width:0}
+.sandyMissionForm button{justify-self:start}.sandyMissionList{display:grid;gap:10px;margin-top:14px}
+.sandyMissionItem{border:1px solid #e0e0e0;padding:14px;border-radius:10px;min-width:0}
+.sandyMissionTop,.sandyMissionStep{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.sandyMissionStep{padding:7px 0;border-top:1px solid #eee;font-size:12px}
+.sandyMissionStep>span:first-child{min-width:0;overflow-wrap:anywhere}
+.sandyMissionStep>span:last-child{flex-shrink:0}
+.sandyMissionItem a{display:inline-flex;margin-top:10px}
+@media(max-width:750px){.sandyMissionPanel{padding:13px}.sandyMissionTop,.sandyMissionStep{flex-direction:column;gap:2px}}
 </style></head><body>
 <div id="authScreen" class="hide">
  <div class="authSide"><div class="logo">sandy<span>.</span></div><div><div class="eyebrow" style="color:#aaa">YOUR PRIVATE WORKSPACE</div><h1>Everything in one place.</h1><p>One Sandy account for your conversations, memory, tasks and everyday work.</p></div><div class="small" style="color:#999">SANDY AI · PRIVATE BY DESIGN</div></div>
@@ -172,6 +186,37 @@ askButton.type="submit";
 add(askActions,askStatus,askButton);
 add(askForm,askInput,askActions);
 add(askPanel,askHeading,askThread,askForm);c.append(askPanel);
+const missionPanel=el("section","sandyMissionPanel");
+const missionHead=el("div","sandyMissionHead");
+add(missionHead,el("h2","","Sandy missions"),el("p","small muted","Delegate a project to Sandy and track it alongside your other tasks."));
+const missionForm=el("form","sandyMissionForm");
+const missionTitle=el("input");missionTitle.placeholder="Project title";missionTitle.maxLength=240;missionTitle.required=true;missionTitle.setAttribute("aria-label","Project title");
+const missionObjective=el("textarea");missionObjective.placeholder="What outcome should Sandy achieve? Include context, deadlines and constraints.";missionObjective.rows=3;missionObjective.maxLength=6000;missionObjective.required=true;missionObjective.setAttribute("aria-label","Project objective");
+const missionSubmit=el("button","btn primary","Delegate project to Sandy");missionSubmit.type="submit";
+const missionFeedback=el("p","small muted","New projects start awaiting a plan and your approval before external actions.");
+add(missionForm,missionTitle,missionObjective,missionSubmit,missionFeedback);
+const missionList=el("div","sandyMissionList");
+add(missionPanel,missionHead,missionForm,missionList);
+c.append(missionPanel);
+const missionRefresh=async()=>{
+ if(!missionPanel.isConnected)return;
+ try{const res=await call("mission_overview");if(!missionPanel.isConnected)return;missionList.replaceChildren();
+ if(!res.missions?.length){missionList.append(el("p","small muted","No projects delegated to Sandy yet."));return}
+ for(const m of res.missions){
+   const item=el("div","sandyMissionItem");
+   const top=el("div","sandyMissionTop");add(top,el("strong","",m.title),el("span","small",m.status==="completed"?"Completed":m.metadata?.execution_state==="setup_failed"?"Setup needs attention":"Assigned to Sandy · "+m.status.replaceAll("_"," ")));
+   item.append(top);const subs=m.milestones||[];
+   item.append(el("p","small muted",subs.filter(t=>t.status==="completed").length+" of "+subs.length+" milestones completed"));
+   for(const s of subs){const line=el("div","sandyMissionStep");const who=s.metadata?.assigned_to==="client"?"You":"Sandy";add(line,el("span","",s.title),el("span","small muted",who+" · "+s.status.replaceAll("_"," ")));item.append(line)}
+   const link=el("a","btn small","Open in Tasks ↗");link.href="../agenda/?tab=all";item.append(link);missionList.append(item)
+ }
+ }catch(e){missionList.replaceChildren(el("p","small muted","Missions could not be loaded: "+(e.message||"Please retry.")))}};
+missionForm.addEventListener("submit",async e=>{e.preventDefault();if(missionSubmit.disabled)return;missionSubmit.disabled=true;missionFeedback.textContent="Registering project…";try{
+ const result=await call("mission_create",{title:missionTitle.value.trim(),objective:missionObjective.value.trim()});
+ missionTitle.value="";missionObjective.value="";missionFeedback.textContent="Project created in Tasks. Sandy's planning stage is queued; external work requires approval.";
+ await missionRefresh();
+ }catch(err){missionFeedback.textContent="Could not delegate project: "+(err.message||"Please retry.")}finally{missionSubmit.disabled=false}});
+missionRefresh();
 let webConversationId=null;
 const revealReply=(node)=>{requestAnimationFrame(()=>{if(!node.isConnected)return;const box=askThread;box.scrollTo({top:box.scrollHeight,behavior:"smooth"});node.scrollIntoView({behavior:"smooth",block:"nearest"});});};
 const showTurn=(role,text)=>{const item=el("div","askTurn "+(role==="You"?"askTurnUser":"askTurnSandy"));add(item,el("div","eyebrow",role),el("div","askTurnText",text||""));askThread.append(item);return item;};
