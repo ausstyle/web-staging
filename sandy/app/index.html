@@ -153,7 +153,7 @@
  <div class="navheading">CHANNELS</div>
  <button class="nav" data-channel="email"><span class="sym">✉</span> Email</button>
  <button class="nav" data-channel="whatsapp"><span class="sym">◉</span> WhatsApp</button>
- <button class="nav" data-channel="voice"><span class="sym">♫</span> Voice transcripts</button>
+ <button class="nav" data-channel="voice"><span class="sym">♫</span> Voice transcripts</button><button class="nav" data-channel="web"><span class="sym">✳</span> Web chats</button>
  <div class="sidefoot"><div class="sideuser" id="sideEmail"></div><button class="nav" id="signOut"><span class="sym">↗</span> Sign out</button></div>
  </aside>
  <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm hide" id="addPasskey" type="button">＋ Set up passkey</button><button class="btn sm" id="refresh">↻ Refresh</button></div></div>
@@ -287,9 +287,9 @@ const h=add(el("div","sectionhead"),el("h2","","Recent conversations"),btn("See 
 call("history",{limit:5}).then(r=>{rec.replaceChildren();if(!r.items?.length){rec.append(el("div","empty","No conversation history is linked yet."));return}r.items.forEach(x=>{const b=el("button","recentrow"),left=el("div","summarytext");add(left,el("strong","",x.preview?safeText(x.preview).slice(0,90):x.title),el("small","",x.channel.toUpperCase()+" · "+fmt(x.at)));add(b,left,el("span","","→"));b.addEventListener("click",()=>{changeView("history",x.channel)});rec.append(b)})}).catch(e=>{rec.replaceChildren(el("div","empty",e.message))});
 }
 function renderHistory(){const c=$("content");c.replaceChildren();
-const head=el("div","histtop"),h=el("div");add(h,el("div","eyebrow","UNIFIED HISTORY"),el("h1","pageTitle","Every conversation."),el("p","lead","Email, WhatsApp and voice together. Search by keyword, filter by channel, and read the original saved content."));head.append(h);c.append(head);
+const head=el("div","histtop"),h=el("div");add(h,el("div","eyebrow","UNIFIED HISTORY"),el("h1","pageTitle","Every conversation."),el("p","lead","Email, WhatsApp, voice and web chats together. Search by keyword, filter by channel, and read the original saved content."));head.append(h);c.append(head);
 const tools=el("div","filterbar");const totals=profile.conversation_counts||profile.counts;
-[["all","All",totals.email+totals.whatsapp+totals.voice],["email","Email",totals.email],["whatsapp","WhatsApp",totals.whatsapp],["voice","Voice",totals.voice]].forEach(([k,label,n])=>{const b=btn(label+" · "+n,()=>changeView("history",k),"chip"+(filter===k?" active":""));tools.append(b)});c.append(tools);
+[["all","All",(totals.email||0)+(totals.whatsapp||0)+(totals.voice||0)+(totals.web||0)],["email","Email",totals.email||0],["whatsapp","WhatsApp",totals.whatsapp||0],["voice","Voice",totals.voice||0],["web","Web chat",totals.web||0]].forEach(([k,label,n])=>{const b=btn(label+" · "+n,()=>changeView("history",k),"chip"+(filter===k?" active":""));tools.append(b)});c.append(tools);
 if(filter==="whatsapp"){
  const modes=el("div","filterbar");
  modes.style.marginTop="0";
