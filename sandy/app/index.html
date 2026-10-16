@@ -137,7 +137,7 @@
 .sandyCommandSection h3{font-size:14px;margin:0 0 8px}
 .sandyCommandTask{display:block;text-decoration:none;color:#111;padding:7px 0;font-size:12px;border-top:1px solid #eee;overflow-wrap:anywhere}
 @media(max-width:750px){.sandyCommandPanel{padding:12px}.sandyCommandMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.sandyCommandAreas{grid-template-columns:1fr}.sandyGlobalSearch{flex-wrap:wrap}.sandyGlobalSearch input{flex:1 1 100%}}
-</style><style>.sandyMissionReview{display:flex;gap:8px;flex-wrap:wrap;margin:9px 0}.sandyMissionReview button{min-height:36px}</style><style>.sandyMissionAudit{border-top:1px solid #eee;margin-top:9px;padding-top:9px}.sandyMissionAudit summary{cursor:pointer;font-size:12px;font-weight:650}.sandyMissionAuditEntry{font-size:11px;line-height:1.4;padding:7px 0;border-bottom:1px solid #eee;overflow-wrap:anywhere}</style><style>.sandyMissionWork{border:1px solid #ddd;border-radius:8px;margin:9px 0;padding:10px}.sandyMissionWork summary{cursor:pointer;font-size:12px;font-weight:650}.sandyMissionWorkContent{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:400px;overflow-y:auto;padding:12px 0;line-height:1.5}</style></head><body>
+</style><style>.sandyMissionReview{display:flex;gap:8px;flex-wrap:wrap;margin:9px 0}.sandyMissionReview button{min-height:36px}</style><style>.sandyMissionAudit{border-top:1px solid #eee;margin-top:9px;padding-top:9px}.sandyMissionAudit summary{cursor:pointer;font-size:12px;font-weight:650}.sandyMissionAuditEntry{font-size:11px;line-height:1.4;padding:7px 0;border-bottom:1px solid #eee;overflow-wrap:anywhere}</style><style>.sandyMissionWork{border:1px solid #ddd;border-radius:8px;margin:9px 0;padding:10px}.sandyMissionWork summary{cursor:pointer;font-size:12px;font-weight:650}.sandyMissionWorkContent{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;max-height:400px;overflow-y:auto;padding:12px 0;line-height:1.5}</style><style>.sandyMissionQuestions{margin:12px 0}.sandyMissionQuestions h3{font-size:15px}.sandyMissionQuestion{display:grid;gap:8px;border:1px solid #dedede;border-radius:9px;padding:12px;margin:10px 0}.sandyMissionQuestion label{font-weight:600;font-size:13px}.sandyMissionQuestion textarea{font:inherit;padding:9px;border:1px solid #bbb;border-radius:7px;width:100%}.sandyMissionQuestion button{justify-self:start}</style></head><body>
 <div id="authScreen" class="hide">
  <div class="authSide"><div class="logo">sandy<span>.</span></div><div><div class="eyebrow" style="color:#aaa">YOUR PRIVATE WORKSPACE</div><h1>Everything in one place.</h1><p>One Sandy account for your conversations, memory, tasks and everyday work.</p></div><div class="small" style="color:#999">SANDY AI · PRIVATE BY DESIGN</div></div>
  <div class="authMain"><div class="authBox"><div class="eyebrow">WELCOME BACK</div><h2>Sign in to Sandy.</h2><p id="loginIntro">Sign in securely by email. Once signed in, Sandy can help you set up a faster passkey login for next time.</p><button class="btn primary hide" id="passkey">◎ &nbsp; Continue with passkey</button><div id="passkeyDivider" class="divider hide">OR USE YOUR EMAIL</div><form id="loginForm"><label for="email">Registered email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com" required><button class="btn" type="submit" id="sendEmail">Send secure sign-in link →</button></form><section id="emailSentPanel" class="hide" role="status" aria-live="polite" style="border:1px solid #dedede;border-radius:16px;padding:24px;margin-top:20px;background:#fafafa"><div style="font-size:30px;margin-bottom:8px" aria-hidden="true">✉</div><h3 style="margin:0 0 10px;font-size:25px;letter-spacing:-.03em">Check your email</h3><p style="margin:0 0 12px;color:#444">We sent a secure sign-in link to <strong id="sentEmailAddress"></strong>.</p><p style="margin:0;color:#666;font-size:14px">Open the email and click the link to sign in. You do not need to request another link.</p><button class="btn" id="anotherEmail" type="button" style="margin-top:20px">Use a different email address</button></section><div class="notice" id="authMessage" role="status" aria-live="polite"></div><button class="btn" type="button" id="showExistingPasskey" style="border:0;background:transparent;padding:8px 0;color:#555;font-size:13px">Already have a passkey on another device?</button><p class="small">New here? Your Sandy account must be enrolled before sign-in. We never create accounts from an unverified email.</p></div></div>
@@ -234,6 +234,24 @@ const missionRefresh=async()=>{
    if(m.metadata?.plan_summary)item.append(el("p","small",m.metadata.plan_summary));
    const state=m.metadata?.execution_state||"awaiting_plan";
    item.append(el("p","small muted","Delivery state: "+state.replaceAll("_"," ")));
+   const questionArea=el("div","sandyMissionQuestions");item.append(questionArea);
+   call("mission_questions",{task_id:m.id}).then(info=>{
+     if(!questionArea.isConnected)return;
+     questionArea.replaceChildren();
+     const open=(info.questions||[]).filter(q=>q.status==="open");
+     if(open.length){questionArea.append(el("h3","","Needs your input ("+open.length+")"));
+       for(const q of open){
+         const form=el("form","sandyMissionQuestion");
+         const label=el("label","",q.question);
+         const answer=el("textarea");answer.rows=2;answer.required=true;answer.maxLength=6000;answer.placeholder="Your answer…";
+         const send=el("button","btn small","Save answer");send.type="submit";
+         add(form,label,answer,send);
+         form.addEventListener("submit",async e=>{e.preventDefault();send.disabled=true;try{const x=await call("mission_answer",{question_id:q.id,answer:answer.value});if(x.replanning_queued)alert("All questions answered. Sandy is preparing an updated decision tree and task plan.");await missionRefresh()}catch(err){alert("Could not save answer: "+err.message);send.disabled=false}});
+         questionArea.append(form);
+       }
+     }
+     if(info.decisions?.length){const tree=el("details","sandyMissionAudit"),summary=el("summary","","Decision tree");tree.append(summary);for(const node of info.decisions.slice(0,12)){const line=el("p","small","IF "+node.condition+" → YES: "+node.on_yes+" / NO: "+node.on_no);tree.append(line)}questionArea.append(tree)}
+   }).catch(e=>{questionArea.append(el("p","small muted","Questions unavailable: "+e.message))});
    if((m.runs||[]).some(r=>r.state==="failed")){
       const canRetry=["awaiting_plan","awaiting_plan_revision","plan_approved_external_actions_still_gated"].includes(state);
       if(canRetry){
