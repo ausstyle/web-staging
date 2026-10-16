@@ -125,8 +125,10 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 <div id="toast" role="status" aria-live="polite"></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+import {installSandyIdleLock} from "../security-lock.js";
 "use strict";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
+const sandyIdle=installSandyIdleLock(sandyAuth.auth);
 const $ = id => document.getElementById(id);
 const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],receivedDelegations:[],customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
@@ -438,6 +440,7 @@ $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const butt
 $("retryLogin").addEventListener("click",()=>{$("codeForm").classList.add("hidden");$("loginForm").classList.remove("hidden");$("loginMessage").textContent=""});
 $("codeForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;try{const verified=await api("verify-code",{email:$("loginEmail").value.trim(),code:$("loginCode").value.trim()});if(verified.token)sessionStorage.setItem("sandy_agenda_token",verified.token);await load()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
 $("logout").addEventListener("click",async()=>{await sandyAuth.auth.signOut();location.assign("../app/")});
+await sandyIdle.check();
 const initial=await sandyAuth.auth.getSession();
 if(!initial.data.session){location.replace("../app/")}else{
  load().catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
