@@ -24,7 +24,22 @@ function switchView(v){view=v;document.querySelectorAll("[data-view]").forEach(b
 function headings(top,title,sub){$("sectionTop").textContent=top;$("pageHeading").textContent=title;$("pageSubtitle").textContent=sub}
 function home(){headings("YOUR PERSONAL KNOWLEDGE","Everything in one place.","What Sandy remembers, what is underway, and what may need you.");const root=clear($("pageview")),stats=h("div","stats");const numbers=[[state.total,"Stored records","search"],[state.facts.length,"Saved facts","knowledge"],[state.checklist.filter(x=>x.status!=="done").length,"Open personal tasks","tasks"]];numbers.forEach(([count,label,target])=>{const n=h("button","stat statLink");n.type="button";n.setAttribute("aria-label","View "+label.toLowerCase());add(n,h("strong","",count),h("small","",label));n.addEventListener("click",()=>switchView(target));stats.append(n)});root.append(stats);
 const row=h("div","cards");const know=h("div","card"),working=h("div","card"),attention=h("div","card");
-know.append(h("div","cardhead","◇  What Sandy knows"),h("h3","","Your story, remembered"));text(know,"Explore what Sandy remembers about your people, companies, projects, preferences and ongoing matters. Review the details by topic, check their sources and correct anything that is incomplete or outdated.");know.append(aBtn("Explore memory →",()=>switchView("knowledge")));
+know.append(h("div","cardhead","◇  What Sandy knows"),h("h3","","A snapshot of you"));
+const memoryFacts=(state.facts||[]).filter(f=>f&&String(f.fact_value||"").trim());
+if(memoryFacts.length){
+ const categories=[["People & relationships",/person|people|family|friend|partner|relationship|social|spouse/i],["Companies & work",/compan|business|work|employ|career|profession|organisation|organization/i],["Projects & matters",/project|matter|property|legal|litigation|task|goal|finance/i],["Preferences & interests",/preference|interest|hobb|sport|school|education|lifestyle|personal/i]];
+ const used=new Set(),samples=[];
+ for(const [label,pattern] of categories){
+  const matches=memoryFacts.filter(f=>!used.has(f.id)&&pattern.test(String(f.category||"")+" "+String(f.fact_key||"")));
+  if(matches.length){const f=matches[0];used.add(f.id);samples.push([label,String(f.fact_value).replace(/\\s+/g," ").trim().slice(0,175)]);}
+ }
+ if(samples.length<3)for(const f of memoryFacts){if(samples.length>=4)break;if(used.has(f.id))continue;used.add(f.id);samples.push([String(f.category||"About you").replaceAll("_"," "),String(f.fact_value).replace(/\\s+/g," ").trim().slice(0,175)]);}
+ const summary=h("div","memoryHomeSummary");
+ for(const [label,value] of samples.slice(0,4)){const item=h("div","memoryHomeFact");item.append(h("strong","",label),h("p","",value));summary.append(item);}
+ know.append(summary);
+ text(know,"A live selection from "+memoryFacts.length+" saved facts. Open your memory to review, correct or add details.","memoryHomeCaption");
+}else text(know,"Sandy has no active saved facts to summarise yet. Tell Sandy something to begin building your personal profile.");
+know.append(aBtn("Explore memory →",()=>switchView("knowledge")));
 working.append(h("div","cardhead","☑  Currently in motion"),h("h3","","Real progress, visible"));const live=state.execution.filter(x=>!["completed","failed"].includes(x.status));text(working,live.length?live.length+" execution requests currently need action or resolution.":"No verified agent work is currently running. Personal checklist items are tracked separately.");working.append(aBtn("Review tasks →",()=>switchView("tasks")));
 attention.append(h("div","cardhead","✦  Worth your attention"),h("h3","","Nothing slips through"));const waiting=state.execution.filter(x=>["awaiting_approval","failed"].includes(x.status));text(attention,waiting.length?waiting.length+" recorded execution requests need review.":"Sandy checks recorded commitments and suggestions for anything important.");attention.append(aBtn("See priorities →",()=>switchView("attention")));add(row,know,working,attention);root.append(row);
 const current=meaningfulMatters();if(current.length){const ms=panel("Ongoing matters");current.slice(0,6).forEach(x=>ms.append(line(x.title,para(x.summary),badge(x.status))));ms.style.marginTop="23px";root.append(ms)}}
