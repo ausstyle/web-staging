@@ -184,7 +184,8 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 
 /* Sandy shared monochrome client style — Agenda */
 :root{color-scheme:light;accent-color:#111}
-#app{filter:grayscale(1)}
+/* Do not filter the app: CSS filter establishes a containing block for fixed navigation, causing sidebar overlap. */
+#app{filter:none}
 #app .workspaceLabel,#app .workspacePill,#app .addCompany,#app .entryWorkspace{color:#555!important}
 #app .workspacePill{background:#fff!important;border-color:#dedede!important}
 #app .workspacePill.selected{background:#ededed!important;color:#111!important;border-color:#bbb!important}
@@ -214,6 +215,12 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
  #app .quick .btn{flex-shrink:0}
 }
 
+/* Desktop page width must exclude the fixed sidebar; nested task controls must not widen the viewport. */
+html,body{max-width:100%;overflow-x:clip}
+#app.shell{width:calc(100% - 240px);min-width:0}
+#app.shell>header,#app.shell>.top,#app.shell>.workspaceBar,#app.shell>.summary,#app.shell>.quickPanel,#app.shell>.toolbar,#app.shell>.outlineHeader,#app.shell>.rootLine,#app.shell>.tasklist{min-width:0;max-width:100%}
+#app .taskrow,#app .taskmain,#app .titleArea{min-width:0}
+@media(max-width:850px){#app.shell{width:100%;margin-left:0}}
 /* Mobile task outliner: keep content readable; never compress desktop actions into title. */
 @media(max-width:750px){
  html,body{max-width:100%;overflow-x:clip}
