@@ -211,6 +211,29 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
  #app .quick{min-width:0;display:flex;flex-wrap:nowrap}
  #app .quick .btn{flex-shrink:0}
 }
+
+/* Mobile task outliner: keep content readable; never compress desktop actions into title. */
+@media(max-width:750px){
+ html,body{max-width:100%;overflow-x:clip}
+ .taskrow,.childrow .taskrow{display:flex!important;flex-wrap:wrap!important;align-items:flex-start!important;gap:8px!important;padding:12px 10px!important;min-height:66px!important}
+ .taskrow>.taskmain{flex:1 1 calc(100% - 92px)!important;min-width:110px!important;max-width:calc(100% - 88px)!important}
+ .taskrow .titleArea{display:flex;flex-wrap:wrap;gap:5px;align-items:flex-start;min-width:0}
+ .taskrow .tasktitle,.childrow .tasktitle{font-size:14px!important;line-height:1.4!important;white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere!important;max-width:100%}
+ .taskrow>.right{order:10;display:flex!important;flex:1 0 100%!important;width:100%!important;max-width:100%!important;min-width:0;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-end;gap:5px!important;padding:3px 0 0!important;border-top:1px solid #f0f0f0}
+ .taskrow>.right>*{flex-shrink:0;max-width:100%}
+ .taskrow .iconbtn{min-height:36px!important;min-width:36px!important;padding:7px!important;font-size:16px!important}
+ .taskrow .inlinePriority,.taskrow .dueButton{min-height:35px;max-width:none;font-size:12px}
+ .taskrow .workspaceHint,.taskrow .stepCount{max-width:100%;white-space:normal}
+ .children{margin-left:10px!important;padding-left:7px!important;margin-right:0!important}
+ .children .children{margin-left:7px!important;padding-left:5px!important}
+ .children .children .children{margin-left:4px!important;padding-left:4px!important}
+ .quick{flex-wrap:wrap}.quick input{flex:1 1 160px!important;width:auto!important;min-width:0}
+ .quick .entryWorkspace{max-width:130px}
+ .shell{padding-bottom:calc(135px + env(safe-area-inset-bottom))!important}
+ .outlineHeader{flex-wrap:wrap;gap:8px}
+ .outlineControls{flex-wrap:wrap}
+ input,select,textarea{font-size:16px!important}
+}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
