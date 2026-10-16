@@ -147,7 +147,7 @@ function knowledge(){
   try{
    if(current.kind==="expand")await api("enrich_answer",{turn_id:current.turn.id,answer:reply.value.trim()});
    else {const result=await api("remember",{text:(current.question+" "+reply.value.trim()).slice(0,3000),request_id:crypto.randomUUID()});if(!result.fact_id)throw Error("Answer was not confirmed saved");}
-   reply.value="";current=null;biographyCache=null;notify("Saved to Sandy's memory.");
+   reply.value="";current=null;notify("Saved to Sandy's memory.");
    question.textContent="Saved. Choose Ask me something for the next question.";
   }catch(e){notify("Could not save your answer: "+e.message);save.disabled=false;skip.disabled=false;}
   finally{busy=false;ask.disabled=false;if(!current)ask.click();}
