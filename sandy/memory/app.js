@@ -125,18 +125,41 @@ function knowledge(){
  const hText=h("div","memoryHeroText");
  hText.append(h("div","eyebrow","YOUR PERSONAL KNOWLEDGE BASE"),h("h2","","Your memory, in your control."));
  hText.append(h("p","","Review what Sandy believes, correct anything that isn't right, and teach her what to remember. Corrections remain recorded so she doesn't make the same assumption again."));
- hero.append(hText);profileSummary(hero,true);
+ hero.append(hText);
  const count=h("div","memoryStats");
  for(const [number,label,target] of [[state.facts.length,"Active facts","memoryFactsList"],[(state.rejected_facts||[]).length,"Corrections","memoryCorrectionsList"],[state.notes?.length||0,"Your notes","memoryNotesList"]]){
   const tile=h("button","memoryStat statLink");tile.type="button";tile.setAttribute("aria-label","View "+label.toLowerCase());tile.append(h("strong","",number),h("span","",label+" →"));tile.addEventListener("click",()=>{if(target==="memoryCorrectionsList"&&document.querySelector("#memoryCorrectionsList .rejectedBody")?.hidden)document.querySelector("#memoryCorrectionsList .rejectedHeader")?.click();document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})});count.append(tile)
  }hero.append(count);root.append(hero);
+ const discover=h("section","memoryNotesBlock");discover.classList.add("getToKnow");discover.append(h("div","memoryBlockTitle","✦ Get to know me"));
+ text(discover,"Sandy will explore a topic from your existing memories. Each answer is saved, and you can skip or stop at any time.","memoryHint");
+ const question=h("p","getToKnowQuestion","Select Ask me something to start.");const reply=h("textarea","factInput");reply.rows=2;reply.placeholder="Tell Sandy your answer…";reply.maxLength=1800;
+ const controls=h("div","actions");let current=null;let active=null;let fetching=false;
+ const ask=aBtn("Ask me something",async()=>{
+  if(fetching)return;fetching=true;ask.disabled=true;question.textContent="Finding a useful question…";
+  try{
+   const candidates=(state.facts||[]).filter(f=>f?.id&&f.fact_value&&!/^(customer_|enrichment_)/i.test(String(f.fact_key||"")));
+   if(!candidates.length){question.textContent="Tell Sandy something first, then she can ask a follow-up.";return}
+   for(let i=0;i<Math.min(5,candidates.length);i++){
+    const f=candidates[(Math.floor(Math.random()*candidates.length)+i)%candidates.length];
+    try{const r=await api("enrich_question",{id:f.id});if(r.turn?.id&&r.turn?.question){active=f;current=r.turn;question.textContent=current.question;save.disabled=false;skip.disabled=false;reply.focus();return}}catch(e){if(i===4)throw e}
+   }
+   throw Error("No new question available");
+  }catch(e){question.textContent="Sandy couldn't generate a question just now. Try again or tell her something new below.";}
+  finally{fetching=false;ask.disabled=false}
+ },"smallbutton");
+ const save=aBtn("Save answer & continue",async()=>{
+  if(!current||!reply.value.trim())return;save.disabled=true;
+  try{await api("enrich_answer",{turn_id:current.id,answer:reply.value.trim()});reply.value="";current=null;notify("Your answer has been saved.");biographyCache=null;await load();}catch(e){notify("Could not save the answer: "+e.message);save.disabled=false}
+ },"smallbutton primary");save.disabled=true;
+ const skip=aBtn("Skip",async()=>{if(current){await api("enrich_skip",{turn_id:current.id,reason:"User skipped"}).catch(()=>{});current=null;}save.disabled=true;skip.disabled=true;ask.click();},"smallbutton");skip.disabled=true;
+ controls.append(ask,skip,save);discover.append(question,reply,controls);root.append(discover);
  const notePanel=h("section","memoryNotesBlock");notePanel.id="memoryNotesList";
  const noteHead=h("div","memoryBlockTitle");noteHead.append(h("div","","Tell Sandy something"));
  notePanel.append(noteHead,h("p","memoryHint","Sandy will categorise what you tell her, save it as an editable fact below and ask what else would be useful to know."));
  notePanel.append(rememberForm());root.append(notePanel);
  const panelRoot=h("section","memoryFactSection");panelRoot.id="memoryFactsList";
  const bar=h("div","memoryFactTop");const titleWrap=h("div","");
- titleWrap.append(h("h2","","Saved facts"),h("p","memoryHint","Only active facts are used as current information. Mark something incorrect with one click."));
+ titleWrap.append(h("h2","","What Sandy knows"),h("p","memoryHint","One organised view of your memories. Edit a detail, mark it incorrect, or improve the topic to teach Sandy more."));
  bar.append(titleWrap);
  const filter=h("input","memoryFind");filter.type="search";filter.placeholder="Search saved facts";filter.setAttribute("aria-label","Search saved facts");
  bar.append(filter);panelRoot.append(bar);
@@ -145,7 +168,7 @@ function knowledge(){
  async function improveFact(f){
   const row=document.querySelector('[data-fact-id="'+f.id+'"]');if(!row)return;
   row.querySelectorAll(".factEditor").forEach(el=>el.remove());
-  const box=h("div","factEditor"),heading=h("strong","","Improve: "+String(f.fact_key).replaceAll("_"," "));
+  const box=h("div","factEditor"),heading=h("strong","","Improve: "+(String(f.fact_key).startsWith("manual_")?String(f.category||"this topic").replaceAll("_"," "):String(f.fact_key).replaceAll("_"," ")));
   const conversation=h("div",""),actions=h("div","actions");
   const answer=h("textarea","factInput");answer.maxLength=1800;answer.rows=3;answer.placeholder="Your answer to Sandy…";
   let stopped=false,turn=null,saved=0;
@@ -177,7 +200,7 @@ function knowledge(){
     turn=r.turn;conversation.replaceChildren(document.createTextNode(turn.question));submit.disabled=false;skip.disabled=false;answer.focus();
    }catch(e){
     if(stopped||!box.isConnected)return;
-    text(conversation,"Sandy could not generate the next question: "+e.message);
+    conversation.replaceChildren(document.createTextNode("Sandy couldn\u2019t prepare a question. Please try again."));
     submit.disabled=true;
     const retry=aBtn("Try again",()=>{retry.remove();text(conversation,"Sandy is thinking…");nextQuestion()},"smallbutton");actions.prepend(retry);
    }
