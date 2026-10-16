@@ -146,7 +146,7 @@
  <aside class="sidebar"><a class="logo" href="./">sandy<span>.</span></a>
  <div class="navheading">WORKSPACE</div>
  <button class="nav active" data-view="home"><span class="sym">◫</span> Overview</button>
- <button class="nav" data-view="history"><span class="sym">☰</span> All conversations</button>
+ <button class="nav" data-view="history"><span class="sym">☰</span> All conversations</button><a class="nav" href="../chat/"><span class="sym">✳</span> Chat with Sandy</a>
  <a class="nav" href="../agenda/"><span class="sym">☑</span> Agenda & tasks</a>
  <a class="nav" href="../calendar/"><span class="sym">▦</span> Calendar</a>
  <a class="nav" href="../memory/"><span class="sym">◇</span> Memory Centre</a>
@@ -182,31 +182,12 @@ function changeView(v,c){historyGeneration++;busy=false;view=v;if(c)filter=c;els
 function service(icon,title,desc,action,label){const card=el("button","service");card.type="button";add(card,el("div","emblem",icon),el("h3","",title),el("p","",desc),el("div","status",label+"  →"));card.addEventListener("click",action);return card}
 function stat(n,label,action){const card=el("button","metric metricLink");card.type="button";card.setAttribute("aria-label","View "+label.toLowerCase());add(card,el("strong","",String(n)),el("span","",label),el("span","metricMore","View records  →"));card.addEventListener("click",action);return card}
 function renderHome(){const c=$("content");c.replaceChildren();
-const askPanel=el("section","askSandy");
-const askHeading=el("div","askSandyHeading");
-add(askHeading,el("h2","","Ask Sandy"),el("p","","A continuing conversation with your personal assistant."));
-const askThread=el("div","askSandyThread");
-askThread.setAttribute("role","log");
-askThread.setAttribute("aria-label","Sandy conversation");
-const askForm=el("form","askSandyForm");
-const askInput=el("textarea","askSandyInput");
-askInput.placeholder="Ask Sandy anything…";
-askInput.rows=2;askInput.maxLength=12000;
-askInput.setAttribute("aria-label","Ask Sandy a question");
-const askActions=el("div","askSandyActions");
-const askStatus=el("span","small muted","Questions are logged as web queries.");
-askStatus.setAttribute("role","status");
-askStatus.setAttribute("aria-live","polite");
-const askButton=el("button","btn primary","Send →");
-askButton.type="submit";
-add(askActions,askStatus,askButton);
-add(askForm,askInput,askActions);
-add(askPanel,askHeading,askThread,askForm);c.append(askPanel);
+const chatLink=el("a","btn primary","Chat with Sandy →");chatLink.href="../chat/";chatLink.style.marginBottom="18px";c.append(chatLink);
 const commandPanel=el("section","sandyCommandPanel");
 const commandHeading=el("div","sandyCommandHeading");add(commandHeading,el("h2","","Your command centre"),el("p","small muted","Tasks, approvals and commitments that need attention."));
 const globalForm=el("form","sandyGlobalSearch");const globalInput=el("input");globalInput.placeholder="Search tasks and web conversations…";globalInput.setAttribute("aria-label","Search Sandy");globalInput.required=true;const globalBtn=el("button","btn","Search");globalBtn.type="submit";add(globalForm,globalInput,globalBtn);
 const globalResults=el("div","sandyGlobalResults");const commandMetrics=el("div","sandyCommandMetrics");const commandAreas=el("div","sandyCommandAreas");
-const quick=el("div","sandyQuickActions");for(const [label,href] of [["New task","../agenda/"],["Calendar","../agenda/?view=calendar"],["Memory","../memory/"],["Email Sandy","mailto:ai@email.com.au"]]){const link=el("a","btn small",label);link.href=href;quick.append(link)}
+const quick=el("div","sandyQuickActions");for(const [label,href] of [["Chat with Sandy","../chat/"],["New task","../agenda/"],["Calendar","../agenda/?view=calendar"],["Memory","../memory/"],["Email Sandy","mailto:ai@email.com.au"]]){const link=el("a","btn small",label);link.href=href;quick.append(link)}
 add(commandPanel,commandHeading,globalForm,globalResults,commandMetrics,quick,commandAreas);c.append(commandPanel);
 globalForm.addEventListener("submit",async e=>{e.preventDefault();globalBtn.disabled=true;globalResults.textContent="Searching…";try{const v=await call("global_search",{query:globalInput.value.trim()});globalResults.replaceChildren();if(!v.results.length)globalResults.textContent="No matching tasks or web conversations.";for(const t of v.results){const a=el("a","sandySearchResult",t.kind+" · "+t.title);a.href=t.url;globalResults.append(a)}globalResults.append(el("p","small muted","Currently searches tasks and web chat questions only."))}catch(e){globalResults.textContent="Search failed: "+(e.message||"Please retry")}finally{globalBtn.disabled=false}});
 call("command_centre").then(v=>{if(!commandPanel.isConnected)return;commandMetrics.replaceChildren();for(const [n,k] of [["Open tasks","open"],["Need you","approvals"],["Due soon / overdue","alerts"],["Sandy assigned","working"]]){const item=el("div","sandyCommandMetric");add(item,el("strong","",String(v.counts[k]||0)),el("span","",n));commandMetrics.append(item)}
@@ -286,28 +267,12 @@ missionForm.addEventListener("submit",async e=>{e.preventDefault();if(missionSub
  await missionRefresh();
  }catch(err){missionFeedback.textContent="Could not delegate project: "+(err.message||"Please retry.")}finally{missionSubmit.disabled=false}});
 missionRefresh();
-let webConversationId=null;
-const revealReply=(node)=>{requestAnimationFrame(()=>{if(!node.isConnected)return;const box=askThread;box.scrollTo({top:box.scrollHeight,behavior:"smooth"});node.scrollIntoView({behavior:"smooth",block:"nearest"});});};
-const showTurn=(role,text)=>{const item=el("div","askTurn "+(role==="You"?"askTurnUser":"askTurnSandy"));add(item,el("div","eyebrow",role),el("div","askTurnText",text||""));askThread.append(item);return item;};
-call("web_history").then(data=>{if(!askPanel.isConnected)return;webConversationId=data.conversation_id||null;askThread.replaceChildren();(data.turns||[]).forEach(t=>{showTurn("You",t.question);if(t.response)showTurn("Sandy",t.response);else if(t.status==="failed")showTurn("Sandy","This request could not be completed.");});}).catch(()=>{askStatus.textContent="Previous chat unavailable — new questions can still be submitted.";});
-askInput.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing&&e.keyCode!==229){e.preventDefault();if(!askButton.disabled&&askInput.value.trim())askForm.requestSubmit();}});
-askForm.addEventListener("submit",async e=>{
-e.preventDefault();const question=askInput.value.trim();if(!question||askButton.disabled)return;
-askButton.disabled=true;askStatus.textContent="Sandy is thinking…";showTurn("You",question);askInput.value="";
-const answer=showTurn("Sandy","Thinking…");revealReply(answer);
-try{
-const request_id="web_"+crypto.randomUUID();
-const result=await call("ask",{question,request_id,conversation_id:webConversationId,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"});
-webConversationId=result.conversation_id||webConversationId;
-answer.querySelector(".askTurnText").textContent=result.response||"No response returned.";
-askStatus.textContent="Saved as a web query.";revealReply(answer);
-}catch(error){answer.querySelector(".askTurnText").textContent="This question could not be completed: "+(error.message||"Please try again.");askStatus.textContent="Request failed; your question has not been answered.";revealReply(answer);}finally{askButton.disabled=false;}
-});
 const hero=el("div","hero"),left=el("div"),acts=el("div","heroactions");add(left,el("div","eyebrow","GOOD TO HAVE YOU BACK"),el("h1","","Your day, simplified."),el("p","","One place to manage everything you work on with Sandy."));add(acts,btn("View conversations  →",()=>changeView("history"),"btn primary"),btn("Open agenda  ↗",()=>location.assign("../agenda/")));add(hero,left,acts);c.append(hero);
 const stats=el("div","summary"),t=profile.counts;add(stats,stat(t.email,"Email messages",()=>changeView("history","email")),stat(t.whatsapp,"WhatsApp messages",()=>{whatsappView="timeline";changeView("history","whatsapp")}),stat(t.voice,"Voice transcript turns",()=>changeView("history","voice")),stat(t.tasks,"Open tasks",()=>location.assign("../agenda/?tab=open")));c.append(stats);
 const sh=add(el("div","sectionhead"),el("h2","","Your Sandy services"),el("p","","Connected to your Sandy account"));c.append(sh);
 const grid=el("div","services");
 add(grid,
+service("✳","Chat with Sandy","A dedicated assistant conversation with saved history.",()=>location.assign("../chat/"),"Open"),
 service("☷","Conversations","Search all your past messages and call transcripts, in one timeline.",()=>changeView("history"),"Open"),
 service("☑","Agenda & tasks","Projects, subtasks, companies, deadlines and delegation.",()=>location.assign("../agenda/"),"Open"),
 service("◇","Memory Centre","What Sandy remembers about your personal and working life.",()=>location.assign("../memory/"),"Open"),
@@ -433,7 +398,7 @@ try{
   if(settings.passkeys_enabled===false){passkeysEnabled=false;$("passkey").classList.add("hide");$("passkeyDivider").classList.add("hide");$("showExistingPasskey").classList.add("hide");}
 }catch{}
 setLoginPasskeyState();
-const params=new URLSearchParams(location.search);if(["email","whatsapp","voice"].includes(params.get("channel")))filter=params.get("channel"),view="history";
+const params=new URLSearchParams(location.search);if(["email","whatsapp","voice","web"].includes(params.get("channel")))filter=params.get("channel"),view="history";
 if(!(await idle.check())){const {data}=await sb.auth.getSession();if(data.session)await enter();else showLogin();}
 if(new URLSearchParams(location.search).has("locked")){authStatus("Sandy locked after 1 hour of inactivity. Unlock with a passkey or secure email link.");history.replaceState(null,"",location.pathname);}
 </script></body></html>
