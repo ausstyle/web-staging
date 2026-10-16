@@ -61,7 +61,7 @@ export function installSandyIdleLock(auth, { redirect = "../app/?locked=1" } = {
     if (!document.hidden) void check();
   });
   window.addEventListener("storage", (event) => {
-    if (event.key === LOCK_KEY && event.newValue && !locking) void lock();
+    if (event.key === LOCK_KEY && event.newValue && !locking) { const last=Number(localStorage.getItem(ACTIVITY_KEY))||0; if(Number(event.newValue)>last) void check(); }
   });
   window.setInterval(() => { void check(); }, 15000);
   return { check, markActive };
