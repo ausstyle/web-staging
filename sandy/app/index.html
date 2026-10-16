@@ -102,6 +102,11 @@
  .topbar .topright .btn{font-size:12px;min-height:40px}
  #breadcrumb{font-size:11px;overflow-wrap:anywhere}
 }
+
+.askSandyThread{display:flex;flex-direction:column;gap:13px;margin:14px 0;max-height:440px;overflow-y:auto;overscroll-behavior:contain}
+.askSandyThread:empty{display:none}.askTurn{border:1px solid #dedede;border-radius:13px;padding:13px 16px;max-width:94%;min-width:0}
+.askTurnUser{background:#f2f2f2;align-self:flex-end}.askTurnSandy{background:#fff;align-self:flex-start}.askTurnText{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:14px;margin-top:6px}
+@media(max-width:750px){.topbar{padding-top:calc(env(safe-area-inset-top) + 18px)!important;min-height:90px!important}.topbar .topright{display:none!important}.askSandyThread{max-height:360px}.askTurn{max-width:100%}}
 </style></head><body>
 <div id="authScreen" class="hide">
  <div class="authSide"><div class="logo">sandy<span>.</span></div><div><div class="eyebrow" style="color:#aaa">YOUR PRIVATE WORKSPACE</div><h1>Everything in one place.</h1><p>One Sandy account for your conversations, memory, tasks and everyday work.</p></div><div class="small" style="color:#999">SANDY AI · PRIVATE BY DESIGN</div></div>
@@ -147,7 +152,41 @@ function changeView(v,c){historyGeneration++;busy=false;view=v;if(c)filter=c;els
 function service(icon,title,desc,action,label){const card=el("button","service");card.type="button";add(card,el("div","emblem",icon),el("h3","",title),el("p","",desc),el("div","status",label+"  →"));card.addEventListener("click",action);return card}
 function stat(n,label,action){const card=el("button","metric metricLink");card.type="button";card.setAttribute("aria-label","View "+label.toLowerCase());add(card,el("strong","",String(n)),el("span","",label),el("span","metricMore","View records  →"));card.addEventListener("click",action);return card}
 function renderHome(){const c=$("content");c.replaceChildren();
-const askPanel=el("section","askSandy");const askHeading=el("div","askSandyHeading");add(askHeading,el("h2","","Ask Sandy"),el("p","","Questions, research or tasks — Sandy can use your relevant history."));const askForm=el("form","askSandyForm");const askInput=el("textarea","askSandyInput");askInput.placeholder="Ask Sandy anything…";askInput.rows=2;askInput.maxLength=12000;askInput.setAttribute("aria-label","Ask Sandy a question");const askActions=el("div","askSandyActions");const askStatus=el("span","small muted","Queries are saved as web requests.");askStatus.setAttribute("role","status");askStatus.setAttribute("aria-live","polite");const askButton=el("button","btn primary","Ask Sandy →");askButton.type="submit";add(askActions,askStatus,askButton);add(askForm,askInput,askActions);const askResponse=el("div","askSandyResponse hide");askResponse.setAttribute("aria-live","polite");add(askPanel,askHeading,askForm,askResponse);c.append(askPanel);askForm.addEventListener("submit",async e=>{e.preventDefault();const question=askInput.value.trim();if(!question||askButton.disabled)return;askButton.disabled=true;askStatus.textContent="Sandy is thinking…";askResponse.classList.add("hide");try{const request_id="web_"+crypto.randomUUID();const result=await call("ask",{question,request_id,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"});askResponse.replaceChildren(el("div","eyebrow","SANDY"),el("div","askSandyReply",result.response||"No response returned."));askResponse.classList.remove("hide");askStatus.textContent="Saved as a web query.";askInput.value="";}catch(error){askStatus.textContent="Request could not be completed.";askResponse.replaceChildren(el("div","askSandyReply",error.message||"Please try again."));askResponse.classList.remove("hide");}finally{askButton.disabled=false;}});
+const askPanel=el("section","askSandy");
+const askHeading=el("div","askSandyHeading");
+add(askHeading,el("h2","","Ask Sandy"),el("p","","A continuing conversation with your personal assistant."));
+const askThread=el("div","askSandyThread");
+askThread.setAttribute("role","log");
+askThread.setAttribute("aria-label","Sandy conversation");
+const askForm=el("form","askSandyForm");
+const askInput=el("textarea","askSandyInput");
+askInput.placeholder="Ask Sandy anything…";
+askInput.rows=2;askInput.maxLength=12000;
+askInput.setAttribute("aria-label","Ask Sandy a question");
+const askActions=el("div","askSandyActions");
+const askStatus=el("span","small muted","Questions are logged as web queries.");
+askStatus.setAttribute("role","status");
+askStatus.setAttribute("aria-live","polite");
+const askButton=el("button","btn primary","Send →");
+askButton.type="submit";
+add(askActions,askStatus,askButton);
+add(askForm,askInput,askActions);
+add(askPanel,askHeading,askThread,askForm);c.append(askPanel);
+let webConversationId=null;
+const showTurn=(role,text)=>{const item=el("div","askTurn "+(role==="You"?"askTurnUser":"askTurnSandy"));add(item,el("div","eyebrow",role),el("div","askTurnText",text||""));askThread.append(item);return item;};
+call("web_history").then(data=>{if(!askPanel.isConnected)return;webConversationId=data.conversation_id||null;askThread.replaceChildren();(data.turns||[]).forEach(t=>{showTurn("You",t.question);if(t.response)showTurn("Sandy",t.response);else if(t.status==="failed")showTurn("Sandy","This request could not be completed.");});}).catch(()=>{askStatus.textContent="Previous chat unavailable — new questions can still be submitted.";});
+askForm.addEventListener("submit",async e=>{
+e.preventDefault();const question=askInput.value.trim();if(!question||askButton.disabled)return;
+askButton.disabled=true;askStatus.textContent="Sandy is thinking…";showTurn("You",question);askInput.value="";
+const answer=showTurn("Sandy","Thinking…");
+try{
+const request_id="web_"+crypto.randomUUID();
+const result=await call("ask",{question,request_id,conversation_id:webConversationId,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"});
+webConversationId=result.conversation_id||webConversationId;
+answer.querySelector(".askTurnText").textContent=result.response||"No response returned.";
+askStatus.textContent="Saved as a web query.";
+}catch(error){answer.querySelector(".askTurnText").textContent="This question could not be completed: "+(error.message||"Please try again.");askStatus.textContent="Request failed; your question has not been answered.";}finally{askButton.disabled=false;}
+});
 const hero=el("div","hero"),left=el("div"),acts=el("div","heroactions");add(left,el("div","eyebrow","GOOD TO HAVE YOU BACK"),el("h1","","Your day, simplified."),el("p","","One place to manage everything you work on with Sandy."));add(acts,btn("View conversations  →",()=>changeView("history"),"btn primary"),btn("Open agenda  ↗",()=>location.assign("../agenda/")));add(hero,left,acts);c.append(hero);
 const stats=el("div","summary"),t=profile.counts;add(stats,stat(t.email,"Email messages",()=>changeView("history","email")),stat(t.whatsapp,"WhatsApp messages",()=>{whatsappView="timeline";changeView("history","whatsapp")}),stat(t.voice,"Voice transcript turns",()=>changeView("history","voice")),stat(t.tasks,"Open tasks",()=>location.assign("../agenda/?tab=open")));c.append(stats);
 const sh=add(el("div","sectionhead"),el("h2","","Your Sandy services"),el("p","","Connected to your Sandy account"));c.append(sh);
