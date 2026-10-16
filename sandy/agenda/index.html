@@ -80,6 +80,10 @@ body{background:#fafbf8;color:#253a2c}
  .right{opacity:1}.branchToggle{width:20px}.outlineHeader span{display:none}
  .quick input{font-size:15px}.tasktitle{font-size:13px}.taskcheck{width:21px;height:21px}
 }
+
+.viewSwitch{display:flex;padding:3px;background:#eef3ec;border-radius:10px;gap:2px}.viewBtn{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:650;color:#7b907e}.viewBtn.chosen{background:#fff;color:#2e6a4b;box-shadow:0 1px 5px #0001}
+.rootLine{display:flex;align-items:center;gap:12px;border:1px solid #dbe8da;border-top:0;background:#f8fbf7;padding:12px 18px;border-radius:0 0 14px 14px}.rootLine span{font-size:20px;color:#538066}.rootLine input{border:0;outline:0;background:transparent;flex:1;font-size:14px;min-width:0;color:#314938}.keyboardHint{font-size:11px;color:#9aaa9b;padding:12px 5px}.timeline{background:white;border:1px solid var(--line);border-radius:14px;overflow-x:auto}.timelineHead{padding:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.timelineHead span{color:#849487;font-size:11px}.timelineGrid{display:grid;grid-template-columns:minmax(170px,240px) repeat(12,minmax(55px,1fr));min-width:860px}.timelineWeeks{background:#f6f9f5;border-block:1px solid #e4ece3}.timelineLabel{text-align:left;padding:10px 12px;border:0;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#38543e}.timelineRow{border-bottom:1px solid #eff3ed;min-height:41px}.timelineRow:hover{background:#fbfdfb}.week{font-size:10px;color:#89998c;padding:11px 5px;text-align:center;border-left:1px solid #ebf0ea}.track{position:relative;grid-row:1;height:40px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(8.333333% - 1px),#edf2ec calc(8.333333% - 1px),#edf2ec 8.333333%)}.ganttBar{position:absolute;top:12px;height:16px;min-width:8px;border-radius:6px;background:#559a72;cursor:pointer}.ganttDone{background:#b4c5b7}.unscheduled{font-size:10px;color:#b2bcb1;margin:12px;display:inline-block}
+@media(max-width:680px){.outlineHeader{align-items:center}.viewBtn{padding:6px 9px}.rootLine{padding:11px}.timelineHead span{display:none}}
 </style></head><body>
 <div id="loginScreen" class="loginscreen"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden">
@@ -89,19 +93,19 @@ body{background:#fafbf8;color:#253a2c}
 <div class="panel quickPanel"><form id="quickForm" class="quick"><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Press Enter to add. Expand any task to add steps underneath. Use ⌘/Ctrl + K to focus quick-add.</div></div>
 <div id="attention" class="attention hidden"></div><div id="suggestions" class="suggest hidden"></div>
 <div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
-<div class="outlineHeader"><strong>Tasks & projects</strong><span>Click to expand · Double-click to rename</span></div><div id="tasks" class="tasklist"></div></div>
+<div class="outlineHeader"><strong>Projects & actions</strong><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><form id="rootLine" class="rootLine"><span>＋</span><input id="rootLineInput" placeholder="New task or project — press Enter…" maxlength="240" aria-label="Add task"></form><div class="keyboardHint">Enter: add a line · Tab: make subtask · Shift+Tab: outdent · ⌘/Ctrl K: quick capture · Details on demand</div></div>
 <div id="dialogOverlay" class="dialogoverlay" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogHeading"><h2 id="dialogHeading">Create a task</h2><p>Give Sandy the outcome you want. Add smaller steps if it helps.</p><form id="taskForm">
 <label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
 <label class="field">Details (optional)<textarea id="taskDetails" placeholder="What does done look like?"></textarea></label>
 <div class="two"><label class="field">Due date (optional)<input type="date" id="taskDue"></label><label class="field">Priority<select id="taskPriority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option><option value="low">Low</option></select></label></div>
-<div class="two"><label class="field">Next follow-up (optional)<input type="date" id="taskReview"></label><label class="field">Waiting on (optional)<input type="text" maxlength="400" id="taskWaiting" placeholder="Accountant, bank, solicitor…"></label></div><label class="field" id="subtaskField">Subtasks — one per line (optional)<textarea id="taskSubtasks" rows="4" placeholder="Contact bank for records&#10;Review Xero&#10;Send information to accountant"></textarea></label>
+<div class="two"><label class="field">Next follow-up (optional)<input type="date" id="taskReview"></label><label class="field">Waiting on (optional)<input type="text" maxlength="400" id="taskWaiting" placeholder="Accountant, bank, solicitor…"></label></div><div class="two"><label class="field">Start date (optional)<input type="date" id="taskStart"></label><label class="field">Contact (optional)<input id="taskContact" type="text" maxlength="240" placeholder="Who is involved?"></label></div><label class="field">Depends on<select id="taskDependency"><option value="">No dependency</option></select></label><label class="field" id="subtaskField">Subtasks — one per line (optional)<textarea id="taskSubtasks" rows="4" placeholder="Contact bank for records&#10;Review Xero&#10;Send information to accountant"></textarea></label>
 <label class="field" id="statusField">Status<select id="taskStatus"><option value="todo">To do</option><option value="in_progress">In progress</option><option value="waiting">Waiting</option><option value="blocked">Blocked</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></label>
 <div class="dialogfooter"><button type="button" class="btn hidden" id="archiveTask" style="margin-right:auto;color:#a5544a">Archive task</button><button type="button" class="btn" id="cancelDialog">Cancel</button><button type="submit" class="btn primary" id="saveTask">Save task</button></div></form></div></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
-const state={tasks:[],suggestions:[],attention:[],tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+const state={tasks:[],suggestions:[],attention:[],dependencies:[],view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const getToken=()=>sessionStorage.getItem("sandy_agenda_token")||"";
 function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
@@ -172,7 +176,7 @@ function renderTask(t,depth){
  if(t.due_at){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.priority==="urgent"||t.priority==="high")meta.append(el("span","tag "+t.priority,t.priority));
- if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
+ if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
  const add=btn("＋","iconbtn",()=>{state.expanded.delete(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();const box=document.querySelector('[data-add-for="'+t.id+'"] input');box?.focus()});
@@ -208,7 +212,43 @@ function render(){
  });
  if(!roots.length){const empty=el("div","empty");empty.append(el("div","emptyicon","✓"));empty.append(el("h2","",state.tab==="done"?"No completed tasks yet":"All clear here"));empty.append(el("p","",state.tab==="open"?"Add a task above, or let Sandy suggest the next useful step.":"Nothing matches this view."));area.append(empty)}
  roots.forEach(t=>area.append(renderTask(t,0)));
- renderSuggestions();renderAttention()
+ renderSuggestions();renderAttention();renderTimeline();$("tasks").classList.toggle("hidden",state.view!=="tree");$("rootLine").classList.toggle("hidden",state.view!=="tree");$("timeline").classList.toggle("hidden",state.view!=="timeline");$("treeView").classList.toggle("chosen",state.view==="tree");$("timelineView").classList.toggle("chosen",state.view==="timeline")
+}
+
+
+function renderTimeline(){
+ const box=$("timeline");box.replaceChildren();
+ const today=new Date();today.setHours(0,0,0,0);
+ const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
+ const weeks=12,range=weeks*7*86400000;
+ const title=el("div","timelineHead");title.append(el("strong","","12-week project plan"));title.append(el("span","","Scheduled tasks only · dates are editable in task details"));box.append(title);
+ const header=el("div","timelineGrid timelineWeeks");header.append(el("div","timelineLabel","Project / task"));
+ for(let w=0;w<weeks;w++){const d=new Date(monday.getTime()+w*7*86400000);header.append(el("div","week",d.toLocaleDateString(undefined,{month:"short",day:"numeric"})))}box.append(header);
+ const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
+ function row(t,depth){
+  const children=childOf(t.id);
+  const a=dates(t),hasDate=Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
+  const line=el("div","timelineGrid timelineRow");
+  const label=el("button","timelineLabel",("  ".repeat(Math.min(depth,5)))+(depth?"↳ ":"")+t.title);
+  label.type="button";label.addEventListener("click",()=>{state.edit=t;state.parent=null;openDialog()});line.append(label);
+  const track=el("div","track");track.style.gridColumn="2 / span 12";
+  if(hasDate){
+   const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
+   const start=Math.max(0,(from-monday.getTime())/range)*100,end=Math.min(100,((to-monday.getTime())/range)*100);
+   if(end>=0&&start<=100){
+    const bar=el("div","ganttBar"+(t.status==="completed"?" ganttDone":""));
+    bar.style.left=Math.max(0,start)+"%";bar.style.width=Math.max(1.2,end-Math.max(0,start))+"%";
+    bar.title=t.title+" · "+dateLabel(a.from)+" → "+dateLabel(a.to);
+    bar.addEventListener("click",()=>{state.edit=t;state.parent=null;openDialog()});track.append(bar)
+   }
+  }
+  if(!hasDate&&depth===0){const dot=el("span","unscheduled","No dates set");track.append(dot)}
+  line.append(track);box.append(line);
+  if(!collapsed(t))children.forEach(c=>row(c,depth+1))
+ }
+ const roots=state.tasks.filter(t=>!t.parent_task_id&&!t.archived_at&&t.status!=="cancelled");
+ if(!roots.length)box.append(el("div","empty","Add a task to build your timeline."));
+ roots.forEach(t=>row(t,0));
 }
 
 function renderAttention(){
@@ -239,7 +279,7 @@ function renderSuggestions(){
  actions.append(btn("Dismiss","btn small",async()=>{try{await api("suggestion",{id:s.id,decision:"dismiss"});await load()}catch(e){toast(e.message,true)}}));line.append(actions);area.append(line)}
 }
 async function load(){
- const data=await api("list");state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.email=data.email||"";$("who").textContent=data.display_name||state.email;
+ const data=await api("list");state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.email=data.email||"";$("who").textContent=data.display_name||state.email;
  $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render()
 }
 async function markTask(t,done,control){
@@ -258,17 +298,17 @@ async function markTask(t,done,control){
 function openDialog(){
  const t=state.edit;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
  $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
- $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
+ $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskStart").value=t?localDate(t.start_at):"";$("taskContact").value=t?t.contact_name||"":"";const dp=$("taskDependency");dp.replaceChildren(new Option("No dependency",""));for(const other of state.tasks.filter(x=>!x.archived_at&&x.id!==t?.id))dp.add(new Option(other.title,other.id));dp.value=t?(state.dependencies.find(x=>x.task_id===t.id)?.depends_on_id||""):"";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
  $("subtaskField").classList.toggle("hidden",!!t||!!state.parent);$("statusField").classList.toggle("hidden",!t);
  $("dialogOverlay").classList.add("show");$("taskTitle").focus()
 }
 function closeDialog(){$("dialogOverlay").classList.remove("show");state.edit=null;state.parent=null}
 $("taskForm").addEventListener("submit",async e=>{
  e.preventDefault();const save=$("saveTask");save.disabled=true;
- const payload={title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),waiting_on:$("taskWaiting").value.trim()||null};
+ const payload={title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),start_at:fromDate($("taskStart").value),contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
  if(!payload.title){save.disabled=false;return}
  try{
-  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;await api("update",payload)}
+  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
   else{payload.parent_task_id=state.parent;payload.subtasks=state.parent?[]:$("taskSubtasks").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);await api("create",payload)}
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
@@ -282,6 +322,17 @@ $("quickForm").addEventListener("submit",async e=>{e.preventDefault();const titl
 document.addEventListener("keydown",e=>{
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("quickTitle").focus();$("quickTitle").select()}
  if(e.key==="Escape"&&$("dialogOverlay").classList.contains("show"))closeDialog()
+});
+
+$("treeView").addEventListener("click",()=>{state.view="tree";render()});
+$("timelineView").addEventListener("click",()=>{state.view="timeline";render()});
+$("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;field.value="";try{await api("create",{title});await load();field.focus()}catch(e){field.value=title;toast(e.message,true)}});
+document.addEventListener("keydown",async e=>{
+ const target=e.target;
+ if(!(target instanceof HTMLInputElement)||!target.closest(".addchild"))return;
+ const form=target.closest(".addchild");const parentId=form.dataset.addFor;
+ if(e.key==="Tab"&&!e.shiftKey){e.preventDefault();const value=target.value.trim();if(!value)return;target.value="";try{await api("create",{title:value,parent_task_id:parentId});await load();const items=childOf(parentId);const last=items[items.length-1];if(last){state.expanded.delete(last.id);render();document.querySelector('[data-add-for="'+last.id+'"] input')?.focus()}}catch(err){target.value=value;toast(err.message,true)}}
+ if(e.key==="Escape")target.blur()
 });
 $("search").addEventListener("input",e=>{state.search=e.target.value;render()});
 document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{state.tab=b.dataset.tab;render()}));
