@@ -68,7 +68,7 @@ function knowledge(){
  }hero.append(count);root.append(hero);
  const notePanel=h("section","memoryNotesBlock");notePanel.id="memoryNotesList";
  const noteHead=h("div","memoryBlockTitle");
- noteHead.append(h("div","", "Things you've told Sandy"));
+ noteHead.append(h("div","", "Tell Sandy something"));
  noteHead.append(aBtn("＋ Remember something",()=>rememberUI(),"smallbutton primary"));
  notePanel.append(noteHead,h("p","memoryHint","Information you've explicitly asked Sandy to keep."));
  notePanel.append(rememberForm());
