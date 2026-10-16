@@ -48,10 +48,12 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
           PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          DEPLOYMENT_ENABLED: ${{ vars.PRODUCTION_DEPLOYMENT_ENABLED }}
           FUNCTION: ${{ inputs.function_name }}
         shell: bash
         run: |
           set -euo pipefail
+          test "$DEPLOYMENT_ENABLED" = "true" || { echo "Production environment not explicitly enabled"; exit 1; }
           test -n "${SUPABASE_ACCESS_TOKEN:-}" || { echo "Missing deployment credential"; exit 1; }
           test "$PROJECT_REF" = "zmqlyygzqoidkcwdysok" || { echo "Unexpected project"; exit 1; }
           case "$FUNCTION" in
