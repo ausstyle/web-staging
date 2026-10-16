@@ -195,13 +195,34 @@ $("loginForm").addEventListener("submit",async e=>{
  e.preventDefault();const email=$("email").value.trim().toLowerCase(),b=$("sendLink");b.disabled=true;
  $("authMessage").textContent="Requesting a secure sign-in link…";
  try{
-  const {error}=await auth.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:window.location.origin+window.location.pathname}});
-  if(error)throw error;
-  $("authMessage").textContent="Check your email once to sign in. You can then add a passkey in Settings and avoid emails on future visits.";
+  const r=await fetch(SB+"/functions/v1/sandy-login-email",{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({email}),
+   cache:"no-store"
+  });
+  const result=await r.json().catch(()=>({}));
+  if(!r.ok)throw Error(result.message||"Secure email service unavailable. Please try again.");
+  $("authMessage").textContent=result.message||"If registered, you'll receive a sign-in link from ai@email.com.au.";
  }catch(er){$("authMessage").textContent="Could not send the sign-in link: "+(er.message||"Try again.").slice(0,200)}
  finally{b.disabled=false}
 });
 auth.auth.onAuthStateChange((_e,s)=>{if(s?.access_token&&!session)enter();else if(!s?.access_token&&session)exit()});
+// Magic links are transported in the fragment (never sent to the web server).
+// Erase the one-time credential from browser history before exchanging it.
+const loginHash=new URLSearchParams(window.location.hash.replace(/^#/,"")).get("sandy_login");
+if(loginHash){
+ window.history.replaceState(null,"",window.location.pathname+window.location.search);
+ $("authMessage").textContent="Verifying your secure Sandy sign-in link…";
+ try{
+  if(!/^[a-f0-9]{40,128}$/i.test(loginHash))throw Error("Invalid sign-in link");
+  const {error}=await auth.auth.verifyOtp({token_hash:loginHash,type:"magiclink"});
+  if(error)throw error;
+  $("authMessage").textContent="Verified. Welcome back to Sandy.";
+ }catch(er){
+  $("authMessage").textContent="This sign-in link could not be verified or has expired. Request a new link from ai@email.com.au.";
+ }
+}
 const {data}=await auth.auth.getSession();if(data.session)enter();else exit();
 }
 start().catch(e=>{$("authMessage").textContent="Could not initialise sign-in: "+e.message});
