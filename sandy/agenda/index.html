@@ -139,7 +139,7 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 .rootAdd:hover{background:#333}
 .rootLine:not(.hidden)+.tasklist{border-radius:0 0 14px 14px!important;border-top:1px solid #e7e7e7!important}
 @media(max-width:600px){.rootLine{gap:7px!important;padding:10px 8px!important}.rootLine .entryWorkspace{max-width:96px;font-size:11px}.rootAdd{padding:6px 8px;font-size:11px}.rootLine input{font-size:12px!important}}
-.task:has(.delegateMenu:not(.hidden)),.childrow:has(.delegateMenu:not(.hidden)){overflow:visible!important;position:relative;z-index:35}.taskDelegate{position:relative;display:inline-flex;align-items:center}.delegateToggle{border:0;background:transparent;color:#555;padding:6px 8px;font-size:17px;border-radius:6px}.delegateToggle:hover{background:#eee}.delegateMenu{position:absolute;z-index:40;right:0;top:100%;width:min(305px,85vw);background:white;border:1px solid #dcdcdc;box-shadow:0 12px 38px #0002;border-radius:12px;padding:14px;color:#111}.delegateMenuHeading{font-size:13px;font-weight:700;margin-bottom:9px}.delegateMenuCaption{font-size:11px;color:#777;margin:8px 0}.delegateChoices{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow:auto}.delegatePerson{padding:9px;text-align:left;font-size:13px;background:#f8f8f8;border:0;border-radius:6px;color:#111}.delegatePerson:hover{background:#eee}.delegateCurrent{font-size:11px;color:#777;padding:5px 3px}.delegateInputRow{display:flex;gap:5px}.delegateEmailInline{min-width:0;flex:1;border:1px solid #ddd;border-radius:7px;padding:8px;font-size:12px}.delegateAction{border:0;border-radius:7px;background:#111;color:white;padding:8px;font-size:12px}.delegateSubInline{display:flex;align-items:center;gap:6px;color:#666;font-size:12px;margin-top:10px}.delegateStatus{font-size:11px;color:#a33;margin-top:5px}.delegateMenu.hidden{display:none}
+.task:has(.delegateMenu:not(.hidden)),.childrow:has(.delegateMenu:not(.hidden)){overflow:visible!important;position:relative;z-index:35}.taskDelegate{position:relative;display:inline-flex;align-items:center}.delegateToggle{border:0;background:transparent;color:#555;padding:6px 8px;font-size:17px;border-radius:6px}.delegateToggle:hover{background:#eee}.delegateMenu{position:absolute;z-index:40;right:0;top:100%;width:min(305px,85vw);background:white;border:1px solid #dcdcdc;box-shadow:0 12px 38px #0002;border-radius:12px;padding:14px;color:#111}.delegateMenuHeading{font-size:13px;font-weight:700;margin-bottom:9px}.delegateMenuCaption{font-size:11px;color:#777;margin:8px 0}.delegateChoices{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow:auto}.delegatePerson{padding:9px;text-align:left;font-size:13px;background:#f8f8f8;border:0;border-radius:6px;color:#111}.delegatePerson:hover{background:#eee}.delegateCurrent{font-size:11px;color:#777;padding:5px 3px}.delegateInputRow{display:flex;gap:5px}.delegateEmailInline{min-width:0;flex:1;border:1px solid #ddd;border-radius:7px;padding:8px;font-size:12px}.delegateAction{border:0;border-radius:7px;background:#111;color:white;padding:8px;font-size:12px}.delegateSubInline{display:flex;align-items:center;gap:6px;color:#666;font-size:12px;margin-top:10px}.delegateStatus{font-size:11px;color:#a33;margin-top:5px}.delegateMenu.hidden{display:none}.delegateAccessRow{display:flex;justify-content:space-between;align-items:center;gap:8px;border-bottom:1px solid #eee}.delegateRevoke{background:#fff;border:1px solid #dbb;color:#934;border-radius:6px;font-size:11px;padding:5px}.shareTaskToggle{border:0;background:transparent;font-size:12px;color:#526557;font-weight:650;padding:5px}.shareRole{width:100%;margin:8px 0;padding:8px;border:1px solid #ddd}
 .taskFocus{outline:2px solid #555!important;outline-offset:-2px}
 .editDelegation{margin:14px 0 16px;padding:13px 15px;border:1px solid #e1e6e1;border-radius:12px;background:#fafbfa}.editDelegationHead{font-size:13px;font-weight:700;color:#526557;margin-bottom:8px}.editDelegateControl{display:block;width:100%}.editDelegateTrigger{background:#fff!important;border:1px solid #dce2dc!important;border-radius:9px!important;font-size:13px!important;font-weight:600;padding:10px 13px!important;width:100%;text-align:left;color:#222!important}.editDelegateControl .delegateMenu{position:relative;top:auto;right:auto;width:100%;margin-top:8px;box-shadow:none}.editDelegation .delegateMenu.hidden{display:none}
 /* Keyboard-first editable outline rows */
@@ -204,7 +204,7 @@ import {installSandyIdleLock} from "../security-lock.js";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
 const $ = id => document.getElementById(id);
-const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 
@@ -473,7 +473,23 @@ function delegationControl(t){
    }
    choices.append(el("div","delegateMenuCaption","Or invite someone new"));
   }
-  for(const d of existing)choices.append(el("div","delegateCurrent",(d.assignee_name||d.assignee_email)+" · "+d.status));
+  for(const d of existing){
+    const item=el("div","delegateAccessRow");
+    item.append(el("span","delegateCurrent",(d.assignee_name||d.assignee_email)+" · "+d.status));
+    item.append(btn(d.status==="invited"?"Cancel invitation":"Revoke delegation","delegateRevoke",async()=>{
+      if(!confirm("Remove this delegation?"))return;
+      try{await api("revoke-access",{task_id:t.id,customer_id:d.assignee_customer_id,kind:"delegation"});await load();toast("Delegation revoked")}
+      catch(e){status.textContent=e.message}
+    }));choices.append(item);
+  }
+  for(const d of state.externalInvitations.filter(x=>x.task_id===t.id)){
+    const item=el("div","delegateAccessRow");item.append(el("span","delegateCurrent",d.email+" · pending"));
+    item.append(btn("Cancel invitation","delegateRevoke",async()=>{
+      if(!confirm("Cancel invitation to "+d.email+"?"))return;
+      try{await api("revoke-access",{task_id:t.id,invitation_id:d.id});await load();toast("Invitation cancelled")}
+      catch(e){status.textContent=e.message}
+    }));choices.append(item);
+  }
  }
  async function submit(email){
   email=String(email||"").trim().toLowerCase();
@@ -489,6 +505,32 @@ function delegationControl(t){
  emailInput.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit(emailInput.value)}if(e.key==="Escape")panel.classList.add("hidden")});
  wrap.append(toggle,panel);
  return wrap;
+}
+function shareTaskControl(t){
+ const wrap=el("div","taskDelegate");
+ const panel=el("div","delegateMenu hidden"),status=el("div","delegateStatus"),choices=el("div","delegateChoices");
+ const toggle=btn("Share","shareTaskToggle",()=>{const open=panel.classList.contains("hidden");document.querySelectorAll(".delegateMenu:not(.hidden)").forEach(x=>x.classList.add("hidden"));panel.classList.toggle("hidden",!open);if(open){fill();email.focus()}});
+ toggle.title="Share this task without delegating responsibility";
+ const email=el("input","delegateEmailInline");email.type="email";email.placeholder="Collaborator email";
+ const role=el("select","shareRole");role.add(new Option("Can collaborate","collaborator"));role.add(new Option("View only","viewer"));
+ const send=btn("Share","delegateAction",async()=>{
+   send.disabled=true;try{const result=await api("share-task",{task_id:t.id,email:email.value.trim(),role:role.value,scope:"subtree"});await load();toast(result.note||"Task shared")}catch(e){status.textContent=e.message;send.disabled=false}
+ });
+ const line=el("div","delegateInputRow");line.append(email,send);
+ panel.append(el("div","delegateMenuHeading","Share task"),el("div","delegateMenuCaption","Share visibility without assigning responsibility. Existing Sandy accounts."),choices,role,line,status);
+ function fill(){
+  choices.replaceChildren();
+  for(const d of state.participants.filter(x=>x.task_id===t.id&&x.status!=="revoked")){
+   const item=el("div","delegateAccessRow");
+   item.append(el("span","delegateCurrent",(d.assignee_name||d.assignee_email)+" · "+d.role));
+   item.append(btn("Remove access","delegateRevoke",async()=>{
+    if(!confirm("Remove shared access?"))return;
+    try{await api("revoke-access",{task_id:t.id,customer_id:d.customer_id,kind:"share"});await load();toast("Access revoked")}catch(e){status.textContent=e.message}
+   }));choices.append(item);
+  }
+ }
+ email.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();send.click()}if(e.key==="Escape")panel.classList.add("hidden")});
+ wrap.append(toggle,panel);return wrap;
 }
 let draggingTaskId=null;
 async function moveOutlineTask(dragId,targetId,zone){
@@ -570,7 +612,7 @@ function renderTask(t,depth){
  const right=el("div","right");
  const notesButton=btn("✎","iconbtn",()=>{const panel=outer.querySelector(".inlineTaskNotes");if(!panel)return;panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){panel.loadHistory();panel.querySelector("textarea").focus()}});
  notesButton.title="Add or edit notes / comments";notesButton.setAttribute("aria-label","Notes for "+t.title);right.append(notesButton);
- if(!t.shared){right.append(quickTaskControls(t));right.append(delegationControl(t))}
+ if(!t.shared){right.append(quickTaskControls(t));right.append(shareTaskControl(t));right.append(delegationControl(t))}
  const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
   add.title="Add a subtask";right.append(add);
  const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";right.append(edit);row.append(right);outer.append(row);
@@ -713,7 +755,7 @@ function editingAgenda(){
  return !!(active?.matches("input,textarea,[contenteditable=true]")&&active?.closest("#app")&&!active?.matches("#search"));
 }
 function applyAgendaData(data){
- state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.delegations=data.delegations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
+ state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.delegations=data.delegations||[];state.participants=data.participants||[];state.externalInvitations=data.externalInvitations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
  $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render();
  liveFingerprint=liveSignature(data);
 }
