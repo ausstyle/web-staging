@@ -262,14 +262,115 @@ function countDesc(t){
 }
 function collapsed(t){return state.expanded.has(t.id)}
 function toggleBranch(t){if(collapsed(t))state.expanded.delete(t.id);else state.expanded.add(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render()}
-function inlineEditor(t,focusTarget){
- const value=el("input","inlineTitle");value.value=t.title;value.maxLength=240;value.setAttribute("aria-label","Rename "+t.title);
+
+function outlinePeers(parent){
+ return state.tasks.filter(t=>!t.shared&&!t.archived_at&&(t.parent_task_id||null)===(parent||null)).sort((a,b)=>a.position-b.position||a.created_at.localeCompare(b.created_at));
+}
+function outlineLast(parent){return outlinePeers(parent).filter(t=>isVisible(t,new Set())).at(-1)?.id||null}
+async function outlinePosition(parent,afterId,exclude){
+ const peers=outlinePeers(parent).filter(t=>t.id!==exclude);const i=afterId?peers.findIndex(t=>t.id===afterId):-1;
+ if(afterId&&i<0)throw Error("Previous task is no longer available");
+ const left=peers[i],right=peers[i+1];
+ if(!left&&!right)return 1000;
+ if(left&&!right&&left.position<9999000)return left.position+1000;
+ if(!left&&right&&right.position>1)return Math.floor(right.position/2);
+ if(left&&right&&right.position-left.position>1)return Math.floor((left.position+right.position)/2);
+ if(peers.length>=9000)throw Error("Outline is too large");
+ for(let n=0;n<peers.length;n++){const pos=(n+1)*1000;if(peers[n].position!==pos){await api("update",{id:peers[n].id,position:pos});peers[n].position=pos}}
+ return i<0?500:peers[i].position+500;
+}
+async function outlineCreate(title,parent,after,company){
+ if(state.outlineBusy)return false;state.outlineBusy=true;let created=null;
+ try{
+  const position=await outlinePosition(parent,after,null);
+  const result=await api("create",{title,parent_task_id:parent||null,company_id:normalizeWorkspace(company)});
+  created=result.id;if(!created)throw Error("Task saved but server did not return an ID");
+  await api("update",{id:created,position});
+  await load();outlineDraft(parent,created,company);return true;
+ }catch(e){
+  if(created){await load().catch(()=>{});toast("Task created but order was not confirmed. Refresh before retrying.",true);return true}
+  toast(e.message,true);return false;
+ }finally{state.outlineBusy=false}
+}
+function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initial=""){
+ state.view="tree";if(!["open","all"].includes(state.tab))state.tab="open";
+ if(state.search){state.search="";$("search").value=""}
+ if(parent){state.expanded.delete(parent);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]))}
+ render();
+ const box=parent?document.getElementById("task-"+parent)?.querySelector(":scope > .children"):$("tasks");
+ if(!box){toast("Parent task is not visible",true);return}
+ if(!parent)box.querySelector(":scope > .empty")?.remove();
+ const ghost=el("div",(parent?"childrow ":"task ")+"outlineDraft"),row=el("div","taskrow"),main=el("div","taskmain");
+ const check=el("input","taskcheck");check.type="checkbox";check.disabled=true;check.setAttribute("aria-label","Unsaved task");
+ const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder="New task…";field.setAttribute("aria-label","New task");
+ main.append(field);row.append(el("span","branchToggle","·"),check,main);ghost.append(row);
+ const prev=after?document.getElementById("task-"+after):null;
+ box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:box.querySelector(":scope > .addchild"));
+ let closed=false;
+ async function save(){
+  if(closed||!field.value.trim())return;
+  closed=true;field.disabled=true;
+  const ok=await outlineCreate(field.value.trim(),parent,after,company);
+  if(!ok){closed=false;field.disabled=false;field.focus()}
+ }
+ field.addEventListener("keydown",e=>{
+  if(e.isComposing)return;
+  if(e.key==="Enter"){e.preventDefault();save()}
+  else if(e.key==="Escape"){e.preventDefault();closed=true;ghost.remove()}
+  else if(e.key==="Tab"){
+   e.preventDefault();
+   if(!e.shiftKey&&after){closed=true;outlineDraft(after,outlinePeers(after).at(-1)?.id||null,company,field.value)}
+   else if(e.shiftKey&&parent){closed=true;const p=state.tasks.find(t=>t.id===parent);if(p)outlineDraft(p.parent_task_id||null,p.id,company,field.value)}
+  }
+ });
+ field.addEventListener("blur",()=>{if(!closed){if(field.value.trim())save();else ghost.remove()}});
+ queueMicrotask(()=>{field.focus();field.setSelectionRange(field.value.length,field.value.length)});
+}
+function outlineTitle(t){
+ const span=el("span","tasktitle"+(t.status==="completed"?" done":""),t.title);
+ span.title="Click to edit task name";span.tabIndex=0;span.setAttribute("role","button");span.setAttribute("aria-label","Edit "+t.title);
+ span.addEventListener("click",()=>span.replaceWith(inlineEditor(t,true)));
+ span.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();span.replaceWith(inlineEditor(t,true))}});
+ return span;
+}
+function inlineEditor(t,focus){
+ const field=el("input","inlineTitle");field.maxLength=240;field.value=t.title;field.setAttribute("aria-label","Edit "+t.title);
  let saving=false;
- async function save(){if(saving)return;const title=value.value.trim();if(!title){value.value=t.title;value.blur();return}if(title===t.title){value.blur();return}
- saving=true;value.disabled=true;try{await api("update",{id:t.id,title});await load()}catch(err){toast(err.message,true);value.disabled=false;saving=false}}
- value.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();save()}if(e.key==="Escape"){value.value=t.title;value.blur()}if(e.key==="Tab")save()});
- value.addEventListener("blur",save);
- if(focusTarget)queueMicrotask(()=>{value.focus();value.select()});return value
+ async function save(mode){
+  if(saving)return;
+  const title=field.value.trim();if(!title){toast("Task title is required",true);field.focus();return}
+  let parent=t.parent_task_id||null,after=t.id;
+  if(mode==="indent"){
+   const peers=outlinePeers(parent).filter(x=>isVisible(x,new Set())),i=peers.findIndex(x=>x.id===t.id);
+   if(i<1){toast("No preceding task to indent beneath",true);return}
+   parent=peers[i-1].id;after=outlinePeers(parent).at(-1)?.id||null;
+  }else if(mode==="outdent"){
+   const p=state.tasks.find(x=>x.id===parent);
+   if(!p){toast("Already at the top level",true);return}
+   parent=p.parent_task_id||null;after=p.id;
+  }
+  saving=true;field.disabled=true;
+  try{
+   const patch={id:t.id};
+   if(title!==t.title)patch.title=title;
+   if(mode==="indent"||mode==="outdent"){patch.parent_task_id=parent;patch.position=await outlinePosition(parent,after,t.id)}
+   if(Object.keys(patch).length>1){await api("update",patch);await load()}
+   if(mode==="enter")outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal");
+   else if(mode==="indent"||mode==="outdent"){
+    const label=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
+    const updated=state.tasks.find(x=>x.id===t.id);if(label&&updated)label.replaceWith(inlineEditor(updated,true));
+   }else if(Object.keys(patch).length===1)field.replaceWith(outlineTitle(t));
+  }catch(e){toast(e.message,true);saving=false;field.disabled=false;field.focus()}
+ }
+ field.addEventListener("keydown",e=>{
+  if(e.isComposing)return;
+  if(e.key==="Enter"){e.preventDefault();save("enter")}
+  else if(e.key==="Tab"){e.preventDefault();save(e.shiftKey?"outdent":"indent")}
+  else if(e.key==="Escape"){e.preventDefault();saving=true;field.replaceWith(outlineTitle(t))}
+ });
+ field.addEventListener("blur",()=>{if(!saving)save("blur")});
+ if(focus)queueMicrotask(()=>{field.focus();field.select()});
+ return field;
 }
 function quickTaskControls(t){
  const wrap=el("div","quickTaskControls");
