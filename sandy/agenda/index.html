@@ -87,7 +87,7 @@ body{background:#fafbf8;color:#253a2c}
 
 .workspaceBar{display:flex;gap:12px;align-items:center;margin:0 0 18px;flex-wrap:wrap}.workspaceLabel{font-size:10px;font-weight:750;letter-spacing:.11em;color:#96a59b}.workspaceTabs{display:flex;gap:5px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}.workspacePill{white-space:nowrap;border:1px solid #e4ebe2;background:#fff;border-radius:99px;padding:8px 14px;color:#6a7d6d;font-size:12px;font-weight:620}.workspacePill.selected{background:#dcebe0;color:#265b41;border-color:#c6dfcc}.addCompany{border:1px dashed #9db6a5;background:#f9fbf8;color:#377253;border-radius:9px;padding:8px 13px;font-size:12px;white-space:nowrap}.entryWorkspace{max-width:145px;flex-shrink:0;border:0;background:#edf4eb;border-radius:9px;padding:7px;color:#37684c;font-size:12px;outline:0}.rootLine .entryWorkspace{max-width:125px}
 @media(max-width:680px){.workspaceBar{gap:8px}.workspaceLabel{width:100%}.workspaceTabs{order:2;flex-basis:100%}.addCompany{margin-left:auto}.entryWorkspace{max-width:105px;font-size:11px;padding:5px}.quick{gap:5px}.quick input{width:80px}}
-</style></head><body>
+.collabBar{display:flex;gap:10px;align-items:center;margin:12px 0;flex-wrap:wrap}.collabBar label{font-size:12px;color:#718474}.collabBar select{background:white;border:1px solid #dce8dd;border-radius:9px;padding:8px;font-size:12px}.delegateField{border:1px solid #dbe8dc;border-radius:12px;padding:13px;margin:14px 0}.delegateScope{display:flex;gap:7px;align-items:center;font-size:12px;margin:10px 0}.delegateScope input{width:auto}.delegateLine,.inviteRow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;padding:10px 0;border-top:1px solid #e9f0e8}.delegateLine span,.inviteRow span{flex:1}.invitations{background:#f2f8ef;border:1px solid #d0e5d0;border-radius:13px;margin:12px 0;padding:14px}</style></head><body>
 <div id="loginScreen" class="loginscreen"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden">
 <header><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
@@ -284,6 +284,43 @@ function renderTimeline(){
  if(!roots.length)box.append(el("div","empty","Add a task to build your timeline."));
  roots.forEach(t=>row(t,0));
 }
+
+
+function renderDelegationList(t){
+ const box=$("delegationList");box.replaceChildren();if(!t)return;
+ for(const d of state.delegations.filter(x=>x.task_id===t.id&&x.status!=="revoked")){
+  const line=el("div","delegateLine");line.append(el("span","",d.assignee_email+" · "+d.status+(d.scope==="subtree"?" · includes subtasks":"")));
+  line.append(btn("Revoke","btn small",async()=>{try{await api("delegation-revoke",{id:d.id});await load();renderDelegationList(t)}catch(e){toast(e.message,true)}}));box.append(line)
+ }
+}
+function renderInvitations(){
+ const box=$("invitations");box.replaceChildren();
+ const pending=state.receivedDelegations.filter(x=>x.status==="invited");box.classList.toggle("hidden",!pending.length);
+ if(!pending.length)return;box.append(el("strong","","Task invitations"));
+ for(const d of pending){
+  const line=el("div","inviteRow");line.append(el("span","","Another Sandy user invited you to collaborate on "+(d.scope==="subtree"?"a project":"a task")+"."));
+  for(const [label,decision] of [["Accept","accepted"],["Decline","declined"]]){
+   line.append(btn(label,"btn small"+(decision==="accepted"?" primary":""),async()=>{try{await api("delegation-response",{id:d.id,decision});await load();toast("Invitation "+decision)}catch(e){toast(e.message,true)}}))
+  }
+  box.append(line)
+ }
+}
+function renderAssigneeFilter(){
+ const select=$("assigneeFilter"),current=state.assigneeFilter;
+ select.replaceChildren(new Option("Everyone","all"),new Option("Not delegated","unassigned"),new Option("Assigned to me","mine"));
+ const seen=new Set();for(const d of state.delegations){
+  if(seen.has(d.assignee_customer_id)||d.status==="revoked"||d.status==="declined")continue;
+  seen.add(d.assignee_customer_id);select.add(new Option(d.assignee_email,d.assignee_customer_id))
+ }
+ select.value=[...select.options].some(o=>o.value===current)?current:"all";
+}
+$("assigneeFilter").addEventListener("change",e=>{state.assigneeFilter=e.target.value;render()});
+$("delegateSend").addEventListener("click",async()=>{
+ const t=state.edit;if(!t)return;const email=$("delegateEmail").value.trim();if(!email)return;
+ const button=$("delegateSend");button.disabled=true;
+ try{await api("delegate",{task_id:t.id,email,scope:$("delegateSubtree").checked?"subtree":"task"});$("delegateEmail").value="";await load();renderDelegationList(t);toast("Invitation added to collaborator's Agenda")}
+ catch(e){toast(e.message,true)}finally{button.disabled=false}
+});
 
 function renderAttention(){
  const area=$("attention");area.replaceChildren();
