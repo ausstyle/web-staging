@@ -173,30 +173,47 @@ function knowledge(){
    head.addEventListener("click",()=>{body.hidden=!body.hidden;head.lastChild.textContent=items.length+" facts  "+(body.hidden?"▸":"▾")});
    node.append(head,body);if(depth)node.style.marginLeft=Math.min(depth,4)*12+"px";groups.append(node)
   }
-  if(!memoryTree){
-   const buckets=new Map();for(const f of chosen){const k=(f.category||"General").replaceAll("_"," ");if(!buckets.has(k))buckets.set(k,[]);buckets.get(k).push(f)}
-   for(const [k,v] of buckets)section(k.charAt(0).toUpperCase()+k.slice(1),v);return
+  const sections=[
+   ["Personal life",[["About you",["identity","background","personal"]],["Education",["education"]],["Health & wellbeing",["health"]],["Pets",["pets"]]]],
+   ["People & relationships",[["Family",["family"]],["Friends & relationships",["relationship"]]]],
+   ["Work & businesses",[["Businesses",["business","work"]],["Career",["career"]],["Projects & matters",["project"]],["Finance",["finance"]]]],
+   ["Homes & places",[["Properties & home",["property","home"]],["Locations & travel",["location","travel"]]]],
+   ["Interests & preferences",[["Interests",["interest","interests"]],["Preferences",["preference","preferences"]]]]
+  ];
+  const subjects=new Map((memoryTree?.subjects||[]).map(x=>[x.id,x.title]));
+  const linked=new Map();
+  for(const l of memoryTree?.links||[])if(subjects.has(l.subject_id)&&!linked.has(l.fact_id))linked.set(l.fact_id,subjects.get(l.subject_id));
+  const byLife=new Map();
+  for(const f of chosen){
+   const c=String(f.category||"other").toLowerCase(),v=(f.fact_key+" "+f.fact_value).toLowerCase();
+   let group=null;
+   if(/\\b(dog|cat|pet|labrador|puppy|kitten|elkie)\\b/.test(v))group=["Personal life","Pets"];
+   else if(/\\b(school|college|university|graduat)\\b/.test(v))group=["Personal life","Education"];
+   else if(c==="other"&&/\\b(cafe|coffee|business|company|roaster)\\b/.test(v))group=["Work & businesses","Businesses"];
+   if(!group)for(const [life,topics] of sections)for(const [topic,categories] of topics)if(categories.includes(c))group=[life,topic];
+   if(!group)group=["More about you","Other details"];
+   const [life,topic]=group;
+   if(!byLife.has(life))byLife.set(life,new Map());
+   const children=byLife.get(life);if(!children.has(topic))children.set(topic,[]);
+   children.get(topic).push(f);
   }
-  const subjects=memoryTree.subjects||[],links=memoryTree.links||[];
-  const assigned=new Set(),visited=new Set();
-  const bySubject=new Map();
-  const factById=new Map(chosen.map(f=>[f.id,f]));
-  for(const link of links){const f=factById.get(link.fact_id);if(!f||assigned.has(f.id))continue;assigned.add(f.id);if(!bySubject.has(link.subject_id))bySubject.set(link.subject_id,[]);bySubject.get(link.subject_id).push(f)}
-  function renderSubject(subject,depth=0){
-   if(visited.has(subject.id))return;visited.add(subject.id);
-   const children=subjects.filter(s=>s.parent_id===subject.id);
-   const local=bySubject.get(subject.id)||[];
-   const group=h("section","factGroup");group.style.marginLeft=Math.min(depth,4)*12+"px";
-   const head=h("button","factGroupHead");head.type="button";head.style.width="100%";head.style.textAlign="left";
-   head.append(h("h3","",subject.title),h("span","factCount",(local.length+children.length)+" items ▾"));
-   const body=h("div","");local.forEach(f=>body.append(factRow(f)));
-   group.append(head,body);
-   head.addEventListener("click",()=>{body.hidden=!body.hidden;head.lastChild.textContent=(local.length+children.length)+" items "+(body.hidden?"▸":"▾")});
-   for(const child of children)body.append(renderSubject(child,depth+1));
-   return group
+  for(const life of [...sections.map(x=>x[0]),"More about you"]){
+   const topics=byLife.get(life);if(!topics)continue;
+   const total=[...topics.values()].reduce((n,arr)=>n+arr.length,0);
+   const top=h("section","factGroup"),head=h("button","factGroupHead"),content=h("div","");
+   head.type="button";head.style.width="100%";head.style.textAlign="left";
+   head.append(h("h3","",life),h("span","factCount",total+" facts ▾"));
+   head.addEventListener("click",()=>{content.hidden=!content.hidden;head.lastChild.textContent=total+" facts "+(content.hidden?"▸":"▾")});
+   for(const [topic,facts] of topics){
+    const group=h("section","factGroup"),subhead=h("button","factGroupHead"),body=h("div","");
+    group.style.marginLeft="12px";subhead.type="button";subhead.style.width="100%";subhead.style.textAlign="left";
+    subhead.append(h("h3","",topic),h("span","factCount",facts.length+" facts ▾"));
+    for(const f of facts.slice().sort((x,y)=>String(linked.get(x.id)||x.fact_key).localeCompare(String(linked.get(y.id)||y.fact_key))))body.append(factRow(f));
+    subhead.addEventListener("click",()=>{body.hidden=!body.hidden;subhead.lastChild.textContent=facts.length+" facts "+(body.hidden?"▸":"▾")});
+    group.append(subhead,body);content.append(group);
+   }
+   top.append(head,content);groups.append(top);
   }
-  subjects.filter(s=>!s.parent_id||!subjects.some(p=>p.id===s.parent_id)).forEach(s=>groups.append(renderSubject(s)));
-  const unassigned=chosen.filter(f=>!assigned.has(f.id));if(unassigned.length){const byCategory=new Map();for(const f of unassigned){const k=(f.category||"Personal").replaceAll("_"," ");if(!byCategory.has(k))byCategory.set(k,[]);byCategory.get(k).push(f)}for(const [k,v] of byCategory)section(k.charAt(0).toUpperCase()+k.slice(1),v)}
  }
  api("memory_tree").then(t=>{if(root.isConnected){memoryTree=t;if(!root.querySelector(".factEditor"))drawFacts()}}).catch(e=>{notify("Topic grouping unavailable: "+e.message);});
  filter.addEventListener("input",drawFacts);drawFacts();root.append(panelRoot);
