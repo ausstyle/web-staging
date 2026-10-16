@@ -202,7 +202,13 @@ $("loginForm").addEventListener("submit",async e=>{
    cache:"no-store"
   });
   const result=await r.json().catch(()=>({}));
-  if(!r.ok)throw Error(result.message||"Secure email service unavailable. Please try again.");
+  if(!r.ok){
+   if(result.error==="delivery_status_uncertain"){
+    $("authMessage").textContent="Sandy couldn't confirm the email's delivery status. Please check your inbox before requesting another link.";
+    return;
+   }
+   throw Error(result.message||"Secure email service unavailable. Please try again.");
+  }
   $("authMessage").textContent=result.message||"If registered, you'll receive a sign-in link from ai@email.com.au.";
  }catch(er){$("authMessage").textContent="Could not send the sign-in link: "+(er.message||"Try again.").slice(0,200)}
  finally{b.disabled=false}
