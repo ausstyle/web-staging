@@ -22,23 +22,54 @@ async function evidence(id){try{const v=(await api("evidence",{id})).item;const 
 async function load(){const j=await api("overview");state=j.overview;$("userName").textContent=state.name||"Your Sandy";$("avatar").textContent=(state.name||"S").charAt(0).toUpperCase();const n=state.insights.length+state.execution.filter(x=>["awaiting_approval","failed"].includes(x.status)).length;$("attentionCount").textContent=n;$("attentionCount").classList.toggle("hide",!n);render()}
 function switchView(v){view=v;document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===v));render();window.scrollTo({top:0,behavior:"smooth"})}
 function headings(top,title,sub){$("sectionTop").textContent=top;$("pageHeading").textContent=title;$("pageSubtitle").textContent=sub}
+function profileGroups(){
+ const groups=[["People & relationships",[]],["Work & businesses",[]],["Homes & places",[]],["Background & interests",[]]];
+ const seen=new Set();
+ for(const f of state.facts||[]){
+  const key=String(f.fact_key||"").toLowerCase(),v=String(f.fact_value||"").trim(),cat=String(f.category||"").toLowerCase();
+  if(!v||/^(customer_|asked_|enrichment_|manual_[^ ]+$)/.test(key)&&!key.startsWith("manual_"))continue;
+  if(/^(you answered|the customer |the user asked|the customer said|you asked|please remember|you may be in touch|you expect to|you plan to|true$)/i.test(v))continue;
+  if(/contact_|phone|email|invoice|address_via|payment|requested|error|retry|follow_up|task_action|setup|login|self_portrait|image_style|image_subject|image.*request|inquiry/i.test(key))continue;
+  if(/^(https?:|[^ ]+@[^ ]+)|\\+?\\d[\\d -]{8,}/i.test(v))continue;
+  let idx=-1;
+  if(/partner|relationship|friend|family|spouse|person|dog|pet|chris|jemma/i.test(key+" "+cat)||/\\b(dog|labrador|partner)\\b/i.test(v))idx=0;
+  else if(/business|coffee|cafe|work|career|profession|company|ground_support|niccolo|investor/i.test(key+" "+cat+" "+v))idx=1;
+  else if(/property|home|location|residen|travel|blevio|como|byron|italy/i.test(key+" "+cat+" "+v))idx=2;
+  else if(/school|college|sport|football|cricket|chess|hobby|interest|nationality|identity|background|education|favourite|favorite|likes_|preferred_reply/i.test(key+" "+cat+" "+v))idx=3;
+  if(idx<0)continue;
+  let label=v.replace(/^You (have|are|own|attended|used to|played|live|also like) /i,m=>m[0].toUpperCase()+m.slice(1));
+  if(/^you answered/i.test(label))continue;
+  if(key==="life_partner_name")label="Partner: "+v;
+  else if(key==="dog_name")label="Dog: "+v.replace(/^You have a dog named /i,"");
+  else if(key==="favourite_football_team"||key==="favorite_football_team_geelong")label="Favourite football team: "+v.replace(/^Your favou?rite football team is /i,"");
+  else if(key==="preferred_reply_style")label="Preferred communication: "+v;
+  const dedupe=label.toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,100);
+  if(seen.has(dedupe))continue;seen.add(dedupe);
+  groups[idx][1].push({label:label.slice(0,210),fact:f});
+ }
+ return groups.filter(g=>g[1].length);
+}
+function profileSummary(root,expanded=false){
+ const grouped=profileGroups();
+ if(!grouped.length){text(root,"Sandy has no suitable verified personal facts to summarise yet. You can add or correct details in the memory section.");return}
+ const wrap=h("div",expanded?"profileSummary expanded":"profileSummary");
+ for(const [heading,facts] of grouped){
+  const section=h("section","profileSection");section.append(h("h3","",heading));
+  for(const item of facts.slice(0,expanded?9:2)){
+   const p=h("div","profileFact");p.append(h("span","",item.label));
+   if(expanded)p.append(aBtn("Correct →",()=>{document.getElementById("memoryFactsList")?.scrollIntoView({behavior:"smooth",block:"start"});const field=document.querySelector(".memoryFind");if(field){field.value=String(item.fact.fact_value||"").slice(0,50);field.dispatchEvent(new Event("input",{bubbles:true}));}setTimeout(()=>document.querySelector('[data-fact-id="'+item.fact.id+'"]')?.scrollIntoView({behavior:"smooth",block:"center"}),100)},"smallbutton"));
+   section.append(p);
+  }
+  wrap.append(section);
+ }
+ root.append(wrap);
+ text(root,expanded?"Is anything wrong or missing? Select Correct alongside a fact, or use Tell Sandy something below.":"A selection from Sandy's saved facts. Review or correct the full profile in Memory.","profileSummaryHint");
+}
+
 function home(){headings("YOUR PERSONAL KNOWLEDGE","Everything in one place.","What Sandy remembers, what is underway, and what may need you.");const root=clear($("pageview")),stats=h("div","stats");const numbers=[[state.total,"Stored records","search"],[state.facts.length,"Saved facts","knowledge"],[state.checklist.filter(x=>x.status!=="done").length,"Open personal tasks","tasks"]];numbers.forEach(([count,label,target])=>{const n=h("button","stat statLink");n.type="button";n.setAttribute("aria-label","View "+label.toLowerCase());add(n,h("strong","",count),h("small","",label));n.addEventListener("click",()=>switchView(target));stats.append(n)});root.append(stats);
 const row=h("div","cards");const know=h("div","card"),working=h("div","card"),attention=h("div","card");
 know.append(h("div","cardhead","◇  What Sandy knows"),h("h3","","A snapshot of you"));
-const memoryFacts=(state.facts||[]).filter(f=>f&&String(f.fact_value||"").trim());
-if(memoryFacts.length){
- const categories=[["People & relationships",/person|people|family|friend|partner|relationship|social|spouse/i],["Companies & work",/compan|business|work|employ|career|profession|organisation|organization/i],["Projects & matters",/project|matter|property|legal|litigation|task|goal|finance/i],["Preferences & interests",/preference|interest|hobb|sport|school|education|lifestyle|personal/i]];
- const used=new Set(),samples=[];
- for(const [label,pattern] of categories){
-  const matches=memoryFacts.filter(f=>!used.has(f.id)&&pattern.test(String(f.category||"")+" "+String(f.fact_key||"")));
-  if(matches.length){const f=matches[0];used.add(f.id);samples.push([label,String(f.fact_value).replace(/\\s+/g," ").trim().slice(0,175)]);}
- }
- if(samples.length<3)for(const f of memoryFacts){if(samples.length>=4)break;if(used.has(f.id))continue;used.add(f.id);samples.push([String(f.category||"About you").replaceAll("_"," "),String(f.fact_value).replace(/\\s+/g," ").trim().slice(0,175)]);}
- const summary=h("div","memoryHomeSummary");
- for(const [label,value] of samples.slice(0,4)){const item=h("div","memoryHomeFact");item.append(h("strong","",label),h("p","",value));summary.append(item);}
- know.append(summary);
- text(know,"A live selection from "+memoryFacts.length+" saved facts. Open your memory to review, correct or add details.","memoryHomeCaption");
-}else text(know,"Sandy has no active saved facts to summarise yet. Tell Sandy something to begin building your personal profile.");
+profileSummary(know,false);
 know.append(aBtn("Explore memory →",()=>switchView("knowledge")));
 working.append(h("div","cardhead","☑  Currently in motion"),h("h3","","Real progress, visible"));const live=state.execution.filter(x=>!["completed","failed"].includes(x.status));text(working,live.length?live.length+" execution requests currently need action or resolution.":"No verified agent work is currently running. Personal checklist items are tracked separately.");working.append(aBtn("Review tasks →",()=>switchView("tasks")));
 attention.append(h("div","cardhead","✦  Worth your attention"),h("h3","","Nothing slips through"));const waiting=state.execution.filter(x=>["awaiting_approval","failed"].includes(x.status));text(attention,waiting.length?waiting.length+" recorded execution requests need review.":"Sandy checks recorded commitments and suggestions for anything important.");attention.append(aBtn("See priorities →",()=>switchView("attention")));add(row,know,working,attention);root.append(row);
@@ -94,7 +125,7 @@ function knowledge(){
  const hText=h("div","memoryHeroText");
  hText.append(h("div","eyebrow","YOUR PERSONAL KNOWLEDGE BASE"),h("h2","","Your memory, in your control."));
  hText.append(h("p","","Review what Sandy believes, correct anything that isn't right, and teach her what to remember. Corrections remain recorded so she doesn't make the same assumption again."));
- hero.append(hText);
+ hero.append(hText);profileSummary(hero,true);
  const count=h("div","memoryStats");
  for(const [number,label,target] of [[state.facts.length,"Active facts","memoryFactsList"],[(state.rejected_facts||[]).length,"Corrections","memoryCorrectionsList"],[state.notes?.length||0,"Your notes","memoryNotesList"]]){
   const tile=h("button","memoryStat statLink");tile.type="button";tile.setAttribute("aria-label","View "+label.toLowerCase());tile.append(h("strong","",number),h("span","",label+" →"));tile.addEventListener("click",()=>{if(target==="memoryCorrectionsList"&&document.querySelector("#memoryCorrectionsList .rejectedBody")?.hidden)document.querySelector("#memoryCorrectionsList .rejectedHeader")?.click();document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})});count.append(tile)
