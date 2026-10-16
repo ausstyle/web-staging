@@ -41,7 +41,7 @@ const $=id=>document.getElementById(id);
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const idle=installSandyIdleLock(sb.auth);
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-workspace";
-let profile=null,view="home",filter="all",whatsappView="topics",search="",cursor=null,items=[],selected=null,busy=false;
+let profile=null,view="home",filter="all",whatsappView="topics",search="",cursor=null,items=[],selected=null,busy=false,historyGeneration=0;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n}
 function add(parent,...nodes){nodes.forEach(n=>parent.appendChild(n));return parent}
 function btn(text,fn,cls="btn"){const b=el("button",cls,text);b.type="button";b.addEventListener("click",fn);return b}
@@ -51,7 +51,7 @@ async function call(action,payload={}){const {data}=await sb.auth.getSession();c
 function authStatus(t){$("authMessage").textContent=t}
 function showLogin(message=""){profile=null;$("authScreen").classList.remove("hide");$("workspace").classList.add("hide");if(message)authStatus(message)}
 function showWorkspace(){$("authScreen").classList.add("hide");$("workspace").classList.remove("hide");$("sideEmail").textContent=profile.email}
-function changeView(v,c){view=v;if(c)filter=c;else if(v==="history")filter="all";if(filter!=="whatsapp")whatsappView="topics";document.querySelectorAll("[data-view],[data-channel]").forEach(n=>{const chosen=n.dataset.view===v&&(!n.dataset.channel&&!(v==="history"&&filter!=="all"))||n.dataset.channel===filter&&v==="history";n.classList.toggle("active",chosen)});$("breadcrumb").textContent=v==="home"?"OVERVIEW":filter==="all"?"ALL CONVERSATIONS":filter.toUpperCase()+" HISTORY";if(v==="home")renderHome();else{search="";cursor=null;items=[];selected=null;renderHistory();loadMore()}window.scrollTo({top:0,behavior:"smooth"})}
+function changeView(v,c){historyGeneration++;busy=false;view=v;if(c)filter=c;else if(v==="history")filter="all";if(filter!=="whatsapp")whatsappView="topics";document.querySelectorAll("[data-view],[data-channel]").forEach(n=>{const chosen=n.dataset.view===v&&(!n.dataset.channel&&!(v==="history"&&filter!=="all"))||n.dataset.channel===filter&&v==="history";n.classList.toggle("active",chosen)});$("breadcrumb").textContent=v==="home"?"OVERVIEW":filter==="all"?"ALL CONVERSATIONS":filter.toUpperCase()+" HISTORY";if(v==="home")renderHome();else{search="";cursor=null;items=[];selected=null;renderHistory();loadMore()}window.scrollTo({top:0,behavior:"smooth"})}
 function service(icon,title,desc,action,label){const card=el("button","service");card.type="button";add(card,el("div","emblem",icon),el("h3","",title),el("p","",desc),el("div","status",label+"  →"));card.addEventListener("click",action);return card}
 function stat(n,label,action){const card=el("button","metric metricLink");card.type="button";card.setAttribute("aria-label","View "+label.toLowerCase());add(card,el("strong","",String(n)),el("span","",label),el("span","metricMore","View records  →"));card.addEventListener("click",action);return card}
 function renderHome(){const c=$("content");c.replaceChildren();
@@ -80,22 +80,22 @@ const tools=el("div","filterbar");const totals=profile.conversation_counts||prof
 if(filter==="whatsapp"){
  const modes=el("div","filterbar");
  modes.style.marginTop="0";
- const setMode=mode=>{if(busy)return;whatsappView=mode;cursor=null;items=[];selected=null;renderHistory();loadMore()};
+ const setMode=mode=>{historyGeneration++;busy=false;whatsappView=mode;cursor=null;items=[];selected=null;renderHistory();loadMore()};
  modes.append(
   btn("By topic",()=>setMode("topics"),"chip"+(whatsappView==="topics"?" active":"")),
   btn("Full WhatsApp timeline",()=>setMode("timeline"),"chip"+(whatsappView==="timeline"?" active":"")),
-  btn("↻ Refresh topics",()=>{if(busy)return;cursor=null;items=[];selected=null;renderHistory();loadMore()},"chip")
+  btn("↻ Refresh topics",()=>{historyGeneration++;busy=false;cursor=null;items=[];selected=null;renderHistory();loadMore()},"chip")
  );
  c.append(modes);
  if(whatsappView==="topics")c.append(el("p","muted small","WhatsApp messages are grouped by subject. Recently received messages may appear under Uncategorised until Sandy processes them."));
 }
-const sr=el("form","searchrow");const inp=el("input");inp.type="search";inp.placeholder="Search conversations…";inp.value=search;inp.setAttribute("aria-label","Search conversation text");const go=el("button","btn primary","Search");go.type="submit";sr.addEventListener("submit",e=>{e.preventDefault();search=inp.value.trim();cursor=null;items=[];selected=null;paintEntries();loadMore()});add(sr,inp,go);c.append(sr);
+const sr=el("form","searchrow");const inp=el("input");inp.type="search";inp.placeholder="Search conversations…";inp.value=search;inp.setAttribute("aria-label","Search conversation text");const go=el("button","btn primary","Search");go.type="submit";sr.addEventListener("submit",e=>{e.preventDefault();historyGeneration++;busy=false;search=inp.value.trim();cursor=null;items=[];selected=null;paintEntries();loadMore()});add(sr,inp,go);c.append(sr);
 const layout=el("div","histlayout");layout.style.marginTop="17px";const list=el("div","histlist");list.id="histList";const detail=el("div","detail");detail.id="histDetail";detail.append(el("div","empty","Select a conversation to read it."));add(layout,list,detail);c.append(layout);paintEntries()}
 function paintEntries(){
- const list=$("histList");if(!list)return;list.replaceChildren();
+ const list=$("histList");if(!list)return;const previousScroll=list.scrollTop;list.replaceChildren();
  if(!items.length&&!busy)list.append(el("div","empty","No conversations matched. Change the filter or search."));
  items.forEach(x=>{
-  const b=el("button","entry"+(selected?.id===x.id?" selected":""));b.type="button";
+  const b=el("button","entry"+(selected?.id===x.id?" selected":""));b.type="button";b.dataset.conversationId=x.id;b.setAttribute("aria-pressed",selected?.id===x.id?"true":"false");
   const head=el("div","entryhead");
   add(head,el("span","tag",x.channel),el("small","",fmt(x.at)));
   const n=Number(x.message_count||0);
@@ -105,9 +105,11 @@ function paintEntries(){
   b.addEventListener("click",()=>select(x));list.append(b);
  });
  if(cursor)list.append(add(el("div","pagefoot"),btn(busy?"Loading…":"Load older conversations",()=>loadMore(),"btn sm")));
+ list.scrollTop=previousScroll;
 }
 function select(x){
- selected=x;paintEntries();
+ selected=x;
+ const sidebar=$("histList");if(sidebar){sidebar.querySelectorAll(".entry").forEach(row=>{const active=row.dataset.conversationId===x.id;row.classList.toggle("selected",active);row.setAttribute("aria-pressed",active?"true":"false");});}
  const d=$("histDetail");if(!d)return;d.replaceChildren();
  const n=Number(x.message_count||0);
  const head=el("div","detailhead");
@@ -130,7 +132,34 @@ function select(x){
  });
  d.append(list);
 }
-async function loadMore(){if(busy)return;busy=true;const list=$("histList");if(list&&!items.length)list.replaceChildren(el("div","loading","Loading conversations…"));try{const j=await call("history",{channel:filter,whatsapp_view:whatsappView,query:search,cursor,limit:40});if(items.length&&j.items?.length){const existing=new Set(items.map(x=>x.id));items.push(...j.items.filter(x=>!existing.has(x.id)))}else if(!items.length)items=j.items||[];cursor=j.next_cursor||null;if(!selected&&items.length)selected=items[0];paintEntries();if(selected)select(selected)}catch(e){if(list)list.replaceChildren(el("div","empty",e.message))}finally{busy=false;const load=document.querySelector(".pagefoot button");if(load)load.disabled=false}}
+async function loadMore(){
+ if(busy)return;
+ busy=true;
+ const generation=historyGeneration;
+ const params={channel:filter,whatsapp_view:whatsappView,query:search,cursor,limit:40};
+ const list=$("histList");
+ if(list&&!items.length)list.replaceChildren(el("div","loading","Loading conversations…"));
+ try{
+  const j=await call("history",params);
+  if(generation!==historyGeneration||view!=="history")return;
+  if(items.length&&j.items?.length){
+   const existing=new Set(items.map(x=>x.id));
+   items.push(...j.items.filter(x=>!existing.has(x.id)));
+  }else if(!items.length)items=j.items||[];
+  cursor=j.next_cursor||null;
+  if(!selected&&items.length)selected=items[0];
+  paintEntries();
+  if(selected)select(selected);
+ }catch(e){
+  if(generation===historyGeneration&&list)list.replaceChildren(el("div","empty",e.message));
+ }finally{
+  if(generation===historyGeneration){
+   busy=false;
+   const load=document.querySelector(".pagefoot button");
+   if(load)load.disabled=false;
+  }
+ }
+}
 async function enter(){if(await idle.check())return;try{profile=await call("overview");showWorkspace();changeView(view,filter==="all"?undefined:filter)}catch(e){showLogin(e.message)}}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>changeView(b.dataset.view)));
 document.querySelectorAll("[data-channel]").forEach(b=>b.addEventListener("click",()=>changeView("history",b.dataset.channel)));
