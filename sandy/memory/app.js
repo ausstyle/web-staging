@@ -130,28 +130,34 @@ function knowledge(){
  for(const [number,label,target] of [[state.facts.length,"Active facts","memoryFactsList"],[(state.rejected_facts||[]).length,"Corrections","memoryCorrectionsList"],[state.notes?.length||0,"Your notes","memoryNotesList"]]){
   const tile=h("button","memoryStat statLink");tile.type="button";tile.setAttribute("aria-label","View "+label.toLowerCase());tile.append(h("strong","",number),h("span","",label+" →"));tile.addEventListener("click",()=>{if(target==="memoryCorrectionsList"&&document.querySelector("#memoryCorrectionsList .rejectedBody")?.hidden)document.querySelector("#memoryCorrectionsList .rejectedHeader")?.click();document.getElementById(target)?.scrollIntoView({behavior:"smooth",block:"start"})});count.append(tile)
  }hero.append(count);root.append(hero);
- const discover=h("section","memoryNotesBlock");discover.classList.add("getToKnow");discover.append(h("div","memoryBlockTitle","✦ Get to know me"));
- text(discover,"Sandy will explore a topic from your existing memories. Each answer is saved, and you can skip or stop at any time.","memoryHint");
- const question=h("p","getToKnowQuestion","Select Ask me something to start.");const reply=h("textarea","factInput");reply.rows=2;reply.placeholder="Tell Sandy your answer…";reply.maxLength=1800;
- const controls=h("div","actions");let current=null;let active=null;let fetching=false;
+ const discover=h("section","memoryNotesBlock");discover.classList.add("getToKnow");
+ discover.append(h("div","memoryBlockTitle","✦ Get to know me"));
+ text(discover,"Sandy chooses whether to explore an existing memory or ask about something new. Each answer is saved to your memory.","memoryHint");
+ const question=h("p","getToKnowQuestion","Choose Ask me something to begin.");
+ const reply=h("textarea","factInput");reply.rows=2;reply.maxLength=1800;reply.placeholder="Your answer to Sandy…";
+ const controls=h("div","actions");let current=null,busy=false;
  const ask=aBtn("Ask me something",async()=>{
-  if(fetching)return;fetching=true;ask.disabled=true;question.textContent="Finding a useful question…";
-  try{
-   const candidates=(state.facts||[]).filter(f=>f?.id&&f.fact_value&&!/^(customer_|enrichment_)/i.test(String(f.fact_key||"")));
-   if(!candidates.length){question.textContent="Tell Sandy something first, then she can ask a follow-up.";return}
-   for(let i=0;i<Math.min(5,candidates.length);i++){
-    const f=candidates[(Math.floor(Math.random()*candidates.length)+i)%candidates.length];
-    try{const r=await api("enrich_question",{id:f.id});if(r.turn?.id&&r.turn?.question){active=f;current=r.turn;question.textContent=current.question;save.disabled=false;skip.disabled=false;reply.focus();return}}catch(e){if(i===4)throw e}
-   }
-   throw Error("No new question available");
-  }catch(e){question.textContent="Sandy couldn't generate a question just now. Try again or tell her something new below.";}
-  finally{fetching=false;ask.disabled=false}
+  if(busy)return;busy=true;ask.disabled=true;save.disabled=true;skip.disabled=true;question.textContent="Sandy is choosing a question…";
+  try{const r=await api("get_to_know_question");current=r;question.textContent=r.turn?.question||r.question;save.disabled=false;skip.disabled=false;reply.focus();}
+  catch(e){question.textContent="Sandy couldn't prepare a question right now. Please try again.";}
+  finally{busy=false;ask.disabled=false;}
  },"smallbutton");
  const save=aBtn("Save answer & continue",async()=>{
-  if(!current||!reply.value.trim())return;save.disabled=true;
-  try{await api("enrich_answer",{turn_id:current.id,answer:reply.value.trim()});reply.value="";current=null;notify("Your answer has been saved.");biographyCache=null;await load();}catch(e){notify("Could not save the answer: "+e.message);save.disabled=false}
+  if(busy||!current||!reply.value.trim())return;busy=true;save.disabled=true;skip.disabled=true;ask.disabled=true;
+  try{
+   if(current.kind==="expand")await api("enrich_answer",{turn_id:current.turn.id,answer:reply.value.trim()});
+   else {const result=await api("remember",{text:(current.question+" "+reply.value.trim()).slice(0,3000),request_id:crypto.randomUUID()});if(!result.fact_id)throw Error("Answer was not confirmed saved");}
+   reply.value="";current=null;biographyCache=null;notify("Saved to Sandy's memory.");
+   question.textContent="Saved. Choose Ask me something for the next question.";
+  }catch(e){notify("Could not save your answer: "+e.message);save.disabled=false;skip.disabled=false;}
+  finally{busy=false;ask.disabled=false;}
  },"smallbutton primary");save.disabled=true;
- const skip=aBtn("Skip",async()=>{if(current){await api("enrich_skip",{turn_id:current.id,reason:"User skipped"}).catch(()=>{});current=null;}save.disabled=true;skip.disabled=true;ask.click();},"smallbutton");skip.disabled=true;
+ const skip=aBtn("Skip question",async()=>{
+  if(busy)return;busy=true;skip.disabled=true;save.disabled=true;
+  try{if(current?.turn?.id)await api("enrich_skip",{turn_id:current.turn.id,reason:"Skipped in Get to know me"});current=null;question.textContent="Question skipped. Ask another whenever you're ready.";}
+  catch(e){notify("Could not skip this question: "+e.message);}
+  finally{busy=false;ask.disabled=false;}
+ },"smallbutton");skip.disabled=true;
  controls.append(ask,skip,save);discover.append(question,reply,controls);root.append(discover);
  const notePanel=h("section","memoryNotesBlock");notePanel.id="memoryNotesList";
  const noteHead=h("div","memoryBlockTitle");noteHead.append(h("div","","Tell Sandy something"));
