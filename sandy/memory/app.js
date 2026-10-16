@@ -150,7 +150,7 @@ function knowledge(){
    reply.value="";current=null;biographyCache=null;notify("Saved to Sandy's memory.");
    question.textContent="Saved. Choose Ask me something for the next question.";
   }catch(e){notify("Could not save your answer: "+e.message);save.disabled=false;skip.disabled=false;}
-  finally{busy=false;ask.disabled=false;}
+  finally{busy=false;ask.disabled=false;if(!current)ask.click();}
  },"smallbutton primary");save.disabled=true;
  const skip=aBtn("Skip question",async()=>{
   if(busy)return;busy=true;skip.disabled=true;save.disabled=true;
