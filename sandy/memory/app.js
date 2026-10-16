@@ -29,13 +29,108 @@ const ms=panel("Your active matters");if(!state.matters.length)ms.append(h("div"
 
 function rememberUI(){const form=document.getElementById("rememberForm");form.classList.toggle("hide");form.querySelector("textarea")?.focus()}
 function rememberForm(){const form=h("form","hide");form.id="rememberForm";const input=h("textarea");input.style.width="100%";input.style.minHeight="88px";input.style.border="1px solid #dce5dd";input.style.borderRadius="9px";input.style.padding="12px";input.style.marginTop="13px";input.maxLength=5000;input.placeholder="Remember that…";const save=h("button","primary","Save to memory");save.type="submit";add(form,input,save);form.addEventListener("submit",async e=>{e.preventDefault();const note=input.value.trim();if(note.length<3)return;const id=crypto.randomUUID();try{await api("remember",{text:note,request_id:id});notify("Added to Sandy's memory");await load()}catch(e){notify(e.message)}});return form}
-async function correctFact(f,remove){let value=null;if(!remove){value=prompt("What should Sandy remember instead?",f.fact_value);if(value===null)return;if(!value.trim())return notify("Enter the correct information.")}else if(!confirm("Mark this saved fact as incorrect so Sandy stops using it?"))return;try{await api("fact_correct",{id:f.id,new_value:value,confirm:true});notify(remove?"Fact marked incorrect":"Fact corrected");await load()}catch(e){notify(e.message)}}
-function knowledge(){headings("WHAT SHE KNOWS","Your memory.","Profile facts, important relationships, active matters and their sources.");const root=clear($("pageview"));const p=panel("Your profile");text(p,state.profile?.profile_summary||"No completed profile summary yet.");root.append(p);
-const notePanel=panel("Things you've told Sandy to remember");
-notePanel.append(aBtn("＋ Remember something",()=>rememberUI(),"secondary"));notePanel.append(rememberForm());
-if(!state.notes?.length)notePanel.append(h("div","empty","No direct memory notes yet. Add anything Sandy should remember."));
-else state.notes.forEach(n=>{const row=h("div","lineitem");text(row,n.content);const actions=h("div","actions");actions.append(aBtn("View source",()=>evidence(n.id)));row.append(actions);notePanel.append(row)});
-root.append(notePanel);const gp={};state.facts.forEach(f=>{const key=f.category||"Other";(gp[key]??=[]).push(f)});const facts=panel("Saved facts");Object.entries(gp).forEach(([key,items])=>{facts.append(h("div","eyebrow",key.toUpperCase()));items.slice(0,25).forEach(f=>{const r=line(String(f.fact_key).replaceAll("_"," "),f.fact_value,badge(f.confidence||"saved"));const b=h("div","actions");b.append(aBtn("Correct",()=>correctFact(f,false)));b.append(aBtn("Not correct",()=>correctFact(f,true),"smallbutton danger"));r.append(b);facts.append(r)})});if(!state.facts.length)facts.append(h("div","empty","No saved profile facts yet."));root.append(facts);const matters=panel("Tracked matters");state.matters.forEach(m=>matters.append(line(m.title,m.summary,badge(m.status))));if(!state.matters.length)matters.append(h("div","empty","No active matters recorded."));root.append(matters)}
+async function correctFact(f,remove){
+ if(remove){
+  if(window._memoryUpdating)return;window._memoryUpdating=true;
+  try{
+   await api("fact_correct",{id:f.id,new_value:null,confirm:true});
+   notify("Removed from active memory. Sandy will remember this assertion was incorrect.");
+   await load();
+  }catch(e){notify(e.message)}finally{window._memoryUpdating=false}
+  return;
+ }
+ const target=document.querySelector('[data-fact-id="'+f.id+'"]');
+ if(!target)return;
+ const existing=target.querySelector(".factEditor");if(existing){existing.querySelector("input")?.focus();return}
+ const area=h("form","factEditor");const input=h("input","factInput");input.type="text";input.maxLength=1000;input.value=f.fact_value;input.setAttribute("aria-label","Correct saved fact");area.append(input);
+ const cancel=aBtn("Cancel",()=>area.remove(),"smallbutton");
+ const submit=h("button","smallbutton primary","Save correction");submit.type="submit";
+ area.append(cancel,submit);
+ area.addEventListener("submit",async e=>{
+  e.preventDefault();const value=input.value.trim();if(value.length<2){notify("Enter the correct information.");return}
+  submit.disabled=true;try{await api("fact_correct",{id:f.id,new_value:value,confirm:true});notify("Corrected. Sandy will prefer this value and keep the earlier claim as incorrect.");await load()}catch(err){notify(err.message);submit.disabled=false}
+ });
+ target.append(area);input.focus();input.select()
+}
+function knowledge(){
+ headings("YOUR MEMORY","What Sandy knows","A clear view of what Sandy has learned, what you've told her, and the statements you've corrected.");
+ const root=clear($("pageview"));
+ const hero=h("div","memoryHero");
+ const hText=h("div","memoryHeroText");
+ hText.append(h("div","eyebrow","YOUR PERSONAL KNOWLEDGE BASE"),h("h2","","Your memory, in your control."));
+ hText.append(h("p","","Review what Sandy believes, correct anything that isn't right, and teach her what to remember. Corrections remain recorded so she doesn't make the same assumption again."));
+ hero.append(hText);
+ const count=h("div","memoryStats");
+ for(const [number,label] of [[state.facts.length,"Active facts"],[(state.rejected_facts||[]).length,"Corrections"],[state.notes?.length||0,"Your notes"]]){
+  const tile=h("div","memoryStat");tile.append(h("strong","",number),h("span","",label));count.append(tile)
+ }hero.append(count);root.append(hero);
+ const notePanel=h("section","memoryNotesBlock");
+ const noteHead=h("div","memoryBlockTitle");
+ noteHead.append(h("div","", "Things you've told Sandy"));
+ noteHead.append(aBtn("＋ Remember something",()=>rememberUI(),"smallbutton primary"));
+ notePanel.append(noteHead,h("p","memoryHint","Information you've explicitly asked Sandy to keep."));
+ notePanel.append(rememberForm());
+ if(!state.notes?.length)notePanel.append(h("div","memoryEmpty","Nothing added manually yet."));
+ else for(const n of state.notes){
+  const row=h("div","memoryNoteRow");row.append(h("div","",n.content));
+  row.append(aBtn("See original",()=>evidence(n.id),"smallbutton"));notePanel.append(row)
+ }root.append(notePanel);
+ const panelRoot=h("section","memoryFactSection");
+ const bar=h("div","memoryFactTop");const titleWrap=h("div","");
+ titleWrap.append(h("h2","","Saved facts"),h("p","memoryHint","Only active facts are used as current information. Mark something incorrect with one click."));
+ bar.append(titleWrap);
+ const filter=h("input","memoryFind");filter.type="search";filter.placeholder="Search saved facts";filter.setAttribute("aria-label","Search saved facts");
+ bar.append(filter);panelRoot.append(bar);
+ const groups=h("div","memoryFactGroups");panelRoot.append(groups);
+ function drawFacts(){
+  groups.replaceChildren();
+  const q=filter.value.trim().toLocaleLowerCase();
+  const chosen=state.facts.filter(f=>(String(f.fact_key)+" "+String(f.fact_value)+" "+String(f.category)).toLocaleLowerCase().includes(q));
+  const buckets=new Map();for(const f of chosen){const key=(f.category||"General").replaceAll("_"," ");if(!buckets.has(key))buckets.set(key,[]);buckets.get(key).push(f)}
+  if(!chosen.length){groups.append(h("div","memoryEmpty",q?"No matching facts.":"Sandy has no active saved facts yet."));return}
+  for(const [category,items] of buckets){
+   const section=h("section","factGroup");const head=h("div","factGroupHead");
+   head.append(h("h3","",category.charAt(0).toUpperCase()+category.slice(1)),h("span","factCount",items.length+" facts"));
+   section.append(head);
+   for(const f of items){
+    const row=h("div","memoryFactRow");row.dataset.factId=f.id;
+    const info=h("div","factBody");
+    info.append(h("div","factLabel",String(f.fact_key).replaceAll("_"," ")));
+    info.append(h("p","factValue",f.fact_value));
+    row.append(info);
+    const controls=h("div","factControls");
+    controls.append(aBtn("Edit",()=>correctFact(f,false),"factAction"));
+    controls.append(aBtn("Not correct",()=>correctFact(f,true),"factReject"));
+    row.append(controls);section.append(row)
+   }
+   groups.append(section)
+  }
+ }
+ filter.addEventListener("input",drawFacts);drawFacts();root.append(panelRoot);
+ const rejects=state.rejected_facts||[];
+ const rejections=h("section","memoryRejectedSection");
+ const rejectHeader=h("button","rejectedHeader");
+ rejectHeader.type="button";rejectHeader.setAttribute("aria-expanded","false");
+ rejectHeader.append(h("span","","↳ Corrections and rejected claims"),h("span","",rejects.length+" recorded  ▸"));
+ rejections.append(rejectHeader);
+ const rejectBody=h("div","rejectedBody");rejectBody.hidden=true;
+ rejectBody.append(h("p","memoryHint","These are not claims Sandy should trust. They stay here as negative evidence, not as active facts."));
+ if(rejects.length){for(const r of rejects){
+  const row=h("div","rejectedFactRow");
+  const value=h("div","");value.append(h("strong","",String(r.fact_key||"Earlier statement").replaceAll("_"," ")),h("p","",r.rejected_value));
+  if(r.corrected_value)value.append(h("p","rejectedCorrection","Corrected to: "+r.corrected_value));
+  row.append(value,h("span","rejectedLabel",r.corrected_value?"Corrected":"Incorrect"));rejectBody.append(row)
+ }}else rejectBody.append(h("div","memoryEmpty","No rejected statements yet."));
+ rejections.append(rejectBody);
+ rejectHeader.addEventListener("click",()=>{rejectBody.hidden=!rejectBody.hidden;rejectHeader.setAttribute("aria-expanded",String(!rejectBody.hidden));rejectHeader.lastChild.textContent=rejects.length+" recorded  "+(rejectBody.hidden?"▸":"▾")});
+ root.append(rejections);
+ const matters=panel("Tracked matters");
+ const info=h("p","memoryHint","Ongoing subjects from Sandy's conversations. These are not necessarily tasks or confirmed actions.");
+ matters.append(info);
+ state.matters.forEach(m=>matters.append(line(m.title,m.summary,badge(m.status))));
+ if(!state.matters.length)matters.append(h("div","empty","No tracked matters yet."));
+ root.append(matters)
+}
 function taskLine(x){const row=h("div","listrow"),main=h("div","rowmain"),check=h("div","checkrow"),box=h("input");box.type="checkbox";box.checked=x.status==="done";box.title="Mark this personal checklist item complete";box.addEventListener("change",async()=>{try{await api("task_status",{id:x.id,status:box.checked?"done":"open"});notify(box.checked?"Marked done":"Reopened");await load()}catch(e){box.checked=!box.checked;notify(e.message)}});const t=h("div");t.append(h("strong",x.status==="done"?"done":"",x.title));if(x.description||x.due_at)text(t,((x.description||"")+(x.due_at?" · Due "+fmt(x.due_at):"")).slice(0,270));add(check,box,t);main.append(check);const right=h("div","rowright");right.append(aBtn("+ Subtask",()=>quickTask(x.id),"smallbutton"));right.append(aBtn("×",async()=>{if(!confirm("Delete this checklist item and its subtasks?"))return;try{await api("task_delete",{id:x.id,confirm:true});await load()}catch(e){notify(e.message)}},"smallbutton danger"));add(row,main,right);return row}
 function quickTask(parent=null){const root=$("pageview");const target=parent?document.getElementById("taskAdd-"+parent):document.getElementById("taskAdd-main");if(!target)return;target.classList.toggle("hide");target.querySelector("input")?.focus()}
 function taskForm(parent=null){const wrap=h("form","taskform hide");wrap.id=parent?"taskAdd-"+parent:"taskAdd-main";const input=h("input");input.required=true;input.maxLength=360;input.placeholder=parent?"Add a subtask":"What needs doing?";const date=h("input");date.type="date";date.title="Optional due date";const save=h("button","primary","Add");save.type="submit";add(wrap,input,date,save);wrap.addEventListener("submit",async e=>{e.preventDefault();try{await api("task_add",{title:input.value,parent_id:parent,due_at:date.value?date.value+"T17:00:00":null});notify("Added to your checklist");await load()}catch(er){notify(er.message)}});return wrap}
