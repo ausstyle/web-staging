@@ -113,3 +113,12 @@ button.memoryStat{font:inherit;color:inherit;cursor:pointer}button.memoryStat:ho
 .memoryFactRow>.factEditor>.factInput{width:100%;min-width:0;resize:vertical}
 .memoryFactRow>.factEditor>.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 @media(max-width:760px){.memoryFactRow{grid-template-columns:minmax(0,1fr)}.memoryFactRow>.factBody,.memoryFactRow>.factControls,.memoryFactRow>.factEditor{grid-column:1;grid-row:auto}.memoryFactRow>.factControls{justify-content:flex-start}}
+
+/* Fact editor layout: reserve full width below the topic and its action buttons. */
+.memoryFactRow{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-auto-flow:row;align-items:start;gap:12px 18px;min-width:0}
+.memoryFactRow>.factBody{grid-column:1!important;grid-row:1!important;min-width:0;width:100%;overflow-wrap:break-word;word-break:normal}
+.memoryFactRow>.factControls{grid-column:2!important;grid-row:1!important;min-width:0;max-width:min(100%,420px);display:flex;flex-wrap:wrap;justify-content:flex-end}
+.memoryFactRow>.factEditor{grid-column:1/-1!important;grid-row:2!important;display:flex!important;flex-direction:column!important;align-items:stretch!important;min-width:0;width:100%;margin:0;box-sizing:border-box}
+.memoryFactRow>.factEditor>*{min-width:0;max-width:100%;overflow-wrap:break-word}
+.memoryFactRow>.factEditor textarea{display:block;width:100%!important;box-sizing:border-box}
+@media(max-width:900px){.memoryFactRow{grid-template-columns:minmax(0,1fr)!important}.memoryFactRow>.factBody{grid-column:1!important;grid-row:1!important}.memoryFactRow>.factControls{grid-column:1!important;grid-row:2!important;justify-content:flex-start}.memoryFactRow>.factEditor{grid-column:1!important;grid-row:3!important}}
