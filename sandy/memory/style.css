@@ -122,3 +122,19 @@ button.memoryStat{font:inherit;color:inherit;cursor:pointer}button.memoryStat:ho
 .memoryFactRow>.factEditor>*{min-width:0;max-width:100%;overflow-wrap:break-word}
 .memoryFactRow>.factEditor textarea{display:block;width:100%!important;box-sizing:border-box}
 @media(max-width:900px){.memoryFactRow{grid-template-columns:minmax(0,1fr)!important}.memoryFactRow>.factBody{grid-column:1!important;grid-row:1!important}.memoryFactRow>.factControls{grid-column:1!important;grid-row:2!important;justify-content:flex-start}.memoryFactRow>.factEditor{grid-column:1!important;grid-row:3!important}}
+
+
+/* Concise, editable personal memory profile */
+.profileSummary{display:grid;gap:16px;margin:18px 0 8px}
+.profileSummary.expanded{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));width:100%;margin:22px 0}
+.profileSection{min-width:0}
+.profileSection h3{font-family:inherit;font-size:13px;font-weight:750;letter-spacing:.01em;margin:0 0 8px;color:#343434}
+.profileFact{font-size:14px;line-height:1.5;color:#575757;padding:6px 0;border-bottom:1px solid #f0f0f0;overflow-wrap:anywhere}
+.profileFact:last-child{border-bottom:0}
+.profileSummary.expanded .profileFact{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.profileSummary.expanded .profileFact span{flex:1}
+.profileSummary.expanded .profileFact button{flex-shrink:0}
+.profileSummaryHint{font-size:12px;color:#777;margin-top:12px}
+.memoryHero{flex-wrap:wrap}
+.memoryHero>.profileSummary{flex-basis:100%}
+@media(max-width:680px){.profileSummary.expanded{grid-template-columns:1fr}.profileSummary.expanded .profileFact{align-items:center}}
