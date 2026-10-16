@@ -100,7 +100,7 @@ function knowledge(){
    try{
     await api("enrich_answer",{turn_id:turn.id,answer:value});
     saved++;answer.value="";notify("Answer saved to Sandy's memory");
-    text(conversation,"Saved. Sandy is thinking of the next relevant question…");
+    conversation.replaceChildren(document.createTextNode("Saved. Finding a useful next question…"));
     stop.disabled=false;await nextQuestion();
    }catch(e){notify("Could not save or continue: "+e.message);submit.disabled=false;stop.disabled=false}
   },"smallbutton primary");
@@ -110,7 +110,7 @@ function knowledge(){
    try{
     const r=await api("enrich_question",{id:f.id});
     if(stopped||!box.isConnected)return;
-    turn=r.turn;text(conversation,turn.question);submit.disabled=false;answer.focus();
+    turn=r.turn;conversation.replaceChildren(document.createTextNode(turn.question));submit.disabled=false;skip.disabled=false;answer.focus();
    }catch(e){
     if(stopped||!box.isConnected)return;
     text(conversation,"Sandy could not generate the next question: "+e.message);
@@ -119,7 +119,16 @@ function knowledge(){
    }
   }
   answer.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();if(!submit.disabled)submit.click()}});
-  actions.append(stop,submit);box.append(heading,conversation,answer,actions);row.append(box);
+  const skip=aBtn("Skip question",async()=>{
+   if(!turn||submit.disabled)return;
+   submit.disabled=true;skip.disabled=true;
+   try{
+    await api("enrich_skip",{turn_id:turn.id,reason:"User marked this question as unnecessary"});
+    conversation.replaceChildren(document.createTextNode("Skipped. Finding a more useful question…"));
+    await nextQuestion();
+   }catch(e){notify("Could not skip: "+e.message);submit.disabled=false;skip.disabled=false}
+  },"smallbutton");
+  actions.append(stop,skip,submit);box.append(heading,conversation,answer,actions);row.append(box);
   text(conversation,"Sandy is thinking of a relevant question…");await nextQuestion();
  }
  function drawFacts(){
