@@ -237,7 +237,7 @@ const missionRefresh=async()=>{
      const actions=el("div","sandyMissionReview");
      for(const [label,decision] of [["Approve proposed plan","approve_plan"],["Request revision","request_revision"]]){
        const b=el("button","btn small",label);b.type="button";b.addEventListener("click",async()=>{if(b.disabled)return;
-       b.disabled=true;try{await call("mission_review",{task_id:m.id,decision});await missionRefresh()}catch(e){b.disabled=false;alert("Could not save your review: "+(e.message||"Please retry."))}});actions.append(b)}
+       b.disabled=true;try{const feedback=decision==="request_revision"?prompt("What should Sandy change in the plan?"):null;if(decision==="request_revision"&&!feedback?.trim()){b.disabled=false;return}await call("mission_review",{task_id:m.id,decision,feedback:feedback||""});await missionRefresh()}catch(e){b.disabled=false;alert("Could not save your review: "+(e.message||"Please retry."))}});actions.append(b)}
      item.append(actions);
      item.append(el("p","small muted","Approval accepts the plan for tracking; external messages, payments and legal decisions remain separately gated."));
    }
@@ -254,7 +254,7 @@ const missionRefresh=async()=>{
        const actions=el("div","sandyMissionReview");
        for(const [label,decision] of [["Approve draft","approve"],["Request revision","revise"]]){
          const btn2=el("button","btn small",label);btn2.type="button";
-         btn2.addEventListener("click",async()=>{btn2.disabled=true;try{await call("mission_deliverable_review",{work_product_id:product.id,decision});await missionRefresh()}catch(e){btn2.disabled=false;alert("Review could not be saved: "+(e.message||"Please retry."))}});
+         btn2.addEventListener("click",async()=>{btn2.disabled=true;try{const feedback=decision==="revise"?prompt("What should Sandy change in this draft?"):null;if(decision==="revise"&&!feedback?.trim()){btn2.disabled=false;return}await call("mission_deliverable_review",{work_product_id:product.id,decision,feedback:feedback||""});await missionRefresh()}catch(e){btn2.disabled=false;alert("Review could not be saved: "+(e.message||"Please retry."))}});
          actions.append(btn2);
        }
        work.append(actions);
