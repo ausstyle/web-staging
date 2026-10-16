@@ -117,6 +117,17 @@ input:focus,select:focus,textarea:focus{outline-color:#555!important}
 @media(max-width:850px){.agendaSide{display:none}#app.shell{margin:0;padding-left:14px;padding-right:14px}#agendaMobileNav{display:inline-flex;border:1px solid #ddd;border-radius:8px;background:#fff;padding:6px 10px}body.agendaNavOpen .agendaSide{display:flex;box-shadow:0 0 0 100vmax #0006}}
 .agendaSide .sideClose{display:none;position:absolute;right:12px;top:16px;border:0;background:transparent;font-size:22px}
 @media(max-width:850px){.agendaSide .sideClose{display:block}}
+
+/* Direct editing on every task line: native one-click date picker and priority menu */
+.quickTaskControls{display:flex;align-items:center;gap:5px;flex-shrink:0;opacity:1}
+.inlineDue,.inlinePriority{font:inherit;font-size:11px;font-weight:570;color:#333;background:white;border:1px solid #ddd;border-radius:7px;height:31px;padding:3px 5px;cursor:pointer}
+.inlineDue{width:130px;min-width:0;color-scheme:light}.inlinePriority{width:86px;min-width:0}
+.inlineDue:focus-visible,.inlinePriority:focus-visible{outline:2px solid #111;outline-offset:1px}
+.taskrow>.right{opacity:1!important;gap:5px;align-items:center}
+.subtaskWorkspace{font:inherit;font-size:11px;max-width:135px;color:#555;background:#f8f8f8;border:1px solid #e5e5e5;border-radius:7px;padding:4px 5px}
+.crossWorkspace{color:#3e3e3e!important;background:#ebebeb!important}
+@media(max-width:870px){.taskrow{flex-wrap:wrap}.taskmain{flex:1;min-width:calc(100% - 95px)}.taskrow>.right{width:100%;justify-content:flex-start;padding-left:48px;flex-wrap:wrap}.quickTaskControls{flex-wrap:wrap}.inlineDue{width:139px}}
+@media(max-width:500px){.taskrow>.right{padding-left:27px}.inlineDue{width:128px}.inlinePriority{width:82px}.subtaskWorkspace{max-width:104px}.addchild{flex-wrap:wrap}}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -230,6 +241,27 @@ function inlineEditor(t,focusTarget){
  value.addEventListener("blur",save);
  if(focusTarget)queueMicrotask(()=>{value.focus();value.select()});return value
 }
+function quickTaskControls(t){
+ const wrap=el("div","quickTaskControls");
+ const date=el("input","inlineDue");date.type="date";date.value=localDate(t.due_at);
+ date.title="Set due date for "+t.title;date.setAttribute("aria-label","Due date for "+t.title);
+ date.addEventListener("change",async()=>{
+  const newDate=date.value;date.disabled=true;
+  try{await api("update",{id:t.id,due_at:fromDate(newDate)});await load();toast(newDate?"Due date saved":"Due date cleared")}
+  catch(e){date.value=localDate(t.due_at);toast(e.message,true)}
+  finally{date.disabled=false}
+ });
+ const prio=el("select","inlinePriority");prio.title="Set priority for "+t.title;prio.setAttribute("aria-label","Priority for "+t.title);
+ for(const [value,label] of [["normal","Normal"],["low","Low"],["high","High"],["urgent","Urgent"]])prio.add(new Option(label,value));
+ prio.value=t.priority||"normal";
+ prio.addEventListener("change",async()=>{
+  prio.disabled=true;
+  try{await api("update",{id:t.id,priority:prio.value});await load();toast("Priority saved")}
+  catch(e){prio.value=t.priority||"normal";toast(e.message,true)}
+  finally{prio.disabled=false}
+ });
+ wrap.append(date,prio);return wrap;
+}
 function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
  const children=childOf(t.id).filter(c=>workspaceMatches(c)&&(state.assigneeFilter!=="all"?isVisible(c,new Set()):(state.tab==="open"||state.tab==="all"?true:isVisible(c,new Set()))));
@@ -249,12 +281,13 @@ function renderTask(t,depth){
  main.append(titleArea);
  if(t.details)main.append(el("div","taskdesc",t.details.slice(0,130)));
  const meta=el("div","meta");
- if(t.due_at){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}
+ if(t.due_at&&t.shared){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}else if(t.due_at&&new Date(t.due_at)<new Date()&&t.status!=="completed"){meta.append(el("span","tag overdue","Overdue"))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
- if(t.priority==="urgent"||t.priority==="high")meta.append(el("span","tag "+t.priority,t.priority));
+ if(t.shared&&(t.priority==="urgent"||t.priority==="high"))meta.append(el("span","tag "+t.priority,t.priority));
  if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(state.workspace==="all"&&!t.shared)meta.append(el("span","tag",taskWorkspaceLabel(t.company_id)));const owners=[...taskWorkspaceOwners(t)];if(owners.length>1)meta.append(el("span","tag crossWorkspace","Across "+owners.join(" + ")));if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
+ if(!t.shared)right.append(quickTaskControls(t));
  const add=btn("＋","iconbtn",()=>{state.expanded.delete(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render();const box=document.querySelector('[data-add-for="'+t.id+'"] input');box?.focus()});
  add.title="Add a subtask";if(!t.shared)right.append(add);
  const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";if(!t.shared)right.append(edit);row.append(right);outer.append(row);
