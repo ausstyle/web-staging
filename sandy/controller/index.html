@@ -30,8 +30,43 @@ main{padding:28px clamp(18px,3.4vw,62px) 100px;min-width:0;max-width:1720px;widt
 .visualBar{display:flex;align-items:center;gap:10px;padding:9px 0}.visualBar label{width:150px;max-width:40%;font-size:12px}.visualBar .track{flex:1;height:11px;border-radius:6px;background:#eee;overflow:hidden}.visualBar .fill{height:100%;background:#333}.visualBar small{width:32px;text-align:right}
 @media(max-width:1050px){.visualSplit{grid-template-columns:1fr}.visualSteps{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:550px){.visualSteps{grid-template-columns:1fr}.visualMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.visualMetric{padding:13px}}
+</style><style>
+:root{font-size:14px;background:#f6f6f5;color:#171717}
+body{background:#f6f6f5}#layout{grid-template-columns:260px minmax(0,1fr)}
+aside{background:#fff;border-right:1px solid #e7e7e7;padding:27px 16px}
+.brand{padding:3px 12px;font-size:27px;letter-spacing:-1.5px}.brand small{font-size:10px;letter-spacing:.17em;margin-top:-3px}
+.menu{gap:3px;margin-top:31px}.navGroup{color:#969696;font-size:10px;font-weight:800;letter-spacing:.13em;padding:19px 13px 7px}
+.nav{display:flex;gap:11px;align-items:center;font-size:13px;font-weight:550;border-radius:9px;padding:10px 12px}
+.nav.active{background:#181818;color:#fff}.nav:hover:not(.active){background:#f1f1f1}
+main{padding:27px clamp(20px,4vw,65px) 90px;max-width:1650px}
+.top{background:transparent;border-bottom:1px solid #dedede;padding-bottom:17px}.top b{font-size:12px;font-weight:650}
+h1{font-size:clamp(29px,3.5vw,43px);letter-spacing:-.055em;margin:30px 0 1px}h2{letter-spacing:-.035em;font-size:18px;margin:0 0 13px}
+.panel{border:1px solid #e8e8e8;box-shadow:0 2px 12px #00000005;border-radius:16px;padding:23px;background:#fff;margin:15px 0}
+.stat{background:white;border-radius:14px;box-shadow:0 2px 12px #00000005;padding:19px}.stat b{font-size:35px}
+.btn{border-radius:9px;padding:10px 15px}.btn.primary{background:#171717;color:white}
+.workspaceGrid{display:grid;grid-template-columns:1.6fr 1fr;gap:15px}.workspaceGrid .panel{margin:0}
+.workspaceKpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:24px 0}
+.workspaceKpi{background:white;border:1px solid #e9e9e9;border-radius:14px;padding:20px;min-width:0}
+.workspaceKpi .big{font-weight:780;font-size:35px;line-height:1.3;letter-spacing:-.07em}
+.workspaceKpi .label{font-size:12px;color:#737373}
+.workspaceKpi .foot{font-size:11px;color:#939393;margin-top:13px}
+.workspaceCard{background:#fff;border:1px solid #e7e7e7;border-radius:13px;padding:16px;margin:9px 0}
+.workspaceCard b{font-size:13px}.workspaceCard p{margin:6px 0;color:#717171;font-size:12px}
+.workspacePill{display:inline-block;font-size:10px;font-weight:750;padding:5px 8px;background:#f0f0f0;border-radius:6px;letter-spacing:.02em}
+.workspacePill.dark{background:#171717;color:#fff}
+.workspaceTop{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.workspaceTimeline{border-left:2px solid #e1e1e1;margin-left:8px;padding-left:21px}
+.workspaceTimeline .workspaceCard{position:relative}.workspaceTimeline .workspaceCard:before{content:"";position:absolute;width:9px;height:9px;background:#555;border:3px solid white;border-radius:50%;left:-31px;top:17px}
+.workspaceTwo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:15px}
+.workspaceEmpty{color:#888;font-size:13px;border:1px dashed #d8d8d8;border-radius:12px;padding:25px;text-align:center}
+.workspaceSearch{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:8px 0 15px}
+.workspaceDetail{margin-top:15px}.workspaceDetail details{border:1px solid #ebebeb;background:#fff;border-radius:12px;padding:14px;margin:8px 0}
+.workspaceDetail summary{cursor:pointer;font-weight:650}.workspaceDetail p{overflow-wrap:anywhere}
+@media(max-width:1050px){.workspaceGrid,.workspaceTwo{grid-template-columns:1fr}.workspaceKpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:950px){#layout{grid-template-columns:1fr}aside{position:sticky;top:0;height:auto;z-index:3;padding:10px 15px;border-bottom:1px solid #ddd;overflow:visible}.brand{font-size:22px}.menu{display:flex;gap:5px;overflow-x:auto;margin-top:10px;padding-bottom:5px}.navGroup{display:none}.menu .nav{white-space:nowrap;flex:none}aside .sub,aside>a.nav{display:none}main{padding:20px 16px}.top{gap:8px}}
+@media(max-width:520px){.workspaceKpis{gap:8px}.workspaceKpi{padding:12px}.workspaceKpi .big{font-size:28px}.panel{padding:17px}.menu .nav{font-size:12px;padding:9px 10px}.top .btn{padding:8px}}
 </style></head><body><div id="gate"><div class="signin"><div class="brand">✳ sandy.<small>CONTROLLER / RESTRICTED OPERATIONS</small></div><h1>Operator sign in</h1><p class="muted">Your private administration console. Access requires a separately authorised Sandy operator account.</p><button id="signin" class="btn primary" style="width:100%">Sign in with Sandy</button><p id="gateMsg" class="status" role="alert"></p><p id="signedInAs" class="small muted"></p><button id="switchAccount" class="btn" type="button" style="width:100%;margin-top:8px">Switch Sandy account</button><p class="small muted">For access, sign in with your approved Sandy account using the shared workspace sign-in flow.</p></div></div>
-<div id="layout" class="hide"><aside><div class="brand">✳ sandy.<small>CONTROLLER</small></div><div class="menu" id="menu"><button class="nav active" data-view="overview">◫ Mission Control</button><button class="nav" data-view="missions">◎ Missions</button><button class="nav" data-view="engineering">⚒ Engineering</button><button class="nav" data-view="intelligence">◈ Sandy Intelligence</button><button class="nav" data-view="activity">↻ Activity & investigations</button><button class="nav" data-view="engagement">♙ Users & engagement</button><button class="nav" data-view="qa">✓ QA & improvements</button><button class="nav" data-view="integrations">⌁ Integrations</button><button class="nav" data-view="architecture">◇ Architecture</button><button class="nav" data-view="capabilities">✧ Capabilities</button><button class="nav" data-view="operations">☷ Operations</button></div><div class="sub">LINKS</div><a class="nav" style="display:block;text-decoration:none" href="../app/">← Client workspace</a></aside>
+<div id="layout" class="hide"><aside><div class="brand">✳ sandy.<small>CONTROLLER</small></div><div class="menu" id="menu"><div class="navGroup">WORKSPACE</div><button class="nav active" data-view="overview">▦ <span>Command centre</span></button><button class="nav" data-view="missions">◎ <span>Missions</span></button><button class="nav" data-view="activity">◷ <span>Execution history</span></button><div class="navGroup">QUALITY & DELIVERY</div><button class="nav" data-view="intelligence">✳ <span>Sandy Intelligence</span></button><button class="nav" data-view="engineering">◈ <span>Improvement pipeline</span></button><button class="nav" data-view="qa">✓ <span>QA laboratory</span></button><div class="navGroup">SYSTEM</div><button class="nav" data-view="integrations">⌘ <span>Integrations</span></button><button class="nav" data-view="capabilities">◇ <span>Capabilities</span></button><button class="nav" data-view="engagement">♧ <span>Clients</span></button><button class="nav" data-view="architecture">⌁ <span>Architecture</span></button><button class="nav" data-view="operations">⚙ <span>Operations</span></button></div><div class="sub">LINKS</div><a class="nav" style="display:block;text-decoration:none" href="../app/">← Client workspace</a></aside>
 <main><div class="top"><div><b>Administration / <span id="sectionName">Overview</span></b><div id="updated" class="muted small">Loading metrics…</div></div><div><button id="refresh" class="btn">↻ Refresh</button> <button id="signout" class="btn">Sign out</button></div></div><h1 id="heading">Sandy operations</h1><p id="subtitle" class="muted">Your private control room for running and improving Sandy.</p><div id="content"></div></main></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -103,20 +138,18 @@ function showEngineering(c){
  const q=panel("Improvement proposals");const items=missionTelemetry?.improvements||data.proposals;searchable(q,items,["Issue","Status"],(x,i)=>[x.failure_description,x.status][i]);c.append(q);
 }
 function showOverview(c){
- if(missionTelemetry){const m=missionTelemetry.counts||{};const p=panel("Mission Control · live mission telemetry");txt(p,"Active missions: "+(m.missions??"—")+" · Waiting or blocked: "+(m.blocked??"—")+" · Need client input: "+(m.needs_input??"—")+" · Failed runs: "+(m.failed_runs??"—"));const b=el("button","btn primary","Inspect missions");b.onclick=()=>{view="missions";location.hash=view;render()};p.append(b);c.append(p)}
- const s=el("div","stats");
- const totals=data.verifiedTotals||{};
- for(const [label,value] of [["Email messages",totals.email_messages],["QA cases",totals.qa_cases],["Roadmap items",totals.roadmap],["QA failures",data.qaSummary?.failed]]){
-  const card=el("div","stat");add(card,el("span","",label),el("b","",value===null||value===undefined?"—":value));s.append(card)
- }
- c.append(s);
- const p=panel("Needs attention");const summary=data.qaSummary||{};
- txt(p,(summary.failed||0)+" failed QA cases · "+(summary.retest_pending||0)+" awaiting retest · "+(summary.other||0)+" other unresolved cases.");
- txt(p,"Counts are from current QA records. Recent activity and calendar execution outcomes are available under Activity & investigations.","small muted");
- const go=el("button","btn primary","Investigate recent requests →");
- go.onclick=()=>{view="activity";location.hash=view;render();loadActivity(true)};
- p.append(go);c.append(p);
- const p2=panel("Recently updated QA cases");p2.append(tbl(["Case","Status","Next action"],data.qa.slice().sort((a,b)=>String(b.updated_at).localeCompare(String(a.updated_at))).slice(0,10),(x,i)=>[x.subject,x.status,x.next_action||"—"][i]));c.append(p2);
+ const m=missionTelemetry?.counts||{},tot=data.verifiedTotals||{},qa=data.qaSummary||{};
+ const k=el("div","workspaceKpis");
+ [["Active missions",m.missions,"Recent mission sample"],["Need input",m.needs_input,"Awaiting client response"],["Failed runs",m.failed_runs,"Requires investigation"],["Unresolved QA",(qa.failed||0)+(qa.retest_pending||0),"QA case sample"]].forEach(([name,v,foot])=>{const x=el("div","workspaceKpi");add(x,el("div","label",name),el("div","big",v??"—"),el("div","foot",foot));k.append(x)});c.append(k);
+ const grid=el("div","workspaceGrid"),main=panel("Priority queue"),side=panel("Quick navigation");
+ txt(main,"Projects requiring attention, sorted by blocked work and outstanding questions.","small muted");
+ const items=(missionTelemetry?.missions||[]).filter(x=>x.open_questions||x.runs?.some(r=>r.state==="failed")||["waiting","blocked"].includes(x.status)).slice(0,12);
+ items.forEach(x=>{const card=el("div","workspaceCard"),top=el("div","workspaceTop");add(top,el("b","",x.title),el("span","workspacePill",x.open_questions+" questions"));card.append(top);txt(card,"State: "+(x.metadata?.execution_state||x.status),"small muted");const go=el("button","btn","Inspect mission →");go.onclick=()=>{view="missions";location.hash=view;render();openMission(x.id)};card.append(go);main.append(card)});
+ if(!items.length)main.append(el("div","workspaceEmpty",missionTelemetry?"No flagged missions in the current sample.":"Loading operational data…"));
+ for(const [title,description,target] of [["Missions","Inspect commitments and decision trees","missions"],["Sandy Intelligence","Understand incidents and improvements","intelligence"],["QA laboratory","Review tests and regression cases","qa"],["Engineering","Track corrective changes","engineering"]]){const b=el("button","workspaceCard");b.style.cssText="display:block;text-align:left;width:100%;cursor:pointer";add(b,el("b","",title),el("p","",description));b.onclick=()=>{view=target;location.hash=target;render()};side.append(b)}
+ const detail=el("div","workspaceCard");add(detail,el("b","","Recorded totals"),el("p","","Email messages: "+(tot.email_messages??"—")+" · QA cases: "+(tot.qa_cases??"—")+" · Roadmap items: "+(tot.roadmap??"—")));side.append(detail);
+ grid.append(main,side);c.append(grid);
+ txt(c,"Mission metrics are limited to recent records. A recorded action is not necessarily verified completion.","small muted");
 }
 let activityRows=[],activityCursor=null;
 async function loadActivity(reset=true){
