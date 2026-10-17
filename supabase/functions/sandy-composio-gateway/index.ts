@@ -61,7 +61,39 @@ Deno.serve(async(req:Request)=>{
   const {data:administrator}=await db.from("sandy_controller_admins").select("enabled").eq("auth_user_id",identity.user.id).eq("enabled",true).maybeSingle();
   let components:any[]|undefined=undefined;
   if(administrator){
-    if(data.refresh_architecture===true){const refreshed=await db.rpc("sandy_v2_refresh_database_inventory");if(refreshed.error)return reply(503,{error:"database_inventory_refresh_failed"});}
+    if(data.refresh_architecture===true){
+      const refreshed=await db.rpc("sandy_v2_refresh_database_inventory");
+      if(refreshed.error)return reply(503,{error:"database_inventory_refresh_failed"});
+      // Public GitHub repository tree is a source inventory, not evidence of production deployment.
+      try{
+        const source=await fetch("https://api.github.com/repos/ausstyle/web-staging/git/trees/main?recursive=1",{
+          headers:{"accept":"application/vnd.github+json","user-agent":"sandy-v2-architecture-inventory"},
+          signal:AbortSignal.timeout(15000)
+        });
+        if(source.ok){
+          const tree=await source.json();
+          if(tree.truncated!==true&&Array.isArray(tree.tree)){
+            const tracked=tree.tree.filter((item:any)=>item.type==="blob"&&typeof item.path==="string"&&
+              (/^supabase\/functions\/[^/]+\/index\.ts$/.test(item.path)||
+               /^\.github\/workflows\/sandy-[^/]+\.yml$/.test(item.path)||
+               /^sandy\/[^/]+\/index\.html$/.test(item.path)));
+            const entries=tracked.slice(0,200).map((item:any)=>({
+              component_key:"repo:"+item.path,
+              component_type:"repository_file",
+              source_of_truth:"github:ausstyle/web-staging@main",
+              deployment_state:"repository_observed_not_proof_deployed",
+              verification_note:"Observed source blob SHA "+String(item.sha||"").slice(0,40),
+              last_verified_at:new Date().toISOString(),
+              updated_at:new Date().toISOString()
+            }));
+            if(entries.length){
+              const {error:writeError}=await db.from("sandy_v2_component_inventory").upsert(entries,{onConflict:"component_key"});
+              if(writeError)console.error("v2_repo_inventory_upsert",writeError.code);
+            }
+          }
+        }
+      }catch(e){console.error("v2_repo_inventory_unavailable",String(e).slice(0,80));}
+    }
     const {data:inventory}=await db.from("sandy_v2_component_inventory").select("component_key,component_type,deployment_state,last_verified_at").limit(400);
     components=inventory||[];
   }
