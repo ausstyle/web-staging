@@ -10,6 +10,18 @@
 <h2>Your connections</h2><div id="connections" class="grid"><p class="sub">Loading connected accounts…</p></div>
 <p class="sub" style="margin-top:30px">Connecting an app does not automatically authorise Sandy to send messages, transfer money, or perform other high-impact actions. Those permissions are controlled separately.</p>
 </main>
+<script>
+window.addEventListener("load",()=>{
+ const notice=document.getElementById("notice"),apps=document.getElementById("apps"),connections=document.getElementById("connections");
+ setTimeout(()=>{
+  if(apps&&apps.textContent.includes("Loading apps")){
+   notice.textContent="Could not start app connections. Please refresh the page or sign in through Sandy's workspace.";
+   apps.innerHTML='<p class="sub">App catalogue unavailable. Try refreshing this page.</p>';
+   if(connections&&connections.textContent.includes("Loading connected accounts"))connections.innerHTML='<p class="sub">Connection status unavailable.</p>';
+  }
+ },14000);
+});
+</script>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
