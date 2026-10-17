@@ -29,9 +29,12 @@ class HandoffTests(unittest.TestCase):
 
     def test_nested_manifest_posted_once(self):
         calls=self.execute('DECISION: BLOCKED\nDEPENDENCIES_JSON:\n{"dependencies":[{"type":"edge_function","name":"sandy-people-network"},{"type":"edge_function","name":"sandy-people-network"}]}')
-        self.assertEqual(len(calls),2)
-        self.assertEqual(calls[-1][:3],["gh","issue","comment"])
-        self.assertEqual(calls[-1][-1].count("sandy-people-network"),1)
+        self.assertEqual(len(calls),4)
+        self.assertEqual(calls[1][:3],["gh","issue","comment"])
+        self.assertEqual(calls[1][-1].count("sandy-people-network"),1)
+        self.assertEqual(calls[2][:3],["gh","workflow","run"])
+        self.assertIn("edge_function=sandy-people-network",calls[2])
+        self.assertEqual(calls[3][:3],["gh","issue","comment"])
 
     def test_missing_edge_function_queues_protected_audit(self):
         calls = self.execute('DECISION: BLOCKED\nDEPENDENCIES_JSON:\n{"dependencies":[{"type":"edge_function","name":"sandy-function-never-present-xyz"}]}')
