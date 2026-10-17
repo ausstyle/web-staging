@@ -30,3 +30,8 @@ A live query of `pg_policies` for sandy_tasks, sandy_task_delegations, sandy_tas
 
 ## First incident
 The historical Villa task exists and had an accepted delegation by the later WhatsApp replies. Independent evidence-backed QA recorded contradictions for outbound message IDs 1272 and 1278. These records support the historical defect, not successful remediation.
+
+## Supplemental production inspection (2026-10-17)
+- PostgreSQL `pg_class` reports `relrowsecurity=true` and `relforcerowsecurity=false` for all five inspected tables: `sandy_tasks`, `sandy_task_delegations`, `sandy_task_participants`, `sandy_external_task_invitations`, `sandy_qa_engineering_handoffs`. RLS is enabled, but role bypass and effective grants still need independent review.
+- The deployed `sandy_task_delegation_scope_guard()` trigger prevents subtree delegations spanning different task workspaces by recursively walking descendants and comparing `company_id` to the task root. This is a workspace-consistency check, **not proof of sender authorisation**.
+- Attempts to retrieve full bodies for `sandy_agenda_claim_invite` and `sandy_claim_external_task_invitation`, and to enumerate role grants, were blocked. These remain missing evidence; no inference of secure permissions should be made.
