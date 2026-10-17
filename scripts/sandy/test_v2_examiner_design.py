@@ -62,7 +62,8 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('Never mark resolved based solely on a merged PR', EDGE)
 
     def test_approved_high_reasoning_openai_model(self):
-        self.assertIn('gpt-6-astra', EDGE)
+        self.assertIn('const designModel=String((policy.config as any)?.model||"gpt-5.2")', EDGE)
+        self.assertIn('approvedModel?.eligibility!=="approved"', EDGE)
         self.assertIn('reasoning:{effort:"high"}', EDGE)
         self.assertIn('api.openai.com/v1/responses', EDGE)
         self.assertIn('eligibility!=="approved"', EDGE)
