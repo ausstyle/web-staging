@@ -35,6 +35,22 @@ class TestV2ArchitecturalContracts(unittest.TestCase):
         self.assertIn('sandy_v2_model_decisions', self.agent)
         self.assertLess(self.agent.index('const update=async'), self.agent.index('const confirmation='))
 
+    def test_customer_scoped_runtime_introspection(self):
+        self.assertIn('name:"inspect_sandy_operational_state"', self.agent)
+        self.assertIn('sandy_web_turns', self.agent)
+        self.assertIn('current_conversation_messages', self.agent)
+        self.assertIn('.eq("customer_id",customerId).eq("conversation_id",conversationId)', self.agent)
+        self.assertIn('scope:"web_only"', self.agent)
+        self.assertIn('physical_location:"not_available"', self.agent)
+        self.assertIn('current_conversation_state', self.agent)
+
+    def test_trusted_web_caller_conversation_identity(self):
+        workspace = (ROOT / "supabase/functions/sandy-workspace/index.ts").read_text()
+        self.assertIn('conversation_id:conversationId', workspace)
+        self.assertIn('.eq("customer_id",owner.customer)', workspace)
+        self.assertIn('const trustedServiceCaller=', self.agent)
+        self.assertIn('const conversationId=trustedServiceCaller', self.agent)
+
     def test_chat_contradictions_feed_self_diagnosis(self):
         self.assertIn('mismatched.length?"contradiction"', self.agent)
         self.assertIn('sandy_supervisor_findings', self.agent)
