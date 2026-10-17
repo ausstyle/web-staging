@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run Sandy's evidence-backed feature discovery using ephemeral GitHub OIDC."""
+import http.client
 import json
 import os
 import re
@@ -21,6 +22,7 @@ def verify_response(data):
 
 
 REPO="ausstyle/web-staging"
+MAX_ISSUE_PAGES = 5
 KEY=re.compile(r"^[a-z][a-z0-9_]{5,79}$")
 def clean_for_public_issue(value):
     """Strictly minimise customer-derived details posted to a PUBLIC repository."""
@@ -60,9 +62,36 @@ def github(method, resource, data=None):
         return json.load(response)
 
 
+def list_issues():
+    """Require a complete, bounded listing before publishing any handoffs."""
+    issues=[]
+    seen=set()
+    for page in range(1, MAX_ISSUE_PAGES + 1):
+        resource=f"issues?state=all&per_page=100&sort=created&direction=asc&page={page}"
+        try:
+            batch=github("GET",resource)
+        except (OSError, ValueError, http.client.HTTPException):
+            raise RuntimeError("GitHub issue listing failed") from None
+        if not isinstance(batch,list) or len(batch)>100:
+            raise RuntimeError("Invalid GitHub issue listing")
+        for issue in batch:
+            if (not isinstance(issue,dict)
+                    or type(issue.get("number")) is not int or issue["number"]<=0
+                    or "body" not in issue
+                    or (issue["body"] is not None and not isinstance(issue["body"],str))):
+                raise RuntimeError("Invalid GitHub issue listing")
+            if issue["number"] in seen:
+                raise RuntimeError("Repeated GitHub issue in listing")
+            seen.add(issue["number"])
+        issues.extend(batch)
+        if len(batch)<100:
+            return issues
+    raise RuntimeError("GitHub issue listing page limit reached")
+
+
 def issue_for(item, existing):
     marker="<!-- sandy-feature-key:"+item["key"]+" -->"
-    matches=[x for x in existing if marker in str(x.get("body") or "") and not x.get("pull_request")]
+    matches=[x for x in existing if marker in str(x.get("body") or "") and "pull_request" not in x]
     if matches:
         return matches[0]["number"]
     title="Sandy feature: "+item["key"].replace("_"," ")
@@ -122,7 +151,7 @@ def main():
     if os.environ.get("GITHUB_EVENT_NAME")=="push":
         print(json.dumps({**report,"smoke_only":True,"github_publication":False}))
         return
-    issues=github("GET","issues?state=all&per_page=100")
+    issues=list_issues()
     for pending in (outcome.get("pending") or [])[:5]:
         feature=validate_pending(pending)
         if feature is None:
