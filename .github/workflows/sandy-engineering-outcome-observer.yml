@@ -6,6 +6,7 @@ on:
     types:
       - completed
 permissions:
+  id-token: write
   contents: read
   actions: read
   issues: write
@@ -25,4 +26,7 @@ jobs:
           ARCHITECT_RUN_ID: ${{ github.event.workflow_run.id }}
           ARCHITECT_RUN_TITLE: ${{ github.event.workflow_run.display_title }}
           ARCHITECT_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SANDY_OUTCOME_FILE: /tmp/sandy-engineering-outcome.json
         run: python3 scripts/sandy/observe_architect_run.py
+      - name: Record signed outcome in Sandy's existing engineering cycle
+        run: python3 scripts/sandy/post_architect_outcome.py

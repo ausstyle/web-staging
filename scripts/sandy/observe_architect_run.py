@@ -25,6 +25,20 @@ def describe(title, first_line, pr):
         outcome="No validated Architect decision artifact; do not treat this run as successful engineering."
     return issue,outcome
 
+def event_payload(title, first_line, run_id, pr):
+    """Only verified report first lines can enter the Supabase engineering state machine."""
+    match = TITLE.fullmatch(title)
+    if not match or first_line not in ("DECISION: READY", "DECISION: BLOCKED"):
+        return None
+    if not re.fullmatch(r"[0-9]{5,20}", run_id):
+        return None
+    return {
+        "issue_number": int(match.group(1)),
+        "architecture_run_id": run_id,
+        "decision": first_line.removeprefix("DECISION: "),
+        "pr_number": int(pr["number"]) if first_line == "DECISION: READY" and pr else None,
+    }
+
 def gh(*args,check=True):
     return subprocess.run(["gh",*args],capture_output=True,text=True,check=check)
 
@@ -45,6 +59,9 @@ def main():
     prs=json.loads(pr_list.stdout)
     pr=prs[0] if isinstance(prs,list) and prs else None
     decision=describe(title,first,pr)
+    outcome=event_payload(title,first,run_id,pr)
+    if outcome is not None and os.environ.get("SANDY_OUTCOME_FILE"):
+        Path(os.environ["SANDY_OUTCOME_FILE"]).write_text(json.dumps(outcome))
     if decision is None:
         return
     marker=f"<!-- sandy-architect-observation:{run_id} -->"
