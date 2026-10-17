@@ -1,0 +1,28 @@
+name: Sandy engineering outcome observer
+on:
+  workflow_run:
+    workflows:
+      - Sandy Architect and Engineer
+    types:
+      - completed
+permissions:
+  contents: read
+  actions: read
+  issues: write
+  pull-requests: read
+jobs:
+  observe:
+    if: ${{ github.event.workflow_run.head_repository.full_name == 'ausstyle/web-staging' && github.event.workflow_run.head_branch == 'main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Inspect completed engineering run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHITECT_RUN_ID: ${{ github.event.workflow_run.id }}
+          ARCHITECT_RUN_TITLE: ${{ github.event.workflow_run.display_title }}
+          ARCHITECT_RUN_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: python3 scripts/sandy/observe_architect_run.py

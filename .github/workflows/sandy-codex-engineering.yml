@@ -1,4 +1,5 @@
 name: Sandy Architect and Engineer
+run-name: Sandy engineering issue #${{ inputs.issue_number }}
 on:
   workflow_dispatch:
     inputs:
