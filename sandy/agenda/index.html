@@ -283,7 +283,7 @@ html,body{max-width:100%;overflow-x:clip}
 }
 
 .missionOverview{background:#fff;border:1px solid #e2e6df;border-radius:13px;padding:15px;margin:8px 0 18px}.missionHeader{display:flex;justify-content:space-between;align-items:center;gap:12px}.missionHeader strong{font-size:16px}.missionHeader p{color:#68716a;font-size:12px;margin:3px 0 0}.missionCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:9px;margin-top:12px}.missionCard{text-align:left;background:#fafbf9;border:1px solid #e1e6de;border-radius:10px;padding:11px 13px;cursor:pointer;color:inherit;font:inherit;min-width:0}.missionCard:hover{background:#f1f6ef;border-color:#acbead}.missionCardTitle{font-weight:700;line-height:1.3;font-size:13px}.missionCardMeta{font-size:11px;color:#607060;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:7px 0}.missionProgress{height:5px;background:#e6ebe4;border-radius:8px;overflow:hidden}.missionProgress span{display:block;background:#668a6a;height:100%}.missionCardInfo{font-size:11px;color:#68716a;margin-top:7px}.missionEmpty{font-size:12px;color:#737973;padding:8px 0}.missionOverview button:focus-visible{outline:2px solid #658568;outline-offset:2px}@media(max-width:700px){.missionHeader{align-items:flex-start}.missionCards{grid-template-columns:1fr}.missionOverview{padding:12px}}
-</style></head><body>
+.missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n</style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
 <header><button type="button" id="agendaMobileNav" aria-label="Open navigation" onclick="document.body.classList.add('agendaNavOpen')">☰</button><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
@@ -991,6 +991,26 @@ function renderMissionOverview(){
   const meta=el("div","missionCardMeta");meta.append(el("span","",stateText.replaceAll("_"," ")),el("span","",children.done+"/"+children.total+" steps"));card.append(meta);
   const track=el("div","missionProgress");const fill=el("span");fill.style.width=percent+"%";track.append(fill);card.append(track);
   const info=el("div","missionCardInfo",clientSteps?(clientSteps+" direct action"+(clientSteps===1?"":"s")+" for you · ")+(outstanding?outstanding+" question(s) pending · ":"")+"Open mission →":(outstanding?outstanding+" question(s) pending · ":"")+"Open mission and milestones →");card.append(info);
+  const pendingQuestions=state.missionQuestions.filter(q=>q.mission_task_id===t.id&&q.status!=="answered");
+  if(pendingQuestions.length){
+   const act=el("div","missionQuestionActions");
+   const answerBtn=btn("Answer Sandy's questions ("+pendingQuestions.length+")","btn small",async()=>{
+    for(const q of pendingQuestions){
+     const answer=prompt("Sandy asks about “"+t.title+"”:\\n\\n"+q.question+"\\n\\nYour response:");
+     if(answer===null)break;
+     if(!answer.trim()){toast("Please enter a response",true);break}
+     try{
+      const {data:authData}=await sandyAuth.auth.getSession();
+      const token=authData?.session?.access_token;
+      if(!token)throw Error("Sign in required");
+      const response=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-promote-mission?action=answer-question",{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({question_id:q.id,answer:answer.trim()})});
+      const result=await response.json();
+      if(!response.ok)throw Error(result.error||"Could not save answer");
+      toast("Answer saved for Sandy");await refreshMissionStatus();
+     }catch(e){toast(e.message,true);break}
+    }
+   });answerBtn.addEventListener("click",e=>e.stopPropagation());act.append(answerBtn);card.append(act);
+  }
   card.addEventListener("click",()=>{
    state.tab="all";state.view="tree";state.search="";$("search").value="";
    state.workspace=t.company_id||"personal";state.category=null;state.expanded.delete(t.id);
