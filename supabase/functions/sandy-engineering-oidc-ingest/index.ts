@@ -303,8 +303,13 @@ Deno.serve(async(req:Request)=>{
       });
       if(!response.ok){
         const status=response.status;
+        const problem=await response.json().catch(()=>({}));
+        const apiCode=String(problem?.error?.code||"unknown").slice(0,70).replace(/[^a-zA-Z0-9._-]/g,"_");
+        const apiType=String(problem?.error?.type||"unknown").slice(0,70).replace(/[^a-zA-Z0-9._-]/g,"_");
+        const apiParam=String(problem?.error?.param||"none").slice(0,70).replace(/[^a-zA-Z0-9._-]/g,"_");
+        // Store only provider structured error classification, never arbitrary error text.
         await finish("failed",{snapshot_hash:snapshotHash,source_summary:summary,
-          rejection_reason:"provider_http_"+status});
+          rejection_reason:"provider_http_"+status+"_"+apiCode+"_"+apiType+"_"+apiParam});
         return fail("examiner_design_provider_http_"+status,503);
       }
       const output=await response.json();
