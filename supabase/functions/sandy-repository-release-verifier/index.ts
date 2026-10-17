@@ -48,6 +48,9 @@ Deno.serve(async(req:Request)=>{
     pr.merge_commit_sha!==run.head_sha||
     pr.head?.repo?.full_name!==REPO)
     return fail("unverified_main_release",409);
+  const expectedBranch=new RegExp("^sandy/codex-issue-"+issue_number+"-[0-9]{5,20}$");
+  if(pr.user?.login!=="github-actions[bot]"||!expectedBranch.test(String(pr.head?.ref||"")))
+    return fail("not_independently_engineered_bot_pr",409);
   if(issue.pull_request||!String(issue.body||"").includes("<!-- sandy-repo-only-engineering -->")||
      issue.repository_url!=="https://api.github.com/repos/"+REPO||
      !(new RegExp("(?:close[sd]?|fix(?:e[sd])?|references?)\\s+#"+issue_number+"\\b","i"))
@@ -62,6 +65,13 @@ Deno.serve(async(req:Request)=>{
   if(!url||!key)return fail("backend_unconfigured",503);
   const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
   const issueKey="github:issue:"+issue_number;
+  const {data:cycle,error:cycleError}=await db.from("sandy_autonomous_engineering_cycles")
+    .select("id").eq("issue_key",issueKey).maybeSingle();
+  if(cycleError||!cycle?.id)return fail("engineering_cycle_not_verified",409);
+  const {data:engineeringEvent,error:eventError}=await db.from("sandy_autonomous_engineering_events")
+    .select("id").eq("cycle_id",cycle.id).eq("event_type","engineering_pr_created")
+    .eq("evidence->>pr_number",String(pr_number)).limit(1).maybeSingle();
+  if(eventError||!engineeringEvent?.id)return fail("release_pr_not_signed_engineering",409);
   const autonomous=(
     typeof pr.head?.ref==="string" &&
     new RegExp("^sandy/codex-issue-"+issue_number+"-[0-9]{5,20}$").test(pr.head.ref) &&
