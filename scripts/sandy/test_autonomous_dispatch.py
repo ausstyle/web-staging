@@ -16,6 +16,11 @@ def run(number, status="completed", created="2026-10-17T16:00:00Z"):
 
 
 class AutoDispatchTests(unittest.TestCase):
+    def test_dispatcher_issue_escalation_requires_issue_write(self):
+        wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-autonomous-dispatch.yml').read_text()
+        self.assertIn('issues: write',wf)
+        self.assertNotIn('issues: read',wf)
+
     def test_engineer_cannot_attempt_unpublishable_workflows(self):
         wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-codex-engineering.yml').read_text()
         self.assertIn("Never modify .github/workflows/**",wf)
