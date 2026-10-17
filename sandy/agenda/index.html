@@ -271,13 +271,14 @@ const $ = id => document.getElementById(id);
 const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
+const internalWorkspace=new URLSearchParams(location.search).get("workspace")==="sandy";
 
 function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
 async function api(action,payload){
  const {data:authData}=await sandyAuth.auth.getSession();
  const access=authData?.session?.access_token;
  if(!access)throw new Error("Sign in to Sandy first");
- const options={credentials:"omit",headers:{"Content-Type":"application/json","Authorization":"Bearer "+access}};
+ const options={credentials:"omit",headers:{"Content-Type":"application/json","Authorization":"Bearer "+access,...(internalWorkspace?{"X-Sandy-Workspace":"internal"}:{})}};
  if(payload!==undefined){options.method="POST";options.body=JSON.stringify(payload)}
  const response=await fetch(base+"?action="+encodeURIComponent(action),options);
  const data=await response.json().catch(()=>({error:"Server returned an unexpected response"}));
@@ -957,9 +958,9 @@ $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const butt
 $("retryLogin").addEventListener("click",()=>{$("codeForm").classList.add("hidden");$("loginForm").classList.remove("hidden");$("loginMessage").textContent=""});
 $("codeForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;try{const verified=await api("verify-code",{email:$("loginEmail").value.trim(),code:$("loginCode").value.trim()});if(verified.token)sessionStorage.setItem("sandy_agenda_token",verified.token);await load()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
 $("logout").addEventListener("click",async()=>{await sandyAuth.auth.signOut();location.assign("../app/")});
-await sandyIdle.check();
+if(!internalWorkspace)await sandyIdle.check();
 const initial=await sandyAuth.auth.getSession();
-if(!initial.data.session){sessionStorage.setItem("sandy_agenda_return",location.pathname+location.search);location.replace("../app/?return="+encodeURIComponent(location.pathname+location.search))}else{
+if(!initial.data.session){if(internalWorkspace){$("loginScreen").classList.remove("hidden");$("loginMessage").textContent="Sign in to Sandy Master Control before opening Sandy’s internal Agenda.";}else{sessionStorage.setItem("sandy_agenda_return",location.pathname+location.search);location.replace("../app/?return="+encodeURIComponent(location.pathname+location.search))}}else{
  load().then(processInvitationLink).catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
 }
 </script></body></html>
