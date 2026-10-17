@@ -31,7 +31,7 @@ class AgendaNestedCategoryContracts(unittest.TestCase):
 
     def test_ui_exposes_company_category_navigation_and_task_assignment(self):
         for name in ('id="categoryBar"', 'id="taskCategoryField"', 'id="taskCategory"',
-                     "function renderCategories()", "function categoryIsWithin(",
+                     "function renderCategories()", "function useEntryWorkspace(", "function categoryIsWithin(",
                      'api("category-create"', 'api("category-update"',
                      'api("category-delete"', 'category_id:$("taskCategory").value||null'):
             self.assertIn(name, self.html, name)
