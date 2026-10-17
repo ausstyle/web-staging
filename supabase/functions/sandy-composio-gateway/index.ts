@@ -123,6 +123,21 @@ Deno.serve(async(req:Request)=>{
     };
     const {error:foundError}=await db.from("sandy_supervisor_findings").upsert(finding,{onConflict:"fingerprint"});
     if(foundError)console.error("v2_findings_write",foundError.code);
+    else{
+      // Existing autonomous diagnosis service is proposal-only and de-duplicates by source_ref.
+      const improveKey=Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY")||"";
+      if(improveKey){
+        const digest=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(fingerprint)))).map(b=>b.toString(16).padStart(2,"0")).join("");
+        const task=fetch(url+"/functions/v1/sandy-auto-improve",{
+          method:"POST",
+          headers:{"authorization":"Bearer "+improveKey,"content-type":"application/json"},
+          body:JSON.stringify({source_type:"system_awareness",source_ref:"v2_conn_"+digest.slice(0,40),
+            problem:"Verified Sandy integration mismatch: "+x.app+" was recorded ACTIVE for an authenticated workspace, but the Composio provider did not confirm it active. Investigate connection sync, provider permissions and chat action registry; do not infer a repair or reveal customer identity."}),
+          signal:AbortSignal.timeout(35000)
+        }).then(async r=>{if(!r.ok)console.error("v2_auto_improve_http",r.status)}).catch(e=>console.error("v2_auto_improve_unavailable",String(e).slice(0,120)));
+        EdgeRuntime.waitUntil(task);
+      }
+    }
   }
   const {error:audit}=await db.from("sandy_v2_awareness_audit").insert({
    customer_id:customerId,channel:"web",request_id:typeof data.request_id==="string"?data.request_id.slice(0,110):null,
