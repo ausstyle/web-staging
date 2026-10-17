@@ -33,7 +33,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('mission_execution_state_distribution:', EDGE)
         self.assertIn('const sourceKeys=new Set<string>', EDGE)
         self.assertIn('sourceKeys.has(x)', EDGE)
-        self.assertIn('if(!grounds.length)continue', EDGE)
+        self.assertIn('if(!grounds.length){rejectionCounts.ungrounded++;continue;}', EDGE)
 
     def test_missing_persisted_evidence_fails_closed(self):
         self.assertIn('throw new Error("examiner_design_receipt_failed_"', EDGE)
@@ -74,7 +74,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('note:"Shadow design only; no generated test has been automatically executed."', EDGE)
         self.assertIn('const allowedKeys=', EDGE)
         self.assertIn('const redFlags=', EDGE)
-        self.assertIn('if(!match[key].test(question))continue', EDGE)
+        self.assertIn('if(!match[key].test(question)){rejectionCounts.oracle_mismatch++;continue;}', EDGE)
         self.assertIn('await finish("rejected"', EDGE)
         design_block = EDGE.split('if(designFlow){', 1)[1].split('if(qaFlow){', 1)[0]
         self.assertNotIn('db.from("email_messages")', design_block)
@@ -135,6 +135,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('Mandatory validation: every question must contain language matching its oracle', EDGE)
         self.assertIn('grounding_keys exactly matching source keys', EDGE)
         self.assertIn('include at least one connections question and one task_count question', EDGE)
+
+    def test_proposal_rejection_diagnostics_are_aggregate_only(self):
+        self.assertIn('proposal_rejections:rejectionCounts', EDGE)
+        self.assertIn('proposals_returned:data.tests.length', EDGE)
+        self.assertIn('proposals_accepted:accepted.length', EDGE)
 
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
