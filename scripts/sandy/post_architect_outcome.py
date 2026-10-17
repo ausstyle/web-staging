@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 import urllib.parse
 import urllib.request
+import urllib.error
 
 AUDIENCE="sandy-engineering-outcomes-zmqlyygzqoidkcwdysok"
 ENDPOINT="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-engineering-oidc-ingest"
@@ -42,8 +43,18 @@ def main():
     body=json.dumps(obj).encode()
     post=urllib.request.Request(ENDPOINT,data=body,method="POST",
         headers={"Authorization":"Bearer "+oidc,"Content-Type":"application/json"})
-    with urllib.request.urlopen(post,timeout=20) as response:
-        result=json.load(response)
+    try:
+        with urllib.request.urlopen(post,timeout=20) as response:
+            result=json.load(response)
+    except urllib.error.HTTPError as error:
+        try:
+            failure=json.loads(error.read().decode("utf-8"))
+            reason=failure.get("reason","unspecified") if isinstance(failure,dict) else "invalid_response"
+            if not isinstance(reason,str) or not re.fullmatch(r"[a-z0-9_]{1,90}",reason):
+                reason="invalid_response"
+        except (ValueError,UnicodeDecodeError):
+            reason="invalid_response"
+        raise RuntimeError(f"Signed engineering outcome rejected: HTTP {error.code}, reason={reason}") from None
     if result.get("ok") is not True:
         raise RuntimeError("Supabase rejected signed engineering observation")
     print("Recorded verified engineering observation in Sandy's canonical Supabase cycle")
