@@ -49,12 +49,11 @@ jobs:
           supabase functions download "$SLUG" --project-ref zmqlyygzqoidkcwdysok --use-api
           test -s "supabase/functions/$SLUG/index.ts" || { echo "::error::Missing downloaded entrypoint"; exit 1; }
           python3 "$GITHUB_WORKSPACE/scripts/sandy/source_audit_manifest.py" "supabase/functions/$SLUG" > manifest.json
-      - name: Upload restricted review artifact
+      - name: Upload metadata-only audit artifact
         uses: actions/upload-artifact@v4
         with:
           name: sandy-source-audit-${{ inputs.issue_number }}-${{ github.run_id }}
           path: |
             /tmp/sandy-audit/manifest.json
-            /tmp/sandy-audit/supabase/functions/${{ inputs.edge_function }}/
           retention-days: 1
           if-no-files-found: error
