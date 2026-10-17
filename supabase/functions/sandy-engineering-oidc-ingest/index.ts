@@ -109,14 +109,37 @@ Deno.serve(async(req:Request)=>{
         }catch{gmailRead.reason="gmail_provider_unreachable";}
       }
     }
+
+    // A real provider read is only attempted with the corresponding independently
+    // confirmed service connection; return metadata-only receipts.
+    const providerRead=async(slug:string,tool:string,args:Record<string,unknown>)=>{
+      const conn=(connections||[]).find(x=>x.toolkit_slug===slug&&x.status==="ACTIVE"&&
+        rows.some((r:any)=>r.id===x.connected_account_id&&r.user_id==="sandy_customer_"+lab.customer_id&&String(r.status).toUpperCase()==="ACTIVE"));
+      if(!conn||!complete)return{attempted:false,successful:false,http_status:null as number|null,reason:"connection_not_confirmed"};
+      try{
+        const response=await fetch("https://backend.composio.dev/api/v3/tools/execute/"+tool,{
+          method:"POST",headers:{"x-api-key":composio,"content-type":"application/json"},
+          body:JSON.stringify({connected_account_id:conn.connected_account_id,
+            user_id:"sandy_customer_"+lab.customer_id,arguments:args}),
+          signal:AbortSignal.timeout(25000)
+        });
+        const body=await response.json().catch(()=>({}));
+        return{attempted:true,successful:response.ok&&body.successful===true&&body.error==null,
+          http_status:response.status,reason:response.ok&&body.successful===true&&body.error==null?"executed_read_only":"provider_tool_failure"};
+      }catch{return{attempted:true,successful:false,http_status:null as number|null,reason:"provider_unreachable"}}
+    };
+    const [driveRead,calendarRead]=await Promise.all([
+      providerRead("googledrive","GOOGLEDRIVE_LIST_FILES",{page_size:1,fields:"nextPageToken,files(id)"}),
+      providerRead("googlecalendar","GOOGLECALENDAR_LIST_CALENDARS",{max_results:1})
+    ]);
     // Provider verification does not mean tool execution has been verified.
     const {error:saveError}=await db.from("sandy_examiner_lab_accounts").update({
-      connection_status:verified?(gmailRead.successful?"gmail_read_verified_drive_calendar_pending":"provider_connections_verified_readonly_tests_pending"):"provider_verification_incomplete",
+      connection_status:verified?(gmailRead.successful?(driveRead.successful&&calendarRead.successful?"google_reads_verified_lab_review_pending":"gmail_read_verified_drive_calendar_pending"):"provider_connections_verified_readonly_tests_pending"):"provider_verification_incomplete",
       enabled:false,verified_at:verified?new Date().toISOString():null,updated_at:new Date().toISOString()
     }).eq("id",1).eq("customer_id",lab.customer_id);
     if(saveError)return fail("lab_result_persistence_failed",503);
     return json({ok:true,verified,provider_listing_complete:complete,services,
-      read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,lab_enabled:false});
+      read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,lab_enabled:false});
   }
   if(designFlow){
     if(body.operation!=="v2_examiner_design"||Object.keys(body).some(k=>k!=="operation"))
