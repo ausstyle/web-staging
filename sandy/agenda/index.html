@@ -245,13 +245,24 @@ html,body{max-width:100%;overflow-x:clip}
  .outlineControls{flex-wrap:wrap}
  input,select,textarea{font-size:16px!important}
 }
-.sandyMissionBadge{display:inline-block;background:#fff;border:1px solid #aaa;border-radius:5px;padding:2px 6px;font-size:10px;line-height:1.4;color:#111;font-weight:600;white-space:nowrap}@media(max-width:750px){.sandyMissionBadge{white-space:normal}}.requestPanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin:15px 0 22px}.requestPanelHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.requestBar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.requestBar input{flex:1;min-width:160px;padding:9px 11px;border:1px solid var(--line);border-radius:9px}.requestInboxItem{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}.requestInboxItem:first-child{margin-top:12px}.requestInboxItem strong{flex:1;min-width:180px}.requestInboxItem .btn{white-space:nowrap}.summary{grid-template-columns:repeat(5,minmax(0,1fr))}.requestDetail{flex-basis:100%;width:100%;background:#f8faf7;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:4px;display:grid;gap:10px}.requestDetail.hidden{display:none}.requestDetailLine{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px;overflow-wrap:anywhere}.requestDetailLine strong{font-size:12px;color:var(--muted)}.requestPanelFocused{outline:2px solid var(--green);outline-offset:4px}@media(max-width:1000px){.summary{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.requestDetailLine{grid-template-columns:1fr;gap:2px}}</style></head><body>
+.sandyMissionBadge{display:inline-block;background:#fff;border:1px solid #aaa;border-radius:5px;padding:2px 6px;font-size:10px;line-height:1.4;color:#111;font-weight:600;white-space:nowrap}@media(max-width:750px){.sandyMissionBadge{white-space:normal}}.requestPanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin:15px 0 22px}.requestPanelHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.requestBar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.requestBar input{flex:1;min-width:160px;padding:9px 11px;border:1px solid var(--line);border-radius:9px}.requestInboxItem{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}.requestInboxItem:first-child{margin-top:12px}.requestInboxItem strong{flex:1;min-width:180px}.requestInboxItem .btn{white-space:nowrap}.summary{grid-template-columns:repeat(5,minmax(0,1fr))}.requestDetail{flex-basis:100%;width:100%;background:#f8faf7;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:4px;display:grid;gap:10px}.requestDetail.hidden{display:none}.requestDetailLine{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px;overflow-wrap:anywhere}.requestDetailLine strong{font-size:12px;color:var(--muted)}.requestPanelFocused{outline:2px solid var(--green);outline-offset:4px}@media(max-width:1000px){.summary{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.requestDetailLine{grid-template-columns:1fr;gap:2px}}
+.categoryBar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:-7px 0 18px;padding:9px 12px;border-left:2px solid #d9d9d9;background:#fafafa;border-radius:7px}
+.categoryLabel{font-size:11px;font-weight:700;letter-spacing:.05em;color:#777;margin-right:4px}
+.categoryPill{font:600 12px/1.4 inherit;white-space:nowrap;padding:7px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#444}
+.categoryPill.selected{background:#e9e9e9;color:#111;border-color:#aaa}
+.categoryCreate{border:1px dashed #aaa;border-radius:8px;background:#fff;color:#444;padding:7px 11px;font-size:12px}
+.categoryItem{display:inline-flex;align-items:center;gap:2px}
+.categoryManage{border:0;background:transparent;color:#777;font-size:12px;padding:4px 5px;border-radius:6px}
+.categoryManage:hover{background:#ececec;color:#111}
+.categoryName{overflow:hidden;text-overflow:ellipsis;max-width:220px}
+@media(max-width:680px){.categoryBar{margin-top:0}.categoryPill{font-size:11px;padding:6px 8px}.categoryManage{padding:5px 3px}}
+</style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
 <header><button type="button" id="agendaMobileNav" aria-label="Open navigation" onclick="document.body.classList.add('agendaNavOpen')">☰</button><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
 <div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
 
-<div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
+<div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div id="categoryBar" class="categoryBar hidden" aria-label="Subcategories"></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
 <section class="requestPanel hidden" id="taskRequestPanel" ><div class="requestPanelHeader"><strong id="taskRequestsHeading">Task requests · Awaiting approval</strong><span class="muted small">Requests require recipient approval</span></div><div id="pendingTaskRequests"></div></section>
 <details class="requestPanel" id="requestSendPanel"><summary>Request a task from someone else / View requests I sent</summary><form id="sendTaskRequest" class="requestBar"><input id="requestTaskTitle" placeholder="Request a task…" maxlength="240" required aria-label="Requested task"><input id="requestTaskRecipient" placeholder="Recipient email or Sandy" aria-label="Task recipient" required><button type="submit" class="btn small">Send request</button></form><details class="sentTaskRequests"><summary>Requests I sent</summary><div id="outgoingTaskRequests"></div></details></details>
 <div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Enter creates the next row · Tab indents beneath the task above · Shift+Tab outdents · ⌘/Ctrl K for quick capture.</div></div>
@@ -259,7 +270,7 @@ html,body{max-width:100%;overflow-x:clip}
 <div id="invitations" class="invitations hidden"></div><div class="collabBar"><label for="assigneeFilter">Delegated to</label><select id="assigneeFilter"><option value="all">Everyone</option><option value="unassigned">Not delegated</option><option value="mine">Assigned to me</option></select></div><div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="doing">In progress</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
 <div class="outlineHeader"><strong>Projects & actions</strong><div class="outlineControls"><label class="sortLabel" for="taskSort">Sort by</label><select id="taskSort" class="taskSort" aria-label="Sort tasks"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="due">Due soonest</option><option value="priority">Priority</option><option value="status">Status</option><option value="az">Name A–Z</option><option value="manual">Custom order</option></select><button class="outlineSmall" id="expandAll" type="button">Expand all</button><button class="outlineSmall" id="collapseAll" type="button">Collapse all</button></div><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><form id="rootLine" class="rootLine" aria-label="Add a new task"><span aria-hidden="true">＋</span><input id="rootLineInput" placeholder="Add a new task… press Enter" maxlength="240" aria-label="New task name" autocomplete="off"><select id="rootWorkspace" class="entryWorkspace" aria-label="New task workspace"></select><button class="rootAdd" type="submit">Add task</button></form><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><div class="keyboardHint">Click a task to edit · Enter: next row · Tab: indent · Shift+Tab: outdent · Esc: cancel</div></div>
 <div id="dialogOverlay" class="dialogoverlay" role="presentation"><div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogHeading"><h2 id="dialogHeading">Create a task</h2><p>Give Sandy the outcome you want. Add smaller steps if it helps.</p><form id="taskForm">
-<label class="field">Belongs to<select id="taskWorkspace"></select></label><div id="editDelegation" class="editDelegation hidden"><div class="editDelegationHead">People & access</div><p class="peopleAccessHint">Delegation assigns responsibility. Sharing gives others access without changing who is responsible.</p><div id="editDelegationControls"></div><div id="editSharingControls"></div></div><label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
+<label class="field">Belongs to<select id="taskWorkspace"></select></label><label class="field hidden" id="taskCategoryField">Category<select id="taskCategory"></select></label><div id="editDelegation" class="editDelegation hidden"><div class="editDelegationHead">People & access</div><p class="peopleAccessHint">Delegation assigns responsibility. Sharing gives others access without changing who is responsible.</p><div id="editDelegationControls"></div><div id="editSharingControls"></div></div><label class="field">Task name<input id="taskTitle" maxlength="240" required placeholder="Get my tax return completed"></label>
 <label class="field">Details (optional)<textarea id="taskDetails" placeholder="What does done look like?"></textarea></label>
 <div class="two"><label class="field">Due date (optional)<input type="date" id="taskDue"></label><label class="field">Priority<select id="taskPriority"><option value="normal">Normal</option><option value="high">High</option><option value="urgent">Urgent</option><option value="low">Low</option></select></label></div>
 <div class="two"><label class="field">Next follow-up (optional)<input type="date" id="taskReview"></label><label class="field">Waiting on (optional)<input type="text" maxlength="400" id="taskWaiting" placeholder="Accountant, bank, solicitor…"></label></div><div class="two"><label class="field">Start date (optional)<input type="date" id="taskStart"></label><label class="field">Contact (optional)<input id="taskContact" type="text" maxlength="240" placeholder="Who is involved?"></label></div><label class="field">Depends on<select id="taskDependency"><option value="">No dependency</option></select></label><label class="field" id="subtaskField">Subtasks — one per line (optional)<textarea id="taskSubtasks" rows="4" placeholder="Contact bank for records&#10;Review Xero&#10;Send information to accountant"></textarea></label>
@@ -273,7 +284,7 @@ import {installSandyIdleLock} from "../security-lock.js";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
 const $ = id => document.getElementById(id);
-const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",sort:["newest","oldest","due","priority","status","az","manual"].includes(localStorage.getItem("sandy_task_sort"))?localStorage.getItem("sandy_task_sort"):"newest",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],categories:[],category:null,delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",sort:["newest","oldest","due","priority","status","az","manual"].includes(localStorage.getItem("sandy_task_sort"))?localStorage.getItem("sandy_task_sort"):"newest",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const internalWorkspace=new URLSearchParams(location.search).get("workspace")==="sandy";
@@ -305,16 +316,94 @@ async function api(action,payload){
 function el(tag,className,text){const n=document.createElement(tag);if(className)n.className=className;if(text!==undefined)n.textContent=text;return n}
 function btn(text,cls,fn){const e=el("button",cls,text);e.type="button";e.addEventListener("click",fn);return e}
 
-function workspaceOwnMatches(t){if(t.shared)return state.workspace==="all"||state.workspace==="assigned";return state.workspace==="all"||(state.workspace==="personal"?!t.company_id:t.company_id===state.workspace)}
+function categoryIsWithin(id,parent){
+ if(!id||!parent)return false;
+ let cur=id;const visited=new Set();
+ for(let i=0;i<30&&cur&&!visited.has(cur);i++){
+  if(cur===parent)return true;
+  visited.add(cur);cur=state.categories.find(c=>c.id===cur)?.parent_category_id||null;
+ }
+ return false;
+}
+function workspaceOwnMatches(t){
+ if(t.shared)return state.workspace==="all"||state.workspace==="assigned";
+ if(state.workspace==="all")return true;
+ if(state.workspace==="personal")return !t.company_id;
+ if(t.company_id!==state.workspace)return false;
+ return !state.category||categoryIsWithin(t.category_id,state.category);
+}
 function workspaceMatches(t,seen=new Set()){if(t.archived_at||seen.has(t.id))return false;seen.add(t.id);return workspaceOwnMatches(t)||childOf(t.id).some(c=>workspaceMatches(c,seen))}
 function taskWorkspaceLabel(id){return id?(state.companies.find(c=>c.id===id)?.name||"Company"):"Personal"}
-function taskWorkspaceOwners(t,owners=new Set(),seen=new Set()){if(seen.has(t.id))return owners;seen.add(t.id);if(!t.shared)owners.add(taskWorkspaceLabel(t.company_id));childOf(t.id).forEach(c=>taskWorkspaceOwners(c,owners,seen));return owners}
+function categoryPath(id){
+ const names=[],seen=new Set();let cat=state.categories.find(c=>c.id===id);
+ while(cat&&!seen.has(cat.id)&&names.length<20){names.unshift(cat.name);seen.add(cat.id);cat=state.categories.find(c=>c.id===cat.parent_category_id)}
+ return names.join(" › ");
+}
+function taskCategoryLabel(t){return t.category_id?taskWorkspaceLabel(t.company_id)+" › "+categoryPath(t.category_id):taskWorkspaceLabel(t.company_id)}
+function categoriesForCompany(companyId){
+ const items=state.categories.filter(c=>c.company_id===companyId),out=[],seen=new Set();
+ function walk(parent,depth){
+  items.filter(c=>(c.parent_category_id||null)===parent).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{if(seen.has(c.id))return;seen.add(c.id);out.push({category:c,depth});walk(c.id,depth+1)});
+ }
+ walk(null,0);items.filter(c=>!seen.has(c.id)).forEach(c=>out.push({category:c,depth:0}));
+ return out;
+}
+function taskWorkspaceOwners(t,owners=new Set(),seen=new Set()){if(seen.has(t.id))return owners;seen.add(t.id);if(!t.shared)owners.add(taskCategoryLabel(t));childOf(t.id).forEach(c=>taskWorkspaceOwners(c,owners,seen));return owners}
 function normalizeWorkspace(value){return value==="personal"||!value?null:value}
 function fillWorkspaceSelect(target,selected){
  target.replaceChildren(new Option("Personal","personal"));
  for(const c of state.companies)target.add(new Option(c.name,c.id));
  target.add(new Option("＋ Add company…","__new_company"));
  target.value=selected&&[...target.options].some(x=>x.value===selected)?selected:"personal";
+}
+function fillCategorySelect(companyId,selected){
+ const target=$("taskCategory"),visible=state.companies.some(c=>c.id===companyId);
+ $("taskCategoryField").classList.toggle("hidden",!visible||!!state.edit?.shared);
+ target.replaceChildren(new Option("Company level · no category",""));
+ if(!visible)return;
+ for(const item of categoriesForCompany(companyId)){
+  target.add(new Option("　".repeat(Math.min(item.depth,5))+(item.depth?"↳ ":"")+item.category.name,item.category.id));
+ }
+ target.add(new Option("＋ Create category…","__new_category"));
+ target.value=selected&&[...target.options].some(x=>x.value===selected)?selected:"";
+}
+async function createCategory(companyId,parentId=null){
+ if(!state.companies.some(c=>c.id===companyId))return null;
+ const parentName=parentId?categoryPath(parentId):taskWorkspaceLabel(companyId);
+ const name=prompt("New subcategory under "+parentName);if(!name?.trim())return null;
+ try{
+  const result=await api("category-create",{company_id:companyId,parent_category_id:parentId,name:name.trim()});
+  state.categories.push(result.category);toast("Subcategory added");return result.category.id;
+ }catch(e){toast(e.message,true);return null}
+}
+function renderCategories(){
+ const bar=$("categoryBar");bar.replaceChildren();
+ const companyId=state.workspace;
+ if(!state.companies.some(c=>c.id===companyId)){bar.classList.add("hidden");return}
+ bar.classList.remove("hidden");
+ bar.append(el("span","categoryLabel","CATEGORIES"));
+ bar.append(btn("All "+taskWorkspaceLabel(companyId),"categoryPill"+(!state.category?" selected":""),()=>{state.category=null;render()}));
+ for(const item of categoriesForCompany(companyId)){
+  const c=item.category;
+  const wrap=el("span","categoryItem");
+  const name=btn((item.depth?"↳ ":"")+c.name,"categoryPill categoryName"+(state.category===c.id?" selected":""),()=>{state.category=c.id;state.entryWorkspace=companyId;render()});
+  name.title=taskWorkspaceLabel(companyId)+" › "+categoryPath(c.id);
+  wrap.append(name);
+  const rename=btn("✎","categoryManage",async()=>{
+   const next=prompt("Rename category",c.name);if(!next||next.trim()===c.name)return;
+   try{const r=await api("category-update",{id:c.id,name:next.trim()});Object.assign(c,r.category);render();toast("Category renamed")}catch(e){toast(e.message,true)}
+  });rename.title="Rename "+c.name;rename.setAttribute("aria-label","Rename "+c.name);wrap.append(rename);
+  const remove=btn("×","categoryManage",async()=>{
+   if(!confirm("Delete category “"+c.name+"”? Only empty categories can be deleted."))return;
+   try{await api("category-delete",{id:c.id});state.categories=state.categories.filter(x=>x.id!==c.id);if(state.category===c.id)state.category=null;render();toast("Category deleted")}
+   catch(e){toast(e.message,true)}
+  });remove.title="Delete empty category "+c.name;remove.setAttribute("aria-label","Delete empty category "+c.name);wrap.append(remove);
+  bar.append(wrap);
+ }
+ bar.append(btn("＋ Subcategory","categoryCreate",async()=>{
+  const id=await createCategory(companyId,state.category||null);
+  if(id){state.category=id;render()}
+ }));
 }
 async function createCompany(){
  const name=prompt("Company name");if(!name?.trim())return null;
@@ -325,13 +414,14 @@ function renderWorkspaces(){
  const area=$("workspaceTabs");area.replaceChildren();
  const options=[{id:"all",name:"Everything"},{id:"personal",name:"Personal"},{id:"assigned",name:"Assigned to me"},...state.companies];
  for(const c of options){
-  const b=btn(c.name,"workspacePill"+(state.workspace===c.id?" selected":""),()=>{state.workspace=c.id;if(c.id!=="all")state.entryWorkspace=c.id;render()});
+  const b=btn(c.name,"workspacePill"+(state.workspace===c.id?" selected":""),()=>{state.workspace=c.id;state.category=null;if(c.id!=="all")state.entryWorkspace=c.id;render()});
   area.append(b)
  }
  for(const id of ["quickWorkspace","rootWorkspace"]){
   const select=$(id);const value=select.value&&select.value!=="__new_company"?select.value:state.entryWorkspace;
   fillWorkspaceSelect(select,value);
  }
+ renderCategories();
 }
 async function chooseCompanyFromSelect(e){
  if(e.target.value!=="__new_company"){state.entryWorkspace=e.target.value;return}
@@ -397,7 +487,10 @@ async function outlineCreate(title,parent,after,company){
  if(state.outlineBusy)return false;state.outlineBusy=true;let created=null;
  try{
   const position=await outlinePosition(parent,after,null);
-  const result=await api("create",{title,parent_task_id:parent||null,company_id:normalizeWorkspace(company)});
+  const companyId=normalizeWorkspace(company);
+  const parentTask=parent?state.tasks.find(t=>t.id===parent):null;
+  const categoryId=parentTask&&parentTask.company_id===companyId?(parentTask.category_id||null):(companyId===state.workspace?state.category:null);
+  const result=await api("create",{title,parent_task_id:parent||null,company_id:companyId,category_id:categoryId});
   created=result.id;if(!created)throw Error("Task saved but server did not return an ID");
   await api("update",{id:created,position});
   await load();outlineDraft(parent,created,company);return true;
@@ -692,8 +785,8 @@ function renderTask(t,depth){
  if(progress.total){titleArea.append(el("span","stepCount",progress.done+"/"+progress.total))}
  if(!t.shared){
   const owners=[...taskWorkspaceOwners(t)];
-  const hint=owners.length>1?"Multiple workspaces":taskWorkspaceLabel(t.company_id);
-  if(owners.length>1||state.workspace==="all"||(state.workspace==="personal"?Boolean(t.company_id):state.workspace!=="assigned"&&t.company_id!==state.workspace)){
+  const hint=owners.length>1?"Multiple workspaces":taskCategoryLabel(t);
+  if(owners.length>1||state.workspace==="all"||Boolean(t.category_id)||(state.workspace==="personal"?Boolean(t.company_id):state.workspace!=="assigned"&&t.company_id!==state.workspace)){
    const chip=el("span","workspaceHint",hint);chip.title=owners.join(" · ");titleArea.append(chip);
   }
  }
@@ -854,7 +947,7 @@ function renderSuggestions(){
 // Never subscribe directly to public task changes or expose other clients' row data.
 let liveTimer=null,liveBusy=false,livePending=null,liveFingerprint="";
 function liveSignature(data){
- return JSON.stringify([(data.tasks||[]).map(t=>[t.id,t.parent_task_id,t.status,t.title,t.details,t.updated_at,t.version,t.position,t.archived_at,t.due_at,t.priority]),(data.delegations||[]).map(d=>[d.id,d.status,d.scope]),(data.receivedDelegations||[]).map(d=>[d.id,d.status,d.scope])]);
+ return JSON.stringify([(data.tasks||[]).map(t=>[t.id,t.parent_task_id,t.company_id,t.category_id,t.status,t.title,t.details,t.updated_at,t.version,t.position,t.archived_at,t.due_at,t.priority]),(data.categories||[]).map(c=>[c.id,c.company_id,c.parent_category_id,c.name]),(data.delegations||[]).map(d=>[d.id,d.status,d.scope]),(data.receivedDelegations||[]).map(d=>[d.id,d.status,d.scope])]);
 }
 function editingAgenda(){
  if(state.outlineBusy||document.querySelector(".outlineDraft,.inlineTitle:not(.outlineDraft .inlineTitle)"))return true;
@@ -863,7 +956,7 @@ function editingAgenda(){
  return !!(active?.matches("input,textarea,[contenteditable=true]")&&active?.closest("#app")&&!active?.matches("#search"));
 }
 function applyAgendaData(data){
- state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.delegations=data.delegations||[];state.participants=data.participants||[];state.externalInvitations=data.externalInvitations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
+ state.tasks=data.tasks||[];state.suggestions=data.suggestions||[];state.attention=data.attention||[];state.dependencies=data.dependencies||[];state.companies=data.companies||[];state.categories=data.categories||[];if(state.category&&!state.categories.some(c=>c.id===state.category))state.category=null;state.delegations=data.delegations||[];state.participants=data.participants||[];state.externalInvitations=data.externalInvitations||[];state.collaborators=data.collaborators||[];state.receivedDelegations=data.receivedDelegations||[];state.customer_id=data.customer_id||null;state.email=data.email||"";$("who").textContent=data.display_name||state.email;
  $("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");render();
  liveFingerprint=liveSignature(data);
 }
@@ -960,7 +1053,7 @@ function openDialog(){
   const sButton=share.querySelector(".shareTaskToggle");if(sButton)sButton.click();
   if(sButton)sButton.classList.add("hidden");
   const delegationPanel=delegate.querySelector(".delegateMenu");if(delegationPanel)delegationPanel.classList.remove("hidden");
- }fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);$("taskWorkspace").disabled=false;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
+ }fillWorkspaceSelect($("taskWorkspace"),t?(t.company_id||"personal"):state.parent?(state.tasks.find(x=>x.id===state.parent)?.company_id||"personal"):state.entryWorkspace);fillCategorySelect($("taskWorkspace").value,t?t.category_id:state.parent?state.tasks.find(x=>x.id===state.parent)?.category_id:state.workspace===$("taskWorkspace").value?state.category:null);$("taskWorkspace").disabled=false;$("dialogHeading").textContent=t?"Edit task":state.parent?"Add a subtask":"Create a task";
  $("taskTitle").value=t?t.title:"";$("taskDetails").value=t?t.details:"";$("taskDue").value=t?localDate(t.due_at):"";
  $("taskPriority").value=t?t.priority:"normal";$("taskStatus").value=t?t.status:"todo";$("taskSubtasks").value="";$("taskStart").value=t?localDate(t.start_at):"";$("taskContact").value=t?t.contact_name||"":"";const dp=$("taskDependency");dp.replaceChildren(new Option("No dependency",""));for(const other of state.tasks.filter(x=>!x.archived_at&&x.id!==t?.id))dp.add(new Option(other.title,other.id));dp.value=t?(state.dependencies.find(x=>x.task_id===t.id)?.depends_on_id||""):"";$("taskReview").value=t?localDate(t.next_review_at):"";$("taskWaiting").value=t?t.waiting_on||"":"";$("archiveTask").classList.toggle("hidden",!t);
  $("subtaskField").classList.toggle("hidden",!!t||!!state.parent);$("statusField").classList.toggle("hidden",!t);
@@ -969,10 +1062,10 @@ function openDialog(){
 function closeDialog(){$("dialogOverlay").classList.remove("show");state.edit=null;state.parent=null}
 $("taskForm").addEventListener("submit",async e=>{
  e.preventDefault();const save=$("saveTask");save.disabled=true;
- const payload={company_id:normalizeWorkspace($("taskWorkspace").value),title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),start_at:fromDate($("taskStart").value),contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
+ const payload={company_id:normalizeWorkspace($("taskWorkspace").value),category_id:$("taskCategory").value||null,title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:fromDate($("taskDue").value),next_review_at:fromDate($("taskReview").value),start_at:fromDate($("taskStart").value),contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
  if(!payload.title){save.disabled=false;return}
  try{
-  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;if(state.edit.shared){delete payload.company_id;delete payload.start_at;delete payload.contact_name;delete payload.next_review_at;delete payload.waiting_on;await api("shared-update",payload)}else await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(!state.edit.shared&&previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(!state.edit.shared&&next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
+  if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;if(state.edit.shared){delete payload.company_id;delete payload.category_id;delete payload.start_at;delete payload.contact_name;delete payload.next_review_at;delete payload.waiting_on;await api("shared-update",payload)}else await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(!state.edit.shared&&previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(!state.edit.shared&&next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
   else{payload.parent_task_id=state.parent;payload.subtasks=state.parent?[]:$("taskSubtasks").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);await api("create",payload)}
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
@@ -986,7 +1079,17 @@ $("newTask").addEventListener("click",()=>outlineDraft(null,outlineLast(null),st
  $("addCompany").addEventListener("click",async()=>{const id=await createCompany();if(id){state.workspace=id;render()}});
 $("quickWorkspace").addEventListener("change",chooseCompanyFromSelect);
 $("rootWorkspace").addEventListener("change",chooseCompanyFromSelect);
-$("taskWorkspace").addEventListener("change",async e=>{if(e.target.value==="__new_company"){const id=await createCompany();fillWorkspaceSelect(e.target,id||"personal")}});
+$("taskWorkspace").addEventListener("change",async e=>{
+ if(e.target.value==="__new_company"){const id=await createCompany();fillWorkspaceSelect(e.target,id||"personal")}
+ fillCategorySelect(e.target.value,e.target.value===state.workspace?state.category:null);
+});
+$("taskCategory").addEventListener("change",async e=>{
+ if(e.target.value!=="__new_category")return;
+ const companyId=$("taskWorkspace").value;
+ const parent=companyId===state.workspace?state.category:null;
+ const id=await createCategory(companyId,parent);
+ fillCategorySelect(companyId,id);
+});
 document.addEventListener("keydown",e=>{
  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();$("quickTitle").focus();$("quickTitle").select()}
  if(e.key==="Escape"&&$("dialogOverlay").classList.contains("show"))closeDialog()
