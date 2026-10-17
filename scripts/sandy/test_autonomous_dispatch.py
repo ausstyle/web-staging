@@ -27,6 +27,7 @@ class AutoDispatchTests(unittest.TestCase):
         self.assertIn('needs: [architect, engineer]',wf)
         self.assertIn('if: ${{ always() }}',wf)
         self.assertIn('python3 scripts/sandy/post_architect_outcome.py',wf)
+        self.assertIn('pull-requests: read',wf.split('  record_outcome:',1)[1])
 
     def test_engineer_cannot_attempt_unpublishable_workflows(self):
         wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-codex-engineering.yml').read_text()
