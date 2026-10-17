@@ -239,6 +239,8 @@ Deno.serve(async(req:Request)=>{
             }).then(async r=>{if(!r.ok)console.error("v2_qa_auto_improve_http",r.status)})
               .catch(e=>console.error("v2_qa_auto_improve_err",String(e).slice(0,100)));
             EdgeRuntime.waitUntil(diagnostic);
+          }else{
+            await db.from("sandy_qa_cases").upsert({test_key:"v2_api_qa_autodiagnosis_unavailable",subject:"Sandy V2 diagnosis credentials unavailable",status:"failed",findings:"Repeated API QA failures have no authorised self-diagnosis connection",next_action:"Configure internal diagnosis capability and independently test the handoff.",updated_at:new Date().toISOString()},{onConflict:"test_key"});
           }
         }
       }
