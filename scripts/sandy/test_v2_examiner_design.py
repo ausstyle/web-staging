@@ -128,7 +128,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertNotIn('instructions,input:JSON.stringify(snapshot)', EDGE)
 
     def test_structured_responses_input(self):
-        self.assertIn('input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({', EDGE)
+        self.assertIn('text:"Respond with a valid JSON object containing a tests array.', EDGE)
         self.assertIn('})}]}],text:{format:{type:"json_object"}}', EDGE)
 
     def test_workflow_requires_oidc_and_is_daily(self):
