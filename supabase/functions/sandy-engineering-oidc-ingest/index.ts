@@ -38,7 +38,7 @@ Deno.serve(async(req:Request)=>{
   const inlineFlow=claims.workflow_ref===ENGINEERING_REF&&claims.event_name==="workflow_dispatch";
   const qaFlow=claims.workflow_ref===QA_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const designFlow=claims.workflow_ref===DESIGN_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
-  const labFlow=claims.workflow_ref===LAB_REF&&["push","workflow_dispatch"].includes(String(claims.event_name));
+  const labFlow=claims.workflow_ref===LAB_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   if(claims.repository!==REPO || String(claims.repository_id)!==REPO_ID ||
      (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow) || claims.ref!=="refs/heads/main")
     return fail("unauthorized_workflow",403);
@@ -174,7 +174,17 @@ Deno.serve(async(req:Request)=>{
       enabled:false,verified_at:verified?new Date().toISOString():null,updated_at:new Date().toISOString()
     }).eq("id",1).eq("customer_id",lab.customer_id);
     if(saveError)return fail("lab_result_persistence_failed",503);
-    return json({ok:true,verified,provider_listing_complete:complete,services,
+    const labRunKey="github:"+String(claims.run_id||"");
+    if(!/^github:[0-9]{5,20}$/.test(labRunKey))return fail("lab_invalid_run_identity",403);
+    const overallStatus=!verified?"blocked":gmailRead.successful&&driveRead.successful&&
+      calendarRead.successful&&runtimeChecks.length===2&&runtimeChecks.every(x=>x.verdict==="pass")?"passed":"needs_review";
+    const {error:receiptError}=await db.from("sandy_examiner_lab_run_receipts").insert({
+      run_key:labRunKey,customer_id:lab.customer_id,provider_verified:verified,
+      gmail_read_ok:gmailRead.successful,drive_read_ok:driveRead.successful,
+      calendar_read_ok:calendarRead.successful,runtime_checks:runtimeChecks,overall_status:overallStatus
+    });
+    if(receiptError?.code!=="23505"&&receiptError)return fail("lab_receipt_persistence_failed",503);
+    return json({ok:true,run_key:labRunKey,overall_status:overallStatus,verified,provider_listing_complete:complete,services,
       read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,runtime_checks:runtimeChecks,lab_enabled:false});
   }
   if(designFlow){
