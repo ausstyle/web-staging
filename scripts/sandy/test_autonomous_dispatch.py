@@ -16,6 +16,12 @@ def run(number, status="completed", created="2026-10-17T16:00:00Z"):
 
 
 class AutoDispatchTests(unittest.TestCase):
+    def test_issue_labeled_dispatch_is_event_gated(self):
+        wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-autonomous-dispatch.yml').read_text()
+        self.assertIn('types: [labeled]',wf)
+        self.assertIn("github.event.label.name == 'sandy-autonomous-ready'",wf)
+        self.assertIn('cancel-in-progress: false',wf)
+
     def test_codex_bot_and_issue_run_title_contract(self):
         source=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-codex-engineering.yml').read_text()
         self.assertIn("run-name: 'Sandy engineering issue #${{ inputs.issue_number }}'",source)

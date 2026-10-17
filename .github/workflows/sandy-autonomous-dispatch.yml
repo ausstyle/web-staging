@@ -2,6 +2,8 @@ name: Sandy autonomous engineering dispatcher
 on:
   schedule:
     - cron: '*/15 * * * *'
+  issues:
+    types: [labeled]
   workflow_dispatch:
     inputs:
       dry_run:
@@ -17,6 +19,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   dispatch:
+    if: ${{ github.event_name != 'issues' || github.event.label.name == 'sandy-autonomous-ready' }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
