@@ -66,6 +66,23 @@ Deno.serve(async(req:Request)=>{
     const {error:reserved}=await db.from("sandy_v2_qa_runs").insert({run_key:runKey,status:"running"});
     if(reserved?.code==="23505")return json({ok:true,duplicate_run:true,run_key:runKey});
     if(reserved)return fail("qa_run_reservation_failed",503);
+    // Recover abandoned test-run state independently, without replaying an old request.
+    const staleBefore=new Date(Date.now()-15*60*1000).toISOString();
+    const {data:stale,error:staleError}=await db.from("sandy_v2_qa_runs")
+      .select("run_key").eq("status","running").lt("started_at",staleBefore).neq("run_key",runKey).limit(20);
+    if(!staleError&&stale?.length){
+      for(const old of stale){
+        await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()})
+          .eq("run_key",old.run_key).eq("status","running");
+      }
+      await db.from("sandy_qa_cases").upsert({
+        test_key:"v2_api_qa_stalled_runner",subject:"Sandy V2 QA run stalled before completion",
+        status:"failed",findings:"A previous signed GitHub QA run exceeded the 15-minute completion window. Investigate GitHub runner, downstream API receipts and missing persistence; do not retry sends.",
+        next_action:"Review retained GitHub run and sandbox trace; correct the underlying failure.",
+        updated_at:new Date().toISOString()
+      },{onConflict:"test_key"});
+    }
+
     const since=new Date(Date.now()-24*60*60*1000).toISOString();
     const {count:used,error:usageError}=await db.from("sandy_v2_qa_executions")
       .select("id",{head:true,count:"exact"}).eq("customer_id",customerId).gte("created_at",since);
@@ -86,7 +103,7 @@ Deno.serve(async(req:Request)=>{
       {key:"task_count",prompts:["How many outstanding tasks does Sandy have recorded for my account?","Check my actual tasks and tell me the number still outstanding."],expect:"real_task_tool"},
       {key:"capability",prompts:["Explain which services you can actually execute in my Sandy account, rather than which integrations are supported generally.","What can you verify about your connected apps and your present limitations?"],expect:"capability_grounding"}
     ];
-    const allowed=Math.min(1,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
+    const allowed=Math.min(2,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
       const ordinal=Number(used||0)+i;
@@ -95,7 +112,7 @@ Deno.serve(async(req:Request)=>{
       const question=testcase.prompts[variant];
       const requestId="v2qa_"+crypto.randomUUID();
       const started=Date.now();
-      let edgeStatus=0,answer="",trace:any[]=[],reason="",verdict:"pass"|"fail"|"needs_review"|"blocked"="needs_review";
+      let edgeStatus=0,answer="",trace:any[]=[],taskModel:string|null=null,reason="",verdict:"pass"|"fail"|"needs_review"|"blocked"="needs_review";
       try{
         const rsp=await fetch(url+"/functions/v1/sandy-agent-runtime",{
           method:"POST",
@@ -110,6 +127,7 @@ Deno.serve(async(req:Request)=>{
           .eq("customer_id",customerId).eq("request_id",requestId).maybeSingle();
         if(taskError)throw Error("task_receipt_unavailable");
         trace=Array.isArray(task?.tool_trace)?task.tool_trace:[];
+        taskModel=typeof task?.model==="string"?task.model.slice(0,100):null;
         const normalized=answer.toLowerCase();
         const had=(tool:string)=>trace.some((t:any)=>t?.tool===tool&&t.success===true);
         const any=(...parts:string[])=>parts.some(x=>normalized.includes(x));
@@ -147,19 +165,24 @@ Deno.serve(async(req:Request)=>{
         run_key:runKey,case_key:testcase.key,request_id:requestId,customer_id:customerId,
         question,reply:answer,tool_trace:trace,verdict,reason,edge_status:edgeStatus||null,duration_ms:duration,
         evidence:{expected:testcase.expect,model_response_present:answer.length>0,tool_count:trace.length,
-          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true}
+          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel}
       });
       if(writeError){
         await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
         return fail("qa_evidence_not_saved",503);
       }
       const caseKey="v2_api_qa_"+testcase.key;
-      const state=verdict==="pass"?"passed":verdict==="fail"?"failed":"needs_review";
+      // A single pass does not retire a defect; require two independently recorded consecutive passes.
+      const {data:recent,error:recentError}=await db.from("sandy_v2_qa_executions")
+        .select("verdict").eq("case_key",testcase.key).order("created_at",{ascending:false}).limit(2);
+      const corroborated=!recentError&&(recent?.length||0)>=2&&recent!.every((x:any)=>x.verdict==="pass");
+      const state=verdict==="pass"?(corroborated?"passed":"retest_pending"):
+        verdict==="fail"?"failed":"needs_review";
       const summary="Real API result ("+verdict+"): "+reason+". Request "+requestId+
         ". Source: sandbox Sandy agent-runtime; independently persisted tool receipt. See sandy_v2_qa_executions.";
       const {error:caseErr}=await db.from("sandy_qa_cases").upsert({
         test_key:caseKey,subject:"Sandy V2 autonomous API QA: "+testcase.key,
-        status:state,findings:summary,next_action:verdict==="pass"?"Keep scheduled regression monitoring":
+        status:state,findings:summary,next_action:verdict==="pass"?(corroborated?"Keep scheduled regression monitoring":"Await a second independent passing API result"):
           "Investigate actual QA execution and fix root cause before marking complete",
         updated_at:new Date().toISOString()
       },{onConflict:"test_key"});
@@ -171,8 +194,11 @@ Deno.serve(async(req:Request)=>{
           const secret=Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY");
           if(secret){
             const payload={source_type:"qa_failure",source_ref:caseKey,problem:
-              "Repeated authenticated Sandy V2 API QA failure for "+testcase.key+" on a synthetic user account. "+
-              reason+". Diagnose deployed runtime, tools, ground truth and tool receipts. Do not assume a repair or use real customer data."};
+              "Repeated authenticated Sandy V2 API QA failure for "+testcase.key+" on an isolated synthetic user account. "+
+              " Expected: "+testcase.expect+". Actual: "+reason+". Model: "+(taskModel||"unknown")+
+              ". Read-only question: "+question.slice(0,220)+". Actual reply excerpt: "+answer.slice(0,650)+
+              ". Tool evidence: "+JSON.stringify(trace.map((t:any)=>({tool:t.tool,success:t.success}))).slice(0,500)+
+              ". Diagnose the root cause in deployed source; do not assume a repair or use real customer data."};
             const diagnostic=fetch(url+"/functions/v1/sandy-auto-improve",{
               method:"POST",headers:{"authorization":"Bearer "+secret,"content-type":"application/json"},
               body:JSON.stringify(payload),signal:AbortSignal.timeout(60000)
