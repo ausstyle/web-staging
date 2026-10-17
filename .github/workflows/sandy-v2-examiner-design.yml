@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Oracle-grounded dynamic test design verification on gateway v23.
+# Aggregate proposal rejection diagnosis verification on gateway v24.
 on:
   push:
     branches: [main]
