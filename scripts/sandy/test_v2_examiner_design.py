@@ -131,6 +131,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('text:"Respond with a valid JSON object containing a tests array.', EDGE)
         self.assertIn('})}]}],text:{format:{type:"json_object"}}', EDGE)
 
+    def test_model_guidance_matches_validation_requirements(self):
+        self.assertIn('Mandatory validation: every question must contain language matching its oracle', EDGE)
+        self.assertIn('grounding_keys exactly matching source keys', EDGE)
+        self.assertIn('include at least one connections question and one task_count question', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
