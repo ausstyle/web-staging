@@ -44,6 +44,7 @@ jobs:
           python3 -m unittest discover -s scripts/sandy -p 'test_source_reconciliation_handoff.py' -v
           python3 -m unittest discover -s scripts/sandy -p 'test_source_reconciliation_review_packet.py' -v
           python3 -m unittest discover -s scripts/sandy -p 'test_source_publication_gate.py' -v
+          python3 -m unittest discover -s scripts/sandy -p 'test_source_diff_summary.py' -v
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -79,6 +80,11 @@ jobs:
           SLUG: ${{ inputs.edge_function }}
         run: |
           python3 scripts/sandy/source_publication_gate.py "/tmp/sandy-audit/supabase/functions/$SLUG" /tmp/sandy-audit/comparison.json > /tmp/sandy-audit/publication-screen.json
+      - name: Prepare source-free diff statistics for independent review
+        env:
+          SLUG: ${{ inputs.edge_function }}
+        run: |
+          python3 scripts/sandy/source_diff_summary.py "/tmp/sandy-audit/supabase/functions/$SLUG" "$GITHUB_WORKSPACE/supabase/functions/$SLUG" /tmp/sandy-audit/comparison.json /tmp/sandy-audit/publication-screen.json > /tmp/sandy-audit/diff-summary.json
       - name: Upload metadata-only audit artifact
         uses: actions/upload-artifact@v4
         with:
@@ -88,5 +94,6 @@ jobs:
             /tmp/sandy-audit/comparison.json
             /tmp/sandy-audit/review-packet.json
             /tmp/sandy-audit/publication-screen.json
+            /tmp/sandy-audit/diff-summary.json
           retention-days: 1
           if-no-files-found: error
