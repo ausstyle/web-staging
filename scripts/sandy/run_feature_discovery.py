@@ -2,6 +2,7 @@
 """Run Sandy's evidence-backed feature discovery using ephemeral GitHub OIDC."""
 import json
 import os
+import re
 import urllib.parse
 import urllib.request
 
@@ -16,6 +17,76 @@ def verify_response(data):
         raise RuntimeError("Feature discovery result count invalid")
     return {"assessed": data.get("assessed"), "created": data["created"],
             "proposed_not_deployed": True}
+
+
+REPO="ausstyle/web-staging"
+KEY=re.compile(r"^[a-z][a-z0-9_]{5,79}$")
+def clean_for_public_issue(value):
+    """Strictly minimise customer-derived details posted to a PUBLIC repository."""
+    string=str(value or "").replace("\n"," ").replace("\r"," ")
+    string=re.sub(r"https?://\S+","[reference]",string)
+    string=re.sub(r"[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}","[contact]",string,flags=re.I)
+    string=re.sub(r"\b[0-9a-f]{8}-[0-9a-f-]{27,}\b","[reference]",string,flags=re.I)
+    string=re.sub(r"\+?\d[\d .()-]{7,}\d","[number]",string)
+    return string[:480]
+
+
+def validate_pending(item):
+    if not isinstance(item,dict) or not KEY.fullmatch(str(item.get("key",""))):
+        return None
+    if item.get("risk") not in ("low","medium","high"):
+        return None
+    if not isinstance(item.get("priority"),(int,float)):
+        return None
+    problem=clean_for_public_issue(item.get("problem"))
+    ideal=clean_for_public_issue(item.get("ideal"))
+    if len(problem)<30 or len(ideal)<30:
+        return None
+    return {"key":item["key"],"problem":problem,"ideal":ideal,
+            "risk":item["risk"],"priority":max(1,min(100,int(item["priority"])))}
+
+
+def github(method, resource, data=None):
+    url="https://api.github.com/repos/"+REPO+"/"+resource
+    request=urllib.request.Request(url,
+      method=method,
+      data=json.dumps(data).encode() if data is not None else None,
+      headers={"authorization":"Bearer "+os.environ["GH_TOKEN"],
+               "accept":"application/vnd.github+json",
+               "content-type":"application/json",
+               "user-agent":"sandy-verified-feature-handoff"})
+    with urllib.request.urlopen(request,timeout=20) as response:
+        return json.load(response)
+
+
+def issue_for(item, existing):
+    marker="<!-- sandy-feature-key:"+item["key"]+" -->"
+    matches=[x for x in existing if marker in str(x.get("body") or "") and not x.get("pull_request")]
+    if matches:
+        return matches[0]["number"]
+    title="Sandy feature: "+item["key"].replace("_"," ")
+    body=("### Product improvement hypothesis (not yet implemented)\n\n"
+      +item["problem"]+"\n\n### Intended behavior\n\n"+item["ideal"]
+      +"\n\nPriority: "+str(item["priority"])+"/100. Risk: "+item["risk"]+" (provisional AI classification).\n\n"
+      "Independent Architect must verify source code, scope, privacy and the actual need; "
+      "create only tested draft PRs. No production deployment is authorised by this issue.\n\n"
+      +marker)
+    can_auto_plan=item["risk"]=="low" and item["priority"]>=80
+    proposal={"title":title,"body":body,
+      "labels":["sandy-autonomous-ready"] if can_auto_plan else []}
+    created=github("POST","issues",proposal)
+    existing.append(created)
+    return created["number"]
+
+
+def acknowledge(assertion, item, issue):
+    request=urllib.request.Request(ENDPOINT,method="POST",
+      data=json.dumps({"op":"acknowledge","key":item["key"],"issue_number":issue}).encode(),
+      headers={"authorization":"Bearer "+assertion,"content-type":"application/json"})
+    with urllib.request.urlopen(request,timeout=25) as response:
+        result=json.load(response)
+    if result.get("ok") is not True or result.get("issue_number")!=issue:
+        raise RuntimeError("GitHub issue acknowledgement not verified")
 
 
 def main():
@@ -34,7 +105,16 @@ def main():
       headers={"authorization":"Bearer "+assertion,"content-type":"application/json"})
     with urllib.request.urlopen(request,timeout=120) as response:
         outcome=json.load(response)
-    print(json.dumps(verify_response(outcome)))
+    report=verify_response(outcome)
+    issues=github("GET","issues?state=all&per_page=100")
+    for pending in (outcome.get("pending") or [])[:5]:
+        feature=validate_pending(pending)
+        if feature is None:
+            raise RuntimeError("Unsafe feature proposal was not forwarded to GitHub")
+        issue=issue_for(feature,issues)
+        acknowledge(assertion,feature,issue)
+        report.setdefault("verified_engineering_handoffs",[]).append(issue)
+    print(json.dumps(report))
 
 
 if __name__=="__main__":
