@@ -171,3 +171,17 @@ jobs:
         run: python3 scripts/sandy/observe_architect_run.py
       - name: Persist GitHub-signed outcome to canonical Supabase cycle
         run: python3 scripts/sandy/post_architect_outcome.py
+
+  trigger_safe_merge:
+    needs: [architect, engineer, record_outcome]
+    if: ${{ needs.architect.result == 'success' && needs.engineer.result == 'success' && needs.record_outcome.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - name: Dispatch independent fail-closed docs-and-tests-only merge review
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sandy-safe-automerge.yml --repo ausstyle/web-staging --ref main -f engineering_run_id="${GITHUB_RUN_ID}"
