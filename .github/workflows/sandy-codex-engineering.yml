@@ -50,6 +50,16 @@ jobs:
             Start the design with exactly one line: DECISION: READY or DECISION: BLOCKED.
             READY means all relevant source is present and there is a safe actionable design.
             BLOCKED means a material prerequisite remains missing; explain the blocker.
+            Apply a strict task-scoped dependency test: only block for missing evidence
+            about files, services, data or permissions that the proposed change actually
+            reads, modifies, executes or deploys. Background system components, optional
+            architecture explanations and unrelated production source parity are not
+            prerequisites for a repository-only, non-executable documentation addition.
+            For docs-only work, inspect the proposed path and any directly quoted facts;
+            explicitly disclose unverified production behavior instead of auditing every
+            adjacent database routine. NEVER relax source review for executable code,
+            migrations, customer data, authentication, integrations or deployments.
+            Treat this task-scope rule as a boundary, not an override of safety gates.
             Produce a design with evidence, exact affected files, root cause (or unknown),
             security analysis, acceptance criteria and regression tests.
             Do NOT change code. Do NOT infer missing production source.
