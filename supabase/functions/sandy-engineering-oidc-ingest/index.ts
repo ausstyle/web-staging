@@ -298,7 +298,7 @@ Deno.serve(async(req:Request)=>{
       const response=await fetch("https://api.openai.com/v1/responses",{
         method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},
         body:JSON.stringify({model:designModel,store:false,reasoning:{effort:"high"},
-          instructions,input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({
+          instructions,input:[{role:"user",content:[{type:"input_text",text:"Respond with a valid JSON object containing a tests array. Ground all tests in this snapshot: "+JSON.stringify({
             mission_statement:snapshot.mission_statement,
             active_mission_count:snapshot.active_mission_count,
             mission_status_distribution:snapshot.mission_status_distribution,
