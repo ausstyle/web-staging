@@ -1,6 +1,7 @@
 import unittest
 from run_feature_discovery import verify_response,validate_pending,clean_for_public_issue,issue_for
 from unittest.mock import patch
+from pathlib import Path
 
 
 class FeatureDiscoveryRunnerTests(unittest.TestCase):
@@ -44,6 +45,16 @@ class FeatureDiscoveryRunnerTests(unittest.TestCase):
         with patch("run_feature_discovery.github",return_value={"number":11,"body":"ok"}) as api:
             self.assertEqual(issue_for(item,[]),11)
             self.assertIn("sandy-autonomous-ready",api.call_args.args[2]["labels"])
+
+    def test_push_smoke_never_publishes_public_issue(self):
+        worker=(Path(__file__).resolve().parents[2] /
+                "scripts/sandy/run_feature_discovery.py").read_text()
+        workflow=(Path(__file__).resolve().parents[2] /
+                  ".github/workflows/sandy-feature-discovery.yml").read_text()
+        self.assertIn('GITHUB_EVENT_NAME")=="push"',worker)
+        self.assertIn('"github_publication":False',worker)
+        self.assertIn("paths:",workflow)
+        self.assertIn("'.github/workflows/sandy-feature-discovery.yml'",workflow)
 
 
 if __name__=="__main__":
