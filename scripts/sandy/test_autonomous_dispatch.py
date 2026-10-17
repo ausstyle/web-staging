@@ -16,6 +16,12 @@ def run(number, status="completed", created="2026-10-17T16:00:00Z"):
 
 
 class AutoDispatchTests(unittest.TestCase):
+    def test_engineer_cannot_attempt_unpublishable_workflows(self):
+        wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-codex-engineering.yml').read_text()
+        self.assertIn("Never modify .github/workflows/**",wf)
+        self.assertIn('git status --porcelain -- .github/workflows',wf)
+        self.assertIn("FILE_COUNT",wf)
+
     def test_issue_labeled_dispatch_is_event_gated(self):
         wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-autonomous-dispatch.yml').read_text()
         self.assertIn('types: [labeled]',wf)

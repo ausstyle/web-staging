@@ -110,6 +110,9 @@ jobs:
             You are Sandy's Software Engineer for issue #${{ inputs.issue_number }}.
             Follow the reviewed design in /tmp/sandy-architecture/sandy-architecture.md.
             Only modify version-controlled source in this repository.
+            Never modify .github/workflows/** or GitHub Actions definitions: this bot has no workflow write permission.
+            If the issue cannot be resolved without changing a workflow, leave source unchanged and explicitly report BLOCKED.
+            Prefer a narrowly scoped source/test correction, at most five files and 400 changed lines.
             Implement the smallest safe change, add focused regression tests and run them.
             Do not deploy, alter secrets, add network exfiltration or claim tests passed unless run.
             If the design is unsafe/incomplete or production source missing, DO NOT edit code;
@@ -123,8 +126,17 @@ jobs:
           set -euo pipefail
           git config user.name 'sandy-engineering[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if [ -n "$(git status --porcelain -- .github/workflows)" ]; then
+            echo "::error::Engineer attempted unauthorised GitHub Actions workflow changes. Do not push; escalate for scoped review."
+            exit 1
+          fi
           if [ -z "$(git status --porcelain)" ]; then
             echo "::error::No code changes produced; no PR created"
+            exit 1
+          fi
+          FILE_COUNT="$(git status --porcelain | wc -l)"
+          if [ "$FILE_COUNT" -gt 5 ]; then
+            echo "::error::Engineer exceeded five-file change budget; require a narrower proposal"
             exit 1
           fi
           BRANCH="sandy/codex-issue-${ISSUE}-${GITHUB_RUN_ID}"
