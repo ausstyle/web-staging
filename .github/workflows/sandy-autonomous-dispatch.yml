@@ -1,0 +1,30 @@
+name: Sandy autonomous engineering dispatcher
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Only report the issue selected; do not dispatch
+        type: boolean
+        default: true
+permissions:
+  contents: read
+  actions: write
+  issues: read
+concurrency:
+  group: sandy-autonomous-dispatch
+  cancel-in-progress: false
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate dispatch selection contract
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_autonomous_dispatch.py' -v
+      - name: Dispatch one opted-in issue with cooldown and attempt limits
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_DISPATCH_DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '1' || '0' }}
+        run: python3 scripts/sandy/autonomous_dispatch.py
