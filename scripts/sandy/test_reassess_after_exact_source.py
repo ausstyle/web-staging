@@ -27,6 +27,20 @@ class ReassessmentTests(unittest.TestCase):
         self.assertIn("already submitted",act(m,c,"1","ausstyle/web-staging",prior,other.append))
         self.assertFalse(other)
 
+    def test_file_identity_mismatch_never_dispatches(self):
+        m,c=self.fixture()
+        c["files"][0]["path"]="other.ts"
+        calls=[]
+        with self.assertRaises(ValueError):
+            act(m,c,"1","ausstyle/web-staging","",calls.append)
+        self.assertFalse(calls)
+
+    def test_invalid_digest_never_dispatches(self):
+        m,c=self.fixture()
+        m["files"][0]["sha256"]="invalid"
+        with self.assertRaises(ValueError):
+            act(m,c,"1","ausstyle/web-staging","",lambda args: None)
+
     def test_untrusted_project_rejected(self):
         m,c=self.fixture()
         m["project_ref"]="wrong"
