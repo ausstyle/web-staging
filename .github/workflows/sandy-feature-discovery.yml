@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sandy-feature-discovery.yml'
+      - 'scripts/sandy/run_feature_discovery.py'
   schedule:
     - cron: '17 4 * * *'
   workflow_dispatch:
