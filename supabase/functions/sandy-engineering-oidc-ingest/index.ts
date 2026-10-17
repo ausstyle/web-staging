@@ -288,6 +288,7 @@ Deno.serve(async(req:Request)=>{
       "For each question choose exactly one supported oracle_key from: "+allowedKeys.join(", ")+".",
       "Mandatory validation: every question must contain language matching its oracle. For connections ask which apps are connected. For task_count ask how many outstanding tasks. For clock ask current time. For location ask about current location.",
       "Every test must have one or more grounding_keys exactly matching source keys present in the input. mission_charter and mission_activity are always valid grounding keys.",
+      "Copy grounding_keys ONLY from allowed_grounding_keys in the input. Never use generic names such as roadmap, capabilities or source_inventory.",
       "Construct 6 different tests; include at least one connections question and one task_count question, and 4 diverse tests based on the actual snapshot. Do not request actions or create items.",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
@@ -313,7 +314,8 @@ Deno.serve(async(req:Request)=>{
             qa_findings:snapshot.qa_findings.slice(0,12),
             recent_evaluations:snapshot.recent_evaluations.slice(0,8),
             customer_conversation_qa:snapshot.customer_conversation_qa.slice(0,5),
-            customer_originated_qa_cases:snapshot.customer_originated_qa_cases.slice(0,6)
+            customer_originated_qa_cases:snapshot.customer_originated_qa_cases.slice(0,6),
+            allowed_grounding_keys:["mission_charter","mission_activity",...snapshot.roadmap.slice(0,15).map((x:any)=>x.key),...snapshot.capabilities.slice(0,18).map((x:any)=>x.key),...snapshot.qa_findings.slice(0,12).map((x:any)=>x.key),...snapshot.source_inventory.slice(0,12).map((x:any)=>x.key),...snapshot.customer_conversation_qa.slice(0,5).map((x:any)=>x.key)]
           })}]}],text:{format:{type:"json_object"}},max_output_tokens:7200}),
         signal:AbortSignal.timeout(160000)
       });
