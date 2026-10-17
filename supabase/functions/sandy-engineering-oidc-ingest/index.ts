@@ -145,13 +145,18 @@ Deno.serve(async(req:Request)=>{
         }else if(testcase.key==="web_history"){
           const {count,error}=await db.from("sandy_web_turns").select("id",{head:true,count:"exact"}).eq("customer_id",customerId);
           if(error)throw Error("web_count_evidence_unavailable");
-          verdict=normalized.includes(String(count??0))&&any("web","chat")?"pass":"fail";
+          verdict=had("v2_operational_read")&&normalized.includes(String(count??0))&&any("web","chat")?"pass":"fail";
           reason=verdict==="pass"?"matches_database_web_count":"message_count_mismatch";
         }else if(testcase.key==="cross_channel"){
           if(!had("v2_operational_read")){verdict="fail";reason="missing_cross_channel_inspection_receipt";}
           else if(["web","whatsapp","voice","email"].every(x=>normalized.includes(x))&&!any("cannot access any","have no access to any")){
             verdict="needs_review";reason="all_channels_described_independent_semantic_review_needed";
           }else{verdict="fail";reason="incomplete_cross_channel_reply";}
+        }else if(testcase.key==="followup_investigation"){
+          const deferred=any("would you like me to","do you want me to","if you want me to","provide keywords");
+          const grounded=had("v2_operational_read")&&["web","whatsapp","voice","email"].every(x=>normalized.includes(x));
+          verdict=grounded&&!deferred?"pass":"fail";
+          reason=verdict==="pass"?"followup_scoped_inspection":"followup_failed_to_investigate";
         }else if(testcase.key==="location"){
           verdict=any("can't access","cannot access","don't have","do not have","not know","can't determine","cannot determine","not available","no access")?"pass":"needs_review";
           reason=verdict==="pass"?"location_not_inferred":"location_response_needs_review";
