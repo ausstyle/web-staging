@@ -248,7 +248,7 @@ html,body{max-width:100%;overflow-x:clip}
 .sandyMissionBadge{display:inline-block;background:#fff;border:1px solid #aaa;border-radius:5px;padding:2px 6px;font-size:10px;line-height:1.4;color:#111;font-weight:600;white-space:nowrap}@media(max-width:750px){.sandyMissionBadge{white-space:normal}}.requestPanel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px;margin:15px 0 22px}.requestPanelHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}.requestBar{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.requestBar input{flex:1;min-width:160px;padding:9px 11px;border:1px solid var(--line);border-radius:9px}.requestInboxItem{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line);flex-wrap:wrap}.requestInboxItem:first-child{margin-top:12px}.requestInboxItem strong{flex:1;min-width:180px}.requestInboxItem .btn{white-space:nowrap}.summary{grid-template-columns:repeat(5,minmax(0,1fr))}.requestDetail{flex-basis:100%;width:100%;background:#f8faf7;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:4px;display:grid;gap:10px}.requestDetail.hidden{display:none}.requestDetailLine{display:grid;grid-template-columns:130px minmax(0,1fr);gap:12px;overflow-wrap:anywhere}.requestDetailLine strong{font-size:12px;color:var(--muted)}.requestPanelFocused{outline:2px solid var(--green);outline-offset:4px}@media(max-width:1000px){.summary{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.requestDetailLine{grid-template-columns:1fr;gap:2px}}
 .categoryBar{display:flex;flex-wrap:wrap;gap:7px;align-items:center;margin:-7px 0 18px;padding:9px 12px;border-left:2px solid #d9d9d9;background:#fafafa;border-radius:7px}
 .categoryLabel{font-size:11px;font-weight:700;letter-spacing:.05em;color:#777;margin-right:4px}
-.categoryPill{font:600 12px/1.4 inherit;white-space:nowrap;padding:7px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#444}
+.categoryPill{font-size:12px;font-weight:600;white-space:nowrap;padding:7px 11px;border-radius:8px;border:1px solid #ddd;background:#fff;color:#444}
 .categoryPill.selected{background:#e9e9e9;color:#111;border-color:#aaa}
 .categoryCreate{border:1px dashed #aaa;border-radius:8px;background:#fff;color:#444;padding:7px 11px;font-size:12px}
 .categoryItem{display:inline-flex;align-items:center;gap:2px}
@@ -376,6 +376,12 @@ async function createCategory(companyId,parentId=null){
   state.categories.push(result.category);toast("Subcategory added");return result.category.id;
  }catch(e){toast(e.message,true);return null}
 }
+function useEntryWorkspace(id){
+ state.entryWorkspace=id;
+ for(const key of ["quickWorkspace","rootWorkspace"]){
+  const select=$(key);if(select&&[...select.options].some(o=>o.value===id))select.value=id;
+ }
+}
 function renderCategories(){
  const bar=$("categoryBar");bar.replaceChildren();
  const companyId=state.workspace;
@@ -386,7 +392,7 @@ function renderCategories(){
  for(const item of categoriesForCompany(companyId)){
   const c=item.category;
   const wrap=el("span","categoryItem");
-  const name=btn((item.depth?"↳ ":"")+c.name,"categoryPill categoryName"+(state.category===c.id?" selected":""),()=>{state.category=c.id;state.entryWorkspace=companyId;render()});
+  const name=btn((item.depth?"↳ ":"")+c.name,"categoryPill categoryName"+(state.category===c.id?" selected":""),()=>{state.category=c.id;useEntryWorkspace(companyId);render()});
   name.title=taskWorkspaceLabel(companyId)+" › "+categoryPath(c.id);
   wrap.append(name);
   const rename=btn("✎","categoryManage",async()=>{
@@ -402,7 +408,7 @@ function renderCategories(){
  }
  bar.append(btn("＋ Subcategory","categoryCreate",async()=>{
   const id=await createCategory(companyId,state.category||null);
-  if(id){state.category=id;render()}
+  if(id){state.category=id;useEntryWorkspace(companyId);render()}
  }));
 }
 async function createCompany(){
@@ -414,7 +420,7 @@ function renderWorkspaces(){
  const area=$("workspaceTabs");area.replaceChildren();
  const options=[{id:"all",name:"Everything"},{id:"personal",name:"Personal"},{id:"assigned",name:"Assigned to me"},...state.companies];
  for(const c of options){
-  const b=btn(c.name,"workspacePill"+(state.workspace===c.id?" selected":""),()=>{state.workspace=c.id;state.category=null;if(c.id!=="all")state.entryWorkspace=c.id;render()});
+  const b=btn(c.name,"workspacePill"+(state.workspace===c.id?" selected":""),()=>{state.workspace=c.id;state.category=null;if(c.id!=="all")useEntryWorkspace(c.id);render()});
   area.append(b)
  }
  for(const id of ["quickWorkspace","rootWorkspace"]){
