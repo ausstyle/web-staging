@@ -972,7 +972,7 @@ async function refreshMissionStatus(){
   state.missionRuns=data.runs||[];state.missionQuestions=data.questions||[];
   for(const task of state.tasks){const item=byId.get(task.id);if(item)task.metadata={...(task.metadata||{}),...(item.metadata||{})};}
   state.extraMissions=(data.missions||[]).filter(m=>!state.tasks.some(t=>t.id===m.id));
-  renderMissionOverview();
+  if(!editingAgenda())render();else renderMissionOverview();
  }catch(error){console.warn("Mission status sync:",error.message);const el=$("missionCards");if(el&&!el.children.length)el.append(document.createTextNode("Mission status temporarily unavailable. Tasks remain accessible below."))}
 }
 function renderMissionOverview(){
