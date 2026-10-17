@@ -1,4 +1,5 @@
 name: Sandy V2 autonomous API QA
+# Verify Examiner-to-Evolution delivery after diagnosis table permission repair.
 # Independent Evolution handoff receipt verification on v28.
 on:
   push:
