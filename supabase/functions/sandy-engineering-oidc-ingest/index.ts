@@ -139,7 +139,9 @@ Deno.serve(async(req:Request)=>{
       recent_evaluations:(latestTests.data||[]).map((x:any)=>({case:x.case_key,verdict:x.verdict,created_at:x.created_at})),
       customer_conversation_qa:customerSignals,
       customer_originated_qa_cases:customerCaseSignals,
-      customer_qa_provenance:"Aggregated failed/issue review verdicts and whitelisted evidence flags, plus deduplicated QA case keys. No raw conversations or reviewer notes."
+      customer_qa_provenance:"Aggregated failed/issue review verdicts and whitelisted evidence flags, plus deduplicated QA case keys. No raw conversations or reviewer notes.",
+      historical_qa_status:"unverified_until_current_production_retest",
+      current_state_verification_required:true
     };
     const bytes=new TextEncoder().encode(JSON.stringify(snapshot));
     const snapshotHash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)))
@@ -178,6 +180,9 @@ Deno.serve(async(req:Request)=>{
       "Prioritise Sandy's mission of independently completing authorised, auditable customer objectives.",
       "Distinguish desired/roadmap features, coded source, capability verification and tested outcomes.",
       "Prioritise repeated real customer failure categories and recent customer-originated QA findings, but do not assume every QA flag has a verified root cause.",
+      "A historical QA failure is not evidence that the defect still exists in currently deployed Sandy. Design a present-tense revalidation test before any corrective work.",
+      "Use present production evidence to distinguish still_failing, resolved_verified, not_reproduced, cannot_test and changed_functionality. Never mark resolved based solely on a merged PR, deployment or model assertion.",
+      "When a relevant historical issue is selected, generate a read-only current-state test with a matching oracle. Keep old incidents for regression coverage, not as an automatically open defect.",
       "Do not claim a planned or connected feature is executable without proof.",
       "For each question choose exactly one supported oracle_key from: "+allowedKeys.join(", ")+".",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
@@ -238,7 +243,7 @@ Deno.serve(async(req:Request)=>{
         accepted.push({oracle_key:key,question,priority,
           purpose:String(candidate.purpose||"").slice(0,240),
           expected_observation:String(candidate.expected_observation||"").slice(0,300),
-          grounding_keys:grounds,execution_status:"shadow_not_executed"});
+          grounding_keys:grounds,execution_status:"shadow_not_executed",requires_current_production_retest:true});
       }
       if(accepted.length<2){
         await finish("rejected",{snapshot_hash:snapshotHash,source_summary:summary,
