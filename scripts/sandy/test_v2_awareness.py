@@ -44,6 +44,27 @@ class TestV2ArchitecturalContracts(unittest.TestCase):
         self.assertIn('physical_location:"not_available"', self.agent)
         self.assertIn('current_conversation_state', self.agent)
 
+    def test_cross_channel_records_are_customer_scoped(self):
+        self.assertIn('enum:["conversation_activity","communication_activity"', self.agent)
+        self.assertIn('name:"inspect_sandy_operational_state"', self.agent)
+        for table in ("sandy_web_turns", "sandy_whatsapp_messages",
+                      "sandy_whatsapp_identities", "sandy_voice_transcript_turns",
+                      "email_messages", "email_customer_addresses"):
+            self.assertIn(f'db.from("{table}")', self.agent)
+        self.assertIn('.eq("owner_customer_id",customerId)', self.agent)
+        self.assertIn('.eq("customer_id",customerId).eq("direction","incoming")', self.agent)
+        self.assertIn('.eq("verification_status","verified")', self.agent)
+        self.assertIn('.eq("direction","inbound").in("sender_wa_id",ids)', self.agent)
+
+    def test_unverified_email_is_not_misreported_as_user_sent(self):
+        self.assertIn('email_authored_by_verified_customer', self.agent)
+        self.assertIn('no_verified_sender_addresses', self.agent)
+        self.assertIn('known_customer_originated_subset', self.agent)
+        self.assertIn('Email records may be from other senders', self.agent)
+        self.assertIn('communicationFacts.status', self.agent)
+        self.assertIn('v2_operational_read', self.agent)
+        self.assertIn('investigate using available customer-scoped tools', self.agent)
+
     def test_trusted_web_caller_conversation_identity(self):
         workspace = (ROOT / "supabase/functions/sandy-workspace/index.ts").read_text()
         self.assertIn('conversation_id:conversationId', workspace)
