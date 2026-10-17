@@ -1,5 +1,12 @@
 name: Sandy verified repository-only release
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-repository-release-verifier.yml'
+      - 'scripts/sandy/verify_repo_release.py'
+  schedule:
+    - cron: '23 * * * *'
   workflow_run:
     workflows: ["Sandy engineering regression checks"]
     types: [completed]
@@ -26,4 +33,24 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           SANDY_MAIN_SHA: ${{ github.event.workflow_run.head_sha }}
           SANDY_CI_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: python3 scripts/sandy/verify_repo_release.py
+
+  reconcile:
+    if: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Verify scheduled receipt-reconciliation contract
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_verify_repo_release*.py' -v
+      - name: Reconcile recent independently successful main CI receipts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_RELEASE_SCAN: '1'
         run: python3 scripts/sandy/verify_repo_release.py
