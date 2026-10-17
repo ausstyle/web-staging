@@ -4,6 +4,7 @@ import json
 import os
 import re
 import urllib.parse
+import urllib.error
 import urllib.request
 
 AUDIENCE="sandy-feature-discovery-zmqlyygzqoidkcwdysok"
@@ -103,8 +104,20 @@ def main():
     payload=json.dumps({"op":"discover"}).encode("utf-8")
     request=urllib.request.Request(ENDPOINT,method="POST",data=payload,
       headers={"authorization":"Bearer "+assertion,"content-type":"application/json"})
-    with urllib.request.urlopen(request,timeout=120) as response:
-        outcome=json.load(response)
+    try:
+        with urllib.request.urlopen(request,timeout=120) as response:
+            outcome=json.load(response)
+    except urllib.error.HTTPError as error:
+        try:
+            payload=json.loads(error.read(2048))
+            reason=payload.get("error","rejected")
+        except (ValueError,UnicodeError):
+            reason="rejected"
+        if reason not in ("unauthorised","worker_unconfigured","evidence_lookup_failed",
+                          "feature_assessment_unavailable","invalid_assessment_response",
+                          "invalid_assessment_schema","invalid_op","invalid_json"):
+            reason="unclassified"
+        raise RuntimeError(f"Feature discovery returned HTTP {error.code}: {reason}") from None
     report=verify_response(outcome)
     if os.environ.get("GITHUB_EVENT_NAME")=="push":
         print(json.dumps({**report,"smoke_only":True,"github_publication":False}))
