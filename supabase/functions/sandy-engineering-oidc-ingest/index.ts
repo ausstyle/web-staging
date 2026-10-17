@@ -72,7 +72,7 @@ Deno.serve(async(req:Request)=>{
     // No tenant-specific messages, mission titles, email contents, tokens, or customer IDs
     // ever go to the external test architect. Snapshot carries only product metadata,
     // per-channel verification state and aggregate Mission counts.
-    const [roadmap,catalog,inventory,qa,missionCount,latestTests,missionStatuses,missionRuns]=await Promise.all([
+    const [roadmap,catalog,inventory,qa,missionCount,latestTests,missionStatuses,missionRuns,customerReviews,customerCases]=await Promise.all([
       db.from("sandy_feature_roadmap").select("feature_key,feature_title,progress,updated_at")
         .order("priority_order",{ascending:true}).limit(90),
       db.from("sandy_capability_catalog").select("feature_key,channels,last_verified_at,updated_at").limit(80),
@@ -87,9 +87,11 @@ Deno.serve(async(req:Request)=>{
         .order("created_at",{ascending:false}).limit(25),
       db.from("sandy_tasks").select("status").contains("metadata",{sandy_mission:true})
         .is("archived_at",null).limit(150),
-      db.from("sandy_mission_runs").select("stage,state").limit(150)
+      db.from("sandy_mission_runs").select("stage,state").limit(150),
+      db.from("sandy_qa_message_reviews").select("direction,verdict,reviewed_at,score_accuracy,score_delivery,evidence").in("verdict",["FAIL","ISSUES","ATTACHMENT_UNVERIFIED"]).order("reviewed_at",{ascending:false}).limit(120),
+      db.from("sandy_qa_cases").select("test_key,status,updated_at").not("source_message_id","is",null).order("updated_at",{ascending:false}).limit(60)
     ]);
-    if([roadmap,catalog,inventory,qa,missionCount,latestTests,missionStatuses,missionRuns].some(x=>x.error)){
+    if([roadmap,catalog,inventory,qa,missionCount,latestTests,missionStatuses,missionRuns,customerReviews,customerCases].some(x=>x.error)){
       await finish("failed",{rejection_reason:"source_of_truth_snapshot_unavailable"});
       return fail("examiner_design_sources_unavailable",503);
     }
@@ -97,6 +99,29 @@ Deno.serve(async(req:Request)=>{
       const name=String(r?.[field]||"unknown").slice(0,60);
       acc[name]=(acc[name]||0)+1;return acc;
     },{} as Record<string,number>);
+    // Structured QA only. Never send raw customer messages, free-text reviewer notes,
+    // email addresses, source message IDs or arbitrary JSON evidence to the model.
+    const reviewRows=(customerReviews.data||[]) as any[];
+    const reviewerSignals=reviewRows.reduce((acc:Record<string,any>,entry:any)=>{
+      const verdict=String(entry.verdict||"").toUpperCase();
+      const safeFlags=["source_attachment_count","delivery_status"].filter(k=>Object.prototype.hasOwnProperty.call(entry.evidence||{},k))
+        .map(k=>k==="source_attachment_count"&&entry.evidence[k]===0?"attachment_absent":
+          k==="delivery_status"&&entry.evidence[k]==="sent"?"delivery_recorded":null).filter(Boolean);
+      const label=verdict==="ATTACHMENT_UNVERIFIED"?"attachment_verification":
+        safeFlags.includes("attachment_absent")?"attachment_verification":
+        verdict==="FAIL"?"customer_reply_failure":"customer_reply_issue";
+      if(!acc[label])acc[label]={key:"customer_qa:"+label,count:0,latest_reviewed_at:null,
+        outcome_distribution:{},observed_flags:[]};
+      const group=acc[label];group.count++;group.outcome_distribution[verdict]=(group.outcome_distribution[verdict]||0)+1;
+      if(entry.reviewed_at&&(!group.latest_reviewed_at||entry.reviewed_at>group.latest_reviewed_at))
+        group.latest_reviewed_at=entry.reviewed_at;
+      for(const flag of safeFlags)if(!group.observed_flags.includes(flag))group.observed_flags.push(flag);
+      return acc;
+    },{});
+    const customerSignals=Object.values(reviewerSignals);
+    const customerCaseSignals=(customerCases.data||[]).map((x:any)=>({
+      key:String(x.test_key).slice(0,110),status:String(x.status).slice(0,35),updated_at:x.updated_at
+    }));
     const snapshot={
       mission_statement:String(policy.config?.mission_statement||"Sandy must complete delegated customer work to independently verified outcomes").slice(0,750),
       active_mission_count:Number(missionCount.count||0),
@@ -111,14 +136,18 @@ Deno.serve(async(req:Request)=>{
       source_inventory:(inventory.data||[]).map((x:any)=>({key:x.component_key,type:x.component_type,
         state:x.deployment_state,verified_at:x.last_verified_at})),
       qa_findings:(qa.data||[]).map((x:any)=>({key:x.test_key,status:x.status,updated_at:x.updated_at})),
-      recent_evaluations:(latestTests.data||[]).map((x:any)=>({case:x.case_key,verdict:x.verdict,created_at:x.created_at}))
+      recent_evaluations:(latestTests.data||[]).map((x:any)=>({case:x.case_key,verdict:x.verdict,created_at:x.created_at})),
+      customer_conversation_qa:customerSignals,
+      customer_originated_qa_cases:customerCaseSignals,
+      customer_qa_provenance:"Aggregated failed/issue review verdicts and whitelisted evidence flags, plus deduplicated QA case keys. No raw conversations or reviewer notes."
     };
     const bytes=new TextEncoder().encode(JSON.stringify(snapshot));
     const snapshotHash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",bytes)))
       .map(x=>x.toString(16).padStart(2,"0")).join("");
     const summary={roadmap_items:snapshot.roadmap.length,catalogued_capabilities:snapshot.capabilities.length,
       inventoried_executable_components:snapshot.source_inventory.length,active_missions:snapshot.active_mission_count,
-      recent_evaluations:snapshot.recent_evaluations.length,observed_mission_runs:(missionRuns.data||[]).length};
+      recent_evaluations:snapshot.recent_evaluations.length,observed_mission_runs:(missionRuns.data||[]).length,
+      customer_issue_reviews:reviewRows.length,customer_issue_categories:customerSignals.length,customer_originated_cases:customerCaseSignals.length};
     const {data:recent,error:recentError}=await db.from("sandy_examiner_design_runs")
       .select("created_at,snapshot_hash,status").eq("status","generated")
       .order("created_at",{ascending:false}).limit(1);
@@ -148,6 +177,7 @@ Deno.serve(async(req:Request)=>{
       "Use the current source-of-truth snapshot to design 6 realistic read-only customer queries.",
       "Prioritise Sandy's mission of independently completing authorised, auditable customer objectives.",
       "Distinguish desired/roadmap features, coded source, capability verification and tested outcomes.",
+      "Prioritise repeated real customer failure categories and recent customer-originated QA findings, but do not assume every QA flag has a verified root cause.",
       "Do not claim a planned or connected feature is executable without proof.",
       "For each question choose exactly one supported oracle_key from: "+allowedKeys.join(", ")+".",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
@@ -181,7 +211,9 @@ Deno.serve(async(req:Request)=>{
         ...snapshot.roadmap.map((x:any)=>x.key),
         ...snapshot.capabilities.map((x:any)=>x.key),
         ...snapshot.source_inventory.map((x:any)=>x.key),
-        ...snapshot.qa_findings.map((x:any)=>x.key)]);
+        ...snapshot.qa_findings.map((x:any)=>x.key),
+        ...snapshot.customer_conversation_qa.map((x:any)=>x.key),
+        ...snapshot.customer_originated_qa_cases.map((x:any)=>x.key)]);
       const accepted:any[]=[];
       for(const candidate of data.tests.slice(0,12)){
         const key=String(candidate?.oracle_key||"");
