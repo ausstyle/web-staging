@@ -239,16 +239,17 @@ async function handler(req:Request):Promise<Response>{
   return json(200,{ok:true},{"set-cookie":cookie("",0)});
  }
  if(action==="list"&&req.method==="GET"){
-  const [tasks,sg,customer,attn,deps,companies,delegatedByMe,assignedToMe]=await Promise.all([
-   db.from("sandy_tasks").select("id,parent_task_id,company_id,title,details,status,priority,due_at,start_at,contact_name,next_review_at,waiting_on,position,source_kind,created_at,updated_at,completed_at,archived_at,version").eq("customer_id",cid).order("created_at",{ascending:false}).limit(2000),
+  const [tasks,sg,customer,attn,deps,companies,categories,delegatedByMe,assignedToMe]=await Promise.all([
+   db.from("sandy_tasks").select("id,parent_task_id,company_id,category_id,title,details,status,priority,due_at,start_at,contact_name,next_review_at,waiting_on,position,source_kind,created_at,updated_at,completed_at,archived_at,version").eq("customer_id",cid).order("created_at",{ascending:false}).limit(2000),
    db.from("sandy_task_suggestions").select("id,title,details,confidence,status,created_at").eq("customer_id",cid).eq("status","suggested").order("created_at",{ascending:false}).limit(20),
    db.from("email_customers").select("display_name").eq("id",cid).single(),
    db.from("sandy_agenda_attention").select("task_id,reason,first_detected_at").eq("customer_id",cid).is("resolved_at",null).order("first_detected_at",{ascending:false}).limit(100),
    db.from("sandy_task_dependencies").select("task_id,depends_on_id").eq("customer_id",cid).limit(3000),
    db.from("sandy_agenda_companies").select("id,name").eq("customer_id",cid).order("name"),
+   db.from("sandy_agenda_categories").select("id,company_id,parent_category_id,name").eq("customer_id",cid).order("name"),
    db.from("sandy_task_delegations").select("id,task_id,assignee_customer_id,status,scope").eq("owner_customer_id",cid).neq("status","revoked"),
    db.from("sandy_task_delegations").select("id,task_id,owner_customer_id,status,scope").eq("assignee_customer_id",cid).in("status",["invited","accepted"]) ]);
-  if(tasks.error||sg.error||attn.error||deps.error||companies.error||delegatedByMe.error||assignedToMe.error)return failure("Could not load agenda",503);
+  if(tasks.error||sg.error||attn.error||deps.error||companies.error||categories.error||delegatedByMe.error||assignedToMe.error)return failure("Could not load agenda",503);
   const ownShares=delegatedByMe.data||[],inShares=assignedToMe.data||[];
   const [myParticipantRes,sharedParticipantRes,extInviteRes]=await Promise.all([
     db.from("sandy_task_participants").select("task_id,customer_id,role,scope,status").in("task_id",(tasks.data||[]).map((t:any)=>t.id).length?(tasks.data||[]).map((t:any)=>t.id):["00000000-0000-0000-0000-000000000000"]).neq("status","revoked"),
@@ -279,7 +280,7 @@ async function handler(req:Request):Promise<Response>{
   const inbound=inShares.map((d:any)=>({...d,task_title:inviteTitle.get(d.task_id)||"Shared task"}));
   const topIds=accepted.map((d:any)=>d.task_id);
   const {data:roots,error:sharedError}=topIds.length?await db.from("sandy_tasks")
-    .select("id,parent_task_id,company_id,title,details,status,priority,due_at,start_at,contact_name,next_review_at,waiting_on,position,created_at,updated_at,completed_at,archived_at,version,customer_id")
+    .select("id,parent_task_id,company_id,category_id,title,details,status,priority,due_at,start_at,contact_name,next_review_at,waiting_on,position,created_at,updated_at,completed_at,archived_at,version,customer_id")
     .in("id",topIds):{data:[],error:null};
   if(sharedError)return failure("Unable to load assigned tasks",503);
   const shared:any[]=[];
@@ -291,7 +292,7 @@ async function handler(req:Request):Promise<Response>{
       const queue=[root.id],visited=new Set(queue);
       while(queue.length&&visited.size<150){
         const {data:children,error:childError}=await db.from("sandy_tasks")
-           .select("id,parent_task_id,company_id,title,details,status,priority,due_at,start_at,contact_name,next_review_at,waiting_on,position,created_at,updated_at,completed_at,archived_at,version,customer_id")
+           .select("id,parent_task_id,company_id,category_id,title,details,status,priority,due_at,start_at,contact_name,next_review_at,waiting_on,position,created_at,updated_at,completed_at,archived_at,version,customer_id")
            .eq("customer_id",d.owner_customer_id).in("parent_task_id",queue).is("archived_at",null).limit(150);
         if(childError)return failure("Unable to load shared subtasks",503);
         queue.length=0;
@@ -305,7 +306,7 @@ async function handler(req:Request):Promise<Response>{
   }
   const ownIds=new Set((tasks.data||[]).map((t:any)=>t.id));
   const uniqueShared=shared.filter((t:any,i:number)=>!ownIds.has(t.id)&&shared.findIndex((v:any)=>v.id===t.id)===i);
-  return json(200,{tasks:[...(tasks.data||[]),...uniqueShared],suggestions:sg.data||[],attention:attn.data||[],dependencies:deps.data||[],companies:companies.data||[],delegations:outgoing,participants:outgoingParticipants,externalInvitations:extInviteRes.data||[],collaborators,receivedDelegations:inbound,email:s.email,customer_id:cid,display_name:customer.data?.display_name||""});
+  return json(200,{tasks:[...(tasks.data||[]),...uniqueShared],suggestions:sg.data||[],attention:attn.data||[],dependencies:deps.data||[],companies:companies.data||[],categories:categories.data||[],delegations:outgoing,participants:outgoingParticipants,externalInvitations:extInviteRes.data||[],collaborators,receivedDelegations:inbound,email:s.email,customer_id:cid,display_name:customer.data?.display_name||""});
  }
  if(action==="revoke-access"&&req.method==="POST"){
   if(!isUUID(p.task_id))return failure("Invalid task",400);
@@ -497,9 +498,9 @@ async function handler(req:Request):Promise<Response>{
   if(!isUUID(parentId)||!title||title.length>240)return failure("Invalid shared subtask",400);
   const owner=await sharedOwnerFor(parentId);
   if(!owner)return failure("You have not accepted access to this task",403);
-  const {data:parent}=await db.from("sandy_tasks").select("status,company_id").eq("id",parentId).eq("customer_id",owner).maybeSingle();
+  const {data:parent}=await db.from("sandy_tasks").select("status,company_id,category_id").eq("id",parentId).eq("customer_id",owner).maybeSingle();
   if(!parent||["completed","cancelled"].includes(parent.status))return failure("Parent is not open",409);
-  const {data:created,error}=await db.from("sandy_tasks").insert({customer_id:owner,company_id:parent.company_id,parent_task_id:parentId,title,details:"",priority:"normal",updated_by:"delegate:"+s.email}).select("id").single();
+  const {data:created,error}=await db.from("sandy_tasks").insert({customer_id:owner,company_id:parent.company_id,category_id:parent.category_id,parent_task_id:parentId,title,details:"",priority:"normal",updated_by:"delegate:"+s.email}).select("id").single();
   if(error||!created)return failure("Unable to add shared subtask",503);
   return json(200,{ok:true,id:created.id});
  }
@@ -538,6 +539,49 @@ async function handler(req:Request):Promise<Response>{
   if(error||!updated)return failure("Unable to update shared task",503);
   return json(200,{ok:true});
  }
+
+ async function categoryValid(companyId:string|null,categoryId:string|null){
+  if(!categoryId)return true;
+  if(!companyId||!isUUID(categoryId))return false;
+  const {data,error}=await db.from("sandy_agenda_categories").select("id").eq("id",categoryId).eq("company_id",companyId).eq("customer_id",cid).maybeSingle();
+  return !error&&!!data;
+ }
+ if(action==="category-create"&&req.method==="POST"){
+  const name=String(p.name||"").trim(),companyId=p.company_id,parentId=p.parent_category_id||null;
+  if(!isUUID(companyId)||!name||name.length>160||parentId&&!isUUID(parentId))return failure("Enter a valid company and category name (up to 160 characters)");
+  const {data:company}=await db.from("sandy_agenda_companies").select("id").eq("id",companyId).eq("customer_id",cid).maybeSingle();
+  if(!company)return failure("Company not found",404);
+  if(parentId&&!await categoryValid(companyId,parentId))return failure("Parent category not found in this company",404);
+  const {data,error}=await db.from("sandy_agenda_categories").insert({customer_id:cid,company_id:companyId,parent_category_id:parentId,name}).select("id,company_id,parent_category_id,name").single();
+  if(error)return failure(error.code==="23505"?"That category already exists here":error.message,400);
+  return json(200,{category:data});
+ }
+ if(action==="category-update"&&req.method==="POST"){
+  if(!isUUID(p.id))return failure("Invalid category");
+  const {data:current,error:readError}=await db.from("sandy_agenda_categories").select("id,company_id").eq("id",p.id).eq("customer_id",cid).maybeSingle();
+  if(readError||!current)return failure("Category not found",404);
+  const fields:Record<string,unknown>={updated_at:new Date().toISOString()};
+  if(p.name!==undefined){const name=String(p.name||"").trim();if(!name||name.length>160)return failure("Enter a category name under 160 characters");fields.name=name}
+  if(p.parent_category_id!==undefined){
+   const parent=p.parent_category_id||null;
+   if(parent&&!isUUID(parent))return failure("Invalid parent category");
+   if(parent===p.id)return failure("A category cannot contain itself");
+   if(parent&&!await categoryValid(current.company_id,parent))return failure("Parent category not found in this company",404);
+   fields.parent_category_id=parent;
+  }
+  if(Object.keys(fields).length===1)return failure("Nothing to update");
+  const {data,error}=await db.from("sandy_agenda_categories").update(fields).eq("id",p.id).eq("customer_id",cid).select("id,company_id,parent_category_id,name").maybeSingle();
+  if(error)return failure(error.code==="23505"?"That category already exists here":error.message,400);
+  if(!data)return failure("Category not found",404);
+  return json(200,{category:data});
+ }
+ if(action==="category-delete"&&req.method==="POST"){
+  if(!isUUID(p.id))return failure("Invalid category");
+  const {data,error}=await db.from("sandy_agenda_categories").delete().eq("id",p.id).eq("customer_id",cid).select("id").maybeSingle();
+  if(error)return failure(error.code==="23503"?"Move or remove tasks and nested categories before deleting":error.message,409);
+  if(!data)return failure("Category not found",404);
+  return json(200,{ok:true});
+ }
  if(action==="company-create"&&req.method==="POST"){
   const name=String(p.name||"").trim();
   if(!name||name.length>160)return failure("Enter a company name under 160 characters");
@@ -553,22 +597,26 @@ async function handler(req:Request):Promise<Response>{
   if(p.due_at){const d=new Date(p.due_at);if(!Number.isFinite(d.getTime()))return failure("Invalid due date");due=d.toISOString()}
   if(p.next_review_at&&!Number.isFinite(new Date(p.next_review_at).getTime()))return failure("Invalid follow-up date");
   let companyId=p.company_id||null;if(companyId&&!isUUID(companyId))return failure("Invalid company");
+  let categoryId=p.category_id===undefined?null:p.category_id;if(categoryId!==null&&!isUUID(categoryId))return failure("Invalid category");
   if(companyId){const {data:company}=await db.from("sandy_agenda_companies").select("id").eq("customer_id",cid).eq("id",companyId).maybeSingle();if(!company)return failure("Company not found",404)}
   let createdId:string|null=null;
   if(p.parent_task_id){
    if(!isUUID(p.parent_task_id))return failure("Invalid parent task");
-   const {data:parent}=await db.from("sandy_tasks").select("id,status,company_id").eq("id",p.parent_task_id).eq("customer_id",cid).is("archived_at",null).maybeSingle();
+   const {data:parent}=await db.from("sandy_tasks").select("id,status,company_id,category_id").eq("id",p.parent_task_id).eq("customer_id",cid).is("archived_at",null).maybeSingle();
    if(!parent)return failure("Parent task was not found",404);
    if(["completed","cancelled"].includes(parent.status))return failure("Reopen parent before adding a subtask");
    // An explicitly supplied workspace wins; otherwise inherit the parent.
    if(p.company_id===undefined)companyId=parent.company_id;
-   const {data:created,error}=await db.from("sandy_tasks").insert({customer_id:cid,company_id:companyId,parent_task_id:parent.id,title,details,priority,due_at:due,next_review_at:p.next_review_at?new Date(p.next_review_at).toISOString():null,waiting_on:p.waiting_on?String(p.waiting_on).slice(0,400):null,updated_by:"customer:"+s.email}).select("id").single();
+   if(p.category_id===undefined)categoryId=companyId===parent.company_id?parent.category_id:null;
+   if(!await categoryValid(companyId,categoryId))return failure("Category is not part of this company",400);
+   const {data:created,error}=await db.from("sandy_tasks").insert({customer_id:cid,company_id:companyId,category_id:categoryId,parent_task_id:parent.id,title,details,priority,due_at:due,next_review_at:p.next_review_at?new Date(p.next_review_at).toISOString():null,waiting_on:p.waiting_on?String(p.waiting_on).slice(0,400):null,updated_by:"customer:"+s.email}).select("id").single();
    if(error)return failure(error.message,400);
    createdId=created.id;
   }else{
+   if(!await categoryValid(companyId,categoryId))return failure("Category is not part of this company",400);
    const subtasks=Array.isArray(p.subtasks)?p.subtasks:[];
    if(subtasks.length>30||subtasks.some((a:unknown)=>typeof a!=="string"||!String(a).trim()||String(a).length>240))return failure("Up to 30 subtasks are allowed, each under 240 characters");
-   const {data:newId,error}=await db.rpc("sandy_task_create_company_bundle",{p_customer_id:cid,p_company_id:companyId,p_title:title,p_details:details,p_priority:priority,p_due_at:due,p_subtasks:subtasks,p_actor:"customer:"+s.email});
+   const {data:newId,error}=await db.rpc("sandy_task_create_categorized_bundle",{p_customer_id:cid,p_company_id:companyId,p_category_id:categoryId,p_title:title,p_details:details,p_priority:priority,p_due_at:due,p_subtasks:subtasks,p_actor:"customer:"+s.email});
    if(!error&&newId&&(p.next_review_at||p.waiting_on))await db.from("sandy_tasks").update({next_review_at:p.next_review_at?new Date(p.next_review_at).toISOString():null,waiting_on:p.waiting_on?String(p.waiting_on).slice(0,400):null}).eq("id",newId).eq("customer_id",cid);
    if(error)return failure(error.message,400);
    createdId=newId;
@@ -578,6 +626,15 @@ async function handler(req:Request):Promise<Response>{
  if(action==="update"&&req.method==="POST"){
   if(!isUUID(p.id))return failure("Invalid task");
   const fields:Record<string,unknown>={updated_by:"customer:"+s.email};
+  if(p.company_id!==undefined||p.category_id!==undefined){
+   const {data:current,error:readError}=await db.from("sandy_tasks").select("company_id,category_id").eq("id",p.id).eq("customer_id",cid).maybeSingle();
+   if(readError||!current)return failure("Task not found",404);
+   const newCompany=p.company_id===undefined?current.company_id:p.company_id;
+   const newCategory=p.category_id===undefined?(newCompany===current.company_id?current.category_id:null):p.category_id;
+   if(newCategory!==null&&!isUUID(newCategory))return failure("Invalid category");
+   if(!await categoryValid(newCompany,newCategory))return failure("Category is not part of this company",400);
+   fields.category_id=newCategory;
+  }
   if(p.company_id!==undefined){if(p.company_id!==null&&!isUUID(p.company_id))return failure("Invalid company");if(p.company_id!==null){const {data:company}=await db.from("sandy_agenda_companies").select("id").eq("customer_id",cid).eq("id",p.company_id).maybeSingle();if(!company)return failure("Company not found",404)}fields.company_id=p.company_id}
   if(p.title!==undefined){if(typeof p.title!=="string"||!p.title.trim()||p.title.length>240)return failure("Invalid title");fields.title=p.title.trim()}
   if(p.details!==undefined){if(typeof p.details!=="string"||p.details.length>12000)return failure("Details are too long");fields.details=p.details}
