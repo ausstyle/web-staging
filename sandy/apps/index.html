@@ -82,6 +82,9 @@ function renderGoogle(){
 
 async function startGoogleConnection(){
  let q=getGoogleQueue();
+ const workspaceNow=$("workspace").value||null;
+ const selectedMissing=[...selectedGoogle].filter(slug=>!googleIsConnected(slug,workspaceNow));
+ if(q&&(q.workspace!==workspaceNow||!q.pending.every(slug=>selectedMissing.includes(slug)))){saveGoogleQueue(null);q=null}
  if(!q){
   const all=[...selectedGoogle].filter(slug=>!googleIsConnected(slug,$("workspace").value||null));if(!all.length)return;
   const workspace=$("workspace").value||null;
@@ -89,6 +92,9 @@ async function startGoogleConnection(){
   saveGoogleQueue(q);
  }
  if(!q.pending.length){saveGoogleQueue(null);render();return}
+ q.pending=q.pending.filter(slug=>!googleIsConnected(slug,q.workspace));
+ if(!q.pending.length){saveGoogleQueue(null);render();return}
+ saveGoogleQueue(q);
  const toolkit=q.pending[0];
  const config=configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===toolkit);
  const result=await api("create_connect_link",{auth_config_id:config?.id||null,toolkit_slug:toolkit,company_id:q.workspace});
@@ -176,7 +182,7 @@ async function load(){
   if(isReturning)window.history.replaceState(null,"",window.location.pathname+window.location.hash);
  }catch(e){notice("Unable to load app connections right now. Please try again later.");configs=[];connections=[];toolkits=[];render();}
 }
-$("workspace").addEventListener("change",()=>{selectedGoogle.clear();renderGoogle()});
+$("workspace").addEventListener("change",()=>{saveGoogleQueue(null);selectedGoogle.clear();renderGoogle()});
 $("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().trim();render()});
 $("statusFilter").addEventListener("change",e=>{statusFilter=e.target.value;render()});
 $("sortApps").addEventListener("change",e=>{sortApps=e.target.value;render()});
