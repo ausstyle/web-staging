@@ -16,7 +16,7 @@ const authorizeGithub=async(req:Request):Promise<boolean>=>{
    String(payload.repository_id)==="1416227508" &&
    payload.workflow_ref===expectedWorkflow &&
    payload.ref==="refs/heads/main" &&
-   (payload.event_name==="schedule"||payload.event_name==="workflow_dispatch");
+   (payload.event_name==="schedule"||payload.event_name==="workflow_dispatch"||payload.event_name==="push");
  }catch{return false}
 };
 const respond=(status:number,data:unknown)=>new Response(JSON.stringify(data),{
