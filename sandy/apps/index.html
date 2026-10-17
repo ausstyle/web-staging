@@ -7,11 +7,11 @@
 <div id="notice" class="notice" role="status">Checking your Sandy session…</div>
 <div class="workspace-picker"><label for="workspace">Connect new apps to</label><select id="workspace"><option value="">Personal (private)</option></select><small class="sub">Company choices come from your Sandy tasks. Existing accounts can be reassigned below.</small></div><div class="toolbar"><input id="search" placeholder="Search apps and services" aria-label="Search apps"><button class="soft" id="refresh">Refresh connections</button></div>
 <h2>Available apps</h2><nav id="categories" class="chips" aria-label="App categories"></nav><div class="filters"><label for="statusFilter">Connection status</label><select id="statusFilter"><option value="all">All statuses</option><option value="ready">Ready to connect</option><option value="connected">Connected</option><option value="setup">Setup required</option></select><label for="sortApps">Sort by</label><select id="sortApps"><option value="recommended">Recommended</option><option value="az">Name A–Z</option><option value="za">Name Z–A</option><option value="status">Connection status</option></select></div><p id="resultCount" class="results" role="status"></p><div id="googleDetails" class="hide"><section id="googlePanel" class="card" style="margin:0 0 18px;min-height:0;border-color:#d9e4f9">
-<div class="app-head"><div class="app-logo" style="font-size:27px;color:#4285f4">G</div><div><h2 style="margin:0">Connect Google Workspace</h2><p class="sub" style="margin:2px 0">Select the Google services you want. Actual access depends on the permissions configured in Composio and approved by Google.</p></div></div>
+<div class="app-head"><div class="app-logo" style="font-size:27px;color:#4285f4">G</div><div><h2 style="margin:0">Connect Google Workspace</h2><p class="sub" style="margin:2px 0">Choose which Google service to connect first. You will approve access directly with Google.</p></div></div>
 <div id="googleChoices" class="google-choices"></div>
 <div id="googleState" class="flag" role="status">Checking Google connection options…</div>
 <button type="button" id="googleConnect" disabled>Connect selected Google services</button>
-<p class="sub" style="font-size:12px;margin:0">Service checkboxes do not alter OAuth scopes. Google Super may request permissions beyond this list, depending on the configured OAuth scopes. Review the Google consent screen carefully. Custom permission combinations require separately configured authorisation.</p>
+<p class="sub" style="font-size:12px;margin:0">You can add more Google services afterward. Google will show the permissions requested before you approve.</p>
 </section>
 </div><div id="apps" class="grid"><p class="loader">Loading apps…</p></div>
 <h2>Your connections</h2><div id="connections" class="grid"><p class="sub">Loading connected accounts…</p></div>
@@ -59,30 +59,24 @@ function logo(name,slug){const icon=cdnLogo(slug);return '<div class="app-logo" 
 let configs=[],connections=[],toolkits=[],companies=[],filter="";
 function renderWorkspaces(){const select=$("workspace"),selected=select.value;select.innerHTML='<option value="">Personal (private)</option>'+companies.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.name)+'</option>').join("");select.value=companies.some(c=>c.id===selected)?selected:"";}
 const googleServices=[["gmail","Gmail",true],["googledrive","Google Drive",true],["googlecalendar","Calendar",true],["googlecontacts","Contacts",false],["googlesheets","Sheets",false],["googledocs","Docs",false]];
-const selectedGoogle=new Set(["gmail","googledrive","googlecalendar"]);
+const selectedGoogle=new Set(["gmail"]);
 function googleAuthConfig(){return configs.find(c=>["googlesuper","google_super","googleworkspace"].includes(String(c.toolkit_slug||"").toLowerCase()));}
 function renderGoogle(){
  const grouped=googleAuthConfig();
  $("googleChoices").innerHTML=googleServices.map(([id,name])=>'<label><input type="checkbox" data-google="'+id+'" '+(selectedGoogle.has(id)?"checked":"")+'>'+esc(name)+'</label>').join("");
- $("googleChoices").querySelectorAll("[data-google]").forEach(c=>c.onchange=()=>{c.checked?selectedGoogle.add(c.dataset.google):selectedGoogle.delete(c.dataset.google);renderGoogle();});
+ $("googleChoices").querySelectorAll("[data-google]").forEach(c=>c.onchange=()=>{if(c.checked){selectedGoogle.clear();selectedGoogle.add(c.dataset.google)}else selectedGoogle.delete(c.dataset.google);renderGoogle();});
  const chosen=[...selectedGoogle];
  const configCount=chosen.filter(id=>configs.some(c=>String(c.toolkit_slug||"").toLowerCase()===id)).length;
- $("googleConnect").disabled=!chosen.length||(!!grouped&&chosen.length!==googleServices.length);
- $("googleConnect").textContent=grouped?"Continue with Google authorisation":"Connect available Google services";
- $("googleState").textContent=grouped?"Google Workspace sign-in is available when all services are selected. Permissions depend on Google consent.":"Selected services will be connected individually, starting with "+(chosen.length?googleServices.find(x=>x[0]===chosen[0])?.[1]||chosen[0]:"a service")+". A separate authorisation may be needed for each.";
+ $("googleConnect").disabled=!chosen.length;
+ $("googleConnect").textContent="Continue to Google";
+ $("googleState").textContent=chosen.length?"Next: sign in to "+(googleServices.find(x=>x[0]===chosen[0])?.[1]||"Google")+".":"Choose a Google service to continue.";
 }
 async function startGoogleConnection(){
- const grouped=googleAuthConfig();const chosen=[...selectedGoogle];if(!chosen.length)return;
- if(grouped&&chosen.length!==googleServices.length)throw Error("Custom Google service combinations require a matching OAuth scope configuration. Select all for Google Super, or connect services individually.");
- if(!grouped){
-  const available=chosen.map(id=>configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===id)).filter(Boolean);
-  if(!available.length){const first=chosen[0];const result=await api("create_connect_link",{auth_config_id:null,toolkit_slug:first,company_id:$("workspace").value||null});window.location.href=result.connect_url;return;}
-  if(available.length>1)notice("Starting Google authorisation; return to connect the others.");
-  const result=await api("create_connect_link",{auth_config_id:available[0].id,toolkit_slug:available[0].toolkit_slug,company_id:$("workspace").value||null});
-  window.location.href=result.connect_url;return;
- }
- const result=await api("create_connect_link",{auth_config_id:grouped.id,toolkit_slug:grouped.toolkit_slug,company_id:$("workspace").value||null});
- window.location.href=result.connect_url;
+ const toolkit=[...selectedGoogle][0];if(!toolkit)return;
+ const config=configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===toolkit);
+ const result=await api("create_connect_link",{auth_config_id:config?.id||null,toolkit_slug:toolkit,company_id:$("workspace").value||null});
+ if(!result.connect_url)throw Error("Unable to start sign-in.");
+ window.location.assign(result.connect_url);
 }
 
 const notice=(message)=>{$("notice").textContent=message};
