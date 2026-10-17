@@ -1,0 +1,40 @@
+name: Sandy Examiner adaptive test design
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-v2-examiner-design.yml'
+  schedule:
+    - cron: '17 2 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandy-v2-examiner-adaptive-design
+  cancel-in-progress: false
+jobs:
+  design-realistic-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Generate read-only tests from live Mission and product state using short-lived OIDC
+        shell: bash
+        env:
+          PROJECT: zmqlyygzqoidkcwdysok
+        run: |
+          set -euo pipefail
+          : "${ACTIONS_ID_TOKEN_REQUEST_URL:?GitHub OIDC unavailable}"
+          : "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:?GitHub OIDC token request unavailable}"
+          AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
+          CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
+          ID_TOKEN="$(curl --fail --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${CLAIM_URL}" | jq -er '.value')"
+          RESPONSE="$(curl --fail-with-body --silent --show-error --max-time 310 \
+            -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" \
+            -H "Authorization: Bearer ${ID_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"operation":"v2_examiner_design"}')"
+          echo "${RESPONSE}" | jq -e '{ok,status,model,mode,proposal_count,source_summary,skipped}'
+          echo "${RESPONSE}" | jq -e '.ok == true' >/dev/null
