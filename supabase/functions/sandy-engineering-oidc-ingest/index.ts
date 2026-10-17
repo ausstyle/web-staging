@@ -182,7 +182,7 @@ Deno.serve(async(req:Request)=>{
       }
       // Feed independently checked synthetic QA outcomes back to routing evaluation.
       // Keyword-only or ambiguous reviews do not qualify as measured model successes.
-      if(taskModel&&["web_history","task_count","followup_investigation"].includes(testcase.key)&&
+      if(taskModel&&["web_history","task_count"].includes(testcase.key)&&
          (verdict==="pass"||verdict==="fail")){
         const {error:feedbackError}=await db.from("sandy_v2_model_decisions").update({
           actual_success:verdict==="pass",evaluated_at:new Date().toISOString(),
