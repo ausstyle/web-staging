@@ -42,6 +42,7 @@ jobs:
           python3 -m unittest discover -s scripts/sandy -p 'test_source_audit_manifest.py' -v
           python3 -m unittest discover -s scripts/sandy -p 'test_reconcile_source_audit.py' -v
           python3 -m unittest discover -s scripts/sandy -p 'test_source_reconciliation_handoff.py' -v
+          python3 -m unittest discover -s scripts/sandy -p 'test_source_reconciliation_review_packet.py' -v
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -67,6 +68,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ inputs.issue_number }}
         run: python3 scripts/sandy/source_reconciliation_handoff.py /tmp/sandy-audit/comparison.json
+      - name: Create review packet without production source
+        env:
+          ISSUE: ${{ inputs.issue_number }}
+        run: |
+          python3 scripts/sandy/source_reconciliation_review_packet.py /tmp/sandy-audit/comparison.json "$ISSUE" "$GITHUB_RUN_ID" /tmp/sandy-audit/review-packet.json
       - name: Upload metadata-only audit artifact
         uses: actions/upload-artifact@v4
         with:
@@ -74,5 +80,6 @@ jobs:
           path: |
             /tmp/sandy-audit/manifest.json
             /tmp/sandy-audit/comparison.json
+            /tmp/sandy-audit/review-packet.json
           retention-days: 1
           if-no-files-found: error
