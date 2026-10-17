@@ -1,0 +1,22 @@
+name: Sandy autonomous feature discovery
+on:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandy-feature-discovery
+  cancel-in-progress: false
+jobs:
+  discover:
+    if: ${{ github.repository == 'ausstyle/web-staging' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify feature-discovery contracts
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_feature_discovery*.py' -v
+      - name: Discover original evidence-backed feature opportunities
+        run: python3 scripts/sandy/run_feature_discovery.py
