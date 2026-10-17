@@ -1,4 +1,5 @@
 name: Sandy Examiner Google Lab Verification
+# Read-only OAuth/provider audit; triggered from main for initial live verification.
 on:
   push:
     branches: [main]
