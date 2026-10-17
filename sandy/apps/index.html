@@ -36,6 +36,9 @@ const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-comp
 const $=id=>document.getElementById(id);
 const popular=[
 ["Google Workspace","googleworkspace","Gmail, Drive, Calendar, Contacts, Sheets and Docs","Productivity","googleworkspace"],
+["Gmail","gmail","Email and attachments","Email","gmail"],
+["Google Drive","googledrive","Files and documents","Files","googledrive"],
+["Google Calendar","googlecalendar","Calendar and meetings","Calendar","googlecalendar"],
 
 
 
@@ -75,10 +78,10 @@ async function startGoogleConnection(){
   const available=chosen.map(id=>configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===id)).filter(Boolean);
   if(!available.length)return notice("These Google services are not available to connect yet.");
   if(available.length>1)notice("Starting Google authorisation; return to connect the others.");
-  const result=await api("create_connect_link",{auth_config_id:available[0].id});
+  const result=await api("create_connect_link",{auth_config_id:available[0].id,toolkit_slug:available[0].toolkit_slug,company_id:$("workspace").value||null});
   window.location.href=result.connect_url;return;
  }
- const result=await api("create_connect_link",{auth_config_id:grouped.id});
+ const result=await api("create_connect_link",{auth_config_id:grouped.id,toolkit_slug:grouped.toolkit_slug,company_id:$("workspace").value||null});
  window.location.href=result.connect_url;
 }
 
@@ -95,14 +98,14 @@ function render(){
  renderGoogle();
  $("categories").innerHTML=categories.map(c=>'<button type="button" class="chip" data-category="'+esc(c)+'" aria-pressed="'+(category===c)+'">'+esc(c)+'</button>').join("");
  $("categories").querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{category=b.dataset.category;render()});
- const extras=toolkits.filter(t=>!popular.some(a=>a[1]===t.slug)&&!["gmail","googledrive","googlecalendar","googlecontacts","googlesheets","googledocs","google_super","googlesuper"].includes(String(t.slug||"").toLowerCase())).map(t=>[t.name||t.slug,t.slug,"Other supported service","Other",null]);
+ const extras=toolkits.filter(t=>!popular.some(a=>a[1]===t.slug)&&!["googlecontacts","googlesheets","googledocs","google_super","googlesuper"].includes(String(t.slug||"").toLowerCase())).map(t=>[t.name||t.slug,t.slug,"Other supported service","Other",null]);
  const all=[...popular,...extras].map((a,i)=>{
   const [name,slug,desc,group]=a;
   const match=slug==="googleworkspace"?googleAuthConfig()||configs.find(c=>["gmail","googledrive","googlecalendar"].includes(String(c.toolkit_slug||"").toLowerCase())):configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===String(slug).toLowerCase()||String(c.name||"").toLowerCase()===String(name).toLowerCase());
   const linked=connections.some(c=>(slug==="googleworkspace"?["googlesuper","google_super","googleworkspace"].includes(String(c.toolkit_slug||"").toLowerCase()):String(c.toolkit_slug||"").toLowerCase()===String(slug).toLowerCase())&&String(c.status).toUpperCase()==="ACTIVE");
   return {name,slug,desc,group,match,linked,state:linked?"connected":match?"ready":"setup",i};
  });
- let items=all.filter(a=>(category==="All"||a.group===category)&&(statusFilter==="all"||a.state===statusFilter)&&(a.name+" "+a.desc+" "+a.group).toLowerCase().includes(filter));
+ let items=all.filter(a=>(category==="All"||a.group===category||(a.slug==="googleworkspace"&&["Email","Files","Calendar"].includes(category)))&&(statusFilter==="all"||a.state===statusFilter)&&(a.name+" "+a.desc+" "+a.group).toLowerCase().includes(filter));
  if(sortApps==="az")items.sort((a,b)=>a.name.localeCompare(b.name));
  if(sortApps==="za")items.sort((a,b)=>b.name.localeCompare(a.name));
  if(sortApps==="status")items.sort((a,b)=>({connected:0,ready:1,setup:2}[a.state]-{connected:0,ready:1,setup:2}[b.state])||a.name.localeCompare(b.name));
