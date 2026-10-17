@@ -87,13 +87,42 @@ function sel(value,options,onchange){const n=el("select");options.forEach(x=>{co
 function searchable(container,records,cols,cell){const box=el("div","toolbar"),input=el("input","search");input.placeholder="Filter records…";box.append(input);const holder=el("div");container.append(box,holder);function draw(){const q=input.value.toLowerCase();holder.replaceChildren(tbl(cols,records.filter(x=>JSON.stringify(x).toLowerCase().includes(q)).slice(0,500),cell))}input.oninput=draw;draw()}
 let missionTelemetry=null;
 async function refreshMissions(){try{missionTelemetry=await call("mission_control");render()}catch(e){console.error("Mission telemetry",e)}}
+async function openMission(id){
+ const holder=$("missionInspector");if(!holder)return;
+ holder.replaceChildren(el("p","muted","Loading mission details…"));
+ try{
+ const r=await call("mission_inspect",{id});holder.replaceChildren();
+ const header=panel(r.mission.title),meta=el("div","workspaceTop");
+ add(meta,el("span","workspacePill dark",r.mission.metadata?.execution_state||r.mission.status),el("span","small muted","Created "+date(r.mission.created_at)));header.append(meta);txt(header,r.mission.details||"No objective recorded");holder.append(header);
+ const columns=el("div","workspaceTwo"),steps=panel("Execution plan"),decisions=panel("Decision tree");
+ r.steps.forEach(s=>{const card=el("div","workspaceCard"),top=el("div","workspaceTop");add(top,el("b","",s.title),el("span","workspacePill",s.status));card.append(top);txt(card,"Assigned: "+(s.metadata?.assigned_to||"Unspecified"),"small muted");steps.append(card)});
+ if(!r.steps.length)steps.append(el("div","workspaceEmpty","No milestones recorded."));
+ r.decisions.slice(0,20).forEach(x=>{const card=el("div","workspaceCard");add(card,el("b","", "IF "+x.condition),el("p","","✓ Yes: "+x.on_yes),el("p","","✕ No: "+x.on_no));decisions.append(card)});
+ if(!r.decisions.length)decisions.append(el("div","workspaceEmpty","No decision branches recorded."));
+ columns.append(steps,decisions);holder.append(columns);
+ const context=el("div","workspaceTwo"),questions=panel("Client questions"),runs=panel("Execution history");
+ r.questions.forEach(x=>{const card=el("div","workspaceCard");add(card,el("span","workspacePill",x.status),el("p","",x.question));questions.append(card)});
+ if(!r.questions.length)questions.append(el("div","workspaceEmpty","No questions recorded."));
+ const timeline=el("div","workspaceTimeline");
+ r.runs.forEach(x=>{const card=el("div","workspaceCard");add(card,el("b","",x.stage+" · "+x.state),el("p","",date(x.updated_at)));if(x.error)add(card,el("p","",x.error));timeline.append(card)});
+ runs.append(timeline);if(!r.runs.length)runs.append(el("div","workspaceEmpty","No execution runs."));
+ context.append(questions,runs);holder.append(context);
+ const audit=panel("Audit trail and deliverables");
+ r.events.slice(0,35).forEach(e=>{const card=el("div","workspaceCard");add(card,el("b","",e.event_type),el("p","",e.actor+" · "+date(e.created_at)));audit.append(card)});
+ r.products.forEach(x=>{const card=el("div","workspaceCard");add(card,el("b","",x.title),el("span","workspacePill",x.state));audit.append(card)});
+ if(!r.events.length&&!r.products.length)audit.append(el("div","workspaceEmpty","No audit events or deliverables recorded."));
+ holder.append(audit);holder.scrollIntoView({behavior:"smooth",block:"start"});
+ }catch(e){holder.replaceChildren(el("div","workspaceEmpty","Mission details unavailable: "+e.message))}
+}
 function showMissions(c){
- const items=missionTelemetry?.missions||[];
- const p=panel("Sandy projects · "+items.length);
- searchable(p,items,["Mission","State","Open questions","Details"],(x,i)=>{
- if(i===3){const b=el("button","btn","Inspect");b.onclick=async()=>{const holder=$("missionInspector");holder.replaceChildren(el("p","muted","Loading…"));try{const r=await call("mission_inspect",{id:x.id});holder.replaceChildren();const section=panel(r.mission.title);txt(section,r.mission.details||"No description");txt(section,"Status: "+(r.mission.metadata?.execution_state||r.mission.status));holder.append(section);for(const [title,cols,rows,cell] of [["Tasks",["Title","Status"],r.steps,(t,i)=>[t.title,t.status][i]],["Decision tree",["Condition","Yes","No"],r.decisions,(t,i)=>[t.condition,t.on_yes,t.on_no][i]],["Questions",["Question","Status"],r.questions,(t,i)=>[t.question,t.status][i]],["Runs",["Stage","State","Error"],r.runs,(t,i)=>[t.stage,t.state,t.error||"—"][i]],["Audit events",["Event","Time"],r.events,(t,i)=>[t.event_type,date(t.created_at)][i]]]){const card=panel(title);card.append(tbl(cols,rows,cell));holder.append(card)}}catch(e){holder.replaceChildren(el("p","status",e.message))}};return b}
- return [x.title,x.metadata?.execution_state||x.status,x.open_questions][i]});
- c.append(p);const detail=el("div");detail.id="missionInspector";c.append(detail);
+ const p=panel("Mission explorer"),items=missionTelemetry?.missions||[];
+ txt(p,"Find a project to view its execution plan, decisions, questions, evidence and work history.","small muted");
+ const input=el("input","workspaceSearch");input.placeholder="Search missions…";input.setAttribute("aria-label","Search missions");
+ const list=el("div");p.append(input,list);
+ const draw=()=>{list.replaceChildren();const found=items.filter(x=>x.title.toLowerCase().includes(input.value.toLowerCase())).slice(0,75);
+ found.forEach(x=>{const card=el("div","workspaceCard"),top=el("div","workspaceTop"),button=el("button","btn","Open project →");button.onclick=()=>openMission(x.id);add(top,el("b","",x.title),el("span","workspacePill",x.metadata?.execution_state||x.status));add(card,top,el("p","small muted",x.open_questions+" unanswered questions"),button);list.append(card)});
+ if(!found.length)list.append(el("div","workspaceEmpty",missionTelemetry?"No matching projects.":"Loading mission records…"))};input.oninput=draw;draw();c.append(p);
+ const inspector=el("div","workspaceDetail");inspector.id="missionInspector";c.append(inspector);
 }
 let supervisorData=null;
 async function refreshSupervisor(){try{supervisorData=await call("supervisor");if(view==="intelligence")render()}catch(e){console.error("Supervisor unavailable",e)}}
