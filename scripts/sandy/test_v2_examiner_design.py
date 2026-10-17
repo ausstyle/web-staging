@@ -175,8 +175,8 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
     def test_connected_lab_checks_real_sandy_runtime_without_mutation(self):
         self.assertIn('examinerlab_', EDGE)
         self.assertIn('url+"/functions/v1/sandy-agent-runtime"', EDGE)
-        self.assertIn('required:"search_connected_gmail"', EDGE)
-        self.assertIn('required:"list_connected_services"', EDGE)
+        self.assertIn('required:"gmail_verified_recent"', EDGE)
+        self.assertIn('required:"v2_connection_preflight"', EDGE)
         self.assertIn('runtime_checks:runtimeChecks,lab_enabled:false', EDGE)
         self.assertIn('no_mutating_tools:!forbidden', EDGE)
 
