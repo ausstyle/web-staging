@@ -53,6 +53,14 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertNotIn('email_messages").select(', design)
         self.assertNotIn('raw_customer_message:', design)
 
+    def test_historical_issues_require_live_revalidation(self):
+        self.assertIn('historical_qa_status:"unverified_until_current_production_retest"', EDGE)
+        self.assertIn('current_state_verification_required:true', EDGE)
+        self.assertIn('requires_current_production_retest:true', EDGE)
+        self.assertIn('A historical QA failure is not evidence', EDGE)
+        self.assertIn('resolved_verified, not_reproduced, cannot_test', EDGE)
+        self.assertIn('Never mark resolved based solely on a merged PR', EDGE)
+
     def test_approved_high_reasoning_openai_model(self):
         self.assertIn('gpt-6-astra', EDGE)
         self.assertIn('reasoning:{effort:"high"}', EDGE)
