@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
 import {createRemoteJWKSet,jwtVerify} from "npm:jose@5.10.0";
+import {conservativeRisk} from "./risk-policy.js";
 
 const audience="sandy-feature-discovery-zmqlyygzqoidkcwdysok";
 const issuer="https://token.actions.githubusercontent.com";
@@ -19,14 +20,6 @@ const authorizeGithub=async(req:Request):Promise<boolean>=>{
    (payload.event_name==="schedule"||payload.event_name==="workflow_dispatch"||payload.event_name==="push");
  }catch{return false}
 };
-// This is an escalation FLOOR, not an assertion that other ideas are safe.
-// Authentication, money, tenant isolation and secret handling always require review.
-const sensitiveChange=/\b(?:auth(?:entication|orization|orisation)?|oauth|oidc|jwt|sso|permissions?|credentials?|passwords?|secrets?|tokens?|apikeys?|api[\s_-]?keys?|payments?|payouts?|billing|banking|fraud|encryption|decryption|private[\s_-]?keys?|security|rls|row[\s_-]?level[\s_-]?security|cross[\s_-]?tenant|cross[\s_-]?customer|customer[\s_-]?data|personal[\s_-]?data)\b/i;
-const conservativeRisk=(risk:unknown,...descriptions:unknown[])=>{
- const requested=["low","medium","high"].includes(String(risk))?String(risk):"high";
- return descriptions.some(x=>sensitiveChange.test(String(x??"")))?"high":requested;
-};
-
 const respond=(status:number,data:unknown)=>new Response(JSON.stringify(data),{
  status,headers:{"content-type":"application/json","cache-control":"no-store"}});
 const redact=(value:unknown)=>String(value??"").slice(0,500)
