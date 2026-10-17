@@ -26,6 +26,18 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('source_inventory:', EDGE)
         self.assertIn('qa_findings:', EDGE)
 
+    def test_actual_mission_execution_state_and_grounded_sources(self):
+        self.assertIn('db.from("sandy_mission_runs")', EDGE)
+        self.assertIn('mission_status_distribution:', EDGE)
+        self.assertIn('mission_execution_stage_distribution:', EDGE)
+        self.assertIn('mission_execution_state_distribution:', EDGE)
+        self.assertIn('const sourceKeys=new Set<string>', EDGE)
+        self.assertIn('sourceKeys.has(x)', EDGE)
+        self.assertIn('if(!grounds.length)continue', EDGE)
+
+    def test_missing_persisted_evidence_fails_closed(self):
+        self.assertIn('throw new Error("examiner_design_receipt_failed_"', EDGE)
+
     def test_approved_high_reasoning_openai_model(self):
         self.assertIn('gpt-6-astra', EDGE)
         self.assertIn('reasoning:{effort:"high"}', EDGE)
