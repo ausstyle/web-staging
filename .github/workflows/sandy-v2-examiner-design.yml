@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Provider error classification verification on gateway v19.
+# Compact grounded model request live verification on gateway v20.
 on:
   push:
     branches: [main]
