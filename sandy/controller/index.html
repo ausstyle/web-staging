@@ -163,8 +163,18 @@ function showIntelligence(c){
  c.append(experiments);
 }
 function showEngineering(c){
- const p=panel("QA issues requiring attention");searchable(p,data.qa.filter(x=>x.status!=="passed"),["Issue","Status","Next action"],(x,i)=>[x.subject,x.status,x.next_action||"—"][i]);c.append(p);
- const q=panel("Improvement proposals");const items=missionTelemetry?.improvements||data.proposals;searchable(q,items,["Issue","Status"],(x,i)=>[x.failure_description,x.status][i]);c.append(q);
+ const p=panel("Improvement pipeline"),items=missionTelemetry?.improvements||data.proposals||[];
+ txt(p,"Track proposed improvements and investigate issues. Only verified results should be marked complete.","small muted");
+ const summary=el("div","workspaceKpis");
+ [["Proposals",items.length],["Open work",items.filter(x=>!["completed","verified"].includes(x.status)).length],["Blocked",items.filter(x=>x.status==="blocked").length]].forEach(([name,n])=>{const x=el("div","workspaceKpi");add(x,el("div","label",name),el("div","big",n));summary.append(x)});p.append(summary);
+ const search=el("input","workspaceSearch");search.placeholder="Search improvements…";p.append(search);
+ const results=el("div");p.append(results);
+ const draw=()=>{results.replaceChildren();const matches=items.filter(x=>String(x.failure_description||"").toLowerCase().includes(search.value.toLowerCase())).slice(0,65);
+ matches.forEach(x=>{const card=el("details","workspaceCard"),top=el("summary","workspaceTop");add(top,el("b","",x.failure_description||"Improvement"),el("span","workspacePill",x.status));card.append(top);const body=el("div","workspaceDetail");txt(body,"Category: "+(x.category||"Not recorded"),"small muted");txt(body,"Review investigation, test evidence and deployment verification before changing the status.","small muted");card.append(body);results.append(card)});
+ if(!matches.length)results.append(el("div","workspaceEmpty","No matching improvements."))};search.oninput=draw;draw();c.append(p);
+ const qa=panel("QA needing action");const cases=data.qa.filter(x=>x.status!=="passed");
+ cases.slice(0,35).forEach(x=>{const card=el("div","workspaceCard"),top=el("div","workspaceTop");add(top,el("b","",x.subject),el("span","workspacePill",x.status));card.append(top);txt(card,x.next_action||x.findings||"No next action specified","small muted");qa.append(card)});
+ if(!cases.length)qa.append(el("div","workspaceEmpty","No unresolved QA cases in this dataset."));c.append(qa);
 }
 function showOverview(c){
  const m=missionTelemetry?.counts||{},tot=data.verifiedTotals||{},qa=data.qaSummary||{};
@@ -196,7 +206,19 @@ function showActivity(c){
  if(!activityRows.length)txt(p,"Select Load recent to retrieve request records.","muted");
  c.append(p);
 }
-function showQA(c){const p=panel("QA cases · "+data.qa.length);searchable(p,data.qa.slice().reverse(),["Subject","Status","Findings / next action","Updated"],(x,i)=>[x.subject,sel(x.status,["pending","needs_review","investigating","retest_pending","failed","passed"],v=>call("qa_update",{id:x.id,status:v})),(x.next_action||x.findings||"").slice(0,400),date(x.updated_at)][i]);c.append(p);showRoadmap(c)}
+function showQA(c){
+ const top=panel("Quality laboratory");txt(top,"Review failing tests, request retesting and track the evidence needed to confirm a fix.","muted");
+ const statuses=["failed","retest_pending","investigating","needs_review","pending","passed"];
+ const counts=el("div","workspaceKpis");statuses.slice(0,4).forEach(s=>{const card=el("div","workspaceKpi");add(card,el("div","label",s.replaceAll("_"," ")),el("div","big",data.qa.filter(q=>q.status===s).length));counts.append(card)});top.append(counts);
+ const input=el("input","workspaceSearch");input.placeholder="Search QA cases…";top.append(input);
+ const holder=el("div");top.append(holder);
+ const draw=()=>{holder.replaceChildren();data.qa.filter(q=>JSON.stringify(q).toLowerCase().includes(input.value.toLowerCase())).slice(0,90).forEach(x=>{
+ const card=el("details","workspaceCard"),summary=el("summary","workspaceTop");add(summary,el("b","",x.subject),el("span","workspacePill",x.status));card.append(summary);
+ const detail=el("div","workspaceDetail");txt(detail,x.findings||"No findings entered.");txt(detail,"Next: "+(x.next_action||"Not specified"),"small muted");
+ const state=sel(x.status,["pending","needs_review","investigating","retest_pending","failed","passed"],v=>call("qa_update",{id:x.id,status:v}));detail.append(state);card.append(detail);holder.append(card)});
+ if(!holder.childNodes.length)holder.append(el("div","workspaceEmpty","No matching cases."))};input.oninput=draw;draw();c.append(top);
+ const more=el("details","panel"),sum=el("summary","","Feature roadmap and progress");more.append(sum);const body=el("div");showRoadmap(body);more.append(body);c.append(more);
+}
 function showRoadmap(c){const p=panel("Improvement roadmap · "+data.roadmap.length);searchable(p,data.roadmap,["Feature","Progress","Phase","Acceptance criteria"],(x,i)=>[x.feature_title,sel(x.progress,Array.from(new Set([x.progress,"proposed","planned","pending","in_progress","blocked","testing","completed"])),v=>call("roadmap_update",{key:x.feature_key,progress:v})),x.phase,x.acceptance_criteria][i]);c.append(p);const p2=panel("AI improvement proposals");p2.append(tbl(["Issue","Category","Status"],data.proposals,(x,i)=>[x.failure_description,x.category,x.status][i]));c.append(p2)}
 function showEngagement(c){const p=panel("Customer engagement");searchable(p,data.activity,["Customer","Email records","Voice sessions","First recorded"],(x,i)=>[x.name,x.email,x.voice,date(x.joined)][i]);c.append(p);const p2=panel("WhatsApp channel activity");const by={};data.channel_activity.forEach(x=>{const d=String(x.created_at).slice(0,10);by[d]=(by[d]||0)+1});p2.append(tbl(["Date","Messages"],Object.entries(by).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),(x,i)=>x[i]));c.append(p2)}
 function showIntegrations(c){const p=panel("Integration inventory");searchable(p,data.integrations,["Integration","Provider","Deployment","Enabled","Last verified","Issue"],(x,i)=>[x.product||x.integration_key,x.provider,x.deployment_status,x.enabled?"Yes":"No",date(x.last_verified_at),x.last_error||"—"][i]);c.append(p)}
