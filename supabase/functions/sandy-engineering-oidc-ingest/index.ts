@@ -13,6 +13,7 @@ const OBSERVER_REF = REPO + "/.github/workflows/sandy-engineering-outcome-observ
 const ENGINEERING_REF = REPO + "/.github/workflows/sandy-codex-engineering.yml@refs/heads/main";
 const QA_REF = REPO + "/.github/workflows/sandy-v2-api-qa.yml@refs/heads/main";
 const DESIGN_REF = REPO + "/.github/workflows/sandy-v2-examiner-design.yml@refs/heads/main";
+const LAB_REF = REPO + "/.github/workflows/sandy-examiner-google-lab.yml@refs/heads/main";
 const keys = createRemoteJWKSet(new URL(ISSUER + "/.well-known/jwks"));
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {
   status, headers: {"content-type":"application/json","cache-control":"no-store"},
@@ -37,14 +38,55 @@ Deno.serve(async(req:Request)=>{
   const inlineFlow=claims.workflow_ref===ENGINEERING_REF&&claims.event_name==="workflow_dispatch";
   const qaFlow=claims.workflow_ref===QA_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const designFlow=claims.workflow_ref===DESIGN_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
+  const labFlow=claims.workflow_ref===LAB_REF&&["push","workflow_dispatch"].includes(String(claims.event_name));
   if(claims.repository!==REPO || String(claims.repository_id)!==REPO_ID ||
-     (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow) || claims.ref!=="refs/heads/main")
+     (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow) || claims.ref!=="refs/heads/main")
     return fail("unauthorized_workflow",403);
 
   let body:Record<string,unknown>;
   try {body=await req.json();} catch {return fail("invalid_json");}
 
 
+  if(labFlow){
+    if(body.operation!=="examiner_google_lab_verify"||Object.keys(body).some(k=>k!=="operation"))return fail("lab_operation_restricted",403);
+    const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+    const composio=Deno.env.get("COMPOSIO_API_KEY")||"";
+    if(!url||!key||!composio)return fail("lab_credentials_unavailable",503);
+    const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
+    const {data:lab,error:labError}=await db.from("sandy_examiner_lab_accounts")
+      .select("customer_id,expected_email").eq("id",1).maybeSingle();
+    if(labError||lab?.expected_email!=="sandyemail.ai@gmail.com")return fail("lab_identity_unverified",409);
+    const {data:addresses,error:addressError}=await db.from("email_customer_addresses")
+      .select("id").eq("customer_id",lab.customer_id).eq("normalized_email",lab.expected_email).limit(1);
+    if(addressError||!addresses?.length)return fail("lab_email_identity_mismatch",409);
+    const {data:connections,error:connError}=await db.from("sandy_composio_connections")
+      .select("toolkit_slug,status,connected_account_id").eq("customer_id",lab.customer_id)
+      .in("toolkit_slug",["gmail","googledrive","googlecalendar"]);
+    if(connError)return fail("lab_connection_query_failed",503);
+    let upstream:any;
+    try{
+      const rsp=await fetch("https://backend.composio.dev/api/v3.1/connected_accounts?limit=100&user_ids="+encodeURIComponent("sandy_customer_"+lab.customer_id),
+        {headers:{"x-api-key":composio},signal:AbortSignal.timeout(20000)});
+      if(!rsp.ok)return fail("lab_upstream_"+rsp.status,503);
+      upstream=await rsp.json();
+    }catch{return fail("lab_provider_unreachable",503)}
+    const rows=Array.isArray(upstream.items)?upstream.items:Array.isArray(upstream.data)?upstream.data:[];
+    const complete=!upstream.next_cursor;
+    const services=["gmail","googledrive","googlecalendar"].map(slug=>{
+      const matches=(connections||[]).filter(x=>x.toolkit_slug===slug&&x.status==="ACTIVE");
+      const confirmed=complete&&matches.some(x=>rows.some((r:any)=>r.id===x.connected_account_id&&r.user_id==="sandy_customer_"+lab.customer_id&&String(r.status).toUpperCase()==="ACTIVE"));
+      return{service:slug,recorded_active:matches.length>0,provider_confirmed:confirmed};
+    });
+    const verified=services.every(x=>x.provider_confirmed);
+    // Provider verification does not mean tool execution has been verified.
+    const {error:saveError}=await db.from("sandy_examiner_lab_accounts").update({
+      connection_status:verified?"provider_connections_verified_readonly_tests_pending":"provider_verification_incomplete",
+      enabled:false,verified_at:verified?new Date().toISOString():null,updated_at:new Date().toISOString()
+    }).eq("id",1).eq("customer_id",lab.customer_id);
+    if(saveError)return fail("lab_result_persistence_failed",503);
+    return json({ok:true,verified,provider_listing_complete:complete,services,
+      read_only_execution_tested:false,lab_enabled:false});
+  }
   if(designFlow){
     if(body.operation!=="v2_examiner_design"||Object.keys(body).some(k=>k!=="operation"))
       return fail("examiner_design_operation_restricted",403);
