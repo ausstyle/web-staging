@@ -240,10 +240,14 @@ Deno.serve(async(req:Request)=>{
     if(!issueResponse||!issueResponse.ok)return fail("github_issue_unavailable",503);
     const recordedIssue=await issueResponse.json();
     const issueBody=String(recordedIssue.body||"");
-    const docsOnly=issueBody.includes("docs/sandy/autonomous-lifecycle-live-verification.md") &&
+    const allowedAcceptanceDocs:Record<number,string>={
+      65:"docs/sandy/autonomous-lifecycle-live-verification.md",
+      72:"docs/sandy/autonomous-lifecycle-second-acceptance.md",
+    };
+    const acceptanceDoc=allowedAcceptanceDocs[Number(issue)];
+    const docsOnly=Boolean(acceptanceDoc)&&issueBody.includes(acceptanceDoc)&&
       pr!==null&&pr!==undefined &&
-      issue===65 &&
-      issueBody.includes("strictly non-executable documentation change");
+      issueBody.includes("<!-- sandy-repo-only-engineering -->");
     const sourceMatch=issueBody.match(new RegExp("scripts/sandy/[a-z0-9_-]+[.]py","i"));
     if(recordedIssue.state!=="open"||recordedIssue.pull_request||
        !String(recordedIssue.title||"").startsWith("Sandy QA:")||
@@ -268,7 +272,7 @@ Deno.serve(async(req:Request)=>{
       if(!pullResponse||!pullResponse.ok)return fail("docs_diff_unavailable",503);
       const files=await pullResponse.json();
       if(!Array.isArray(files)||files.length!==1||
-        files[0].filename!=="docs/sandy/autonomous-lifecycle-live-verification.md"||
+        files[0].filename!==acceptanceDoc||
         files[0].status!=="added"||files[0].deletions!==0||
         !Number.isSafeInteger(files[0].additions)||files[0].additions>120)
         return fail("docs_scope_unverified",409);
