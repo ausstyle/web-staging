@@ -89,6 +89,14 @@ class TestV2APIQA(unittest.TestCase):
         self.assertIn('.eq("selected_model",taskModel)', self.edge)
         self.assertIn('v2_api_qa_model_feedback', self.edge)
 
+    def test_failed_diagnosis_is_retryable_not_silently_deduplicated(self):
+        improve = (ROOT / "supabase/functions/sandy-auto-improve/index.ts").read_text()
+        self.assertIn('prior.status==="failed"', improve)
+        self.assertIn('3600000', improve)
+        self.assertIn('.eq("status","failed").select("id").maybeSingle()', improve)
+        self.assertIn('diagnosis_retry_claim_failed', improve)
+        self.assertIn('v2_api_qa_autodiagnosis_unavailable', self.edge)
+
     def test_workflow_short_lived_oidc_and_schedule(self):
         self.assertIn("cron: '*/15 * * * *'", self.flow)
         self.assertIn('id-token: write', self.flow)
