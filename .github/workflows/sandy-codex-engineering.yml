@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: read
-      issues: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - name: Validate assignment and credentials
@@ -52,6 +52,20 @@ jobs:
             Do NOT change code. Do NOT infer missing production source.
             If the relevant production code is absent, explicitly BLOCK implementation
             and specify which files must be synchronised and audited first.
+            When BLOCKED, append a machine-readable section at the very END of the report:
+            DEPENDENCIES_JSON:
+            {"dependencies":[{"type":"edge_function","name":"example-function"}]}
+            Supported types: edge_function, database_routine, database_schema,
+            identity_permissions, source_parity, other. Use exact source object names only;
+            omit sensitive identifiers, customer data, credentials and tokens.
+            The dependency list is evidence to gather, NEVER permission to bypass BLOCKED.
+      - name: Record deduplicated dependency handoff
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ inputs.issue_number }}
+          ARCHITECT_REPORT: /tmp/sandy-architecture.md
+        run: python3 scripts/sandy/architect_dependency_handoff.py
       - uses: actions/upload-artifact@v4
         with:
           name: sandy-architecture-${{ inputs.issue_number }}
