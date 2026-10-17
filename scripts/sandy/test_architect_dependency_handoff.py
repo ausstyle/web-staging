@@ -40,7 +40,7 @@ class HandoffTests(unittest.TestCase):
         self.assertIn("edge_function=sandy-function-never-present-xyz", calls[-2])
 
     def test_source_parity_requests_protected_audit(self):
-        calls = self.execute('DECISION: BLOCKED\\nDEPENDENCIES_JSON:\\n{"dependencies":[{"type":"source_parity","name":"sandy-whatsapp-webhook"}]}')
+        calls = self.execute('DECISION: BLOCKED\nDEPENDENCIES_JSON:\n{"dependencies":[{"type":"source_parity","name":"sandy-whatsapp-webhook"}]}')
         self.assertEqual(len(calls), 4)
         self.assertIn("edge_function=sandy-whatsapp-webhook", calls[-2])
 
