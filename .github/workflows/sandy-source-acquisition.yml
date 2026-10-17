@@ -21,6 +21,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: sandy-source-audit
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - name: Validate request
@@ -38,6 +41,7 @@ jobs:
         run: |
           python3 -m unittest discover -s scripts/sandy -p 'test_source_audit_manifest.py' -v
           python3 -m unittest discover -s scripts/sandy -p 'test_reconcile_source_audit.py' -v
+          python3 -m unittest discover -s scripts/sandy -p 'test_source_reconciliation_handoff.py' -v
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -58,6 +62,11 @@ jobs:
         run: |
           set -euo pipefail
           python3 scripts/sandy/reconcile_source_audit.py /tmp/sandy-audit/manifest.json "$GITHUB_WORKSPACE" > /tmp/sandy-audit/comparison.json
+      - name: Record metadata-only review evidence on engineering issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ inputs.issue_number }}
+        run: python3 scripts/sandy/source_reconciliation_handoff.py /tmp/sandy-audit/comparison.json
       - name: Upload metadata-only audit artifact
         uses: actions/upload-artifact@v4
         with:
