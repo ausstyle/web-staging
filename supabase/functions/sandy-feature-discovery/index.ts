@@ -47,7 +47,7 @@ Deno.serve(async(req:Request)=>{
  const listPending=async()=>{
   const {data,error}=await db.from("sandy_improvement_proposals")
    .select("id,ideal_behavior,failure_description,proposed_change,evidence")
-   .eq("category","self_originated_feature").order("created_at",{ascending:false}).limit(100);
+   .eq("category","self_originated_feature").eq("status","proposed").order("created_at",{ascending:false}).limit(100);
   if(error)throw Error("pending_query_failed");
   return (data||[])
    .filter((x:any)=>!x.evidence?.github_issue_url &&
@@ -92,23 +92,54 @@ Deno.serve(async(req:Request)=>{
   return respond(200,{ok:true,issue_number:issue});
  }
  if(params.op!=="discover")return respond(400,{error:"invalid_op"});
- const [{data:cases,error:casesError},{data:proposals,error:proposalsError}]=await Promise.all([
+ const [{data:cases,error:casesError},{data:proposals,error:proposalsError},{data:tasks,error:tasksError}]=await Promise.all([
   db.from("sandy_qa_cases").select("test_key,subject,findings,status")
     .in("status",["failed","needs_review","retest_pending"])
     .order("updated_at",{ascending:false}).limit(40),
   db.from("sandy_improvement_proposals").select("category,failure_description,ideal_behavior,evidence")
     .order("created_at",{ascending:false}).limit(50),
+  db.from("sandy_self_improvement_tasks").select("feature_key,title,description,status").limit(100),
  ]);
- if(casesError||proposalsError)return respond(503,{error:"evidence_lookup_failed"});
+ if(casesError||proposalsError||tasksError)return respond(503,{error:"evidence_lookup_failed"});
  const observed=(cases||[]).filter((x:any)=>typeof x.test_key==="string").map((x:any)=>({
   key:x.test_key,status:x.status,subject:redact(x.subject),finding:redact(x.findings).slice(0,280),
  }));
- const backlog=(proposals||[]).map((x:any)=>({
+ const backlog=[...(proposals||[]).map((x:any)=>({
    summary:redact(x.failure_description).slice(0,160),
    ideal:redact(x.ideal_behavior).slice(0,160),
    category:x.category,key:x.evidence?.dedup_key??null,
- }));
+ })),...(tasks||[]).map((x:any)=>({summary:redact(x.title),ideal:redact(x.description).slice(0,160),category:"existing_self_improvement_task",key:x.feature_key}))];
  if(!observed.length)return respond(200,{ok:true,status:"no_observed_evidence",created:0,pending:await listPending()});
+
+ // Conservative cross-registry novelty gate: existing products and proposals
+ // are more authoritative than an AI claim that a feature is new.
+ const tokens=(value:unknown):Set<string>=>{
+  const raw=String(value||"").toLowerCase().replace(/[^a-z0-9]+/g," ").split(" ").filter(Boolean);
+  const map:Record<string,string>={
+   tasks:"task",todo:"task",todos:"task",
+   updated:"update",updates:"update",modification:"update",modifications:"update",
+   created:"create",creation:"create",
+   verification:"verify",verified:"verify",verify:"verify",receipt:"verify",
+   receipts:"verify",evidence:"verify",proof:"verify",confirmation:"verify",
+   confirmed:"verify",confirming:"verify",confirm:"verify",
+   multicall:"multi",multiple:"multi",several:"multi",batch:"multi",
+   batches:"multi",multitask:"multi",simultaneously:"multi",
+   whatsapp:"whatsapp",wa:"whatsapp"
+  };
+  const ignore=new Set(["to","and","or","a","the","of","in","for","with","are","as","that","should","users","sandy","assistant","provides","provide","allow","allows","support","need","needs","can","without","when"]);
+  return new Set(raw.map(x=>map[x]||x).filter(x=>!ignore.has(x)&&x.length>2));
+ };
+ const duplicate=(candidate:any):boolean=>{
+  const c=tokens([candidate.key,candidate.opportunity,candidate.ideal].join(" "));
+  return backlog.some((existing:any)=>{
+   const old=tokens([existing.key,existing.summary,existing.ideal].join(" "));
+   if(c.has("task")&&old.has("task")&&c.has("verify")&&old.has("verify"))return true;
+   if(c.has("task")&&old.has("task")&&c.has("multi")&&old.has("multi")&&
+      c.has("whatsapp")&&old.has("whatsapp"))return true;
+   const overlap=[...c].filter(x=>old.has(x)).length;
+   return overlap>=3 && overlap/Math.max(1,Math.min(c.size,old.size))>=0.6;
+  });
+ };
  const prompt=[
   {role:"system",content:
    "You are Sandy AI's evidence-bound independent product improvement strategist. "+
@@ -138,7 +169,7 @@ Deno.serve(async(req:Request)=>{
      !Array.isArray(item.evidence_keys)||
      new Set(item.evidence_keys.filter((x:any)=>typeof x==="string"&&allowed.has(x))).size<2||
      !Array.isArray(item.acceptance_tests)||item.acceptance_tests.length<1||
-     !["low","medium","high"].includes(item.risk))continue;
+     !["low","medium","high"].includes(item.risk)||duplicate(item))continue;
   const refs=[...new Set(item.evidence_keys)].filter(x=>allowed.has(x)).slice(0,8);
   const priority=Math.max(1,Math.min(100,Math.round(Number(item.priority)||50)));
   const {data,error}=await db.rpc("sandy_store_self_discovered_feature",{

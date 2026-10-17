@@ -7,6 +7,13 @@ SOURCE = (Path(__file__).resolve().parents[2] /
 
 
 class FeatureDiscoverySafetyTests(unittest.TestCase):
+    def test_existing_tasks_and_proposals_are_both_considered(self):
+        self.assertIn('db.from("sandy_self_improvement_tasks")', SOURCE)
+        self.assertIn('category:"existing_self_improvement_task"', SOURCE)
+        self.assertIn('||duplicate(item)', SOURCE)
+        self.assertIn('x.evidence?.github_issue_url', SOURCE)
+        self.assertIn('.eq("status","proposed")', SOURCE)
+
     def test_requires_existing_scheduler_authentication(self):
         self.assertIn('sandy_qualitative_authorize', SOURCE)
         self.assertIn('x-sandy-qa-scheduler', SOURCE)
