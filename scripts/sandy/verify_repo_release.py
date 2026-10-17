@@ -64,6 +64,12 @@ def verify_ci_candidate(sha,ci,api_headers):
     if target is None:
         return False
     pr_number,issue_number=target
+    details=get_json(f"https://api.github.com/repos/{REPO}/pulls/{pr_number}",api_headers)
+    if (not isinstance(details,dict)
+        or details.get("user",{}).get("login")!="github-actions[bot]"
+        or not re.fullmatch(r"sandy/codex-issue-"+str(issue_number)+r"-[0-9]{5,20}",
+                            str(details.get("head",{}).get("ref","")))):
+        return False
     issue=get_json(f"https://api.github.com/repos/{REPO}/issues/{issue_number}",api_headers)
     if (not isinstance(issue,dict) or issue.get("repository_url")!=f"https://api.github.com/repos/{REPO}"
             or "<!-- sandy-repo-only-engineering -->" not in str(issue.get("body") or "")):
