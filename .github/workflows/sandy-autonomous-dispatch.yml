@@ -19,7 +19,7 @@ on:
 permissions:
   contents: read
   actions: write
-  issues: read
+  issues: write # required for idempotent retry-exhaustion escalation in the same repository
 concurrency:
   group: sandy-autonomous-dispatch
   cancel-in-progress: false
