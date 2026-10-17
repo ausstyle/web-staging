@@ -41,6 +41,7 @@ jobs:
           allow-bots: true
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           permission-profile: ":read-only"
+          model: gpt-6-astra
           effort: high
           output-file: /tmp/sandy-architecture.md
           prompt: |
@@ -115,7 +116,8 @@ jobs:
           allow-bots: true
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           permission-profile: ":workspace"
-          effort: medium
+          model: gpt-6.1-sol
+          effort: high
           prompt: |
             You are Sandy's Software Engineer for issue #${{ inputs.issue_number }}.
             Follow the reviewed design in /tmp/sandy-architecture/sandy-architecture.md.
