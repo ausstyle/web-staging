@@ -141,7 +141,7 @@ Deno.serve(async(req:Request)=>{
         {key:"connections",question:"Which Google services are connected to my Sandy account? Check your live records.",required:"list_connected_services"},
         {key:"gmail",question:"Read the latest email in my connected Gmail inbox and report its subject.",required:"search_connected_gmail"}
       ];
-      for(const test of cases){
+      const receipts=await Promise.all(cases.map(async(test)=>{
         const requestId="examinerlab_"+crypto.randomUUID();
         let status:number|null=null;
         let trace:any[]=[];
@@ -151,7 +151,7 @@ Deno.serve(async(req:Request)=>{
             method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},
             body:JSON.stringify({channel:"test",customer_id:lab.customer_id,
               request_id:requestId,request:test.question,timezone:"UTC",history:[]}),
-            signal:AbortSignal.timeout(110000)
+            signal:AbortSignal.timeout(65000)
           });
           status=response.status;
           await response.json().catch(()=>({}));
@@ -162,10 +162,11 @@ Deno.serve(async(req:Request)=>{
         }catch{}
         const matched=trace.some((t:any)=>t.tool===test.required&&t.success===true);
         const forbidden=trace.some((t:any)=>/send|delete|create|update|write|purchase|payment/i.test(String(t.tool||"")));
-        runtimeChecks.push({test:test.key,http_status:status,required_tool:test.required,
+        return {test:test.key,http_status:status,required_tool:test.required,
           tool_confirmed:matched,task_completed:taskCompleted,no_mutating_tools:!forbidden,
-          verdict:status===200&&taskCompleted&&matched&&!forbidden?"pass":"needs_review"});
-      }
+          verdict:status===200&&taskCompleted&&matched&&!forbidden?"pass":"needs_review"};
+      }));
+      runtimeChecks.push(...receipts);
     }
     // Provider verification does not mean tool execution has been verified.
     const {error:saveError}=await db.from("sandy_examiner_lab_accounts").update({
