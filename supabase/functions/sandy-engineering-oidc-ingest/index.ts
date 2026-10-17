@@ -449,12 +449,37 @@ Deno.serve(async(req:Request)=>{
       {key:"followup_investigation",prompts:["Can you investigate the other channels now?", "Find the other channel counts please."],expect:"proactive_followup"},
       {key:"capability",prompts:["Explain which services you can actually execute in my Sandy account, rather than which integrations are supported generally.","What can you verify about your connected apps and your present limitations?"],expect:"capability_grounding"}
     ];
+    const {data:executionPolicy,error:executionPolicyError}=await db.from("sandy_v2_runtime_policy")
+      .select("mode").eq("policy_key","examiner_dynamic_execution").maybeSingle();
+    if(executionPolicyError)return fail("examiner_execution_policy_unavailable",503);
+    let dynamicCandidates:any[]=[];
+    let latestDesignRunKey:string|null=null;
+    if(executionPolicy?.mode==="enabled"){
+      const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
+        .select("run_key,proposals").eq("status","generated")
+        .order("created_at",{ascending:false}).limit(1).maybeSingle();
+      if(designError)return fail("examiner_generated_suite_unavailable",503);
+      const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
+      const disallow=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
+      dynamicCandidates=(Array.isArray(design?.proposals)?design.proposals:[]).filter((x:any)=>
+        safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
+        !disallow.test(x.question)&&x.execution_status==="shadow_not_executed"&&
+        x.requires_current_production_retest===true&&Array.isArray(x.grounding_keys)&&x.grounding_keys.length>0);
+      latestDesignRunKey=design?.run_key||null;
+    }
     const allowed=Math.min(2,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
       const ordinal=Number(used||0)+i;
-      const testcase=cases[ordinal%cases.length];
-      const variant=Math.floor(ordinal/cases.length)%testcase.prompts.length;
+      const selectedDynamic=i===1&&dynamicCandidates.length>0
+        ?dynamicCandidates[Math.floor(Number(used||0)/8)%dynamicCandidates.length]:null;
+      const testcase=selectedDynamic?{
+        key:String(selectedDynamic.oracle_key),prompts:[String(selectedDynamic.question)],
+        expect:String(selectedDynamic.expected_observation||"").slice(0,300),
+        design_run_key:latestDesignRunKey
+      }:cases[ordinal%cases.length];
+      const recordCaseKey=selectedDynamic?"dynamic_"+testcase.key:testcase.key;
+      const variant=selectedDynamic?0:Math.floor(ordinal/cases.length)%testcase.prompts.length;
       const question=testcase.prompts[variant];
       const requestId="v2qa_"+crypto.randomUUID();
       const started=Date.now();
@@ -516,10 +541,10 @@ Deno.serve(async(req:Request)=>{
       }catch(e){verdict="blocked";reason=String(e).replace(/[^a-z0-9_ -]/gi,"").slice(0,110);}
       const duration=Date.now()-started;
       const {error:writeError}=await db.from("sandy_v2_qa_executions").insert({
-        run_key:runKey,case_key:testcase.key,request_id:requestId,customer_id:customerId,
+        run_key:runKey,case_key:recordCaseKey,request_id:requestId,customer_id:customerId,
         question,reply:answer,tool_trace:trace,verdict,reason,edge_status:edgeStatus||null,duration_ms:duration,
         evidence:{expected:testcase.expect,model_response_present:answer.length>0,tool_count:trace.length,
-          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel}
+          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel,ai_design_run:testcase.design_run_key||null}
       });
       if(writeError){
         await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
@@ -527,7 +552,7 @@ Deno.serve(async(req:Request)=>{
       }
       // Feed independently checked synthetic QA outcomes back to routing evaluation.
       // Keyword-only or ambiguous reviews do not qualify as measured model successes.
-      if(taskModel&&["web_history","task_count"].includes(testcase.key)&&
+      if(taskModel&&!testcase.design_run_key&&["web_history","task_count"].includes(testcase.key)&&
          (verdict==="pass"||verdict==="fail")){
         const {error:feedbackError}=await db.from("sandy_v2_model_decisions").update({
           actual_success:verdict==="pass",evaluated_at:new Date().toISOString(),
@@ -547,10 +572,10 @@ Deno.serve(async(req:Request)=>{
           },{onConflict:"test_key"});
         }
       }
-      const caseKey="v2_api_qa_"+testcase.key;
+      const caseKey=(selectedDynamic?"v2_dynamic_qa_":"v2_api_qa_")+testcase.key;
       // A single pass does not retire a defect; require two independently recorded consecutive passes.
       const {data:recent,error:recentError}=await db.from("sandy_v2_qa_executions")
-        .select("verdict").eq("case_key",testcase.key).order("created_at",{ascending:false}).limit(2);
+        .select("verdict").eq("case_key",recordCaseKey).order("created_at",{ascending:false}).limit(2);
       const corroborated=!recentError&&(recent?.length||0)>=2&&recent!.every((x:any)=>x.verdict==="pass");
       const state=verdict==="pass"?(corroborated?"passed":"retest_pending"):
         verdict==="fail"?"failed":"needs_review";
@@ -568,7 +593,7 @@ Deno.serve(async(req:Request)=>{
       }
       if(verdict==="fail"){
         const {count:failCount}=await db.from("sandy_v2_qa_executions").select("id",{head:true,count:"exact"})
-          .eq("case_key",testcase.key).eq("verdict","fail").gte("created_at",since);
+          .eq("case_key",recordCaseKey).eq("verdict","fail").gte("created_at",since);
         if((failCount||0)>=2){
           const secret=Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY");
           if(secret){
@@ -589,7 +614,7 @@ Deno.serve(async(req:Request)=>{
           }
         }
       }
-      outputs.push({case:testcase.key,verdict,reason,duration_ms:duration,request_id:requestId});
+      outputs.push({case:recordCaseKey,verdict,reason,duration_ms:duration,request_id:requestId,ai_design_run:testcase.design_run_key||null});
     }
     const summary={attempted:outputs.length,passed:outputs.filter(x=>x.verdict==="pass").length,
       failed:outputs.filter(x=>x.verdict==="fail"||x.verdict==="blocked").length,reviews:outputs.filter(x=>x.verdict==="needs_review").length};
