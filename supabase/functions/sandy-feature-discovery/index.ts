@@ -43,6 +43,54 @@ Deno.serve(async(req:Request)=>{
  }
  let params:any={};
  try{params=await req.json()}catch{return respond(400,{error:"invalid_json"})}
+
+ const listPending=async()=>{
+  const {data,error}=await db.from("sandy_improvement_proposals")
+   .select("id,ideal_behavior,failure_description,proposed_change,evidence")
+   .eq("category","self_originated_feature").order("created_at",{ascending:false}).limit(100);
+  if(error)throw Error("pending_query_failed");
+  return (data||[])
+   .filter((x:any)=>!x.evidence?.github_issue_url &&
+    typeof x.evidence?.dedup_key==="string" &&
+    /^[a-z][a-z0-9_]{5,79}$/.test(x.evidence.dedup_key))
+   .slice(0,5).map((x:any)=>({
+    key:x.evidence.dedup_key,
+    // Customer QA records and identifiers must NEVER be published to a public GitHub issue.
+    problem:redact(x.failure_description).slice(0,500),
+    ideal:redact(x.ideal_behavior).slice(0,500),
+    priority:Math.max(1,Math.min(100,Number(x.proposed_change?.priority_score)||50)),
+    risk:["low","medium","high"].includes(x.proposed_change?.risk)?x.proposed_change.risk:"high",
+    tests:Array.isArray(x.proposed_change?.acceptance_tests)?
+      x.proposed_change.acceptance_tests.slice(0,5).map(redact):[],
+  }));
+ };
+ if(params.op==="acknowledge"){
+  const key=String(params.key||""),issue=Number(params.issue_number);
+  if(!/^[a-z][a-z0-9_]{5,79}$/.test(key)||!Number.isInteger(issue)||
+    issue<1||issue>9999999)return respond(400,{error:"invalid_acknowledgement"});
+  const response=await fetch("https://api.github.com/repos/ausstyle/web-staging/issues/"+issue,{
+   headers:{"accept":"application/vnd.github+json","user-agent":"sandy-feature-discovery"},
+  }).catch(()=>null);
+  if(!response||!response.ok)return respond(503,{error:"github_issue_unavailable"});
+  const git=await response.json();
+  if(git.pull_request||git.repository_url!=="https://api.github.com/repos/ausstyle/web-staging"||
+     git.title!=="Sandy feature: "+key.replace(/_/g," ")||
+     !String(git.body||"").includes("<!-- sandy-feature-key:"+key+" -->"))
+   return respond(409,{error:"issue_evidence_invalid"});
+  const {data,error}=await db.from("sandy_improvement_proposals").select("id,evidence")
+    .eq("category","self_originated_feature")
+    .eq("evidence->>dedup_key",key).limit(1).maybeSingle();
+  if(error||!data)return respond(409,{error:"proposal_not_found"});
+  const bound="https://github.com/ausstyle/web-staging/issues/"+issue;
+  if(data.evidence?.github_issue_url&&data.evidence.github_issue_url!==bound)
+   return respond(409,{error:"issue_conflict"});
+  const {error:updateError}=await db.from("sandy_improvement_proposals")
+   .update({evidence:{...data.evidence,github_issue_url:bound,
+    github_issue_number:issue,engineering_handoff_at:new Date().toISOString()}})
+   .eq("id",data.id);
+  if(updateError)return respond(503,{error:"acknowledgement_storage_failed"});
+  return respond(200,{ok:true,issue_number:issue});
+ }
  if(params.op!=="discover")return respond(400,{error:"invalid_op"});
  const [{data:cases,error:casesError},{data:proposals,error:proposalsError}]=await Promise.all([
   db.from("sandy_qa_cases").select("test_key,subject,findings,status")
@@ -60,7 +108,7 @@ Deno.serve(async(req:Request)=>{
    ideal:redact(x.ideal_behavior).slice(0,160),
    category:x.category,key:x.evidence?.dedup_key??null,
  }));
- if(!observed.length)return respond(200,{ok:true,status:"no_observed_evidence",created:0});
+ if(!observed.length)return respond(200,{ok:true,status:"no_observed_evidence",created:0,pending:await listPending()});
  const prompt=[
   {role:"system",content:
    "You are Sandy AI's evidence-bound independent product improvement strategist. "+
@@ -105,5 +153,5 @@ Deno.serve(async(req:Request)=>{
   results.push({key:item.key,status:data?.created?"proposed":"already_exists"});
  }
  return respond(200,{ok:true,assessed:observed.length,
-  created:results.filter(x=>x.status==="proposed").length,results});
+  created:results.filter(x=>x.status==="proposed").length,results,pending:await listPending()});
 });
