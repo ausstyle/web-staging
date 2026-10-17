@@ -24,7 +24,25 @@ def eligibility(manifest, comparison):
         raise ValueError("Unexpected parity claim")
     if comparison.get("comparison") != "exact_snapshot_match" or len(files) != len(entries) or any(x.get("status") != "hash_match" for x in entries):
         return None
-    attested = sorted((f["path"], f["sha256"], f["bytes"]) for f in files)
+    expected = set()
+    attested = []
+    for f in files:
+        if not isinstance(f, dict):
+            raise ValueError("Malformed manifest entry")
+        name, digest, size = f.get("path"), f.get("sha256"), f.get("bytes")
+        if (not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*", name)
+                or ".." in name.split("/") or name in expected
+                or not isinstance(digest, str) or not re.fullmatch(r"[0-9a-f]{64}", digest)
+                or type(size) is not int or size < 0):
+            raise ValueError("Invalid manifest file evidence")
+        expected.add(name)
+        attested.append((name, digest, size))
+    if "index.ts" not in expected:
+        raise ValueError("Entrypoint missing")
+    actual = [x.get("path") if isinstance(x, dict) else None for x in entries]
+    if len(set(actual)) != len(actual) or set(actual) != expected:
+        raise ValueError("File evidence mismatch")
+    attested.sort()
     fingerprint = hashlib.sha256(json.dumps(attested, separators=(",", ":")).encode()).hexdigest()[:24]
     return slug, fingerprint
 
