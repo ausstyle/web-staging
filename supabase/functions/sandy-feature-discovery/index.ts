@@ -19,6 +19,14 @@ const authorizeGithub=async(req:Request):Promise<boolean>=>{
    (payload.event_name==="schedule"||payload.event_name==="workflow_dispatch"||payload.event_name==="push");
  }catch{return false}
 };
+// This is an escalation FLOOR, not an assertion that other ideas are safe.
+// Authentication, money, tenant isolation and secret handling always require review.
+const sensitiveChange=/\b(?:auth(?:entication|orization|orisation)?|oauth|oidc|jwt|sso|permissions?|credentials?|passwords?|secrets?|tokens?|apikeys?|api[\s_-]?keys?|payments?|payouts?|billing|banking|fraud|encryption|decryption|private[\s_-]?keys?|security|rls|row[\s_-]?level[\s_-]?security|cross[\s_-]?tenant|cross[\s_-]?customer|customer[\s_-]?data|personal[\s_-]?data)\b/i;
+const conservativeRisk=(risk:unknown,...descriptions:unknown[])=>{
+ const requested=["low","medium","high"].includes(String(risk))?String(risk):"high";
+ return descriptions.some(x=>sensitiveChange.test(String(x??"")))?"high":requested;
+};
+
 const respond=(status:number,data:unknown)=>new Response(JSON.stringify(data),{
  status,headers:{"content-type":"application/json","cache-control":"no-store"}});
 const redact=(value:unknown)=>String(value??"").slice(0,500)
@@ -59,7 +67,7 @@ Deno.serve(async(req:Request)=>{
     problem:redact(x.failure_description).slice(0,500),
     ideal:redact(x.ideal_behavior).slice(0,500),
     priority:Math.max(1,Math.min(100,Number(x.proposed_change?.priority_score)||50)),
-    risk:["low","medium","high"].includes(x.proposed_change?.risk)?x.proposed_change.risk:"high",
+    risk:conservativeRisk(x.proposed_change?.risk,x.evidence?.dedup_key,x.failure_description,x.ideal_behavior),
     tests:Array.isArray(x.proposed_change?.acceptance_tests)?
       x.proposed_change.acceptance_tests.slice(0,5).map(redact):[],
   }));
@@ -172,13 +180,14 @@ Deno.serve(async(req:Request)=>{
      !["low","medium","high"].includes(item.risk)||duplicate(item))continue;
   const refs=[...new Set(item.evidence_keys)].filter(x=>allowed.has(x)).slice(0,8);
   const priority=Math.max(1,Math.min(100,Math.round(Number(item.priority)||50)));
+  const risk=conservativeRisk(item.risk,item.key,item.opportunity,item.ideal,item.acceptance_tests.join(" "));
   const {data,error}=await db.rpc("sandy_store_self_discovered_feature",{
    p_key:item.key,p_problem:item.opportunity.slice(0,1200),
    p_ideal:item.ideal.slice(0,1600),
-   p_proposed_change:{feature_key:item.key,priority_score:priority,risk:item.risk,
+   p_proposed_change:{feature_key:item.key,priority_score:priority,risk,proposed_risk:item.risk,
      acceptance_tests:item.acceptance_tests.slice(0,8),type:"feature",phase:"proposed_not_implemented"},
    p_evidence:{source:"sandy_autonomous_feature_discovery",qa_case_keys:refs,
-     verified_delivery:false,assessor_model:"gpt-4.1-mini",review_required:true},
+     verified_delivery:false,assessor_model:"gpt-4.1-mini",review_required:true,risk_policy_escalated:risk!==item.risk},
   });
   if(error){results.push({key:item.key,status:"rejected"});continue}
   results.push({key:item.key,status:data?.created?"proposed":"already_exists"});
