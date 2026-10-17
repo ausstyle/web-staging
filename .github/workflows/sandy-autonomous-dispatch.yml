@@ -1,0 +1,24 @@
+name: Sandy autonomous engineering dispatcher
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+  id-token: write
+concurrency:
+  group: sandy-autonomous-architect-dispatch
+  cancel-in-progress: false
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate dispatcher contracts
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_dispatch_autonomous_engineering.py' -v
+      - name: Request one eligible Architect run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/sandy/dispatch_autonomous_engineering.py
