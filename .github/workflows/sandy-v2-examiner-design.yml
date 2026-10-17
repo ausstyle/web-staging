@@ -1,4 +1,5 @@
 name: Sandy Examiner adaptive test design
+# Initial live model verification for Examiner completion.
 on:
   push:
     branches: [main]
