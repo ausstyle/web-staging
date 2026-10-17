@@ -19,9 +19,9 @@ const popular=[["Gmail","gmail","Email and attachments"],["Google Drive","google
 let configs=[],connections=[],toolkits=[],filter="";
 const notice=(message)=>{$("notice").textContent=message};
 async function api(operation,payload={}){
- const {data,error}=await sb.auth.getSession();if(error||!data.session?.access_token)throw Error("Sign in to your Sandy workspace before connecting apps.");
+ const {data,error}=await Promise.race([sb.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(Error("Session check timed out. Sign in again.")),10000))]);if(error||!data.session?.access_token)throw Error("Sign in to your Sandy workspace before connecting apps.");
  const run=async(token)=>fetch(endpoint,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"},body:JSON.stringify({operation,...payload})});
- let res=await run(data.session.access_token);
+ let res=await Promise.race([run(data.session.access_token),new Promise((_,reject)=>setTimeout(()=>reject(Error("Connection request timed out.")),20000))]);
  if(res.status===401){const refreshed=await sb.auth.refreshSession();if(refreshed.data.session)res=await run(refreshed.data.session.access_token);}
  const body=await res.json().catch(()=>({}));if(!res.ok)throw Error(body.error||"Request failed ("+res.status+")");return body;
 }
@@ -54,9 +54,11 @@ async function load(){
   if(status.enabled)notice(configs.length?"Choose an app to connect. Only configured apps can be connected.":"No application authentication configurations are available yet. An administrator must configure them in Composio.");
   else notice("Composio connection setup is not yet enabled by Sandy's administrator.");
   render();
- }catch(e){notice(e.message);$("apps").innerHTML='<p class="sub">Unable to load available apps.</p>';}
+ }catch(e){notice("Unable to load app connections: "+e.message);configs=[];connections=[];toolkits=[];render();}
 }
 $("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().trim();render()});
 $("refresh").onclick=async()=>{try{await api("sync_connections")}catch(e){notice(e.message)}await load()};
-load();
+render();
+const startup=setTimeout(()=>{if($("apps").textContent.includes("Loading apps")){notice("Loading is taking too long. Please refresh or sign in again.");render();}},12000);
+load().finally(()=>clearTimeout(startup));
 </script></body></html>
