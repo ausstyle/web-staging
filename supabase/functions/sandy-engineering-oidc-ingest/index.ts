@@ -72,8 +72,42 @@ Deno.serve(async(req:Request)=>{
   const {data:handoffs,error:readError}=await db.from("sandy_qa_engineering_handoffs")
     .select("issue_key").eq("evidence->>github_issue_url",githubIssue).limit(2);
   if(readError) return fail("handoff_lookup_failed",503);
-  if(!handoffs||handoffs.length!==1) return fail("handoff_not_unique",409);
-  const issueKey=handoffs[0].issue_key;
+  let issueKey=handoffs?.length===1?handoffs[0].issue_key:null;
+  if(!issueKey && !handoffs?.length){
+    // Only trusted GitHub-only source may be onboarded without a production-source audit.
+    // Existing Supabase-function incidents continue to require verified source parity.
+    const issueResponse=await fetch("https://api.github.com/repos/"+REPO+"/issues/"+issue,{
+      headers:{"accept":"application/vnd.github+json","user-agent":"sandy-verified-engineering"},
+    }).catch(()=>null);
+    if(!issueResponse||!issueResponse.ok)return fail("github_issue_unavailable",503);
+    const recordedIssue=await issueResponse.json();
+    const issueBody=String(recordedIssue.body||"");
+    const sourceMatch=issueBody.match(new RegExp("scripts/sandy/[a-z0-9_-]+[.]py","i"));
+    if(recordedIssue.state!=="open"||recordedIssue.pull_request||
+       !String(recordedIssue.title||"").startsWith("Sandy QA:")||
+       !recordedIssue.labels?.some((l:any)=>l.name==="sandy-autonomous-ready")||
+       !issueBody.includes("<!-- sandy-repo-only-engineering -->")||!sourceMatch||
+       !/^[a-f0-9]{40}$/.test(String(run.head_sha||"")))
+      return fail("repo_only_onboarding_not_authorised",409);
+    const fileUrl="https://api.github.com/repos/"+REPO+"/contents/"+
+      sourceMatch[0]+"?ref="+run.head_sha;
+    const sourceResponse=await fetch(fileUrl,{
+      headers:{"accept":"application/vnd.github+json","user-agent":"sandy-verified-engineering"},
+    }).catch(()=>null);
+    if(!sourceResponse||!sourceResponse.ok)return fail("github_source_not_verified",409);
+    const sourceMeta=await sourceResponse.json();
+    if(sourceMeta.type!=="file"||!sourceMeta.sha)return fail("github_source_not_verified",409);
+    const priorityMatch=issueBody.match(new RegExp("priority[ :]+([0-9]{1,3})","i"));
+    const priority=Math.min(100,Math.max(1,Number(priorityMatch?.[1]||80)));
+    const registered=await db.rpc("sandy_autonomous_engineering_register_repo_issue",{
+      p_issue_number:issue,p_run_id:String(runId),p_source_sha:String(run.head_sha),
+      p_priority:priority,
+    });
+    if(registered.error||registered.data?.registered!==true)
+      return fail("repository_issue_registration_failed",409);
+    issueKey=registered.data.issue_key;
+  }
+  if(!issueKey||handoffs?.length>1)return fail("handoff_not_unique",409);
   const evidence={run_id:String(runId),github_issue_url:githubIssue,
     workflow_run_url:"https://github.com/"+REPO+"/actions/runs/"+runId,
     decision:String(decision),source:"github_oidc_observer"};

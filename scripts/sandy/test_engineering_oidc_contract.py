@@ -5,6 +5,14 @@ SOURCE=(Path(__file__).resolve().parents[2] /
     "supabase/functions/sandy-engineering-oidc-ingest/index.ts").read_text()
 
 class GitHubOutcomeIdentityTests(unittest.TestCase):
+    def test_repo_only_issue_enrollment_is_fail_closed(self):
+        self.assertIn('sandy-repo-only-engineering',SOURCE)
+        self.assertIn('sandy-autonomous-ready',SOURCE)
+        self.assertIn('sandy_autonomous_engineering_register_repo_issue',SOURCE)
+        self.assertIn('sourceMeta.type!=="file"',SOURCE)
+        self.assertIn('repo_only_onboarding_not_authorised',SOURCE)
+        self.assertIn('if(!issueKey && !handoffs?.length)',SOURCE)
+
     def test_workflow_identity_not_mutable_display_name(self):
         self.assertIn('run.path!==".github/workflows/sandy-codex-engineering.yml"',SOURCE)
         self.assertIn('run.workflow_id!==387224954',SOURCE)
