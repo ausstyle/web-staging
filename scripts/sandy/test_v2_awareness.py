@@ -78,6 +78,14 @@ class TestV2ArchitecturalContracts(unittest.TestCase):
         self.assertIn('source_type:"system_awareness"', self.agent)
         self.assertIn('task_completion:"not_independently_verified"', self.agent)
 
+    def test_operational_queries_are_not_classified_as_email(self):
+        self.assertIn('operational_introspection', self.agent)
+        self.assertIn('general_assistance', self.agent)
+        self.assertIn('const emailAction=', self.agent)
+        self.assertIn('const selfInspection=', self.agent)
+        self.assertIn('const v2TaskType=emailAction?', self.agent)
+        self.assertIn('const defaultModel=complex?', self.agent)
+
     def test_shadow_routing_guarded(self):
         self.assertIn('v2ModelMode==="enabled"', self.agent)
         self.assertIn('registry?.eligibility==="approved"', self.agent)
