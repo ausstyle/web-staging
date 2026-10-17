@@ -5,11 +5,17 @@ on:
     paths:
       - 'scripts/sandy/**'
       - '.github/workflows/sandy-*.yml'
+      - 'supabase/functions/sandy-feature-discovery/**'
+      - 'supabase/functions/sandy-engineering-oidc-ingest/**'
+      - 'supabase/functions/sandy-repository-release-verifier/**'
   push:
     branches: [main]
     paths:
       - 'scripts/sandy/**'
       - '.github/workflows/sandy-*.yml'
+      - 'supabase/functions/sandy-feature-discovery/**'
+      - 'supabase/functions/sandy-engineering-oidc-ingest/**'
+      - 'supabase/functions/sandy-repository-release-verifier/**'
 permissions:
   contents: read
 jobs:
@@ -22,3 +28,5 @@ jobs:
         run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
       - name: Verify Python syntax
         run: python3 -m compileall -q scripts/sandy
+      - name: Verify feature-discovery risk policy syntax
+        run: node --check supabase/functions/sandy-feature-discovery/risk-policy.js
