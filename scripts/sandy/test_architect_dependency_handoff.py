@@ -20,7 +20,11 @@ class HandoffTests(unittest.TestCase):
                 calls.append(args)
                 return subprocess.CompletedProcess(args, 0, stdout="")
             with patch.dict(os.environ,env),patch("subprocess.run",side_effect=fake_run):
-                runpy.run_path(str(SCRIPT),run_name="__main__")
+                try:
+                    runpy.run_path(str(SCRIPT),run_name="__main__")
+                except SystemExit as exc:
+                    if exc.code not in (0, None):
+                        raise
             return calls
 
     def test_nested_manifest_posted_once(self):
