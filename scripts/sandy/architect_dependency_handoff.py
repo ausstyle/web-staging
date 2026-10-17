@@ -54,14 +54,15 @@ fingerprint = hashlib.sha256(canonical.encode()).hexdigest()[:20]
 marker = f"<!-- sandy-dependency-handoff:{fingerprint} -->"
 repo = os.environ["GITHUB_REPOSITORY"]
 prior = subprocess.run(["gh", "api", "--paginate", f"repos/{repo}/issues/{issue}/comments", "--jq", ".[].body"], capture_output=True, text=True, check=True).stdout
-if marker in prior:
-    print("Existing matching handoff; no duplicate created")
-    raise SystemExit(0)
+already_recorded = marker in prior
 lines = ["### Sandy Architect: dependencies needed", "", "Read-only source audit required before coding:", ""]
 assessment = assess([{"type":kind,"name":name} for kind,name in clean], inventory())
 lines += [f"- `{x['type']}`: `{x['name']}` — {x['status']}" for x in assessment]
 lines += ["", "Sandy's source-acquisition process should retrieve and audit these using approved least-privilege access. Do not paste credentials, customer data or tokens into the issue. Engineer remains blocked.", "", marker]
-subprocess.run(["gh", "issue", "comment", issue, "--body", "\n".join(lines)], check=True)
+if not already_recorded:
+    subprocess.run(["gh", "issue", "comment", issue, "--body", "\n".join(lines)], check=True)
+else:
+    print("Existing matching dependency handoff; no duplicate posted")
 # Queue at most one missing Edge Function for the protected approval workflow.
 # A dispatch is NOT an approval: the sandy-source-audit environment must approve it.
 # Never dispatch arbitrary database operations, identifiers, or source from the issue body.
@@ -71,8 +72,14 @@ missing = sorted(x["name"] for x in assessment
                  and re.fullmatch(r"sandy-[a-z0-9-]{1,80}", x["name"]))
 if missing:
     slug = missing[0]
+    audit_marker = f"<!-- sandy-source-audit-request:{issue}:{slug} -->"
+    if audit_marker in prior:
+        print(f"Protected source audit already requested for {slug}")
+        raise SystemExit(0)
     subprocess.run(["gh", "workflow", "run", "sandy-source-acquisition.yml",
                     "--ref", "main", "-f", f"issue_number={issue}",
                     "-f", f"edge_function={slug}"], check=True)
+    subprocess.run(["gh", "issue", "comment", issue, "--body",
+                    f"Protected source audit requested for `{slug}`. Pending environment approval; parity NOT established.\n\n{audit_marker}"], check=True)
     print(f"Requested protected review for {slug}; no production parity or source approval inferred")
 print(f"Published dependency handoff with {len(clean)} items; repository presence is NOT production parity")
