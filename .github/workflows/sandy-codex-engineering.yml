@@ -145,3 +145,28 @@ jobs:
           git commit -m "Sandy engineering proposal for issue #$ISSUE"
           git push origin "$BRANCH"
           gh pr create --draft --base "${GITHUB_REF_NAME}" --head "$BRANCH" --title "Sandy: proposed fix for issue #$ISSUE" --body "Proposed by Sandy's Codex Engineer based on an independent Architect design. Requires human review and production verification. References #$ISSUE."
+
+  record_outcome:
+    needs: [architect, engineer]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    permissions:
+      contents: read
+      actions: read
+      issues: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Record Architect decision and verified Engineer pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHITECT_RUN_ID: ${{ github.run_id }}
+          ARCHITECT_RUN_TITLE: 'Sandy engineering issue #${{ inputs.issue_number }}'
+          ARCHITECT_RUN_CONCLUSION: 'architect=${{ needs.architect.result }},engineer=${{ needs.engineer.result }}'
+          SANDY_OUTCOME_FILE: /tmp/sandy-engineering-outcome.json
+        run: python3 scripts/sandy/observe_architect_run.py
+      - name: Persist GitHub-signed outcome to canonical Supabase cycle
+        run: python3 scripts/sandy/post_architect_outcome.py

@@ -9,7 +9,8 @@ const REPO = "ausstyle/web-staging";
 const REPO_ID = "1416227508";
 const ISSUER = "https://token.actions.githubusercontent.com";
 const AUDIENCE = "sandy-engineering-outcomes-" + PROJECT;
-const WORKFLOW_REF = REPO + "/.github/workflows/sandy-engineering-outcome-observer.yml@refs/heads/main";
+const OBSERVER_REF = REPO + "/.github/workflows/sandy-engineering-outcome-observer.yml@refs/heads/main";
+const ENGINEERING_REF = REPO + "/.github/workflows/sandy-codex-engineering.yml@refs/heads/main";
 const keys = createRemoteJWKSet(new URL(ISSUER + "/.well-known/jwks"));
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {
   status, headers: {"content-type":"application/json","cache-control":"no-store"},
@@ -30,9 +31,11 @@ Deno.serve(async(req:Request)=>{
     });
     claims=verified.payload as Record<string,unknown>;
   } catch {return fail("invalid_oidc",401);}
+  const observerFlow=claims.workflow_ref===OBSERVER_REF&&claims.event_name==="workflow_run";
+  const inlineFlow=claims.workflow_ref===ENGINEERING_REF&&claims.event_name==="workflow_dispatch";
   if(claims.repository!==REPO || String(claims.repository_id)!==REPO_ID ||
-     claims.workflow_ref!==WORKFLOW_REF || claims.event_name!=="workflow_run" ||
-     claims.ref!=="refs/heads/main") return fail("unauthorized_workflow",403);
+     (!observerFlow&&!inlineFlow) || claims.ref!=="refs/heads/main")
+    return fail("unauthorized_workflow",403);
 
   let body:Record<string,unknown>;
   try {body=await req.json();} catch {return fail("invalid_json");}
@@ -46,9 +49,11 @@ Deno.serve(async(req:Request)=>{
   }).catch(()=>null);
   if(!github||!github.ok) return fail("github_run_unavailable",503);
   const run=await github.json();
+  const sameRun=inlineFlow && String(claims.run_id)===String(runId);
   if(run.path!==".github/workflows/sandy-codex-engineering.yml" ||
      run.workflow_id!==387224954 || run.event!=="workflow_dispatch" ||
-     run.status!=="completed" || run.head_repository?.full_name!==REPO ||
+     !(run.status==="completed" || (sameRun&&run.status==="in_progress")) ||
+     (inlineFlow&&!sameRun) || run.head_repository?.full_name!==REPO ||
      run.display_title!=="Sandy engineering issue #"+issue)
     return fail("unverified_architect_run",409);
 
