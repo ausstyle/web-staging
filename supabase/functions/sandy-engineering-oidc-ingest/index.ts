@@ -341,13 +341,14 @@ Deno.serve(async(req:Request)=>{
         ...snapshot.qa_findings.map((x:any)=>x.key),
         ...snapshot.customer_conversation_qa.map((x:any)=>x.key),
         ...snapshot.customer_originated_qa_cases.map((x:any)=>x.key)]);
+      const rejectionCounts:Record<string,number>={invalid_shape:0,invalid_read_only:0,oracle_mismatch:0,ungrounded:0};
       const accepted:any[]=[];
       for(const candidate of data.tests.slice(0,12)){
         const key=String(candidate?.oracle_key||"");
         const question=String(candidate?.question||"").trim();
         const priority=Number(candidate?.priority);
         if(!allowedKeys.includes(key)||question.length<14||question.length>250||
-           redFlags.test(question)||!Number.isInteger(priority)||priority<1||priority>5)continue;
+           redFlags.test(question)||!Number.isInteger(priority)||priority<1||priority>5){rejectionCounts.invalid_read_only++;continue;}
         const match:Record<string,RegExp>={
           clock:/\b(time|date|clock)\b/i,
           connections:/\b(connected|connections|linked|integrations?)\b/i,
@@ -358,10 +359,10 @@ Deno.serve(async(req:Request)=>{
           capability:/\b(capabilit|can you|actually (do|use|execute)|available services)\b/i,
           followup_investigation:/\b(investigate|find|check)\b[\s\S]*\b(channels?|platforms?|counts?|messages?)\b/i
         };
-        if(!match[key].test(question))continue;
+        if(!match[key].test(question)){rejectionCounts.oracle_mismatch++;continue;}
         const grounds=Array.isArray(candidate.grounding_keys)?candidate.grounding_keys
           .filter((x:any)=>typeof x==="string"&&sourceKeys.has(x)).map((x:string)=>x.slice(0,100)).slice(0,6):[];
-        if(!grounds.length)continue;
+        if(!grounds.length){rejectionCounts.ungrounded++;continue;}
         accepted.push({oracle_key:key,question,priority,
           purpose:String(candidate.purpose||"").slice(0,240),
           expected_observation:String(candidate.expected_observation||"").slice(0,300),
@@ -369,7 +370,7 @@ Deno.serve(async(req:Request)=>{
       }
       if(accepted.length<2){
         await finish("rejected",{snapshot_hash:snapshotHash,source_summary:summary,
-          rejection_reason:"insufficient_valid_read_only_grounded_tests"});
+          rejection_reason:"insufficient_valid_read_only_grounded_tests",source_summary:{...summary,proposal_rejections:rejectionCounts,proposals_returned:data.tests.length,proposals_accepted:accepted.length}});
         return json({ok:true,status:"rejected",accepted:accepted.length,mode:policy.mode});
       }
       accepted.sort((a:any,b:any)=>b.priority-a.priority);
