@@ -16,6 +16,11 @@ h1{font-size:35px;letter-spacing:-1.5px;margin:0 0 3px;line-height:1.2}h2{font-s
 .panel{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:23px}
 .quick{display:flex;gap:10px;align-items:center}.quick input{flex:1;border:0;outline:0;padding:9px;font-size:16px;min-width:0}
 .quickHierarchy{max-width:260px;font-size:13px;background:#f1f5f0;color:#31513d}
+.categoryPopover{position:fixed;z-index:10000;width:min(350px,calc(100vw - 24px));background:#fff;border:1px solid #dce5dc;border-radius:14px;padding:16px;box-shadow:0 14px 45px rgba(20,35,25,.17);display:grid;gap:11px}
+.categoryPopover:before{content:"";position:absolute;top:-6px;left:20px;width:10px;height:10px;background:#fff;border-left:1px solid #dce5dc;border-top:1px solid #dce5dc;transform:rotate(45deg)}
+.categoryPopover strong{font-size:14px}.categoryPopover .categoryParent{font-size:12px;color:#64746a;overflow-wrap:anywhere}.categoryPopover input{width:100%;border:1px solid #cbd9cf;border-radius:9px;padding:11px 12px;font-size:14px;outline:0}.categoryPopover input:focus{border-color:#57856c;box-shadow:0 0 0 3px #e2eee6}
+.categoryPopover .categoryActions{display:flex;gap:8px;justify-content:flex-end}.categoryPopover .categoryActions button{border:1px solid #dce5dc;border-radius:9px;background:#fff;padding:8px 14px;font-size:13px;font-weight:600}.categoryPopover .categoryActions .saveCategory{background:#171b18;color:white;border-color:#171b18}.categoryPopover .categoryActions button:disabled{opacity:.55;cursor:wait}
+.categoryPopover .categoryError{font-size:12px;color:#a83232}
 .quickicon{color:var(--green);font-size:24px;font-weight:300}
 .helper{font-size:12px;color:var(--muted);padding:8px 0 0 35px}
 .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin:28px 0 13px}
@@ -369,13 +374,45 @@ function fillCategorySelect(companyId,selected){
  target.add(new Option("＋ Create category…","__new_category"));
  target.value=selected&&[...target.options].some(x=>x.value===selected)?selected:"";
 }
-async function createCategory(companyId,parentId=null){
+function categoryNamePopover(parentName,anchor){
+ return new Promise(resolve=>{
+  document.querySelector(".categoryPopover")?.remove();
+  const pop=el("div","categoryPopover");
+  pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Create category");
+  const heading=el("strong","", "New "+(parentName?"subcategory":"category"));
+  const parent=el("div","categoryParent","Under "+parentName);
+  const input=el("input");input.placeholder="Category name";input.maxLength=160;input.setAttribute("aria-label","New category name");
+  const error=el("div","categoryError");error.setAttribute("role","alert");
+  const actions=el("div","categoryActions");
+  const cancel=btn("Cancel","",()=>finish(null));
+  const save=btn("Create category","saveCategory",()=>finish(input.value.trim()));
+  actions.append(cancel,save);pop.append(heading,parent,input,error,actions);document.body.append(pop);
+  const target=anchor&&document.contains(anchor)?anchor:$("quickWorkspace");
+  const rect=target.getBoundingClientRect();
+  const width=Math.min(350,window.innerWidth-24);
+  pop.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-width-12))+"px";
+  const below=rect.bottom+9;
+  pop.style.top=(below+225<window.innerHeight?below:Math.max(12,rect.top-225))+"px";
+  let settled=false;
+  function finish(value){
+   if(settled)return;
+   if(value!==null&&!value){error.textContent="Enter a category name";input.focus();return}
+   settled=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();resolve(value);
+  }
+  function outside(e){if(!pop.contains(e.target)&&e.target!==target)finish(null)}
+  function key(e){if(e.key==="Escape"){e.preventDefault();finish(null)}else if(e.key==="Enter"&&document.activeElement===input){e.preventDefault();finish(input.value.trim())}}
+  document.addEventListener("pointerdown",outside,true);document.addEventListener("keydown",key,true);
+  input.focus();
+ });
+}
+async function createCategory(companyId,parentId=null,anchor=null){
  if(companyId!=="personal"&&!state.companies.some(c=>c.id===companyId))return null;
  const parentName=parentId?categoryPath(parentId):taskWorkspaceLabel(companyId==="personal"?null:companyId);
- const name=prompt("New subcategory under "+parentName);if(!name?.trim())return null;
+ const name=await categoryNamePopover(parentName,anchor);
+ if(!name)return null;
  try{
-  const result=await api("category-create",{company_id:companyId==="personal"?null:companyId,parent_category_id:parentId,name:name.trim()});
-  state.categories.push(result.category);toast("Subcategory added");return result.category.id;
+  const result=await api("category-create",{company_id:companyId==="personal"?null:companyId,parent_category_id:parentId,name});
+  state.categories.push(result.category);toast("Category created");return result.category.id;
  }catch(e){toast(e.message,true);return null}
 }
 function useEntryWorkspace(id){
@@ -460,7 +497,7 @@ async function chooseQuickHierarchy(){
   const previous=select.dataset.lastValid||"personal";
   const parent=value.startsWith("create:")?value.slice(7):null;
   const company=parent?(state.categories.find(c=>c.id===parent)?.company_id||"personal"):value.slice(12);
-  const id=company?await createCategory(company,parent):null;
+  const id=company?await createCategory(company,parent,select):null;
   fillQuickHierarchy(id?"category:"+id:previous);
   if(id)renderCategories();
   select.dataset.lastValid=select.value;return;
