@@ -15,7 +15,7 @@ h1{font-size:35px;letter-spacing:-1.5px;margin:0 0 3px;line-height:1.2}h2{font-s
 .metric{background:var(--white);border:1px solid var(--line);border-radius:16px;padding:19px 20px}.metricLink{font:inherit;color:inherit;width:100%;text-align:left;cursor:pointer}.metricLink:hover,.metricLink[aria-pressed="true"]{border-color:#999;background:#fafafa}.metricLink:focus-visible{outline:2px solid #111;outline-offset:3px}.metric span{font-size:12px;color:var(--muted);display:block}.metric b{font-size:29px;letter-spacing:-1px;line-height:1.3}
 .panel{background:var(--white);border:1px solid var(--line);border-radius:18px;padding:23px}
 .quick{display:flex;gap:10px;align-items:center}.quick input{flex:1;border:0;outline:0;padding:9px;font-size:16px;min-width:0}
-.quickCategory{max-width:215px;background:#f1f5f0;color:#31513d}.quickCategoryAdd{border:1px solid #dce8dd;background:white;border-radius:9px;padding:5px 9px;color:#37684c;font-size:17px;flex-shrink:0}.quickCategoryAdd:hover{background:#edf4eb}
+.quickHierarchy{max-width:260px;font-size:13px;background:#f1f5f0;color:#31513d}
 .quickicon{color:var(--green);font-size:24px;font-weight:300}
 .helper{font-size:12px;color:var(--muted);padding:8px 0 0 35px}
 .toolbar{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin:28px 0 13px}
@@ -266,7 +266,7 @@ html,body{max-width:100%;overflow-x:clip}
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div id="categoryBar" class="categoryBar hidden" aria-label="Subcategories"></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
 <section class="requestPanel hidden" id="taskRequestPanel" ><div class="requestPanelHeader"><strong id="taskRequestsHeading">Task requests · Awaiting approval</strong><span class="muted small">Requests require recipient approval</span></div><div id="pendingTaskRequests"></div></section>
 <details class="requestPanel" id="requestSendPanel"><summary>Request a task from someone else / View requests I sent</summary><form id="sendTaskRequest" class="requestBar"><input id="requestTaskTitle" placeholder="Request a task…" maxlength="240" required aria-label="Requested task"><input id="requestTaskRecipient" placeholder="Recipient email or Sandy" aria-label="Task recipient" required><button type="submit" class="btn small">Send request</button></form><details class="sentTaskRequests"><summary>Requests I sent</summary><div id="outgoingTaskRequests"></div></details></details>
-<div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace" aria-label="Task workspace"></select><select id="quickCategory" class="entryWorkspace quickCategory hidden" aria-label="Task category or subcategory"></select><button id="quickNewCategory" type="button" class="quickCategoryAdd hidden" title="Create category or subcategory" aria-label="Create category or subcategory">＋</button><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Enter creates the next row · Tab indents beneath the task above · Shift+Tab outdents · ⌘/Ctrl K for quick capture.</div></div>
+<div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace quickHierarchy" aria-label="Task company, category or subcategory"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Enter creates the next row · Tab indents beneath the task above · Shift+Tab outdents · ⌘/Ctrl K for quick capture.</div></div>
 <div id="attention" class="attention hidden"></div><div id="suggestions" class="suggest hidden"></div>
 <div id="invitations" class="invitations hidden"></div><div class="collabBar"><label for="assigneeFilter">Delegated to</label><select id="assigneeFilter"><option value="all">Everyone</option><option value="unassigned">Not delegated</option><option value="mine">Assigned to me</option></select></div><div class="toolbar"><div class="tabs"><button class="tab active" data-tab="open">Active</button><button class="tab" data-tab="doing">In progress</button><button class="tab" data-tab="today">Due soon</button><button class="tab" data-tab="waiting">Waiting</button><button class="tab" data-tab="done">Completed</button><button class="tab" data-tab="all">All</button></div><input class="search" id="search" type="search" placeholder="Search tasks…" aria-label="Search tasks"></div>
 <div class="outlineHeader"><strong>Projects & actions</strong><div class="outlineControls"><label class="sortLabel" for="taskSort">Sort by</label><select id="taskSort" class="taskSort" aria-label="Sort tasks"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="due">Due soonest</option><option value="priority">Priority</option><option value="status">Status</option><option value="az">Name A–Z</option><option value="manual">Custom order</option></select><button class="outlineSmall" id="expandAll" type="button">Expand all</button><button class="outlineSmall" id="collapseAll" type="button">Collapse all</button></div><div class="viewSwitch"><button type="button" id="treeView" class="viewBtn chosen">☷ Outline</button><button type="button" id="timelineView" class="viewBtn">▦ Timeline</button></div></div><form id="rootLine" class="rootLine" aria-label="Add a new task"><span aria-hidden="true">＋</span><input id="rootLineInput" placeholder="Add a new task… press Enter" maxlength="240" aria-label="New task name" autocomplete="off"><select id="rootWorkspace" class="entryWorkspace" aria-label="New task workspace"></select><button class="rootAdd" type="submit">Add task</button></form><div id="tasks" class="tasklist"></div><div id="timeline" class="timeline hidden"></div><div class="keyboardHint">Click a task to edit · Enter: next row · Tab: indent · Shift+Tab: outdent · Esc: cancel</div></div>
@@ -418,29 +418,51 @@ async function createCompany(){
  try{const result=await api("company-create",{name:name.trim()});state.companies.push(result.company);state.companies.sort((a,b)=>a.name.localeCompare(b.name));state.entryWorkspace=result.company.id;renderWorkspaces();toast("Company added");return result.company.id}
  catch(e){toast(e.message,true);return null}
 }
-function fillQuickCategory(companyId,selected){
- const select=$("quickCategory"),add=$("quickNewCategory");
- const visible=state.companies.some(c=>c.id===companyId);
- select.classList.toggle("hidden",!visible);add.classList.toggle("hidden",!visible);
- if(!visible){select.replaceChildren();select.dataset.lastCategory="";return}
- const previous=selected!==undefined?selected:(select.dataset.companyId===companyId?select.value:"");
- select.replaceChildren(new Option("Company level",""));
- for(const item of categoriesForCompany(companyId)){
-  select.add(new Option("　".repeat(Math.min(item.depth,4))+(item.depth?"↳ ":"")+item.category.name,item.category.id));
+function quickSelection(){
+ const value=$("quickWorkspace").value;
+ if(value==="personal")return {company:"personal",category:null};
+ if(value.startsWith("category:")){
+  const id=value.slice(9),cat=state.categories.find(c=>c.id===id);
+  return cat?{company:cat.company_id,category:id}:{company:"personal",category:null};
  }
- select.add(new Option("＋ Create category…","__new_category"));
- select.value=[...select.options].some(o=>o.value===previous)?previous:"";
- select.dataset.companyId=companyId;
- select.dataset.lastCategory=select.value;
- select.title=select.value?taskWorkspaceLabel(companyId)+" › "+categoryPath(select.value):"Company level · no subcategory";
+ return {company:value,category:null};
 }
-async function quickCreateCategory(){
- const companyId=$("quickWorkspace").value;
- if(!state.companies.some(c=>c.id===companyId))return;
- const parentId=$("quickCategory").dataset.lastCategory||null;
- const id=await createCategory(companyId,parentId);
- fillQuickCategory(companyId,id||parentId||"");
- if(id){renderCategories();$("quickCategory").focus()}
+function fillQuickHierarchy(selected){
+ const select=$("quickWorkspace"),previous=selected===undefined?(select.value||state.entryWorkspace):selected;
+ select.replaceChildren(new Option("Personal","personal"));
+ for(const company of state.companies){
+  select.add(new Option(company.name,company.id));
+  for(const item of categoriesForCompany(company.id)){
+   const indent="　".repeat(Math.min(item.depth+1,5));
+   select.add(new Option(indent+"↳ "+item.category.name,"category:"+item.category.id));
+   select.add(new Option(indent+"　＋ Subcategory under "+item.category.name,"create:"+item.category.id));
+  }
+  select.add(new Option("　＋ New category under "+company.name,"create-root:"+company.id));
+ }
+ select.add(new Option("＋ Add company…","__new_company"));
+ select.value=[...select.options].some(o=>o.value===previous)?previous:"personal";
+ const choice=quickSelection();
+ select.title=choice.category?taskWorkspaceLabel(choice.company)+" › "+categoryPath(choice.category):taskWorkspaceLabel(choice.company==="personal"?null:choice.company);
+}
+async function chooseQuickHierarchy(){
+ const select=$("quickWorkspace"),value=select.value;
+ if(value==="__new_company"){
+  const previous=select.dataset.lastValid||"personal",id=await createCompany();
+  fillQuickHierarchy(id||previous);select.dataset.lastValid=select.value;return;
+ }
+ if(value.startsWith("create:")||value.startsWith("create-root:")){
+  const previous=select.dataset.lastValid||"personal";
+  const parent=value.startsWith("create:")?value.slice(7):null;
+  const company=parent?state.categories.find(c=>c.id===parent)?.company_id:value.slice(12);
+  const id=company?await createCategory(company,parent):null;
+  fillQuickHierarchy(id?"category:"+id:previous);
+  if(id)renderCategories();
+  select.dataset.lastValid=select.value;return;
+ }
+ const chosen=quickSelection();
+ state.entryWorkspace=chosen.company;
+ select.dataset.lastValid=value;
+ select.title=chosen.category?taskWorkspaceLabel(chosen.company)+" › "+categoryPath(chosen.category):taskWorkspaceLabel(chosen.company==="personal"?null:chosen.company);
 }
 function renderWorkspaces(){
  const area=$("workspaceTabs");area.replaceChildren();
@@ -451,9 +473,8 @@ function renderWorkspaces(){
  }
  for(const id of ["quickWorkspace","rootWorkspace"]){
   const select=$(id);const value=select.value&&select.value!=="__new_company"?select.value:state.entryWorkspace;
-  fillWorkspaceSelect(select,value);
+  if(id==="quickWorkspace")fillQuickHierarchy(value);else fillWorkspaceSelect(select,value);
  }
- fillQuickCategory($("quickWorkspace").value);
  renderCategories();
 }
 async function chooseCompanyFromSelect(e){
@@ -1123,16 +1144,10 @@ $("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!co
 $("cancelDialog").addEventListener("click",closeDialog);
 $("dialogOverlay").addEventListener("click",e=>{if(e.target===$("dialogOverlay"))closeDialog()});
 $("newTask").addEventListener("click",()=>outlineDraft(null,outlineLast(null),state.entryWorkspace));
- $("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;const ok=await outlineCreate(title,null,outlineLast(null),$("quickWorkspace").value,$("quickCategory").value||null);if(ok)$("quickTitle").value=""});
+ $("quickForm").addEventListener("submit",async e=>{e.preventDefault();const title=$("quickTitle").value.trim();if(!title)return;const choice=quickSelection();const ok=await outlineCreate(title,null,outlineLast(null),choice.company,choice.category);if(ok)$("quickTitle").value=""});
 
  $("addCompany").addEventListener("click",async()=>{const id=await createCompany();if(id){state.workspace=id;render()}});
-$("quickWorkspace").addEventListener("change",chooseCompanyFromSelect);
-$("quickCategory").addEventListener("change",async e=>{
- if(e.target.value==="__new_category"){await quickCreateCategory();return}
- e.target.dataset.lastCategory=e.target.value;
- e.target.title=e.target.value?taskWorkspaceLabel($("quickWorkspace").value)+" › "+categoryPath(e.target.value):"Company level · no subcategory";
-});
-$("quickNewCategory").addEventListener("click",quickCreateCategory);
+$("quickWorkspace").addEventListener("change",chooseQuickHierarchy);
 $("rootWorkspace").addEventListener("change",chooseCompanyFromSelect);
 $("taskWorkspace").addEventListener("change",async e=>{
  if(e.target.value==="__new_company"){const id=await createCompany();fillWorkspaceSelect(e.target,id||"personal")}
