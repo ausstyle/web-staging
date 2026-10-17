@@ -1,5 +1,6 @@
 import datetime as dt
 import unittest
+from pathlib import Path
 from autonomous_dispatch import choose, priority
 
 NOW = dt.datetime(2026, 10, 17, 18, tzinfo=dt.timezone.utc)
@@ -15,6 +16,12 @@ def run(number, status="completed", created="2026-10-17T16:00:00Z"):
 
 
 class AutoDispatchTests(unittest.TestCase):
+    def test_codex_bot_and_issue_run_title_contract(self):
+        source=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-codex-engineering.yml').read_text()
+        self.assertIn("run-name: 'Sandy engineering issue #${{ inputs.issue_number }}'",source)
+        self.assertEqual(source.count('allow-bots: true'),2)
+
+
     def test_requires_opt_in_and_title(self):
         self.assertIsNone(choose([issue(1, labels=[]), issue(2, title="Unrelated")], [], NOW))
 
