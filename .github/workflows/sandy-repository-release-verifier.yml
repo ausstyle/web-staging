@@ -1,0 +1,29 @@
+name: Sandy verified repository-only release
+on:
+  workflow_run:
+    workflows: ["Sandy engineering regression checks"]
+    types: [completed]
+permissions:
+  contents: read
+  pull-requests: read
+  id-token: write
+concurrency:
+  group: sandy-repository-release-${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == 'ausstyle/web-staging' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Verify release association tests
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_verify_repo_release.py' -v
+      - name: Reconcile repository-only release with independently verified evidence
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_MAIN_SHA: ${{ github.event.workflow_run.head_sha }}
+          SANDY_CI_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: python3 scripts/sandy/verify_repo_release.py
