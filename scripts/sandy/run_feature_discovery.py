@@ -60,6 +60,25 @@ def github(method, resource, data=None):
         return json.load(response)
 
 
+
+def load_all_existing_issues(max_pages=12):
+    """Bounded, complete pagination; fail closed instead of risking duplicate issues."""
+    if not isinstance(max_pages,int) or not 1<=max_pages<=20:
+        raise ValueError("Invalid pagination bound")
+    issues=[]
+    for page in range(1,max_pages+1):
+        batch=github("GET",f"issues?state=all&per_page=100&page={page}")
+        if not isinstance(batch,list):
+            raise RuntimeError("Incomplete GitHub issues response")
+        for entry in batch:
+            if not isinstance(entry,dict) or not isinstance(entry.get("number"),int):
+                raise RuntimeError("Malformed GitHub issue list")
+        issues.extend(batch)
+        if len(batch)<100:
+            return issues
+    raise RuntimeError("GitHub issues exceed bounded scan; refusing to create duplicates")
+
+
 def issue_for(item, existing):
     marker="<!-- sandy-feature-key:"+item["key"]+" -->"
     matches=[x for x in existing if marker in str(x.get("body") or "") and not x.get("pull_request")]
@@ -122,7 +141,7 @@ def main():
     if os.environ.get("GITHUB_EVENT_NAME")=="push":
         print(json.dumps({**report,"smoke_only":True,"github_publication":False}))
         return
-    issues=github("GET","issues?state=all&per_page=100")
+    issues=load_all_existing_issues()
     for pending in (outcome.get("pending") or [])[:5]:
         feature=validate_pending(pending)
         if feature is None:
