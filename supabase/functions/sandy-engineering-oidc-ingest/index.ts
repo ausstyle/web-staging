@@ -298,7 +298,7 @@ Deno.serve(async(req:Request)=>{
       const response=await fetch("https://api.openai.com/v1/responses",{
         method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},
         body:JSON.stringify({model:designModel,store:false,reasoning:{effort:"high"},
-          instructions,input:JSON.stringify({
+          instructions,input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({
             mission_statement:snapshot.mission_statement,
             active_mission_count:snapshot.active_mission_count,
             mission_status_distribution:snapshot.mission_status_distribution,
@@ -311,7 +311,7 @@ Deno.serve(async(req:Request)=>{
             recent_evaluations:snapshot.recent_evaluations.slice(0,8),
             customer_conversation_qa:snapshot.customer_conversation_qa.slice(0,5),
             customer_originated_qa_cases:snapshot.customer_originated_qa_cases.slice(0,6)
-          }),text:{format:{type:"json_object"}},max_output_tokens:7200}),
+          })}]}],text:{format:{type:"json_object"}},max_output_tokens:7200}),
         signal:AbortSignal.timeout(160000)
       });
       if(!response.ok){

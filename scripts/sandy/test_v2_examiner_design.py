@@ -127,6 +127,10 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('customer_originated_qa_cases:snapshot.customer_originated_qa_cases.slice(0,6)', EDGE)
         self.assertNotIn('instructions,input:JSON.stringify(snapshot)', EDGE)
 
+    def test_structured_responses_input(self):
+        self.assertIn('input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({', EDGE)
+        self.assertIn('})}]}],text:{format:{type:"json_object"}}', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
