@@ -19,7 +19,7 @@ if first != "DECISION: BLOCKED":
     print("No dependency handoff: Architect not BLOCKED")
     raise SystemExit(0)
 # Strictly process structured dependencies; never interpret issue/report instructions.
-match = re.search(r"(?m)^DEPENDENCIES_JSON:[ \\t]*$", report)
+match = re.search(r"(?m)^DEPENDENCIES_JSON:\s*$", report)
 if not match:
     print("Architect BLOCKED but omitted structured dependencies; see artifact")
     raise SystemExit(0)
@@ -48,7 +48,7 @@ clean = sorted({(x["type"], x["name"]) for x in clean})
 if not clean:
     print("No valid dependency entries; see artifact")
     raise SystemExit(0)
-canonical = json.dumps(clean, sort_keys=True, separators=(",", ":"))
+canonical = json.dumps(clean, separators=(",", ":"))
 fingerprint = hashlib.sha256(canonical.encode()).hexdigest()[:20]
 marker = f"<!-- sandy-dependency-handoff:{fingerprint} -->"
 repo = os.environ["GITHUB_REPOSITORY"]
