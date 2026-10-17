@@ -19,12 +19,15 @@ if first != "DECISION: BLOCKED":
     print("No dependency handoff: Architect not BLOCKED")
     raise SystemExit(0)
 # Strictly process structured dependencies; never interpret issue/report instructions.
-match = re.search(r"(?ms)^DEPENDENCIES_JSON:\s*\n(```json\n)?(\{.*?\})(?:\n```)?(?=\n(?:[A-Z][A-Z_ ]+:|$)|\Z)", report)
+match = re.search(r"(?m)^DEPENDENCIES_JSON:[ \\t]*$", report)
 if not match:
     print("Architect BLOCKED but omitted structured dependencies; see artifact")
     raise SystemExit(0)
+payload = report[match.end():].strip()
+if payload.startswith("```json"):
+    payload = payload[len("```json"):].strip()
 try:
-    manifest = json.loads(match.group(2))
+    manifest, _ = json.JSONDecoder().raw_decode(payload)
 except json.JSONDecodeError:
     print("Invalid dependencies JSON; see artifact")
     raise SystemExit(0)
