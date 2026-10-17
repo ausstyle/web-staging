@@ -1103,7 +1103,22 @@ $("taskForm").addEventListener("submit",async e=>{
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
 });
-$("deleteTask").addEventListener("click",async()=>{const t=state.edit;if(!t||t.shared)return;if(state.tasks.some(x=>x.parent_task_id===t.id)){toast("Move or delete subtasks first",true);return}if(!confirm("Permanently delete “"+t.title+"”? This cannot be undone."))return;const button=$("deleteTask");button.disabled=true;try{await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title});closeDialog();await load();toast("Task deleted")}catch(e){toast(e.message,true)}finally{button.disabled=false}});
+$("deleteTask").addEventListener("click",async()=>{
+ const t=state.edit;if(!t||t.shared)return;
+ const descendants=new Set([t.id]);let changed=true;
+ while(changed){changed=false;for(const x of state.tasks){if(x.parent_task_id&&descendants.has(x.parent_task_id)&&!descendants.has(x.id)){descendants.add(x.id);changed=true}}}
+ const childCount=descendants.size-1;
+ if(!confirm("Permanently delete task “"+t.title+"”? This cannot be undone."))return;
+ let childMode="promote_children";
+ if(childCount>0){
+  const removeAll=confirm("This task has "+childCount+" nested subtask"+(childCount===1?"":"s")+".\n\nOK: Delete the parent AND all subtasks.\nCancel: Keep subtasks and move the immediate children up one level.");
+  childMode=removeAll?"delete_all":"promote_children";
+  if(!removeAll&&!confirm("Keep all subtasks and move them up one level, then delete only “"+t.title+"”?"))return;
+ }
+ const button=$("deleteTask");button.disabled=true;
+ try{const result=await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});closeDialog();await load();toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted")}
+ catch(e){toast(e.message,true)}finally{button.disabled=false}
+});
 $("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!confirm("Archive this task and all of its subtasks? You will no longer see them in your active agenda."))return;try{await api("archive-tree",{id:state.edit.id,confirm_all:true});closeDialog();await load();toast("Task archived")}catch(e){toast(e.message,true)}});
 $("cancelDialog").addEventListener("click",closeDialog);
 $("dialogOverlay").addEventListener("click",e=>{if(e.target===$("dialogOverlay"))closeDialog()});
