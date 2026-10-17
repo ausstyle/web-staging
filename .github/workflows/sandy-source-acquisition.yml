@@ -35,7 +35,8 @@ jobs:
           [[ "$SLUG" =~ ^sandy-[a-z0-9-]{1,80}$ ]] || exit 1
           test -n "$SOURCE_TOKEN" || { echo "::error::Missing SUPABASE_ACCESS_TOKEN in protected environment"; exit 1; }
       - name: Test source audit safety contracts
-        run: python3 -m unittest discover -s scripts/sandy -p 'test_source_audit_manifest.py' -v
+        run: |
+          python3 -m unittest discover -s scripts/sandy -p 'test_source_audit_manifest.py' -v
           python3 -m unittest discover -s scripts/sandy -p 'test_reconcile_source_audit.py' -v
       - uses: supabase/setup-cli@v1
         with:
