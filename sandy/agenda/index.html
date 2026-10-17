@@ -262,6 +262,25 @@ html,body{max-width:100%;overflow-x:clip}
 .categoryManage:hover{background:#ececec;color:#111}
 .categoryName{overflow:hidden;text-overflow:ellipsis;max-width:220px}
 @media(max-width:680px){.categoryBar{margin-top:0}.categoryPill{font-size:11px;padding:6px 8px}.categoryManage{padding:5px 3px}}
+
+/* Dense desktop agenda: compact rows, clear controls, no unnecessary whitespace. */
+@media(min-width:751px){
+ .taskrow{min-height:38px!important;padding:5px 9px!important;gap:7px!important;align-items:center!important}
+ .childrow .taskrow{min-height:36px!important;padding:4px 8px!important}
+ .taskmain{padding-top:0!important}
+ .taskrow .tasktitle{line-height:1.28!important}
+ .taskrow .titleArea{gap:5px!important;align-items:center!important}
+ .taskrow .taskdesc{margin-top:2px!important;line-height:1.25!important}
+ .taskrow .meta{margin-top:2px!important;gap:4px!important}
+ .taskrow .right{gap:4px!important;align-items:center!important}
+ .taskrow .iconbtn{width:27px!important;height:29px!important;min-width:27px!important;min-height:29px!important;padding:3px!important}
+ .taskrow .dueButton,.taskrow .inlinePriority{min-height:29px!important;padding-top:2px!important;padding-bottom:2px!important}
+ .taskrow .taskcheck{margin-top:0!important}
+ .children{margin-top:0!important;margin-bottom:0!important}
+ .addchild{padding-top:4px!important;padding-bottom:4px!important}
+ .taskrow .progress{margin-top:3px!important}
+ .taskrow .workspaceHint,.taskrow .stepCount{line-height:1.2!important}
+}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -902,7 +921,7 @@ function renderTask(t,depth){
  const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
   add.title="Add a subtask";right.append(add);
  if(!t.shared&&!t.metadata?.sandy_mission_step){
-  const mission=btn(t.metadata?.sandy_mission===true?"🚀":"↗","iconbtn",async()=>{
+  const mission=btn("🚀","iconbtn",async()=>{
    if(t.metadata?.sandy_mission===true){toast("Already a Sandy Mission");return}
    const descendants=countDesc(t).total;
    if(!confirm("Convert \""+t.title+"\" into a Sandy Mission? Sandy will plan this task and its "+descendants+" existing subtasks. Their hierarchy and history will remain intact."))return;
