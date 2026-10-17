@@ -107,6 +107,14 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('gmailRead.successful', EDGE)
         self.assertIn('gmail_read:gmailRead,lab_enabled:false', EDGE)
 
+    def test_drive_calendar_reads_are_provider_scoped_and_read_only(self):
+        self.assertIn('GOOGLEDRIVE_LIST_FILES', EDGE)
+        self.assertIn('GOOGLECALENDAR_LIST_CALENDARS', EDGE)
+        self.assertIn('connection_not_confirmed', EDGE)
+        self.assertIn('drive_read:driveRead,calendar_read:calendarRead', EDGE)
+        self.assertIn('google_reads_verified_lab_review_pending', EDGE)
+        self.assertIn('lab_enabled:false', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
