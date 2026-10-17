@@ -1,5 +1,6 @@
 import unittest
-from run_feature_discovery import verify_response
+from run_feature_discovery import verify_response,validate_pending,clean_for_public_issue,issue_for
+from unittest.mock import patch
 
 
 class FeatureDiscoveryRunnerTests(unittest.TestCase):
@@ -16,6 +17,33 @@ class FeatureDiscoveryRunnerTests(unittest.TestCase):
     def test_impossible_count_rejected(self):
         with self.assertRaises(RuntimeError):
             verify_response({"ok": True, "created": 99})
+
+
+    def test_public_issue_redacts_private_identifiers(self):
+        scrubbed=clean_for_public_issue("Email bob@example.com URL https://example.com/private account 00000000-0000-0000-0000-000000000000")
+        self.assertNotIn("bob@example.com",scrubbed)
+        self.assertNotIn("https://example.com/private",scrubbed)
+        self.assertNotIn("00000000-0000-0000-0000-000000000000",scrubbed)
+
+    def test_pending_requires_proper_evidence_shape(self):
+        self.assertIsNone(validate_pending({"key":"bad"}))
+        good={"key":"unified_task_insights","problem":"Repeated users need faster verified task execution",
+              "ideal":"A single task interface that shows verified execution receipts",
+              "risk":"low","priority":87}
+        self.assertEqual(validate_pending(good)["key"],"unified_task_insights")
+
+    def test_issue_creation_idempotent_and_gated(self):
+        item=validate_pending({"key":"unified_task_insights",
+              "problem":"Repeated users need faster verified task execution",
+              "ideal":"A single task interface that shows verified execution receipts",
+              "risk":"low","priority":87})
+        prior=[{"number":9,"body":"<!-- sandy-feature-key:unified_task_insights -->"}]
+        with patch("run_feature_discovery.github") as api:
+            self.assertEqual(issue_for(item,prior),9)
+            api.assert_not_called()
+        with patch("run_feature_discovery.github",return_value={"number":11,"body":"ok"}) as api:
+            self.assertEqual(issue_for(item,[]),11)
+            self.assertIn("sandy-autonomous-ready",api.call_args.args[2]["labels"])
 
 
 if __name__=="__main__":
