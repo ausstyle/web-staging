@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# JSON-mode request verification using gateway v22.
+# Oracle-grounded dynamic test design verification on gateway v23.
 on:
   push:
     branches: [main]
