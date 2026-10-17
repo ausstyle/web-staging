@@ -189,6 +189,12 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn("cron: '23 4 * * *'", lab)
         self.assertIn('overall_status,run_key,lab_enabled', lab)
 
+    def test_intelligence_assurance_scope_in_astra_architect(self):
+        for requirement in ["customer objective completion", "delegation and recovery", "customer friction",
+                            "independent of Evolution", "learning effectiveness",
+                            "necessary approval", "cannot_test"]:
+            self.assertIn(requirement, EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
