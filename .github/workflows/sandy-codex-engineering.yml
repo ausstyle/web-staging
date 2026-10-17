@@ -1,5 +1,5 @@
 name: Sandy Architect and Engineer
-run-name: Sandy engineering issue #${{ inputs.issue_number }}
+run-name: 'Sandy engineering issue #${{ inputs.issue_number }}'
 on:
   workflow_dispatch:
     inputs:
@@ -38,6 +38,7 @@ jobs:
       - name: Software Architect — read-only
         uses: openai/codex-action@v1
         with:
+          allow-bots: true
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           permission-profile: ":read-only"
           effort: high
@@ -101,6 +102,7 @@ jobs:
       - name: Software Engineer — isolated workspace
         uses: openai/codex-action@v1
         with:
+          allow-bots: true
           openai-api-key: ${{ secrets.OPENAI_API_KEY }}
           permission-profile: ":workspace"
           effort: medium
