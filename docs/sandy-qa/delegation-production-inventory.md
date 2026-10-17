@@ -35,3 +35,14 @@ The historical Villa task exists and had an accepted delegation by the later Wha
 - PostgreSQL `pg_class` reports `relrowsecurity=true` and `relforcerowsecurity=false` for all five inspected tables: `sandy_tasks`, `sandy_task_delegations`, `sandy_task_participants`, `sandy_external_task_invitations`, `sandy_qa_engineering_handoffs`. RLS is enabled, but role bypass and effective grants still need independent review.
 - The deployed `sandy_task_delegation_scope_guard()` trigger prevents subtree delegations spanning different task workspaces by recursively walking descendants and comparing `company_id` to the task root. This is a workspace-consistency check, **not proof of sender authorisation**.
 - Attempts to retrieve full bodies for `sandy_agenda_claim_invite` and `sandy_claim_external_task_invitation`, and to enumerate role grants, were blocked. These remain missing evidence; no inference of secure permissions should be made.
+
+## Supplemental authorisation audit — 2026-10-17
+
+Live deployed PostgreSQL definitions successfully inspected:
+
+- `sandy_agenda_claim_invite(p_owner,p_assignee,p_task,p_email)` inserts into `sandy_agenda_invite_deliveries`, retries on conflict only for failed, stale sending or stale submitted states, and returns an identifier. The function body contains no separate identity check; authorisation must be enforced by its caller and effective execution rights.
+- `sandy_claim_external_task_invitation(p_owner,p_task,p_email,p_scope,p_hash)` inserts into `sandy_external_task_invitations`, retries failed/stale sending/stale sent records, and returns an identifier. Its body likewise does not verify the requester's ownership; caller isolation and execution grants require review.
+- Live `pg_class.relacl` entries for `sandy_tasks`, `sandy_task_delegations` and `sandy_external_task_invitations` include table owner `postgres` and `service_role` privileges, with no explicit `anon` or `authenticated` entries in the retrieved ACL arrays. This observation concerns table ACLs only, not all function EXECUTE rights, inherited role privileges, or every possible access path.
+- RLS is enabled on `sandy_tasks` and `sandy_task_delegations`. Privileged service-role calls require explicit tenant checks in every call path.
+
+The Architect should determine where external invitation acceptance/revocation is handled, audit its authenticated boundary, and ensure evidence-based task lookup has complete scope and no negative claims after truncated reads. Do not interpret this audit as approval to change production.
