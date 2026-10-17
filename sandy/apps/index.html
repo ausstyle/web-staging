@@ -7,11 +7,11 @@
 <div id="notice" class="notice" role="status">Checking your Sandy session…</div>
 <div class="toolbar"><input id="search" placeholder="Search apps and services" aria-label="Search apps"><button class="soft" id="refresh">Refresh connections</button></div>
 <section id="googlePanel" class="card" style="margin:24px 0;min-height:0;border-color:#d9e4f9">
-<div class="app-head"><div class="app-logo" style="font-size:27px;color:#4285f4">G</div><div><h2 style="margin:0">Connect Google Workspace</h2><p class="sub" style="margin:2px 0">Choose the Google services Sandy may access. Google will ask you to review permissions.</p></div></div>
+<div class="app-head"><div class="app-logo" style="font-size:27px;color:#4285f4">G</div><div><h2 style="margin:0">Connect Google Workspace</h2><p class="sub" style="margin:2px 0">Select the Google services you want. Actual access depends on the permissions configured in Composio and approved by Google.</p></div></div>
 <div id="googleChoices" class="google-choices"></div>
 <div id="googleState" class="flag" role="status">Checking Google connection options…</div>
 <button type="button" id="googleConnect" disabled>Connect selected Google services</button>
-<p class="sub" style="font-size:12px;margin:0">Selecting services does not grant access. Only permissions actually approved through Google are available to Sandy. Other Google services may require separate authorisation if unified Google authentication is not configured.</p>
+<p class="sub" style="font-size:12px;margin:0">Service checkboxes do not alter OAuth scopes. Google Super may request permissions beyond this list, depending on the configured OAuth scopes. Review the Google consent screen carefully. Custom permission combinations require separately configured authorisation.</p>
 </section>
 <h2>Available apps</h2><nav id="categories" class="chips" aria-label="App categories"></nav><div class="filters"><label for="statusFilter">Connection status</label><select id="statusFilter"><option value="all">All statuses</option><option value="ready">Ready to connect</option><option value="connected">Connected</option><option value="setup">Setup required</option></select><label for="sortApps">Sort by</label><select id="sortApps"><option value="recommended">Recommended</option><option value="az">Name A–Z</option><option value="za">Name Z–A</option><option value="status">Connection status</option></select></div><p id="resultCount" class="results" role="status"></p><div id="apps" class="grid"><p class="loader">Loading apps…</p></div>
 <h2>Your connections</h2><div id="connections" class="grid"><p class="sub">Loading connected accounts…</p></div>
@@ -62,12 +62,13 @@ function renderGoogle(){
  $("googleChoices").querySelectorAll("[data-google]").forEach(c=>c.onchange=()=>{c.checked?selectedGoogle.add(c.dataset.google):selectedGoogle.delete(c.dataset.google);renderGoogle();});
  const chosen=[...selectedGoogle];
  const configCount=chosen.filter(id=>configs.some(c=>String(c.toolkit_slug||"").toLowerCase()===id)).length;
- $("googleConnect").disabled=!chosen.length||(!grouped&&configCount===0);
+ $("googleConnect").disabled=!chosen.length||(!grouped&&configCount===0)||(!!grouped&&chosen.length!==googleServices.length);
  $("googleConnect").textContent=grouped?"Continue with Google authorisation":"Connect available Google services";
- $("googleState").textContent=grouped?"Unified Google authentication configured. Google determines the actual consent and permissions granted.":configCount?"Unified authorisation is not configured. "+configCount+" selected services have individual connection options.":"Google connection is not yet configured in Composio.";
+ $("googleState").textContent=grouped?"Google Super is configured. For now, bundled authorisation is available only when all listed services are selected. Your Google consent screen determines actual access.":configCount?"Unified authorisation is not configured. "+configCount+" selected services have individual connection options.":"Google connection is not yet configured in Composio.";
 }
 async function startGoogleConnection(){
  const grouped=googleAuthConfig();const chosen=[...selectedGoogle];if(!chosen.length)return;
+ if(grouped&&chosen.length!==googleServices.length)throw Error("Custom Google service combinations require a matching OAuth scope configuration. Select all for Google Super, or connect services individually.");
  if(!grouped){
   const available=chosen.map(id=>configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===id)).filter(Boolean);
   if(!available.length)return notice("Selected Google services require Composio authentication setup.");
