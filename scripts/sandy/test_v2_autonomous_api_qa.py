@@ -81,6 +81,14 @@ class TestV2APIQA(unittest.TestCase):
         self.assertIn('approval_required:true', improve)
         self.assertIn('proposal_only:true', improve)
 
+    def test_only_deterministic_qa_outcomes_train_model_router(self):
+        self.assertIn('sandy_v2_model_decisions', self.edge)
+        self.assertIn('["web_history","task_count"].includes(testcase.key)', self.edge)
+        self.assertIn('actual_success:verdict==="pass"', self.edge)
+        self.assertIn('source:"sandy_v2_synthetic_api_qa"', self.edge)
+        self.assertIn('.eq("selected_model",taskModel)', self.edge)
+        self.assertIn('v2_api_qa_model_feedback', self.edge)
+
     def test_workflow_short_lived_oidc_and_schedule(self):
         self.assertIn("cron: '*/15 * * * *'", self.flow)
         self.assertIn('id-token: write', self.flow)

@@ -180,6 +180,28 @@ Deno.serve(async(req:Request)=>{
         await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
         return fail("qa_evidence_not_saved",503);
       }
+      // Feed independently checked synthetic QA outcomes back to routing evaluation.
+      // Keyword-only or ambiguous reviews do not qualify as measured model successes.
+      if(taskModel&&["web_history","task_count"].includes(testcase.key)&&
+         (verdict==="pass"||verdict==="fail")){
+        const {error:feedbackError}=await db.from("sandy_v2_model_decisions").update({
+          actual_success:verdict==="pass",evaluated_at:new Date().toISOString(),
+          verified_outcome:{source:"sandy_v2_synthetic_api_qa",case_key:testcase.key,
+            verdict,reason,request_id:requestId,evidence:"authenticated_api_receipt_and_customer_scoped_ground_truth",
+            semantic_review_required:false}
+        }).eq("customer_id",customerId).eq("request_id",requestId).eq("selected_model",taskModel)
+          .is("actual_success",null);
+        if(feedbackError){
+          console.error("v2_model_feedback_error",feedbackError.code);
+          await db.from("sandy_qa_cases").upsert({
+            test_key:"v2_api_qa_model_feedback",
+            subject:"Sandy V2 QA evidence was not persisted to model decision learning",
+            status:"failed",findings:"A signed synthetic QA evaluation could not update the bounded model-selection decision record. Check schema grants and source request matching.",
+            next_action:"Correct model feedback persistence, then rerun and independently verify a new execution.",
+            updated_at:new Date().toISOString()
+          },{onConflict:"test_key"});
+        }
+      }
       const caseKey="v2_api_qa_"+testcase.key;
       // A single pass does not retire a defect; require two independently recorded consecutive passes.
       const {data:recent,error:recentError}=await db.from("sandy_v2_qa_executions")
