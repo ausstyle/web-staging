@@ -23,6 +23,8 @@ class GitHubOutcomeIdentityTests(unittest.TestCase):
         self.assertIn('pull.head?.repo?.full_name!==REPO',SOURCE)
     def test_short_lived_identity_enforced(self):
         self.assertIn('jwtVerify(',SOURCE)
-        self.assertIn('claims.workflow_ref!==WORKFLOW_REF',SOURCE)
+        self.assertIn('claims.workflow_ref===ENGINEERING_REF',SOURCE)
+        self.assertIn('String(claims.run_id)===String(runId)',SOURCE)
+        self.assertIn('sameRun&&run.status==="in_progress"',SOURCE)
 
 if __name__=="__main__": unittest.main()
