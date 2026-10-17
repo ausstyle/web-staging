@@ -78,14 +78,45 @@ Deno.serve(async(req:Request)=>{
       return{service:slug,recorded_active:matches.length>0,provider_confirmed:confirmed};
     });
     const verified=services.every(x=>x.provider_confirmed);
+    // Execute a metadata-only Gmail search through Sandy's production tool provider.
+    // Do not return or persist email subjects, senders, bodies, identifiers or snippets.
+    let gmailRead:{attempted:boolean;successful:boolean;http_status:number|null;result_count:number|null;reason:string}={
+      attempted:false,successful:false,http_status:null,result_count:null,reason:"provider_connection_not_verified"
+    };
+    if(services.find(x=>x.service==="gmail")?.provider_confirmed){
+      const gmail=(connections||[]).find(x=>x.toolkit_slug==="gmail"&&x.status==="ACTIVE"&&
+        rows.some((r:any)=>r.id===x.connected_account_id&&r.user_id==="sandy_customer_"+lab.customer_id&&String(r.status).toUpperCase()==="ACTIVE"));
+      if(gmail){
+        gmailRead={attempted:true,successful:false,http_status:null,result_count:null,reason:"provider_failure"};
+        try{
+          const response=await fetch("https://backend.composio.dev/api/v3/tools/execute/GMAIL_FETCH_EMAILS",{
+            method:"POST",headers:{"x-api-key":composio,"content-type":"application/json"},
+            body:JSON.stringify({connected_account_id:gmail.connected_account_id,
+              user_id:"sandy_customer_"+lab.customer_id,version:"20261015_00",
+              arguments:{query:"in:inbox",max_results:1,include_payload:false}}),
+            signal:AbortSignal.timeout(25000)
+          });
+          gmailRead.http_status=response.status;
+          const body=await response.json().catch(()=>({}));
+          gmailRead.successful=response.ok&&body.successful===true&&body.error==null;
+          if(gmailRead.successful){
+            const payload=body.data||{};
+            const messages=Array.isArray(payload.messages)?payload.messages:
+              Array.isArray(payload.emails)?payload.emails:Array.isArray(payload.items)?payload.items:null;
+            gmailRead.result_count=messages?.length??null;
+            gmailRead.reason="executed_read_only";
+          }else gmailRead.reason="gmail_provider_response_unsuccessful";
+        }catch{gmailRead.reason="gmail_provider_unreachable";}
+      }
+    }
     // Provider verification does not mean tool execution has been verified.
     const {error:saveError}=await db.from("sandy_examiner_lab_accounts").update({
-      connection_status:verified?"provider_connections_verified_readonly_tests_pending":"provider_verification_incomplete",
+      connection_status:verified?(gmailRead.successful?"gmail_read_verified_drive_calendar_pending":"provider_connections_verified_readonly_tests_pending"):"provider_verification_incomplete",
       enabled:false,verified_at:verified?new Date().toISOString():null,updated_at:new Date().toISOString()
     }).eq("id",1).eq("customer_id",lab.customer_id);
     if(saveError)return fail("lab_result_persistence_failed",503);
     return json({ok:true,verified,provider_listing_complete:complete,services,
-      read_only_execution_tested:false,lab_enabled:false});
+      read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,lab_enabled:false});
   }
   if(designFlow){
     if(body.operation!=="v2_examiner_design"||Object.keys(body).some(k=>k!=="operation"))

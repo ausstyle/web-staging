@@ -93,12 +93,19 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('body.operation!=="examiner_google_lab_verify"', EDGE)
         self.assertIn('lab?.expected_email!=="sandyemail.ai@gmail.com"', EDGE)
         self.assertIn('provider_confirmed:confirmed', EDGE)
-        self.assertIn('read_only_execution_tested:false,lab_enabled:false', EDGE)
+        self.assertIn('read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,lab_enabled:false', EDGE)
         self.assertIn('enabled:false,verified_at:', EDGE)
         workflow = (ROOT / ".github/workflows/sandy-examiner-google-lab.yml").read_text()
         self.assertIn('id-token: write', workflow)
         self.assertIn('examiner_google_lab_verify', workflow)
         self.assertNotIn('COMPOSIO_API_KEY', workflow)
+
+    def test_live_gmail_read_is_no_payload_no_external_send(self):
+        self.assertIn('GMAIL_FETCH_EMAILS', EDGE)
+        self.assertIn('include_payload:false', EDGE)
+        self.assertIn('max_results:1', EDGE)
+        self.assertIn('gmailRead.successful', EDGE)
+        self.assertIn('gmail_read:gmailRead,lab_enabled:false', EDGE)
 
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
