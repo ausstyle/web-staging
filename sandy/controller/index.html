@@ -219,27 +219,7 @@ function showQA(c){
  if(!holder.childNodes.length)holder.append(el("div","workspaceEmpty","No matching cases."))};input.oninput=draw;draw();c.append(top);
  const more=el("details","panel"),sum=el("summary","","Feature roadmap and progress");more.append(sum);const body=el("div");showRoadmap(body);more.append(body);c.append(more);
 }
-async function showSelfTasks(c){
- const p=panel("Sandy’s own tasks");c.append(p);txt(p,"Private improvement work, separate from client tasks.","small muted");
- const search=el("input","search");search.placeholder="Search tasks";p.append(search);
- const area=el("div");p.append(area);
- const result=await call("self_tasks_list").catch(e=>({error:e.message}));if(result.error){txt(area,result.error,"small muted");return}
- const tasks=result.tasks||[];const children=id=>tasks.filter(t=>t.parent_task_id===id);
- const renderRow=(t,depth=0)=>{
- const box=el("details","workspaceCard");box.style.marginLeft=Math.min(depth,8)*15+"px";
- const head=el("summary","workspaceTop");add(head,el("b","",t.title),el("span","workspacePill",t.status));box.append(head);
- const body=el("div","workspaceDetail");txt(body,t.description||"No details yet.","small muted");
- if(t.origin)txt(body,"Origin: "+t.origin+" · Priority: "+t.priority,"small muted");
- const status=el("select");for(const v of [...new Set([t.status,"intake","evaluating","approved","rejected","planned","in_progress","testing","deployed","blocked"])])status.add(new Option(v.replaceAll("_"," "),v));status.value=t.status;
- status.onchange=async()=>{const previous=t.status;let reason="";if(status.value==="rejected"){reason=prompt("Why is this improvement not approved?")||"";if(!reason){status.value=previous;return}}try{await call("self_tasks_update",{id:t.id,status:status.value,decision_reason:reason});t.status=status.value;head.lastChild.textContent=t.status}catch(e){alert(e.message);status.value=previous}};
- const notes=el("textarea");notes.value=t.notes||"";notes.placeholder="Task notes";notes.style.width="100%";
- const save=el("button","btn","Save notes");save.onclick=async()=>{try{await call("self_tasks_update",{id:t.id,notes:notes.value});save.textContent="Saved"}catch(e){alert(e.message)}};
- body.append(status,notes,save);box.append(body);area.append(box);
- for(const sub of children(t.id))renderRow(sub,depth+1)
- };
- function draw(){area.replaceChildren();const q=search.value.toLowerCase();const matches=tasks.filter(t=>[t.title,t.description,t.notes].join(" ").toLowerCase().includes(q));const ids=new Set(matches.map(t=>t.id));for(const t of matches.filter(t=>!ids.has(t.parent_task_id)))renderRow(t)}
- search.oninput=draw;draw()
-}
+function showSelfTasks(c){const p=panel("Sandy’s shared Agenda");txt(p,"This is the same Agenda application used by clients, running in Sandy’s authorised internal workspace. Tasks, calendar and delegation share the same code.","small muted");const link=el("a","btn","Open full-screen Sandy Agenda ↗");link.href="../agenda/?workspace=sandy";link.target="_blank";link.rel="noopener";p.append(link);const frame=el("iframe");frame.src="../agenda/?workspace=sandy";frame.title="Sandy internal Agenda";frame.style.cssText="width:100%;height:calc(100vh - 330px);min-height:650px;border:1px solid #e5e8e5;border-radius:12px;margin-top:16px;background:white";p.append(frame);c.append(p)}
 function showRoadmap(c){const p=panel("Improvement roadmap · "+data.roadmap.length);searchable(p,data.roadmap,["Feature","Progress","Phase","Acceptance criteria"],(x,i)=>[x.feature_title,sel(x.progress,Array.from(new Set([x.progress,"proposed","planned","pending","in_progress","blocked","testing","completed"])),v=>call("roadmap_update",{key:x.feature_key,progress:v})),x.phase,x.acceptance_criteria][i]);c.append(p);const p2=panel("AI improvement proposals");p2.append(tbl(["Issue","Category","Status"],data.proposals,(x,i)=>[x.failure_description,x.category,x.status][i]));c.append(p2)}
 function showEngagement(c){const p=panel("Customer engagement");searchable(p,data.activity,["Customer","Email records","Voice sessions","First recorded"],(x,i)=>[x.name,x.email,x.voice,date(x.joined)][i]);c.append(p);const p2=panel("WhatsApp channel activity");const by={};data.channel_activity.forEach(x=>{const d=String(x.created_at).slice(0,10);by[d]=(by[d]||0)+1});p2.append(tbl(["Date","Messages"],Object.entries(by).sort((a,b)=>b[0].localeCompare(a[0])).slice(0,30),(x,i)=>x[i]));c.append(p2)}
 function showIntegrations(c){const p=panel("Integration inventory");searchable(p,data.integrations,["Integration","Provider","Deployment","Enabled","Last verified","Issue"],(x,i)=>[x.product||x.integration_key,x.provider,x.deployment_status,x.enabled?"Yes":"No",date(x.last_verified_at),x.last_error||"—"][i]);c.append(p)}
