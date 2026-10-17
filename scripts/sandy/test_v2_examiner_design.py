@@ -5,6 +5,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 EDGE = (ROOT / "supabase/functions/sandy-engineering-oidc-ingest/index.ts").read_text()
 FLOW = (ROOT / ".github/workflows/sandy-v2-examiner-design.yml").read_text()
+EVOLUTION = (ROOT / "supabase/functions/sandy-auto-improve/index.ts").read_text()
 MIGRATION = (ROOT / "supabase/migrations/20261017211020_sandy_examiner_ai_test_architect_design_cache.sql").read_text()
 
 class TestExaminerIntelligentDesign(unittest.TestCase):
@@ -166,6 +167,10 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('v2_api_qa_evolution_delivery_', EDGE)
         self.assertIn('if(handoffReceiptError)return fail(', EDGE)
         self.assertNotIn('EdgeRuntime.waitUntil(diagnostic)', EDGE)
+
+    def test_evolution_uses_approved_operational_model(self):
+        self.assertIn('model:"gpt-5.2",store:false', EVOLUTION)
+        self.assertNotIn('model:"gpt-6-astra"', EVOLUTION)
 
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
