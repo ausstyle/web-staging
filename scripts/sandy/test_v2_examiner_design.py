@@ -180,6 +180,15 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('runtime_checks:runtimeChecks,lab_enabled:false', EDGE)
         self.assertIn('no_mutating_tools:!forbidden', EDGE)
 
+    def test_connected_lab_scheduled_audit_receipts(self):
+        self.assertIn('sandy_examiner_lab_run_receipts', EDGE)
+        self.assertIn('overall_status:overallStatus', EDGE)
+        self.assertIn('runtime_checks:runtimeChecks', EDGE)
+        self.assertIn('["push","schedule","workflow_dispatch"]', EDGE)
+        lab = (ROOT / ".github/workflows/sandy-examiner-google-lab.yml").read_text()
+        self.assertIn("cron: '23 4 * * *'", lab)
+        self.assertIn('overall_status,run_key,lab_enabled', lab)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
