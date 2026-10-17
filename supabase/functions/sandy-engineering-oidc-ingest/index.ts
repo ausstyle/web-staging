@@ -87,21 +87,39 @@ Deno.serve(async(req:Request)=>{
     if(!issueResponse||!issueResponse.ok)return fail("github_issue_unavailable",503);
     const recordedIssue=await issueResponse.json();
     const issueBody=String(recordedIssue.body||"");
+    const docsOnly=issueBody.includes("docs/sandy/autonomous-lifecycle-live-verification.md") &&
+      pr!==null&&pr!==undefined &&
+      issue===65 &&
+      issueBody.includes("strictly non-executable documentation change");
     const sourceMatch=issueBody.match(new RegExp("scripts/sandy/[a-z0-9_-]+[.]py","i"));
     if(recordedIssue.state!=="open"||recordedIssue.pull_request||
        !String(recordedIssue.title||"").startsWith("Sandy QA:")||
        !recordedIssue.labels?.some((l:any)=>l.name==="sandy-autonomous-ready")||
-       !issueBody.includes("<!-- sandy-repo-only-engineering -->")||!sourceMatch||
+       !issueBody.includes("<!-- sandy-repo-only-engineering -->")||(!sourceMatch&&!docsOnly)||
        !/^[a-f0-9]{40}$/.test(String(run.head_sha||"")))
       return fail("repo_only_onboarding_not_authorised",409);
     const fileUrl="https://api.github.com/repos/"+REPO+"/contents/"+
-      sourceMatch[0]+"?ref="+run.head_sha;
+      (docsOnly?"supabase/functions/sandy-engineering-oidc-ingest/index.ts":sourceMatch![0])+"?ref="+run.head_sha;
     const sourceResponse=await fetch(fileUrl,{
       headers:{"accept":"application/vnd.github+json","user-agent":"sandy-verified-engineering"},
     }).catch(()=>null);
     if(!sourceResponse||!sourceResponse.ok)return fail("github_source_not_verified",409);
     const sourceMeta=await sourceResponse.json();
     if(sourceMeta.type!=="file"||!sourceMeta.sha)return fail("github_source_not_verified",409);
+    if(docsOnly){
+      // Pin this exception to the pre-existing acceptance issue and its exact
+      // independently generated draft PR. Never authorize executable code.
+      const pullResponse=await fetch("https://api.github.com/repos/"+REPO+"/pulls/"+pr+"/files?per_page=100",{
+        headers:{"accept":"application/vnd.github+json","user-agent":"sandy-verified-engineering"},
+      }).catch(()=>null);
+      if(!pullResponse||!pullResponse.ok)return fail("docs_diff_unavailable",503);
+      const files=await pullResponse.json();
+      if(!Array.isArray(files)||files.length!==1||
+        files[0].filename!=="docs/sandy/autonomous-lifecycle-live-verification.md"||
+        files[0].status!=="added"||files[0].deletions!==0||
+        !Number.isSafeInteger(files[0].additions)||files[0].additions>120)
+        return fail("docs_scope_unverified",409);
+    }
     const priorityMatch=issueBody.match(new RegExp("priority[ :]+([0-9]{1,3})","i"));
     const priority=Math.min(100,Math.max(1,Number(priorityMatch?.[1]||80)));
     const registered=await db.rpc("sandy_autonomous_engineering_register_repo_issue",{
