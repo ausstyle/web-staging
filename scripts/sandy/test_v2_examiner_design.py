@@ -146,6 +146,13 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('Copy grounding_keys ONLY from allowed_grounding_keys', EDGE)
         self.assertIn('if(!grounds.length){rejectionCounts.ungrounded++;continue;}', EDGE)
 
+    def test_dynamic_execution_is_scoped_and_gated(self):
+        self.assertIn('examiner_dynamic_execution', EDGE)
+        self.assertIn('executionPolicy?.mode==="enabled"', EDGE)
+        self.assertIn('i===1&&dynamicCandidates.length>0', EDGE)
+        self.assertIn('const recordCaseKey=selectedDynamic?', EDGE)
+        self.assertIn('ai_design_run:testcase.design_run_key||null', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
