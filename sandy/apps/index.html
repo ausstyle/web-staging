@@ -176,6 +176,7 @@ async function load(){
   if(isReturning)window.history.replaceState(null,"",window.location.pathname+window.location.hash);
  }catch(e){notice("Unable to load app connections right now. Please try again later.");configs=[];connections=[];toolkits=[];render();}
 }
+$("workspace").addEventListener("change",()=>{selectedGoogle.clear();renderGoogle()});
 $("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().trim();render()});
 $("statusFilter").addEventListener("change",e=>{statusFilter=e.target.value;render()});
 $("sortApps").addEventListener("change",e=>{sortApps=e.target.value;render()});
