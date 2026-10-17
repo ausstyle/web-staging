@@ -15,7 +15,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
     steps:
       - name: Verify connected test identity via signed GitHub OIDC
         shell: bash
@@ -28,6 +28,6 @@ jobs:
           AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
           CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
           ID_TOKEN="$(curl --fail --silent --show-error --max-time 15 -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${CLAIM_URL}" | jq -er .value)"
-          RESPONSE="$(curl --fail-with-body --silent --show-error --max-time 100 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${ID_TOKEN}" -H "Content-Type: application/json" --data '{"operation":"examiner_google_lab_verify"}')"
-          echo "${RESPONSE}" | jq -e '{ok,verified,services,read_only_execution_tested,lab_enabled}'
+          RESPONSE="$(curl --fail-with-body --silent --show-error --max-time 210 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${ID_TOKEN}" -H "Content-Type: application/json" --data '{"operation":"examiner_google_lab_verify"}')"
+          echo "${RESPONSE}" | jq -e '{ok,verified,services,read_only_execution_tested,runtime_checks,lab_enabled}'
           echo "${RESPONSE}" | jq -e '.ok == true' >/dev/null
