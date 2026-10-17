@@ -161,6 +161,12 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('independent_semantic_review_unavailable', EDGE)
         self.assertIn('observed_tools:trace.map', EDGE)
 
+    def test_evolution_handoff_requires_durable_receipt(self):
+        self.assertIn('evolutionAccepted=rsp.ok&&receipt.ok===true&&receipt.status==="proposed"', EDGE)
+        self.assertIn('v2_api_qa_evolution_delivery_', EDGE)
+        self.assertIn('if(handoffReceiptError)return fail(', EDGE)
+        self.assertNotIn('EdgeRuntime.waitUntil(diagnostic)', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
