@@ -13,6 +13,7 @@ TTL_HOURS = 24
 MIN_REPAIR_RETRY_MINUTES = 3
 REPAIR_FILES = frozenset({
     '.github/workflows/sandy-codex-engineering.yml',
+    '.github/workflows/sandy-autonomous-dispatch.yml',
     'scripts/sandy/autonomous_dispatch.py',
     'supabase/functions/sandy-engineering-oidc-ingest/index.ts',
     'scripts/sandy/observe_architect_run.py',
