@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Examiner V2 independent semantic judge verification on v27.
+# Post-deployment settled Examiner quality judge execution verification on v27.
 on:
   push:
     branches: [main]
