@@ -66,8 +66,8 @@ subprocess.run(["gh", "issue", "comment", issue, "--body", "\n".join(lines)], ch
 # A dispatch is NOT an approval: the sandy-source-audit environment must approve it.
 # Never dispatch arbitrary database operations, identifiers, or source from the issue body.
 missing = sorted(x["name"] for x in assessment
-                 if x["type"] == "edge_function"
-                 and x["status"] == "requires_authorized_retrieval"
+                 if x["type"] in ("edge_function", "source_parity")
+                 and x["status"] in ("requires_authorized_retrieval", "repository_present_unverified")
                  and re.fullmatch(r"sandy-[a-z0-9-]{1,80}", x["name"]))
 if missing:
     slug = missing[0]
