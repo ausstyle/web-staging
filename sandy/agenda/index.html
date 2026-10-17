@@ -275,6 +275,18 @@ const state={tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],d
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const internalWorkspace=new URLSearchParams(location.search).get("workspace")==="sandy";
+if(internalWorkspace){
+ document.querySelectorAll('a[href]').forEach(a=>{
+  const href=a.getAttribute("href")||"";
+  if(href.startsWith("../agenda/")){
+   const url=new URL(href,location.href);url.searchParams.set("workspace","sandy");a.href=url.href;
+  }else if(href.startsWith("../app/")||href.startsWith("../calendar/")||href.startsWith("../chat/")||href.startsWith("../memory/")){
+   a.href="../controller/#selftasks";
+   a.title="Return to Sandy Master Control. Client workspace pages are not part of Sandy's internal session.";
+  }
+ });
+}
+
 
 function toast(t,error){const e=$("toast");e.textContent=t;e.style.background=error?"#a74f44":"#28392e";e.style.display="block";clearTimeout(window.toastTimer);window.toastTimer=setTimeout(()=>e.style.display="none",4500)}
 async function api(action,payload){
