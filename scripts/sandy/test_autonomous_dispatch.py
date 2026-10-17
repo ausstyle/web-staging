@@ -46,7 +46,9 @@ class AutoDispatchTests(unittest.TestCase):
 
     def test_issue_labeled_dispatch_is_event_gated(self):
         wf=(Path(__file__).resolve().parents[2]/'.github/workflows/sandy-autonomous-dispatch.yml').read_text()
-        self.assertIn('types: [labeled]',wf)
+        self.assertIn('types: [opened, reopened, labeled]',wf)
+        self.assertIn("github.event.action == 'labeled'",wf)
+        self.assertIn("contains(github.event.issue.labels.*.name, 'sandy-autonomous-ready')",wf)
         self.assertIn("github.event.label.name == 'sandy-autonomous-ready'",wf)
         self.assertIn('cancel-in-progress: false',wf)
 
