@@ -28,6 +28,17 @@ Deno.serve(async req=>{
   if(!proposal.root_cause||!Array.isArray(proposal.regression_tests)||!Array.isArray(proposal.proposed_changes))throw Error("invalid_proposal");
   const {error:saved}=await db.from("sandy_auto_improve_runs").update({status:"proposed",diagnosis:{root_cause:proposal.root_cause,investigation_steps:proposal.investigation_steps},proposed_fix:proposal,updated_at:new Date().toISOString()}).eq("id",id);
   if(saved)throw Error("save_"+saved.code);
+  if(sourceType==="qa_failure"){
+   const changeList=proposal.proposed_changes.map((x:any)=>String(x.component||"system")+": "+String(x.change||"")).join("; ").slice(0,2400);
+   const {error:handoff}=await db.from("sandy_qa_engineering_handoffs").upsert({
+     issue_key:"v2:auto_qa:"+sourceRef,status:"fix_proposed",approval_required:true,
+     root_cause:String(proposal.root_cause).slice(0,2200),recommended_fix:changeList,
+     regression_plan:proposal.regression_tests,
+     evidence:{source_type:sourceType,source_ref:sourceRef,diagnosis_id:id,proposal_only:true},
+     verification:{status:"not_verified"}
+   },{onConflict:"issue_key",ignoreDuplicates:true});
+   if(handoff)throw Error("engineering_handoff_failed_"+handoff.code);
+  }
   return out(200,{ok:true,id,status:"proposed",requires_approval:true});
  }catch(e){
   const reason=String(e).slice(0,250);

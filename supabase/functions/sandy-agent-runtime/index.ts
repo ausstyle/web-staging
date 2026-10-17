@@ -101,7 +101,7 @@ Deno.serve(async req=>{
  // Live operational self-awareness: counts come from this tenant's database, not
  // short model context, a prompt heuristic, or a global aggregate.
  let activityFacts:any={status:"not_checked",scope:"web_only"};
- if(customerId&&channel==="web"){
+ if(customerId&&(channel==="web"||channel==="test")){
    const total=db.from("sandy_web_turns").select("id",{count:"exact",head:true}).eq("customer_id",customerId);
    const current=conversationId?db.from("sandy_web_conversations").select("id").eq("id",conversationId).eq("customer_id",customerId).maybeSingle():Promise.resolve({data:null,error:null});
    const [allWeb,owned]=await Promise.all([total,current]);

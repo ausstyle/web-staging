@@ -4,6 +4,9 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/sandy-v2-api-qa.yml'
+      - 'supabase/functions/sandy-agent-runtime/**'
+      - 'supabase/functions/sandy-engineering-oidc-ingest/**'
+      - 'scripts/sandy/test_v2_autonomous_api_qa.py'
   schedule:
     - cron: '*/15 * * * *'
   workflow_dispatch:
