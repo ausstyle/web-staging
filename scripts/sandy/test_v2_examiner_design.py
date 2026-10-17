@@ -195,6 +195,14 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
                             "necessary approval", "cannot_test"]:
             self.assertIn(requirement, EDGE)
 
+    def test_assurance_receipts_do_not_claim_unmeasured_outcomes(self):
+        self.assertIn('sandy_examiner_assurance_runs', EDGE)
+        self.assertIn('sandy_examiner_assurance_findings', EDGE)
+        self.assertIn('customer_outcome_completion:"not_measured"', EDGE)
+        self.assertIn('customer_frustration:"not_measured"', EDGE)
+        self.assertIn('current_state:"retest_required"', EDGE)
+        self.assertIn('ignoreDuplicates:true', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)

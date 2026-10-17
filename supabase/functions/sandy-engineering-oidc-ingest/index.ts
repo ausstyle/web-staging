@@ -729,6 +729,40 @@ Deno.serve(async(req:Request)=>{
       failed:outputs.filter(x=>x.verdict==="fail"||x.verdict==="blocked").length,reviews:outputs.filter(x=>x.verdict==="needs_review").length};
     await db.from("sandy_v2_qa_runs").update({status:summary.failed?"partial":"complete",
       ...summary,completed_at:new Date().toISOString()}).eq("run_key",runKey);
+    // Independent assurance receipts: observed execution is not proof of
+    // customer objective completion, intelligence quality or a repaired defect.
+    const dimensions:Record<string,string>={
+      clock:"self_awareness",connections:"self_awareness",capability:"self_awareness",
+      task_count:"outcomes",web_history:"self_awareness",cross_channel:"self_awareness",
+      location:"safety",followup_investigation:"delegation_recovery"
+    };
+    const observedDimensions=[...new Set(outputs.map((x:any)=>dimensions[String(x.case||"").replace(/^dynamic_/,"")]||"intelligence"))];
+    const metrics={attempted:summary.attempted,passed:summary.passed,failed:summary.failed,
+      needs_review:summary.reviews,scope_coverage:"limited_synthetic_cases",
+      customer_outcome_completion:"not_measured",customer_frustration:"not_measured",
+      independent_regression_evidence:"partial"};
+    const {error:assuranceRunError}=await db.from("sandy_examiner_assurance_runs").insert({
+      run_key:runKey,mode:"read_only",model:"gpt-6-astra",status:summary.failed?"partial":"completed",
+      selected_dimensions:observedDimensions,sample_size:summary.attempted,
+      evidence:{source:"sandy_v2_qa_executions",synthetic_customer_only:true,
+        actual_model_per_case:"sandy_v2_qa_executions.evidence.observed_model",
+        no_objective_completion_claim:true},metrics,completed_at:new Date().toISOString()
+    });
+    if(assuranceRunError?.code!=="23505"&&assuranceRunError)return fail("assurance_run_receipt_failed",503);
+    for(const finding of outputs.filter((x:any)=>x.verdict!=="pass")){
+      const base=String(finding.case||"").replace(/^dynamic_/,"");
+      const {error:findingError}=await db.from("sandy_examiner_assurance_findings").upsert({
+        finding_key:"v2:"+String(finding.case),dimension:dimensions[base]||"intelligence",
+        source_type:"synthetic_api_qa",source_ref:String(finding.request_id),
+        claim:"Current synthetic QA observation for "+String(finding.case)+": "+String(finding.reason),
+        observed_evidence:{run_key:runKey,request_id:finding.request_id,verdict:finding.verdict,
+          qa_execution_table:"sandy_v2_qa_executions"},
+        independent_oracle:{status:"requires_review",reason:"independent customer outcome not established"},
+        confidence:"tentative",current_state:"retest_required",status:"open",
+        updated_at:new Date().toISOString()
+      },{onConflict:"finding_key",ignoreDuplicates:true});
+      if(findingError)return fail("assurance_finding_receipt_failed",503);
+    }
     // No customer-sensitive content or API token in the external result.
     return json({ok:true,run_key:runKey,...summary,results:outputs});
   }
