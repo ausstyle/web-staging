@@ -312,7 +312,7 @@ import {installSandyIdleLock} from "../security-lock.js";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
 const $ = id => document.getElementById(id);
-const state={showAllMissions:false,tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],categories:[],category:null,delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",sort:["newest","oldest","due","priority","status","az","manual"].includes(localStorage.getItem("sandy_task_sort"))?localStorage.getItem("sandy_task_sort"):"newest",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+const state={showAllMissions:false,missionRuns:[],missionQuestions:[],tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],categories:[],category:null,delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",sort:["newest","oldest","due","priority","status","az","manual"].includes(localStorage.getItem("sandy_task_sort"))?localStorage.getItem("sandy_task_sort"):"newest",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const internalWorkspace=new URLSearchParams(location.search).get("workspace")==="sandy";
@@ -961,22 +961,36 @@ function renderTask(t,depth){
  return outer
 }
 
+async function refreshMissionStatus(){
+ try{
+  const {data:authData}=await sandyAuth.auth.getSession();
+  const access=authData?.session?.access_token;if(!access)return;
+  const response=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-promote-mission?action=status",{method:"POST",headers:{"Authorization":"Bearer "+access,"Content-Type":"application/json"},body:"{}",cache:"no-store"});
+  if(!response.ok)throw Error("Mission status "+response.status);
+  const data=await response.json();
+  const byId=new Map((data.missions||[]).map(m=>[m.id,m]));
+  state.missionRuns=data.runs||[];state.missionQuestions=data.questions||[];
+  for(const task of state.tasks){const item=byId.get(task.id);if(item)task.metadata={...(task.metadata||{}),...(item.metadata||{})};}
+  state.extraMissions=(data.missions||[]).filter(m=>!state.tasks.some(t=>t.id===m.id));
+  renderMissionOverview();
+ }catch(error){console.warn("Mission status sync:",error.message);const el=$("missionCards");if(el&&!el.children.length)el.append(document.createTextNode("Mission status temporarily unavailable. Tasks remain accessible below."))}
+}
 function renderMissionOverview(){
  const area=$("missionCards");if(!area)return;area.replaceChildren();
- const missions=state.tasks.filter(t=>t.metadata?.sandy_mission===true&&!t.archived_at&&workspaceMatches(t));
+ const missions=[...state.tasks.filter(t=>t.metadata?.sandy_mission===true&&!t.archived_at&&workspaceMatches(t)),...(state.extraMissions||[]).filter(t=>!t.archived_at)];
  const active=missions.filter(t=>!["completed","cancelled"].includes(t.status));
  const all=state.showAllMissions?missions:active;
  const toggle=$("missionShowAll");toggle.textContent=state.showAllMissions?"Show active":"View all missions";toggle.setAttribute("aria-pressed",String(!!state.showAllMissions));
  if(!all.length){area.append(el("div","missionEmpty",missions.length?"No active missions. View all to see completed missions.":"No Sandy Missions in this workspace yet. Use the 🚀 icon beside a task to delegate it to Sandy."));return}
  for(const t of all.sort((a,b)=>String(b.updated_at||"").localeCompare(String(a.updated_at||"")))){
   const children=countDesc(t),percent=children.total?Math.round(children.done/children.total*100):(t.status==="completed"?100:0);
-  const stateText=t.metadata?.execution_state||"Mission created";
+  const latest=state.missionRuns.find(r=>r.mission_task_id===t.id);const outstanding=state.missionQuestions.filter(q=>q.mission_task_id===t.id&&q.status!=="answered").length;const stateText=latest?(latest.stage+" · "+latest.state):(t.metadata?.execution_state||"Mission created");
   const clientSteps=state.tasks.filter(x=>x.parent_task_id===t.id&&x.metadata?.assigned_to==="client"&&!["completed","cancelled"].includes(x.status)).length;
   const card=el("button","missionCard");card.type="button";
   card.append(el("div","missionCardTitle",t.title));
   const meta=el("div","missionCardMeta");meta.append(el("span","",stateText.replaceAll("_"," ")),el("span","",children.done+"/"+children.total+" steps"));card.append(meta);
   const track=el("div","missionProgress");const fill=el("span");fill.style.width=percent+"%";track.append(fill);card.append(track);
-  const info=el("div","missionCardInfo",clientSteps?clientSteps+" direct action"+(clientSteps===1?"":"s")+" for you · Open mission →":"Open mission and milestones →");card.append(info);
+  const info=el("div","missionCardInfo",clientSteps?(clientSteps+" direct action"+(clientSteps===1?"":"s")+" for you · ")+(outstanding?outstanding+" question(s) pending · ":"")+"Open mission →":(outstanding?outstanding+" question(s) pending · ":"")+"Open mission and milestones →");card.append(info);
   card.addEventListener("click",()=>{
    state.tab="all";state.view="tree";state.search="";$("search").value="";
    state.workspace=t.company_id||"personal";state.category=null;state.expanded.delete(t.id);
@@ -1113,7 +1127,7 @@ async function pollAgenda(){
   if(liveSignature(data)!==liveFingerprint){
    if(editingAgenda()){livePending=data;return}
    const earlier=new Map(state.tasks.map(t=>[t.id,t]));
-   applyAgendaData(data);
+   applyAgendaData(data);refreshMissionStatus();
    const completed=(data.tasks||[]).filter(t=>t.status==="completed"&&earlier.has(t.id)&&earlier.get(t.id).status!=="completed");
    if(completed.length)toast(completed.length===1?"Task completed: "+completed[0].title:completed.length+" tasks completed");
   }
@@ -1167,7 +1181,7 @@ $("sendTaskRequest").addEventListener("submit",async e=>{
 });
 async function load(){
  const data=await api("list");
- applyAgendaData(data);startAgendaSync();loadTaskRequests();loadOutgoingRequests();
+ applyAgendaData(data);refreshMissionStatus();startAgendaSync();loadTaskRequests();loadOutgoingRequests();
 }
 async function markTask(t,done,control){
  control.disabled=true;
