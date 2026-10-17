@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Examiner Baseline Pass 1: run existing signed QA tests against isolated customer.
+# Examiner V2 first policy-gated AI-designed synthetic test execution on v26.
 on:
   push:
     branches: [main]
