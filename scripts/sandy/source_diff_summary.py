@@ -22,6 +22,8 @@ def summarize(prod_dir, repo_dir, comparison, screen):
         raise ValueError("Invalid comparison")
     results=[]
     for item in files:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid file entry")
         name,status=item.get("path"),item.get("status")
         if not isinstance(name,str) or not re.fullmatch(r"[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*",name) or ".." in name.split("/"):
             raise ValueError("Invalid path")
