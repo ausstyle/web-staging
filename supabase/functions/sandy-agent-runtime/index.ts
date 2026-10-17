@@ -229,7 +229,11 @@ Deno.serve(async req=>{
    return json(200,{ok:true,task_id:id,response:msg,tools_used:[{tool:"v2_connection_preflight",success:true,provider_check:providerCheck}]});
  }
  const complex=/\b(analy[sz]e|investigate|research|compare|develop|debug|code|legal|financial|forecast|strategy|audit|calculate)\b/i.test(prompt)||prompt.length>1000;
- const v2TaskType=complex?"complex_reasoning":"routine_email";
+ // Task identity is not the same as model cost tier. Preserve existing live model behaviour
+ // while gathering properly labelled outcomes for future verified adaptive selection.
+ const emailAction=/\b(send|draft|write|reply|forward|search|read|show|list)\b[\s\S]{0,55}\b(email|emails|gmail|inbox|mail)\b/i.test(prompt);
+ const selfInspection=/\b(messages?|conversation|connected services?|connected apps?|integrations?|capabilities?|web chat|whatsapp|voice|outstanding tasks?|system state|my location|what time)\b/i.test(prompt);
+ const v2TaskType=emailAction?"routine_email":selfInspection?"operational_introspection":complex?"complex_reasoning":"general_assistance";
  const defaultModel=complex?"gpt-5.2":"gpt-4.1-mini";
  let model=defaultModel;
  let routingReason="v1_fallback";
