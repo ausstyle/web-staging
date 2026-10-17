@@ -74,7 +74,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('note:"Shadow design only; no generated test has been automatically executed."', EDGE)
         self.assertIn('const allowedKeys=', EDGE)
         self.assertIn('const redFlags=', EDGE)
-        self.assertIn('if(!match[key].test(question))continue', EDGE)
+        self.assertIn('if(!match[key].test(question)){rejectionCounts.oracle_mismatch++;continue;}', EDGE)
         self.assertIn('await finish("rejected"', EDGE)
         design_block = EDGE.split('if(designFlow){', 1)[1].split('if(qaFlow){', 1)[0]
         self.assertNotIn('db.from("email_messages")', design_block)
