@@ -35,6 +35,12 @@ class TestV2ArchitecturalContracts(unittest.TestCase):
         self.assertIn('sandy_v2_model_decisions', self.agent)
         self.assertLess(self.agent.index('const update=async'), self.agent.index('const confirmation='))
 
+    def test_chat_contradictions_feed_self_diagnosis(self):
+        self.assertIn('mismatched.length?"contradiction"', self.agent)
+        self.assertIn('sandy_supervisor_findings', self.agent)
+        self.assertIn('source_type:"system_awareness"', self.agent)
+        self.assertIn('task_completion:"not_independently_verified"', self.agent)
+
     def test_shadow_routing_guarded(self):
         self.assertIn('v2ModelMode==="enabled"', self.agent)
         self.assertIn('registry?.eligibility==="approved"', self.agent)
