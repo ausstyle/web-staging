@@ -89,7 +89,7 @@ const notice=(message)=>{$("notice").textContent=message};
 async function api(operation,payload={}){
  const {data,error}=await Promise.race([sb.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(Error("Session check timed out. Sign in again.")),10000))]);if(error||!data.session?.access_token)throw Error("Sign in to your Sandy workspace before connecting apps.");
  const run=async(token)=>fetch(endpoint,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"},body:JSON.stringify({operation,...payload})});
- let res=await Promise.race([run(data.session.access_token),new Promise((_,reject)=>setTimeout(()=>reject(Error("Connection request timed out.")),operation==="provision_managed_apps"?65000:20000))]);
+ let res=await Promise.race([run(data.session.access_token),new Promise((_,reject)=>setTimeout(()=>reject(Error("Connection request timed out.")),operation==="list_auth_configs"?65000:operation==="provision_managed_apps"?65000:20000))]);
  if(res.status===401){const refreshed=await sb.auth.refreshSession();if(refreshed.data.session)res=await run(refreshed.data.session.access_token);}
  const body=await res.json().catch(()=>({}));if(!res.ok)throw Error(body.error||"Request failed ("+res.status+")");return body;
 }
