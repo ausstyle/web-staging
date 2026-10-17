@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Structured Responses API request verification on gateway v21.
+# JSON-mode request verification using gateway v22.
 on:
   push:
     branches: [main]
