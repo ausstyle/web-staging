@@ -681,6 +681,20 @@ function renderTask(t,depth){
  if(!t.shared){right.append(quickTaskControls(t));right.append(shareTaskControl(t));right.append(delegationControl(t))}
  const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
   add.title="Add a subtask";right.append(add);
+ if(!t.shared&&!t.metadata?.sandy_mission_step){
+  const mission=btn(t.metadata?.sandy_mission===true?"🚀":"↗","iconbtn",async()=>{
+   if(t.metadata?.sandy_mission===true){toast("Already a Sandy Mission");return}
+   const descendants=countDesc(t).total;
+   if(!confirm("Convert \""+t.title+"\" into a Sandy Mission? Sandy will plan this task and its "+descendants+" existing subtasks. Their hierarchy and history will remain intact."))return;
+   mission.disabled=true;
+   try{await api("promote-mission",{id:t.id});await load();toast("Converted to Sandy Mission — planning queued")}
+   catch(e){toast("Mission conversion failed: "+e.message,true)}
+   finally{mission.disabled=false}
+  });
+  mission.title=t.metadata?.sandy_mission===true?"Sandy Mission":"Convert task and all nested subtasks to Sandy Mission";
+  mission.setAttribute("aria-label",mission.title);
+  right.append(mission);
+ }
  const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";right.append(edit);row.append(right);outer.append(row);
  const notes=el("form","inlineTaskNotes hidden");
  const history=el("div","taskHistory");history.textContent="Open to load conversation history…";notes.append(history);
