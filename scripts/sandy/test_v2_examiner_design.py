@@ -172,6 +172,14 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('model:"gpt-5.2",store:false', EVOLUTION)
         self.assertNotIn('model:"gpt-6-astra"', EVOLUTION)
 
+    def test_connected_lab_checks_real_sandy_runtime_without_mutation(self):
+        self.assertIn('examinerlab_', EDGE)
+        self.assertIn('url+"/functions/v1/sandy-agent-runtime"', EDGE)
+        self.assertIn('required:"search_connected_gmail"', EDGE)
+        self.assertIn('required:"list_connected_services"', EDGE)
+        self.assertIn('runtime_checks:runtimeChecks,lab_enabled:false', EDGE)
+        self.assertIn('no_mutating_tools:!forbidden', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
