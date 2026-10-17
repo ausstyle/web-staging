@@ -86,7 +86,7 @@ const notice=(message)=>{$("notice").textContent=message};
 async function api(operation,payload={}){
  const {data,error}=await Promise.race([sb.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(Error("Session check timed out. Sign in again.")),10000))]);if(error||!data.session?.access_token)throw Error("Sign in to your Sandy workspace before connecting apps.");
  const run=async(token)=>fetch(endpoint,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"},body:JSON.stringify({operation,...payload})});
- let res=await Promise.race([run(data.session.access_token),new Promise((_,reject)=>setTimeout(()=>reject(Error("Connection request timed out.")),20000))]);
+ let res=await Promise.race([run(data.session.access_token),new Promise((_,reject)=>setTimeout(()=>reject(Error("Connection request timed out.")),operation==="provision_managed_apps"?65000:20000))]);
  if(res.status===401){const refreshed=await sb.auth.refreshSession();if(refreshed.data.session)res=await run(refreshed.data.session.access_token);}
  const body=await res.json().catch(()=>({}));if(!res.ok)throw Error(body.error||"Request failed ("+res.status+")");return body;
 }
@@ -142,7 +142,24 @@ $("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().tri
 $("statusFilter").addEventListener("change",e=>{statusFilter=e.target.value;render()});
 $("sortApps").addEventListener("change",e=>{sortApps=e.target.value;render()});
 $("googleConnect").onclick=async()=>{const b=$("googleConnect");b.disabled=true;try{await startGoogleConnection()}catch(e){notice("Google connection could not start: "+e.message);renderGoogle()}};
-$("provisionApps").onclick=async()=>{const button=$("provisionApps");button.disabled=true;button.textContent="Configuring apps…";$("provisionResult").textContent="Working through supported providers; this may take a few minutes.";try{const result=await api("provision_managed_apps");const failed=result.results.filter(r=>r.status!=="created"&&r.status!=="existing");$("provisionResult").textContent=result.created+" created, "+result.existing+" already configured, "+failed.length+" need attention."+(failed.length?" Providers: "+failed.map(x=>x.toolkit+" ("+x.status+")").join(", "):"");await load()}catch(e){$("provisionResult").textContent="Setup failed: "+e.message}finally{button.disabled=false;button.textContent="Configure supported apps"}};
+$("provisionApps").onclick=async()=>{
+ const button=$("provisionApps");button.disabled=true;button.textContent="Configuring apps…";
+ const slugs=["gmail","googledrive","googlecalendar","googlecontacts","googledocs","googlesheets","slack","hubspot","notion","xero","shopify","github","outlook","microsoft_teams","dropbox"];
+ const batches=[];for(let i=0;i<slugs.length;i+=2)batches.push(slugs.slice(i,i+2));
+ const results=[];let batchError="";
+ try{
+  for(let i=0;i<batches.length;i++){
+   $("provisionResult").textContent="Configuring apps: batch "+(i+1)+" of "+batches.length+".";
+   try{const result=await api("provision_managed_apps",{toolkit_slugs:batches[i]});results.push(...result.results)}
+   catch(e){batchError=e.message;results.push(...batches[i].map(toolkit=>({toolkit,status:"failed"})))}
+  }
+  const created=results.filter(r=>r.status==="created").length,existing=results.filter(r=>r.status==="existing").length;
+  const failed=results.filter(r=>!["created","existing"].includes(r.status));
+  $("provisionResult").textContent=created+" created, "+existing+" already configured, "+failed.length+" require attention."+(failed.length?" Details: "+failed.map(x=>x.toolkit+" ("+x.status+")").join(", "):"")+(batchError?" Last error: "+batchError:"");
+  await load();
+ }catch(e){$("provisionResult").textContent="Setup failed: "+e.message}
+ finally{button.disabled=false;button.textContent="Configure supported apps"}
+};
 $("refresh").onclick=async()=>{try{await api("sync_connections")}catch(e){notice(e.message)}await load()};
 render();
 const startup=setTimeout(()=>{if($("apps").textContent.includes("Loading apps")){notice("Loading is taking too long. Please refresh or sign in again.");render();}},12000);
