@@ -61,7 +61,8 @@ Deno.serve(async(req:Request)=>{
   const {data:administrator}=await db.from("sandy_controller_admins").select("enabled").eq("auth_user_id",identity.user.id).eq("enabled",true).maybeSingle();
   let components:any[]|undefined=undefined;
   if(administrator){
-    const {data:inventory}=await db.from("sandy_v2_component_inventory").select("component_key,component_type,deployment_state,last_verified_at").limit(100);
+    if(data.refresh_architecture===true){const refreshed=await db.rpc("sandy_v2_refresh_database_inventory");if(refreshed.error)return reply(503,{error:"database_inventory_refresh_failed"});}
+    const {data:inventory}=await db.from("sandy_v2_component_inventory").select("component_key,component_type,deployment_state,last_verified_at").limit(400);
     components=inventory||[];
   }
   const policyMap=Object.fromEntries((policy.data||[]).map((p:any)=>[p.policy_key,p.mode]));
@@ -75,10 +76,26 @@ Deno.serve(async(req:Request)=>{
    system_components:components,
    execution:{composio_generic_tool_execution:false,connection_does_not_imply_execution:true,model_claims_not_evidence:true,production_mutation_not_enabled_by_v2:true}
   };
+  const mismatch=connectionStates.filter((x:any)=>x.status==="provider_not_confirmed");
+  const awarenessOutcome=mismatch.length?"contradiction":(provider_check==="verified"?"verified":"unverified");
+  // Deduplicated finding, not an unapproved self-directed production modification.
+  for(const x of mismatch){
+    const fingerprint="v2:connection:"+customerId+":"+x.app+":"+(x.company_id||"personal");
+    const finding={
+      fingerprint,category:"integration_state_discrepancy",severity:"medium",state:"open",
+      subject:"Recorded app connection not confirmed by provider",
+      explanation:"Sandy records a connection as active but Composio did not report it active. Inspect provider status, sync and permissions before attempting actions.",
+      evidence:{app:x.app,provider_status:x.provider_status,provider_check,workspace:x.company_id?"company":"personal"},
+      recommendation:"Recheck the connection using a provider-authorised read-only verification, then review the customer-scoped connection sync; do not infer a successful repair.",
+      source_type:"sandy_v2_awareness",source_id:fingerprint,updated_at:new Date().toISOString()
+    };
+    const {error:foundError}=await db.from("sandy_supervisor_findings").upsert(finding,{onConflict:"fingerprint"});
+    if(foundError)console.error("v2_findings_write",foundError.code);
+  }
   const {error:audit}=await db.from("sandy_v2_awareness_audit").insert({
    customer_id:customerId,channel:"web",request_id:typeof data.request_id==="string"?data.request_id.slice(0,110):null,
-   subject:"connected_services",outcome:provider_check==="verified"?"verified":"unverified",
-   evidence:{provider_check,connections:connectionStates.length,workspaces:companies.data?.length||0}
+   subject:"connected_services",outcome:awarenessOutcome,
+   evidence:{provider_check,connections:connectionStates.length,workspaces:companies.data?.length||0,mismatches:mismatch.length}
   });
   if(audit)console.error("v2_awareness_audit",audit.code);
   return reply(200,summary);
