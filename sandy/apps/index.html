@@ -59,60 +59,45 @@ function renderWorkspaces(){const select=$("workspace"),selected=select.value;se
 const googleServices=[["gmail","Gmail",true],["googledrive","Google Drive",true],["googlecalendar","Calendar",true],["googlecontacts","Contacts",false],["googlesheets","Sheets",false],["googledocs","Docs",false]];
 const selectedGoogle=new Set();
 const GOOGLE_QUEUE_KEY="sandy_google_connection_queue_v1";
-function getGoogleQueue(){try{const q=JSON.parse(sessionStorage.getItem(GOOGLE_QUEUE_KEY)||"null");return q&&Array.isArray(q.pending)&&Array.isArray(q.completed)?q:null}catch{return null}}
+function getGoogleQueue(){try{return JSON.parse(sessionStorage.getItem(GOOGLE_QUEUE_KEY)||"null")}catch{return null}}
 function saveGoogleQueue(q){if(q)sessionStorage.setItem(GOOGLE_QUEUE_KEY,JSON.stringify(q));else sessionStorage.removeItem(GOOGLE_QUEUE_KEY)}
 function googleIsConnected(slug,workspace){return connections.some(c=>String(c.toolkit_slug).toLowerCase()===slug&&String(c.status).toUpperCase()==="ACTIVE"&&(c.company_id||"")===(workspace||""))}
-function queueMessage(){const q=getGoogleQueue();if(!q)return "";const finished=q.completed.length;return finished+" of "+q.all.length+" Google services confirmed"+(q.pending.length?" · Next: "+(googleServices.find(g=>g[0]===q.pending[0])?.[1]||q.pending[0]):"")}
-
-function googleAuthConfig(){return configs.find(c=>["googlesuper","google_super","googleworkspace"].includes(String(c.toolkit_slug||"").toLowerCase()));}
+function googleAuthConfig(){return configs.find(c=>String(c.toolkit_slug||"").toLowerCase()==="googlesuper");}
 function renderGoogle(){
  const logos={gmail:"gmail",googledrive:"googledrive",googlecalendar:"googlecalendar",googlecontacts:"googlecontacts",googlesheets:"googlesheets",googledocs:"googledocs"};
- const workspace=$("workspace").value||null;
- const connected=new Set(googleServices.filter(([id])=>googleIsConnected(id,workspace)).map(([id])=>id));
+ const workspace=$("workspace").value||null,unified=googleIsConnected("googlesuper",workspace);
  $("googleChoices").innerHTML=googleServices.map(([id,name])=>{
-  const linked=connected.has(id),selected=selectedGoogle.has(id);
-  return '<button type="button" class="google-chip" data-google="'+id+'" aria-pressed="'+(linked||selected)+'" '+(linked?'disabled title="Already connected in this workspace"':'')+'><img loading="lazy" alt="" src="https://cdn.simpleicons.org/'+logos[id]+'"><span>'+esc(name)+'</span>'+(linked?'<span class="google-connected-label">Connected ✓</span>':'<span class="toggle-switch" aria-hidden="true"></span>')+'</button>';
+  const linked=googleIsConnected(id,workspace),selected=selectedGoogle.has(id);
+  return '<button type="button" class="google-chip" data-google="'+id+'" aria-pressed="'+(linked||selected)+'" '+(linked?'disabled title="This service has an existing individual connection"':'')+'><img loading="lazy" alt="" src="https://cdn.simpleicons.org/'+logos[id]+'"><span>'+esc(name)+'</span>'+(linked?'<span class="google-connected-label">Connected ✓</span>':'<span class="toggle-switch" aria-hidden="true"></span>')+'</button>';
  }).join("");
  $("googleChoices").querySelectorAll("[data-google]:not(:disabled)").forEach(b=>b.onclick=()=>{selectedGoogle.has(b.dataset.google)?selectedGoogle.delete(b.dataset.google):selectedGoogle.add(b.dataset.google);renderGoogle()});
- const queue=getGoogleQueue();
- const remaining=queue&&queue.workspace===workspace?queue.pending.filter(id=>!connected.has(id)):[];
- const missing=[...selectedGoogle].filter(id=>!connected.has(id));
- const next=remaining[0];
- $("googleConnect").disabled=!next&&missing.length===0;
- $("googleConnect").textContent=next?"Connect "+(googleServices.find(g=>g[0]===next)?.[1]||"Google service")+" ("+(queue.completed.length+1)+" of "+queue.all.length+")":missing.length?"Start connecting "+missing.length+" Google service"+(missing.length===1?"":"s"):"Choose services to add";
- $("googleState").textContent=next?queue.completed.length+" of "+queue.all.length+" connected · Next: "+(googleServices.find(g=>g[0]===next)?.[1]||"Google"):connected.size+" connected · "+missing.length+" selected to add";
+ const q=getGoogleQueue();
+ $("googleConnect").disabled=selectedGoogle.size===0;
+ $("googleConnect").textContent=unified?"Reconnect Google Workspace":"Connect Google Workspace";
+ $("googleState").textContent=unified?"Google Workspace connection active. Individual service permissions are not yet verified; reconnect if permissions need updating.":q&&q.workspace===workspace&&q.mode==="unified"?"Google Workspace authorization pending. Complete the Google consent screen, then refresh connections.":selectedGoogle.size+" services chosen · One Google consent screen. Access depends on approved scopes.";
 }
-
 async function startGoogleConnection(){
- let q=getGoogleQueue();
- const workspaceNow=$("workspace").value||null;
- const selectedMissing=[...selectedGoogle].filter(slug=>!googleIsConnected(slug,workspaceNow));
- if(q&&q.workspace!==workspaceNow){saveGoogleQueue(null);q=null}
- if(!q){
-  const all=[...selectedGoogle].filter(slug=>!googleIsConnected(slug,$("workspace").value||null));if(!all.length)return;
-  const workspace=$("workspace").value||null;
-  q={all,pending:all.filter(slug=>!googleIsConnected(slug,workspace)),completed:all.filter(slug=>googleIsConnected(slug,workspace)),workspace};
-  saveGoogleQueue(q);
- }
- if(!q.pending.length){saveGoogleQueue(null);render();return}
- q.pending=q.pending.filter(slug=>!googleIsConnected(slug,q.workspace));
- if(!q.pending.length){saveGoogleQueue(null);render();return}
- saveGoogleQueue(q);
- const toolkit=q.pending[0];
- const config=configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===toolkit);
- const result=await api("create_connect_link",{auth_config_id:config?.id||null,toolkit_slug:toolkit,company_id:q.workspace});
- if(!result.connect_url)throw Error("Unable to start sign-in.");
+ const workspace=$("workspace").value||null;
+ const selected=[...selectedGoogle];
+ if(!selected.length)throw Error("Select at least one Google service.");
+ const config=googleAuthConfig();
+ saveGoogleQueue({mode:"unified",workspace,selected,created_at:Date.now()});
+ const result=await api("create_connect_link",{auth_config_id:config?.id||null,toolkit_slug:"googlesuper",company_id:workspace});
+ if(!result.connect_url){saveGoogleQueue(null);throw Error("No Google authorization link was returned.");}
  window.location.assign(result.connect_url);
 }
 async function reconcileGoogleQueue(){
- const q=getGoogleQueue();if(!q)return;
- const remaining=q.all.filter(slug=>!googleIsConnected(slug,q.workspace));
- q.completed=q.all.filter(slug=>!remaining.includes(slug));
- q.pending=remaining;
- if(!remaining.length){saveGoogleQueue(null);$("googleState").textContent="All "+q.all.length+" services connected.";return}
- saveGoogleQueue(q);$("googleDetails").classList.remove("hide");renderGoogle();
- $("googleState").textContent=queueMessage()+". Each Google service requires separate authorization in the current connector.";
- $("googleConnect").textContent="Connect "+(googleServices.find(g=>g[0]===remaining[0])?.[1]||"Google service")+" ("+(q.completed.length+1)+" of "+q.all.length+")";
+ const q=getGoogleQueue();if(!q||q.mode!=="unified")return;
+ if(googleIsConnected("googlesuper",q.workspace)){
+  saveGoogleQueue(null);
+  $("googleDetails").classList.remove("hide");
+  renderGoogle();
+  $("googleState").textContent="Google Workspace connected. Service permissions require verification before use.";
+ }else{
+  $("googleDetails").classList.remove("hide");
+  renderGoogle();
+  $("googleState").textContent="Google Workspace authorization not confirmed. Complete Google consent or retry.";
+ }
 }
 
 const notice=(message)=>{$("notice").textContent=message};
