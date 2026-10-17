@@ -189,7 +189,7 @@ $("workspace").addEventListener("change",()=>{saveGoogleQueue(null);selectedGoog
 $("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().trim();render()});
 $("statusFilter").addEventListener("change",e=>{statusFilter=e.target.value;render()});
 $("sortApps").addEventListener("change",e=>{sortApps=e.target.value;render()});
-$("googleConnect").onclick=async()=>{const b=$("googleConnect");b.disabled=true;try{await startGoogleConnection()}catch(e){renderGoogle();$("googleState").textContent="Connection could not start ("+String(e.message||"unknown_error")+"). No Google permissions were granted. Please retry.";}};
+$("googleConnect").onclick=async()=>{const b=$("googleConnect");b.disabled=true;try{await startGoogleConnection()}catch(e){renderGoogle();const code=String(e.message||"unknown_error");$("googleState").textContent=code==="customer_access_denied"?"Your Sandy account is not linked to an active customer workspace. Please contact support; Google permissions were not requested.":code==="sign_in_required"?"Please sign in again to connect Google services.":"Unable to start Google authorization ("+code+"). No Google permissions were requested. Please try again or contact support.";}};
 
 $("refresh").onclick=async()=>{try{await api("sync_connections")}catch(e){notice(e.message)}await load()};
 render();
