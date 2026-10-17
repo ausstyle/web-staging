@@ -38,3 +38,12 @@ Live `pg_policies` for sandy_task_delegations returned **zero rows**. This does 
 Inspect constraints, indexes and trigger/function bodies for participant, invitation, task, identity and QA handoff tables; inspect effective function EXECUTE privileges and all service-role caller checks. Do not treat missing policy rows as tenant isolation. Build a scoped regression demonstrating no cross-customer disclosure, no acceptance-status downgrade, no truncation-driven false negative and a fresh provider-observed WhatsApp response.
 
 This file is a factual reference, not evidence that production remediation succeeded.
+
+## Additional verified privilege and lifecycle checks
+- `sandy_verify_task_delegation` is SECURITY DEFINER with explicit EXECUTE ACL for postgres and service_role only.
+- `sandy_agenda_claim_invite` and `sandy_claim_external_task_invitation` are invoker-security functions, with explicit EXECUTE ACL for postgres and service_role only.
+- `sandy_qa_handoff_guard` and `sandy_task_delegation_scope_guard` are invoker-security triggers; their proacl is NULL (do not infer effective EXECUTE permissions from this alone).
+- `sandy_task_participants` ACL explicitly lists DELETE/TRIGGER/TRUNCATE/MAINTAIN for anon and authenticated; these do not include SELECT, INSERT or UPDATE. RLS is enabled, and actual effective capability must be evaluated against privileges, RLS, and caller functions.
+- `sandy_external_task_invitations` and `sandy_qa_engineering_handoffs` ACLs list postgres and service_role, not anon/authenticated.
+- `sandy_qa_handoff_guard_t` is confirmed as BEFORE INSERT OR UPDATE trigger on sandy_qa_engineering_handoffs.
+- No user-data rows were exported. These metadata checks do not constitute a complete end-to-end authorisation audit of every caller.
