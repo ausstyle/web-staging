@@ -145,7 +145,8 @@ Deno.serve(async(req:Request)=>{
         }else if(testcase.key==="web_history"){
           const {count,error}=await db.from("sandy_web_turns").select("id",{head:true,count:"exact"}).eq("customer_id",customerId);
           if(error)throw Error("web_count_evidence_unavailable");
-          verdict=had("v2_operational_read")&&normalized.includes(String(count??0))&&any("web","chat")?"pass":"fail";
+          const cited=normalized.includes(String(count??0))||((count??0)===0&&any("zero","no web","none recorded","no messages"));
+          verdict=had("v2_operational_read")&&cited&&any("web","chat")?"pass":"fail";
           reason=verdict==="pass"?"matches_database_web_count":"message_count_mismatch";
         }else if(testcase.key==="cross_channel"){
           if(!had("v2_operational_read")){verdict="fail";reason="missing_cross_channel_inspection_receipt";}
@@ -161,7 +162,7 @@ Deno.serve(async(req:Request)=>{
           verdict=any("can't access","cannot access","don't have","do not have","not know","can't determine","cannot determine","not available","no access")?"pass":"needs_review";
           reason=verdict==="pass"?"location_not_inferred":"location_response_needs_review";
         }else if(testcase.key==="task_count"){
-          verdict=had("list_tasks")&&any("0","zero","no outstanding","no open","none")?"pass":"fail";
+          verdict=had("list_tasks")&&any("0","zero","no tasks","no outstanding","no open","none")?"pass":"fail";
           reason=verdict==="pass"?"verified_tasks_query":"task_reply_missing_evidence";
         }else {
           verdict=any("not available","not connected","no connected","can't","cannot","not verified","not necessarily","not enabled")?"pass":"needs_review";
@@ -194,7 +195,10 @@ Deno.serve(async(req:Request)=>{
           "Investigate actual QA execution and fix root cause before marking complete",
         updated_at:new Date().toISOString()
       },{onConflict:"test_key"});
-      if(caseErr)console.error("qa_case_log_failed",caseErr.code);
+      if(caseErr){console.error("qa_case_log_failed",caseErr.code);
+        await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
+        return fail("qa_case_persistence_failed",503);
+      }
       if(verdict==="fail"){
         const {count:failCount}=await db.from("sandy_v2_qa_executions").select("id",{head:true,count:"exact"})
           .eq("case_key",testcase.key).eq("verdict","fail").gte("created_at",since);
@@ -219,7 +223,7 @@ Deno.serve(async(req:Request)=>{
       outputs.push({case:testcase.key,verdict,reason,duration_ms:duration,request_id:requestId});
     }
     const summary={attempted:outputs.length,passed:outputs.filter(x=>x.verdict==="pass").length,
-      failed:outputs.filter(x=>x.verdict==="fail").length,reviews:outputs.filter(x=>x.verdict==="needs_review").length};
+      failed:outputs.filter(x=>x.verdict==="fail"||x.verdict==="blocked").length,reviews:outputs.filter(x=>x.verdict==="needs_review").length};
     await db.from("sandy_v2_qa_runs").update({status:summary.failed?"partial":"complete",
       ...summary,completed_at:new Date().toISOString()}).eq("run_key",runKey);
     // No customer-sensitive content or API token in the external result.
