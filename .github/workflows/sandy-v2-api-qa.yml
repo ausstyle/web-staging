@@ -1,0 +1,41 @@
+name: Sandy V2 autonomous API QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-v2-api-qa.yml'
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandy-v2-autonomous-api-qa
+  cancel-in-progress: false
+jobs:
+  issue-real-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Call Sandy QA with short-lived GitHub identity (no shared secrets)
+        shell: bash
+        env:
+          PROJECT: zmqlyygzqoidkcwdysok
+        run: |
+          set -euo pipefail
+          : "${ACTIONS_ID_TOKEN_REQUEST_URL:?GitHub OIDC unavailable}"
+          : "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:?GitHub OIDC request token unavailable}"
+          AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
+          CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
+          ID_TOKEN="$(curl --fail --silent --show-error --max-time 15 \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${CLAIM_URL}" | jq -er '.value')"
+          test -n "${ID_TOKEN}"
+          RESPONSE="$(curl --fail-with-body --silent --show-error --max-time 250 \
+            -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" \
+            -H "Authorization: Bearer ${ID_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"operation":"v2_api_qa"}')"
+          echo "${RESPONSE}" | jq -e '{ok,run_key,attempted,passed,failed,reviews,results}'
+          echo "${RESPONSE}" | jq -e '.ok == true' >/dev/null
