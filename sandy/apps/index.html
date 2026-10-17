@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connect apps — Sandy</title>
+<style>
+:root{font:15px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#151515;background:#fafafa}*{box-sizing:border-box}body{margin:0}a{color:inherit}header{background:#fff;border-bottom:1px solid #e8e8e8;padding:17px max(24px,calc((100vw - 1080px)/2));display:flex;gap:22px;align-items:center}header b{font-size:20px}header a{color:#555;text-decoration:none}.shell{max-width:1080px;margin:auto;padding:34px 24px 90px}.sub{color:#747474}.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0}input{padding:13px 16px;border:1px solid #dedede;border-radius:12px;font:inherit;flex:1;min-width:220px}button{background:#161616;color:#fff;border:0;border-radius:11px;padding:11px 15px;font:inherit;cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}.soft{background:#f0f0f0;color:#222}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:14px}.card{border:1px solid #e7e7e7;background:#fff;border-radius:17px;padding:20px;display:flex;flex-direction:column;gap:12px;min-height:184px}.card h3{font-size:16px;margin:0}.card p{color:#777;font-size:13px;margin:0;flex:1}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#c7c7c7;margin-right:6px}.connected .dot{background:#16865a}.flag{color:#6b6b6b;font-size:12px}h1{font-size:29px;letter-spacing:-.7px;margin:0}h2{margin:40px 0 15px;font-size:20px}.notice{background:white;border:1px solid #e6e6e6;border-radius:14px;padding:16px;margin:20px 0}.hide{display:none!important}.loader{color:#555;margin:20px 0}@media(max-width:640px){.shell{padding:24px 16px}header{padding:15px 16px}.toolbar{display:block}.toolbar input,.toolbar button{width:100%;margin-bottom:8px}}</style></head>
+<body><header><b>Sandy</b><a href="../app/">← Workspace</a><a href="../agenda/">Tasks</a><a href="../memory/">Memory</a></header>
+<main class="shell"><h1>Connect your apps</h1><p class="sub">Give Sandy permission to work with your tools. You remain in control of which accounts you connect.</p>
+<div id="notice" class="notice" role="status">Checking your Sandy session…</div>
+<div class="toolbar"><input id="search" placeholder="Search apps and services" aria-label="Search apps"><button class="soft" id="refresh">Refresh connections</button></div>
+<h2>Available apps</h2><div id="apps" class="grid"><p class="loader">Loading apps…</p></div>
+<h2>Your connections</h2><div id="connections" class="grid"><p class="sub">Loading connected accounts…</p></div>
+<p class="sub" style="margin-top:30px">Connecting an app does not automatically authorise Sandy to send messages, transfer money, or perform other high-impact actions. Those permissions are controlled separately.</p>
+</main>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-composio-gateway";
+const $=id=>document.getElementById(id);
+const popular=[["Gmail","gmail","Email and attachments"],["Google Drive","googledrive","Files and documents"],["Google Calendar","googlecalendar","Meetings and events"],["Slack","slack","Team communications"],["HubSpot","hubspot","Customer relationships"],["Notion","notion","Notes and knowledge"],["Xero","xero","Accounting records"],["Shopify","shopify","Commerce and orders"],["GitHub","github","Software projects"],["Microsoft Outlook","outlook","Email and calendar"],["Microsoft Teams","microsoft_teams","Team collaboration"],["Dropbox","dropbox","Cloud file storage"]];
+let configs=[],connections=[],toolkits=[],filter="";
+const notice=(message)=>{$("notice").textContent=message};
+async function api(operation,payload={}){
+ const {data,error}=await sb.auth.getSession();if(error||!data.session?.access_token)throw Error("Sign in to your Sandy workspace before connecting apps.");
+ const run=async(token)=>fetch(endpoint,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts"},body:JSON.stringify({operation,...payload})});
+ let res=await run(data.session.access_token);
+ if(res.status===401){const refreshed=await sb.auth.refreshSession();if(refreshed.data.session)res=await run(refreshed.data.session.access_token);}
+ const body=await res.json().catch(()=>({}));if(!res.ok)throw Error(body.error||"Request failed ("+res.status+")");return body;
+}
+const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function render(){
+ const found=popular.filter(a=>(a[0]+" "+a[2]).toLowerCase().includes(filter));
+ const extra=toolkits.filter(t=>!popular.some(a=>a[1]===t.slug)&&String(t.name||t.slug).toLowerCase().includes(filter)).slice(0,24).map(t=>[t.name||t.slug,t.slug,"Other supported service"]);
+ const items=[...found,...extra];
+ $("apps").innerHTML=items.length?items.map(([name,slug,desc])=>{
+ const match=configs.find(c=>String(c.toolkit_slug).toLowerCase()===slug||String(c.name).toLowerCase()===name.toLowerCase());
+ const linked=connections.some(c=>c.toolkit_slug===slug&&String(c.status).toUpperCase()==="ACTIVE");
+ return '<article class="card '+(linked?"connected":"")+'"><h3>'+esc(name)+'</h3><p>'+esc(desc)+'</p><div class="flag"><span class="dot"></span>'+(linked?"Connected":match?"Ready to connect":"Setup required")+'</div><button data-auth="'+esc(match?.id||"")+'" data-name="'+esc(name)+'" '+(!match||linked?"disabled":"")+'>'+(linked?"Connected":match?"Connect":"Not configured")+'</button></article>';
+ }).join(""):'<p class="sub">No matching apps found.</p>';
+ $("connections").innerHTML=connections.length?connections.map(c=>'<article class="card"><h3>'+esc(c.toolkit_slug)+'</h3><p>Connected account '+esc(c.connected_account_id)+'</p><div class="flag">'+esc(c.status)+'</div></article>').join(""):'<p class="sub">You have not connected any apps yet.</p>';
+ for(const button of $("apps").querySelectorAll("button[data-auth]"))button.onclick=async()=>{
+ const id=button.dataset.auth;if(!id)return;button.disabled=true;button.textContent="Starting connection…";
+ try{const result=await api("create_connect_link",{auth_config_id:id});if(!result.connect_url)throw Error("No authorisation link returned.");window.location.href=result.connect_url;}catch(e){notice(e.message);button.disabled=false;button.textContent="Connect";}
+ };
+}
+async function load(){
+ notice("Checking app connection settings…");
+ try{
+  const status=await api("status");
+  if(!status.configured){notice("Sandy’s Composio API key is not yet available to the gateway.");configs=[];connections=[];render();return}
+  if(!status.enabled){notice("App connections are being prepared. Existing connections can be viewed, but new ones are not yet enabled.");}
+  const [cs,ac,ts]=await Promise.allSettled([api("list_connections"),api("list_auth_configs"),api("list_toolkits")]);
+  connections=cs.status==="fulfilled"?cs.value.connections||[]:[];
+  configs=ac.status==="fulfilled"?ac.value.configs||[]:[];
+  toolkits=ts.status==="fulfilled"?ts.value.toolkits||[]:[];
+  if(status.enabled)notice(configs.length?"Choose an app to connect. Only configured apps can be connected.":"No application authentication configurations are available yet. An administrator must configure them in Composio.");
+  else notice("Composio connection setup is not yet enabled by Sandy's administrator.");
+  render();
+ }catch(e){notice(e.message);$("apps").innerHTML='<p class="sub">Unable to load available apps.</p>';}
+}
+$("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().trim();render()});
+$("refresh").onclick=async()=>{try{await api("sync_connections")}catch(e){notice(e.message)}await load()};
+load();
+</script></body></html>
