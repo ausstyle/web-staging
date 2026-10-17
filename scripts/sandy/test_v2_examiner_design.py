@@ -38,6 +38,21 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
     def test_missing_persisted_evidence_fails_closed(self):
         self.assertIn('throw new Error("examiner_design_receipt_failed_"', EDGE)
 
+    def test_customer_reviews_feed_examiner_without_raw_content(self):
+        self.assertIn('db.from("sandy_qa_message_reviews")', EDGE)
+        self.assertIn('db.from("sandy_qa_cases")', EDGE)
+        self.assertIn('customer_conversation_qa:', EDGE)
+        self.assertIn('customer_originated_qa_cases:', EDGE)
+        self.assertIn('source_attachment_count', EDGE)
+        self.assertIn('customer_qa:', EDGE)
+        self.assertIn('customer_issue_reviews:', EDGE)
+        self.assertIn('...snapshot.customer_conversation_qa.map', EDGE)
+        design = EDGE.split('if(designFlow){',1)[1].split('if(qaFlow){',1)[0]
+        self.assertNotIn('.select("reviewer_note', design)
+        self.assertNotIn('.select("question,reply', design)
+        self.assertNotIn('email_messages").select(', design)
+        self.assertNotIn('raw_customer_message:', design)
+
     def test_approved_high_reasoning_openai_model(self):
         self.assertIn('gpt-6-astra', EDGE)
         self.assertIn('reasoning:{effort:"high"}', EDGE)
