@@ -333,7 +333,7 @@ async function api(action,payload){
  if(!access)throw new Error("Sign in to Sandy first");
  const options={credentials:"omit",headers:{"Content-Type":"application/json","Authorization":"Bearer "+access,...(internalWorkspace?{"X-Sandy-Workspace":"internal"}:{})}};
  if(payload!==undefined){options.method="POST";options.body=JSON.stringify(payload)}
- const endpoint=action==="delete-task"?"https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-delete-task":base+"?action="+encodeURIComponent(action);
+ const endpoint=["delete-task","promote-mission"].includes(action)?"https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/"+(action==="delete-task"?"sandy-delete-task":"sandy-promote-mission"):base+"?action="+encodeURIComponent(action);
  const response=await fetch(endpoint,options);
  const data=await response.json().catch(()=>({error:"Server returned an unexpected response"}));
  if(!response.ok){const err=new Error(data.error||"Something went wrong");err.code=data.code||null;err.needsInvitation=!!data.needs_invitation;throw err}
@@ -926,7 +926,7 @@ function renderTask(t,depth){
    const descendants=countDesc(t).total;
    if(!confirm("Convert \""+t.title+"\" into a Sandy Mission? Sandy will plan this task and its "+descendants+" existing subtasks. Their hierarchy and history will remain intact."))return;
    mission.disabled=true;
-   try{await api("promote-mission",{id:t.id});await load();toast("Converted to Sandy Mission — planning queued")}
+   try{await api("promote-mission",{id:t.id,confirm_promote:true,confirm_title:t.title});await load();toast("Converted to Sandy Mission — planning queued")}
    catch(e){toast("Mission conversion failed: "+e.message,true)}
    finally{mission.disabled=false}
   });
