@@ -136,6 +136,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('grounding_keys exactly matching source keys', EDGE)
         self.assertIn('include at least one connections question and one task_count question', EDGE)
 
+    def test_proposal_rejection_diagnostics_are_aggregate_only(self):
+        self.assertIn('proposal_rejections:rejectionCounts', EDGE)
+        self.assertIn('proposals_returned:data.tests.length', EDGE)
+        self.assertIn('proposals_accepted:accepted.length', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
