@@ -93,7 +93,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('body.operation!=="examiner_google_lab_verify"', EDGE)
         self.assertIn('lab?.expected_email!=="sandyemail.ai@gmail.com"', EDGE)
         self.assertIn('provider_confirmed:confirmed', EDGE)
-        self.assertIn('read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,lab_enabled:false', EDGE)
+        self.assertIn('read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,lab_enabled:false', EDGE)
         self.assertIn('enabled:false,verified_at:', EDGE)
         workflow = (ROOT / ".github/workflows/sandy-examiner-google-lab.yml").read_text()
         self.assertIn('id-token: write', workflow)
@@ -105,7 +105,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('include_payload:false', EDGE)
         self.assertIn('max_results:1', EDGE)
         self.assertIn('gmailRead.successful', EDGE)
-        self.assertIn('gmail_read:gmailRead,lab_enabled:false', EDGE)
+        self.assertIn('gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,lab_enabled:false', EDGE)
 
     def test_drive_calendar_reads_are_provider_scoped_and_read_only(self):
         self.assertIn('GOOGLEDRIVE_LIST_FILES', EDGE)
