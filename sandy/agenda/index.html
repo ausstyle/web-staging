@@ -330,7 +330,7 @@ function categoryIsWithin(id,parent){
 function workspaceOwnMatches(t){
  if(t.shared)return state.workspace==="all"||state.workspace==="assigned";
  if(state.workspace==="all")return true;
- if(state.workspace==="personal")return !t.company_id;
+ if(state.workspace==="personal")return !t.company_id&&(!state.category||categoryIsWithin(t.category_id,state.category));
  if(t.company_id!==state.workspace)return false;
  return !state.category||categoryIsWithin(t.category_id,state.category);
 }
@@ -343,7 +343,7 @@ function categoryPath(id){
 }
 function taskCategoryLabel(t){return t.category_id?taskWorkspaceLabel(t.company_id)+" › "+categoryPath(t.category_id):taskWorkspaceLabel(t.company_id)}
 function categoriesForCompany(companyId){
- const items=state.categories.filter(c=>c.company_id===companyId),out=[],seen=new Set();
+ const items=state.categories.filter(c=>(c.company_id||null)===(companyId==="personal"?null:companyId)),out=[],seen=new Set();
  function walk(parent,depth){
   items.filter(c=>(c.parent_category_id||null)===parent).sort((a,b)=>a.name.localeCompare(b.name)).forEach(c=>{if(seen.has(c.id))return;seen.add(c.id);out.push({category:c,depth});walk(c.id,depth+1)});
  }
@@ -359,9 +359,9 @@ function fillWorkspaceSelect(target,selected){
  target.value=selected&&[...target.options].some(x=>x.value===selected)?selected:"personal";
 }
 function fillCategorySelect(companyId,selected){
- const target=$("taskCategory"),visible=state.companies.some(c=>c.id===companyId);
+ const target=$("taskCategory"),visible=companyId==="personal"||state.companies.some(c=>c.id===companyId);
  $("taskCategoryField").classList.toggle("hidden",!visible||!!state.edit?.shared);
- target.replaceChildren(new Option("Company level · no category",""));
+ target.replaceChildren(new Option(companyId==="personal"?"Personal · no category":"Company level · no category",""));
  if(!visible)return;
  for(const item of categoriesForCompany(companyId)){
   target.add(new Option("　".repeat(Math.min(item.depth,5))+(item.depth?"↳ ":"")+item.category.name,item.category.id));
@@ -370,11 +370,11 @@ function fillCategorySelect(companyId,selected){
  target.value=selected&&[...target.options].some(x=>x.value===selected)?selected:"";
 }
 async function createCategory(companyId,parentId=null){
- if(!state.companies.some(c=>c.id===companyId))return null;
- const parentName=parentId?categoryPath(parentId):taskWorkspaceLabel(companyId);
+ if(companyId!=="personal"&&!state.companies.some(c=>c.id===companyId))return null;
+ const parentName=parentId?categoryPath(parentId):taskWorkspaceLabel(companyId==="personal"?null:companyId);
  const name=prompt("New subcategory under "+parentName);if(!name?.trim())return null;
  try{
-  const result=await api("category-create",{company_id:companyId,parent_category_id:parentId,name:name.trim()});
+  const result=await api("category-create",{company_id:companyId==="personal"?null:companyId,parent_category_id:parentId,name:name.trim()});
   state.categories.push(result.category);toast("Subcategory added");return result.category.id;
  }catch(e){toast(e.message,true);return null}
 }
@@ -387,7 +387,7 @@ function useEntryWorkspace(id){
 function renderCategories(){
  const bar=$("categoryBar");bar.replaceChildren();
  const companyId=state.workspace;
- if(!state.companies.some(c=>c.id===companyId)){bar.classList.add("hidden");return}
+ if(companyId!=="personal"&&!state.companies.some(c=>c.id===companyId)){bar.classList.add("hidden");return}
  bar.classList.remove("hidden");
  bar.append(el("span","categoryLabel","CATEGORIES"));
  bar.append(btn("All "+taskWorkspaceLabel(companyId),"categoryPill"+(!state.category?" selected":""),()=>{state.category=null;render()}));
@@ -423,13 +423,19 @@ function quickSelection(){
  if(value==="personal")return {company:"personal",category:null};
  if(value.startsWith("category:")){
   const id=value.slice(9),cat=state.categories.find(c=>c.id===id);
-  return cat?{company:cat.company_id,category:id}:{company:"personal",category:null};
+  return cat?{company:cat.company_id||"personal",category:id}:{company:"personal",category:null};
  }
  return {company:value,category:null};
 }
 function fillQuickHierarchy(selected){
  const select=$("quickWorkspace"),previous=selected===undefined?(select.value||state.entryWorkspace):selected;
  select.replaceChildren(new Option("Personal","personal"));
+ for(const item of categoriesForCompany("personal")){
+  const indent="　".repeat(Math.min(item.depth+1,5));
+  select.add(new Option(indent+"↳ "+item.category.name,"category:"+item.category.id));
+  select.add(new Option(indent+"　＋ Subcategory under "+item.category.name,"create:"+item.category.id));
+ }
+ select.add(new Option("　＋ New category under Personal","create-root:personal"));
  for(const company of state.companies){
   select.add(new Option(company.name,company.id));
   for(const item of categoriesForCompany(company.id)){
@@ -453,7 +459,7 @@ async function chooseQuickHierarchy(){
  if(value.startsWith("create:")||value.startsWith("create-root:")){
   const previous=select.dataset.lastValid||"personal";
   const parent=value.startsWith("create:")?value.slice(7):null;
-  const company=parent?state.categories.find(c=>c.id===parent)?.company_id:value.slice(12);
+  const company=parent?(state.categories.find(c=>c.id===parent)?.company_id||"personal"):value.slice(12);
   const id=company?await createCategory(company,parent):null;
   fillQuickHierarchy(id?"category:"+id:previous);
   if(id)renderCategories();
