@@ -88,6 +88,18 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('source_summary:', EDGE)
         self.assertIn('policy.mode==="disabled"', EDGE)
 
+    def test_connected_lab_verification_is_identity_scoped_and_non_mutating(self):
+        self.assertIn('LAB_REF = REPO + "/.github/workflows/sandy-examiner-google-lab.yml@refs/heads/main"', EDGE)
+        self.assertIn('body.operation!=="examiner_google_lab_verify"', EDGE)
+        self.assertIn('lab?.expected_email!=="sandyemail.ai@gmail.com"', EDGE)
+        self.assertIn('provider_confirmed:confirmed', EDGE)
+        self.assertIn('read_only_execution_tested:false,lab_enabled:false', EDGE)
+        self.assertIn('enabled:false,verified_at:', EDGE)
+        workflow = (ROOT / ".github/workflows/sandy-examiner-google-lab.yml").read_text()
+        self.assertIn('id-token: write', workflow)
+        self.assertIn('examiner_google_lab_verify', workflow)
+        self.assertNotIn('COMPOSIO_API_KEY', workflow)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
