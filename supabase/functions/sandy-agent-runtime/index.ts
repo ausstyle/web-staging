@@ -133,8 +133,31 @@ Deno.serve(async req=>{
    });
    const msg=described.length?("Sandy's connection records show:\n"+described.join("\n")):
      (v2RequestedService?"I found no active "+v2RequestedService+" connection recorded for your Sandy account. This does not establish whether authorisation is pending or has not been synced.":"I found no active app connections recorded for your Sandy account.");
-   const outcome=providerCheck==="confirmed"?"verified":"unverified";
-   await db.from("sandy_v2_awareness_audit").insert({customer_id:customerId,channel,request_id:requestId,subject:"connections",outcome,evidence:{provider_check:providerCheck,records:selected.length,requested_service:v2RequestedService||"all"}});
+   const mismatched=providerCheck==="confirmed"?selected.filter((x:any)=>!verifiedIds.has(x.connected_account_id)):[];
+   for(const x of mismatched){
+     const fingerprint="v2:connection:"+customerId+":"+x.toolkit_slug+":"+(x.company_id||"personal");
+     const {error:findingError}=await db.from("sandy_supervisor_findings").upsert({
+       fingerprint,category:"integration_state_discrepancy",severity:"medium",state:"open",
+       subject:"Recorded app connection not confirmed by provider",
+       explanation:"The authenticated customer's local ACTIVE connection was not confirmed by Composio. Inspect provider status, sync and permissions before executing.",
+       evidence:{app:x.toolkit_slug,provider_check:providerCheck,workspace:x.company_id?"company":"personal"},
+       recommendation:"Recheck the provider and resolve tenant-scoped connection drift; do not claim repair without evidence.",
+       source_type:"sandy_v2_awareness",source_id:fingerprint,updated_at:new Date().toISOString()
+     },{onConflict:"fingerprint"});
+     if(findingError)console.error("v2_chat_finding_write",findingError.code);
+     const improveKey=Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY")||"";
+     if(!findingError&&improveKey){
+       const hash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(fingerprint)))).map(b=>b.toString(16).padStart(2,"0")).join("");
+       EdgeRuntime.waitUntil(fetch(url+"/functions/v1/sandy-auto-improve",{
+          method:"POST",headers:{"authorization":"Bearer "+improveKey,"content-type":"application/json"},
+          body:JSON.stringify({source_type:"system_awareness",source_ref:"v2_conn_"+hash.slice(0,40),
+            problem:"Sandy records an ACTIVE "+x.toolkit_slug+" connection but the provider did not confirm it active. Diagnose provider permissions, sync, execution scope and verification without exposing customer details."}),
+          signal:AbortSignal.timeout(35000)
+       }).then(async q=>{if(!q.ok)console.error("v2_chat_autodiagnosis_http",q.status)}).catch(e=>console.error("v2_chat_autodiagnosis_failed",String(e).slice(0,100))));
+     }
+   }
+   const outcome=mismatched.length?"contradiction":(providerCheck==="confirmed"?"verified":"unverified");
+   await db.from("sandy_v2_awareness_audit").insert({customer_id:customerId,channel,request_id:requestId,subject:"connections",outcome,evidence:{provider_check:providerCheck,records:selected.length,mismatches:mismatched.length,requested_service:v2RequestedService||"all"}});
    await update({status:"completed",model:"sandy-v2-system-awareness",result:{text:msg},tool_trace:[{tool:"v2_connection_preflight",success:true,provider_check:providerCheck}]});
    return json(200,{ok:true,task_id:id,response:msg,tools_used:[{tool:"v2_connection_preflight",success:true,provider_check:providerCheck}]});
  }
@@ -405,6 +428,10 @@ Deno.serve(async req=>{
   if(gmailFailure){const errorMessage="I located your connected Gmail account, but the live Gmail search failed ("+String(gmailFailure.error||"unknown_error")+(gmailFailure.provider_status?", HTTP "+gmailFailure.provider_status:"")+"). I have not retrieved your emails.";await update({status:"completed",result:{text:errorMessage},tool_trace:trace});return json(200,{ok:true,task_id:id,response:errorMessage,tools_used:trace});}
   if(!content)throw Error("empty_response");
   await update({status:"completed",result:{text:content},tool_trace:trace});
+  if(customerId)await db.from("sandy_v2_model_decisions").update({
+    verified_outcome:{model_output_present:true,tool_failures:trace.filter((t:any)=>t.success===false).length,task_completion:"not_independently_verified"},
+    evaluated_at:new Date().toISOString()
+  }).eq("customer_id",customerId).eq("request_id",requestId).is("evaluated_at",null);
   return json(200,{ok:true,task_id:id,model,response:content,tools_used:trace});
  }catch(e){const reason=String(e).slice(0,250);await update({status:"failed",failure:reason,tool_trace:trace});return json(502,{error:"task_failed",task_id:id})}
 });
