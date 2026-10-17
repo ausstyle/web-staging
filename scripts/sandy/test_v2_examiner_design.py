@@ -33,7 +33,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('mission_execution_state_distribution:', EDGE)
         self.assertIn('const sourceKeys=new Set<string>', EDGE)
         self.assertIn('sourceKeys.has(x)', EDGE)
-        self.assertIn('if(!grounds.length)continue', EDGE)
+        self.assertIn('if(!grounds.length){rejectionCounts.ungrounded++;continue;}', EDGE)
 
     def test_missing_persisted_evidence_fails_closed(self):
         self.assertIn('throw new Error("examiner_design_receipt_failed_"', EDGE)
