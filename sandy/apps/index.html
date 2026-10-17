@@ -123,14 +123,18 @@ async function load(){
 
   if(!status.configured){notice("App connections are temporarily unavailable. Please try again later.");configs=[];connections=[];render();return}
   if(!status.enabled){notice("New app connections are not available yet. You can still view your existing accounts.");}
+  const isReturning=new URLSearchParams(window.location.search).has("connection_return");
+  let synced=false;
+  if(isReturning){try{await api("sync_connections");synced=true;}catch(e){console.warn("Connection reconciliation pending",e)}}
   const [cs,ac,ts,co]=await Promise.allSettled([api("list_connections"),api("list_auth_configs"),api("list_toolkits"),api("list_companies")]);
   companies=co.status==="fulfilled"?co.value.companies||[]:[];renderWorkspaces();
   connections=cs.status==="fulfilled"?cs.value.connections||[]:[];
   configs=ac.status==="fulfilled"?ac.value.configs||[]:[];
   toolkits=ts.status==="fulfilled"?ts.value.toolkits||[]:[];
-  if(status.enabled)notice(configs.length?"Choose an app to connect.":"Choose an app and select Connect. Sandy will attempt to prepare secure authorisation automatically.");
+  if(status.enabled)notice(isReturning?(synced?"Welcome back. Your connected accounts have been refreshed.":"Welcome back. Your connection is being verified; use Refresh connections if it does not appear yet."):(configs.length?"Choose an app to connect.":"Choose an app and select Connect. Sandy will attempt to prepare secure authorisation automatically."));
   else notice("New connections are temporarily unavailable. Please try again later.");
   render();
+  if(isReturning)window.history.replaceState(null,"",window.location.pathname+window.location.hash);
  }catch(e){notice("Unable to load app connections right now. Please try again later.");configs=[];connections=[];toolkits=[];render();}
 }
 $("search").addEventListener("input",e=>{filter=e.target.value.toLowerCase().trim();render()});
