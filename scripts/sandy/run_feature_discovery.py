@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run Sandy's evidence-backed feature discovery using ephemeral GitHub OIDC."""
+import http.client
 import json
 import os
 import re
@@ -58,6 +59,32 @@ def github(method, resource, data=None):
                "user-agent":"sandy-verified-feature-handoff"})
     with urllib.request.urlopen(request,timeout=20) as response:
         return json.load(response)
+
+
+def complete_issue_inventory():
+    """Require a complete, validated inventory before any public handoff."""
+    issues=[]
+    seen=set()
+    try:
+        for page in range(1,6):
+            batch=github("GET", "issues?state=all&per_page=100&sort=created&direction=asc&page="+str(page))
+            if not isinstance(batch,list) or len(batch)>100:
+                raise ValueError
+            for issue in batch:
+                if (not isinstance(issue,dict)
+                    or type(issue.get("number")) is not int
+                    or issue["number"]<=0
+                    or "body" not in issue
+                    or (issue["body"] is not None and not isinstance(issue["body"],str))
+                    or issue["number"] in seen):
+                    raise ValueError
+                seen.add(issue["number"])
+            issues.extend(batch)
+            if len(batch)<100:
+                return issues
+    except (OSError, ValueError, http.client.HTTPException):
+        raise RuntimeError("GitHub issue inventory could not be completed") from None
+    raise RuntimeError("GitHub issue inventory could not be completed")
 
 
 def issue_for(item, existing):
@@ -122,7 +149,7 @@ def main():
     if os.environ.get("GITHUB_EVENT_NAME")=="push":
         print(json.dumps({**report,"smoke_only":True,"github_publication":False}))
         return
-    issues=github("GET","issues?state=all&per_page=100")
+    issues=complete_issue_inventory()
     for pending in (outcome.get("pending") or [])[:5]:
         feature=validate_pending(pending)
         if feature is None:
