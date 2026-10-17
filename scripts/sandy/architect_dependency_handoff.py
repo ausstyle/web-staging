@@ -74,7 +74,7 @@ if missing:
     slug = missing[0]
     audit_marker = f"<!-- sandy-source-audit-request:{issue}:{slug} -->"
     if audit_marker in prior:
-        print(f"Protected source audit already requested for {slug}")
+        print(f"Protected source audit already requested for {slug}; no duplicate")
         raise SystemExit(0)
     subprocess.run(["gh", "workflow", "run", "sandy-source-acquisition.yml",
                     "--ref", "main", "-f", f"issue_number={issue}",

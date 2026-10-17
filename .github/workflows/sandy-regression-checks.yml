@@ -1,0 +1,23 @@
+name: Sandy engineering regression checks
+on:
+  pull_request:
+    paths:
+      - 'scripts/sandy/**'
+      - '.github/workflows/sandy-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sandy/**'
+      - '.github/workflows/sandy-*.yml'
+permissions:
+  contents: read
+jobs:
+  offline-contract-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Sandy offline contract tests
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
+      - name: Verify Python syntax
+        run: python3 -m compileall -q scripts/sandy
