@@ -152,10 +152,15 @@ Deno.serve(async(req:Request)=>{
     if(policyError||!policy)return fail("examiner_design_policy_missing",503);
     if(policy.mode==="disabled")return json({ok:true,skipped:"policy_disabled"});
     if(!["shadow","enabled"].includes(policy.mode))return fail("unknown_examiner_design_policy",409);
+    const designModel=String((policy.config as any)?.model||"gpt-5.2");
+    if(!/^[a-zA-Z0-9._-]{3,80}$/.test(designModel))return fail("examiner_model_invalid",409);
+    const {data:approvedModel,error:modelError}=await db.from("ai_model_registry")
+      .select("eligibility").eq("model_id",designModel).maybeSingle();
+    if(modelError||approvedModel?.eligibility!=="approved")return fail("examiner_model_not_approved",409);
     const runKey="github:"+String(claims.run_id);
     if(!/^[0-9]{5,20}$/.test(String(claims.run_id||"")))return fail("examiner_design_run_id_invalid",401);
     const {error:reserved}=await db.from("sandy_examiner_design_runs").insert({
-      run_key:runKey,model:"gpt-6-astra",mode:policy.mode,status:"running"
+      run_key:runKey,model:designModel,mode:policy.mode,status:"running"
     });
     if(reserved?.code==="23505")return json({ok:true,duplicate_run:true,run_key:runKey});
     if(reserved)return fail("examiner_design_reservation_failed",503);
@@ -292,7 +297,7 @@ Deno.serve(async(req:Request)=>{
     try{
       const response=await fetch("https://api.openai.com/v1/responses",{
         method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},
-        body:JSON.stringify({model:"gpt-6-astra",store:false,reasoning:{effort:"high"},
+        body:JSON.stringify({model:designModel,store:false,reasoning:{effort:"high"},
           instructions,input:JSON.stringify(snapshot),text:{format:{type:"json_object"}},max_output_tokens:7200}),
         signal:AbortSignal.timeout(160000)
       });
@@ -348,7 +353,7 @@ Deno.serve(async(req:Request)=>{
       }
       accepted.sort((a:any,b:any)=>b.priority-a.priority);
       await finish("generated",{snapshot_hash:snapshotHash,source_summary:summary,proposals:accepted});
-      return json({ok:true,status:"generated",model:"gpt-6-astra",mode:policy.mode,
+      return json({ok:true,status:"generated",model:designModel,mode:policy.mode,
         proposal_count:accepted.length,snapshot_hash:snapshotHash,source_summary:summary,
         note:"Shadow design only; no generated test has been automatically executed."});
     }catch(error){
