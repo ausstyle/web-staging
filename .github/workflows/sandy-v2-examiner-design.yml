@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Initial live model verification for Examiner completion.
+# Live approved-model verification after gateway v18 policy-driven model recovery.
 on:
   push:
     branches: [main]
