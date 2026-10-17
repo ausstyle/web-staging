@@ -43,7 +43,6 @@ class TestV2APIQA(unittest.TestCase):
 
     def test_response_evidence_and_proposal_only_improvement(self):
         self.assertIn('db.from("sandy_agent_tasks").select("status,tool_trace,model,customer_id")', self.edge)
-        self.assertIn('tool_receipt', self.edge) if False else None
         self.assertIn('status:"completed"', (ROOT / "supabase/functions/sandy-agent-runtime/index.ts").read_text())
         self.assertIn('sandy_auto_improve', self.edge.replace("-", "_"))
         self.assertIn('source_type:"qa_failure"', self.edge)
