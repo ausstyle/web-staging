@@ -95,7 +95,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('body.operation!=="examiner_google_lab_verify"', EDGE)
         self.assertIn('lab?.expected_email!=="sandyemail.ai@gmail.com"', EDGE)
         self.assertIn('provider_confirmed:confirmed', EDGE)
-        self.assertIn('read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,lab_enabled:false', EDGE)
+        self.assertIn('read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,runtime_checks:runtimeChecks,lab_enabled:false', EDGE)
         self.assertIn('enabled:false,verified_at:', EDGE)
         workflow = (ROOT / ".github/workflows/sandy-examiner-google-lab.yml").read_text()
         self.assertIn('id-token: write', workflow)
@@ -107,7 +107,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('include_payload:false', EDGE)
         self.assertIn('max_results:1', EDGE)
         self.assertIn('gmailRead.successful', EDGE)
-        self.assertIn('gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,lab_enabled:false', EDGE)
+        self.assertIn('gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,runtime_checks:runtimeChecks,lab_enabled:false', EDGE)
 
     def test_drive_calendar_reads_are_provider_scoped_and_read_only(self):
         self.assertIn('GOOGLEDRIVE_LIST_FILES', EDGE)
@@ -171,6 +171,14 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
     def test_evolution_uses_approved_operational_model(self):
         self.assertIn('model:"gpt-5.2",store:false', EVOLUTION)
         self.assertNotIn('model:"gpt-6-astra"', EVOLUTION)
+
+    def test_connected_lab_checks_real_sandy_runtime_without_mutation(self):
+        self.assertIn('examinerlab_', EDGE)
+        self.assertIn('url+"/functions/v1/sandy-agent-runtime"', EDGE)
+        self.assertIn('required:"search_connected_gmail"', EDGE)
+        self.assertIn('required:"list_connected_services"', EDGE)
+        self.assertIn('runtime_checks:runtimeChecks,lab_enabled:false', EDGE)
+        self.assertIn('no_mutating_tools:!forbidden', EDGE)
 
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
