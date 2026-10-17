@@ -1,5 +1,11 @@
 name: Sandy autonomous engineering dispatcher
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-codex-engineering.yml'
+      - '.github/workflows/sandy-autonomous-dispatch.yml'
+      - 'scripts/sandy/autonomous_dispatch.py'
   schedule:
     - cron: '*/15 * * * *'
   issues:

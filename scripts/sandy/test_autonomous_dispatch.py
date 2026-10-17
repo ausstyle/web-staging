@@ -34,6 +34,19 @@ class AutoDispatchTests(unittest.TestCase):
         self.assertEqual(source.count('allow-bots: true'),2)
 
 
+    def test_repair_retry_requires_actual_source_change(self):
+        now=dt.datetime(2026,10,17,18,tzinfo=dt.timezone.utc)
+        failed=run(1,created="2026-10-17T17:50:00Z")
+        failed["conclusion"]="failure"
+        self.assertIsNone(choose([issue(1)],[failed],now,lambda _:False))
+        self.assertEqual(choose([issue(1)],[failed],now,lambda _:True)["number"],1)
+        succeeded=dict(failed,conclusion="success")
+        self.assertIsNone(choose([issue(1)],[succeeded],now,lambda _:True))
+    def test_repair_retry_still_respects_attempt_cap(self):
+        now=dt.datetime(2026,10,17,18,tzinfo=dt.timezone.utc)
+        runs=[dict(run(1,created="2026-10-17T17:50:00Z"),conclusion="failure") for _ in range(3)]
+        self.assertIsNone(choose([issue(1)],runs,now,lambda _:True))
+
     def test_requires_opt_in_and_title(self):
         self.assertIsNone(choose([issue(1, labels=[]), issue(2, title="Unrelated")], [], NOW))
 
