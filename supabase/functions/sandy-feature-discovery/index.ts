@@ -1,6 +1,24 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
+import {createRemoteJWKSet,jwtVerify} from "npm:jose@5.10.0";
 
+const audience="sandy-feature-discovery-zmqlyygzqoidkcwdysok";
+const issuer="https://token.actions.githubusercontent.com";
+const jwks=createRemoteJWKSet(new URL(issuer+"/.well-known/jwks"));
+const expectedWorkflow="ausstyle/web-staging/.github/workflows/sandy-feature-discovery.yml@refs/heads/main";
+const authorizeGithub=async(req:Request):Promise<boolean>=>{
+ const header=req.headers.get("authorization")||"";
+ if(!header.startsWith("Bearer ")||header.length>10000)return false;
+ try{
+  const {payload}=await jwtVerify(header.slice(7),jwks,{
+   issuer,audience,algorithms:["RS256"],clockTolerance:5});
+  return payload.repository==="ausstyle/web-staging" &&
+   String(payload.repository_id)==="1416227508" &&
+   payload.workflow_ref===expectedWorkflow &&
+   payload.ref==="refs/heads/main" &&
+   (payload.event_name==="schedule"||payload.event_name==="workflow_dispatch");
+ }catch{return false}
+};
 const respond=(status:number,data:unknown)=>new Response(JSON.stringify(data),{
  status,headers:{"content-type":"application/json","cache-control":"no-store"}});
 const redact=(value:unknown)=>String(value??"").slice(0,500)
@@ -16,10 +34,13 @@ Deno.serve(async(req:Request)=>{
  const ai=Deno.env.get("OPENAI_API_KEY");
  if(!service||!url||!ai)return respond(503,{error:"worker_unconfigured"});
  const db=createClient(url,service,{auth:{persistSession:false,autoRefreshToken:false}});
- const token=req.headers.get("x-sandy-qa-scheduler")||"";
- if(token.length<40)return respond(403,{error:"unauthorised"});
- const verified=await db.rpc("sandy_qualitative_authorize",{p_token:token});
- if(verified.error||verified.data!==true)return respond(403,{error:"unauthorised"});
+ const githubAuthorized=await authorizeGithub(req);
+ if(!githubAuthorized){
+  const token=req.headers.get("x-sandy-qa-scheduler")||"";
+  if(token.length<40)return respond(403,{error:"unauthorised"});
+  const verified=await db.rpc("sandy_qualitative_authorize",{p_token:token});
+  if(verified.error||verified.data!==true)return respond(403,{error:"unauthorised"});
+ }
  let params:any={};
  try{params=await req.json()}catch{return respond(400,{error:"invalid_json"})}
  if(params.op!=="discover")return respond(400,{error:"invalid_op"});
