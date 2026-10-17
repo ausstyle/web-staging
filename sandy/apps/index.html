@@ -79,7 +79,7 @@ function renderGoogle(){
  const missing=[...selectedGoogle].filter(id=>!connected.has(id));
  const next=remaining[0];
  $("googleConnect").disabled=!next&&missing.length===0;
- $("googleConnect").textContent=next?"Connect selected Google services":missing.length?"Add "+missing.length+" selected service"+(missing.length===1?"":"s"):"Choose services to add";
+ $("googleConnect").textContent=next?"Connect "+(googleServices.find(g=>g[0]===next)?.[1]||"Google service")+" ("+(queue.completed.length+1)+" of "+queue.all.length+")":missing.length?"Start connecting "+missing.length+" Google service"+(missing.length===1?"":"s"):"Choose services to add";
  $("googleState").textContent=next?queue.completed.length+" of "+queue.all.length+" connected · Next: "+(googleServices.find(g=>g[0]===next)?.[1]||"Google"):connected.size+" connected · "+missing.length+" selected to add";
 }
 
@@ -111,8 +111,8 @@ async function reconcileGoogleQueue(){
  q.pending=remaining;
  if(!remaining.length){saveGoogleQueue(null);$("googleState").textContent="All "+q.all.length+" services connected.";return}
  saveGoogleQueue(q);$("googleDetails").classList.remove("hide");renderGoogle();
- $("googleState").textContent=queueMessage()+". Continue to authorise the next service.";
- $("googleConnect").textContent="Connect selected Google services";
+ $("googleState").textContent=queueMessage()+". Each Google service requires separate authorization in the current connector.";
+ $("googleConnect").textContent="Connect "+(googleServices.find(g=>g[0]===remaining[0])?.[1]||"Google service")+" ("+(q.completed.length+1)+" of "+q.all.length+")";
 }
 
 const notice=(message)=>{$("notice").textContent=message};
