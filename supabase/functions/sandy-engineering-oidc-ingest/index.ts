@@ -67,12 +67,12 @@ Deno.serve(async(req:Request)=>{
       const {error}=await db.from("sandy_examiner_design_runs").update({
         status,completed_at:new Date().toISOString(),...extras
       }).eq("run_key",runKey).eq("status","running");
-      if(error)console.error("examiner_design_receipt_failed",error.code);
+      if(error)throw new Error("examiner_design_receipt_failed_"+error.code);
     };
     // No tenant-specific messages, mission titles, email contents, tokens, or customer IDs
     // ever go to the external test architect. Snapshot carries only product metadata,
     // per-channel verification state and aggregate Mission counts.
-    const [roadmap,catalog,inventory,qa,missionCount,latestTests]=await Promise.all([
+    const [roadmap,catalog,inventory,qa,missionCount,latestTests,missionStatuses,missionRuns]=await Promise.all([
       db.from("sandy_feature_roadmap").select("feature_key,feature_title,progress,updated_at")
         .order("priority_order",{ascending:true}).limit(90),
       db.from("sandy_capability_catalog").select("feature_key,channels,last_verified_at,updated_at").limit(80),
@@ -84,15 +84,25 @@ Deno.serve(async(req:Request)=>{
       db.from("sandy_tasks").select("id",{count:"exact",head:true})
         .contains("metadata",{sandy_mission:true}).is("archived_at",null),
       db.from("sandy_v2_qa_executions").select("case_key,verdict,created_at")
-        .order("created_at",{ascending:false}).limit(25)
+        .order("created_at",{ascending:false}).limit(25),
+      db.from("sandy_tasks").select("status").contains("metadata",{sandy_mission:true})
+        .is("archived_at",null).limit(150),
+      db.from("sandy_mission_runs").select("stage,state").limit(150)
     ]);
-    if([roadmap,catalog,inventory,qa,missionCount,latestTests].some(x=>x.error)){
+    if([roadmap,catalog,inventory,qa,missionCount,latestTests,missionStatuses,missionRuns].some(x=>x.error)){
       await finish("failed",{rejection_reason:"source_of_truth_snapshot_unavailable"});
       return fail("examiner_design_sources_unavailable",503);
     }
+    const stateCounts=(rows:any[],field:string)=>rows.reduce((acc:Record<string,number>,r:any)=>{
+      const name=String(r?.[field]||"unknown").slice(0,60);
+      acc[name]=(acc[name]||0)+1;return acc;
+    },{} as Record<string,number>);
     const snapshot={
       mission_statement:String(policy.config?.mission_statement||"Sandy must complete delegated customer work to independently verified outcomes").slice(0,750),
       active_mission_count:Number(missionCount.count||0),
+      mission_status_distribution:stateCounts(missionStatuses.data||[],"status"),
+      mission_execution_stage_distribution:stateCounts(missionRuns.data||[],"stage"),
+      mission_execution_state_distribution:stateCounts(missionRuns.data||[],"state"),
       mission_data_provenance:"Only aggregate Mission count. No customer private Mission content.",
       roadmap:(roadmap.data||[]).map((x:any)=>({key:x.feature_key,title:String(x.feature_title||"").slice(0,110),
         progress:x.progress,updated_at:x.updated_at})),
@@ -108,7 +118,7 @@ Deno.serve(async(req:Request)=>{
       .map(x=>x.toString(16).padStart(2,"0")).join("");
     const summary={roadmap_items:snapshot.roadmap.length,catalogued_capabilities:snapshot.capabilities.length,
       inventoried_executable_components:snapshot.source_inventory.length,active_missions:snapshot.active_mission_count,
-      recent_evaluations:snapshot.recent_evaluations.length};
+      recent_evaluations:snapshot.recent_evaluations.length,observed_mission_runs:(missionRuns.data||[]).length};
     const {data:recent,error:recentError}=await db.from("sandy_examiner_design_runs")
       .select("created_at,snapshot_hash,status").eq("status","generated")
       .order("created_at",{ascending:false}).limit(1);
@@ -142,7 +152,7 @@ Deno.serve(async(req:Request)=>{
       "For each question choose exactly one supported oracle_key from: "+allowedKeys.join(", ")+".",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
-      "Include purpose, grounding (source keys only), expected observation, and a 1-5 priority.",
+      "Include purpose, grounding (exact source keys present in snapshot, or mission_charter/mission_activity), expected observation, and a 1-5 priority.",
       "Return only a JSON object with a tests array; each test has oracle_key, question, purpose,",
       "grounding_keys (array of strings), expected_observation and priority (1-5).",
       "Questions should sound like realistic customer requests, not implementation commands.",
@@ -167,6 +177,11 @@ Deno.serve(async(req:Request)=>{
       const data=JSON.parse(raw);
       if(!Array.isArray(data.tests))throw new Error("invalid_json_shape");
       const redFlags=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
+      const sourceKeys=new Set<string>(["mission_charter","mission_activity",
+        ...snapshot.roadmap.map((x:any)=>x.key),
+        ...snapshot.capabilities.map((x:any)=>x.key),
+        ...snapshot.source_inventory.map((x:any)=>x.key),
+        ...snapshot.qa_findings.map((x:any)=>x.key)]);
       const accepted:any[]=[];
       for(const candidate of data.tests.slice(0,12)){
         const key=String(candidate?.oracle_key||"");
@@ -186,7 +201,8 @@ Deno.serve(async(req:Request)=>{
         };
         if(!match[key].test(question))continue;
         const grounds=Array.isArray(candidate.grounding_keys)?candidate.grounding_keys
-          .filter((x:any)=>typeof x==="string").map((x:string)=>x.slice(0,100)).slice(0,6):[];
+          .filter((x:any)=>typeof x==="string"&&sourceKeys.has(x)).map((x:string)=>x.slice(0,100)).slice(0,6):[];
+        if(!grounds.length)continue;
         accepted.push({oracle_key:key,question,priority,
           purpose:String(candidate.purpose||"").slice(0,240),
           expected_observation:String(candidate.expected_observation||"").slice(0,300),
