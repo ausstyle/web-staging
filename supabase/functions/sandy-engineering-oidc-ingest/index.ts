@@ -132,6 +132,41 @@ Deno.serve(async(req:Request)=>{
       providerRead("googledrive","GOOGLEDRIVE_LIST_FILES",{page_size:1,fields:"nextPageToken,files(id)"}),
       providerRead("googlecalendar","GOOGLECALENDAR_LIST_CALENDARS",{max_results:1})
     ]);
+    // Customer-facing end-to-end probes. These execute Sandy's actual runtime
+    // under the explicitly registered Examiner identity, without sending or writing.
+    // Do not expose the answers or any Gmail payload in workflow output.
+    const runtimeChecks:any[]=[];
+    if(verified&&gmailRead.successful){
+      const cases=[
+        {key:"connections",question:"Which Google services are connected to my Sandy account? Check your live records.",required:"list_connected_services"},
+        {key:"gmail",question:"Read the latest email in my connected Gmail inbox and report its subject.",required:"search_connected_gmail"}
+      ];
+      for(const test of cases){
+        const requestId="examinerlab_"+crypto.randomUUID();
+        let status:number|null=null;
+        let trace:any[]=[];
+        let taskCompleted=false;
+        try{
+          const response=await fetch(url+"/functions/v1/sandy-agent-runtime",{
+            method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},
+            body:JSON.stringify({channel:"test",customer_id:lab.customer_id,
+              request_id:requestId,request:test.question,timezone:"UTC",history:[]}),
+            signal:AbortSignal.timeout(110000)
+          });
+          status=response.status;
+          await response.json().catch(()=>({}));
+          const {data:task}=await db.from("sandy_agent_tasks").select("status,tool_trace")
+            .eq("customer_id",lab.customer_id).eq("request_id",requestId).maybeSingle();
+          taskCompleted=task?.status==="completed";
+          trace=Array.isArray(task?.tool_trace)?task.tool_trace:[];
+        }catch{}
+        const matched=trace.some((t:any)=>t.tool===test.required&&t.success===true);
+        const forbidden=trace.some((t:any)=>/send|delete|create|update|write|purchase|payment/i.test(String(t.tool||"")));
+        runtimeChecks.push({test:test.key,http_status:status,required_tool:test.required,
+          tool_confirmed:matched,task_completed:taskCompleted,no_mutating_tools:!forbidden,
+          verdict:status===200&&taskCompleted&&matched&&!forbidden?"pass":"needs_review"});
+      }
+    }
     // Provider verification does not mean tool execution has been verified.
     const {error:saveError}=await db.from("sandy_examiner_lab_accounts").update({
       connection_status:verified?(gmailRead.successful?(driveRead.successful&&calendarRead.successful?"google_reads_verified_lab_review_pending":"gmail_read_verified_drive_calendar_pending"):"provider_connections_verified_readonly_tests_pending"):"provider_verification_incomplete",
@@ -139,7 +174,7 @@ Deno.serve(async(req:Request)=>{
     }).eq("id",1).eq("customer_id",lab.customer_id);
     if(saveError)return fail("lab_result_persistence_failed",503);
     return json({ok:true,verified,provider_listing_complete:complete,services,
-      read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,lab_enabled:false});
+      read_only_execution_tested:gmailRead.successful,gmail_read:gmailRead,drive_read:driveRead,calendar_read:calendarRead,runtime_checks:runtimeChecks,lab_enabled:false});
   }
   if(designFlow){
     if(body.operation!=="v2_examiner_design"||Object.keys(body).some(k=>k!=="operation"))
