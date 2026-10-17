@@ -203,6 +203,12 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('current_state:"retest_required"', EDGE)
         self.assertIn('ignoreDuplicates:true', EDGE)
 
+    def test_acceptance_gate_requires_real_dynamic_evidence(self):
+        self.assertIn('sandy_examiner_acceptance_gates', EDGE)
+        self.assertIn('if(summary.attempted>0)', EDGE)
+        self.assertIn('x.ai_design_run&&x.verdict==="pass"', EDGE)
+        self.assertIn('acceptance_gate_write_failed', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
