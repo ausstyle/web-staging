@@ -115,10 +115,12 @@ Deno.serve(async(req:Request)=>{
       const started=Date.now();
       let edgeStatus=0,answer="",trace:any[]=[],taskModel:string|null=null,reason="",verdict:"pass"|"fail"|"needs_review"|"blocked"="needs_review";
       try{
+        const followup=testcase.key==="followup_investigation";
+        const context=followup?[{user:"How many messages have I sent across all channels?",assistant:"I have only checked the web count so far."}]:[];
         const rsp=await fetch(url+"/functions/v1/sandy-agent-runtime",{
           method:"POST",
           headers:{"authorization":"Bearer "+key,"content-type":"application/json"},
-          body:JSON.stringify({channel:"test",request_id:requestId,customer_id:customerId,request:question,timezone:"UTC"}),
+          body:JSON.stringify({channel:followup?"web":"test",request_id:requestId,customer_id:customerId,request:question,timezone:"UTC",history:context}),
           signal:AbortSignal.timeout(110000)
         });
         edgeStatus=rsp.status;
