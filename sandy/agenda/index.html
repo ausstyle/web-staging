@@ -986,7 +986,7 @@ function renderMissionOverview(){
   const children=countDesc(t),percent=children.total?Math.round(children.done/children.total*100):(t.status==="completed"?100:0);
   const latest=state.missionRuns.find(r=>r.mission_task_id===t.id);const outstanding=state.missionQuestions.filter(q=>q.mission_task_id===t.id&&q.status!=="answered").length;const stateText=latest?(latest.stage+" · "+latest.state):(t.metadata?.execution_state||"Mission created");
   const clientSteps=state.tasks.filter(x=>x.parent_task_id===t.id&&x.metadata?.assigned_to==="client"&&!["completed","cancelled"].includes(x.status)).length;
-  const card=el("button","missionCard");card.type="button";
+  const card=el("div","missionCard");card.setAttribute("role","button");card.tabIndex=0;
   card.append(el("div","missionCardTitle",t.title));
   const meta=el("div","missionCardMeta");meta.append(el("span","",stateText.replaceAll("_"," ")),el("span","",children.done+"/"+children.total+" steps"));card.append(meta);
   const track=el("div","missionProgress");const fill=el("span");fill.style.width=percent+"%";track.append(fill);card.append(track);
@@ -1011,7 +1011,7 @@ function renderMissionOverview(){
     }
    });answerBtn.addEventListener("click",e=>e.stopPropagation());act.append(answerBtn);card.append(act);
   }
-  card.addEventListener("click",()=>{
+  card.addEventListener("keydown",e=>{if(e.target===card&&(e.key==="Enter"||e.key===" ")){e.preventDefault();card.click()}});card.addEventListener("click",()=>{
    state.tab="all";state.view="tree";state.search="";$("search").value="";
    state.workspace=t.company_id||"personal";state.category=null;state.expanded.delete(t.id);
    let cursor=t.parent_task_id;let guard=0;while(cursor&&guard++<20){state.expanded.delete(cursor);cursor=state.tasks.find(x=>x.id===cursor)?.parent_task_id}
