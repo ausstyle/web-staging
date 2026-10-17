@@ -122,6 +122,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('problem?.error?.type', EDGE)
         self.assertIn('never arbitrary error text', EDGE)
 
+    def test_compact_live_model_input(self):
+        self.assertIn('roadmap:snapshot.roadmap.slice(0,15)', EDGE)
+        self.assertIn('customer_originated_qa_cases:snapshot.customer_originated_qa_cases.slice(0,6)', EDGE)
+        self.assertNotIn('instructions,input:JSON.stringify(snapshot)', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
