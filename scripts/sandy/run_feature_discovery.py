@@ -106,6 +106,9 @@ def main():
     with urllib.request.urlopen(request,timeout=120) as response:
         outcome=json.load(response)
     report=verify_response(outcome)
+    if os.environ.get("GITHUB_EVENT_NAME")=="push":
+        print(json.dumps({**report,"smoke_only":True,"github_publication":False}))
+        return
     issues=github("GET","issues?state=all&per_page=100")
     for pending in (outcome.get("pending") or [])[:5]:
         feature=validate_pending(pending)
