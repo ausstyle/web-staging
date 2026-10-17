@@ -59,6 +59,28 @@ class TestV2APIQA(unittest.TestCase):
         self.assertNotIn('confirm send ', self.edge)
         self.assertNotIn('send_email"', self.edge)
 
+    def test_synthetic_channel_can_inspect_its_own_history(self):
+        agent = (ROOT / "supabase/functions/sandy-agent-runtime/index.ts").read_text()
+        self.assertIn('channel==="web"||channel==="test"', agent)
+        self.assertIn('.eq("customer_id",customerId)', agent)
+
+    def test_multiturn_and_independent_repeat_verification(self):
+        self.assertIn('followup_investigation', self.edge)
+        self.assertIn('history:context', self.edge)
+        self.assertIn('followup_scoped_inspection', self.edge)
+        self.assertIn('had("v2_operational_read")', self.edge)
+        self.assertIn('const corroborated=', self.edge)
+        self.assertIn('corroborated?"passed":"retest_pending"', self.edge)
+        self.assertIn('Math.min(2,Number(account.max_calls_per_run)', self.edge)
+
+    def test_stalled_run_reconciliation_and_engineering_handoff(self):
+        self.assertIn('v2_api_qa_stalled_runner', self.edge)
+        self.assertIn('qa_case_persistence_failed', self.edge)
+        improve = (ROOT / "supabase/functions/sandy-auto-improve/index.ts").read_text()
+        self.assertIn('sandy_qa_engineering_handoffs', improve)
+        self.assertIn('approval_required:true', improve)
+        self.assertIn('proposal_only:true', improve)
+
     def test_workflow_short_lived_oidc_and_schedule(self):
         self.assertIn("cron: '*/15 * * * *'", self.flow)
         self.assertIn('id-token: write', self.flow)
