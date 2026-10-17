@@ -46,6 +46,14 @@ class FeatureDiscoveryRunnerTests(unittest.TestCase):
             self.assertEqual(issue_for(item,[]),11)
             self.assertIn("sandy-autonomous-ready",api.call_args.args[2]["labels"])
 
+    def test_smoke_reruns_on_runner_changes_and_reports_safely(self):
+        root=Path(__file__).resolve().parents[2]
+        runner=(root/"scripts/sandy/run_feature_discovery.py").read_text()
+        workflow=(root/".github/workflows/sandy-feature-discovery.yml").read_text()
+        self.assertIn("scripts/sandy/run_feature_discovery.py",workflow)
+        self.assertIn("except urllib.error.HTTPError as error:",runner)
+        self.assertIn("reason=\"unclassified\"",runner)
+
     def test_push_smoke_never_publishes_public_issue(self):
         worker=(Path(__file__).resolve().parents[2] /
                 "scripts/sandy/run_feature_discovery.py").read_text()
