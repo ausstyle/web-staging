@@ -42,7 +42,7 @@ Deno.serve(async(req:Request)=>{
   if(!run||!pr||!issue)return fail("missing_github_evidence",503);
   if(run.path!==".github/workflows/sandy-regression-checks.yml"||
     run.status!=="completed"||run.conclusion!=="success"||
-    run.event!=="push"||run.head_branch!=="main"||run.head_repository?.full_name!==REPO||
+    !(run.event==="push"||run.event==="workflow_dispatch")||run.head_branch!=="main"||run.head_repository?.full_name!==REPO||
     !hex(run.head_sha)||pr.merged!==true||pr.state!=="closed"||
     pr.base?.ref!=="main"||pr.base?.repo?.full_name!==REPO||
     pr.merge_commit_sha!==run.head_sha||
@@ -55,7 +55,7 @@ Deno.serve(async(req:Request)=>{
   const files=await get("pulls/"+pr_number+"/files?per_page=20");
   if(!Array.isArray(files)||files.length<1||files.length>5||
      files.some((f:any)=>typeof f.filename!=="string"||
-       !/^scripts\/sandy\/[a-zA-Z0-9_.\/-]+\.py$/.test(f.filename)||
+       !(/^scripts\/sandy\/[a-zA-Z0-9_.\/-]+\.py$/.test(f.filename)||/^docs\/sandy\/[a-zA-Z0-9_.\/-]+\.md$/.test(f.filename))||
        String(f.status)==="removed"))return fail("unsafe_release_scope",409);
 
   const url=Deno.env.get("SUPABASE_URL"),key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

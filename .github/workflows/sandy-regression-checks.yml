@@ -1,5 +1,6 @@
 name: Sandy engineering regression checks
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - 'scripts/sandy/**'

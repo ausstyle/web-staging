@@ -1,0 +1,92 @@
+name: Sandy strictly safe autonomous merge
+on:
+  workflow_run:
+    workflows: ["Sandy Architect and Engineer"]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: sandy-safe-automerge-${{ github.event.workflow_run.id }}
+  cancel-in-progress: false
+jobs:
+  policy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == 'ausstyle/web-staging' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      actions: read
+    outputs:
+      eligible: ${{ steps.check.outputs.eligible }}
+      pr_number: ${{ steps.check.outputs.pr_number }}
+      head_sha: ${{ steps.check.outputs.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Verify deterministic release gate tests
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_autonomous_safe_merge.py' -v
+      - id: check
+        name: Check exact source, GitHub identity, scope and diff
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id }}
+        run: python3 scripts/sandy/autonomous_safe_merge.py
+  independent_tests:
+    needs: policy
+    if: ${{ needs.policy.outputs.eligible == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.policy.outputs.head_sha }}
+          persist-credentials: false
+      - name: Run complete Sandy regression suite without write token or deployment credentials
+        run: |
+          python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
+          python3 -m compileall -q scripts/sandy
+          git diff --check
+  promote:
+    needs: [policy, independent_tests]
+    if: ${{ needs.policy.outputs.eligible == 'true' && needs.independent_tests.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Revalidate unchanged PR, then merge strictly safe source-only improvement
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id }}
+          EXPECTED_HEAD: ${{ needs.policy.outputs.head_sha }}
+          EXPECTED_PR: ${{ needs.policy.outputs.pr_number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import os
+          from scripts.sandy.autonomous_safe_merge import get_evidence
+          candidate=get_evidence(os.environ["SANDY_ENGINEER_RUN_ID"])
+          if not candidate or candidate["head_sha"]!=os.environ["EXPECTED_HEAD"] or str(candidate["pr_number"])!=os.environ["EXPECTED_PR"]:
+              raise SystemExit("Safety evidence changed: do not merge")
+          PY
+          gh pr ready "$EXPECTED_PR" --repo ausstyle/web-staging
+          gh api -X PUT "repos/ausstyle/web-staging/pulls/$EXPECTED_PR/merge" -f sha="$EXPECTED_HEAD" -f merge_method=squash >/dev/null
+          echo "Merged bounded non-production docs/additive-tests change. Production verification is NOT asserted."
+      - name: Request independent main-branch CI despite bot-trigger recursion
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run sandy-regression-checks.yml --repo ausstyle/web-staging --ref main
