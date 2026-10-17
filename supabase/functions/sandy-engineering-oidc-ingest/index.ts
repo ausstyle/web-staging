@@ -138,8 +138,8 @@ Deno.serve(async(req:Request)=>{
     const runtimeChecks:any[]=[];
     if(verified&&gmailRead.successful){
       const cases=[
-        {key:"connections",question:"Which Google services are connected to my Sandy account? Check your live records.",required:"list_connected_services"},
-        {key:"gmail",question:"Read the latest email in my connected Gmail inbox and report its subject.",required:"search_connected_gmail"}
+        {key:"connections",question:"Which Google services are connected to my Sandy account? Check your live records.",required:"v2_connection_preflight"},
+        {key:"gmail",question:"Read the latest email in my connected Gmail inbox and report its subject.",required:"gmail_verified_recent"}
       ];
       const receipts=await Promise.all(cases.map(async(test)=>{
         const requestId="examinerlab_"+crypto.randomUUID();
