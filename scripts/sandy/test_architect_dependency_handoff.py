@@ -29,6 +29,16 @@ class HandoffTests(unittest.TestCase):
         self.assertEqual(calls[-1][:3],["gh","issue","comment"])
         self.assertEqual(calls[-1][-1].count("sandy-people-network"),1)
 
+    def test_missing_edge_function_queues_protected_audit(self):
+        calls = self.execute('DECISION: BLOCKED\\nDEPENDENCIES_JSON:\\n{"dependencies":[{"type":"edge_function","name":"sandy-function-never-present-xyz"}]}')
+        self.assertEqual(len(calls), 3)
+        self.assertEqual(calls[-1][:3], ["gh", "workflow", "run"])
+        self.assertIn("edge_function=sandy-function-never-present-xyz", calls[-1])
+
+    def test_non_edge_dependency_does_not_dispatch(self):
+        calls = self.execute('DECISION: BLOCKED\\nDEPENDENCIES_JSON:\\n{"dependencies":[{"type":"database_schema","name":"sandy_unknown_table"}]}')
+        self.assertEqual(len(calls), 2)
+
     def test_ready_does_not_post(self):
         self.assertEqual(self.execute("DECISION: READY\n"),[])
 
