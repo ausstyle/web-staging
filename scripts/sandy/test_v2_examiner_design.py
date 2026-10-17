@@ -116,6 +116,12 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('google_reads_verified_lab_review_pending', EDGE)
         self.assertIn('lab_enabled:false', EDGE)
 
+    def test_model_provider_errors_are_minimized(self):
+        self.assertIn('problem?.error?.code', EDGE)
+        self.assertIn('problem?.error?.param', EDGE)
+        self.assertIn('problem?.error?.type', EDGE)
+        self.assertIn('never arbitrary error text', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
