@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Aggregate proposal rejection diagnosis verification on gateway v24.
+# Exact provenance grounding-key verification on gateway v25.
 on:
   push:
     branches: [main]
