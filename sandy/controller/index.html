@@ -13,6 +13,23 @@ main{padding:28px clamp(18px,3.4vw,62px) 100px;min-width:0;max-width:1720px;widt
 .detail{white-space:pre-wrap;overflow-wrap:anywhere;max-width:520px;color:#555}.status{font-size:12px;color:#666}a{color:#111}
 @media(max-width:950px){#layout{grid-template-columns:1fr}aside{position:static;height:auto;padding:15px}.menu{display:flex;overflow:auto;margin-top:12px}.nav{white-space:nowrap;width:auto}.sub{display:none}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.arch{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){main{padding:17px}.arch{grid-template-columns:1fr}.stat{padding:15px}h1{font-size:27px}}
+</style><style>
+.visualMetrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:12px;margin:22px 0}
+.visualMetric{border:1px solid #e4e4e4;border-radius:16px;padding:19px;background:linear-gradient(135deg,#fff,#f8f8f8)}
+.visualMetric .value{font-size:34px;font-weight:800;letter-spacing:-1.4px}.visualMetric .name{font-size:12px;color:#666}.visualMetric .track{height:5px;background:#e8e8e8;border-radius:6px;margin-top:13px;overflow:hidden}.visualMetric .fill{height:100%;background:#222;border-radius:6px}
+.visualSteps{display:grid;grid-template-columns:repeat(5,minmax(125px,1fr));gap:8px;margin:19px 0}
+.visualStep{position:relative;border:1px solid #dedede;border-radius:12px;padding:15px;background:#fafafa;min-height:104px}
+.visualStep b{display:block;font-size:13px}.visualStep small{display:block;margin-top:8px;color:#777}.visualStep .number{font-size:11px;color:#888;letter-spacing:.08em;margin-bottom:7px}
+.visualSplit{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(260px,1fr);gap:16px}
+.visualCard{border:1px solid #e6e6e6;border-radius:12px;padding:14px;margin:9px 0;background:#fff}
+.visualCard summary{cursor:pointer;font-weight:650;display:flex;align-items:center;gap:9px;justify-content:space-between}
+.visualCard summary::marker{color:#888}.visualCard .details{padding-top:12px;color:#555;font-size:13px;overflow-wrap:anywhere}
+.visualTag{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:5px 8px;border-radius:30px;background:#ededed;color:#555;white-space:nowrap}
+.visualTag.high,.visualTag.failed{background:#171717;color:#fff}
+.visualList{display:grid;gap:8px}.visualEmpty{padding:25px;text-align:center;border:1px dashed #ddd;border-radius:12px;color:#777}
+.visualBar{display:flex;align-items:center;gap:10px;padding:9px 0}.visualBar label{width:150px;max-width:40%;font-size:12px}.visualBar .track{flex:1;height:11px;border-radius:6px;background:#eee;overflow:hidden}.visualBar .fill{height:100%;background:#333}.visualBar small{width:32px;text-align:right}
+@media(max-width:1050px){.visualSplit{grid-template-columns:1fr}.visualSteps{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:550px){.visualSteps{grid-template-columns:1fr}.visualMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.visualMetric{padding:13px}}
 </style></head><body><div id="gate"><div class="signin"><div class="brand">✳ sandy.<small>CONTROLLER / RESTRICTED OPERATIONS</small></div><h1>Operator sign in</h1><p class="muted">Your private administration console. Access requires a separately authorised Sandy operator account.</p><button id="signin" class="btn primary" style="width:100%">Sign in with Sandy</button><p id="gateMsg" class="status" role="alert"></p><p id="signedInAs" class="small muted"></p><button id="switchAccount" class="btn" type="button" style="width:100%;margin-top:8px">Switch Sandy account</button><p class="small muted">For access, sign in with your approved Sandy account using the shared workspace sign-in flow.</p></div></div>
 <div id="layout" class="hide"><aside><div class="brand">✳ sandy.<small>CONTROLLER</small></div><div class="menu" id="menu"><button class="nav active" data-view="overview">◫ Mission Control</button><button class="nav" data-view="missions">◎ Missions</button><button class="nav" data-view="engineering">⚒ Engineering</button><button class="nav" data-view="intelligence">◈ Sandy Intelligence</button><button class="nav" data-view="activity">↻ Activity & investigations</button><button class="nav" data-view="engagement">♙ Users & engagement</button><button class="nav" data-view="qa">✓ QA & improvements</button><button class="nav" data-view="integrations">⌁ Integrations</button><button class="nav" data-view="architecture">◇ Architecture</button><button class="nav" data-view="capabilities">✧ Capabilities</button><button class="nav" data-view="operations">☷ Operations</button></div><div class="sub">LINKS</div><a class="nav" style="display:block;text-decoration:none" href="../app/">← Client workspace</a></aside>
 <main><div class="top"><div><b>Administration / <span id="sectionName">Overview</span></b><div id="updated" class="muted small">Loading metrics…</div></div><div><button id="refresh" class="btn">↻ Refresh</button> <button id="signout" class="btn">Sign out</button></div></div><h1 id="heading">Sandy operations</h1><p id="subtitle" class="muted">Your private control room for running and improving Sandy.</p><div id="content"></div></main></div>
@@ -47,26 +64,39 @@ let supervisorData=null;
 async function refreshSupervisor(){try{supervisorData=await call("supervisor");if(view==="intelligence")render()}catch(e){console.error("Supervisor unavailable",e)}}
 function showIntelligence(c){
  const d=supervisorData;
- const p=panel("Supervisory intelligence");
- txt(p,"Independent evidence from recorded executions and QA. Observations identify risks; they do not reconstruct private model reasoning or prove root causes.","muted");
- if(!d){txt(p,"Loading supervisory records…");c.append(p);refreshSupervisor();return}
- const s=el("div","stats");
- for(const [n,v] of [["Failed runs",d.metrics.failed_runs],["Stalled missions",d.metrics.stale_missions],["Unresolved QA",d.metrics.unresolved_qa]]){const card=el("div","stat");add(card,el("span","",n),el("b","",v));s.append(card)}p.append(s);c.append(p);
- const evidence=panel("Behaviour and failure observations");
- searchable(evidence,d.observations,["Category","Subject","Evidence"],(x,i)=>[x.category,x.subject,x.detail][i]);c.append(evidence);
- const findings=panel("Investigation register");searchable(findings,d.findings,["Finding","Severity","State","Recommendation"],(x,i)=>[x.subject,x.severity,x.state,x.recommendation||"Unassigned"][i]);c.append(findings);
- const maturity=panel("Capability maturity");txt(maturity,"0 absent · 1 implemented · 2 isolated test · 3 end-to-end · 4 production reliable · 5 autonomous and continually verified.","small muted");
- searchable(maturity,d.assessments,["Capability","Level","Evidence basis"],(x,i)=>[x.capability_key,x.maturity,x.basis][i]);c.append(maturity);
- const work=panel("Improvement investigations and customer outcomes");
- const loadWork=el("button","btn","Load improvement work");loadWork.onclick=async()=>{loadWork.disabled=true;try{const r=await call("supervisor_work");work.append(tbl(["Capability","Phase","State","Action"],r.jobs,(x,i)=>{
-if(i===3){const b=el("button","btn small","Review");b.onclick=async()=>{
-const status=prompt("Set investigation status: investigating, proposal_ready, testing, verified, rejected, blocked",x.status);if(!status||status===x.status)return;
-let verification={};
-if(status==="verified"){const test_reference=prompt("Independent test reference");if(!test_reference)return;const observed_result=prompt("Observed test result");if(!observed_result)return;const deployment_reference=prompt("Deployed version or commit");if(!deployment_reference)return;verification={test_reference,observed_result,deployment_reference}}
-try{await call("supervisor_job_update",{id:x.id,status,verification});alert("Investigation updated");work.remove();showIntelligence($("content"))}catch(e){alert(e.message)}
-};return b}
-return [x.capability,x.phase,x.status][i]}));const summary=el("p","small muted","Customer outcomes: "+r.outcomes.length+" recorded, "+r.outcomes.filter(x=>x.verdict==="verified").length+" verified");work.append(summary)}catch(e){alert(e.message)}finally{loadWork.disabled=false}};work.append(loadWork);c.append(work);
- const lab=panel("Experimentation and independent verification");searchable(lab,d.evaluations,["Scenario","Verdict","Date"],(x,i)=>[x.scenario,x.verdict,date(x.created_at)][i]);c.append(lab);
+ const intro=panel("Sandy at a glance");txt(intro,"See what needs attention, follow the improvement process, and inspect evidence behind each finding.","muted");
+ if(!d){txt(intro,"Loading intelligence…","muted");c.append(intro);refreshSupervisor();return}
+ const metrics=el("div","visualMetrics");
+ const values=[["Failed executions",d.metrics.failed_runs],["Possibly stalled missions",d.metrics.stale_missions],["QA awaiting resolution",d.metrics.unresolved_qa],["Recorded findings",d.findings.length]];
+ const ceiling=Math.max(1,...values.map(x=>Number(x[1])||0));
+ values.forEach(([name,value])=>{const card=el("div","visualMetric");add(card,el("div","value",value),el("div","name",name));const track=el("div","track"),fill=el("div","fill");fill.style.width=Math.max(0,Math.min(100,(Number(value)||0)/ceiling*100))+"%";track.append(fill);card.append(track);metrics.append(card)});
+ intro.append(metrics);txt(intro,"Snapshot of bounded operational records; not system-wide totals or independent proof of causes.","small muted");c.append(intro);
+ const process=panel("How Sandy improves");txt(process,"Select an incident below to investigate it, then follow each improvement through evidence-based verification.","small muted");
+ const steps=el("div","visualSteps");
+ [["01","Detect","Find operational failures"],["02","Investigate","Identify probable causes"],["03","Propose","Design corrective change"],["04","Test","Compare against baseline"],["05","Verify","Confirm the real outcome"]].forEach(([num,title,caption])=>{const x=el("div","visualStep");add(x,el("div","number",num),el("b","",title),el("small","",caption));steps.append(x)});process.append(steps);c.append(process);
+ const split=el("div","visualSplit"),left=el("section","panel"),right=el("section","panel");
+ add(left,el("h2","","Needs investigation"),el("p","small muted","Expandable observations drawn from execution and QA records."));
+ const observations=el("div","visualList");
+ d.observations.slice(0,35).forEach(x=>{const card=el("details","visualCard"),head=el("summary");add(head,el("span","",x.subject),el("span","visualTag",x.category));card.append(head);add(card,el("div","details",x.detail||"No additional evidence supplied"));observations.append(card)});
+ if(!d.observations.length)observations.append(el("div","visualEmpty","No current observations in this sample."));left.append(observations);
+ add(right,el("h2","","Capability maturity"),el("p","small muted","Evidence-based maturity from 0 (not implemented) to 5 (reliably autonomous)."));
+ if(d.assessments.length){d.assessments.slice(0,20).forEach(x=>{const line=el("div","visualBar"),track=el("div","track"),fill=el("div","fill");fill.style.width=Math.min(100,Math.max(0,Number(x.maturity)*20))+"%";track.append(fill);add(line,el("label","",x.capability_key),track,el("small","",x.maturity+"/5"));right.append(line)})}
+ else right.append(el("div","visualEmpty","Capability assessments have not yet been recorded."));
+ split.append(left,right);c.append(split);
+ const findings=panel("Findings register");
+ d.findings.slice(0,35).forEach(x=>{const card=el("details","visualCard"),head=el("summary");add(head,el("span","",x.subject),el("span","visualTag "+(x.severity==="high"?"high":""),x.state+" · "+x.severity));card.append(head);const body=el("div","details");add(body,el("p","",x.explanation),el("p","", "Recommended: "+(x.recommendation||"Investigation needed")));card.append(body);findings.append(card)});
+ if(!d.findings.length)findings.append(el("div","visualEmpty","No persisted findings in this view."));c.append(findings);
+ const work=panel("Improvement workbench");
+ const load=el("button","btn primary","Show investigations and outcomes");
+ load.onclick=async()=>{load.disabled=true;try{const result=await call("supervisor_work");load.remove();
+ const summary=el("div","visualMetrics");for(const [name,num] of [["Investigations",result.jobs.length],["Outcome records",result.outcomes.length],["Verified outcomes",result.outcomes.filter(x=>x.verdict==="verified").length]]){const item=el("div","visualMetric");add(item,el("div","value",num),el("div","name",name));summary.append(item)}work.append(summary);
+ result.jobs.forEach(x=>{const item=el("details","visualCard"),h=el("summary");add(h,el("span","",x.capability),el("span","visualTag",x.status));item.append(h);const inner=el("div","details");add(inner,el("p","",x.hypothesis||"No hypothesis yet"),el("p","",x.proposed_change||"No proposal yet"));const btn=el("button","btn","Review status");btn.onclick=async()=>{const status=prompt("Set status: investigating, proposal_ready, testing, verified, rejected, blocked",x.status);if(!status||status===x.status)return;let verification={};if(status==="verified"){const test_reference=prompt("Test reference");if(!test_reference)return;const observed_result=prompt("Observed test result");if(!observed_result)return;const deployment_reference=prompt("Deployment reference");if(!deployment_reference)return;verification={test_reference,observed_result,deployment_reference}}try{await call("supervisor_job_update",{id:x.id,status,verification});alert("Status saved");await refreshSupervisor()}catch(e){alert(e.message)}};inner.append(btn);item.append(inner);work.append(item)});
+ if(!result.jobs.length)work.append(el("div","visualEmpty","No investigations currently queued."));
+ }catch(e){alert(e.message);load.disabled=false}};work.append(load);c.append(work);
+ const experiments=panel("Experiments and verification");
+ if(!d.evaluations.length)experiments.append(el("div","visualEmpty","No comparative experiments recorded yet."));
+ else d.evaluations.slice(0,20).forEach(x=>{const item=el("div","visualCard");add(item,el("strong","",x.scenario),el("p","small muted",x.verdict+" · "+date(x.created_at)));experiments.append(item)});
+ c.append(experiments);
 }
 function showEngineering(c){
  const p=panel("QA issues requiring attention");searchable(p,data.qa.filter(x=>x.status!=="passed"),["Issue","Status","Next action"],(x,i)=>[x.subject,x.status,x.next_action||"—"][i]);c.append(p);
