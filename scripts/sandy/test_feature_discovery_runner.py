@@ -1,5 +1,5 @@
 import unittest
-from run_feature_discovery import verify_response,validate_pending,clean_for_public_issue,issue_for
+from run_feature_discovery import verify_response,validate_pending,clean_for_public_issue,issue_for,load_all_existing_issues
 from unittest.mock import patch
 from pathlib import Path
 
@@ -63,6 +63,30 @@ class FeatureDiscoveryRunnerTests(unittest.TestCase):
         self.assertIn('"github_publication":False',worker)
         self.assertIn("paths:",workflow)
         self.assertIn("'.github/workflows/sandy-feature-discovery.yml'",workflow)
+
+
+    def test_paginated_issue_lookup_prevents_duplicate(self):
+        existing=[{"number":n,"body":""} for n in range(1,101)]
+        matching={"number":101,"body":"<!-- sandy-feature-key:unified_task_insights -->"}
+        item=validate_pending({"key":"unified_task_insights",
+              "problem":"Repeated users need faster verified task execution",
+              "ideal":"A single task interface that shows verified execution receipts",
+              "risk":"low","priority":87})
+        with patch("run_feature_discovery.github",side_effect=[existing,[matching]]) as api:
+            found=load_all_existing_issues()
+            self.assertEqual(issue_for(item,found),101)
+            self.assertEqual(api.call_count,2)
+
+    def test_pagination_errors_fail_closed(self):
+        with patch("run_feature_discovery.github",side_effect=RuntimeError("GitHub down")):
+            with self.assertRaises(RuntimeError):
+                load_all_existing_issues()
+        with patch("run_feature_discovery.github",return_value={"not":"a list"}):
+            with self.assertRaises(RuntimeError):
+                load_all_existing_issues()
+        with patch("run_feature_discovery.github",return_value=[{"number":i} for i in range(100)]):
+            with self.assertRaises(RuntimeError):
+                load_all_existing_issues(max_pages=2)
 
 
 if __name__=="__main__":
