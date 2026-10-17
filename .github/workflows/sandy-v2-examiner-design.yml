@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Compact grounded model request live verification on gateway v20.
+# Structured Responses API request verification on gateway v21.
 on:
   push:
     branches: [main]
