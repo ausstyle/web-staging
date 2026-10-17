@@ -644,12 +644,26 @@ Deno.serve(async(req:Request)=>{
               ". Read-only question: "+question.slice(0,220)+". Actual reply excerpt: "+answer.slice(0,650)+
               ". Tool evidence: "+JSON.stringify(trace.map((t:any)=>({tool:t.tool,success:t.success}))).slice(0,500)+
               ". Diagnose the root cause in deployed source; do not assume a repair or use real customer data."};
-            const diagnostic=fetch(url+"/functions/v1/sandy-auto-improve",{
-              method:"POST",headers:{"authorization":"Bearer "+secret,"content-type":"application/json"},
-              body:JSON.stringify(payload),signal:AbortSignal.timeout(60000)
-            }).then(async r=>{if(!r.ok)console.error("v2_qa_auto_improve_http",r.status)})
-              .catch(e=>console.error("v2_qa_auto_improve_err",String(e).slice(0,100)));
-            EdgeRuntime.waitUntil(diagnostic);
+            let evolutionAccepted=false,evolutionStatus="unavailable";
+            try{
+              const rsp=await fetch(url+"/functions/v1/sandy-auto-improve",{
+                method:"POST",headers:{"authorization":"Bearer "+secret,"content-type":"application/json"},
+                body:JSON.stringify(payload),signal:AbortSignal.timeout(85000)
+              });
+              const receipt=await rsp.json().catch(()=>({}));
+              evolutionAccepted=rsp.ok&&receipt.ok===true&&receipt.status==="proposed";
+              evolutionStatus=evolutionAccepted?"proposal_recorded":"delivery_or_diagnosis_failed";
+            }catch{evolutionStatus="evolution_unreachable";}
+            // Never acknowledge delivery without an authenticated downstream receipt.
+            const {error:handoffReceiptError}=await db.from("sandy_qa_cases").upsert({
+              test_key:"v2_api_qa_evolution_delivery_"+recordCaseKey,
+              subject:"Sandy Examiner to Evolution diagnosis receipt: "+recordCaseKey,
+              status:evolutionAccepted?"passed":"failed",
+              findings:evolutionStatus+". Independent synthetic API QA evidence: "+requestId+".",
+              next_action:evolutionAccepted?"Evolution proposal requires separate engineering review, deployment and current-state regression verification.":"Inspect Evolution edge errors and retry delivery without repeating any customer side effects.",
+              updated_at:new Date().toISOString()
+            },{onConflict:"test_key"});
+            if(handoffReceiptError)return fail("evolution_handoff_receipt_unavailable",503);
           }else{
             await db.from("sandy_qa_cases").upsert({test_key:"v2_api_qa_autodiagnosis_unavailable",subject:"Sandy V2 diagnosis credentials unavailable",status:"failed",findings:"Repeated API QA failures have no authorised self-diagnosis connection",next_action:"Configure internal diagnosis capability and independently test the handoff.",updated_at:new Date().toISOString()},{onConflict:"test_key"});
           }
