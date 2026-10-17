@@ -19,6 +19,7 @@ jobs:
     permissions:
       contents: read
       issues: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
       - name: Validate assignment and credentials
