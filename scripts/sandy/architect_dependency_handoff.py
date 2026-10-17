@@ -9,6 +9,7 @@ import os
 import re
 import subprocess
 from pathlib import Path
+from source_registry import inventory, assess
 
 report = Path(os.environ.get("ARCHITECT_REPORT", "/tmp/sandy-architecture.md")).read_text()
 issue = os.environ["ISSUE"]
@@ -57,7 +58,8 @@ if marker in prior:
     print("Existing matching handoff; no duplicate created")
     raise SystemExit(0)
 lines = ["### Sandy Architect: dependencies needed", "", "Read-only source audit required before coding:", ""]
-lines += [f"- `{kind}`: `{name}`" for kind, name in clean]
+assessment = assess([{"type":kind,"name":name} for kind,name in clean], inventory())
+lines += [f"- `{x['type']}`: `{x['name']}` — {x['status']}" for x in assessment]
 lines += ["", "Sandy's source-acquisition process should retrieve and audit these using approved least-privilege access. Do not paste credentials, customer data or tokens into the issue. Engineer remains blocked.", "", marker]
 subprocess.run(["gh", "issue", "comment", issue, "--body", "\n".join(lines)], check=True)
-print(f"Published dependency handoff with {len(clean)} items")
+print(f"Published dependency handoff with {len(clean)} items; repository presence is NOT production parity")

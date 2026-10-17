@@ -59,6 +59,8 @@ jobs:
             identity_permissions, source_parity, other. Use exact source object names only;
             omit sensitive identifiers, customer data, credentials and tokens.
             The dependency list is evidence to gather, NEVER permission to bypass BLOCKED.
+      - name: Validate dependency handoff and registry contracts
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
       - name: Record deduplicated dependency handoff
         if: success()
         env:
