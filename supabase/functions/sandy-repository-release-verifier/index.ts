@@ -31,7 +31,7 @@ Deno.serve(async(req:Request)=>{
     claims=verified.payload;
   }catch{return fail("invalid_oidc",401);}
   if(claims.repository!==REPO||String(claims.repository_id)!==REPO_ID||
-    claims.workflow_ref!==WORKFLOW_REF||claims.event_name!=="workflow_run"||
+    claims.workflow_ref!==WORKFLOW_REF||!["workflow_run","push","schedule"].includes(String(claims.event_name))||
     claims.ref!=="refs/heads/main")return fail("unauthorised_workflow",403);
   let payload:any;
   try{payload=await req.json()}catch{return fail("invalid_body")}
