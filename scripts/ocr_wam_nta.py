@@ -34,7 +34,7 @@ def ocr(item):
   first=pdf[0]
   # Prefer rendered text before OCR; always OCR when sparse.
   native=first.get_text()
-  if len(native.strip())>550:text=native
+  if len(native.strip())>1400:text=native
   else:
    pix=first.get_pixmap(matrix=fitz.Matrix(2.0,2.0),alpha=False)
    image=Image.open(io.BytesIO(pix.tobytes("png")))
@@ -44,11 +44,13 @@ def ocr(item):
   title_date=re.search(r"(January|February|March|April|May|June|July|August|September|October|November|December)\s+([12][09]\d\d)",text[:4500],re.I)
   if title_date:
    actual=f'{title_date.group(2)}-{monthnames[title_date.group(1).lower()]:02d}'
-   if actual!=period:return [period,name,"MISMATCH",None,None,"internal month "+actual,d["stored_pdf_url"],text[:850]]
+   if actual!=period and "INVESTMENT UPDATE & NTA" in text[:350].upper():return [period,name,"MISMATCH",None,None,"internal month "+actual,d["stored_pdf_url"],text[:4000]]
   # Examples: 'Pre-tax net tangible assets $1.57', 'NTA before tax 157.3c', 'Pre-tax NTA $1.53 $1.48 ...'
   patterns=[
    (r"pre[\s-]*tax\s+net\s+tangible\s+assets\s*[:\-]?\s*\$\s*(\d\.\d{2,4})",1),
    (r"NTA\s+before\s+tax(?:\s+payable\s+and\s+after\s+tax\s+assets)?\s*[:\-]?\s*\*{0,2}\s*(\d{2,3}\.\d{1,4})\s*c",.01),
+   (r"NTA\s+before\s+tax\s+was\s+(\d{2,3}\.\d{1,4})\s+cents",.01),
+   (r"NTA\s+before\s+tax\s*\$\s*(\d\.\d{2,4})",1),
    (r"pre[\s-]*tax\s+NTA\s*(?:\(ex.dividend\))?\s*\$\s*(\d\.\d{2,4})",1),
   ]
   pres=[]
@@ -61,7 +63,7 @@ def ocr(item):
    # Some Wilson multi-LIC reports show 'Pre-tax NTA $1.50 $1.25 $2.21' in first row; WAM first.
    ma=re.search(r"Pre.tax\s+NTA\s*\n\s*\$?\s*(\d\.\d\d)\s*\n\s*\$\d",text[:2700],re.I)
    if ma:pres=[(float(ma.group(1)),ma.group(0))]
-  if not pres:return [period,name,"REVIEW",None,None,"NTA number not extracted",d["stored_pdf_url"],text[:850]]
+  if not pres:return [period,name,"REVIEW",None,None,"NTA number not extracted",d["stored_pdf_url"],text[:6500]]
   if max(x[0] for x in pres)-min(x[0] for x in pres)>.04:return [period,name,"REVIEW",None,None,"conflicting pre-tax values "+str(pres[:5]),d["stored_pdf_url"],text[:850]]
   pre=pres[0][0]
   post=None
