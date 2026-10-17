@@ -57,6 +57,8 @@ function showIntelligence(c){
  const findings=panel("Investigation register");searchable(findings,d.findings,["Finding","Severity","State","Recommendation"],(x,i)=>[x.subject,x.severity,x.state,x.recommendation||"Unassigned"][i]);c.append(findings);
  const maturity=panel("Capability maturity");txt(maturity,"0 absent · 1 implemented · 2 isolated test · 3 end-to-end · 4 production reliable · 5 autonomous and continually verified.","small muted");
  searchable(maturity,d.assessments,["Capability","Level","Evidence basis"],(x,i)=>[x.capability_key,x.maturity,x.basis][i]);c.append(maturity);
+ const work=panel("Improvement investigations and customer outcomes");
+ const loadWork=el("button","btn","Load improvement work");loadWork.onclick=async()=>{loadWork.disabled=true;try{const r=await call("supervisor_work");work.append(tbl(["Capability","Phase","State","Approval required"],r.jobs,(x,i)=>[x.capability,x.phase,x.status,x.approval_required?"Yes":"No"][i]));const summary=el("p","small muted","Customer outcomes: "+r.outcomes.length+" recorded, "+r.outcomes.filter(x=>x.verdict==="verified").length+" verified");work.append(summary)}catch(e){alert(e.message)}finally{loadWork.disabled=false}};work.append(loadWork);c.append(work);
  const lab=panel("Experimentation and independent verification");searchable(lab,d.evaluations,["Scenario","Verdict","Date"],(x,i)=>[x.scenario,x.verdict,date(x.created_at)][i]);c.append(lab);
 }
 function showEngineering(c){
