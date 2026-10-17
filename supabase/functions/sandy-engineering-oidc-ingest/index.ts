@@ -763,6 +763,19 @@ Deno.serve(async(req:Request)=>{
       },{onConflict:"finding_key",ignoreDuplicates:true});
       if(findingError)return fail("assurance_finding_receipt_failed",503);
     }
+    // A no-op budget-limited run must never be counted as passing acceptance.
+    if(summary.attempted>0){
+      const dynamicVerified=outputs.some((x:any)=>x.ai_design_run&&x.verdict==="pass");
+      if(dynamicVerified){
+        const {error:gateError}=await db.from("sandy_examiner_acceptance_gates").update({
+          status:"passed",verified_at:new Date().toISOString(),updated_at:new Date().toISOString(),
+          evidence:{run_key:runKey,source:"sandy_v2_qa_executions",
+            qualifying_case:outputs.find((x:any)=>x.ai_design_run&&x.verdict==="pass")?.case,
+            scope:"synthetic_api_only"}
+        }).eq("gate_key","dynamic_execution");
+        if(gateError)return fail("acceptance_gate_write_failed",503);
+      }
+    }
     // No customer-sensitive content or API token in the external result.
     return json({ok:true,run_key:runKey,...summary,results:outputs});
   }
