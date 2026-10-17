@@ -887,7 +887,7 @@ async function loadTaskRequests(){
  const item=el("div","requestInboxItem");item.append(el("strong","",request.title));
  const detail=btn("Details","btn small",()=>alert(request.details||"No additional details"));
  const approve=btn("Approve","btn small primary",async()=>{approve.disabled=true;try{await api("request-decision",{id:request.id,decision:"approved"});await load();toast("Task request approved")}catch(err){toast(err.message,true)}finally{approve.disabled=false}});
- const decline=btn("Decline","btn small",async()=>{const reason=prompt("Reason for declining (optional)")||"";decline.disabled=true;try{await api("request-decision",{id:request.id,decision:"declined",reason});await loadTaskRequests();toast("Request declined")}catch(err){toast(err.message,true)}finally{decline.disabled=false}});
+ const decline=btn("Decline","btn small",async()=>{const reason=(prompt("Please explain why this request is declined")||"").trim();if(!reason){toast("A reason is required to decline a request",true);return}decline.disabled=true;try{await api("request-decision",{id:request.id,decision:"declined",reason});await loadTaskRequests();toast("Request declined")}catch(err){toast(err.message,true)}finally{decline.disabled=false}});
  item.append(detail,approve,decline);area.append(item)
  }
  }catch(err){area.textContent="Could not load task requests: "+err.message}
