@@ -82,7 +82,7 @@ Deno.serve(async(req:Request)=>{
     if(!issueResponse||!issueResponse.ok)return fail("github_issue_unavailable",503);
     const recordedIssue=await issueResponse.json();
     const issueBody=String(recordedIssue.body||"");
-    const sourceMatch=issueBody.match(/\\bscripts\\/sandy\\/[a-z0-9_/-]+[.]py\\b/i);
+    const sourceMatch=issueBody.match(new RegExp("scripts/sandy/[a-z0-9_-]+[.]py","i"));
     if(recordedIssue.state!=="open"||recordedIssue.pull_request||
        !String(recordedIssue.title||"").startsWith("Sandy QA:")||
        !recordedIssue.labels?.some((l:any)=>l.name==="sandy-autonomous-ready")||
@@ -97,7 +97,7 @@ Deno.serve(async(req:Request)=>{
     if(!sourceResponse||!sourceResponse.ok)return fail("github_source_not_verified",409);
     const sourceMeta=await sourceResponse.json();
     if(sourceMeta.type!=="file"||!sourceMeta.sha)return fail("github_source_not_verified",409);
-    const priorityMatch=issueBody.match(/\\bpriority\\s*[:=]?\\s*(\\d{1,3})(?:\\/100)?/i);
+    const priorityMatch=issueBody.match(new RegExp("priority[ :]+([0-9]{1,3})","i"));
     const priority=Math.min(100,Math.max(1,Number(priorityMatch?.[1]||80)));
     const registered=await db.rpc("sandy_autonomous_engineering_register_repo_issue",{
       p_issue_number:issue,p_run_id:String(runId),p_source_sha:String(run.head_sha),
