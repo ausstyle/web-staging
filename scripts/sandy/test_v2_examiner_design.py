@@ -153,6 +153,14 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('const recordCaseKey=selectedDynamic?', EDGE)
         self.assertIn('ai_design_run:testcase.design_run_key||null', EDGE)
 
+    def test_separate_ai_quality_judge_cannot_override_oracle(self):
+        self.assertIn('if(selectedDynamic){', EDGE)
+        self.assertIn('semantic_review:semanticReview', EDGE)
+        self.assertIn('An oracle failure cannot be overturned', EDGE)
+        self.assertIn('if(verdict==="pass"&&(value!=="pass"||score<3))', EDGE)
+        self.assertIn('independent_semantic_review_unavailable', EDGE)
+        self.assertIn('observed_tools:trace.map', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
