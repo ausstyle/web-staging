@@ -1,16 +1,22 @@
 name: Sandy strictly safe autonomous merge
 on:
+  workflow_dispatch:
+    inputs:
+      engineering_run_id:
+        description: Successful Architect/Engineer run to verify; not an approval override
+        required: true
+        type: string
   workflow_run:
     workflows: ["Sandy Architect and Engineer"]
     types: [completed]
 permissions:
   contents: read
 concurrency:
-  group: sandy-safe-automerge-${{ github.event.workflow_run.id }}
+  group: sandy-safe-automerge-${{ github.event.workflow_run.id || inputs.engineering_run_id }}
   cancel-in-progress: false
 jobs:
   policy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == 'ausstyle/web-staging' }}
+    if: ${{ (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && github.event.workflow_run.head_repository.full_name == 'ausstyle/web-staging') || (github.event_name == 'workflow_dispatch' && github.repository == 'ausstyle/web-staging' && github.ref == 'refs/heads/main') }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -29,11 +35,25 @@ jobs:
           persist-credentials: false
       - name: Verify deterministic release gate tests
         run: python3 -m unittest discover -s scripts/sandy -p 'test_autonomous_safe_merge.py' -v
+      - name: Verify source engineering workflow completed before independent review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id || inputs.engineering_run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$SANDY_ENGINEER_RUN_ID" =~ ^[1-9][0-9]{4,19}$ ]] || exit 1
+          for attempt in $(seq 1 12); do
+            STATUS="$(gh api "repos/ausstyle/web-staging/actions/runs/$SANDY_ENGINEER_RUN_ID" --jq '.status')"
+            if [[ "$STATUS" == "completed" ]]; then exit 0; fi
+            sleep 5
+          done
+          echo "::error::Source engineering run did not complete"; exit 1
       - id: check
         name: Check exact source, GitHub identity, scope and diff
         env:
           GH_TOKEN: ${{ github.token }}
-          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id }}
+          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id || inputs.engineering_run_id }}
         run: python3 scripts/sandy/autonomous_safe_merge.py
   independent_tests:
     needs: policy
@@ -70,7 +90,7 @@ jobs:
       - name: Revalidate unchanged PR, then merge strictly safe source-only improvement
         env:
           GH_TOKEN: ${{ github.token }}
-          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id }}
+          SANDY_ENGINEER_RUN_ID: ${{ github.event.workflow_run.id || inputs.engineering_run_id }}
           EXPECTED_HEAD: ${{ needs.policy.outputs.head_sha }}
           EXPECTED_PR: ${{ needs.policy.outputs.pr_number }}
         shell: bash
