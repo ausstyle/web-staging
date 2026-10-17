@@ -6,14 +6,14 @@
 <main class="shell"><h1>Connect your apps</h1><p class="sub">Give Sandy permission to work with your tools. You remain in control of which accounts you connect.</p>
 <div id="notice" class="notice" role="status">Checking your Sandy session…</div>
 <div class="workspace-picker"><label for="workspace">Connect new apps to</label><select id="workspace"><option value="">Personal (private)</option></select><small class="sub">Company choices come from your Sandy tasks. Existing accounts can be reassigned below.</small></div><div class="toolbar"><input id="search" placeholder="Search apps and services" aria-label="Search apps"><button class="soft" id="refresh">Refresh connections</button></div>
-<section id="googlePanel" class="card" style="margin:24px 0;min-height:0;border-color:#d9e4f9">
+<h2>Available apps</h2><nav id="categories" class="chips" aria-label="App categories"></nav><div class="filters"><label for="statusFilter">Connection status</label><select id="statusFilter"><option value="all">All statuses</option><option value="ready">Ready to connect</option><option value="connected">Connected</option><option value="setup">Setup required</option></select><label for="sortApps">Sort by</label><select id="sortApps"><option value="recommended">Recommended</option><option value="az">Name A–Z</option><option value="za">Name Z–A</option><option value="status">Connection status</option></select></div><p id="resultCount" class="results" role="status"></p><div id="googleDetails" class="hide"><section id="googlePanel" class="card hide" style="margin:0 0 18px;min-height:0;border-color:#d9e4f9">
 <div class="app-head"><div class="app-logo" style="font-size:27px;color:#4285f4">G</div><div><h2 style="margin:0">Connect Google Workspace</h2><p class="sub" style="margin:2px 0">Select the Google services you want. Actual access depends on the permissions configured in Composio and approved by Google.</p></div></div>
 <div id="googleChoices" class="google-choices"></div>
 <div id="googleState" class="flag" role="status">Checking Google connection options…</div>
 <button type="button" id="googleConnect" disabled>Connect selected Google services</button>
 <p class="sub" style="font-size:12px;margin:0">Service checkboxes do not alter OAuth scopes. Google Super may request permissions beyond this list, depending on the configured OAuth scopes. Review the Google consent screen carefully. Custom permission combinations require separately configured authorisation.</p>
 </section>
-<h2>Available apps</h2><nav id="categories" class="chips" aria-label="App categories"></nav><div class="filters"><label for="statusFilter">Connection status</label><select id="statusFilter"><option value="all">All statuses</option><option value="ready">Ready to connect</option><option value="connected">Connected</option><option value="setup">Setup required</option></select><label for="sortApps">Sort by</label><select id="sortApps"><option value="recommended">Recommended</option><option value="az">Name A–Z</option><option value="za">Name Z–A</option><option value="status">Connection status</option></select></div><p id="resultCount" class="results" role="status"></p><div id="apps" class="grid"><p class="loader">Loading apps…</p></div>
+</div><div id="apps" class="grid"><p class="loader">Loading apps…</p></div>
 <h2>Your connections</h2><div id="connections" class="grid"><p class="sub">Loading connected accounts…</p></div>
 <p class="sub" style="margin-top:30px">Connecting an app does not automatically authorise Sandy to send messages, transfer money, or perform other high-impact actions. Those permissions are controlled separately.</p>
 </main>
@@ -35,6 +35,7 @@ const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-composio-gateway";
 const $=id=>document.getElementById(id);
 const popular=[
+["Google Workspace","googleworkspace","Gmail, Drive, Calendar, Contacts, Sheets and Docs","Productivity","googleworkspace"],
 
 
 
@@ -49,7 +50,7 @@ const popular=[
 ["Dropbox","dropbox","Cloud file storage","Files","dropbox"]];
 const categories=["All","Email","Files","Calendar","Communication","CRM","Productivity","Finance","Commerce","Development","Other"];
 let category="All",statusFilter="all",sortApps="recommended";
-const cdnLogo=slug=>({gmail:"gmail",googledrive:"googledrive",googlecalendar:"googlecalendar",slack:"slack",hubspot:"hubspot",notion:"notion",xero:"xero",shopify:"shopify",github:"github",outlook:"microsoftoutlook",microsoft_teams:"microsoftteams",dropbox:"dropbox"})[slug];
+const cdnLogo=slug=>({googleworkspace:"google",gmail:"gmail",googledrive:"googledrive",googlecalendar:"googlecalendar",slack:"slack",hubspot:"hubspot",notion:"notion",xero:"xero",shopify:"shopify",github:"github",outlook:"microsoftoutlook",microsoft_teams:"microsoftteams",dropbox:"dropbox"})[slug];
 function logo(name,slug){const icon=cdnLogo(slug);return '<div class="app-logo" aria-hidden="true">'+(icon?'<img src="https://cdn.simpleicons.org/'+icon+'" loading="lazy" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span hidden>'+esc(name.charAt(0).toUpperCase())+'</span>':'<span>'+esc(name.charAt(0).toUpperCase())+'</span>')+'</div>';}
 
 let configs=[],connections=[],toolkits=[],companies=[],filter="";
@@ -94,11 +95,11 @@ function render(){
  renderGoogle();
  $("categories").innerHTML=categories.map(c=>'<button type="button" class="chip" data-category="'+esc(c)+'" aria-pressed="'+(category===c)+'">'+esc(c)+'</button>').join("");
  $("categories").querySelectorAll("[data-category]").forEach(b=>b.onclick=()=>{category=b.dataset.category;render()});
- const extras=toolkits.filter(t=>!popular.some(a=>a[1]===t.slug)).map(t=>[t.name||t.slug,t.slug,"Other supported service","Other",null]);
+ const extras=toolkits.filter(t=>!popular.some(a=>a[1]===t.slug)&&!["gmail","googledrive","googlecalendar","googlecontacts","googlesheets","googledocs","google_super","googlesuper"].includes(String(t.slug||"").toLowerCase())).map(t=>[t.name||t.slug,t.slug,"Other supported service","Other",null]);
  const all=[...popular,...extras].map((a,i)=>{
   const [name,slug,desc,group]=a;
-  const match=configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===String(slug).toLowerCase()||String(c.name||"").toLowerCase()===String(name).toLowerCase());
-  const linked=connections.some(c=>String(c.toolkit_slug||"").toLowerCase()===String(slug).toLowerCase()&&String(c.status).toUpperCase()==="ACTIVE");
+  const match=slug==="googleworkspace"?googleAuthConfig()||configs.find(c=>["gmail","googledrive","googlecalendar"].includes(String(c.toolkit_slug||"").toLowerCase())):configs.find(c=>String(c.toolkit_slug||"").toLowerCase()===String(slug).toLowerCase()||String(c.name||"").toLowerCase()===String(name).toLowerCase());
+  const linked=connections.some(c=>(slug==="googleworkspace"?["googlesuper","google_super","googleworkspace"].includes(String(c.toolkit_slug||"").toLowerCase()):String(c.toolkit_slug||"").toLowerCase()===String(slug).toLowerCase())&&String(c.status).toUpperCase()==="ACTIVE");
   return {name,slug,desc,group,match,linked,state:linked?"connected":match?"ready":"setup",i};
  });
  let items=all.filter(a=>(category==="All"||a.group===category)&&(statusFilter==="all"||a.state===statusFilter)&&(a.name+" "+a.desc+" "+a.group).toLowerCase().includes(filter));
@@ -107,11 +108,12 @@ function render(){
  if(sortApps==="status")items.sort((a,b)=>({connected:0,ready:1,setup:2}[a.state]-{connected:0,ready:1,setup:2}[b.state])||a.name.localeCompare(b.name));
  $("resultCount").textContent=items.length+" of "+all.length+" apps"+(category==="All"?"":" · "+category);
  $("apps").innerHTML=items.length?items.map(({name,slug,desc,match,linked})=>
- '<article class="card '+(linked?"connected":"")+'"><div class="app-head">'+logo(name,slug)+'<h3>'+esc(name)+'</h3></div><p>'+esc(desc)+'</p><div class="flag"><span class="dot"></span>'+(linked?"Connected · add another":match?"Ready to connect":"Setup required")+'</div><button data-auth="'+esc(match?.id||"")+'" data-name="'+esc(name)+'" '+(!match?"disabled":"")+'>'+(match?(linked?"Connect another":"Connect"):"Not configured")+'</button></article>'
+ '<article class="card '+(linked?"connected":"")+'"><div class="app-head">'+logo(name,slug)+'<h3>'+esc(name)+'</h3></div><p>'+esc(desc)+'</p><div class="flag"><span class="dot"></span>'+(linked?"Connected · add another":match?"Ready to connect":"Setup required")+'</div><button data-auth="'+esc(match?.id||"")+'" data-name="'+esc(name)+'" data-slug="'+esc(slug)+'" '+(!match?"disabled":"")+'>'+(match?(linked?"Connect another":"Connect"):"Not configured")+'</button></article>'
  ).join(""):'<p class="sub">No apps match these filters. Try another category or status.</p>';
  $("connections").innerHTML=connections.length?connections.map(c=>'<article class="card"><div class="app-head">'+logo(String(c.toolkit_slug||"App"),String(c.toolkit_slug||""))+'<h3>'+esc(popular.find(p=>p[1]===c.toolkit_slug)?.[0]||c.toolkit_slug)+'</h3></div><p>Connected account '+esc(c.connected_account_id)+'</p><label class="flag" for="assignment-'+esc(c.connected_account_id)+'">Workspace</label><select class="connection-select" data-connection="'+esc(c.connected_account_id)+'" aria-label="Workspace for '+esc(c.toolkit_slug)+'"><option value="">Personal (private)</option>'+companies.map(company=>'<option value="'+esc(company.id)+'" '+(company.id===c.company_id?'selected':'')+'>'+esc(company.name)+'</option>').join("")+'</select><div class="flag"><span class="dot"></span>'+esc(c.status)+'</div></article>').join(""):'<p class="sub">You have not connected any apps yet.</p>';
  $("connections").querySelectorAll("[data-connection]").forEach(select=>{const record=connections.find(c=>c.connected_account_id===select.dataset.connection);if(!record)return;select.value=record.company_id||"";select.onchange=async()=>{const selected=select.value;select.disabled=true;try{await api("assign_connection",{connected_account_id:record.connected_account_id,company_id:selected||null});record.company_id=selected||null;notice("Connection workspace updated.");}catch(e){select.value=record.company_id||"";notice("Could not change workspace: "+e.message)}finally{select.disabled=false}}});
  for(const button of $("apps").querySelectorAll("button[data-auth]"))button.onclick=async()=>{
+ if(button.dataset.slug==="googleworkspace"){$("googleDetails").classList.toggle("hide");if(!$("googleDetails").classList.contains("hide"))$("googleDetails").scrollIntoView({behavior:"smooth",block:"nearest"});return;}
  const id=button.dataset.auth;if(!id)return;button.disabled=true;button.textContent="Starting connection…";
  try{const toolkit=popular.find(p=>p[0]===button.dataset.name)?.[1]||toolkits.find(t=>t.name===button.dataset.name)?.slug;
  if(!toolkit)throw Error("Could not identify app toolkit.");
