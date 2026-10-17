@@ -647,9 +647,9 @@ function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
  const children=childOf(t.id).filter(c=>(state.tab==="open"||state.tab==="all")&&!state.search&&state.assigneeFilter==="all"?true:isVisible(c,new Set()));
  const row=el("div","taskrow");row.style.paddingLeft=(depth?"5px":"12px");enableTaskDrag(row,t);
- const branch=btn(children.length?(collapsed(t)?"▸":"▾"):"·","branchToggle",()=>toggleBranch(t));
+ const branch=btn(collapsed(t)?"▸":children.length?"▾":"·","branchToggle",()=>toggleBranch(t));
  branch.setAttribute("aria-label",(collapsed(t)?"Expand ":"Collapse ")+t.title);
- if(!children.length)branch.disabled=true;
+ if(!children.length&&!collapsed(t))branch.disabled=true;
  row.append(branch);
  const check=el("input","taskcheck");check.type="checkbox";check.checked=t.status==="completed";check.setAttribute("aria-label","Complete "+t.title);
  check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
@@ -927,7 +927,7 @@ document.addEventListener("keydown",e=>{
 });
 
 $("expandAll").addEventListener("click",()=>{state.expanded.clear();localStorage.setItem("sandy_tree_collapsed","[]");state.view="tree";render()});
- $("collapseAll").addEventListener("click",()=>{state.expanded=new Set(state.tasks.filter(t=>childOf(t.id).length>0).map(t=>t.id));localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));state.view="tree";render()});
+ $("collapseAll").addEventListener("click",()=>{state.expanded=new Set(state.tasks.filter(t=>!t.archived_at).map(t=>t.id));localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));state.view="tree";render()});
  $("treeView").addEventListener("click",()=>{state.view="tree";render()});
 $("timelineView").addEventListener("click",()=>{state.view="timeline";render()});
 $("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;const ok=await outlineCreate(title,null,outlineLast(null),$("rootWorkspace").value);if(ok)field.value=""});
