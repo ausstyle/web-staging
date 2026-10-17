@@ -141,6 +141,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('proposals_returned:data.tests.length', EDGE)
         self.assertIn('proposals_accepted:accepted.length', EDGE)
 
+    def test_model_receives_exact_allowed_grounding_keys(self):
+        self.assertIn('allowed_grounding_keys:["mission_charter","mission_activity"', EDGE)
+        self.assertIn('Copy grounding_keys ONLY from allowed_grounding_keys', EDGE)
+        self.assertIn('if(!grounds.length){rejectionCounts.ungrounded++;continue;}', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
