@@ -46,7 +46,8 @@ Deno.serve(async(req:Request)=>{
   }).catch(()=>null);
   if(!github||!github.ok) return fail("github_run_unavailable",503);
   const run=await github.json();
-  if(run.name!=="Sandy Architect and Engineer" || run.event!=="workflow_dispatch" ||
+  if(run.path!==".github/workflows/sandy-codex-engineering.yml" ||
+     run.workflow_id!==387224954 || run.event!=="workflow_dispatch" ||
      run.status!=="completed" || run.head_repository?.full_name!==REPO ||
      run.display_title!=="Sandy engineering issue #"+issue)
     return fail("unverified_architect_run",409);
