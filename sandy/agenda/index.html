@@ -872,6 +872,8 @@ function persistInstantQueue(){
  try{localStorage.setItem(instantQueueKey,JSON.stringify([...instantPending.values()].map(j=>({...j,error:j.error||null}))))}catch(e){console.warn("Local save queue is unavailable",e)}
 }
 function instantEntry(title,parent,after,company,selectedCategory){
+ parent=instantIds.get(parent)||parent;
+ after=instantIds.get(after)||after;
  const id="pending-"+crypto.randomUUID(),companyId=normalizeWorkspace(company);
  const parentTask=parent?state.tasks.find(t=>t.id===parent):null;
  const categoryId=parentTask&&parentTask.company_id===companyId?(parentTask.category_id||null):(selectedCategory!==undefined?selectedCategory:(companyId===state.workspace?state.category:null));
@@ -958,6 +960,8 @@ function outlineCreate(title,parent,after,company,selectedCategory=undefined){
  return true;
 }
 function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initial=""){
+ parent=instantIds.get(parent)||parent;
+ after=instantIds.get(after)||after;
  state.view="tree";if(!["open","all"].includes(state.tab))state.tab="open";
  if(state.search){state.search="";$("search").value=""}
  if(parent){state.expanded.delete(parent);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]))}
