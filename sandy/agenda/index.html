@@ -319,6 +319,7 @@ html,body{max-width:100%;overflow-x:clip}
 .quickCategoryTree:has(+ .categoryPopover){visibility:hidden}.categoryPopover{z-index:12000;max-height:calc(100dvh - 24px);overflow-y:auto}
 .quickCategoryTree{display:flex;flex-direction:column;gap:8px;overflow:hidden;max-height:calc(100dvh - 24px);padding:12px}.quickCategoryTree .quickCategorySearch{width:100%;min-height:34px;border:1px solid #dce3dc;border-radius:7px;padding:6px 9px;font-size:13px;flex-shrink:0}.quickCategoryTreeList{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:2px 0}.quickTreeItem{display:block;width:100%;text-align:left;border:0;border-radius:5px;background:transparent;color:#303934;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:8px;padding-bottom:8px;padding-right:8px;font-size:13px;cursor:pointer}.quickTreeItem:hover,.quickTreeItem:focus-visible{background:#edf3ed;outline:none}.quickTreeSelected{font-weight:700;background:#e6eee6}.quickTreeCreate{color:#53725e}.quickTreeEmpty{font-size:12px;padding:12px;color:#788179}
 .taskOriginalButton{font:inherit;font-size:10px;color:#5b765e;border:0;background:transparent;padding:2px 5px;border-radius:5px;white-space:nowrap}.taskOriginalButton:hover{background:#edf3eb}
+.instantSaveStatus{font-size:10px;color:#777;white-space:nowrap}.instantFailed{color:#b24b35;cursor:pointer;text-decoration:underline}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -841,25 +842,81 @@ function organiseTaskLater(id,originalTitle){
   }).catch(e=>console.warn("Task saved; organisation deferred or unavailable",e));
  },0);
 }
-async function outlineCreate(title,parent,after,company,selectedCategory=undefined){
- if(state.outlineBusy)return false;state.outlineBusy=true;let created=null;
+const instantQueueKey="sandy_pending_task_entries_v1";
+const instantPending=new Map();
+const instantIds=new Map();
+let instantRunning=false;
+function persistInstantQueue(){
+ try{localStorage.setItem(instantQueueKey,JSON.stringify([...instantPending.values()].map(j=>({...j,error:j.error||null}))))}catch(e){console.warn("Local save queue is unavailable",e)}
+}
+function instantEntry(title,parent,after,company,selectedCategory){
+ const id="pending-"+crypto.randomUUID(),companyId=normalizeWorkspace(company);
+ const parentTask=parent?state.tasks.find(t=>t.id===parent):null;
+ const categoryId=parentTask&&parentTask.company_id===companyId?(parentTask.category_id||null):(selectedCategory!==undefined?selectedCategory:(companyId===state.workspace?state.category:null));
+ const position=after?(Number(state.tasks.find(x=>x.id===after)?.position)||1000)+1:1000;
+ const task={id,title,details:"",parent_task_id:parent||null,company_id:companyId,category_id:categoryId,status:"todo",priority:"normal",position,created_at:new Date().toISOString(),metadata:{},shared:false,_pending:true};
+ state.tasks.push(task);
+ const job={id,title,parent,after,company:companyId,category:categoryId,position,status:"saving",created_at:Date.now(),error:null};
+ instantPending.set(id,job);persistInstantQueue();
+ return job;
+}
+function renderInstantState(task,outer){
+ const job=instantPending.get(task.id);
+ if(!job)return;
+ const status=el("span","instantSaveStatus "+(job.status==="failed"?"instantFailed":""),job.status==="failed"?"Not saved · retry":"Saving…");
+ status.title=job.error||"Saving to Sandy";
+ if(job.status==="failed"){
+  status.tabIndex=0;status.setAttribute("role","button");
+  status.onclick=()=>{job.status="saving";job.error=null;persistInstantQueue();runInstantQueue();render()};
+  status.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();status.click()}};
+ }
+ outer.querySelector(".titleArea")?.append(status);
+}
+async function runInstantQueue(){
+ if(instantRunning)return;instantRunning=true;
  try{
-  const position=await outlinePosition(parent,after,null);
-  const companyId=normalizeWorkspace(company);
-  const parentTask=parent?state.tasks.find(t=>t.id===parent):null;
-  const categoryId=parentTask&&parentTask.company_id===companyId?(parentTask.category_id||null):(selectedCategory!==undefined?selectedCategory:(companyId===state.workspace?state.category:null));
-  const result=await api("create",{title,parent_task_id:parent||null,company_id:companyId,category_id:categoryId});
-  created=result.id;if(!created)throw Error("Task saved but server did not return an ID");
-  // Render the new task and next input without waiting for another round trip or AI.
-  state.tasks.push({id:created,title,details:"",parent_task_id:parent||null,company_id:companyId,category_id:categoryId,status:"todo",priority:"normal",position,created_at:new Date().toISOString(),metadata:{},shared:false});
-  outlineDraft(parent,created,company);
-  api("update",{id:created,position}).catch(e=>console.warn("Task saved; custom position update failed",e));
-  organiseTaskLater(created,title);
-  return true;
- }catch(e){
-  if(created){await load().catch(()=>{});toast("Task created but order was not confirmed. Refresh before retrying.",true);return true}
-  toast(e.message,true);return false;
- }finally{state.outlineBusy=false}
+  while(true){
+   const job=[...instantPending.values()].find(j=>j.status==="saving"&&(!j.parent||!String(j.parent).startsWith("pending-")||instantIds.has(j.parent)));
+   if(!job)break;
+   const parentId=instantIds.get(job.parent)||job.parent||null;
+   try{
+    const result=await api("create",{title:job.title,parent_task_id:parentId,company_id:job.company,category_id:job.category,client_request_id:job.id});
+    if(!result.id)throw Error("No task ID was returned");
+    instantIds.set(job.id,result.id);
+    const task=state.tasks.find(t=>t.id===job.id);
+    if(task){task.id=result.id;delete task._pending}
+    for(const t of state.tasks)if(t.parent_task_id===job.id)t.parent_task_id=result.id;
+    instantPending.delete(job.id);persistInstantQueue();
+    if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    api("update",{id:result.id,position:job.position}).catch(()=>{});
+    organiseTaskLater(result.id,job.title);
+   }catch(e){
+    job.status="failed";job.error=e.message||String(e);persistInstantQueue();
+    if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    toast("Task is saved locally but not yet on Sandy. Select Retry.",true);
+    break;
+   }
+  }
+ }finally{instantRunning=false}
+}
+function recoverInstantEntries(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(instantQueueKey)||"[]");
+  if(!Array.isArray(saved))return;
+  for(const j of saved){
+   if(!j?.id||!j.title||instantPending.has(j.id))continue;
+   j.status="failed";j.error="Not confirmed by Sandy. Retry to save.";
+   instantPending.set(j.id,j);
+   state.tasks.push({id:j.id,title:j.title,details:"",parent_task_id:j.parent||null,company_id:j.company||null,category_id:j.category||null,status:"todo",priority:"normal",position:j.position||1000,created_at:new Date(j.created_at||Date.now()).toISOString(),metadata:{},shared:false,_pending:true});
+  }
+  if(saved.length)persistInstantQueue();
+ }catch(e){console.warn("Could not recover pending entries",e)}
+}
+function outlineCreate(title,parent,after,company,selectedCategory=undefined){
+ const job=instantEntry(title,parent,after,company,selectedCategory);
+ outlineDraft(parent,job.id,company);
+ setTimeout(runInstantQueue,0);
+ return true;
 }
 function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initial=""){
  state.view="tree";if(!["open","all"].includes(state.tab))state.tab="open";
@@ -1173,7 +1230,7 @@ function renderTask(t,depth){
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.shared&&(t.priority==="urgent"||t.priority==="high"))meta.append(el("span","tag "+t.priority,t.priority));
  if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+new Date(t.start_at).toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"})+(t.metadata?.task_ai_assumed_today?" · Assumed today":"")));else if(t.metadata?.task_ai_pending_time){const pending=el("span","tag","Time "+t.metadata.task_ai_pending_time+" · date needed");pending.title="Choose a scheduled date in the task editor";meta.append(pending)}const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
- main.append(meta);row.append(main);
+ main.append(meta);row.append(main);if(t._pending)renderInstantState(t,outer);
  const right=el("div","right");
  if(!t.shared){
   const attach=btn("📎","iconbtn sandyQuickAttach",()=>{const panel=outer.querySelector(".sandyTaskFiles");if(!panel)return;panel.classList.remove("hidden");panel.refresh();panel.querySelector('input[type="file"]')?.click()});
@@ -1415,7 +1472,7 @@ async function pollAgenda(){
   if(liveSignature(data)!==liveFingerprint){
    if(editingAgenda()){livePending=data;return}
    const earlier=new Map(state.tasks.map(t=>[t.id,t]));
-   applyAgendaData(data);taskFiles.refreshCounts(state.tasks);refreshMissionStatus();
+   applyAgendaData(data);for(const j of instantPending.values())if(!state.tasks.some(t=>t.id===j.id))state.tasks.push({id:j.id,title:j.title,details:"",parent_task_id:j.parent||null,company_id:j.company||null,category_id:j.category||null,status:"todo",priority:"normal",position:j.position||1000,created_at:new Date(j.created_at||Date.now()).toISOString(),metadata:{},shared:false,_pending:true});render();taskFiles.refreshCounts(state.tasks);refreshMissionStatus();
    const completed=(data.tasks||[]).filter(t=>t.status==="completed"&&earlier.has(t.id)&&earlier.get(t.id).status!=="completed");
    if(completed.length)toast(completed.length===1?"Task completed: "+completed[0].title:completed.length+" tasks completed");
   }
