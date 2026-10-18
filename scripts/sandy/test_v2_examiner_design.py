@@ -225,6 +225,12 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('test.key!=="gmail"', EDGE)
         self.assertIn('?"pass":"needs_review"', EDGE)
 
+    def test_independent_gmail_subjects_required_for_pass(self):
+        self.assertIn('independentGmailSubjects.every(subject=>answerText.includes(subject))', EDGE)
+        self.assertIn('contentComparable&&contentMatches===true', EDGE)
+        self.assertIn('provider_subjects_match:contentMatches', EDGE)
+        self.assertNotIn('runtime_checks:runtimeChecks,lab_enabled:true', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
