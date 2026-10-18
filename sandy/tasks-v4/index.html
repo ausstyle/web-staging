@@ -1000,9 +1000,10 @@ function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
  const children=childOf(t.id).filter(c=>(state.tab==="open"||state.tab==="all")&&!state.search&&state.assigneeFilter==="all"?true:isVisible(c,new Set()));
  const row=el("div","taskrow");row.style.paddingLeft=(depth?"5px":"12px");enableTaskDrag(row,t);
- const branch=btn(collapsed(t)?"▸":children.length?"▾":"·","branchToggle",()=>toggleBranch(t));
- branch.setAttribute("aria-label",(collapsed(t)?"Expand ":"Collapse ")+t.title);
- if(!children.length&&!collapsed(t))branch.disabled=true;
+ const hasVisibleChildren=children.length>0;
+ const branch=btn(hasVisibleChildren?(collapsed(t)?"▸":"▾"):"·","branchToggle",()=>{if(hasVisibleChildren)toggleBranch(t)});
+ branch.setAttribute("aria-label",hasVisibleChildren?((collapsed(t)?"Expand ":"Collapse ")+t.title):"No subtasks for "+t.title);
+ if(!hasVisibleChildren)branch.disabled=true;
  row.append(branch);
  const check=el("input","taskcheck");check.type="checkbox";check.checked=t.status==="completed";check.setAttribute("aria-label","Complete "+t.title);
  check.addEventListener("change",()=>markTask(t,check.checked,check));row.append(check);
