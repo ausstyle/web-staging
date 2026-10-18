@@ -432,6 +432,8 @@ Deno.serve(async(req:Request)=>{
       const data=JSON.parse(raw);
       if(!Array.isArray(data.tests))throw new Error("invalid_json_shape");
       const redFlags=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
+      const actionRequest=/\b(?:please|can you|could you|would you)\s+(?:send|delete|create|book|invite|make changes|archive|complete a task)\b/i;
+      const explicitlyReadOnly=/\b(?:do not|don't|without|only inspect|read.only|no changes|not asking you to|just check)\b/i;
       const sourceKeys=new Set<string>(["mission_charter","mission_activity",
         ...snapshot.roadmap.map((x:any)=>x.key),
         ...snapshot.capabilities.map((x:any)=>x.key),
@@ -446,7 +448,7 @@ Deno.serve(async(req:Request)=>{
         const question=String(candidate?.question||"").trim();
         const priority=Number(candidate?.priority);
         if(!allowedKeys.includes(key)||question.length<14||question.length>250||
-           redFlags.test(question)||!Number.isInteger(priority)||priority<1||priority>5){rejectionCounts.invalid_read_only++;continue;}
+           (redFlags.test(question)||(actionRequest.test(question)&&!explicitlyReadOnly.test(question)))||!Number.isInteger(priority)||priority<1||priority>5){rejectionCounts.invalid_read_only++;continue;}
         const match:Record<string,RegExp>={
           clock:/\b(time|date|clock)\b/i,
           connections:/\b(connected|connections|linked|integrations?)\b/i,
@@ -563,9 +565,11 @@ Deno.serve(async(req:Request)=>{
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
       const disallow=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
+      const actionRequest=/\b(?:please|can you|could you|would you)\s+(?:send|delete|create|book|invite|make changes|archive|complete a task)\b/i;
+      const explicitlyReadOnly=/\b(?:do not|don't|without|only inspect|read.only|no changes|not asking you to|just check)\b/i;
       dynamicCandidates=(design||[]).flatMap((run:any)=>(Array.isArray(run.proposals)?run.proposals:[]).map((x:any)=>({...x,design_run_key:run.run_key}))).filter((x:any)=>
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
-        !disallow.test(x.question)&&x.execution_status==="shadow_not_executed"&&
+        !(disallow.test(x.question)||(actionRequest.test(x.question)&&!explicitlyReadOnly.test(x.question)))&&x.execution_status==="shadow_not_executed"&&
         x.requires_current_production_retest===true&&Array.isArray(x.grounding_keys)&&x.grounding_keys.length>0);
       const prior=await db.from("sandy_v2_qa_executions").select("question,verdict")
         .eq("customer_id",customerId).order("created_at",{ascending:false}).limit(1000);
