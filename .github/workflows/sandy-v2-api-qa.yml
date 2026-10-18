@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Full production cycle: post-design V2 API execution on v70.
+# Retry complete Examiner API stage after v71 novelty selection correction.
 # V68 production verification of balanced novelty filter.
 # Fresh production QA regression.
 # New manual production smoke.
