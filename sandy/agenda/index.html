@@ -880,20 +880,26 @@ async function runInstantQueue(){
    if(!job)break;
    const parentId=instantIds.get(job.parent)||job.parent||null;
    try{
-    const result=await api("create",{title:job.title,parent_task_id:parentId,company_id:job.company,category_id:job.category,client_request_id:job.id});
+    const result=await Promise.race([
+     api("create",{title:job.title,parent_task_id:parentId,company_id:job.company,category_id:job.category,client_request_id:job.id}),
+     new Promise((_,reject)=>setTimeout(()=>reject(new Error("Save confirmation timed out. Retry to verify or save again.")),15000))
+    ]);
     if(!result.id)throw Error("No task ID was returned");
     instantIds.set(job.id,result.id);
     const task=state.tasks.find(t=>t.id===job.id);
     if(task){task.id=result.id;delete task._pending}
     for(const t of state.tasks)if(t.parent_task_id===job.id)t.parent_task_id=result.id;
     instantPending.delete(job.id);persistInstantQueue();
+    document.querySelectorAll(".instantSaveStatus").forEach(n=>{if(n.closest(".task,.childrow")?.id==="task-"+job.id)n.remove()});
     if(!document.activeElement?.closest?.(".outlineDraft"))render();
     api("update",{id:result.id,position:job.position}).catch(()=>{});
     organiseTaskLater(result.id,job.title);
    }catch(e){
     job.status="failed";job.error=e.message||String(e);persistInstantQueue();
+    const badge=document.getElementById("task-"+job.id)?.querySelector(".instantSaveStatus");
+    if(badge){badge.textContent="Not saved · retry";badge.classList.add("instantFailed");badge.title=job.error;badge.onclick=()=>{job.status="saving";job.error=null;persistInstantQueue();badge.textContent="Saving…";badge.classList.remove("instantFailed");runInstantQueue()}}
     if(!document.activeElement?.closest?.(".outlineDraft"))render();
-    toast("Task is saved locally but not yet on Sandy. Select Retry.",true);
+    toast("Task has not been confirmed saved. Retry the task.",true);
     continue;
    }
   }
