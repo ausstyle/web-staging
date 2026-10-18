@@ -322,6 +322,12 @@ html,body{max-width:100%;overflow-x:clip}
 .instantSaveStatus{font-size:10px;color:#777;white-space:nowrap}.instantFailed{color:#b24b35;cursor:pointer;text-decoration:underline}
 .dueDateTimePopover{position:fixed;z-index:12000;width:min(300px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;background:#fff;border:1px solid #dce5dc;border-radius:12px;box-shadow:0 12px 32px #0002;padding:13px;display:grid;gap:10px;font-size:13px}.dueDateTimePopover>input,.dueDateTimePopover label input{display:block;width:100%;padding:7px;border:1px solid #dce5dc;border-radius:7px;margin-top:4px}.dueDateTimePopover small{color:#68756b}.dueDateTimeActions{display:flex;justify-content:flex-end;gap:7px}.dueDateTimeActions button{border:1px solid #dce5dc;border-radius:7px;background:#fff;padding:6px 10px}.dueDateTimeActions button:last-child{background:#2e5140;color:#fff}.dueDialogTimeLabel{display:block;margin-top:7px;font-size:12px;color:#68756b}.dueDialogTimeLabel input{display:block;width:100%;margin-top:3px}
 .dueQuickDates{display:flex;gap:6px}.dueQuickDate{font-size:12px;border:1px solid #dbe3da;background:#eef4ed;border-radius:8px;padding:7px}.dueTimeToggle{display:flex;gap:8px;align-items:center}.dueClock{display:flex;align-items:center;gap:5px}.dueClock.hidden{display:none}.dueClock select{min-width:0;flex:1;padding:7px;border:1px solid #dbe3da;border-radius:8px}.dueDateTimePopover>input[type=date]{padding:9px;border:1px solid #dbe3da;border-radius:8px}
+/* Keep the due-date label readable and separate from adjacent controls. */
+.taskrow .dueWrap{flex:0 0 auto;min-width:0}
+.taskrow .dueButton{max-width:none!important;min-width:55px!important;width:auto!important;min-height:29px!important;white-space:nowrap!important;overflow:visible!important;text-overflow:clip!important;padding:3px 8px!important;font-variant-numeric:tabular-nums;line-height:1.2}
+.taskrow .quickTaskControls{gap:7px!important;flex:0 0 auto}
+.taskrow .inlinePriority{flex:0 0 auto;min-width:72px!important}
+.dueDateTimePopover{overflow:auto;max-height:calc(100dvh - 24px)}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -1052,7 +1058,7 @@ function openDuePicker(t,anchor){
  const hour=el("select"),minute=el("select"),period=el("select");
  for(let h=1;h<=12;h++)hour.add(new Option(String(h),String(h)));
  for(let m=0;m<60;m+=5)minute.add(new Option(String(m).padStart(2,"0"),String(m).padStart(2,"0")));
- period.add(new Option("AM","AM"),new Option("PM","PM"));
+ period.add(new Option("AM","AM"));period.add(new Option("PM","PM"));
  const d=t.due_at?new Date(t.due_at):new Date();
  hour.value=String(d.getHours()%12||12);minute.value=String(Math.floor(d.getMinutes()/5)*5).padStart(2,"0");period.value=d.getHours()>=12?"PM":"AM";
  clock.append(hour,el("span","",":"),minute,period);
@@ -1079,10 +1085,10 @@ function openDuePicker(t,anchor){
 function quickTaskControls(t){
  const wrap=el("div","quickTaskControls");
  const dueWrap=el("span","dueWrap");
- const hasTime=Boolean(t.due_at)&&new Date(t.due_at).getHours()!==12||Boolean(t.metadata?.due_time_specified);
+ const hasTime=Boolean(t.due_at)&&(Boolean(t.metadata?.due_time_specified)||new Date(t.due_at).getHours()!==12||new Date(t.due_at).getMinutes()!==0);
  const displayTime=hasTime?new Date(t.due_at).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}):"";
  const due=btn(t.due_at?dateLabel(t.due_at)+(displayTime?" · "+displayTime:""):"＋ Due","dueButton",()=>openDuePicker(t,due));
- due.title="Choose due date and optional time for "+t.title;
+ due.title="Choose due date and optional time for "+t.title;due.setAttribute("aria-label",due.title);due.type="button";
  dueWrap.append(due);
  const priority=el("select","inlinePriority");
  priority.setAttribute("aria-label","Set priority for "+t.title);
