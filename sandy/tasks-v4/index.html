@@ -283,7 +283,11 @@ html,body{max-width:100%;overflow-x:clip}
 }
 
 .missionOverview{background:#fff;border:1px solid #e2e6df;border-radius:13px;padding:15px;margin:8px 0 18px}.missionHeader{display:flex;justify-content:space-between;align-items:center;gap:12px}.missionHeader strong{font-size:16px}.missionHeader p{color:#68716a;font-size:12px;margin:3px 0 0}.missionCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:9px;margin-top:12px}.missionCard{text-align:left;background:#fafbf9;border:1px solid #e1e6de;border-radius:10px;padding:11px 13px;cursor:pointer;color:inherit;font:inherit;min-width:0}.missionCard:hover{background:#f1f6ef;border-color:#acbead}.missionCardTitle{font-weight:700;line-height:1.3;font-size:13px}.missionCardMeta{font-size:11px;color:#607060;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:7px 0}.missionProgress{height:5px;background:#e6ebe4;border-radius:8px;overflow:hidden}.missionProgress span{display:block;background:#668a6a;height:100%}.missionCardInfo{font-size:11px;color:#68716a;margin-top:7px}.missionEmpty{font-size:12px;color:#737973;padding:8px 0}.missionOverview button:focus-visible{outline:2px solid #658568;outline-offset:2px}@media(max-width:700px){.missionHeader{align-items:flex-start}.missionCards{grid-template-columns:1fr}.missionOverview{padding:12px}}
-.missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n</style>
+.missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n.quickCategoryChip{border:0;cursor:pointer;font:inherit;font-size:10px;text-align:left}.quickCategoryChip:hover,.quickCategoryChip:focus-visible{background:#e1e9e2;outline:1px solid #9fb4a4}
+.quickCategoryPopover{position:fixed;z-index:11000;width:min(320px,calc(100vw - 24px));background:#fff;border:1px solid #dce3dc;border-radius:12px;box-shadow:0 12px 35px #0002;padding:13px;display:grid;gap:9px}
+.quickCategoryPopover strong{font-size:13px}.quickCategorySelect{width:100%;padding:8px;border:1px solid #d9e0d9;border-radius:7px;background:#fff;font-size:13px}
+.quickCategoryActions{display:flex;justify-content:flex-end;gap:8px}.quickCategoryActions button{border:1px solid #d9e0d9;border-radius:7px;padding:6px 12px;background:#fff;font-size:12px}.quickCategoryActions .quickCategorySave{background:#2e5140;color:white;border-color:#2e5140}
+</style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
 body{background:#f8f8f5!important;color:#292d29!important}
@@ -487,6 +491,44 @@ function categoriesForCompany(companyId){
  }
  walk(null,0);items.filter(c=>!seen.has(c.id)).forEach(c=>out.push({category:c,depth:0}));
  return out;
+}
+function openQuickCategory(t,anchor){
+ document.querySelector(".quickCategoryPopover")?.remove();
+ const pop=el("div","quickCategoryPopover");
+ pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Change task category");
+ const heading=el("strong","","Move task to");
+ const work=el("select","quickCategorySelect");work.setAttribute("aria-label","Workspace");
+ const cat=el("select","quickCategorySelect");cat.setAttribute("aria-label","Category");
+ fillWorkspaceSelect(work,t.company_id||"personal");
+ [...work.options].filter(o=>o.value==="__new_company").forEach(o=>o.remove());
+ function options(){
+  const company=work.value;
+  cat.replaceChildren(new Option("No category",""));
+  for(const item of categoriesForCompany(company)){
+   cat.add(new Option("　".repeat(Math.min(item.depth,5))+(item.depth?"↳ ":"")+item.category.name,item.category.id));
+  }
+  cat.value=company===(t.company_id||"personal")?(t.category_id||""):"";
+ }
+ work.addEventListener("change",options);options();
+ const actions=el("div","quickCategoryActions");
+ const cancel=btn("Cancel","",()=>pop.remove());
+ const save=btn("Save","quickCategorySave",async()=>{
+  const nextCompany=normalizeWorkspace(work.value),nextCategory=cat.value||null;
+  if(nextCompany===(t.company_id||null)&&nextCategory===(t.category_id||null)){pop.remove();return}
+  save.disabled=true;
+  try{
+   await api("update",{id:t.id,company_id:nextCompany,category_id:nextCategory});
+   pop.remove();await load();toast("Task category updated");
+  }catch(e){save.disabled=false;toast("Could not change category: "+e.message,true)}
+ });
+ actions.append(cancel,save);pop.append(heading,work,cat,actions);document.body.append(pop);
+ const rect=anchor.getBoundingClientRect(),w=Math.min(320,window.innerWidth-24);
+ pop.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-w-12))+"px";
+ pop.style.top=Math.max(12,Math.min(rect.bottom+6,window.innerHeight-190))+"px";
+ function dismiss(e){if(!pop.contains(e.target)&&e.target!==anchor){pop.remove();document.removeEventListener("pointerdown",dismiss,true)}}
+ setTimeout(()=>document.addEventListener("pointerdown",dismiss,true),0);
+ pop.addEventListener("keydown",e=>{if(e.key==="Escape"){pop.remove();anchor.focus()}});
+ work.focus();
 }
 function taskWorkspaceOwners(t,owners=new Set(),seen=new Set()){if(seen.has(t.id))return owners;seen.add(t.id);if(!t.shared)owners.add(taskCategoryLabel(t));childOf(t.id).forEach(c=>taskWorkspaceOwners(c,owners,seen));return owners}
 function normalizeWorkspace(value){return value==="personal"||!value?null:value}
@@ -1019,7 +1061,7 @@ function renderTask(t,depth){
   const owners=[...taskWorkspaceOwners(t)];
   const hint=owners.length>1?"Multiple workspaces":taskCategoryLabel(t);
   if(owners.length>1||state.workspace==="all"||Boolean(t.category_id)||(state.workspace==="personal"?Boolean(t.company_id):state.workspace!=="assigned"&&t.company_id!==state.workspace)){
-   const chip=el("span","workspaceHint",hint);chip.title=owners.join(" · ");titleArea.append(chip);
+   const chip=btn(hint,"workspaceHint quickCategoryChip",()=>openQuickCategory(t,chip));chip.title="Change category · "+owners.join(" · ");chip.setAttribute("aria-label","Change category for "+t.title);titleArea.append(chip);
   }
  }
  main.append(titleArea);
