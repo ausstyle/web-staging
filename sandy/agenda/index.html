@@ -831,6 +831,10 @@ async function outlinePosition(parent,afterId,exclude){
  for(let n=0;n<peers.length;n++){const pos=(n+1)*1000;if(peers[n].position!==pos){await api("update",{id:peers[n].id,position:pos});peers[n].position=pos}}
  return i<0?500:peers[i].position+500;
 }
+function organiseTaskLater(id,originalTitle){
+ if(!id||!originalTitle||/^["“].*["”]$/.test(originalTitle.trim()))return;
+ api("update",{id,title:originalTitle,interpret:true}).then(async()=>{await load()}).catch(e=>console.warn("Task saved; organisation deferred or unavailable",e));
+}
 async function outlineCreate(title,parent,after,company,selectedCategory=undefined){
  if(state.outlineBusy)return false;state.outlineBusy=true;let created=null;
  try{
@@ -841,7 +845,7 @@ async function outlineCreate(title,parent,after,company,selectedCategory=undefin
   const result=await api("create",{title,parent_task_id:parent||null,company_id:companyId,category_id:categoryId});
   created=result.id;if(!created)throw Error("Task saved but server did not return an ID");
   await api("update",{id:created,position});
-  await load();outlineDraft(parent,created,company);return true;
+  await load();outlineDraft(parent,created,company);organiseTaskLater(created,title);return true;
  }catch(e){
   if(created){await load().catch(()=>{});toast("Task created but order was not confirmed. Refresh before retrying.",true);return true}
   toast(e.message,true);return false;
@@ -1158,7 +1162,7 @@ function renderTask(t,depth){
  if(t.due_at&&t.shared){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}else if(t.due_at&&new Date(t.due_at)<new Date()&&t.status!=="completed"){meta.append(el("span","tag overdue","Overdue"))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.shared&&(t.priority==="urgent"||t.priority==="high"))meta.append(el("span","tag "+t.priority,t.priority));
- if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
+ if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+new Date(t.start_at).toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"})));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
  if(!t.shared){
@@ -1501,7 +1505,7 @@ $("taskForm").addEventListener("submit",async e=>{
  if(!payload.title){save.disabled=false;return}
  try{
   if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;if(state.edit.shared){delete payload.company_id;delete payload.category_id;delete payload.start_at;delete payload.contact_name;delete payload.next_review_at;delete payload.waiting_on;await api("shared-update",payload)}else await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(!state.edit.shared&&previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(!state.edit.shared&&next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
-  else{payload.parent_task_id=state.parent;payload.subtasks=state.parent?[]:$("taskSubtasks").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);await api("create",payload)}
+  else{payload.parent_task_id=state.parent;payload.subtasks=state.parent?[]:$("taskSubtasks").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);const created=await api("create",payload);organiseTaskLater(created.id,payload.title)}
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
 });
