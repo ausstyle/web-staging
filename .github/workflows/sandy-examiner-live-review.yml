@@ -28,6 +28,7 @@ jobs:
           AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
           CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
           TOKEN="$(curl --fail --silent --show-error --max-time 15 -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${CLAIM_URL}" | jq -er '.value')"
+          echo "${TOKEN}" | cut -d. -f2 | tr '_-' '/+' | base64 -d 2>/dev/null | jq -c '{workflow_ref,ref,event_name,repository,repository_id}' || true
           RESPONSE="$(curl --silent --show-error --max-time 270 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data '{"operation":"v2_live_review"}')"
           echo "${RESPONSE}" | jq '{ok,run_key,scanned,reviewed,flagged,channels,reason}'
           echo "${RESPONSE}" | jq -e '.ok == true and (.run_key|type=="string") and (.channels|type=="object")' >/dev/null
