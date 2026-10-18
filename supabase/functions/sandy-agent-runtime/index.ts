@@ -321,7 +321,7 @@ Deno.serve(async req=>{
  const clockOnlyRequest=prompt.length<=220 &&
    /(?:what(?:'s| is)\\s+(?:the\\s+)?(?:current\\s+)?(?:time|date)|what time is it|current time|current date|time and date|date and time|tell me the time|what day is it)/i.test(prompt) &&
    !/(?:schedule|appointment|meeting|remind|timer|deadline|flight|calendar|email|send|book|when did|what time did)/i.test(prompt);
- if(clockOnlyRequest){{
+ if(clockOnlyRequest){
   const text="It's "+clock+" ("+timezone+").";
   await update({status:"completed",model:"system-clock",result:{text},tool_trace:[{tool:"system_clock",success:true,timezone}]});
   return json(200,{ok:true,task_id:id,model:"system-clock",response:text,tools_used:[{tool:"system_clock",success:true}]});
