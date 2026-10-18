@@ -894,7 +894,7 @@ async function runInstantQueue(){
     job.status="failed";job.error=e.message||String(e);persistInstantQueue();
     if(!document.activeElement?.closest?.(".outlineDraft"))render();
     toast("Task is saved locally but not yet on Sandy. Select Retry.",true);
-    break;
+    continue;
    }
   }
  }finally{instantRunning=false}
@@ -1230,7 +1230,7 @@ function renderTask(t,depth){
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
  if(t.shared&&(t.priority==="urgent"||t.priority==="high"))meta.append(el("span","tag "+t.priority,t.priority));
  if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+new Date(t.start_at).toLocaleString(undefined,{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit",timeZoneName:"short"})+(t.metadata?.task_ai_assumed_today?" · Assumed today":"")));else if(t.metadata?.task_ai_pending_time){const pending=el("span","tag","Time "+t.metadata.task_ai_pending_time+" · date needed");pending.title="Choose a scheduled date in the task editor";meta.append(pending)}const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
- main.append(meta);row.append(main);if(t._pending)renderInstantState(t,outer);
+ main.append(meta);row.append(main);
  const right=el("div","right");
  if(!t.shared){
   const attach=btn("📎","iconbtn sandyQuickAttach",()=>{const panel=outer.querySelector(".sandyTaskFiles");if(!panel)return;panel.classList.remove("hidden");panel.refresh();panel.querySelector('input[type="file"]')?.click()});
@@ -1282,6 +1282,7 @@ function renderTask(t,depth){
    }
    if(childbox.childNodes.length)outer.append(childbox)
  }
+ if(t._pending)renderInstantState(t,outer);
  return outer
 }
 
@@ -1635,6 +1636,6 @@ $("logout").addEventListener("click",async()=>{await sandyAuth.auth.signOut();lo
 if(!internalWorkspace)await sandyIdle.check();
 const initial=await sandyAuth.auth.getSession();
 if(!initial.data.session){if(internalWorkspace){$("loginScreen").classList.remove("hidden");$("loginMessage").textContent="Sign in to Sandy Master Control before opening Sandy’s internal Agenda.";}else{sessionStorage.setItem("sandy_agenda_return",location.pathname+location.search);location.replace("../app/?return="+encodeURIComponent(location.pathname+location.search))}}else{
- load().then(processInvitationLink).catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
+ load().then(()=>{recoverInstantEntries();render();return processInvitationLink()}).catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
 }
 </script></body></html>
