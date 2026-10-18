@@ -561,7 +561,7 @@ Deno.serve(async(req:Request)=>{
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
-        .order("created_at",{ascending:false}).limit(12);
+        .order("created_at",{ascending:false}).limit(2);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
       const disallow=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
@@ -593,7 +593,7 @@ Deno.serve(async(req:Request)=>{
         if(!k)return reject("invalid_question",x);
         if(seen.has(k))return reject("previously_executed",x);
         if((selectedOracles.get(oracle)||0)>=2)return reject("oracle_limit_per_batch",x);
-        if(priorPasses.some((old:string)=>similarity(k,old)>=0.82))return reject("similar_to_prior_pass",x);
+        if(priorPasses.some((old:string)=>similarity(k,old)>=0.94))return reject("similar_to_prior_pass",x);
         if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.78))return reject("similar_within_batch",x);
         seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,(selectedOracles.get(oracle)||0)+1);return true;
       });
