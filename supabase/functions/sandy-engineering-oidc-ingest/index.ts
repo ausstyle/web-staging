@@ -513,7 +513,7 @@ Deno.serve(async(req:Request)=>{
     }
     if(Number(used||0)>=Math.min(200,Number(account.max_calls_per_day)||80)){
       await db.from("sandy_v2_qa_runs").update({status:"complete",completed_at:new Date().toISOString()}).eq("run_key",runKey);
-      return json({ok:true,skipped:"rolling_24_hour_budget",max_per_day:account.max_calls_per_day});
+      return json({ok:false,reason:"rolling_24_hour_budget_exhausted",run_key:runKey,attempted:0,used:Number(used||0),limit:account.max_calls_per_day},429);
     }
     const cases=[
       {key:"clock",prompts:["What time is it?","Please tell me the current time."],expect:"verified_clock"},
