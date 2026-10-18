@@ -379,7 +379,7 @@ Deno.serve(async(req:Request)=>{
       "Mandatory validation: every question must contain language matching its oracle. For connections ask which apps are connected. For task_count ask how many outstanding tasks. For clock ask current time. For location ask about current location.",
       "Every test must have one or more grounding_keys exactly matching source keys present in the input. mission_charter and mission_activity are always valid grounding keys.",
       "Copy grounding_keys ONLY from allowed_grounding_keys in the input. Never use generic names such as roadmap, capabilities or source_inventory.",
-      "Construct 18 substantively different read-only customer workflow scenarios. Prefer under-tested mission_awareness, memory_retrieval, calendar_awareness, integration_recovery, followup_investigation and cross_channel. Do NOT include routine clock, connections, location, basic task_count or capability questions merely to fill a quota: those passed categories are heavily saturated. Distinguish realistic customer objectives, not surface paraphrases. Each workflow should probe one new failure mode and use only accessible synthetic-account information. Do not require an existing connected mailbox or external side effects. Do not request actions or create items.",
+      "Construct 20 substantively different read-only customer workflow scenarios. State the supported oracle concept explicitly in each question. For mission_awareness use mission or delegated, for memory_retrieval use memory or remember, for calendar_awareness use calendar or meeting, for integration_recovery use connection or failed. Use available exact grounding keys from the snapshot, including mission_charter and mission_activity. Prefer under-tested mission_awareness, memory_retrieval, calendar_awareness, integration_recovery, followup_investigation and cross_channel. Do NOT include routine clock, connections, location, basic task_count or capability questions merely to fill a quota: those passed categories are heavily saturated. Distinguish realistic customer objectives, not surface paraphrases. Each workflow should probe one new failure mode and use only accessible synthetic-account information. Do not require an existing connected mailbox or external side effects. Do not request actions or create items.",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
       "Include purpose, grounding (exact source keys present in snapshot, or mission_charter/mission_activity), expected observation, and a 1-5 priority.",
@@ -435,7 +435,7 @@ Deno.serve(async(req:Request)=>{
         ...snapshot.customer_originated_qa_cases.map((x:any)=>x.key)]);
       const rejectionCounts:Record<string,number>={invalid_shape:0,invalid_read_only:0,oracle_mismatch:0,ungrounded:0};
       const accepted:any[]=[];
-      for(const candidate of data.tests.slice(0,12)){
+      for(const candidate of data.tests.slice(0,24)){
         const key=String(candidate?.oracle_key||"");
         const question=String(candidate?.question||"").trim();
         const priority=Number(candidate?.priority);
@@ -470,9 +470,9 @@ Deno.serve(async(req:Request)=>{
         return json({ok:true,status:"rejected",accepted:accepted.length,mode:policy.mode});
       }
       accepted.sort((a:any,b:any)=>b.priority-a.priority);
-      await finish("generated",{snapshot_hash:snapshotHash,source_summary:summary,proposals:accepted});
+      await finish("generated",{snapshot_hash:snapshotHash,source_summary:{...summary,proposal_rejections:rejectionCounts,proposals_returned:data.tests.length,proposals_accepted:accepted.length},proposals:accepted});
       return json({ok:true,status:"generated",model:designModel,mode:policy.mode,
-        proposal_count:accepted.length,snapshot_hash:snapshotHash,source_summary:summary,
+        proposal_count:accepted.length,snapshot_hash:snapshotHash,source_summary:{...summary,proposal_rejections:rejectionCounts,proposals_returned:data.tests.length,proposals_accepted:accepted.length},
         note:"Shadow design only; no generated test has been automatically executed."});
     }catch(error){
       await finish("failed",{snapshot_hash:snapshotHash,source_summary:summary,
@@ -582,10 +582,10 @@ Deno.serve(async(req:Request)=>{
         const k=canonical(String(x.question||"")),oracle=String(x.oracle_key||"");
         if(!k)return reject("invalid_question",x);
         if(seen.has(k))return reject("previously_executed",x);
-        if(selectedOracles.has(oracle))return reject("duplicate_oracle_in_batch",x);
+        if((selectedOracles.get(oracle)||0)>=2)return reject("oracle_limit_per_batch",x);
         if(priorPasses.some((old:string)=>similarity(k,old)>=0.75))return reject("similar_to_prior_pass",x);
         if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.65))return reject("similar_within_batch",x);
-        seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,1);return true;
+        seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,(selectedOracles.get(oracle)||0)+1);return true;
       });
       const priorityByOracle:Record<string,number>={memory_retrieval:12,mission_awareness:11,calendar_awareness:10,integration_recovery:9,followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
       dynamicCandidates.sort((a:any,b:any)=>(priorityByOracle[String(b.oracle_key)]||0)-(priorityByOracle[String(a.oracle_key)]||0)
