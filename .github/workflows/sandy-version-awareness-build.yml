@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/sandy-version-awareness-build.yml'
       - 'scripts/sandy/build_version_awareness.py'
+      - 'scripts/sandy/build_version_awareness_compared.py'
       - 'scripts/sandy/version-awareness.js'
   workflow_dispatch:
 permissions:
@@ -26,8 +27,8 @@ jobs:
       - name: Compile and exercise additive version self-inspection
         run: |
           set -eu
-          python3 -W error -m py_compile scripts/sandy/build_version_awareness.py
-          python3 scripts/sandy/build_version_awareness.py
+          python3 -W error -m py_compile scripts/sandy/build_version_awareness.py scripts/sandy/build_version_awareness_compared.py
+          python3 scripts/sandy/build_version_awareness_compared.py
       - name: Commit tested source to a new isolated branch only
         run: |
           set -eu
