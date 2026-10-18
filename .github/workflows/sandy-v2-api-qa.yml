@@ -67,3 +67,5 @@ jobs:
             echo "::error::Examiner API QA produced no verifiable executions or invalid counters; refusing false success."
             exit 1
           }
+
+# Production verification for Examiner v52.
