@@ -1,0 +1,21 @@
+/* Sandy Task files: dense, understated controls. */
+.sandyFileToggle{border:0;background:transparent;color:#637269;font-size:12px;line-height:21px;padding:1px 4px;white-space:nowrap;border-radius:6px;cursor:pointer}
+.sandyFileToggle:hover,.sandyFileToggle:focus-visible{background:#ebf2eb;color:#222}
+.sandyTaskFiles{margin:4px 12px 9px 48px;padding:8px 11px;border:1px solid #e6ebe5;border-radius:8px;background:#fff}
+.sandyTaskFiles.hidden{display:none}
+.sandyTaskFileDialog .sandyTaskFiles{margin:5px 0 10px}
+.sandyFilesHead{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.sandyFilesHead strong{font-size:12px}
+.sandyFilesHead .btn{font-size:12px;padding:5px 8px}
+.sandyFilesInput{display:none!important}
+.sandyFilesHelp{font-size:11px;color:#79817b;margin:4px 0}
+.sandyFilesGallery{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px}
+.sandyFilesItem{display:flex;gap:6px;align-items:center;min-width:0;max-width:225px;padding:5px 7px;border:1px solid #e8ece7;border-radius:7px;background:#fbfcfb}
+.sandyFileThumbnail{width:38px;height:38px;object-fit:cover;border-radius:5px;background:#edf1ec}
+.sandyFileGlyph{color:#758478;font-size:24px}
+.sandyFileOpen{font-size:11px;color:#202a20;background:transparent;border:0;min-width:0;max-width:156px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;cursor:pointer}
+.sandyFileRemove{background:transparent;border:0;color:#777;font-size:17px;cursor:pointer;padding:0 3px}
+.sandyFileRemove:hover{color:#a33}
+.sandyFilesStatus{font-size:11px;color:#607365;margin-top:4px}
+.sandyTaskFileDialog{margin:7px 0}
+@media(max-width:650px){.sandyTaskFiles{margin-left:10px;margin-right:3px}.sandyFilesItem{max-width:100%}}
