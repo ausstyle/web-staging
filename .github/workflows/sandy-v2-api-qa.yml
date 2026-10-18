@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Verify selection audit persistence on v62.
+# V67 production re-run against novel generated scenarios.
 # Fresh production QA regression.
 # New manual production smoke.
 # Fresh production test.
