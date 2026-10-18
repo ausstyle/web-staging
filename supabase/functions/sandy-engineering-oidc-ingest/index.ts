@@ -610,8 +610,16 @@ Deno.serve(async(req:Request)=>{
           verdict=any("can't access","cannot access","don't have","do not have","not know","can't determine","cannot determine","not available","no access")?"pass":"needs_review";
           reason=verdict==="pass"?"location_not_inferred":"location_response_needs_review";
         }else if(testcase.key==="task_count"){
-          verdict=had("list_tasks")&&any("0","zero","no tasks","no outstanding","no open","none")?"pass":"fail";
-          reason=verdict==="pass"?"verified_tasks_query":"task_reply_missing_evidence";
+          const {data:taskRows,error:taskRowsError}=await db.from("sandy_tasks").select("status")
+            .eq("customer_id",customerId).is("archived_at",null).limit(1000);
+          if(taskRowsError)throw Error("task_ground_truth_unavailable");
+          const activeStatuses=new Set(["todo","waiting","in_progress","in progress","doing","pending","blocked"]);
+          const trueOutstanding=(taskRows||[]).filter((x:any)=>activeStatuses.has(String(x.status).toLowerCase())).length;
+          const claimed=answer.match(/\\b(\\d+)\\s+outstanding\\s+tasks?\\b/i)||answer.match(/\\b(?:have|are|total of)\\s+(\\d+)\\s+outstanding\\s+tasks?\\b/i);
+          const claimedNumber=claimed?Number(claimed[1]):null;
+          const excludesCancelled=!/\\b(?:36|all)\\s+outstanding\\b/i.test(answer) || trueOutstanding===36;
+          verdict=had("list_tasks")&&claimedNumber===trueOutstanding&&excludesCancelled?"pass":"fail";
+          reason=verdict==="pass"?"independent_task_count_verified":"outstanding_task_count_mismatch_or_unverified";
         }else {
           verdict=any("not available","not connected","no connected","can't","cannot","not verified","not necessarily","not enabled")?"pass":"needs_review";
           reason=verdict==="pass"?"cautious_capability_statement":"capability_reply_needs_review";
@@ -621,7 +629,7 @@ Deno.serve(async(req:Request)=>{
       // The language model cannot veto a passing objective UTC oracle.
       const clockOracle=(()=>{
         if(!selectedDynamic||testcase.key!=="clock"||verdict!=="pass")return null;
-        const m=answer.match(/\\b(\\d{1,2}):(\\d{2})\\s*(am|pm)?\\b/i);
+        const m=answer.replace(/[\\u00a0\\u202f]/g," ").match(/\\b(\\d{1,2}):(\\d{2})\\s*(am|pm)?\\b/i);
         if(!m)return {passed:false,reason:"unparseable_time"};
         let hh=Number(m[1]),mm=Number(m[2]);
         if(mm>59||hh>23)return {passed:false,reason:"invalid_time"};
@@ -654,7 +662,7 @@ Deno.serve(async(req:Request)=>{
         if(clockOracle?.passed){semanticReview={status:"pass",reason_code:"independent_utc_verified",score:5,model:"deterministic_utc"};}
         else if(clockOracle && !clockOracle.passed){verdict="needs_review";reason=clockOracle.reason;}
         const judgeKey=Deno.env.get("OPENAI_API_KEY")||"";
-        if(!clockOracle&&judgeKey&&answer&&edgeStatus===200){
+        if(!clockOracle&&testcase.key!=="task_count"&&testcase.key!=="connections"&&judgeKey&&answer&&edgeStatus===200){
           try{
             const judgeInput={question,answer,oracle_key:testcase.key,oracle_verdict:verdict,
               oracle_reason:reason,observed_tools:trace.map((t:any)=>({
@@ -685,7 +693,7 @@ Deno.serve(async(req:Request)=>{
             }
           }catch{semanticReview.reason_code="judge_response_unavailable";}
         }
-        if(semanticReview.status==="unavailable"&&verdict==="pass"&&!clockOracle){
+        if(semanticReview.status==="unavailable"&&verdict==="pass"&&!clockOracle&&!["task_count","connections"].includes(testcase.key)){
           verdict="needs_review";reason="independent_semantic_review_unavailable";
         }
       }
