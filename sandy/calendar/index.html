@@ -114,7 +114,7 @@ function attachCalendarDrag(element,item,{resize=false}={}){
    const timeline=target?.closest?.(".dayTimeline");let destination=null;
    if(timeline&&selectedDay){const rect=timeline.getBoundingClientRect();const minute=Math.max(0,Math.min(1425,Math.round(((e.clientY-rect.top)/80)*4)*15));destination=dateAtMinutes(selectedDay,minute)}
    else{const date=calendarDropDate(target);if(date){destination=new Date(date);destination.setHours(state.start.getHours(),state.start.getMinutes(),0,0)}}
-   if(!destination&&state.resize){const diff=Math.round((e.clientY-origin.y)/20)*15;destination=new Date(state.end.getTime()+diff*60000)}
+   if(state.resize){const diff=Math.round((e.clientY-origin.y)/20)*15;destination=new Date(state.end.getTime()+diff*60000)}
    if(!destination)return;
    if(state.resize&&destination<=state.start)destination=new Date(state.start.getTime()+15*60000);
    if(item.kind==="task"){message("Open Tasks to schedule this task; drag changes are not automatically applied.");return}
@@ -193,7 +193,7 @@ function renderDay(){
    card.style.top=topPx+"px";card.style.height=heightPx+"px";
    card.style.left="calc("+((ev.col/total)*100)+"% + 4px)";
    card.style.width="calc("+(100/total)+"% - 8px)";
-   card.title=ev.title+" — "+human(ev.start.toISOString());card.onclick=()=>{if(Date.now()>suppressCalendarClickUntil)ev.click()};if(ev.kind==="event"){const match=data.events.find(x=>x.title===ev.title&&new Date(x.starts_at).getTime()===ev.start.getTime());if(match&&match.source_kind==="manual"){card.draggable=true;card.ondragstart=e=>{e.dataTransfer.setData("application/x-sandy-event",match.id);e.dataTransfer.effectAllowed="move"}}}if(ev.kind==="event"){const source=data.events.find(x=>x.title===ev.title&&new Date(x.starts_at).getTime()===ev.start.getTime());if(source){const grip=node("span");grip.className="calResizeGrip";grip.title="Drag to change duration";card.append(grip);attachCalendarDrag(card,{kind:"event",event:source,start:ev.start,end:ev.end})}}timeline.append(card);
+   card.title=ev.title+" — "+human(ev.start.toISOString());card.onclick=()=>{if(Date.now()>suppressCalendarClickUntil)ev.click()};if(ev.kind==="event"){const source=data.events.find(x=>x.title===ev.title&&new Date(x.starts_at).getTime()===ev.start.getTime());if(source){const grip=node("span");grip.className="calResizeGrip";grip.title="Drag to change duration";card.append(grip);attachCalendarDrag(card,{kind:"event",event:source,start:ev.start,end:ev.end})}}timeline.append(card);
   }
  }
  const isToday=day.toDateString()===today.toDateString();
