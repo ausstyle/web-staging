@@ -307,7 +307,7 @@ html,body{max-width:100%;overflow-x:clip}
 <div id="toast" role="status" aria-live="polite"></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
-import {installSandyIdleLock} from "../security-lock.js";
+import {installSandyIdleLock} from "../../security-lock.js";
 "use strict";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
