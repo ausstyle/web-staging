@@ -356,6 +356,11 @@ Deno.serve(async(req:Request)=>{
     }
     const allowedKeys=["clock","connections","web_history","cross_channel","location",
       "task_count","capability","followup_investigation","memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"];
+    const {data:recentQuestions,error:recentQuestionsError}=await db.from("sandy_v2_qa_executions")
+      .select("question,verdict,case_key").order("created_at",{ascending:false}).limit(180);
+    if(recentQuestionsError)return fail("examiner_recent_test_history_unavailable",503);
+    const historicalQuestions=(recentQuestions||[]).map((x:any)=>String(x.question||"").slice(0,220))
+      .filter((q:string)=>q.length>0).filter((q:string,i:number,all:string[])=>all.indexOf(q)===i).slice(0,90);
     const instructions=[
       "You are Sandy Examiner's independent real-world test architect.",
       "Examiner is an independent intelligence assurance function, not merely a defect finder. Assess reasoning, judgment, initiative, truthful capability self-awareness, customer objective completion, delegation and recovery, customer friction, safety, cost and learning effectiveness.",
@@ -379,7 +384,7 @@ Deno.serve(async(req:Request)=>{
       "Mandatory validation: every question must contain language matching its oracle. For connections ask which apps are connected. For task_count ask how many outstanding tasks. For clock ask current time. For location ask about current location.",
       "Every test must have one or more grounding_keys exactly matching source keys present in the input. mission_charter and mission_activity are always valid grounding keys.",
       "Copy grounding_keys ONLY from allowed_grounding_keys in the input. Never use generic names such as roadmap, capabilities or source_inventory.",
-      "Construct 14 substantively different read-only customer workflow scenarios. State the supported oracle concept explicitly in each question. For mission_awareness use mission or delegated, for memory_retrieval use memory or remember, for calendar_awareness use calendar or meeting, for integration_recovery use connection or failed. Use available exact grounding keys from the snapshot, including mission_charter and mission_activity. Prefer under-tested mission_awareness, memory_retrieval, calendar_awareness, integration_recovery, followup_investigation and cross_channel. Do NOT include routine clock, connections, location, basic task_count or capability questions merely to fill a quota: those passed categories are heavily saturated. Distinguish realistic customer objectives, not surface paraphrases. Each workflow should probe one new failure mode and use only accessible synthetic-account information. Do not require an existing connected mailbox or external side effects. Do not request actions or create items.",
+      "Construct 14 substantively different read-only customer workflow scenarios. State the supported oracle concept explicitly in each question. For mission_awareness use mission or delegated, for memory_retrieval use memory or remember, for calendar_awareness use calendar or meeting, for integration_recovery use connection or failed. Use available exact grounding keys from the snapshot, including mission_charter and mission_activity. Never repeat or lightly paraphrase any excluded_previously_executed_questions supplied in the input. Do not invent permissions or fixtures. Prefer under-tested mission_awareness, memory_retrieval, calendar_awareness, integration_recovery, followup_investigation and cross_channel. Do NOT include routine clock, connections, location, basic task_count or capability questions merely to fill a quota: those passed categories are heavily saturated. Distinguish realistic customer objectives, not surface paraphrases. Each workflow should probe one new failure mode and use only accessible synthetic-account information. Do not require an existing connected mailbox or external side effects. Do not request actions or create items.",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
       "Include purpose, grounding (exact source keys present in snapshot, or mission_charter/mission_activity), expected observation, and a 1-5 priority.",
@@ -393,6 +398,7 @@ Deno.serve(async(req:Request)=>{
         method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},
         body:JSON.stringify({model:designModel,store:false,reasoning:{effort:"high"},
           instructions,input:[{role:"user",content:[{type:"input_text",text:"Respond with a valid JSON object containing a tests array. Ground all tests in this snapshot: "+JSON.stringify({
+            excluded_previously_executed_questions:historicalQuestions,
             mission_statement:snapshot.mission_statement,
             active_mission_count:snapshot.active_mission_count,
             mission_status_distribution:snapshot.mission_status_distribution,
