@@ -730,27 +730,40 @@ Deno.serve(async(req:Request)=>{
       // Clock correctness is evaluated from the independently captured request time.
       // The language model cannot veto a passing objective UTC oracle.
       const clockOracle=(()=>{
-        if(!selectedDynamic||testcase.key!=="clock"||verdict!=="pass")return null;
-        const m=answer.replace(/[\u00a0\u202f]/g," ").match(/\b(\d{1,2}):(\d{2})\s*(am|pm)?\b/i);
+        if(testcase.key!=="clock"||!answer)return null;
+        const normalizedTime=answer.replace(/[\u00a0\u202f]/g," ");
+        const m=normalizedTime.match(/\b(\d{1,2}):(\d{2})\s*(am|pm)?\b/i)
+          ||normalizedTime.match(/\b(\d{1,2})\s*(am|pm)\b/i);
         if(!m)return {passed:false,reason:"unparseable_time"};
-        let hh=Number(m[1]),mm=Number(m[2]);
+        let hh=Number(m[1]),mm=m[3]===undefined&&m[2]&&/^(?:am|pm)$/i.test(m[2])?0:Number(m[2]||0);
+        const meridiem=m[3]||(/^(?:am|pm)$/i.test(m[2]||"")?m[2]:null);
         if(mm>59||hh>23)return {passed:false,reason:"invalid_time"};
-        if(m[3]){if(hh<1||hh>12)return {passed:false,reason:"invalid_12h_time"};hh=hh%12+(m[3].toLowerCase()==="pm"?12:0);}
-        const minute=hh*60+mm;
+        if(meridiem){if(hh<1||hh>12)return {passed:false,reason:"invalid_12h_time"};hh=hh%12+(meridiem.toLowerCase()==="pm"?12:0);}
         const before=new Date(started),after=new Date(Date.now());
+        const expectedDate=(at:Date)=>{
+          const dateExplicit=/\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|\d{4})\b/i.test(answer);
+          return !dateExplicit||(answer.toLowerCase().includes(String(at.getUTCFullYear()))&&answer.includes(String(at.getUTCDate())));
+        };
         const matches=(at:Date)=>{
           const expected=at.getUTCHours()*60+at.getUTCMinutes();
-          const distance=Math.min(Math.abs(minute-expected),1440-Math.abs(minute-expected));
-          const txt=answer.toLowerCase();
-          const datePresent=txt.includes(String(at.getUTCDate()))&&txt.includes(String(at.getUTCFullYear()))&&
-            txt.includes(at.toLocaleString("en-GB",{month:"long",timeZone:"UTC"}).toLowerCase());
-          return distance<=2&&datePresent;
+          const stated=hh*60+mm;
+          const delta=Math.min(Math.abs(stated-expected),1440-Math.abs(stated-expected));
+          return delta<=2&&expectedDate(at);
         };
         const passed=[-2,-1,0,1,2].some(offset=>matches(new Date(before.getTime()+offset*60000)))||
           [-2,-1,0,1,2].some(offset=>matches(new Date(after.getTime()+offset*60000)));
-        return {passed,reason:passed?"independent_utc_verified":"clock_mismatch_or_date_unverified",
+        return {passed,reason:passed?"independent_utc_verified":"clock_inaccurate_or_not_parseable",
           start_utc:before.toISOString(),end_utc:after.toISOString(),tolerance_minutes:2};
       })();
+      const executionQuality={clock_tool_receipt:trace.some((t:any)=>t?.tool==="system_clock"&&t.success===true),
+        successful_tools:trace.filter((t:any)=>t?.success===true).map((t:any)=>t.tool),
+        failed_tools:trace.filter((t:any)=>t?.success===false).map((t:any)=>t.tool),
+        non_blocking_improvements:[] as string[]};
+      if(testcase.key==="clock"&&!executionQuality.clock_tool_receipt)executionQuality.non_blocking_improvements.push("use_verified_clock_tool");
+      if(clockOracle&&edgeStatus===200&&answer){
+        verdict=clockOracle.passed?"pass":"needs_review";
+        reason=clockOracle.passed?"verified_customer_clock_outcome":"clock_answer_requires_accuracy_review";
+      }
       const complexJudge=["capability","cross_channel","followup_investigation","memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"].includes(testcase.key);
       if(clockOracle)auditOracle={rule_version:"utc-clock-v2",reference:{reference_time:clockOracle.start_utc,completed_time:clockOracle.end_utc,tolerance_minutes:clockOracle.tolerance_minutes},observed:{response:answer,system_clock_receipt:trace.some((t:any)=>t?.tool==="system_clock"&&t.success===true)},decision:clockOracle.passed?"verified":"requires_review"};
             const configuredJudge=String((executionPolicy?.config as any)?.[complexJudge?"complex_judge_model":"routine_judge_model"]||(complexJudge?"gpt-6-astra":"gpt-5.2"));
@@ -808,7 +821,7 @@ Deno.serve(async(req:Request)=>{
         run_key:runKey,case_key:recordCaseKey,request_id:requestId,customer_id:customerId,
         question,reply:answer,tool_trace:trace,verdict,reason,edge_status:edgeStatus||null,duration_ms:duration,
         evidence:{expected:testcase.expect,model_response_present:answer.length>0,tool_count:trace.length,
-          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel,ai_design_run:testcase.design_run_key||null,semantic_review:semanticReview,clock_oracle:clockOracle,audit_oracle:auditOracle,final_verdict:verdict,final_reason:reason,audit_schema_version:2}
+          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel,ai_design_run:testcase.design_run_key||null,semantic_review:semanticReview,clock_oracle:clockOracle,execution_quality:executionQuality,customer_outcome:{verdict,reason},audit_oracle:auditOracle,final_verdict:verdict,final_reason:reason,audit_schema_version:2}
       });
       if(writeError){
         await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
