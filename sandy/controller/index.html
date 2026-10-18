@@ -212,40 +212,65 @@ async function loadExaminerRuns(){examinerLoading=true;examinerError="";render()
 async function loadExaminerDetail(redraw=true){try{const r=await call("examiner_run_detail",{run_key:examinerSelected});examinerDetail=r}catch(e){examinerError=e.message;examinerDetail=null}if(redraw)render()}
 async function loadExaminerProduction(){examinerError="";try{const r=await call("examiner_production",{channel:examinerChannel,page:examinerPage});examinerProduction=r.items||[];examinerTotal=r.count||0}catch(e){examinerError=e.message}render()}
 function examinerText(p,label,value){const wrap=el("div","workspaceDetail");add(wrap,el("b","",label),el("div","detail",value===null||value===undefined||value===""?"Not recorded":typeof value==="string"?value:JSON.stringify(value,null,2)));p.append(wrap)}
+function examinerVerdict(v){const x=String(v||"unknown").toLowerCase();return x==="pass"||x==="passed"?"Passed":x==="fail"||x==="failed"?"Failed":x==="potential_issue"?"Potential problem":x==="needs_review"?"Needs review":x==="unverifiable"?"Could not verify":x==="complete"?"Completed":x==="partial"?"Partially completed":x.replaceAll("_"," ")}
+function examinerOutcome(r){if(!r)return "No run selected.";const n=Number(r.examined||0),live=r.stream==="live";if(n===0)return "No customer conversations or test questions were assessed. This run provides no evidence of Sandy’s quality, even if the job completed successfully.";if(live)return "Examiner reviewed "+n+" production conversation"+(n===1?"":"s")+". These are assessments of real customer interactions, not new questions sent to Sandy.";return "Examiner assessed "+n+" test response"+(n===1?"":"s")+". "+(r.failed||0)+" failed, "+(r.passed||0)+" passed and "+(r.needs_review||0)+" need review."}
+function examinerSimple(p,label,value){if(value===null||value===undefined||value==="")return;const d=el("div","workspaceDetail");d.style.marginTop="12px";add(d,el("b","",label),el("p","",String(value)));p.append(d)}
+function examinerDetails(p,title,obj){if(!obj||typeof obj!=="object"||!Object.keys(obj).length)return;const d=el("details","workspaceCard");d.append(el("summary","",title));const pre=el("pre","detail",JSON.stringify(obj,null,2));pre.style.maxWidth="100%";d.append(pre);p.append(d)}
 function showExaminer(c){
- const intro=panel("Examiner · quality evidence");txt(intro,"Actual stored test questions, Sandy responses and Examiner verdicts. Judgments are assessments, not independently verified facts. Missing answers, absent evidence and incomplete coverage remain visible.","muted");
- const actions=el("div","toolbar"),refresh=el("button","btn","↻ Reload runs");refresh.onclick=loadExaminerRuns;actions.append(refresh);
- const prod=el("button","btn","Load production reviews");prod.onclick=()=>{examinerPage=0;loadExaminerProduction()};actions.append(prod);intro.append(actions);
- if(examinerError)txt(intro,"Retrieval error: "+examinerError,"status");
- if(examinerLoading)txt(intro,"Loading Examiner evidence…","muted");
- const latest=examinerRuns[0];if(latest){const k=el("div","workspaceKpis");for(const [a,b] of [["Latest run",latest.status||"Unknown"],["Questions examined",latest.examined??"Not recorded"],["Failed",latest.failed??"Not recorded"],["Needs review",latest.needs_review??"Not recorded"]])add(k,add(el("div","workspaceKpi"),el("div","label",a),el("div","big",b)));intro.append(k)}
- c.append(intro);
- const area=panel("Examiner run history");
- const select=el("select","search");select.style.maxWidth="100%";examinerRuns.forEach(r=>{const o=el("option","",date(r.started_at)+" · "+r.stream+" · "+r.run_key+" · "+r.status);o.value=r.run_key;o.selected=r.run_key===examinerSelected;select.append(o)});
- select.onchange=()=>{examinerSelected=select.value;examinerDetail=null;loadExaminerDetail()};area.append(select);
- if(!examinerRuns.length)txt(area,"No run records retrieved.","muted");
- const run=examinerRuns.find(x=>x.run_key===examinerSelected);
- if(run){const info=el("div","workspaceCard");examinerText(info,"Status / time",run.status+" · "+date(run.started_at)+" → "+date(run.completed_at));examinerText(info,"Run counts", {examined:run.examined,passed:run.passed,failed:run.failed,needs_review:run.needs_review,potential_issues:run.potential_issues});area.append(info)}
- if(examinerDetail&&examinerDetail.run_key===examinerSelected){
- const d=examinerDetail;const tests=d.audits.length?d.audits:d.executions;
- txt(area,"Recorded audit cases: "+d.audits.length+" · API executions: "+d.executions.length+" · independent reviews: "+d.independent_reviews.length+" · production reviews in run: "+d.production_reviews.length,"muted");
- if(!tests.length)txt(area,"No test transcripts are recorded for this run. This is not a passing result.","status");
- tests.forEach((x,i)=>{const card=el("details","workspaceCard"),sum=el("summary","workspaceTop");add(sum,el("b","",String(i+1)+". "+String(x.question||x.case_key||"Question missing").slice(0,180)),el("span","workspacePill",x.verdict||"unassessed"));card.append(sum);
- examinerText(card,"Question asked",x.question);examinerText(card,"Actual Sandy response",x.reply);examinerText(card,"Examiner's qualitative determination",x.verdict);examinerText(card,"Reasoning / findings",x.reason);examinerText(card,"AI judge review",x.ai_review);examinerText(card,"Deterministic and clock audits",{deterministic:x.deterministic_audit,clock:x.clock_audit});examinerText(card,"Tool / provider trace",x.tool_trace);examinerText(card,"Execution status",x.edge_status);examinerText(card,"Run / case references",{run_key:x.run_key,case_key:x.case_key,request_id:x.request_id,model:x.sandy_model});area.append(card)});
- if(d.production_reviews.length){const x=el("details","workspaceCard");x.append(el("summary","","Production conversation reviews linked to this run · "+d.production_reviews.length));d.production_reviews.forEach(v=>examinerText(x,v.channel+" · "+v.verdict,{source_id:v.source_id,reason:v.reason,judge_evidence:v.judge_evidence}));area.append(x)}
- if(d.design){const x=el("details","workspaceCard");x.append(el("summary","","Question generation and coverage"));examinerText(x,"Design model, mode and status",{model:d.design.model,mode:d.design.mode,status:d.design.status,rejection_reason:d.design.rejection_reason});examinerText(x,"Question proposals",d.design.proposals);examinerText(x,"Source and coverage",d.design.source_summary);area.append(x)}
- if(d.assurance){const x=el("details","workspaceCard");x.append(el("summary","","Independent assurance summary"));examinerText(x,"Assurance",{model:d.assurance.model,status:d.assurance.status,metrics:d.assurance.metrics,evidence:d.assurance.evidence});area.append(x)}
- if(d.independent_reviews.length){const x=el("details","workspaceCard");x.append(el("summary","","Independent audit of Examiner verdicts"));d.independent_reviews.forEach(v=>examinerText(x,v.review_source+" · "+v.audited_verdict,{rationale:v.rationale,evidence:v.evidence,execution_id:v.execution_id}));area.append(x)}
- }c.append(area);
- const p=panel("Production customer conversation reviews");txt(p,"Separate from synthetic API tests. Reviews of real Email, Web, WhatsApp and Voice conversations, with stored sources, verdicts and review evidence. Customer content appears only where Examiner retained it; access is restricted to authenticated Controller operators.","muted");
- const bar=el("div","toolbar"),channel=el("select","search");["all","email","web","whatsapp","voice"].forEach(v=>{const x=el("option","",v);x.value=v;channel.append(x)});channel.value=examinerChannel;channel.onchange=()=>{examinerChannel=channel.value;examinerPage=0;loadExaminerProduction()};bar.append(channel);
- const reload=el("button","btn","↻ Refresh reviews");reload.onclick=loadExaminerProduction;bar.append(reload);p.append(bar);
- txt(p,examinerTotal+" stored matching reviews · page "+(examinerPage+1),"small muted");
- examinerProduction.forEach(x=>{const card=el("details","workspaceCard"),summary=el("summary","workspaceTop");add(summary,el("b","",x.channel+" · "+date(x.source_at)),el("span","workspacePill",x.verdict||"unassessed"));card.append(summary);examinerText(card,"Examiner assessment",x.reason);examinerText(card,"Customer question",x.original_question);examinerText(card,"Sandy answer",x.actual_response);examinerText(card,"Transcript evidence status",x.transcript_status);examinerText(card,"Examiner judgment evidence",x.judge_evidence);examinerText(card,"Source reference",{source_id:x.source_id,run_key:x.run_key,reviewed_at:x.reviewed_at});p.append(card)});
- const paging=el("div","toolbar"),prev=el("button","btn","← Previous"),next=el("button","btn","Next →");prev.disabled=examinerPage===0;next.disabled=(examinerPage+1)*50>=examinerTotal;prev.onclick=()=>{examinerPage--;loadExaminerProduction()};next.onclick=()=>{examinerPage++;loadExaminerProduction()};paging.append(prev,next);p.append(paging);
- if(!examinerProduction.length)txt(p,"No production reviews loaded for this filter.","muted");c.append(p);
+ const top=panel("What did Examiner find?");
+ txt(top,"Select a run to see what it checked, what Sandy said and what Examiner concluded. Test runs and reviews of customer conversations are kept separate.","muted");
+ const controls=el("div","toolbar"),pick=el("select","search");pick.style.cssText="min-width:min(460px,100%);max-width:100%";
+ examinerRuns.forEach(r=>{const n=Number(r.examined||0);const name=(r.stream==="live"?"Customer conversations":"Sandy test questions")+" · "+date(r.started_at)+" · "+n+" reviewed"+(n===0?" (no assessment)":"");const o=el("option","",name);o.value=r.run_key;o.selected=r.run_key===examinerSelected;pick.append(o)});
+ pick.onchange=()=>{examinerSelected=pick.value;examinerDetail=null;loadExaminerDetail()};controls.append(pick);
+ const reload=el("button","btn","↻ Refresh results");reload.onclick=loadExaminerRuns;controls.append(reload);top.append(controls);
+ if(examinerLoading)txt(top,"Loading…","muted");if(examinerError)txt(top,"Unable to load: "+examinerError,"status");
+ const run=examinerRuns.find(r=>r.run_key===examinerSelected);
+ if(run){const zero=Number(run.examined||0)===0;const result=el("div","workspaceCard");result.style.borderLeft=zero?"4px solid #9a6c19":Number(run.failed||0)?"4px solid #a23c3c":"4px solid #333";add(result,el("b","",zero?"No quality assessment took place":run.stream==="live"?"Production conversation review":"Sandy capability test"),el("p","",examinerOutcome(run)));top.append(result);
+ const k=el("div","workspaceKpis");
+ const stats=[["Interactions assessed",run.examined??"—"],["Passed",run.passed??"—"],["Failed",run.failed??"—"],["Further review",run.needs_review??"—"]];
+ stats.forEach(([name,n])=>{const card=el("div","workspaceKpi");add(card,el("div","label",name),el("div","big",n));k.append(card)});top.append(k);
+ txt(top,"Started "+date(run.started_at)+" · Finished "+date(run.completed_at)+" · Job: "+examinerVerdict(run.status),"small muted");
+ }else if(!examinerLoading)txt(top,"No Examiner runs available.","muted");
+ c.append(top);
+ const report=panel(run?.stream==="live"?"Customer conversations reviewed in this run":"Questions Examiner asked Sandy");
+ const d=examinerDetail&&examinerDetail.run_key===examinerSelected?examinerDetail:null;
+ if(d){
+ let tests=d.audits?.length?d.audits:d.executions||[];
+ if(run?.stream==="live"){
+  const items=d.production_reviews||[];
+  if(!items.length)txt(report,"No individual customer-review records are attached to this run. The run status alone does not establish a quality result.","muted");
+  items.forEach((x,i)=>{const card=el("details","workspaceCard");const sum=el("summary","workspaceTop");add(sum,el("b","",String(i+1)+". "+x.channel.toUpperCase()+" conversation · "+date(x.source_at)),el("span","workspacePill",examinerVerdict(x.verdict)));card.append(sum);
+    examinerSimple(card,"Examiner’s conclusion",x.reason||"No qualitative explanation recorded.");
+    examinerSimple(card,"Evidence of review",x.judge_evidence?.reason_summary||"No detailed explanation recorded.");
+    examinerSimple(card,"Customer interaction reference",x.source_id);
+    examinerDetails(card,"Technical evidence",x.judge_evidence);report.append(card)});
+ }else{
+ if(!tests.length)txt(report,"No question-and-answer records are attached to this run. It cannot be counted as a successful quality test.","muted");
+ tests.forEach((x,i)=>{const card=el("details","workspaceCard");const sum=el("summary","workspaceTop");add(sum,el("b","",String(i+1)+". "+String(x.question||"Question not recorded").slice(0,190)),el("span","workspacePill",examinerVerdict(x.verdict)));card.append(sum);
+ examinerSimple(card,"Question asked",x.question||"Not recorded");examinerSimple(card,"Sandy’s actual answer",x.reply||"No answer recorded");examinerSimple(card,"Examiner’s assessment",x.reason||"No qualitative determination recorded");
+ if(x.ai_review?.reason||x.ai_review?.rationale||x.ai_review?.explanation)examinerSimple(card,"Why Examiner reached this decision",x.ai_review.reason||x.ai_review.rationale||x.ai_review.explanation);
+ examinerSimple(card,"Provider response code",x.edge_status);
+ const extra=el("details","workspaceCard");extra.append(el("summary","","View detailed technical evidence"));examinerDetails(extra,"Model evaluation",x.ai_review);examinerDetails(extra,"Checks and timing",{deterministic:x.deterministic_audit,clock:x.clock_audit});examinerDetails(extra,"Tool execution",x.tool_trace);card.append(extra);report.append(card)});
+ }
+ if(d.design){const block=el("details","workspaceCard");block.append(el("summary","","How Examiner selected this run’s tests"));examinerSimple(block,"Test design result",examinerVerdict(d.design.status));examinerSimple(block,"Why test generation did not complete",d.design.rejection_reason);examinerDetails(block,"Design and coverage evidence",{proposals:d.design.proposals,source_summary:d.design.source_summary});report.append(block)}
+ if(d.independent_reviews?.length){const block=el("details","workspaceCard");block.append(el("summary","","Independent checks of Examiner’s assessments"));d.independent_reviews.forEach(x=>examinerSimple(block,examinerVerdict(x.audited_verdict),x.rationale));report.append(block)}
+ if(d.assurance)examinerDetails(report,"Independent assurance run",d.assurance);
+ }else txt(report,"Select a run to load its detailed findings.","muted");
+ c.append(report);
+ const prod=panel("Customer service quality · production reviews");
+ txt(prod,"Real customer questions and Sandy’s answers, as evaluated by Examiner. These reviews are distinct from simulated test questions.","muted");
+ const tools=el("div","toolbar"),channel=el("select","search");["all","email","web","whatsapp","voice"].forEach(v=>{const o=el("option","",v==="all"?"All channels":v[0].toUpperCase()+v.slice(1));o.value=v;channel.append(o)});channel.value=examinerChannel;channel.onchange=()=>{examinerChannel=channel.value;examinerPage=0;loadExaminerProduction()};tools.append(channel);
+ const loadBtn=el("button","btn","↻ Load / refresh conversations");loadBtn.onclick=loadExaminerProduction;tools.append(loadBtn);prod.append(tools);
+ txt(prod,examinerTotal+" reviews found · page "+(examinerPage+1),"small muted");
+ examinerProduction.forEach((x,i)=>{const card=el("details","workspaceCard"),sum=el("summary","workspaceTop");add(sum,el("b","",String(examinerPage*50+i+1)+". "+x.channel.toUpperCase()+" · "+date(x.source_at)),el("span","workspacePill",examinerVerdict(x.verdict)));card.append(sum);
+ examinerSimple(card,"Customer asked",x.original_question||"Original question unavailable");
+ examinerSimple(card,"Sandy replied",x.actual_response||"Answer unavailable or not verifiably linked");
+ examinerSimple(card,"Examiner concluded",x.reason||"No explanation provided");
+ examinerSimple(card,"Quality of transcript match",x.transcript_status==="source_record"?"Verified source record":x.transcript_status?.includes("unverified")?"Likely chronological match — not independently verified":"Source response could not be recovered");
+ examinerDetails(card,"Further review evidence",x.judge_evidence);prod.append(card)});
+ if(!examinerProduction.length)txt(prod,"No conversation records loaded. Click Load / refresh conversations to retrieve the latest assessments.","muted");
+ const nav=el("div","toolbar"),prev=el("button","btn","← Earlier page"),next=el("button","btn","Next page →");prev.disabled=examinerPage===0;next.disabled=(examinerPage+1)*50>=examinerTotal;prev.onclick=()=>{examinerPage--;loadExaminerProduction()};next.onclick=()=>{examinerPage++;loadExaminerProduction()};nav.append(prev,next);prod.append(nav);c.append(prod);
 }
-
 function showQA(c){
  const top=panel("Quality laboratory");txt(top,"Review failing tests, request retesting and track the evidence needed to confirm a fix.","muted");
  const statuses=["failed","retest_pending","investigating","needs_review","pending","passed"];
