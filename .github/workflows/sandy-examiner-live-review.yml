@@ -1,5 +1,5 @@
 name: Sandy Examiner live conversation review
-# Production v3 WhatsApp matching regression
+# Production v4 multi-turn continuation regression
 on:
   workflow_run:
     workflows: ['Sandy V2 autonomous API QA']
