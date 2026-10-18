@@ -465,6 +465,7 @@ Deno.serve(async(req:Request)=>{
   if(qaFlow){
     if(body.operation!=="v2_api_qa"||Object.keys(body).some(k=>k!=="operation"))
       return fail("qa_operation_restricted",403);
+    const targetedTen=body.operation==="v2_api_qa_targeted_10";
     const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
     if(!url||!key)return fail("qa_backend_unconfigured",503);
     const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -532,28 +533,30 @@ Deno.serve(async(req:Request)=>{
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
-        .order("created_at",{ascending:false}).limit(1).maybeSingle();
+        .order("created_at",{ascending:false}).limit(targetedTen?3:1);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
       const disallow=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
-      dynamicCandidates=(Array.isArray(design?.proposals)?design.proposals:[]).filter((x:any)=>
+      dynamicCandidates=(design||[]).flatMap((run:any)=>(Array.isArray(run.proposals)?run.proposals:[]).map((x:any)=>({...x,design_run_key:run.run_key}))).filter((x:any)=>
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
         !disallow.test(x.question)&&x.execution_status==="shadow_not_executed"&&
         x.requires_current_production_retest===true&&Array.isArray(x.grounding_keys)&&x.grounding_keys.length>0);
-      latestDesignRunKey=design?.run_key||null;
+      latestDesignRunKey=(design||[])[0]?.run_key||null;
     }
-    const allowed=Math.min(2,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
+    const allowed=Math.min(targetedTen?10:2,targetedTen?10:(Number(account.max_calls_per_run)||1),Math.max(0,Number(account.max_calls_per_day)-(used||0)));
+    if(targetedTen&&dynamicCandidates.length<10)return fail("qa_targeted_suite_less_than_ten",409);
+    if(targetedTen&&allowed<10)return fail("qa_targeted_budget_insufficient",429);
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
       const ordinal=Number(used||0)+i;
-      const selectedDynamic=i===1&&dynamicCandidates.length>0
-        ?dynamicCandidates[Math.floor(Number(used||0)/8)%dynamicCandidates.length]:null;
+      const selectedDynamic=targetedTen?dynamicCandidates[i]:(i===1&&dynamicCandidates.length>0
+        ?dynamicCandidates[Math.floor(Number(used||0)/8)%dynamicCandidates.length]:null);
       const testcase=selectedDynamic?{
         key:String(selectedDynamic.oracle_key),prompts:[String(selectedDynamic.question)],
         expect:String(selectedDynamic.expected_observation||"").slice(0,300),
-        design_run_key:latestDesignRunKey
+        design_run_key:selectedDynamic.design_run_key||latestDesignRunKey
       }:cases[ordinal%cases.length];
-      const recordCaseKey=selectedDynamic?"dynamic_"+testcase.key:testcase.key;
+      const recordCaseKey=selectedDynamic?(targetedTen?"targeted_"+i+"_"+testcase.key:"dynamic_"+testcase.key):testcase.key;
       const variant=selectedDynamic?0:Math.floor(ordinal/cases.length)%testcase.prompts.length;
       const question=testcase.prompts[variant];
       const requestId="v2qa_"+crypto.randomUUID();
