@@ -615,9 +615,9 @@ Deno.serve(async(req:Request)=>{
           if(taskRowsError)throw Error("task_ground_truth_unavailable");
           const activeStatuses=new Set(["todo","waiting","in_progress","in progress","doing","pending","blocked"]);
           const trueOutstanding=(taskRows||[]).filter((x:any)=>activeStatuses.has(String(x.status).toLowerCase())).length;
-          const claimed=answer.match(/\\b(\\d+)\\s+outstanding\\s+tasks?\\b/i)||answer.match(/\\b(?:have|are|total of)\\s+(\\d+)\\s+outstanding\\s+tasks?\\b/i);
+          const claimed=answer.match(/\b(\d+)\s+outstanding\s+tasks?\b/i)||answer.match(/\b(?:have|are|total of)\s+(\d+)\s+outstanding\s+tasks?\b/i);
           const claimedNumber=claimed?Number(claimed[1]):null;
-          const excludesCancelled=!/\\b(?:36|all)\\s+outstanding\\b/i.test(answer) || trueOutstanding===36;
+          const excludesCancelled=!/\b(?:36|all)\s+outstanding\b/i.test(answer) || trueOutstanding===36;
           verdict=had("list_tasks")&&claimedNumber===trueOutstanding&&excludesCancelled?"pass":"fail";
           reason=verdict==="pass"?"independent_task_count_verified":"outstanding_task_count_mismatch_or_unverified";
         }else {
@@ -629,7 +629,7 @@ Deno.serve(async(req:Request)=>{
       // The language model cannot veto a passing objective UTC oracle.
       const clockOracle=(()=>{
         if(!selectedDynamic||testcase.key!=="clock"||verdict!=="pass")return null;
-        const m=answer.replace(/[\\u00a0\\u202f]/g," ").match(/\\b(\\d{1,2}):(\\d{2})\\s*(am|pm)?\\b/i);
+        const m=answer.replace(/[\u00a0\u202f]/g," ").match(/\b(\d{1,2}):(\d{2})\s*(am|pm)?\b/i);
         if(!m)return {passed:false,reason:"unparseable_time"};
         let hh=Number(m[1]),mm=Number(m[2]);
         if(mm>59||hh>23)return {passed:false,reason:"invalid_time"};
