@@ -79,7 +79,7 @@ function calendarDateKey(d){return [d.getFullYear(),String(d.getMonth()+1).padSt
 function dateAtMinutes(date,minutes){const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());d.setMinutes(minutes);return d}
 async function calendarMove(item,target,resize=false){
  if(item.kind==="task"){message("Task scheduling must be changed in Tasks; calendar proposals cannot silently change task dates.");return}
- const source=item.event;if(source.source_kind!=="manual"||source.external_event_id){message("Synced events must be rescheduled in their source calendar until two-way sync is enabled.");return}
+ const source=item.event;if((source.source_kind&&source.source_kind!=="manual")||source.external_event_id){message("Synced events must be rescheduled in their source calendar until two-way sync is enabled.");return}
  const originalStart=new Date(source.starts_at),oldEnd=source.ends_at?new Date(source.ends_at):new Date(originalStart.getTime()+30*60000);
  const proposedStart=resize?originalStart:target,proposedEnd=resize?target:new Date(target.getTime()+(oldEnd-originalStart));
  if(proposedEnd<=proposedStart){message("End time must be after start time");return}
@@ -88,19 +88,19 @@ async function calendarMove(item,target,resize=false){
  try{await api("update",updated);await load();message(resize?"Event duration updated":"Event moved")}catch(err){Object.assign(source,snapshot);render();message("Could not save: "+err.message)}
 }
 function attachCalendarDrag(element,item,{resize=false}={}){
- if(item.kind==="event"&&(item.event.source_kind!=="manual"||item.event.external_event_id))return;
+ if(item.kind==="event"&&((item.event.source_kind&&item.event.source_kind!=="manual")||item.event.external_event_id)){element.title+=" · Managed externally (read-only)";return;}
  element.addEventListener("pointerdown",event=>{
   if(event.button!==0||event.target.closest("input,select"))return;
-  if(resize!==!!event.target.closest(".calResizeGrip"))return;
+  const resizing=!!event.target.closest(".calResizeGrip");
   const origin=dragPoint(event),start=new Date(item.event?.starts_at||item.start),end=new Date(item.event?.ends_at||item.end||start.getTime()+1800000);
-  const state={id:event.pointerId,item,origin,start,end,resize,moved:false,ghost:null,source:element,hover:null};
-  calendarDrag.active=state;element.setPointerCapture(event.pointerId);
+  const state={id:event.pointerId,item,origin,start,end,resize:resizing,moved:false,ghost:null,source:element,hover:null};
+  calendarDrag.active=state;try{element.setPointerCapture(event.pointerId)}catch{}
   const moving=e=>{
    if(calendarDrag.active!==state)return;
    const distance=Math.hypot(e.clientX-origin.x,e.clientY-origin.y);
    if(!state.moved&&distance<9)return;
    if(!state.moved){state.moved=true;state.ghost=node("div",item.event?.title||item.task?.title||"Schedule");state.ghost.className="calendarDragGhost";document.body.append(state.ghost)}
-   state.ghost.style.left=Math.min(innerWidth-160,e.clientX+12)+"px";state.ghost.style.top=Math.max(0,e.clientY-18)+"px";
+   state.ghost.style.left=Math.max(0,Math.min(innerWidth-160,e.clientX+12))+"px";state.ghost.style.top=Math.max(0,e.clientY-18)+"px";
    state.ghost.style.display="none";const over=document.elementFromPoint(e.clientX,e.clientY);state.ghost.style.display="";
    state.hover?.classList.remove("calDropActive");state.hover=over?.closest?.("[data-calendar-date],.dayTimeline")||null;state.hover?.classList.add("calDropActive");
   };
@@ -114,13 +114,13 @@ function attachCalendarDrag(element,item,{resize=false}={}){
    const timeline=target?.closest?.(".dayTimeline");let destination=null;
    if(timeline&&selectedDay){const rect=timeline.getBoundingClientRect();const minute=Math.max(0,Math.min(1425,Math.round(((e.clientY-rect.top)/80)*4)*15));destination=dateAtMinutes(selectedDay,minute)}
    else{const date=calendarDropDate(target);if(date){destination=new Date(date);destination.setHours(state.start.getHours(),state.start.getMinutes(),0,0)}}
-   if(state.resize){const diff=Math.round((e.clientY-origin.y)/20)*15;destination=new Date(state.end.getTime()+diff*60000)}
+   if(state.resize){const diff=Math.round((e.clientY-origin.y)/(80/4))*15;destination=new Date(state.end.getTime()+diff*60000)}
    if(!destination)return;
    if(state.resize&&destination<=state.start)destination=new Date(state.start.getTime()+15*60000);
    if(item.kind==="task"){message("Open Tasks to schedule this task; drag changes are not automatically applied.");return}
    await calendarMove(item,destination,state.resize);
   };
-  const cancel=()=>{state.hover?.classList.remove("calDropActive");state.ghost?.remove();calendarDrag.active=null};
+  const cancel=()=>{state.hover?.classList.remove("calDropActive");state.ghost?.remove();calendarDrag.active=null;element.removeEventListener("pointermove",moving);element.removeEventListener("pointerup",finish);element.removeEventListener("pointercancel",cancel)};
   element.addEventListener("pointermove",moving);element.addEventListener("pointerup",finish);element.addEventListener("pointercancel",cancel);
  });
 }
