@@ -341,8 +341,8 @@ Deno.serve(async(req:Request)=>{
       return fail("examiner_design_deduplication_unavailable",503);
     }
     if(recent?.length&&recent[0].snapshot_hash===snapshotHash&&
-      Date.now()-new Date(recent[0].created_at).getTime()<20*60*60*1000){
-      await finish("skipped",{snapshot_hash:snapshotHash,source_summary:summary,rejection_reason:"unchanged_snapshot_within_20_hours"});
+      claims.event_name==="schedule"&&Date.now()-new Date(recent[0].created_at).getTime()<75*60*1000){
+      await finish("skipped",{snapshot_hash:snapshotHash,source_summary:summary,rejection_reason:"unchanged_snapshot_within_75_min_schedule_only"});
       return json({ok:true,skipped:"unchanged_snapshot",snapshot_hash:snapshotHash,source_summary:summary});
     }
     const [registry,modelKey]=await Promise.all([
@@ -431,7 +431,7 @@ Deno.serve(async(req:Request)=>{
         (part.content||[]).filter((c:any)=>c.type==="output_text").map((c:any)=>c.text)).join("");
       const data=JSON.parse(raw);
       if(!Array.isArray(data.tests))throw new Error("invalid_json_shape");
-      const redFlags=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
+      const redFlags=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
       const sourceKeys=new Set<string>(["mission_charter","mission_activity",
         ...snapshot.roadmap.map((x:any)=>x.key),
         ...snapshot.capabilities.map((x:any)=>x.key),
@@ -562,7 +562,7 @@ Deno.serve(async(req:Request)=>{
         .order("created_at",{ascending:false}).limit(12);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
-      const disallow=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
+      const disallow=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
       dynamicCandidates=(design||[]).flatMap((run:any)=>(Array.isArray(run.proposals)?run.proposals:[]).map((x:any)=>({...x,design_run_key:run.run_key}))).filter((x:any)=>
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
         !disallow.test(x.question)&&x.execution_status==="shadow_not_executed"&&
