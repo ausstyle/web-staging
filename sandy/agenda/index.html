@@ -318,6 +318,7 @@ html,body{max-width:100%;overflow-x:clip}
 .quickCategoryPopover{overflow-y:auto;overscroll-behavior:contain;max-height:calc(100dvh - 24px)}
 .quickCategoryTree:has(+ .categoryPopover){visibility:hidden}.categoryPopover{z-index:12000;max-height:calc(100dvh - 24px);overflow-y:auto}
 .quickCategoryTree{display:flex;flex-direction:column;gap:8px;overflow:hidden;max-height:calc(100dvh - 24px);padding:12px}.quickCategoryTree .quickCategorySearch{width:100%;min-height:34px;border:1px solid #dce3dc;border-radius:7px;padding:6px 9px;font-size:13px;flex-shrink:0}.quickCategoryTreeList{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:2px 0}.quickTreeItem{display:block;width:100%;text-align:left;border:0;border-radius:5px;background:transparent;color:#303934;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:8px;padding-bottom:8px;padding-right:8px;font-size:13px;cursor:pointer}.quickTreeItem:hover,.quickTreeItem:focus-visible{background:#edf3ed;outline:none}.quickTreeSelected{font-weight:700;background:#e6eee6}.quickTreeCreate{color:#53725e}.quickTreeEmpty{font-size:12px;padding:12px;color:#788179}
+.taskOriginalButton{font:inherit;font-size:10px;color:#5b765e;border:0;background:transparent;padding:2px 5px;border-radius:5px;white-space:nowrap}.taskOriginalButton:hover{background:#edf3eb}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -1140,6 +1141,17 @@ function renderTask(t,depth){
   }
  }
  if(!t.shared)titleArea.append(taskFiles.indicator(t));
+ const original=t.metadata?.task_ai_original;
+ if(original?.title&&!t.shared){
+  const restore=btn("↶ Original","taskOriginalButton",async()=>{
+   const ok=confirm("Restore the original task text? The automatically extracted schedule, contact and due date will be cleared.");
+   if(!ok)return;
+   restore.disabled=true;
+   try{await api("update",{id:t.id,restore_original:true});await load();toast("Original task text restored")}
+   catch(e){restore.disabled=false;toast("Could not restore original: "+e.message,true)}
+  });
+  restore.title="Restore: "+original.title;restore.setAttribute("aria-label","Restore original text for "+t.title);titleArea.append(restore);
+ }
  main.append(titleArea);
  if(t.details)main.append(el("div","taskdesc",t.details.slice(0,130)));
  const meta=el("div","meta");
