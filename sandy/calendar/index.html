@@ -33,7 +33,7 @@ function renderDay(){
  panel.classList.remove("hidden");
  const top=node("div");top.className="dayViewHeader";
  const label=node("strong",new Intl.DateTimeFormat(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(selectedDay));
- const close=node("button","Back to month");close.className="btn";close.onclick=()=>{selectedDay=null;renderDay()};
+ const close=node("button","Back to month");close.className="btn";close.onclick=()=>{selectedDay=null;render()};
  const before=node("button","‹");before.className="btn";before.onclick=()=>{selectedDay.setDate(selectedDay.getDate()-1);renderDay()};
  const after=node("button","›");after.className="btn";after.onclick=()=>{selectedDay.setDate(selectedDay.getDate()+1);renderDay()};
  top.append(label,before,after,close);panel.append(top);
