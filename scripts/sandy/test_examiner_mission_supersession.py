@@ -9,7 +9,7 @@ class TestMissionSupersession(unittest.TestCase):
         self.assertIn('question_key,status,question,answer', SOURCE)
         self.assertIn('clarificationReview="unavailable"', SOURCE)
         self.assertIn('newQuestions=newQuestions.filter', SOURCE)
-        self.assertIn('If uncertain whether a question is answered, keep it.', SOURCE)
+        self.assertIn('If uncertain about required safety or permission, keep it.', SOURCE)
         self.assertIn('clarification_review:clarificationReview', SOURCE)
         self.assertIn('max_output_tokens:900', SOURCE)
         self.assertIn('provider_http_', SOURCE)
