@@ -66,6 +66,15 @@ Deno.serve(async req=>{
       }
       const {error:we}=await db.from("sandy_examiner_live_reviews").insert({channel:cfg.channel,source_id:id,source_at:when,customer_id:x.customer_id||x.owner_customer_id||null,run_key,verdict,reason,judge_evidence:judge});
       if(we&&we.code!=="23505")throw Error(cfg.channel+":evidence_save_failed");
+      if(verdict==="potential_issue"){
+       const caseKey="examiner:live:"+cfg.channel+":"+id;
+       const {error:intakeError}=await db.from("sandy_evolution_cases").upsert({
+        case_key:caseKey,domain:"intelligence",title:"Review live "+cfg.channel+" customer interaction",
+        description:"Potential response-quality problem. Independently examine the referenced Examiner live review and verify root cause; do not assume customer objective failed.",
+        source_type:"sandy_examiner_live_reviews",source_reference:cfg.channel+":"+id,priority:65
+       },{onConflict:"case_key",ignoreDuplicates:true});
+       if(intakeError)throw Error(cfg.channel+":evolution_intake_failed");
+      }
       reviewed++;if(verdict==="potential_issue")flagged++;
      }
     }
