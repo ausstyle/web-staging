@@ -316,6 +316,7 @@ html,body{max-width:100%;overflow-x:clip}
 .quickCategoryActions{display:flex;justify-content:flex-end;gap:8px}.quickCategoryActions button{border:1px solid #d9e0d9;border-radius:7px;padding:6px 12px;background:#fff;font-size:12px}.quickCategoryActions .quickCategorySave{background:#2e5140;color:white;border-color:#2e5140}
 .quickCategoryCreateRow{display:flex;flex-wrap:wrap;gap:6px}.quickCategoryCreateRow button{font-size:12px;border:1px solid #d9e0d9;background:#fff;border-radius:7px;padding:6px 9px;color:#365746}.quickCategoryCreateForm{display:grid;gap:7px;background:#f8faf8;border:1px solid #e1e7e1;padding:10px;border-radius:8px}.quickCategoryCreateForm.hidden{display:none}.quickCategoryCreateForm span{font-size:12px}.quickCategoryError{color:#a63829}
 .quickCategoryPopover{overflow-y:auto;overscroll-behavior:contain;max-height:calc(100dvh - 24px)}
+.quickCategoryTree{display:flex;flex-direction:column;gap:8px;overflow:hidden;max-height:calc(100dvh - 24px);padding:12px}.quickCategoryTree .quickCategorySearch{width:100%;min-height:34px;border:1px solid #dce3dc;border-radius:7px;padding:6px 9px;font-size:13px;flex-shrink:0}.quickCategoryTreeList{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:2px 0}.quickTreeItem{display:block;width:100%;text-align:left;border:0;border-radius:5px;background:transparent;color:#303934;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:8px;padding-bottom:8px;padding-right:8px;font-size:13px;cursor:pointer}.quickTreeItem:hover,.quickTreeItem:focus-visible{background:#edf3ed;outline:none}.quickTreeSelected{font-weight:700;background:#e6eee6}.quickTreeCreate{color:#53725e}.quickTreeEmpty{font-size:12px;padding:12px;color:#788179}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -523,101 +524,83 @@ function categoriesForCompany(companyId){
 }
 function openQuickCategory(t,anchor){
  document.querySelector(".quickCategoryPopover")?.remove();
- const pop=el("div","quickCategoryPopover");
- pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Change task category");
+ const pop=el("div","quickCategoryPopover quickCategoryTree");
+ pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Move task to category");
  const heading=el("strong","","Move task to");
- const work=el("select","quickCategorySelect");work.setAttribute("aria-label","Workspace");
- const cat=el("select","quickCategorySelect");cat.setAttribute("aria-label","Category");
- fillWorkspaceSelect(work,t.company_id||"personal");
- [...work.options].filter(o=>o.value==="__new_company").forEach(o=>o.remove());
- function options(){
-  const company=work.value;
-  cat.replaceChildren(new Option("No category",""));
-  for(const item of categoriesForCompany(company)){
-   cat.add(new Option("　".repeat(Math.min(item.depth,5))+(item.depth?"↳ ":"")+item.category.name,item.category.id));
-  }
-  cat.value=company===(t.company_id||"personal")?(t.category_id||""):"";
+ const search=el("input","quickCategorySearch");search.type="search";search.placeholder="Search companies and categories…";search.setAttribute("aria-label","Search categories");
+ const tree=el("div","quickCategoryTreeList");tree.setAttribute("role","tree");
+ pop.append(heading,search,tree);document.body.append(pop);
+ let busy=false;
+ const roots=[{id:"personal",name:"Personal"},...state.companies.map(c=>({id:c.id,name:c.name}))];
+ function position(){
+  if(!pop.isConnected)return;
+  const v=window.visualViewport,top=v?.offsetTop||0,left=v?.offsetLeft||0,w=v?.width||window.innerWidth,h=v?.height||window.innerHeight;
+  const margin=12,rect=anchor.getBoundingClientRect(),pw=Math.min(350,w-2*margin);
+  pop.style.width=pw+"px";pop.style.maxHeight=Math.max(140,h-2*margin)+"px";
+  pop.style.left=Math.max(left+margin,Math.min(rect.left,left+w-pw-margin))+"px";
+  const ph=pop.getBoundingClientRect().height;
+  const down=top+h-rect.bottom-margin-7,up=rect.top-top-margin-7;
+  const target=down>=ph||down>=up?rect.bottom+7:rect.top-ph-7;
+  pop.style.top=Math.max(top+margin,Math.min(target,top+h-ph-margin))+"px";
  }
- work.addEventListener("change",options);options();
- const createRow=el("div","quickCategoryCreateRow");
- const createTop=btn("＋ New category","",()=>startCreate(false));
- const createChild=btn("＋ New subcategory","",()=>startCreate(true));
- createRow.append(createTop,createChild);
- const createForm=el("div","quickCategoryCreateForm hidden");
- const createHint=el("span","","");
- const createInput=el("input","quickCategorySelect");createInput.placeholder="Category name";createInput.maxLength=160;createInput.setAttribute("aria-label","New category name");
- const createError=el("span","quickCategoryError","");
- const createActions=el("div","quickCategoryActions");
- const abort=btn("Cancel","",()=>createForm.classList.add("hidden"));
- const confirm=btn("Create","quickCategorySave",async()=>{
-  const name=createInput.value.trim();
-  if(!name){createError.textContent="Enter a category name";createInput.focus();return}
-  const parentId=createForm.dataset.parentId||null;
-  confirm.disabled=true;createError.textContent="";
+ function close(){pop.remove();document.removeEventListener("pointerdown",outside,true);window.removeEventListener("resize",position);window.removeEventListener("scroll",position,true);window.visualViewport?.removeEventListener("resize",position);window.visualViewport?.removeEventListener("scroll",position)}
+ function outside(e){if(!pop.contains(e.target)&&!anchor.contains(e.target))close()}
+ async function move(company,category){
+  if(busy)return;
+  const companyId=normalizeWorkspace(company),categoryId=category||null;
+  if(companyId===(t.company_id||null)&&categoryId===(t.category_id||null)){close();return}
+  busy=true;tree.style.opacity=".55";
+  try{await api("update",{id:t.id,company_id:companyId,category_id:categoryId});close();await load();toast("Task category updated")}
+  catch(e){busy=false;tree.style.opacity="1";toast("Could not move task: "+e.message,true)}
+ }
+ async function add(company,parent){
+  if(busy)return;
+  const parentName=parent?categoryPath(parent):taskWorkspaceLabel(normalizeWorkspace(company));
+  const name=await categoryNamePopover(parentName,pop);
+  if(!name||!pop.isConnected)return;
+  busy=true;
   try{
-   const result=await api("category-create",{company_id:normalizeWorkspace(work.value),parent_category_id:parentId,name});
+   const result=await api("category-create",{company_id:normalizeWorkspace(company),parent_category_id:parent||null,name});
    if(!result.category?.id)throw Error("Category was not returned");
    state.categories.push(result.category);
-   options();cat.value=result.category.id;
-   createForm.classList.add("hidden");
-   toast("Category created — press Save to move this task");
-  }catch(e){createError.textContent=e.message}
-  finally{confirm.disabled=false}
- });
- createActions.append(abort,confirm);createForm.append(createHint,createInput,createError,createActions);
- function startCreate(child){
-  const parentId=child?cat.value:null;
-  if(child&&!parentId){toast("Select a parent category first",true);cat.focus();return}
-  createForm.dataset.parentId=parentId||"";
-  createHint.textContent=child?"New subcategory under "+categoryPath(parentId):"New category in "+taskWorkspaceLabel(normalizeWorkspace(work.value));
-  createInput.value="";createError.textContent="";
-  createForm.classList.remove("hidden");positionPopup();createInput.focus();
+   search.value="";render();
+   await moveNew(company,result.category.id);
+  }catch(e){toast("Could not create category: "+e.message,true)}
+  finally{busy=false}
  }
- const actions=el("div","quickCategoryActions");
- const cancel=btn("Cancel","",()=>pop.remove());
- const save=btn("Save","quickCategorySave",async()=>{
-  const nextCompany=normalizeWorkspace(work.value),nextCategory=cat.value||null;
-  if(nextCompany===(t.company_id||null)&&nextCategory===(t.category_id||null)){pop.remove();return}
-  save.disabled=true;
-  try{
-   await api("update",{id:t.id,company_id:nextCompany,category_id:nextCategory});
-   pop.remove();await load();toast("Task category updated");
-  }catch(e){save.disabled=false;toast("Could not change category: "+e.message,true)}
- });
- actions.append(cancel,save);pop.append(heading,work,cat,createRow,createForm,actions);document.body.append(pop);
- function positionPopup(){
-  if(!pop.isConnected)return;
-  const view=window.visualViewport;
-  const top=view?.offsetTop||0,left=view?.offsetLeft||0;
-  const width=view?.width||window.innerWidth,height=view?.height||window.innerHeight;
-  const margin=12,rect=anchor.getBoundingClientRect();
-  const w=Math.min(320,width-margin*2);
-  pop.style.width=w+"px";
-  pop.style.maxHeight=Math.max(140,height-margin*2)+"px";
-  pop.style.left=Math.max(left+margin,Math.min(rect.left,left+width-w-margin))+"px";
-  const actualHeight=pop.getBoundingClientRect().height;
-  const below=top+height-(rect.bottom+8)-margin;
-  const above=rect.top-(top+margin)-8;
-  const desired=below>=actualHeight||below>=above?rect.bottom+8:rect.top-actualHeight-8;
-  pop.style.top=Math.max(top+margin,Math.min(desired,top+height-actualHeight-margin))+"px";
+ async function moveNew(company,id){
+  try{await api("update",{id:t.id,company_id:normalizeWorkspace(company),category_id:id});close();await load();toast("Category created and task moved")}
+  catch(e){toast("Category created, but the task could not be moved: "+e.message,true)}
  }
- positionPopup();
- const reposition=()=>positionPopup();
- window.addEventListener("resize",reposition);
- window.addEventListener("scroll",reposition,true);
- window.visualViewport?.addEventListener("resize",reposition);
- window.visualViewport?.addEventListener("scroll",reposition);
- const watch=new MutationObserver(()=>{if(!pop.isConnected){
-  window.removeEventListener("resize",reposition);window.removeEventListener("scroll",reposition,true);
-  window.visualViewport?.removeEventListener("resize",reposition);
-  window.visualViewport?.removeEventListener("scroll",reposition);watch.disconnect();
- }});
- watch.observe(document.body,{childList:true});
-
- function dismiss(e){if(!pop.contains(e.target)&&e.target!==anchor){pop.remove();document.removeEventListener("pointerdown",dismiss,true)}}
- setTimeout(()=>document.addEventListener("pointerdown",dismiss,true),0);
- pop.addEventListener("keydown",e=>{if(e.key==="Escape"){pop.remove();anchor.focus()}});
- work.focus();
+ function item(label,depth,onClick,selected,create=false){
+  const b=btn(label,"quickTreeItem"+(selected?" quickTreeSelected":"")+(create?" quickTreeCreate":""),onClick);
+  b.style.paddingLeft=(12+Math.min(depth,12)*23)+"px";
+  b.setAttribute("role","treeitem");b.setAttribute("aria-selected",String(!!selected));
+  tree.append(b);
+ }
+ function render(){
+  tree.replaceChildren();
+  const q=search.value.trim().toLocaleLowerCase(),matching=(label)=>label.toLocaleLowerCase().includes(q);
+  for(const root of roots){
+   const categories=categoriesForCompany(root.id);
+   const visible=categories.filter(({category})=>matching(root.name)||matching(category.name)||matching(categoryPath(category.id)));
+   if(q&&!matching(root.name)&&!visible.length)continue;
+   item(root.name,0,()=>move(root.id,null),(t.company_id||"personal")===root.id&&!t.category_id);
+   for(const {category,depth} of visible){
+    item("↳ "+category.name,depth+1,()=>move(root.id,category.id),(t.company_id||"personal")===root.id&&t.category_id===category.id);
+    if(!q)item("＋ Subcategory under "+category.name,depth+2,()=>add(root.id,category.id),false,true);
+   }
+   if(!q)item("＋ New category under "+root.name,1,()=>add(root.id,null),false,true);
+  }
+  if(!tree.children.length)tree.append(el("div","quickTreeEmpty","No matching categories"));
+  position();
+ }
+ search.addEventListener("input",render);
+ pop.addEventListener("keydown",e=>{if(e.key==="Escape"){close();anchor.focus()}});
+ window.addEventListener("resize",position);window.addEventListener("scroll",position,true);
+ window.visualViewport?.addEventListener("resize",position);window.visualViewport?.addEventListener("scroll",position);
+ setTimeout(()=>document.addEventListener("pointerdown",outside,true),0);
+ render();search.focus();
 }
 function taskWorkspaceOwners(t,owners=new Set(),seen=new Set()){if(seen.has(t.id))return owners;seen.add(t.id);if(!t.shared)owners.add(taskCategoryLabel(t));childOf(t.id).forEach(c=>taskWorkspaceOwners(c,owners,seen));return owners}
 function normalizeWorkspace(value){return value==="personal"||!value?null:value}
