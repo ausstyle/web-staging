@@ -315,6 +315,7 @@ html,body{max-width:100%;overflow-x:clip}
 .quickCategoryPopover strong{font-size:13px}.quickCategorySelect{width:100%;padding:8px;border:1px solid #d9e0d9;border-radius:7px;background:#fff;font-size:13px}
 .quickCategoryActions{display:flex;justify-content:flex-end;gap:8px}.quickCategoryActions button{border:1px solid #d9e0d9;border-radius:7px;padding:6px 12px;background:#fff;font-size:12px}.quickCategoryActions .quickCategorySave{background:#2e5140;color:white;border-color:#2e5140}
 .quickCategoryCreateRow{display:flex;flex-wrap:wrap;gap:6px}.quickCategoryCreateRow button{font-size:12px;border:1px solid #d9e0d9;background:#fff;border-radius:7px;padding:6px 9px;color:#365746}.quickCategoryCreateForm{display:grid;gap:7px;background:#f8faf8;border:1px solid #e1e7e1;padding:10px;border-radius:8px}.quickCategoryCreateForm.hidden{display:none}.quickCategoryCreateForm span{font-size:12px}.quickCategoryError{color:#a63829}
+.quickCategoryPopover{overflow-y:auto;overscroll-behavior:contain;max-height:calc(100dvh - 24px)}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -570,7 +571,7 @@ function openQuickCategory(t,anchor){
   createForm.dataset.parentId=parentId||"";
   createHint.textContent=child?"New subcategory under "+categoryPath(parentId):"New category in "+taskWorkspaceLabel(normalizeWorkspace(work.value));
   createInput.value="";createError.textContent="";
-  createForm.classList.remove("hidden");createInput.focus();
+  createForm.classList.remove("hidden");positionPopup();createInput.focus();
  }
  const actions=el("div","quickCategoryActions");
  const cancel=btn("Cancel","",()=>pop.remove());
@@ -584,9 +585,35 @@ function openQuickCategory(t,anchor){
   }catch(e){save.disabled=false;toast("Could not change category: "+e.message,true)}
  });
  actions.append(cancel,save);pop.append(heading,work,cat,createRow,createForm,actions);document.body.append(pop);
- const rect=anchor.getBoundingClientRect(),w=Math.min(320,window.innerWidth-24);
- pop.style.left=Math.max(12,Math.min(rect.left,window.innerWidth-w-12))+"px";
- pop.style.top=Math.max(12,Math.min(rect.bottom+6,window.innerHeight-190))+"px";
+ function positionPopup(){
+  if(!pop.isConnected)return;
+  const view=window.visualViewport;
+  const top=view?.offsetTop||0,left=view?.offsetLeft||0;
+  const width=view?.width||window.innerWidth,height=view?.height||window.innerHeight;
+  const margin=12,rect=anchor.getBoundingClientRect();
+  const w=Math.min(320,width-margin*2);
+  pop.style.width=w+"px";
+  pop.style.maxHeight=Math.max(140,height-margin*2)+"px";
+  pop.style.left=Math.max(left+margin,Math.min(rect.left,left+width-w-margin))+"px";
+  const actualHeight=pop.getBoundingClientRect().height;
+  const below=top+height-(rect.bottom+8)-margin;
+  const above=rect.top-(top+margin)-8;
+  const desired=below>=actualHeight||below>=above?rect.bottom+8:rect.top-actualHeight-8;
+  pop.style.top=Math.max(top+margin,Math.min(desired,top+height-actualHeight-margin))+"px";
+ }
+ positionPopup();
+ const reposition=()=>positionPopup();
+ window.addEventListener("resize",reposition);
+ window.addEventListener("scroll",reposition,true);
+ window.visualViewport?.addEventListener("resize",reposition);
+ window.visualViewport?.addEventListener("scroll",reposition);
+ const watch=new MutationObserver(()=>{if(!pop.isConnected){
+  window.removeEventListener("resize",reposition);window.removeEventListener("scroll",reposition,true);
+  window.visualViewport?.removeEventListener("resize",reposition);
+  window.visualViewport?.removeEventListener("scroll",reposition);watch.disconnect();
+ }});
+ watch.observe(document.body,{childList:true});
+
  function dismiss(e){if(!pop.contains(e.target)&&e.target!==anchor){pop.remove();document.removeEventListener("pointerdown",dismiss,true)}}
  setTimeout(()=>document.addEventListener("pointerdown",dismiss,true),0);
  pop.addEventListener("keydown",e=>{if(e.key==="Escape"){pop.remove();anchor.focus()}});
