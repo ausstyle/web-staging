@@ -214,6 +214,12 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('diagnosis_response_incomplete', EVOLUTION)
         self.assertIn('diagnosis_json_not_parseable', EVOLUTION)
 
+    def test_provider_count_parity_not_conflated_with_content_truth(self):
+        self.assertIn('provider_count_comparable:providerCountComparable', EDGE)
+        self.assertIn('provider_count_matches:providerCountMatches', EDGE)
+        self.assertIn('max_results:5,include_payload:false', EDGE)
+        self.assertIn('Count parity is a bounded independent cross-check', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
