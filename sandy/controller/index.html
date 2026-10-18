@@ -233,7 +233,7 @@ function showCapabilities(c){
  p.append(summary);
  searchable(p,modules,["Module / group","Deployed version","Deployment","Operational status","Last test","Remaining steps / evidence"],(x,i)=>{
  const fresh=!!x.last_tested_at&&Date.now()-Date.parse(x.last_tested_at)<86400000;
- return [x.module_name+" · "+x.module_group,x.deployed_version?"v"+x.deployed_version:"unknown",x.deployment_state,(fresh?x.operational_status:"unverified / stale"),date(x.last_tested_at),(x.remaining_steps||"No documented acceptance steps")+(x.evidence?" · Evidence: "+x.evidence:"")][i]});
+ return [x.module_name+" · "+x.module_group,x.deployed_version?"v"+x.deployed_version:"unknown",x.deployment_state+(x.observed_at&&Date.now()-Date.parse(x.observed_at)>=86400000?" · inventory stale":""),(fresh?x.operational_status:"unverified / stale"),date(x.last_tested_at),(x.remaining_steps||"No documented acceptance steps")+(x.evidence?" · Evidence: "+x.evidence:"")][i]});
  c.append(p);
  const catalog=panel("Declared capability catalog");
  searchable(catalog,data.capabilities,["Feature","Description","Channels","Last verified"],(x,i)=>[x.feature_key,x.description,(x.channels||[]).join(", "),date(x.last_verified_at)][i]);
