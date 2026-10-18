@@ -364,7 +364,7 @@ Deno.serve(async(req:Request)=>{
       "Mandatory validation: every question must contain language matching its oracle. For connections ask which apps are connected. For task_count ask how many outstanding tasks. For clock ask current time. For location ask about current location.",
       "Every test must have one or more grounding_keys exactly matching source keys present in the input. mission_charter and mission_activity are always valid grounding keys.",
       "Copy grounding_keys ONLY from allowed_grounding_keys in the input. Never use generic names such as roadmap, capabilities or source_inventory.",
-      "Construct 6 different tests; include at least one connections question and one task_count question, and 4 diverse tests based on the actual snapshot. Do not request actions or create items.",
+      "Construct 12 distinct read-only tests. Include at least one connections, task_count, clock, and capability question, and vary the remaining cases across supported oracles. Avoid reusing earlier exact questions. Do not request actions or create items.",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
       "Include purpose, grounding (exact source keys present in snapshot, or mission_charter/mission_activity), expected observation, and a 1-5 priority.",
@@ -533,7 +533,7 @@ Deno.serve(async(req:Request)=>{
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
-        .order("created_at",{ascending:false}).limit(targetedTen?3:1);
+        .order("created_at",{ascending:false}).limit(targetedTen?1:1);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
       const disallow=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
@@ -544,7 +544,7 @@ Deno.serve(async(req:Request)=>{
       latestDesignRunKey=(design||[])[0]?.run_key||null;
     }
     const allowed=Math.min(targetedTen?10:2,targetedTen?10:(Number(account.max_calls_per_run)||1),Math.max(0,Number(account.max_calls_per_day)-(used||0)));
-    if(targetedTen&&dynamicCandidates.length<10)return fail("qa_targeted_suite_less_than_ten",409);
+    if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
     if(targetedTen&&allowed<10)return fail("qa_targeted_budget_insufficient",429);
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
