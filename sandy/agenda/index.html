@@ -833,7 +833,13 @@ async function outlinePosition(parent,afterId,exclude){
 }
 function organiseTaskLater(id,originalTitle){
  if(!id||!originalTitle||/^["“].*["”]$/.test(originalTitle.trim()))return;
- api("update",{id,title:originalTitle,interpret:true}).then(async()=>{await load()}).catch(e=>console.warn("Task saved; organisation deferred or unavailable",e));
+ // AI only starts after the create response and the editor has yielded to the browser.
+ setTimeout(()=>{
+  api("update",{id,title:originalTitle,interpret:true}).then(()=>{
+   const editing=document.activeElement?.closest?.(".outlineDraft")||document.activeElement?.classList?.contains("inlineTitle");
+   if(!editing)load().catch(()=>{});
+  }).catch(e=>console.warn("Task saved; organisation deferred or unavailable",e));
+ },0);
 }
 async function outlineCreate(title,parent,after,company,selectedCategory=undefined){
  if(state.outlineBusy)return false;state.outlineBusy=true;let created=null;
@@ -844,8 +850,12 @@ async function outlineCreate(title,parent,after,company,selectedCategory=undefin
   const categoryId=parentTask&&parentTask.company_id===companyId?(parentTask.category_id||null):(selectedCategory!==undefined?selectedCategory:(companyId===state.workspace?state.category:null));
   const result=await api("create",{title,parent_task_id:parent||null,company_id:companyId,category_id:categoryId});
   created=result.id;if(!created)throw Error("Task saved but server did not return an ID");
-  await api("update",{id:created,position});
-  await load();outlineDraft(parent,created,company);organiseTaskLater(created,title);return true;
+  // Render the new task and next input without waiting for another round trip or AI.
+  state.tasks.push({id:created,title,details:"",parent_task_id:parent||null,company_id:companyId,category_id:categoryId,status:"todo",priority:"normal",position,created_at:new Date().toISOString(),metadata:{},shared:false});
+  outlineDraft(parent,created,company);
+  api("update",{id:created,position}).catch(e=>console.warn("Task saved; custom position update failed",e));
+  organiseTaskLater(created,title);
+  return true;
  }catch(e){
   if(created){await load().catch(()=>{});toast("Task created but order was not confirmed. Refresh before retrying.",true);return true}
   toast(e.message,true);return false;
