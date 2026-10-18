@@ -1,0 +1,100 @@
+name: Sandy V2 Core candidate
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-v2-core-candidate.yml'
+      - 'scripts/sandy/prepare_v2_core_candidate.py'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-v2-core-candidate
+  cancel-in-progress: false
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build only audited corrections and preserve V1
+        run: python3 scripts/sandy/prepare_v2_core_candidate.py
+      - name: Exercise actual candidate validation and workspace code
+        shell: bash
+        run: |
+          set -euo pipefail
+          node artifacts/sandy-v2-core/gmail-draft-regression.mjs | tee artifacts/sandy-v2-core/regression-results.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('artifacts/sandy-v2-core/regression-results.json').read_text())
+          assert r['passed']==r['total']==16, 'Incomplete local regression'
+          PY
+      - name: Preserve candidate, baseline and test evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandy-v2-core-candidate-${{ github.run_id }}
+          path: artifacts/sandy-v2-core/
+          retention-days: 90
+          if-no-files-found: error
+  deploy-isolated-candidate:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: sandy-v2-core-candidate-${{ github.run_id }}
+          path: artifacts/sandy-v2-core/
+      - name: Respect production environment controls
+        env:
+          PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          DEPLOYMENT_ENABLED: ${{ vars.PRODUCTION_DEPLOYMENT_ENABLED }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: |
+          set -eu
+          test "$PROJECT_REF" = 'zmqlyygzqoidkcwdysok' || { echo '::error::Production project variable is missing or incorrect'; exit 1; }
+          test "$DEPLOYMENT_ENABLED" = 'true' || { echo '::error::Protected production deployment is not enabled'; exit 1; }
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo '::error::Protected deployment credential is unavailable'; exit 1; }
+      - uses: supabase/setup-cli@v1
+        with:
+          version: '2.106.0'
+      - name: Deploy candidate only; do not switch customer traffic
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase --version
+          supabase functions deploy --help > /tmp/sandy-functions-deploy-help.txt
+          grep -q -- '--no-verify-jwt' /tmp/sandy-functions-deploy-help.txt
+          mkdir -p supabase/functions/sandy-agent-runtime-v2
+          cp artifacts/sandy-v2-core/v2-runtime.ts supabase/functions/sandy-agent-runtime-v2/index.ts
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('artifacts/sandy-v2-core')
+          m=json.loads((p/'manifest.json').read_text())
+          assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime-v2/index.ts').read_bytes()).hexdigest()==m['candidate_sha256']
+          assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime/index.ts').read_bytes()).hexdigest()==m['baseline_sha256']
+          PY
+          # Body authentication is retained byte-for-byte from the existing runtime.
+          # Candidate has a separate URL and is not attached to live customer routing.
+          supabase functions deploy sandy-agent-runtime-v2 --project-ref zmqlyygzqoidkcwdysok --no-verify-jwt
+      - name: Verify unauthenticated requests are rejected
+        shell: bash
+        run: |
+          set -euo pipefail
+          CODE="$(curl --silent --show-error --max-time 30 -o /tmp/sandy-v2-auth.json -w '%{http_code}' -X POST 'https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agent-runtime-v2' -H 'Content-Type: application/json' --data '{}')"
+          test "$CODE" = '403' || { echo "::error::Expected application auth rejection; got HTTP $CODE"; exit 1; }
+          jq -e '.error == "unauthorized"' /tmp/sandy-v2-auth.json
+          echo 'Candidate deployed; authenticated workflow acceptance and customer cutover still required.'
