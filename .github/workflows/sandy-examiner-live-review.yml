@@ -1,5 +1,5 @@
 name: Sandy Examiner live conversation review
-# Production v4 multi-turn continuation regression
+# Full production Examiner cycle: live channel audit.
 on:
   workflow_run:
     workflows: ['Sandy V2 autonomous API QA']
