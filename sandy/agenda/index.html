@@ -877,7 +877,18 @@ async function runInstantQueue(){
  try{
   while(true){
    const job=[...instantPending.values()].find(j=>j.status==="saving"&&(!j.parent||!String(j.parent).startsWith("pending-")||instantIds.has(j.parent)));
-   if(!job)break;
+   if(!job){
+    for(const waiting of instantPending.values()){
+     if(waiting.status!=="saving"||!String(waiting.parent||"").startsWith("pending-"))continue;
+     const parentJob=instantPending.get(waiting.parent);
+     if(parentJob?.status==="failed"){
+      waiting.status="failed";waiting.error="Save the parent task first";persistInstantQueue();
+      const badge=document.getElementById("task-"+waiting.id)?.querySelector(".instantSaveStatus");
+      if(badge){badge.textContent="Waiting for parent · retry";badge.classList.add("instantFailed");badge.title=waiting.error}
+     }
+    }
+    break;
+   }
    const parentId=instantIds.get(job.parent)||job.parent||null;
    try{
     const result=await Promise.race([
