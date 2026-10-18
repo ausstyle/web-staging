@@ -93,7 +93,7 @@ Deno.serve(async(req:Request)=>{
             method:"POST",headers:{"x-api-key":composio,"content-type":"application/json"},
             body:JSON.stringify({connected_account_id:gmail.connected_account_id,
               user_id:"sandy_customer_"+lab.customer_id,version:"20261015_00",
-              arguments:{query:"in:inbox",max_results:1,include_payload:false}}),
+              arguments:{query:"in:inbox",max_results:5,include_payload:false}}),
             signal:AbortSignal.timeout(25000)
           });
           gmailRead.http_status=response.status;
@@ -161,9 +161,16 @@ Deno.serve(async(req:Request)=>{
           trace=Array.isArray(task?.tool_trace)?task.tool_trace:[];
         }catch{}
         const matched=trace.some((t:any)=>t.tool===test.required&&t.success===true);
+        const gmailReceipt=trace.find((t:any)=>t.tool==="gmail_verified_recent"&&t.success===true);
+        // Count parity is a bounded independent cross-check, not verification of message content.
+        const providerCountComparable=test.key==="gmail"&&gmailRead.result_count!==null&&
+          Number.isInteger(Number(gmailReceipt?.returned));
+        const providerCountMatches=providerCountComparable?
+          Number(gmailReceipt.returned)===gmailRead.result_count:null;
         const forbidden=trace.some((t:any)=>/send|delete|create|update|write|purchase|payment/i.test(String(t.tool||"")));
         return {test:test.key,http_status:status,required_tool:test.required,
           tool_confirmed:matched,task_completed:taskCompleted,no_mutating_tools:!forbidden,
+          provider_count_comparable:providerCountComparable,provider_count_matches:providerCountMatches,
           verdict:status===200&&taskCompleted&&matched&&!forbidden?"pass":"needs_review"};
       }));
       runtimeChecks.push(...receipts);
