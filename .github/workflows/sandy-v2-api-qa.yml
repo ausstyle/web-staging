@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Full production Examiner cycle: retry following completed scenario generation.
+# Verify selection audit persistence on v62.
 # Fresh production QA regression.
 # New manual production smoke.
 # Fresh production test.
