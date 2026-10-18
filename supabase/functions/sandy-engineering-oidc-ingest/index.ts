@@ -650,17 +650,17 @@ Deno.serve(async(req:Request)=>{
           const excluded=[...priorQuestions.slice(0,110),...selectedQuestions].slice(-140);
           const response=await fetch("https://api.openai.com/v1/responses",{
             method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},
-            body:JSON.stringify({model:"gpt-6-astra",store:false,reasoning:{effort:"medium"},
+            body:JSON.stringify({model:"gpt-6-astra",store:false,reasoning:{effort:"high"},
               instructions:"You design novel read-only synthetic-account questions testing Sandy V2. Output JSON object containing tests array. Each test has oracle_key and question. No external side effects. Do not ask to send, delete, create or modify data. Questions must be substantively different from excluded questions. Ground tests in capabilities that can be evaluated even when the synthetic account has no Gmail connection or historical memory. State limitations truthfully. Prefer different oracle categories. Every question <=220 characters.",
               input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({
                 requested:Math.min(16,needed+5),allowed_oracles:permitted,
                 existing_oracle_counts:Object.fromEntries(oracleCounts),
                 excluded_questions:excluded,
                 available_test_account:"isolated, no connected Gmail; existing task, mission, memory, calendar and channel records may be empty"
-              })}]}],text:{format:{type:"json_object"}},max_output_tokens:3800}),
+              })}]}],text:{format:{type:"json_object"}},max_output_tokens:8500}),
             signal:AbortSignal.timeout(80000)
           });
-          if(!response.ok){reason("model_http_"+response.status);continue;}
+          if(!response.ok){const problem=await response.json().catch(()=>({}));reason("model_http_"+response.status+"_"+String(problem?.error?.code||problem?.error?.param||problem?.error?.type||"unknown").replace(/[^a-z0-9_-]/gi,"").slice(0,45));continue;}
           const data=await response.json();
           const raw=(data.output||[]).flatMap((o:any)=>(o.content||[]).filter((c:any)=>typeof c.text==="string").map((c:any)=>c.text)).join("");
           const obj=JSON.parse(raw);
