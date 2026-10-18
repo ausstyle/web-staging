@@ -379,7 +379,7 @@ Deno.serve(async(req:Request)=>{
       "Mandatory validation: every question must contain language matching its oracle. For connections ask which apps are connected. For task_count ask how many outstanding tasks. For clock ask current time. For location ask about current location.",
       "Every test must have one or more grounding_keys exactly matching source keys present in the input. mission_charter and mission_activity are always valid grounding keys.",
       "Copy grounding_keys ONLY from allowed_grounding_keys in the input. Never use generic names such as roadmap, capabilities or source_inventory.",
-      "Construct 12 distinct read-only tests. Rotate mission status, memory retrieval, calendar capability and integration recovery; do not imply unavailable tools are connected. Include at least one connections, task_count, clock, and capability question, and vary the remaining cases across supported oracles. Avoid reusing earlier exact questions. Do not request actions or create items.",
+      "Construct 18 substantively different read-only customer workflow scenarios. Prefer under-tested mission_awareness, memory_retrieval, calendar_awareness, integration_recovery, followup_investigation and cross_channel. Do NOT include routine clock, connections, location, basic task_count or capability questions merely to fill a quota: those passed categories are heavily saturated. Distinguish realistic customer objectives, not surface paraphrases. Each workflow should probe one new failure mode and use only accessible synthetic-account information. Do not require an existing connected mailbox or external side effects. Do not request actions or create items.",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
       "Include purpose, grounding (exact source keys present in snapshot, or mission_charter/mission_activity), expected observation, and a 1-5 priority.",
@@ -612,7 +612,7 @@ Deno.serve(async(req:Request)=>{
     if(selectionSaveError)return fail("qa_selection_audit_write_failed",503);
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
     if(targetedTen&&allowed<10)return fail("qa_targeted_budget_or_novelty_insufficient",409);
-    if(!targetedTen&&allowed===0)return fail("qa_no_novel_eligible_generated_cases",409);
+    if(!targetedTen&&allowed===0){await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);return json({ok:false,reason:"qa_no_novel_eligible_generated_cases",run_key:runKey,selection_audit:selectionAudit},409);}
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
       const ordinal=Number(used||0)+i;
