@@ -616,6 +616,72 @@ Deno.serve(async(req:Request)=>{
         return !emailRead;
       });
     }
+
+    // Replenish missing slots without reusing questions or requiring customer side effects.
+    const availableSlots=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
+    const refillAudit:any={attempts:0,proposed:0,accepted:0,reasons:{},target:availableSlots};
+    if(executionPolicy?.mode==="enabled"&&dynamicCandidates.length<availableSlots&&availableSlots>0){
+      const key=Deno.env.get("OPENAI_API_KEY")||"";
+      const canonicalRefill=(q:string)=>q.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+      const {data:recentRefill,error:recentRefillError}=await db.from("sandy_v2_qa_executions")
+        .select("question").eq("customer_id",customerId).order("created_at",{ascending:false}).limit(250);
+      if(recentRefillError)return fail("qa_replenishment_history_unavailable",503);
+      const priorQuestions=(recentRefill||[]).map((x:any)=>canonicalRefill(String(x.question||"")));
+      const selectedQuestions=new Set(dynamicCandidates.map((x:any)=>canonicalRefill(String(x.question||""))));
+      const oracleCounts=new Map<string,number>();
+      for(const x of dynamicCandidates)oracleCounts.set(String(x.oracle_key),(oracleCounts.get(String(x.oracle_key))||0)+1);
+      const permitted=["clock","connections","web_history","cross_channel","location","task_count","capability",
+        "followup_investigation","memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"];
+      const prohibited=/\b(?:password|secret|token|api key|transfer money|purchase|payment|sign in|log in)\b/i;
+      const actionRequest=/\b(?:please|can you|could you|would you)\s+(?:send|delete|create|book|invite|archive|complete)\b/i;
+      const readOnly=/\b(?:do not|don't|without|only inspect|read.only|no changes|not asking you to|just check)\b/i;
+      const words=(s:string)=>new Set(s.split(" ").filter(w=>w.length>3));
+      const similar=(a:string,b:string)=>{
+        const x=words(a),y=words(b);if(!x.size||!y.size)return false;
+        let shared=0;for(const w of x)if(y.has(w))shared++;
+        return shared/(x.size+y.size-shared)>=0.82;
+      };
+      const reason=(r:string)=>{refillAudit.reasons[r]=(refillAudit.reasons[r]||0)+1;};
+      if(!key){reason("model_key_unavailable");}
+      else for(let attempt=0;attempt<2&&dynamicCandidates.length<availableSlots;attempt++){
+        refillAudit.attempts++;
+        try{
+          const needed=availableSlots-dynamicCandidates.length;
+          const excluded=[...priorQuestions.slice(0,110),...selectedQuestions].slice(-140);
+          const response=await fetch("https://api.openai.com/v1/responses",{
+            method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},
+            body:JSON.stringify({model:"gpt-6-astra",store:false,reasoning:{effort:"medium"},
+              instructions:"You design novel read-only synthetic-account questions testing Sandy V2. Output JSON object containing tests array. Each test has oracle_key and question. No external side effects. Do not ask to send, delete, create or modify data. Questions must be substantively different from excluded questions. Ground tests in capabilities that can be evaluated even when the synthetic account has no Gmail connection or historical memory. State limitations truthfully. Prefer different oracle categories. Every question <=220 characters.",
+              input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({
+                requested:Math.min(16,needed+5),allowed_oracles:permitted,
+                existing_oracle_counts:Object.fromEntries(oracleCounts),
+                excluded_questions:excluded,
+                available_test_account:"isolated, no connected Gmail; existing task, mission, memory, calendar and channel records may be empty"
+              })}]}],text:{format:{type:"json_object"}},max_output_tokens:3800}),
+            signal:AbortSignal.timeout(80000)
+          });
+          if(!response.ok){reason("model_http_"+response.status);continue;}
+          const data=await response.json();
+          const raw=(data.output||[]).flatMap((o:any)=>(o.content||[]).filter((c:any)=>typeof c.text==="string").map((c:any)=>c.text)).join("");
+          const obj=JSON.parse(raw);
+          for(const v of Array.isArray(obj.tests)?obj.tests.slice(0,18):[]){
+            refillAudit.proposed++;
+            const oracle=String(v.oracle_key||""),question=String(v.question||"").trim(),c=canonicalRefill(question);
+            if(!permitted.includes(oracle)||question.length<14||question.length>220||prohibited.test(question)||(actionRequest.test(question)&&!readOnly.test(question))){reason("invalid_or_unsafe");continue;}
+            if((oracleCounts.get(oracle)||0)>=2){reason("oracle_diversity_limit");continue;}
+            if(selectedQuestions.has(c)||priorQuestions.includes(c)){reason("exact_duplicate");continue;}
+            if(priorQuestions.some((old:string)=>similar(c,old))||[...selectedQuestions].some(old=>similar(c,old))){reason("near_duplicate");continue;}
+            const emailRead=/\b(?:email|gmail|inbox)\b/i.test(question)&&/\b(?:investigat\w*|verif\w*|check|read|search|retriev\w*|confirm|achiev\w*|outcome|last|latest)\b/i.test(question);
+            if((qaGmailConnections||0)===0&&emailRead){reason("missing_gmail_prerequisite");continue;}
+            dynamicCandidates.push({oracle_key:oracle,question,expected_observation:"Assess the customer-facing answer against independently available isolated-account evidence; otherwise needs_review.",priority:3,design_run_key:"refill:"+runKey});
+            selectedQuestions.add(c);oracleCounts.set(oracle,(oracleCounts.get(oracle)||0)+1);refillAudit.accepted++;
+            if(dynamicCandidates.length>=availableSlots)break;
+          }
+        }catch(e){reason("model_or_parse_failure");}
+      }
+    }
+    selectionAudit={...selectionAudit,replenishment:refillAudit};
+
     selectionAudit={...selectionAudit,eligible_after_prerequisites:dynamicCandidates.length};
     const allowed=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)),dynamicCandidates.length);
     const {error:selectionSaveError}=await db.from("sandy_v2_qa_runs").update({selection_audit:{...selectionAudit,selected:dynamicCandidates.slice(0,allowed).map((x:any)=>({oracle:x.oracle_key,question:x.question}))}}).eq("run_key",runKey);
