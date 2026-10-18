@@ -711,6 +711,17 @@ Deno.serve(async(req:Request)=>{
         await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
         return fail("qa_evidence_not_saved",503);
       }
+      if(verdict==="fail"||verdict==="needs_review"){
+        const {error:intakeError}=await db.from("sandy_evolution_cases").upsert({
+          case_key:"examiner:"+testcase.key+":"+reason,domain:"intelligence",
+          title:"Examiner finding: "+testcase.key+" / "+reason,
+          description:"Review synthetic API evidence and independently verify root cause before release.",
+          source_type:"sandy_v2_qa_executions",source_reference:requestId,
+          evidence:{run_key:runKey,case_key:recordCaseKey,verdict,reason,request_id:requestId,
+            independent_production:false,requires_verification:true}
+        },{onConflict:"case_key",ignoreDuplicates:true});
+        if(intakeError)console.error("examiner_evolution_case_intake",intakeError.code);
+      }
       // Feed independently checked synthetic QA outcomes back to routing evaluation.
       // Keyword-only or ambiguous reviews do not qualify as measured model successes.
       if(taskModel&&!testcase.design_run_key&&["web_history","task_count"].includes(testcase.key)&&
