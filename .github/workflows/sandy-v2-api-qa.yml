@@ -1,4 +1,5 @@
 name: Sandy V2 autonomous API QA
+# Fresh production test.
 # Verify v49 persisted clock/task independent audit data.
 # Verify explicit budget-exhaustion response on v50.
 # Capacity-aligned hourly scheduling; preserve independent per-run evidence.
