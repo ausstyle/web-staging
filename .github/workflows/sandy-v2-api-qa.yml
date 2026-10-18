@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Retry complete Examiner API stage after v71 novelty selection correction.
+# Final full Examiner API verification on v72 expanded oracle allowlist.
 # V68 production verification of balanced novelty filter.
 # Fresh production QA regression.
 # New manual production smoke.
