@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# V67 production re-run against novel generated scenarios.
+# V68 production verification of balanced novelty filter.
 # Fresh production QA regression.
 # New manual production smoke.
 # Fresh production test.
