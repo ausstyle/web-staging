@@ -1,0 +1,50 @@
+name: Sandy version awareness build
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-version-awareness-build.yml'
+      - 'scripts/sandy/build_version_awareness.py'
+      - 'scripts/sandy/version-awareness.js'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: sandy-version-awareness-source-build
+  cancel-in-progress: false
+jobs:
+  build-tested-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.16.0'
+      - name: Compile and exercise additive version self-inspection
+        run: |
+          set -eu
+          python3 -W error -m py_compile scripts/sandy/build_version_awareness.py
+          python3 scripts/sandy/build_version_awareness.py
+      - name: Commit tested source to a new isolated branch only
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          BRANCH="sandy-version-aware-${GITHUB_RUN_ID}"
+          git checkout -b "$BRANCH"
+          git add sandy-version-awareness-release/
+          git commit -m "Verified version-awareness source; no customer cutover"
+          git push origin "HEAD:refs/heads/$BRANCH"
+          git rev-parse HEAD > sandy-version-awareness-release/source-commit.txt
+          printf 'Source branch: %s\nCommit: %s\nNo Supabase credential used; no production code deployed by this workflow.\n' "$BRANCH" "$(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+      - name: Preserve source, rollback copies and actual test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandy-version-awareness-${{ github.run_id }}
+          path: sandy-version-awareness-release/
+          if-no-files-found: error
+          retention-days: 90
