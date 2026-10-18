@@ -1,6 +1,7 @@
 name: Sandy V2 autonomous API QA
 # Capacity-aligned hourly scheduling; preserve independent per-run evidence.
 # Verify intelligence capture INSERT and SELECT privileges repaired 2026-10-18.
+# Validate v39 deterministic clock oracle deployment.
 # Validate Examiner intelligence assurance evidence receipts on v33.
 # Run dynamic QA with newly generated Astra suite.
 # Verify Examiner-to-Evolution delivery after diagnosis table permission repair.
