@@ -340,7 +340,7 @@ Deno.serve(async(req:Request)=>{
       return fail("examiner_design_model_unavailable",503);
     }
     const allowedKeys=["clock","connections","web_history","cross_channel","location",
-      "task_count","capability","followup_investigation"];
+      "task_count","capability","followup_investigation","memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"];
     const instructions=[
       "You are Sandy Examiner's independent real-world test architect.",
       "Examiner is an independent intelligence assurance function, not merely a defect finder. Assess reasoning, judgment, initiative, truthful capability self-awareness, customer objective completion, delegation and recovery, customer friction, safety, cost and learning effectiveness.",
@@ -364,7 +364,7 @@ Deno.serve(async(req:Request)=>{
       "Mandatory validation: every question must contain language matching its oracle. For connections ask which apps are connected. For task_count ask how many outstanding tasks. For clock ask current time. For location ask about current location.",
       "Every test must have one or more grounding_keys exactly matching source keys present in the input. mission_charter and mission_activity are always valid grounding keys.",
       "Copy grounding_keys ONLY from allowed_grounding_keys in the input. Never use generic names such as roadmap, capabilities or source_inventory.",
-      "Construct 12 distinct read-only tests. Include at least one connections, task_count, clock, and capability question, and vary the remaining cases across supported oracles. Avoid reusing earlier exact questions. Do not request actions or create items.",
+      "Construct 12 distinct read-only tests. Rotate mission status, memory retrieval, calendar capability and integration recovery; do not imply unavailable tools are connected. Include at least one connections, task_count, clock, and capability question, and vary the remaining cases across supported oracles. Avoid reusing earlier exact questions. Do not request actions or create items.",
       "The QA account is synthetic and isolated. Never request external sends, purchases, account connections, approvals, writes, destructive tasks or credentials.",
       "For unavailable functionality, design discovery/limitation tests, not impossible execution tests.",
       "Include purpose, grounding (exact source keys present in snapshot, or mission_charter/mission_activity), expected observation, and a 1-5 priority.",
@@ -434,7 +434,11 @@ Deno.serve(async(req:Request)=>{
           location:/\b(location|where am i|street|address)\b/i,
           task_count:/\b(outstanding|open|pending|unfinished)\b[\s\S]*\btasks?\b/i,
           capability:/\b(capabilit|can you|actually (do|use|execute)|available services)\b/i,
-          followup_investigation:/\b(investigate|find|check)\b[\s\S]*\b(channels?|platforms?|counts?|messages?)\b/i
+          followup_investigation:/\b(investigate|find|check)\b[\s\S]*\b(channels?|platforms?|counts?|messages?)\b/i,
+          memory_retrieval:/\b(memory|remember|previous conversation|history)\b/i,
+          mission_awareness:/\b(missions?|delegat|progress)\b/i,
+          calendar_awareness:/\b(calendar|meetings?|events?)\b/i,
+          integration_recovery:/\b(connection|integration|failed|unavailable|expired)\b/i
         };
         if(!match[key].test(question)){rejectionCounts.oracle_mismatch++;continue;}
         const grounds=Array.isArray(candidate.grounding_keys)?candidate.grounding_keys
@@ -562,7 +566,7 @@ Deno.serve(async(req:Request)=>{
         if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.65))return false;
         seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,1);return true;
       });
-      const priorityByOracle:Record<string,number>={followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
+      const priorityByOracle:Record<string,number>={memory_retrieval:12,mission_awareness:11,calendar_awareness:10,integration_recovery:9,followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
       dynamicCandidates.sort((a:any,b:any)=>(priorityByOracle[String(b.oracle_key)]||0)-(priorityByOracle[String(a.oracle_key)]||0)
         ||Number(b.priority||0)-Number(a.priority||0));
       latestDesignRunKey=(design||[])[0]?.run_key||null;
@@ -675,6 +679,14 @@ Deno.serve(async(req:Request)=>{
           verdict=had("list_tasks")&&claimedNumber===trueOutstanding&&excludesCancelled?"pass":"fail";
           reason=verdict==="pass"?"independent_task_count_verified":"outstanding_task_count_mismatch_or_unverified";
           auditOracle={rule_version:"task-count-v2",reference:{table:"sandy_tasks",customer_scope:"isolated_test",outstanding_count:trueOutstanding,allowed_statuses:[...activeStatuses]},observed:{claimed_count:claimedNumber,tool_receipt:had("list_tasks")},decision:verdict};
+        }else if(["memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"].includes(testcase.key)){
+          const required=testcase.key==="memory_retrieval"?"search_history":
+            testcase.key==="integration_recovery"?"list_connected_services":"inspect_sandy_operational_state";
+          const receipt=had(required);
+          const transparent=/(?:cannot|can't|not available|not connected|not accessible|no recorded|no matching|no active|could not|unable|unknown|not verified)/i.test(answer);
+          verdict="needs_review";
+          reason=receipt?"new_domain_semantic_verification_required":"new_domain_tool_evidence_unverified";
+          auditOracle={rule_version:"expanded-domain-v1",reference:{domain:testcase.key,required_read_receipt:required},observed:{receipt,transparent,tool_names:trace.map((t:any)=>String(t.tool||""))},decision:"independent_outcome_review_required"};
         }else {
           verdict=any("not available","not connected","no connected","can't","cannot","not verified","not necessarily","not enabled")?"pass":"needs_review";
           reason=verdict==="pass"?"cautious_capability_statement":"capability_reply_needs_review";
@@ -704,7 +716,7 @@ Deno.serve(async(req:Request)=>{
         return {passed,reason:passed?"independent_utc_verified":"clock_mismatch_or_date_unverified",
           start_utc:before.toISOString(),end_utc:after.toISOString(),tolerance_minutes:2};
       })();
-      const complexJudge=["capability","cross_channel","followup_investigation"].includes(testcase.key);
+      const complexJudge=["capability","cross_channel","followup_investigation","memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"].includes(testcase.key);
       if(clockOracle)auditOracle={rule_version:"utc-clock-v2",reference:{reference_time:clockOracle.start_utc,completed_time:clockOracle.end_utc,tolerance_minutes:clockOracle.tolerance_minutes},observed:{response:answer,system_clock_receipt:trace.some((t:any)=>t?.tool==="system_clock"&&t.success===true)},decision:clockOracle.passed?"verified":"requires_review"};
             const configuredJudge=String((executionPolicy?.config as any)?.[complexJudge?"complex_judge_model":"routine_judge_model"]||(complexJudge?"gpt-6-astra":"gpt-5.2"));
       const judgeCandidate=/^[a-zA-Z0-9._-]{3,80}$/.test(configuredJudge)?configuredJudge:"gpt-5.2";
