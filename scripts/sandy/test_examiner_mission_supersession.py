@@ -9,11 +9,16 @@ class TestMissionSupersession(unittest.TestCase):
         self.assertIn('question_key,status,question,answer', SOURCE)
         self.assertIn('clarificationReview="unavailable"', SOURCE)
         self.assertIn('newQuestions=newQuestions.filter', SOURCE)
-        self.assertIn('If uncertain whether a question is answered, keep it.', SOURCE)
+        self.assertIn('If uncertain about required safety or permission, keep it.', SOURCE)
         self.assertIn('clarification_review:clarificationReview', SOURCE)
         self.assertIn('max_output_tokens:900', SOURCE)
         self.assertIn('provider_http_', SOURCE)
         self.assertIn('empty_model_output', SOURCE)
+
+    def test_optional_preferences_do_not_block_reversible_drafts(self):
+        self.assertIn('Ask customer questions only when missing information prevents', SOURCE)
+        self.assertIn('If uncertain about an optional preference, discard it.', SOURCE)
+        self.assertIn('If uncertain about required safety or permission, keep it.', SOURCE)
 
     def test_old_steps_status_is_loaded_before_supersession(self):
         self.assertIn('.select("id,status,metadata").eq("customer_id",job.customer_id)', SOURCE)
