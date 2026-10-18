@@ -16,6 +16,12 @@ class TestV2APIQA(unittest.TestCase):
         cls.edge = EDGE.read_text()
         cls.flow = WORKFLOW.read_text()
 
+    def test_verified_clock_route(self):
+        source=(ROOT / "supabase/functions/sandy-agent-runtime/index.ts").read_text()
+        self.assertIn('clockOnlyRequest',source)
+        self.assertIn('system_clock',source)
+        self.assertIn('time and date',source)
+
     def test_exact_main_workflow_with_repo_identity(self):
         self.assertIn('QA_REF = REPO + "/.github/workflows/sandy-v2-api-qa.yml@refs/heads/main"', self.edge)
         self.assertIn('claims.repository!==REPO', self.edge)
