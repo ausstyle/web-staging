@@ -113,6 +113,7 @@ export function initTaskFiles({auth,notify,customerId}){
   wrap.addEventListener("dragover",e=>{e.preventDefault();e.dataTransfer.dropEffect="copy"});
   wrap.addEventListener("drop",e=>{e.preventDefault();if(!add.disabled)upload([...e.dataTransfer.files])});
   wrap.refresh=refresh;
+  wrap.upload=upload;
   return wrap;
  }
  return {panel,toggle,refreshCounts};
