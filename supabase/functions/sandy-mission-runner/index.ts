@@ -58,17 +58,19 @@ Deno.serve(async req=>{
          body:JSON.stringify({model:"gpt-4.1-mini",store:false,
            instructions:"You are an independent customer-friction reviewer. Return JSON {keep_indexes:number[]} containing only 0-based indexes of candidate questions that require genuinely NEW, decision-blocking information not already clearly answered by prior questions and answers. Treat wording variations and requests to reconfirm settled preferences as duplicates. Preserve questions about genuinely new decisions. If uncertain whether a question is answered, keep it. No external action.",
            input:JSON.stringify({answered:answered.map((q:any)=>({question:String(q.question||"").slice(0,500),answer:String(q.answer||"").slice(0,500)})),candidates:newQuestions.map((q:any)=>q.question)}),
-           text:{format:{type:"json_object"}},max_output_tokens:450}),
+           max_output_tokens:900}),
          signal:AbortSignal.timeout(18000)
        });
        if(judge.ok){
          const payload=await judge.json();
          const raw=(payload.output||[]).flatMap((v:any)=>(v.content||[]).filter((x:any)=>x.type==="output_text").map((x:any)=>x.text)).join("");
+         if(!raw.trim()){clarificationReview="empty_model_output";}else{
          const parsed=JSON.parse(raw);
          if(Array.isArray(parsed.keep_indexes)&&parsed.keep_indexes.every((n:any)=>Number.isInteger(n)&&n>=0&&n<newQuestions.length)){
            const keep=new Set<number>(parsed.keep_indexes);
            newQuestions=newQuestions.filter((_:any,i:number)=>keep.has(i));
            clarificationReview="reviewed";
+         }else clarificationReview="invalid_model_result";
          }
        }
      }catch{console.error("mission_clarification_dedupe_unavailable");}
