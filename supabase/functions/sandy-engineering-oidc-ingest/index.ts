@@ -581,7 +581,7 @@ Deno.serve(async(req:Request)=>{
       const similarity=(a:string,b:string)=>{
         const x=words(a),y=words(b);if(!x.size||!y.size)return 0;
         let common=0;for(const w of x)if(y.has(w))common++;
-        return common/Math.min(x.size,y.size);
+        return common/(x.size+y.size-common);
       };
       const rejected:Record<string,number>={};
       const rejectionSamples:any[]=[];
@@ -593,8 +593,8 @@ Deno.serve(async(req:Request)=>{
         if(!k)return reject("invalid_question",x);
         if(seen.has(k))return reject("previously_executed",x);
         if((selectedOracles.get(oracle)||0)>=2)return reject("oracle_limit_per_batch",x);
-        if(priorPasses.some((old:string)=>similarity(k,old)>=0.75))return reject("similar_to_prior_pass",x);
-        if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.65))return reject("similar_within_batch",x);
+        if(priorPasses.some((old:string)=>similarity(k,old)>=0.82))return reject("similar_to_prior_pass",x);
+        if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.78))return reject("similar_within_batch",x);
         seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,(selectedOracles.get(oracle)||0)+1);return true;
       });
       const priorityByOracle:Record<string,number>={memory_retrieval:12,mission_awareness:11,calendar_awareness:10,integration_recovery:9,followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
