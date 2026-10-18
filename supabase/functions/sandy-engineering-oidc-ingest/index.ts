@@ -608,6 +608,8 @@ Deno.serve(async(req:Request)=>{
     }
     selectionAudit={...selectionAudit,eligible_after_prerequisites:dynamicCandidates.length};
     const allowed=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)),dynamicCandidates.length);
+    const {error:selectionSaveError}=await db.from("sandy_v2_qa_runs").update({selection_audit:{...selectionAudit,selected:dynamicCandidates.slice(0,allowed).map((x:any)=>({oracle:x.oracle_key,question:x.question}))}}).eq("run_key",runKey);
+    if(selectionSaveError)return fail("qa_selection_audit_write_failed",503);
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
     if(targetedTen&&allowed<10)return fail("qa_targeted_budget_or_novelty_insufficient",409);
     if(!targetedTen&&allowed===0)return fail("qa_no_novel_eligible_generated_cases",409);
@@ -945,7 +947,7 @@ Deno.serve(async(req:Request)=>{
       }
     }
     // No customer-sensitive content or API token in the external result.
-    return json({ok:true,run_key:runKey,...summary,results:outputs});
+    return json({ok:true,run_key:runKey,...summary,selection_audit:selectionAudit,results:outputs});
   }
   if(!observerFlow&&!inlineFlow)return fail("qa_only_workflow_not_authorized_for_engineering",403);
   const issue=body.issue_number,runId=body.architecture_run_id,decision=body.decision,pr=body.pr_number;
