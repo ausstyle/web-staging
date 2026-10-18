@@ -1,0 +1,17 @@
+{
+  "base_repo_blob": "da7db37f6276cf5fa345d0c3dc5737d768ad2962",
+  "source_commit": "fef69a4f236b5d289da110ff37c01b566ec0484b",
+  "release_routing_changed": false,
+  "runtimes": {
+    "v1": {
+      "component": "sandy-agent-runtime",
+      "baseline_sha256": "ed5f6d2d855fbae18dcc8ee723d6a09ffcf06234078e725890d5ad2100b6be95",
+      "patched_sha256": "44b02d75390d39f53a45517e3d474c17f7b8833ca34e2b843c296e0919f8694f"
+    },
+    "v2": {
+      "component": "sandy-agent-runtime-v2",
+      "baseline_sha256": "059cb5fbd9dee5ba891aac94dcb383e6075ec29180cc7d9f5e1b3d2a12a2cffe",
+      "patched_sha256": "3d218c18afc21d0049fcecc88c30706fb261b28e5bf35c9d037a3cc4cceffa59"
+    }
+  }
+}
