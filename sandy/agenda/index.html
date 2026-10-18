@@ -1037,6 +1037,21 @@ function dueLocalTime(value){
  if(d.getHours()===12&&d.getMinutes()===0)return "";
  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
+function zonedDateTime(day,time,zone){
+ if(!day)return null;
+ if(!time||zone==="local")return combineDueDateTime(day,time);
+ const [y,m,d]=day.split("-").map(Number),[hour,minute]=time.split(":").map(Number);
+ const target=Date.UTC(y,m-1,d,hour,minute);
+ const dateParts=at=>{
+  const parts=new Intl.DateTimeFormat("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(at));
+  const get=k=>Number(parts.find(x=>x.type===k)?.value);
+  return Date.UTC(get("year"),get("month")-1,get("day"),get("hour"),get("minute"));
+ };
+ let instant=target;
+ for(let i=0;i<3;i++)instant+=target-dateParts(instant);
+ if(dateParts(instant)!==target)throw Error("This local time does not exist in the selected timezone");
+ return new Date(instant).toISOString();
+}
 function combineDueDateTime(day,time){
  if(!day)return null;
  const d=new Date(day+"T"+(time||"12:00")+":00");
@@ -1644,7 +1659,7 @@ function openDialog(){
 function closeDialog(){$("dialogOverlay").classList.remove("show");state.edit=null;state.parent=null}
 $("taskForm").addEventListener("submit",async e=>{
  e.preventDefault();const save=$("saveTask");save.disabled=true;
- const payload={company_id:normalizeWorkspace($("taskWorkspace").value),category_id:$("taskCategory").value||null,title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:combineDueDateTime($("taskDue").value,$("taskDueTime").value),due_time_specified:Boolean($("taskDue").value&&$("taskDueTime").value),next_review_at:fromDate($("taskReview").value),start_at:$("taskStart").value?combineDueDateTime($("taskStart").value,$("taskStartTime").value):null,schedule_timezone:$("taskTimezone").value,scheduled_end_at:$("taskStart").value&&$("taskEndTime").value?combineDueDateTime($("taskStart").value,$("taskEndTime").value):null,contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
+ const payload={company_id:normalizeWorkspace($("taskWorkspace").value),category_id:$("taskCategory").value||null,title:$("taskTitle").value.trim(),details:$("taskDetails").value.trim(),priority:$("taskPriority").value,due_at:combineDueDateTime($("taskDue").value,$("taskDueTime").value),due_time_specified:Boolean($("taskDue").value&&$("taskDueTime").value),next_review_at:fromDate($("taskReview").value),start_at:$("taskStart").value?zonedDateTime($("taskStart").value,$("taskStartTime").value,$("taskTimezone").value):null,schedule_timezone:$("taskTimezone").value,scheduled_end_at:$("taskStart").value&&$("taskEndTime").value?zonedDateTime($("taskStart").value,$("taskEndTime").value,$("taskTimezone").value):null,contact_name:$("taskContact").value.trim()||null,waiting_on:$("taskWaiting").value.trim()||null};
  if(!payload.title){save.disabled=false;return}
  try{
   if(state.edit){payload.id=state.edit.id;payload.status=$("taskStatus").value;if(state.edit.shared){delete payload.company_id;delete payload.category_id;delete payload.start_at;delete payload.contact_name;delete payload.next_review_at;delete payload.waiting_on;await api("shared-update",payload)}else await api("update",payload);const previous=state.dependencies.find(d=>d.task_id===payload.id)?.depends_on_id||"";const next=$("taskDependency").value;if(!state.edit.shared&&previous&&previous!==next)await api("dependency",{task_id:payload.id,depends_on_id:previous,remove:true});if(!state.edit.shared&&next&&next!==previous)await api("dependency",{task_id:payload.id,depends_on_id:next})}
