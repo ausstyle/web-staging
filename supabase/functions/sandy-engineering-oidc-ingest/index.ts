@@ -652,7 +652,7 @@ Deno.serve(async(req:Request)=>{
             method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},
             body:JSON.stringify({model:"gpt-6-astra",store:false,reasoning:{effort:"high"},
               instructions:"You design novel read-only synthetic-account questions testing Sandy V2. Output JSON object containing tests array. Each test has oracle_key and question. No external side effects. Do not ask to send, delete, create or modify data. Questions must be substantively different from excluded questions. Ground tests in capabilities that can be evaluated even when the synthetic account has no Gmail connection or historical memory. State limitations truthfully. Prefer different oracle categories. Every question <=220 characters.",
-              input:[{role:"user",content:[{type:"input_text",text:JSON.stringify({
+              input:[{role:"user",content:[{type:"input_text",text:"Return valid JSON with a tests array. "+JSON.stringify({
                 requested:Math.min(16,needed+5),allowed_oracles:permitted,
                 existing_oracle_counts:Object.fromEntries(oracleCounts),
                 excluded_questions:excluded,
