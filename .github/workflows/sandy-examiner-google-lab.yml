@@ -1,4 +1,5 @@
 name: Sandy Examiner Google Lab Verification
+# Validate mandatory independent Gmail count comparison in gateway v36.
 # Verify production Gmail provider count parity after v35 deployment.
 # Validate persistent audit receipts after Gateway v31 deployment.
 # Current production v30 test oracle verification.
