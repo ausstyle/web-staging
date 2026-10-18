@@ -544,7 +544,7 @@ function openQuickCategory(t,anchor){
   pop.style.top=Math.max(top+margin,Math.min(target,top+h-ph-margin))+"px";
  }
  function close(){pop.remove();document.removeEventListener("pointerdown",outside,true);window.removeEventListener("resize",position);window.removeEventListener("scroll",position,true);window.visualViewport?.removeEventListener("resize",position);window.visualViewport?.removeEventListener("scroll",position)}
- function outside(e){if(!pop.contains(e.target)&&!anchor.contains(e.target))close()}
+ function outside(e){if(e.target.closest?.(".categoryPopover"))return;if(!pop.contains(e.target)&&!anchor.contains(e.target))close()}
  async function move(company,category){
   if(busy)return;
   const companyId=normalizeWorkspace(company),categoryId=category||null;
