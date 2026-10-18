@@ -1,5 +1,6 @@
 name: Sandy V2 autonomous API QA
 # Verify v49 persisted clock/task independent audit data.
+# One-off fresh production QA invocation.
 # Capacity-aligned hourly scheduling; preserve independent per-run evidence.
 # Verify intelligence capture INSERT and SELECT privileges repaired 2026-10-18.
 # Final v44 evidence and Evolution intake regression.
