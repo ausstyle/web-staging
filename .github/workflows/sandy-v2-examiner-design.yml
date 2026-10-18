@@ -1,5 +1,5 @@
 name: Sandy Examiner adaptive test design
-# Verify expanded Examiner v58 test categories.
+# Full production Examiner cycle 2026-10-18: regenerate scenarios.
 # Validate expanded intelligence assurance scope on v32.
 # Revalidate restored gpt-6-astra through signed production design workflow.
 on:
