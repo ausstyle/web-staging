@@ -1,5 +1,5 @@
 name: Sandy V2 autonomous API QA
-# Expanded V2 Examiner production regression v58.
+# Expanded V2 Examiner production regression v59 with 240-call limit.
 # Fresh production QA regression.
 # New manual production smoke.
 # Fresh production test.
