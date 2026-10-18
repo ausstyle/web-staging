@@ -463,7 +463,7 @@ Deno.serve(async(req:Request)=>{
     }
   }
   if(qaFlow){
-    if(body.operation!=="v2_api_qa"||Object.keys(body).some(k=>k!=="operation"))
+    if(!["v2_api_qa","v2_api_qa_targeted_10"].includes(String(body.operation))||Object.keys(body).some(k=>k!=="operation"))
       return fail("qa_operation_restricted",403);
     const targetedTen=body.operation==="v2_api_qa_targeted_10";
     const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
