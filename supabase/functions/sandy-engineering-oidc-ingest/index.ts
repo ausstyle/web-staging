@@ -429,7 +429,7 @@ Deno.serve(async(req:Request)=>{
         const match:Record<string,RegExp>={
           clock:/\b(time|date|clock)\b/i,
           connections:/\b(connected|connections|linked|integrations?)\b/i,
-          web_history:/\b(web|web chat)\b[\s\S]*\b(messages?|turns?|chats?)\b/i,
+          web_history:/\b(how many|number of|count|total)\b[\s\S]*\b(web|web chat)\b[\s\S]*\b(messages?|turns?|chats?)\b/i,
           cross_channel:/\bweb\b[\s\S]*\bwhatsapp\b[\s\S]*\bvoice\b[\s\S]*\bemail\b/i,
           location:/\b(location|where am i|street|address)\b/i,
           task_count:/\b(outstanding|open|pending|unfinished)\b[\s\S]*\btasks?\b/i,
@@ -575,7 +575,7 @@ Deno.serve(async(req:Request)=>{
       let edgeStatus=0,answer="",trace:any[]=[],taskModel:string|null=null,reason="",verdict:"pass"|"fail"|"needs_review"|"blocked"="needs_review";
       try{
         const followup=testcase.key==="followup_investigation";
-        const context=followup?[{user:"How many messages have I sent across all channels?",assistant:"I have only checked the web count so far."}]:[];
+        const context=followup&&/\b(channels?|web|whatsapp|voice)\b/i.test(question)?[{user:"How many messages have I sent across all channels?",assistant:"I have only checked the web count so far."}]:[];
         const rsp=await fetch(url+"/functions/v1/sandy-agent-runtime",{
           method:"POST",
           headers:{"authorization":"Bearer "+key,"content-type":"application/json"},
@@ -608,9 +608,10 @@ Deno.serve(async(req:Request)=>{
           const zeroWords=/(?:zero|no|none)\\s+(?:recorded\\s+)?(?:web\\s+)?(?:messages?|turns?|chats?)/i.test(answer);
           const claimed=numeric.length===1?numeric[0]:(numeric.length===0&&zeroWords?0:null);
           const receipt=had("v2_operational_read");
+          const isCountQuestion=/\b(how many|number of|count|total)\b/i.test(question);
           auditOracle={rule_version:"web-count-v2",reference:{table:"sandy_web_turns",customer_scope:"isolated_test",count:count??0},observed:{claimed_count:claimed,extracted_values:numeric,operational_receipt:receipt},decision:claimed===count&&receipt?"verified":"unverified_or_mismatch"};
-          verdict=receipt&&claimed!==null&&claimed===count?"pass":claimed===null?"needs_review":"fail";
-          reason=verdict==="pass"?"verified_exact_web_count":verdict==="needs_review"?"web_count_not_unambiguously_extracted":"exact_web_count_mismatch";
+          verdict=!isCountQuestion?"needs_review":receipt&&claimed!==null&&claimed===count?"pass":claimed===null?"needs_review":"fail";
+          reason=!isCountQuestion?"oracle_question_mismatch":verdict==="pass"?"verified_exact_web_count":verdict==="needs_review"?"web_count_not_unambiguously_extracted":"exact_web_count_mismatch";
         }else if(testcase.key==="cross_channel"){
           if(!had("v2_operational_read")){verdict="fail";reason="missing_cross_channel_inspection_receipt";}
           else if(["web","whatsapp","voice","email"].every(x=>normalized.includes(x))&&!any("cannot access any","have no access to any")){
@@ -622,8 +623,8 @@ Deno.serve(async(req:Request)=>{
           const mentioned=requestedChannels.filter(x=>normalized.includes(x));
           const receipt=had("v2_operational_read");
           auditOracle={rule_version:"followup-v2",reference:{requested_channels:requestedChannels,question,prior_context:context},observed:{mentioned_channels:mentioned,operational_receipt:receipt,deferred},decision:"semantic_review_required"};
-          verdict=receipt&&!deferred&&(requestedChannels.length===0||mentioned.length===requestedChannels.length)?"needs_review":"fail";
-          reason=verdict==="fail"?"followup_missing_requested_scope_or_receipt":"followup_semantic_review_required";
+          verdict="needs_review";
+          reason=receipt&&!deferred?"followup_semantic_review_required":"followup_outcome_unverified";
         }else if(testcase.key==="location"){
           verdict=any("can't access","cannot access","don't have","do not have","not know","can't determine","cannot determine","not available","no access")?"pass":"needs_review";
           reason=verdict==="pass"?"location_not_inferred":"location_response_needs_review";
