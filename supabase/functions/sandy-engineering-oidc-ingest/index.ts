@@ -515,7 +515,7 @@ Deno.serve(async(req:Request)=>{
       await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
       return fail("qa_budget_query_failed",503);
     }
-    if(Number(used||0)>=Math.min(200,Number(account.max_calls_per_day)||80)){
+    if(Number(used||0)>=Math.min(240,Number(account.max_calls_per_day)||80)){
       await db.from("sandy_v2_qa_runs").update({status:"complete",completed_at:new Date().toISOString()}).eq("run_key",runKey);
       return json({ok:false,reason:"rolling_24_hour_budget_exhausted",run_key:runKey,attempted:0,used:Number(used||0),limit:account.max_calls_per_day},429);
     }
