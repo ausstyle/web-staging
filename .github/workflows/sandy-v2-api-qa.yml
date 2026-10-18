@@ -1,4 +1,5 @@
 name: Sandy V2 autonomous API QA
+# Capacity-aligned hourly scheduling; preserve independent per-run evidence.
 # Validate Examiner intelligence assurance evidence receipts on v33.
 # Run dynamic QA with newly generated Astra suite.
 # Verify Examiner-to-Evolution delivery after diagnosis table permission repair.
@@ -12,7 +13,7 @@ on:
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'scripts/sandy/test_v2_autonomous_api_qa.py'
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '11 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
