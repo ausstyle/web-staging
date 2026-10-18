@@ -533,7 +533,7 @@ Deno.serve(async(req:Request)=>{
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
-        .order("created_at",{ascending:false}).limit(targetedTen?1:1);
+        .order("created_at",{ascending:false}).limit(targetedTen?6:1);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
       const disallow=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
@@ -541,6 +541,16 @@ Deno.serve(async(req:Request)=>{
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
         !disallow.test(x.question)&&x.execution_status==="shadow_not_executed"&&
         x.requires_current_production_retest===true&&Array.isArray(x.grounding_keys)&&x.grounding_keys.length>0);
+      if(targetedTen){
+        const prior=await db.from("sandy_v2_qa_executions").select("question").eq("customer_id",customerId).order("created_at",{ascending:false}).limit(200);
+        if(prior.error)return fail("qa_prior_question_query_failed",503);
+        const excluded=new Set((prior.data||[]).map((x:any)=>String(x.question||"").trim().toLowerCase()));
+        dynamicCandidates=dynamicCandidates.filter((x:any)=>{
+          const question=String(x.question||"").trim().toLowerCase();
+          if(excluded.has(question))return false;
+          excluded.add(question);return true;
+        });
+      }
       latestDesignRunKey=(design||[])[0]?.run_key||null;
     }
     const allowed=Math.min(targetedTen?10:2,targetedTen?10:(Number(account.max_calls_per_run)||1),Math.max(0,Number(account.max_calls_per_day)-(used||0)));
