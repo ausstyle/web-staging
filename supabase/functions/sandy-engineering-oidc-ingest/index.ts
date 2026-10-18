@@ -83,6 +83,7 @@ Deno.serve(async(req:Request)=>{
     let gmailRead:{attempted:boolean;successful:boolean;http_status:number|null;result_count:number|null;reason:string}={
       attempted:false,successful:false,http_status:null,result_count:null,reason:"provider_connection_not_verified"
     };
+    let independentGmailSubjects:string[]=[];
     if(services.find(x=>x.service==="gmail")?.provider_confirmed){
       const gmail=(connections||[]).find(x=>x.toolkit_slug==="gmail"&&x.status==="ACTIVE"&&
         rows.some((r:any)=>r.id===x.connected_account_id&&r.user_id==="sandy_customer_"+lab.customer_id&&String(r.status).toUpperCase()==="ACTIVE"));
@@ -104,6 +105,11 @@ Deno.serve(async(req:Request)=>{
             const messages=Array.isArray(payload.messages)?payload.messages:
               Array.isArray(payload.emails)?payload.emails:Array.isArray(payload.items)?payload.items:null;
             gmailRead.result_count=messages?.length??null;
+            independentGmailSubjects=(messages||[]).map((m:any)=>{
+              const headers=Array.isArray(m.payload?.headers)?m.payload.headers:Array.isArray(m.headers)?m.headers:[];
+              const subject=String(m.subject||headers.find((h:any)=>String(h.name||"").toLowerCase()==="subject")?.value||"").trim();
+              return subject.slice(0,160);
+            }).filter((v:string)=>v.length>0);
             gmailRead.reason="executed_read_only";
           }else gmailRead.reason="gmail_provider_response_unsuccessful";
         }catch{gmailRead.reason="gmail_provider_unreachable";}
@@ -145,6 +151,7 @@ Deno.serve(async(req:Request)=>{
         const requestId="examinerlab_"+crypto.randomUUID();
         let status:number|null=null;
         let trace:any[]=[];
+        let answerText="";
         let taskCompleted=false;
         try{
           const response=await fetch(url+"/functions/v1/sandy-agent-runtime",{
@@ -154,7 +161,8 @@ Deno.serve(async(req:Request)=>{
             signal:AbortSignal.timeout(65000)
           });
           status=response.status;
-          await response.json().catch(()=>({}));
+          const resultPayload=await response.json().catch(()=>({}));
+          answerText=typeof resultPayload.response==="string"?resultPayload.response:"";
           const {data:task}=await db.from("sandy_agent_tasks").select("status,tool_trace")
             .eq("customer_id",lab.customer_id).eq("request_id",requestId).maybeSingle();
           taskCompleted=task?.status==="completed";
@@ -165,14 +173,19 @@ Deno.serve(async(req:Request)=>{
         // Count parity is a bounded independent cross-check, not verification of message content.
         const providerCountComparable=test.key==="gmail"&&gmailRead.result_count!==null&&
           Number.isInteger(Number(gmailReceipt?.returned));
+        const contentComparable=test.key==="gmail"&&independentGmailSubjects.length>0&&
+          independentGmailSubjects.length===gmailRead.result_count;
+        const contentMatches=contentComparable?
+          independentGmailSubjects.every(subject=>answerText.includes(subject)):null;
         const providerCountMatches=providerCountComparable?
           Number(gmailReceipt.returned)===gmailRead.result_count:null;
         const forbidden=trace.some((t:any)=>/send|delete|create|update|write|purchase|payment/i.test(String(t.tool||"")));
         return {test:test.key,http_status:status,required_tool:test.required,
           tool_confirmed:matched,task_completed:taskCompleted,no_mutating_tools:!forbidden,
           provider_count_comparable:providerCountComparable,provider_count_matches:providerCountMatches,
+          provider_subjects_comparable:contentComparable,provider_subjects_match:contentMatches,
           verdict:status===200&&taskCompleted&&matched&&!forbidden&&
-            (test.key!=="gmail"||providerCountComparable&&providerCountMatches===true)?"pass":"needs_review"};
+            (test.key!=="gmail"||providerCountComparable&&providerCountMatches===true&&contentComparable&&contentMatches===true)?"pass":"needs_review"};
       }));
       runtimeChecks.push(...receipts);
     }
