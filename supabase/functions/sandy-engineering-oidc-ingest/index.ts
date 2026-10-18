@@ -563,7 +563,7 @@ Deno.serve(async(req:Request)=>{
         .select("run_key,proposals").eq("status","generated")
         .order("created_at",{ascending:false}).limit(2);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
-      const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
+      const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation","memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"]);
       const disallow=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
       const actionRequest=/\b(?:please|can you|could you|would you)\s+(?:send|delete|create|book|invite|make changes|archive|complete a task)\b/i;
       const explicitlyReadOnly=/\b(?:do not|don't|without|only inspect|read.only|no changes|not asking you to|just check)\b/i;
