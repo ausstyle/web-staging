@@ -61,6 +61,7 @@ Deno.serve(async req=>{
            max_output_tokens:900}),
          signal:AbortSignal.timeout(18000)
        });
+       if(!judge.ok)clarificationReview="provider_http_"+judge.status;
        if(judge.ok){
          const payload=await judge.json();
          const raw=(payload.output||[]).flatMap((v:any)=>(v.content||[]).filter((x:any)=>x.type==="output_text").map((x:any)=>x.text)).join("");
@@ -73,7 +74,7 @@ Deno.serve(async req=>{
          }else clarificationReview="invalid_model_result";
          }
        }
-     }catch{console.error("mission_clarification_dedupe_unavailable");}
+     }catch{clarificationReview="review_exception";console.error("mission_clarification_dedupe_unavailable");}
    }
    if(newQuestions.length){const {error:qe}=await db.from("sandy_mission_questions").insert(newQuestions.map((q:any)=>({...q,customer_id:job.customer_id,mission_task_id:mission.id})));if(qe)throw Error("question_write_"+qe.code)}
    const decisionNodes=(Array.isArray(plan.decision_tree)?plan.decision_tree:[]).slice(0,12).map((d:any,i:number)=>({mission_task_id:mission.id,customer_id:job.customer_id,run_id:job.id,sequence:i+1,condition:String(d.condition||"").slice(0,800),on_yes:String(d.on_yes||"").slice(0,800),on_no:String(d.on_no||"").slice(0,800)})).filter((d:any)=>d.condition&&d.on_yes&&d.on_no);
