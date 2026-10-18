@@ -31,6 +31,27 @@ jobs:
           node --check supabase/functions/sandy-feature-discovery/risk-policy.js
       - name: Build only audited corrections and preserve V1
         run: python3 scripts/sandy/prepare_v2_core_candidate.py
+      - name: Exercise actual candidate validation and workspace code
+        shell: bash
+        run: |
+          set -euo pipefail
+          node artifacts/sandy-v2-core/gmail-draft-regression.mjs | tee artifacts/sandy-v2-core/regression-results.json
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('artifacts/sandy-v2-core')
+          r=json.loads((p/'regression-results.json').read_text())
+          m=json.loads((p/'manifest.json').read_text())
+          assert r['passed']==r['total']==16,'Incomplete local regression'
+          assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime/index.ts').read_bytes()).hexdigest()==m['baseline_sha256'],'V1 source was modified'
+          s=(p/'v2-runtime.ts').read_text()
+          a=s.index('if(c.name==="prepare_gmail_message"&&customerId)')
+          b=s.index('if(c.name==="search_connected_gmail"&&customerId)',a)
+          block=s[a:b]
+          assert chr(92)*2+'s' not in block,'Candidate still contains a double-escaped whitespace class'
+          assert 'if(workspace){' not in block,'Candidate still contains the broken Personal-workspace branch'
+          (p/'candidate-handler.txt').write_text(block)
+          PY
       - name: Record test provenance and prepare isolated candidate checkout
         shell: bash
         run: |
@@ -59,23 +80,23 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd "$RUNNER_TEMP/sandy-v2-candidate-contracts"
-          python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v 2>&1 | tee "$GITHUB_WORKSPACE/artifacts/sandy-v2-core/offline-contract-tests.log"
-      - name: Exercise actual candidate validation and workspace code
-        shell: bash
-        run: |
-          set -euo pipefail
-          node artifacts/sandy-v2-core/gmail-draft-regression.mjs | tee artifacts/sandy-v2-core/regression-results.json
+          EVIDENCE="$GITHUB_WORKSPACE/artifacts/sandy-v2-core"
+          export GITHUB_WORKSPACE="$RUNNER_TEMP/sandy-v2-candidate-contracts"
+          cd "$GITHUB_WORKSPACE"
           python3 - <<'PY'
-          import hashlib,json
+          import os
           from pathlib import Path
-          p=Path('artifacts/sandy-v2-core')
-          r=json.loads((p/'regression-results.json').read_text())
-          m=json.loads((p/'manifest.json').read_text())
-          assert r['passed']==r['total']==16,'Incomplete local regression'
-          assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime/index.ts').read_bytes()).hexdigest()==m['baseline_sha256'],'V1 source was modified'
+          p=Path(os.environ['GITHUB_WORKSPACE'])/'supabase/functions/sandy-agent-runtime/index.ts'
+          s=p.read_text()
+          a=s.index('if(c.name==="prepare_gmail_message"&&customerId)')
+          b=s.index('if(c.name==="search_connected_gmail"&&customerId)',a)
+          assert chr(92)*2+'s' not in s[a:b]
+          assert 'if(workspace){' not in s[a:b]
+          print('Contract-test workspace points to the corrected candidate; V1 remains outside this copy.')
           PY
+          python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v 2>&1 | tee "$EVIDENCE/offline-contract-tests.log"
       - name: Preserve candidate, baseline and test evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: sandy-v2-core-candidate-${{ github.run_id }}
