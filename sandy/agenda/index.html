@@ -933,8 +933,23 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
  if(state.search){state.search="";$("search").value=""}
  if(parent){state.expanded.delete(parent);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]))}
  render();
- const box=parent?document.getElementById("task-"+parent)?.querySelector(":scope > .children"):$("tasks");
- if(!box){toast("Parent task is not visible",true);return}
+ let box=parent?document.getElementById("task-"+parent)?.querySelector(":scope > .children"):$("tasks");
+ if(parent&&!box){
+  // A collapsed or filtered parent may be present without a rendered child container.
+  const task=state.tasks.find(t=>t.id===parent);
+  if(!task){toast("Parent task could not be found. Refresh and try again.",true);return}
+  state.expanded.delete(parent);
+  state.tab="open";state.assigneeFilter="all";state.workspace="all";state.category=null;
+  state.search="";$("search").value="";
+  localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));
+  render();
+  const parentNode=document.getElementById("task-"+parent);
+  if(parentNode){
+   box=parentNode.querySelector(":scope > .children");
+   if(!box){box=el("div","children");parentNode.append(box)}
+  }
+ }
+ if(!box){toast("Could not open the parent task for editing. Please refresh.",true);return}
  if(!parent)box.querySelector(":scope > .empty")?.remove();
  const ghost=el("div",(parent?"childrow ":"task ")+"outlineDraft"),row=el("div","taskrow"),main=el("div","taskmain");
  const check=el("input","taskcheck");check.type="checkbox";check.disabled=true;check.setAttribute("aria-label","Unsaved task");
