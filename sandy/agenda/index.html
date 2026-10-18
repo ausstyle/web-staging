@@ -329,6 +329,32 @@ html,body{max-width:100%;overflow-x:clip}
 .taskrow .inlinePriority{flex:0 0 auto;min-width:72px!important}
 .dueDateTimePopover{overflow:auto;max-height:calc(100dvh - 24px)}
 .dueDialogTimeLabel select{display:block;width:100%;margin-top:3px;padding:8px;border:1px solid #dce5dc;border-radius:8px}.dueDialogTimeLabel{margin-top:8px}
+
+/* Dense task editor. All existing controls remain present and functional. */
+#dialogOverlay .dialog{width:min(840px,calc(100vw - 20px));max-height:calc(100dvh - 20px);overflow:auto;padding:12px 14px}
+#dialogOverlay .dialog h2{font-size:16px;line-height:1.15;margin:0 0 3px}
+#dialogOverlay .dialog>p{font-size:11px;line-height:1.25;margin:0 0 7px}
+#taskForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:9px;row-gap:6px}
+#taskForm>.field,#taskForm>.two,#taskForm>.editDelegation,#taskForm>.sandyTaskFileDialog,#taskForm>.dialogfooter{margin:0;min-width:0}
+#taskForm>.field:has(#taskTitle),#taskForm>.field:has(#taskDetails),#taskForm>.editDelegation,#taskForm>.sandyTaskFileDialog,#taskForm>.dialogfooter,#taskForm>#subtaskField{grid-column:1/-1}
+#taskForm .field{font-size:10.5px;line-height:1.2;gap:2px}
+#taskForm input:not([type=checkbox]),#taskForm select,#taskForm button,#taskForm textarea{font-size:12px}
+#taskForm input:not([type=checkbox]),#taskForm select{min-height:28px;height:28px;padding:3px 7px}
+#taskForm button{min-height:27px;padding:3px 8px}
+#taskForm textarea{min-height:45px;height:48px;padding:5px 7px}
+#taskForm #taskSubtasks{height:48px;min-height:48px}
+#taskForm .two{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#taskForm .dueDialogTimeLabel{font-size:10px;line-height:1.2;margin-top:3px}
+#taskForm .editDelegation{padding:6px 8px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+#taskForm .editDelegationHead{font-size:11px;grid-column:1/-1}
+#taskForm .peopleAccessHint{display:none}
+#taskForm .editDelegation>div:not(.editDelegationHead){min-width:0}
+#taskForm .delegateMenuCaption,#taskForm .delegateMenuHeading{font-size:11px;margin:2px 0}
+#taskForm .delegateInputRow{gap:5px}
+#taskForm .delegateChoices{gap:3px}
+#taskForm .sandyTaskFileDialog{padding:5px 8px}
+#taskForm .dialogfooter{position:sticky;bottom:-12px;background:var(--surface,#fff);padding:6px 0 2px;z-index:3}
+@media(max-width:580px){#dialogOverlay .dialog{padding:9px;width:calc(100vw - 8px);max-height:calc(100dvh - 8px)}#taskForm{gap:5px;column-gap:6px}#taskForm .editDelegation{grid-template-columns:1fr}#taskForm .two{gap:5px}#taskForm input:not([type=checkbox]),#taskForm select{font-size:12px;min-height:29px;height:29px}}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
