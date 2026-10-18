@@ -660,7 +660,7 @@ Deno.serve(async(req:Request)=>{
               })}]}],text:{format:{type:"json_object"}},max_output_tokens:8500}),
             signal:AbortSignal.timeout(80000)
           });
-          if(!response.ok){const problem=await response.json().catch(()=>({}));reason("model_http_"+response.status+"_"+String(problem?.error?.code||problem?.error?.param||problem?.error?.type||"unknown").replace(/[^a-z0-9_-]/gi,"").slice(0,45));continue;}
+          if(!response.ok){const problem=await response.json().catch(()=>({}));reason("model_http_"+response.status+"_"+String(problem?.error?.message||problem?.error?.code||"unknown").replace(/[^a-z0-9 _.-]/gi,"").slice(0,115));continue;}
           const data=await response.json();
           const raw=(data.output||[]).flatMap((o:any)=>(o.content||[]).filter((c:any)=>typeof c.text==="string").map((c:any)=>c.text)).join("");
           const obj=JSON.parse(raw);
