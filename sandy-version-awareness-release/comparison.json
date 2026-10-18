@@ -1,0 +1,19 @@
+{
+  "tests_per_version": 191,
+  "baseline_failures": [
+    "test_v2_examiner_design.TestExaminerIntelligentDesign.test_dedupe_and_receipts",
+    "test_v2_examiner_design.TestExaminerIntelligentDesign.test_dynamic_execution_is_scoped_and_gated",
+    "test_v2_examiner_design.TestExaminerIntelligentDesign.test_model_guidance_matches_validation_requirements"
+  ],
+  "candidate_failures": [
+    "test_v2_examiner_design.TestExaminerIntelligentDesign.test_dedupe_and_receipts",
+    "test_v2_examiner_design.TestExaminerIntelligentDesign.test_dynamic_execution_is_scoped_and_gated",
+    "test_v2_examiner_design.TestExaminerIntelligentDesign.test_model_guidance_matches_validation_requirements"
+  ],
+  "new_or_changed_failures": [],
+  "all_tests_passed": false,
+  "patch_has_no_new_regression": true,
+  "test_sources_unchanged": true,
+  "full_production_acceptance": false,
+  "scope": "version-awareness only; independent existing Examiner failures remain unresolved"
+}
