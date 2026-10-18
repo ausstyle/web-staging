@@ -604,8 +604,8 @@ Deno.serve(async(req:Request)=>{
         }else if(testcase.key==="web_history"){
           const {count,error}=await db.from("sandy_web_turns").select("id",{head:true,count:"exact"}).eq("customer_id",customerId);
           if(error)throw Error("web_count_evidence_unavailable");
-          const numeric=[...answer.matchAll(/\\b(\\d+)\\s+(?:web(?:\\s+chat)?\\s+)?(?:messages?|turns?|chats?)\\b/gi)].map(m=>Number(m[1]));
-          const zeroWords=/(?:zero|no|none)\\s+(?:recorded\\s+)?(?:web\\s+)?(?:messages?|turns?|chats?)/i.test(answer);
+          const numeric=[...answer.matchAll(/\b(\d+)\s+(?:web(?:\s+chat)?\s+)?(?:messages?|turns?|chats?)\b/gi)].map(m=>Number(m[1]));
+          const zeroWords=/\b(?:zero|no|none)\s+(?:recorded\s+)?(?:web\s+)?(?:chat\s+)?(?:messages?|turns?|chats?)\b/i.test(answer);
           const claimed=numeric.length===1?numeric[0]:(numeric.length===0&&zeroWords?0:null);
           const receipt=had("v2_operational_read");
           const isCountQuestion=/\b(how many|number of|count|total)\b/i.test(question);
