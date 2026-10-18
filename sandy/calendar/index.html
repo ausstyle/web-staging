@@ -3,6 +3,9 @@
 .taskDueEvent{background:#e7efe6!important;color:#355b40!important;border-left:3px solid #568563!important}
 .daynum{cursor:pointer;border-radius:5px;padding:3px 5px}.daynum:hover,.daynum:focus-visible{background:#dde9df;outline:1px solid #85a08b}#dayView{margin-top:16px}.dayViewHeader{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}.dayViewHeader strong{margin-right:auto}.dayTimelineScroll{max-height:650px;overflow:auto;border:1px solid #e0e6e0;border-radius:8px}.dayTimeline{height:1536px;position:relative;margin-left:60px;border-left:1px solid #ddd}.dayHour{position:absolute;left:0;right:0;border-top:1px solid #e9e9e9;height:1px}.dayHour span{position:absolute;left:-58px;top:-10px;color:#777;font-size:11px}.dayAppointment{position:absolute;left:10px;right:12px;width:calc(100% - 22px);background:#e8ecf7;border:1px solid #bbc9e4;border-radius:7px;text-align:left;padding:5px 9px;font-size:12px;z-index:2;overflow:hidden}.dayAppointment.dayTask{background:#e4f1e7;border-color:#accdb8}.dayAppointment:hover{filter:brightness(.96)}.dayAllDay{background:#f1f4f0;padding:8px;margin-bottom:8px;border-radius:6px}
 .dayAllDayTask{font-size:12px;padding:5px 7px;color:#315640;cursor:pointer}.dayAllDayTask:hover{text-decoration:underline}
+
+/* Calendar refinement: spacious planning canvas, compact tools */
+.wrap{max-width:1600px;padding:22px 28px}.layout{grid-template-columns:minmax(0,1fr) 310px;gap:16px}.layout>section{min-width:0}.panel{border-color:#e7e8eb;border-radius:14px;padding:18px;background:#fff;box-shadow:0 1px 2px #14141405}.bar h1{margin:18px 0 0;font-size:30px}.bar p{margin:2px 0}.month{justify-content:flex-start;gap:7px}.month h2{margin:0 auto 0 10px;letter-spacing:-.5px;font-size:21px}.month .btn{padding:7px 12px}.grid{margin-top:16px}.day{min-height:116px;transition:background .14s}.day:hover{background:#fafafa}.day.today{background:#f7f9fc}.day.today .daynum{background:#171717;color:white;border-radius:50%;min-width:27px;height:27px;display:inline-grid;place-items:center}.daynum{display:inline-grid;place-items:center;min-width:27px;height:27px;font-size:13px}.event{font-size:11px;font-weight:550;background:#edf2fb;border-left:3px solid #7d98d7}.dayViewHeader{border-bottom:1px solid #eceef1;padding:6px 0 16px;gap:7px}.dayViewHeader strong{font-size:23px;letter-spacing:-.65px}.dayViewHeader .btn{padding:6px 11px}.daySummary{display:flex;gap:8px;align-items:center;margin-bottom:12px;color:#747b86;font-size:12px}.daySummary span{padding:3px 8px;border-radius:30px;background:#f4f5f7}.dayAllDay{display:flex;align-items:flex-start;gap:6px;flex-wrap:wrap;background:#fafafa;border:1px solid #e9ebef;border-radius:8px;margin-bottom:10px;padding:10px}.dayAllDay:before{content:"All day";font-size:11px;color:#7c8189;padding:5px 8px;min-width:68px}.dayAllDayTask,.allDayEvent{display:inline-block;background:#e8f2eb;border:1px solid #bcd6c5;padding:5px 9px;border-radius:6px;font-size:12px;cursor:pointer}.allDayEvent{background:#eaf0fc;border-color:#c9d5f0}.dayTimelineScroll{max-height:min(72vh,850px);border-radius:10px;border:1px solid #e8e9ed;scrollbar-gutter:stable}.dayTimeline{margin-left:72px;border-left:1px solid #e9e9ed;background:repeating-linear-gradient(to bottom,#fff 0,#fff 39px,#f5f6f8 40px,#fff 41px,#fff 79px,#eff0f2 80px);height:1920px}.dayHour{border-top:1px solid #e7e8eb}.dayHour span{left:-66px;top:-9px;font-size:11px;color:#858a92}.dayAppointment{left:auto;right:auto;width:auto;border-radius:6px;padding:4px 7px;font-size:11px;line-height:1.35;box-shadow:0 1px 2px #0000000d;white-space:normal;z-index:2;border-left:3px solid #7794d2}.dayAppointment.dayTask{border-left-color:#6f9c7c}.dayAppointment:focus-visible{outline:2px solid #171717;outline-offset:1px;z-index:5}.nowLine{position:absolute;left:0;right:0;border-top:2px solid #db5555;z-index:6;pointer-events:none}.nowLine:before{content:"";position:absolute;background:#db5555;width:9px;height:9px;border-radius:50%;left:-5px;top:-5px}.emptyDay{font-size:12px;color:#858a92;padding:7px 0}.dayTimelineScroll:focus-visible{outline:2px solid #111;outline-offset:2px}@media(max-width:1000px){.layout{grid-template-columns:1fr}.wrap{padding:15px}.dayTimelineScroll{max-height:65vh}.day{min-height:90px}}@media(max-width:600px){.panel{padding:11px}.dayViewHeader strong{font-size:18px;width:100%}.dayTimeline{margin-left:51px}.dayHour span{left:-48px;font-size:10px}.day{min-height:72px}.month h2{font-size:17px;margin-left:3px}.month .btn{padding:6px 9px}.week{font-size:10px}.event{font-size:10px}.dayAppointment{font-size:10px;padding:3px 5px}}
 </style></head><body><div class="wrap"><header><strong style="font-size:24px;letter-spacing:-1px">sandy.</strong><nav class="row"><a class="btn" href="../app/">Workspace</a><a class="btn" href="../agenda/">Tasks</a></nav></header><div class="bar"><div><h1>Calendar</h1><p class="muted">Events, matters and the tasks that lead up to them.</p><p id="timezoneDisplay" class="muted" style="font-size:13px;font-weight:700" aria-live="polite"></p></div><button class="btn" id="refresh">↻ Refresh</button></div><p class="notice" id="message" role="status" aria-live="polite"></p><div class="layout"><section><div class="panel"><div class="month"><button class="btn" id="prev" aria-label="Previous month">‹</button><h2 id="monthTitle"></h2><button class="btn" id="next" aria-label="Next month">›</button><button class="btn" id="today">Today</button></div><div class="grid" id="calendar"></div><div id="dayView" class="hidden"></div></div><div class="panel" style="margin-top:20px"><h2>Upcoming events</h2><div id="upcoming"></div></div></section><aside><div class="panel"><h2 id="formTitle">Add an event</h2><form id="eventForm"><div class="field"><label for="title">Event title</label><input id="title" maxlength="240" required placeholder="Court hearing"></div><div class="field"><label for="matter">Matter or project</label><input id="matter" maxlength="200" placeholder="Sotheby’s litigation"></div><div class="field"><label for="start">Date and time (your timezone)</label><input id="start" type="datetime-local" required></div><div class="field"><label for="end">End (optional, your timezone)</label><input id="end" type="datetime-local"></div><button class="btn dark" id="save" type="submit">Save event</button><button class="btn hidden" id="clear" type="button">Cancel edit</button></form></div><div class="panel" style="margin-top:20px"><h2>Event files</h2><p class="muted" style="font-size:12px">Select a saved calendar event to attach files (maximum 10 MB each).</p><div class="field"><label for="fileEvent">Calendar event</label><select id="fileEvent"></select></div><div class="field"><label for="fileInput">Upload a file</label><input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.docx,.xlsx"></div><button class="btn" type="button" id="uploadFile">Upload file</button><div id="attachmentList"></div></div><div class="panel" style="margin-top:20px"><h2>Linked task deadlines</h2><p class="muted" style="font-size:12px">Choose an event, then attach a task with a relative deadline. Dates are proposed for review, never silently changed.</p><div class="field"><label for="eventSelect">Event</label><select id="eventSelect"></select></div><div class="field"><label for="taskSelect">Task</label><select id="taskSelect"></select></div><div class="field"><label for="offset">Days before event</label><input id="offset" type="number" min="0" max="3650" value="14"></div><button class="btn" id="link">Link task</button><div id="links"></div></div><div class="panel" style="margin-top:20px"><h2>Proposed deadline changes</h2><div id="reviews"></div></div><div class="panel" style="margin-top:20px"><h2>Calendar connections</h2><p class="muted" style="font-size:12px">Outlook and Apple Calendar synchronisation are not active yet. Sandy events are currently stored only in Sandy.</p></div></aside></div></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -20,7 +23,7 @@ async function api(action,payload={}){const {data:{session}}=await sb.auth.getSe
 const node=(tag,text)=>{const x=document.createElement(tag);if(text!==undefined)x.textContent=text;return x};
 function options(id,items,placeholder){const s=$(id),old=s.value;s.replaceChildren(new Option(placeholder,""));for(const x of items)s.add(new Option(x.label,x.value));if([...s.options].some(o=>o.value===old))s.value=old}
 function showDay(date){
- selectedDay=new Date(date.getFullYear(),date.getMonth(),date.getDate());renderDay();
+ selectedDay=new Date(date.getFullYear(),date.getMonth(),date.getDate());current=new Date(date.getFullYear(),date.getMonth(),1);render();
 }
 function sameCalendarDay(value,day){return value&&new Date(value).toDateString()===day.toDateString()}
 function guessedDuration(title){
@@ -32,51 +35,68 @@ function renderDay(){
  const panel=$("dayView");panel.replaceChildren();
  if(!selectedDay){panel.classList.add("hidden");return}
  panel.classList.remove("hidden");
+ const day=new Date(selectedDay),today=new Date();
  const top=node("div");top.className="dayViewHeader";
- const label=node("strong",new Intl.DateTimeFormat(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(selectedDay));
- const close=node("button","Back to month");close.className="btn";close.onclick=()=>{selectedDay=null;render()};
- const before=node("button","‹");before.className="btn";before.onclick=()=>{selectedDay.setDate(selectedDay.getDate()-1);renderDay()};
- const after=node("button","›");after.className="btn";after.onclick=()=>{selectedDay.setDate(selectedDay.getDate()+1);renderDay()};
- top.append(label,before,after,close);panel.append(top);
+ const label=node("strong",new Intl.DateTimeFormat(undefined,{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(day));
+ const back=node("button","Month view");back.className="btn";back.onclick=()=>{selectedDay=null;current=new Date(day.getFullYear(),day.getMonth(),1);render()};
+ const before=node("button","‹");before.className="btn";before.setAttribute("aria-label","Previous day");before.onclick=()=>moveDay(-1);
+ const after=node("button","›");after.className="btn";after.setAttribute("aria-label","Next day");after.onclick=()=>moveDay(1);
+ const jump=node("button","Today");jump.className="btn";jump.onclick=()=>showDay(new Date());
+ const add=node("button","+ Event");add.className="btn dark";add.onclick=()=>{reset();$("start").value=local(new Date(day.getFullYear(),day.getMonth(),day.getDate(),9));$("end").value=local(new Date(day.getFullYear(),day.getMonth(),day.getDate(),9,30));$("title").focus();$("title").scrollIntoView({behavior:"smooth",block:"center"})};
+ top.append(label,before,after,jump,back,add);panel.append(top);
  const allDay=node("div");allDay.className="dayAllDay";
- const scheduled=[];
- for(const event of data.events.filter(e=>e.status!=="cancelled"&&sameCalendarDay(e.starts_at,selectedDay))){
-  if(event.all_day){allDay.append(node("div",event.title));continue}
-  const start=new Date(event.starts_at),end=event.ends_at?new Date(event.ends_at):new Date(start.getTime()+30*60000);
-  scheduled.push({start,end,title:event.title,kind:"event",click:()=>edit(event)});
+ const scheduled=[],startOfDay=new Date(day.getFullYear(),day.getMonth(),day.getDate()).getTime(),endOfDay=new Date(day.getFullYear(),day.getMonth(),day.getDate()+1).getTime();
+ for(const event of data.events.filter(e=>e.status!=="cancelled")){
+  const st=new Date(event.starts_at).getTime();if(!Number.isFinite(st))continue;
+  const en=event.ends_at?new Date(event.ends_at).getTime():st+30*60000;
+  if(st>=endOfDay||en<=startOfDay)continue;
+  if(event.all_day){const b=node("button",event.title);b.className="allDayEvent";b.onclick=()=>edit(event);allDay.append(b);continue}
+  scheduled.push({start:new Date(st),end:new Date(Math.max(en,st+60000)),title:event.title,kind:"event",click:()=>edit(event)});
  }
  for(const task of data.tasks.filter(t=>!["cancelled","completed"].includes(t.status))){
-  const when=task.start_at||task.due_at;
-  if(!sameCalendarDay(when,selectedDay))continue;
-  if(!task.start_at&&!task.metadata?.due_time_specified){
-   const allDayTask=node("div","Due · "+task.title);allDayTask.className="dayAllDayTask";allDayTask.onclick=()=>location.assign("../agenda/#task-"+encodeURIComponent(task.id));
-   allDay.append(allDayTask);continue;
-  }
-  const start=new Date(when);
-  const explicitEnd=task.metadata?.scheduled_end_at;
-  const isFlight=/\\b(flight|fly to|airline)\\b/i.test(task.title);
-  const expected=guessedDuration(task.title);
-  const end=explicitEnd?new Date(explicitEnd):new Date(start.getTime()+(isFlight?20:(expected||30))*60000);
-  scheduled.push({start,end,title:task.title+(isFlight&&!explicitEnd?" · End time not confirmed":""),kind:"task",click:()=>location.assign("../agenda/#task-"+encodeURIComponent(task.id))});
+  const when=task.start_at||task.due_at;if(!when)continue;const st=new Date(when).getTime();if(!Number.isFinite(st))continue;
+  const explicitEnd=task.metadata?.scheduled_end_at;const expected=guessedDuration(task.title);
+  const en=explicitEnd?new Date(explicitEnd).getTime():st+(expected||30)*60000;
+  if(st>=endOfDay||Math.max(en,st+60000)<=startOfDay)continue;
+  const open=()=>location.assign("../agenda/#task-"+encodeURIComponent(task.id));
+  if(!task.start_at&&!task.metadata?.due_time_specified){const b=node("button","Due · "+task.title);b.className="dayAllDayTask";b.onclick=open;allDay.append(b);continue}
+  scheduled.push({start:new Date(st),end:new Date(Math.max(en,st+60000)),title:task.title+(expected===null&&!explicitEnd?" · Duration unconfirmed":""),kind:"task",click:open});
  }
+ const summary=node("div");summary.className="daySummary";summary.append(node("span",scheduled.length+" scheduled"),node("span",allDay.children.length+" all-day / deadlines"),node("span",displayZone));panel.append(summary);
  if(allDay.children.length)panel.append(allDay);
- const scroller=node("div");scroller.className="dayTimelineScroll";
+ const scroller=node("div");scroller.className="dayTimelineScroll";scroller.tabIndex=0;scroller.setAttribute("aria-label","Hourly calendar schedule");
  const timeline=node("div");timeline.className="dayTimeline";
- for(let h=0;h<24;h++){
-  const line=node("div");line.className="dayHour";line.style.top=h*64+"px";
-  const hourLabel=node("span",new Date(2026,0,1,h).toLocaleTimeString(undefined,{hour:"numeric"}));
-  line.append(hourLabel);timeline.append(line);
+ const hourHeight=80,minutePx=hourHeight/60;
+ for(let h=0;h<24;h++){const line=node("div");line.className="dayHour";line.style.top=h*hourHeight+"px";line.append(node("span",new Date(2026,0,1,h).toLocaleTimeString(undefined,{hour:"numeric"})));timeline.append(line)}
+ const items=scheduled.map(ev=>{
+  const st=Math.max(startOfDay,ev.start.getTime()),en=Math.min(endOfDay,ev.end.getTime());
+  return {...ev,from:(st-startOfDay)/60000,to:Math.max((st-startOfDay)/60000+15,(en-startOfDay)/60000)};
+ }).sort((a,b)=>a.from-b.from||b.to-a.to);
+ // Place colliding appointments into side-by-side columns instead of visually obscuring them.
+ let groups=[],group=[],groupEnd=-1;
+ for(const item of items){if(group.length&&item.from>=groupEnd){groups.push(group);group=[];groupEnd=-1}group.push(item);groupEnd=Math.max(groupEnd,item.to)}
+ if(group.length)groups.push(group);
+ for(const groupItems of groups){
+  const ends=[];
+  for(const item of groupItems){let col=ends.findIndex(end=>end<=item.from);if(col<0){col=ends.length;ends.push(-1)}ends[col]=item.to;item.col=col}
+  const total=ends.length;
+  for(const ev of groupItems){
+   const topPx=ev.from*minutePx,heightPx=Math.max(24,(ev.to-ev.from)*minutePx-2);
+   const card=node("button",(ev.start.getTime()<startOfDay?"↳ ":ev.start.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})+"  ")+ev.title);
+   card.className="dayAppointment "+(ev.kind==="task"?"dayTask":"");
+   card.style.top=topPx+"px";card.style.height=heightPx+"px";
+   card.style.left="calc("+((ev.col/total)*100)+"% + 4px)";
+   card.style.width="calc("+(100/total)+"% - 8px)";
+   card.title=ev.title+" — "+human(ev.start.toISOString());card.onclick=ev.click;timeline.append(card);
+  }
  }
- for(const ev of scheduled){
-  const start=ev.start.getHours()*60+ev.start.getMinutes();
-  const length=Math.max(20,Math.min(1440-start,(ev.end.getTime()-ev.start.getTime())/60000||30));
-  const card=node("button",ev.start.toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"})+"  "+ev.title);
-  card.className="dayAppointment "+(ev.kind==="task"?"dayTask":"");
-  card.style.top=(start*64/60)+"px";card.style.height=Math.max(28,length*64/60)+"px";
-  card.title=ev.title;card.onclick=ev.click;timeline.append(card);
- }
- scroller.append(timeline);panel.append(scroller);queueMicrotask(()=>{if(scroller.isConnected)scroller.scrollTop=8*64});
+ const isToday=day.toDateString()===today.toDateString();
+ if(isToday){const line=node("div");line.className="nowLine";line.style.top=(today.getHours()*60+today.getMinutes())*minutePx+"px";timeline.append(line)}
+ scroller.append(timeline);panel.append(scroller);
+ queueMicrotask(()=>{if(scroller.isConnected)scroller.scrollTop=isToday?Math.max(0,(today.getHours()-2)*hourHeight):Math.max(0,((items[0]?.from||540)/60-2)*hourHeight)});
 }
+function moveDay(offset){if(!selectedDay)return;const d=new Date(selectedDay);d.setDate(d.getDate()+offset);selectedDay=d;current=new Date(d.getFullYear(),d.getMonth(),1);render()}
+
 function render(){
  $("monthTitle").textContent=fmt(current);const grid=$("calendar");grid.classList.toggle("hidden",!!selectedDay);grid.replaceChildren();for(const d of ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]){const w=node("div",d);w.className="week";grid.append(w)}
  const first=(current.getDay()+6)%7,days=new Date(current.getFullYear(),current.getMonth()+1,0).getDate(),total=Math.ceil((first+days)/7)*7;
@@ -98,6 +118,6 @@ async function refreshFiles(){const area=$("attachmentList");area.replaceChildre
 $("fileEvent").onchange=refreshFiles;
 $("uploadFile").onclick=async()=>{const file=$("fileInput").files?.[0],event_id=$("fileEvent").value;if(!event_id||!file)return message("Choose an event and file");const types={"pdf":"application/pdf","jpg":"image/jpeg","jpeg":"image/jpeg","png":"image/png","webp":"image/webp","txt":"text/plain","docx":"application/vnd.openxmlformats-officedocument.wordprocessingml.document","xlsx":"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"};const extension=file.name.split(".").pop().toLowerCase(),type=types[extension];if(!type||file.size>10485760||file.size<1)return message("Choose a supported file under 10 MB");$("uploadFile").disabled=true;try{const ticket=await api("upload",{event_id,file_name:file.name,byte_size:file.size,content_type:type});const uploaded=await sb.storage.from("sandy-calendar-private").uploadToSignedUrl(ticket.path,ticket.token,file,{contentType:type,upsert:false});if(uploaded.error)throw uploaded.error;await api("finalize_upload",{event_id,file_id:ticket.file_id,file_name:file.name,byte_size:file.size,content_type:type});$("fileInput").value="";await refreshFiles();message("File uploaded")}catch(err){message(err.message)}finally{$("uploadFile").disabled=false}};
 $("clear").onclick=reset;$("eventSelect").onchange=renderLinks;$("link").onclick=async()=>{if(!$("eventSelect").value||!$("taskSelect").value)return message("Choose an event and task");try{await api("link",{event_id:$("eventSelect").value,task_id:$("taskSelect").value,offset_days:-Number($("offset").value)});await load();message("Task linked; deadline proposal generated")}catch(e){message(e.message)}};
-$("prev").onclick=()=>{current.setMonth(current.getMonth()-1);render()};$("next").onclick=()=>{current.setMonth(current.getMonth()+1);render()};$("today").onclick=()=>{current=new Date();current.setDate(1);render()};$("refresh").onclick=load;
+$("prev").onclick=()=>{if(selectedDay){moveDay(-1)}else{current.setMonth(current.getMonth()-1);render()}};$("next").onclick=()=>{if(selectedDay){moveDay(1)}else{current.setMonth(current.getMonth()+1);render()}};$("today").onclick=()=>{if(selectedDay){showDay(new Date())}else{current=new Date();current.setDate(1);render()}};$("refresh").onclick=load;
 await idle.check();const {data:{session}}=await sb.auth.getSession();if(!session)location.replace("../app/?return="+encodeURIComponent(location.pathname));else await load();
 </script></body></html>
