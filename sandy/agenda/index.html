@@ -316,6 +316,7 @@ html,body{max-width:100%;overflow-x:clip}
 .quickCategoryActions{display:flex;justify-content:flex-end;gap:8px}.quickCategoryActions button{border:1px solid #d9e0d9;border-radius:7px;padding:6px 12px;background:#fff;font-size:12px}.quickCategoryActions .quickCategorySave{background:#2e5140;color:white;border-color:#2e5140}
 .quickCategoryCreateRow{display:flex;flex-wrap:wrap;gap:6px}.quickCategoryCreateRow button{font-size:12px;border:1px solid #d9e0d9;background:#fff;border-radius:7px;padding:6px 9px;color:#365746}.quickCategoryCreateForm{display:grid;gap:7px;background:#f8faf8;border:1px solid #e1e7e1;padding:10px;border-radius:8px}.quickCategoryCreateForm.hidden{display:none}.quickCategoryCreateForm span{font-size:12px}.quickCategoryError{color:#a63829}
 .quickCategoryPopover{overflow-y:auto;overscroll-behavior:contain;max-height:calc(100dvh - 24px)}
+.quickCategoryTree:has(+ .categoryPopover){visibility:hidden}.categoryPopover{z-index:12000;max-height:calc(100dvh - 24px);overflow-y:auto}
 .quickCategoryTree{display:flex;flex-direction:column;gap:8px;overflow:hidden;max-height:calc(100dvh - 24px);padding:12px}.quickCategoryTree .quickCategorySearch{width:100%;min-height:34px;border:1px solid #dce3dc;border-radius:7px;padding:6px 9px;font-size:13px;flex-shrink:0}.quickCategoryTreeList{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;padding:2px 0}.quickTreeItem{display:block;width:100%;text-align:left;border:0;border-radius:5px;background:transparent;color:#303934;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:8px;padding-bottom:8px;padding-right:8px;font-size:13px;cursor:pointer}.quickTreeItem:hover,.quickTreeItem:focus-visible{background:#edf3ed;outline:none}.quickTreeSelected{font-weight:700;background:#e6eee6}.quickTreeCreate{color:#53725e}.quickTreeEmpty{font-size:12px;padding:12px;color:#788179}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
@@ -556,8 +557,10 @@ function openQuickCategory(t,anchor){
  async function add(company,parent){
   if(busy)return;
   const parentName=parent?categoryPath(parent):taskWorkspaceLabel(normalizeWorkspace(company));
-  const name=await categoryNamePopover(parentName,pop);
-  if(!name||!pop.isConnected)return;
+  pop.style.visibility="hidden";
+  const name=await categoryNamePopover(parentName,anchor);
+  pop.style.visibility="";
+  if(!name||!pop.isConnected){position();return}
   busy=true;
   try{
    const result=await api("category-create",{company_id:normalizeWorkspace(company),parent_category_id:parent||null,name});
