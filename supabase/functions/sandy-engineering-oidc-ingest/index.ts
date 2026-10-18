@@ -546,10 +546,21 @@ Deno.serve(async(req:Request)=>{
       if(prior.error)return fail("qa_prior_question_query_failed",503);
       const canonical=(q:string)=>q.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
       const seen=new Set((prior.data||[]).map((x:any)=>canonical(String(x.question||""))));
+      const priorPasses=(prior.data||[]).filter((x:any)=>x.verdict==="pass").map((x:any)=>canonical(String(x.question||"")));
+      const words=(q:string)=>new Set(q.split(" ").filter(w=>w.length>3&&!["what","which","please","could","would","have","right","about","current","your","from","does","there","those","them","with"].includes(w)));
+      const similarity=(a:string,b:string)=>{
+        const x=words(a),y=words(b);if(!x.size||!y.size)return 0;
+        let common=0;for(const w of x)if(y.has(w))common++;
+        return common/Math.min(x.size,y.size);
+      };
+      const selectedQuestions:string[]=[];
+      const selectedOracles=new Map<string,number>();
       dynamicCandidates=dynamicCandidates.filter((x:any)=>{
-        const k=canonical(String(x.question||""));
-        if(!k||seen.has(k))return false;
-        seen.add(k);return true;
+        const k=canonical(String(x.question||"")),oracle=String(x.oracle_key||"");
+        if(!k||seen.has(k)||selectedOracles.has(oracle))return false;
+        if(priorPasses.some((old:string)=>similarity(k,old)>=0.75))return false;
+        if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.65))return false;
+        seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,1);return true;
       });
       const priorityByOracle:Record<string,number>={followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
       dynamicCandidates.sort((a:any,b:any)=>(priorityByOracle[String(b.oracle_key)]||0)-(priorityByOracle[String(a.oracle_key)]||0)
