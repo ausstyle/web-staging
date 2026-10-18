@@ -283,7 +283,33 @@ html,body{max-width:100%;overflow-x:clip}
 }
 
 .missionOverview{background:#fff;border:1px solid #e2e6df;border-radius:13px;padding:15px;margin:8px 0 18px}.missionHeader{display:flex;justify-content:space-between;align-items:center;gap:12px}.missionHeader strong{font-size:16px}.missionHeader p{color:#68716a;font-size:12px;margin:3px 0 0}.missionCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:9px;margin-top:12px}.missionCard{text-align:left;background:#fafbf9;border:1px solid #e1e6de;border-radius:10px;padding:11px 13px;cursor:pointer;color:inherit;font:inherit;min-width:0}.missionCard:hover{background:#f1f6ef;border-color:#acbead}.missionCardTitle{font-weight:700;line-height:1.3;font-size:13px}.missionCardMeta{font-size:11px;color:#607060;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:7px 0}.missionProgress{height:5px;background:#e6ebe4;border-radius:8px;overflow:hidden}.missionProgress span{display:block;background:#668a6a;height:100%}.missionCardInfo{font-size:11px;color:#68716a;margin-top:7px}.missionEmpty{font-size:12px;color:#737973;padding:8px 0}.missionOverview button:focus-visible{outline:2px solid #658568;outline-offset:2px}@media(max-width:700px){.missionHeader{align-items:flex-start}.missionCards{grid-template-columns:1fr}.missionOverview{padding:12px}}
-.missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n</style>
+.missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n
+/* Compact agenda: prioritize the interactive task table on initial load */
+#app .summary{display:flex!important;gap:7px!important;margin:4px 0 8px!important;flex-wrap:wrap!important}
+#app .metric{display:flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;flex:1 1 125px!important;min-height:35px!important;padding:5px 10px!important;border-radius:9px!important}
+#app .metric span{display:inline!important;font-size:11px!important;white-space:nowrap!important}
+#app .metric b{font-size:17px!important;line-height:1!important;letter-spacing:0!important}
+#app .missionOverview{padding:0!important;margin:0 0 7px!important;border-radius:9px!important}
+#app .compactMissionSummary{padding:8px 11px;cursor:pointer;font-size:12px;font-weight:700;list-style-position:inside}
+#app .compactMissionSummary span{font-weight:400;color:#6b756c}
+#app .missionOverview:not([open]) .missionHeader,#app .missionOverview:not([open]) .missionCards{display:none!important}
+#app .missionOverview[open] .missionHeader{padding:7px 11px}
+#app .missionOverview[open] .missionCards{padding:0 11px 10px;margin-top:5px}
+#app #requestSendPanel{padding:7px 11px!important;margin:0 0 7px!important;border-radius:9px!important}
+#app #requestSendPanel>summary{font-size:12px!important}
+#app .quickPanel{padding:6px 9px!important;margin:0 0 7px!important;border-radius:9px!important}
+#app .quickPanel .quick{gap:7px!important}
+#app .quickPanel .quick input{font-size:13px!important;padding:6px!important}
+#app .quickPanel .helper{display:none!important}
+#app #suggestions{padding:0!important;margin:0 0 7px!important;border:1px solid #e3e8e1!important;border-radius:9px!important;background:#fff!important}
+#app #suggestions>details>summary{padding:8px 11px;cursor:pointer;font-size:12px;font-weight:650}
+#app #suggestions .suggestContents{padding:0 11px 9px}
+#app #suggestions .suggestContents>h2,#app #suggestions .suggestContents>.suggestsmall{display:none}
+#app #suggestions .suggestitem{padding:7px 0!important;font-size:12px!important;line-height:1.35}
+#app .toolbar{margin:8px 0 7px!important}
+#app .collabBar{margin-top:4px!important;margin-bottom:4px!important}
+@media(max-width:650px){#app .summary{gap:5px!important}#app .metric{flex:1 1 42%!important}#app .compactMissionSummary span{display:none}}
+</style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
 body{background:#f8f8f5!important;color:#292d29!important}
@@ -398,7 +424,7 @@ body{background:#f8f8f5!important;color:#292d29!important}
 <div class="top"><div><h1>Tasks, without the clutter.</h1><p class="intro">A clearer view of your work and what needs attention.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
 
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div id="categoryBar" class="categoryBar hidden" aria-label="Subcategories"></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
-<section id="missionOverview" class="missionOverview" aria-label="Sandy Missions"><div class="missionHeader"><div><strong>🚀 Sandy Missions</strong><p>Track the work Sandy is managing and jump into individual missions.</p></div><button type="button" class="btn small" id="missionShowAll">View all missions</button></div><div id="missionCards" class="missionCards"></div></section>
+<details id="missionOverview" class="missionOverview" aria-label="Sandy Missions"><summary class="compactMissionSummary">🚀 Sandy Missions <span>· expand to view missions and questions</span></summary><div class="missionHeader"><div><strong>🚀 Sandy Missions</strong><p>Track the work Sandy is managing and jump into individual missions.</p></div><button type="button" class="btn small" id="missionShowAll">View all missions</button></div><div id="missionCards" class="missionCards"></div></details>
 <section class="requestPanel hidden" id="taskRequestPanel" ><div class="requestPanelHeader"><strong id="taskRequestsHeading">Task requests · Awaiting approval</strong><span class="muted small">Requests require recipient approval</span></div><div id="pendingTaskRequests"></div></section>
 <details class="requestPanel" id="requestSendPanel"><summary>Request a task from someone else / View requests I sent</summary><form id="sendTaskRequest" class="requestBar"><input id="requestTaskTitle" placeholder="Request a task…" maxlength="240" required aria-label="Requested task"><input id="requestTaskRecipient" placeholder="Recipient email or Sandy" aria-label="Task recipient" required><button type="submit" class="btn small">Send request</button></form><details class="sentTaskRequests"><summary>Requests I sent</summary><div id="outgoingTaskRequests"></div></details></details>
 <div class="panel quickPanel"><form id="quickForm" class="quick"><select id="quickWorkspace" class="entryWorkspace quickHierarchy" aria-label="Task company, category or subcategory"></select><span class="quickicon">＋</span><input id="quickTitle" placeholder="What needs to get done?" maxlength="240" aria-label="Quick add task"><button class="btn primary small" type="submit">Add</button></form><div class="helper">Enter creates the next row · Tab indents beneath the task above · Shift+Tab outdents · ⌘/Ctrl K for quick capture.</div></div>
@@ -1235,13 +1261,14 @@ function renderAttention(){
 }
 
 function renderSuggestions(){
- const area=$("suggestions");area.replaceChildren();const ss=state.suggestions.filter(s=>s.status==="suggested").slice(0,5);
+ const area=$("suggestions");const wasOpen=!!area.querySelector("details")?.open;area.replaceChildren();const ss=state.suggestions.filter(s=>s.status==="suggested").slice(0,5);
  if(!ss.length){area.classList.add("hidden");return}
  area.classList.remove("hidden");area.append(el("h2","","✳  Sandy noticed something"));
  area.append(el("div","suggestsmall","Potential tasks from your conversations. Review before adding them to your agenda."));
  for(const s of ss){const line=el("div","suggestitem");line.append(el("div","",s.title));const actions=el("div","right");
  actions.append(btn("Add","btn small primary",async()=>{try{await api("suggestion",{id:s.id,decision:"accept"});toast("Added to your agenda");await load()}catch(e){toast(e.message,true)}}));
  actions.append(btn("Dismiss","btn small",async()=>{try{await api("suggestion",{id:s.id,decision:"dismiss"});await load()}catch(e){toast(e.message,true)}}));line.append(actions);area.append(line)}
+ const details=document.createElement("details");details.open=wasOpen;const summary=document.createElement("summary");summary.textContent=`✳ Sandy noticed something · ${ss.length} suggested tasks`;const content=document.createElement("div");content.className="suggestContents";while(area.firstChild)content.append(area.firstChild);details.append(summary,content);area.append(details);
 }
 // Authenticated live sync: reads the same permission-filtered Agenda API used on first load.
 // Never subscribe directly to public task changes or expose other clients' row data.
