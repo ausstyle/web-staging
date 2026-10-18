@@ -15,6 +15,7 @@ export function initTaskFiles({auth,notify,customerId}){
  }
  function setCount(id,n){
   counts[id]=n;
+  document.querySelectorAll(".sandyAttachmentIndicator").forEach(b=>{if(b.dataset.taskFiles===id){b.hidden=!n;b.textContent="📎 "+n+" file"+(n===1?"":"s");b.title=n+" attached file"+(n===1?"":"s")+" · click to view";}});
   document.querySelectorAll(".sandyFileToggle").forEach(b=>{
    if(b.dataset.taskFiles===id)b.textContent="📎"+(n?" "+n:"");
   });
@@ -116,5 +117,6 @@ export function initTaskFiles({auth,notify,customerId}){
   wrap.upload=upload;
   return wrap;
  }
- return {panel,toggle,refreshCounts};
+ function indicator(task){const b=button(counts[task.id]?"📎 "+counts[task.id]+" files":"","sandyAttachmentIndicator",()=>{const outer=document.getElementById("task-"+task.id);const p=outer?.querySelector(".sandyTaskFiles");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))p.refresh();});b.dataset.taskFiles=task.id;b.hidden=!counts[task.id];b.title="View task attachments";b.setAttribute("aria-label","View attached files for "+task.title);return b;}
+ return {panel,toggle,indicator,refreshCounts};
 }
