@@ -1,7 +1,6 @@
 name: Sandy Examiner adaptive test design
-# Full production cycle manual regeneration after outcome-first v70.
-# Validate expanded intelligence assurance scope on v32.
-# Revalidate restored gpt-6-astra through signed production design workflow.
+# backend_release_20261018: execute using the approved model in live runtime policy.
+# Design is read-only; source-grounding, budget and deployment approvals are unchanged.
 on:
   push:
     branches: [main]
