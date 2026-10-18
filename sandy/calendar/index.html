@@ -101,7 +101,7 @@ async function calendarMove(item,target,resize=false){
  if(proposedEnd<=proposedStart){message("End time must be after start time");return}
  const updated={event_id:source.id,starts_at:proposedStart.toISOString(),ends_at:proposedEnd.toISOString()};
  const snapshot={...source};Object.assign(source,updated);
- try{await api("update",updated);await load();offerCalendarUndo({kind:"event",id:source.id,beforeStart:originalStart.toISOString(),beforeEnd:source.ends_at?oldEnd.toISOString():null,afterStart:updated.starts_at,afterEnd:updated.ends_at})}catch(err){Object.assign(source,snapshot);render();message("Could not save: "+err.message)}
+ try{await api("update",updated);await load();offerCalendarUndo({kind:"event",id:source.id,beforeStart:originalStart.toISOString(),beforeEnd:snapshot.ends_at||null,afterStart:updated.starts_at,afterEnd:updated.ends_at})}catch(err){Object.assign(source,snapshot);render();message("Could not save: "+err.message)}
 }
 function attachCalendarDrag(element,item,{resize=false}={}){
  if(item.kind==="event"&&((item.event.source_kind&&item.event.source_kind!=="manual")||item.event.external_event_id)){element.title+=" · Managed externally (read-only)";return;}
