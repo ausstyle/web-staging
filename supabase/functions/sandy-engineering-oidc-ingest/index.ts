@@ -566,14 +566,14 @@ Deno.serve(async(req:Request)=>{
         return !emailRead;
       });
     }
-    const allowed=Math.min(targetedTen?10:2,targetedTen?10:(Number(account.max_calls_per_run)||1),Math.max(0,Number(account.max_calls_per_day)-(used||0)));
+    const allowed=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
     if(targetedTen&&allowed<10)return fail("qa_targeted_budget_insufficient",429);
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
       const ordinal=Number(used||0)+i;
-      const selectedDynamic=targetedTen?dynamicCandidates[i]:(i===1&&dynamicCandidates.length>0
-        ?dynamicCandidates[Math.floor(Number(used||0)/8)%dynamicCandidates.length]:null);
+      const selectedDynamic=targetedTen?dynamicCandidates[i]:(dynamicCandidates.length>0&&i%5!==0
+        ?dynamicCandidates[(Math.floor(Number(used||0)/10)*8+i-1+dynamicCandidates.length)%dynamicCandidates.length]:null);
       const testcase=selectedDynamic?{
         key:String(selectedDynamic.oracle_key),prompts:[String(selectedDynamic.question)],
         expect:String(selectedDynamic.expected_observation||"").slice(0,300),
