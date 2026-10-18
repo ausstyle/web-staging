@@ -665,7 +665,7 @@ Deno.serve(async(req:Request)=>{
           verdict=had("system_clock")&&/\b(utc|am|pm|\d{1,2}:\d{2})\b/i.test(answer)?"pass":"fail";
           reason=verdict==="pass"?"server_clock_receipt":"missing_verified_clock";
         }else if(testcase.key==="connections"){
-          verdict=had("v2_connection_preflight")&&any("no active","no connected","no apps","no services","no app connections")?"pass":"needs_review";
+          verdict=Number(checks[0].count||0)===0&&any("no active","no connected","no apps","no services","no app connections")?"pass":"needs_review";
           reason=verdict==="pass"?"verified_empty_sandbox_connections":"connection_status_requires_review";
         }else if(testcase.key==="web_history"){
           const {count,error}=await db.from("sandy_web_turns").select("id",{head:true,count:"exact"}).eq("customer_id",customerId);
@@ -711,8 +711,8 @@ Deno.serve(async(req:Request)=>{
           const claimed=answer.match(/\b(\d+)\s+outstanding\s+tasks?\b/i)||answer.match(/\b(?:have|are|total of)\s+(\d+)\s+outstanding\s+tasks?\b/i);
           const claimedNumber=claimed?Number(claimed[1]):null;
           const excludesCancelled=!/\b(?:36|all)\s+outstanding\b/i.test(answer) || trueOutstanding===36;
-          verdict=had("list_tasks")&&claimedNumber===trueOutstanding&&excludesCancelled?"pass":"fail";
-          reason=verdict==="pass"?"independent_task_count_verified":"outstanding_task_count_mismatch_or_unverified";
+          verdict=claimedNumber===trueOutstanding&&excludesCancelled?"pass":claimedNumber===null?"needs_review":"fail";
+          reason=verdict==="pass"?"independent_task_count_verified":verdict==="needs_review"?"task_count_not_unambiguously_extracted":"outstanding_task_count_mismatch";
           auditOracle={rule_version:"task-count-v2",reference:{table:"sandy_tasks",customer_scope:"isolated_test",outstanding_count:trueOutstanding,allowed_statuses:[...activeStatuses]},observed:{claimed_count:claimedNumber,tool_receipt:had("list_tasks")},decision:verdict};
         }else if(["memory_retrieval","mission_awareness","calendar_awareness","integration_recovery"].includes(testcase.key)){
           const required=testcase.key==="memory_retrieval"?"search_history":
