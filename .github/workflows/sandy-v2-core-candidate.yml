@@ -6,6 +6,7 @@ on:
       - '.github/workflows/sandy-v2-core-candidate.yml'
       - 'scripts/sandy/prepare_v2_core_candidate.py'
       - 'scripts/sandy/compare_v2_core_regressions.py'
+      - 'scripts/sandy/test_v2_*.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,9 +42,9 @@ jobs:
           assert r['passed']==r['total']==16,'Incomplete Gmail regression'
           assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime/index.ts').read_bytes()).hexdigest()==m['baseline_sha256'],'V1 source changed'
           PY
-      - name: Compare full unchanged suites on baseline and candidate
+      - name: Compare identical full suites on baseline and candidate
         run: python3 scripts/sandy/compare_v2_core_regressions.py
-      - name: Publish accurate candidate review summary
+      - name: Require all repository contracts to pass and publish evidence
         shell: bash
         run: |
           set -euo pipefail
@@ -52,15 +53,17 @@ jobs:
           from pathlib import Path
           p=Path('artifacts/sandy-v2-core')
           r=json.loads((p/'baseline-candidate-comparison.json').read_text())
-          assert r['isolated_candidate_regression_check_passed']
+          assert r['isolated_candidate_regression_check_passed'] is True
+          assert r['all_repository_tests_passed'] is True,'Full candidate suite must pass'
+          assert r['candidate_failed']==0,'No known-failure waiver for this release'
+          assert r['candidate_passed']==r['tests_per_version'],'No skipped or expected-failure credit'
           assert r['production_ready'] is False
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a') as f:
-              f.write('## Isolated V2 candidate, not customer cutover\n\n')
-              f.write('Gmail fix regressions: 16/16.\n\n')
-              f.write(f"Full suite: {r['candidate_passed']}/{r['tests_per_version']} passed; {r['candidate_failed']} pre-existing Examiner failures remain open.\n\n")
-              f.write(f"New candidate regressions: {len(r['new_regressions'])}. Test assertions are unchanged. V1 source is preserved.\n\n")
-              for item in r['known_examiner_failures_still_open']:f.write('- Still failing: '+item+'\n')
-              f.write('\nProtected approval permits only a separate candidate endpoint. No Core gate is changed or declared passed; production routing remains unchanged.\n')
+              f.write('## Verified candidate build; customer cutover not yet performed\n\n')
+              f.write('Gmail regression checks: 16/16.\n\n')
+              f.write(f"Full candidate suite: {r['candidate_passed']}/{r['tests_per_version']} passed.\n\n")
+              f.write(f"New regressions: {len(r['new_regressions'])}. Identical test source was used for baseline and candidate. V1 source is preserved.\n\n")
+              f.write('Protected deployment creates only the isolated endpoint. Authenticated provider acceptance and real rollback are still required before customer cutover.\n')
           PY
       - name: Preserve baseline, candidate and both full test reports
         if: always()
@@ -114,6 +117,7 @@ jobs:
           m=json.loads((p/'manifest.json').read_text())
           r=json.loads((p/'baseline-candidate-comparison.json').read_text())
           assert r['isolated_candidate_regression_check_passed'] is True
+          assert r['all_repository_tests_passed'] is True and r['candidate_failed']==0
           assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime-v2/index.ts').read_bytes()).hexdigest()==m['candidate_sha256']
           assert hashlib.sha256(Path('supabase/functions/sandy-agent-runtime/index.ts').read_bytes()).hexdigest()==m['baseline_sha256']
           PY
