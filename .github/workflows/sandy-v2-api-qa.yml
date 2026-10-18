@@ -46,7 +46,7 @@ jobs:
             -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" \
             -H "Authorization: Bearer ${ID_TOKEN}" \
             -H "Content-Type: application/json" \
-            --data '{"operation":"v2_api_qa"}')"
+            --data '{"operation":"v2_api_qa_targeted_10"}')"
           echo "${RESPONSE}" | jq -e '{ok,reason,run_key,attempted,passed,failed,reviews,results}'
           # A transport-level ok is not a successful Examiner test.
           # Fail closed on skipped/idempotent runs and missing evidence.
