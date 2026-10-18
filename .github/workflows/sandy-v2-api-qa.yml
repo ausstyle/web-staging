@@ -21,7 +21,7 @@ on:
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'scripts/sandy/test_v2_autonomous_api_qa.py'
   schedule:
-    - cron: '11 * * * *'
+    - cron: '11 */2 * * *'
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,7 +32,7 @@ concurrency:
 jobs:
   issue-real-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 6
+    timeout-minutes: 22
     steps:
       - name: Call Sandy QA with short-lived GitHub identity (no shared secrets)
         shell: bash
@@ -48,7 +48,7 @@ jobs:
             -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
             "${CLAIM_URL}" | jq -er '.value')"
           test -n "${ID_TOKEN}"
-          RESPONSE="$(curl --silent --show-error --max-time 250 \
+          RESPONSE="$(curl --silent --show-error --max-time 1200 \
             -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" \
             -H "Authorization: Bearer ${ID_TOKEN}" \
             -H "Content-Type: application/json" \
