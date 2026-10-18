@@ -1,4 +1,5 @@
 name: Sandy Examiner Google Lab Verification
+# Verify production Gmail provider count parity after v35 deployment.
 # Validate persistent audit receipts after Gateway v31 deployment.
 # Current production v30 test oracle verification.
 # Read-only OAuth/provider, Gmail, Drive and Calendar metadata audit; triggered after v17 deployment.
