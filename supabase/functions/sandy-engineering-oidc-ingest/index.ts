@@ -560,10 +560,11 @@ Deno.serve(async(req:Request)=>{
       .eq("toolkit_slug","gmail").in("status",["ACTIVE","active"]);
     if(qaGmailError)return fail("qa_prerequisite_lookup_failed",503);
     if((qaGmailConnections||0)===0){
-      dynamicCandidates=dynamicCandidates.filter((candidate:any)=>
-        !(/\\b(email|gmail|inbox)\\b/i.test(String(candidate.question||""))
-          && /\\b(investigat|verify|check|read|search|retriev|confirm|achiev|outcome|last|latest)\\b/i.test(String(candidate.question||""))
-          && /\\b(request|message|sent|repl|email|inbox)\\b/i.test(String(candidate.question||""))));
+      dynamicCandidates=dynamicCandidates.filter((candidate:any)=>{
+        const q=String(candidate.question||"");
+        const emailRead=/\b(?:email|gmail|inbox)\b/i.test(q)&&/\b(?:investigat\w*|verif\w*|check|read|search|retriev\w*|confirm|achiev\w*|outcome|last|latest)\b/i.test(q);
+        return !emailRead;
+      });
     }
     const allowed=Math.min(targetedTen?10:2,targetedTen?10:(Number(account.max_calls_per_run)||1),Math.max(0,Number(account.max_calls_per_day)-(used||0)));
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
