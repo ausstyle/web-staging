@@ -1,0 +1,33 @@
+name: Sandy Examiner live conversation review
+on:
+  schedule:
+    - cron: '25 */2 * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-examiner-live-review.yml'
+      - 'supabase/functions/sandy-examiner-live-review/**'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandy-examiner-live-review
+  cancel-in-progress: false
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - name: Review new real customer conversations
+        shell: bash
+        env:
+          PROJECT: zmqlyygzqoidkcwdysok
+        run: |
+          set -euo pipefail
+          AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
+          CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
+          TOKEN="$(curl --fail --silent --show-error --max-time 15 -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${CLAIM_URL}" | jq -er '.value')"
+          RESPONSE="$(curl --silent --show-error --max-time 270 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data '{"operation":"v2_live_review"}')"
+          echo "${RESPONSE}" | jq '{ok,run_key,scanned,reviewed,flagged,channels,reason}'
+          echo "${RESPONSE}" | jq -e '.ok == true and (.run_key|type=="string") and (.channels|type=="object")' >/dev/null
