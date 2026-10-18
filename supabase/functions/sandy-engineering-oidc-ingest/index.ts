@@ -806,13 +806,13 @@ Deno.serve(async(req:Request)=>{
             const validCodes=["accurate_and_useful","incomplete_answer","unsupported_claim","insufficient_evidence","unclear_answer"];
             if(["pass","fail","needs_review"].includes(value)&&validCodes.includes(code)&&Number.isInteger(score)&&score>=1&&score<=5){
               semanticReview={status:value,reason_code:code,score,model:judgeModel};
-              if(verdict==="pass"&&(value!=="pass"||score<3)&&!["clock","location"].includes(testcase.key)){
+              if(verdict==="pass"&&(value!=="pass"||score<3)&&!["clock","location","task_count","connections","web_history"].includes(testcase.key)){
                 verdict="needs_review";reason="independent_quality_review_"+code;
               }
             }
           }catch{semanticReview.reason_code="judge_response_unavailable";}
         }
-        if(semanticReview.status==="unavailable"&&verdict==="pass"&&!clockOracle&&!["task_count","connections"].includes(testcase.key)){
+        if(semanticReview.status==="unavailable"&&verdict==="pass"&&!clockOracle&&!["task_count","connections","web_history"].includes(testcase.key)){
           verdict="needs_review";reason="independent_semantic_review_unavailable";
         }
       }
