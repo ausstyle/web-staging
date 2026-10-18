@@ -833,6 +833,93 @@ async function outlinePosition(parent,afterId,exclude){
  return i<0?500:peers[i].position+500;
 }
 function organiseTaskLater(){ /* Analysis is queued automatically by the database after persistence. */ }
+const instantQueueKey="sandy_pending_task_entries_v1";
+const instantPending=new Map();
+const instantIds=new Map();
+let instantRunning=false;
+function persistInstantQueue(){
+ try{localStorage.setItem(instantQueueKey,JSON.stringify([...instantPending.values()].map(j=>({...j,error:j.error||null}))))}catch(e){console.warn("Local save queue is unavailable",e)}
+}
+function instantEntry(title,parent,after,company,selectedCategory){
+ const id="pending-"+crypto.randomUUID(),companyId=normalizeWorkspace(company);
+ const parentTask=parent?state.tasks.find(t=>t.id===parent):null;
+ const categoryId=parentTask&&parentTask.company_id===companyId?(parentTask.category_id||null):(selectedCategory!==undefined?selectedCategory:(companyId===state.workspace?state.category:null));
+ const position=after?(Number(state.tasks.find(x=>x.id===after)?.position)||1000)+1:1000;
+ const task={id,title,details:"",parent_task_id:parent||null,company_id:companyId,category_id:categoryId,status:"todo",priority:"normal",position,created_at:new Date().toISOString(),metadata:{},shared:false,_pending:true};
+ state.tasks.push(task);
+ const job={id,title,parent,after,company:companyId,category:categoryId,position,status:"saving",created_at:Date.now(),error:null};
+ instantPending.set(id,job);persistInstantQueue();
+ return job;
+}
+function renderInstantState(task,outer){
+ const job=instantPending.get(task.id);
+ if(!job)return;
+ const status=el("span","instantSaveStatus "+(job.status==="failed"?"instantFailed":""),job.status==="failed"?"Not saved · retry":"Saving…");
+ status.title=job.error||"Saving to Sandy";
+ if(job.status==="failed"){
+  status.tabIndex=0;status.setAttribute("role","button");
+  status.onclick=()=>{job.status="saving";job.error=null;persistInstantQueue();runInstantQueue();render()};
+  status.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();status.click()}};
+ }
+ outer.querySelector(".titleArea")?.append(status);
+}
+async function runInstantQueue(){
+ if(instantRunning)return;instantRunning=true;
+ try{
+  while(true){
+   const job=[...instantPending.values()].find(j=>j.status==="saving"&&(!j.parent||!String(j.parent).startsWith("pending-")||instantIds.has(j.parent)));
+   if(!job){
+    for(const waiting of instantPending.values()){
+     if(waiting.status!=="saving"||!String(waiting.parent||"").startsWith("pending-"))continue;
+     const parentJob=instantPending.get(waiting.parent);
+     if(parentJob?.status==="failed"){
+      waiting.status="failed";waiting.error="Save the parent task first";persistInstantQueue();
+      const badge=document.getElementById("task-"+waiting.id)?.querySelector(".instantSaveStatus");
+      if(badge){badge.textContent="Waiting for parent · retry";badge.classList.add("instantFailed");badge.title=waiting.error}
+     }
+    }
+    break;
+   }
+   const parentId=instantIds.get(job.parent)||job.parent||null;
+   try{
+    const result=await Promise.race([
+     api("create",{title:job.title,parent_task_id:parentId,company_id:job.company,category_id:job.category,client_request_id:job.id}),
+     new Promise((_,reject)=>setTimeout(()=>reject(new Error("Save confirmation timed out. Retry to verify or save again.")),15000))
+    ]);
+    if(!result.id)throw Error("No task ID was returned");
+    instantIds.set(job.id,result.id);
+    const task=state.tasks.find(t=>t.id===job.id);
+    if(task){task.id=result.id;delete task._pending}
+    for(const t of state.tasks)if(t.parent_task_id===job.id)t.parent_task_id=result.id;
+    instantPending.delete(job.id);persistInstantQueue();
+    document.querySelectorAll(".instantSaveStatus").forEach(n=>{if(n.closest(".task,.childrow")?.id==="task-"+job.id)n.remove()});
+    if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    api("update",{id:result.id,position:job.position}).catch(()=>{});
+    organiseTaskLater(result.id,job.title);
+   }catch(e){
+    job.status="failed";job.error=e.message||String(e);persistInstantQueue();
+    const badge=document.getElementById("task-"+job.id)?.querySelector(".instantSaveStatus");
+    if(badge){badge.textContent="Not saved · retry";badge.classList.add("instantFailed");badge.title=job.error;badge.onclick=()=>{job.status="saving";job.error=null;persistInstantQueue();badge.textContent="Saving…";badge.classList.remove("instantFailed");runInstantQueue()}}
+    if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    toast("Task has not been confirmed saved. Retry the task.",true);
+    continue;
+   }
+  }
+ }finally{instantRunning=false}
+}
+function recoverInstantEntries(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(instantQueueKey)||"[]");
+  if(!Array.isArray(saved))return;
+  for(const j of saved){
+   if(!j?.id||!j.title||instantPending.has(j.id))continue;
+   j.status="failed";j.error="Not confirmed by Sandy. Retry to save.";
+   instantPending.set(j.id,j);
+   state.tasks.push({id:j.id,title:j.title,details:"",parent_task_id:j.parent||null,company_id:j.company||null,category_id:j.category||null,status:"todo",priority:"normal",position:j.position||1000,created_at:new Date(j.created_at||Date.now()).toISOString(),metadata:{},shared:false,_pending:true});
+  }
+  if(saved.length)persistInstantQueue();
+ }catch(e){console.warn("Could not recover pending entries",e)}
+}
 function outlineCreate(title,parent,after,company,selectedCategory=undefined){
  const job=instantEntry(title,parent,after,company,selectedCategory);
  outlineDraft(parent,job.id,company);
