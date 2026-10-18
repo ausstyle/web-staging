@@ -209,6 +209,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('x.ai_design_run&&x.verdict==="pass"', EDGE)
         self.assertIn('acceptance_gate_write_failed', EDGE)
 
+    def test_evolution_diagnosis_json_has_room_and_explicit_failure(self):
+        self.assertIn('max_output_tokens:4500', EVOLUTION)
+        self.assertIn('diagnosis_response_incomplete', EVOLUTION)
+        self.assertIn('diagnosis_json_not_parseable', EVOLUTION)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
