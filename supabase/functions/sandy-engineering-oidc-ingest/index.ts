@@ -171,7 +171,8 @@ Deno.serve(async(req:Request)=>{
         return {test:test.key,http_status:status,required_tool:test.required,
           tool_confirmed:matched,task_completed:taskCompleted,no_mutating_tools:!forbidden,
           provider_count_comparable:providerCountComparable,provider_count_matches:providerCountMatches,
-          verdict:status===200&&taskCompleted&&matched&&!forbidden?"pass":"needs_review"};
+          verdict:status===200&&taskCompleted&&matched&&!forbidden&&
+            (test.key!=="gmail"||providerCountComparable&&providerCountMatches===true)?"pass":"needs_review"};
       }));
       runtimeChecks.push(...receipts);
     }

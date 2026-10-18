@@ -220,6 +220,11 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('max_results:5,include_payload:false', EDGE)
         self.assertIn('Count parity is a bounded independent cross-check', EDGE)
 
+    def test_gmail_runtime_requires_independent_provider_parity_for_pass(self):
+        self.assertIn('providerCountComparable&&providerCountMatches===true', EDGE)
+        self.assertIn('test.key!=="gmail"', EDGE)
+        self.assertIn('?"pass":"needs_review"', EDGE)
+
     def test_workflow_requires_oidc_and_is_daily(self):
         self.assertIn("cron: '17 2 * * *'", FLOW)
         self.assertIn('id-token: write', FLOW)
