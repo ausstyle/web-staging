@@ -533,7 +533,7 @@ Deno.serve(async(req:Request)=>{
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
-        .order("created_at",{ascending:false}).limit(targetedTen?6:1);
+        .order("created_at",{ascending:false}).limit(12);
       if(designError)return fail("examiner_generated_suite_unavailable",503);
       const safeOracles=new Set(["clock","connections","web_history","cross_channel","location","task_count","capability","followup_investigation"]);
       const disallow=/(password|secret|token|api key|delete|transfer money|purchase|payment|sign in|log in|send an email|invite people|create a task|book a|make a reservation)/i;
@@ -541,16 +541,19 @@ Deno.serve(async(req:Request)=>{
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
         !disallow.test(x.question)&&x.execution_status==="shadow_not_executed"&&
         x.requires_current_production_retest===true&&Array.isArray(x.grounding_keys)&&x.grounding_keys.length>0);
-      if(targetedTen){
-        const prior=await db.from("sandy_v2_qa_executions").select("question").eq("customer_id",customerId).order("created_at",{ascending:false}).limit(200);
-        if(prior.error)return fail("qa_prior_question_query_failed",503);
-        const excluded=new Set((prior.data||[]).map((x:any)=>String(x.question||"").trim().toLowerCase()));
-        dynamicCandidates=dynamicCandidates.filter((x:any)=>{
-          const question=String(x.question||"").trim().toLowerCase();
-          if(excluded.has(question))return false;
-          excluded.add(question);return true;
-        });
-      }
+      const prior=await db.from("sandy_v2_qa_executions").select("question,verdict")
+        .eq("customer_id",customerId).order("created_at",{ascending:false}).limit(1000);
+      if(prior.error)return fail("qa_prior_question_query_failed",503);
+      const canonical=(q:string)=>q.toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+      const seen=new Set((prior.data||[]).map((x:any)=>canonical(String(x.question||""))));
+      dynamicCandidates=dynamicCandidates.filter((x:any)=>{
+        const k=canonical(String(x.question||""));
+        if(!k||seen.has(k))return false;
+        seen.add(k);return true;
+      });
+      const priorityByOracle:Record<string,number>={followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
+      dynamicCandidates.sort((a:any,b:any)=>(priorityByOracle[String(b.oracle_key)]||0)-(priorityByOracle[String(a.oracle_key)]||0)
+        ||Number(b.priority||0)-Number(a.priority||0));
       latestDesignRunKey=(design||[])[0]?.run_key||null;
     }
     // Evolution fix: a synthetic customer without Gmail cannot validate an email-outcome investigation.
@@ -566,14 +569,14 @@ Deno.serve(async(req:Request)=>{
         return !emailRead;
       });
     }
-    const allowed=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)));
+    const allowed=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)),dynamicCandidates.length);
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
-    if(targetedTen&&allowed<10)return fail("qa_targeted_budget_insufficient",429);
+    if(targetedTen&&allowed<10)return fail("qa_targeted_budget_or_novelty_insufficient",409);
+    if(!targetedTen&&allowed===0)return fail("qa_no_novel_eligible_generated_cases",409);
     const outputs:any[]=[];
     for(let i=0;i<allowed;i++){
       const ordinal=Number(used||0)+i;
-      const selectedDynamic=targetedTen?dynamicCandidates[i]:(dynamicCandidates.length>0&&i%5!==0
-        ?dynamicCandidates[(Math.floor(Number(used||0)/10)*8+i-1+dynamicCandidates.length)%dynamicCandidates.length]:null);
+      const selectedDynamic=dynamicCandidates[i]||null;
       const testcase=selectedDynamic?{
         key:String(selectedDynamic.oracle_key),prompts:[String(selectedDynamic.question)],
         expect:String(selectedDynamic.expected_observation||"").slice(0,300),
@@ -644,8 +647,11 @@ Deno.serve(async(req:Request)=>{
           reason=satisfactory?"verified_scoped_followup_with_coverage_disclosure":"followup_outcome_unverified";
           auditOracle={...auditOracle,rule_version:"followup-v3",observed:{...auditOracle.observed,scoped_inspection:scopedInspection,covers_other_channels:coversOtherChannels,coverage_disclosed:caveat},decision:satisfactory?"verified_behavior":"independent_review_required"};
         }else if(testcase.key==="location"){
-          verdict=any("can't access","cannot access","don't have","do not have","not know","can't determine","cannot determine","not available","no access")?"pass":"needs_review";
-          reason=verdict==="pass"?"location_not_inferred":"location_response_needs_review";
+          const cautious=/(?:do not know|don't know|do not have|don't have|cannot access|can't access|no access|no recent or precise location)/i.test(answer);
+          const freshConfirmation=/(?:timezone|location)[^.\\n]{0,95}(?:confirmed|verified|updated)[^.\\n]{0,65}(?:today|current|recent|at the current)/i.test(answer);
+          verdict=cautious&&!freshConfirmation?"pass":"needs_review";
+          reason=verdict==="pass"?"location_not_inferred":"location_confirmation_unverified";
+          auditOracle={rule_version:"location-caution-v3",reference:{question,scope:"no verified precise geolocation in synthetic account"},observed:{cautious,unverified_fresh_confirmation:freshConfirmation},decision:verdict};
         }else if(testcase.key==="task_count"){
           const {data:taskRows,error:taskRowsError}=await db.from("sandy_tasks").select("status")
             .eq("customer_id",customerId).is("archived_at",null).limit(1000);
@@ -729,7 +735,7 @@ Deno.serve(async(req:Request)=>{
             const validCodes=["accurate_and_useful","incomplete_answer","unsupported_claim","insufficient_evidence","unclear_answer"];
             if(["pass","fail","needs_review"].includes(value)&&validCodes.includes(code)&&Number.isInteger(score)&&score>=1&&score<=5){
               semanticReview={status:value,reason_code:code,score,model:judgeModel};
-              if(verdict==="pass"&&(value!=="pass"||score<3)&&testcase.key!=="clock"){
+              if(verdict==="pass"&&(value!=="pass"||score<3)&&!["clock","location"].includes(testcase.key)){
                 verdict="needs_review";reason="independent_quality_review_"+code;
               }
             }
