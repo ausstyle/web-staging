@@ -372,6 +372,10 @@ Deno.serve(async req=>{
      result=error||countError||delegationQuery.error||participantQuery.error||namesQuery.error?
        {error:error?.code||countError?.code||delegationQuery.error?.code||participantQuery.error?.code||namesQuery.error?.code}:
        {outstanding_count:exactCount??0,shown_count:data?.length||0,
+        definition:"Outstanding includes todo, waiting, pending, blocked and in-progress tasks; excludes completed, cancelled, canceled, deleted and archived.",
+        status_breakdown:(data||[]).reduce((acc:Record<string,number>,t:any)=>{acc[t.status]=(acc[t.status]||0)+1;return acc;},{}),
+        in_progress_count:(data||[]).filter((t:any)=>["in_progress","in progress","doing"].includes(String(t.status))).length,
+        todo_is_in_progress:false,
         tasks:(data||[]).map((t:any)=>({id:t.id,title:t.title,status:t.status,priority:t.priority,due_at:t.due_at,
           responsible_customer_id:t.responsible_customer_id,
           delegations:(delegationQuery.data||[]).filter((d:any)=>d.task_id===t.id).map((d:any)=>({assignee:assigneeNames.get(d.assignee_customer_id)||"Unknown",status:d.status,scope:d.scope})),
