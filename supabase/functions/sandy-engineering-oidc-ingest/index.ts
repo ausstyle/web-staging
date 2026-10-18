@@ -553,6 +553,18 @@ Deno.serve(async(req:Request)=>{
       }
       latestDesignRunKey=(design||[])[0]?.run_key||null;
     }
+    // Evolution fix: a synthetic customer without Gmail cannot validate an email-outcome investigation.
+    // Exclude only questions that require reading existing emails; retain missing-connection capability tests.
+    const {count:qaGmailConnections,error:qaGmailError}=await db.from("sandy_composio_connections")
+      .select("connected_account_id",{head:true,count:"exact"}).eq("customer_id",customerId)
+      .eq("toolkit_slug","gmail").in("status",["ACTIVE","active"]);
+    if(qaGmailError)return fail("qa_prerequisite_lookup_failed",503);
+    if((qaGmailConnections||0)===0){
+      dynamicCandidates=dynamicCandidates.filter((candidate:any)=>
+        !(/\\b(email|gmail|inbox)\\b/i.test(String(candidate.question||""))
+          && /\\b(investigat|verify|check|read|search|retriev|confirm|achiev|outcome|last|latest)\\b/i.test(String(candidate.question||""))
+          && /\\b(request|message|sent|repl|email|inbox)\\b/i.test(String(candidate.question||""))));
+    }
     const allowed=Math.min(targetedTen?10:2,targetedTen?10:(Number(account.max_calls_per_run)||1),Math.max(0,Number(account.max_calls_per_day)-(used||0)));
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
     if(targetedTen&&allowed<10)return fail("qa_targeted_budget_insufficient",429);
