@@ -220,8 +220,8 @@ function examinerDetails(p,title,obj){if(!obj||typeof obj!=="object"||!Object.ke
 function examinerScore(x){const n=Number(x?.ai_review?.score);return x?.ai_review?.score!==undefined&&x?.ai_review?.score!==null&&Number.isFinite(n)?n.toFixed(Number.isInteger(n)?0:1)+"/5":examinerVerdict(x?.verdict||"Not scored")}
 function examinerQA(parent,number,question,answer,score,reason,sub){const card=el("div","workspaceCard");card.style.cssText="padding:22px;margin:14px 0";const title=el("div","workspaceTop");add(title,el("b","",number+". "+(sub||"Examiner test")),el("span","workspacePill",score));card.append(title);examinerSimple(card,"QUESTION",question||"Question was not recorded");examinerSimple(card,"SANDY’S ANSWER",answer||"No answer recorded");examinerSimple(card,"EXAMINER’S SCORE",score);examinerSimple(card,"WHY THIS SCORE?",reason||"Examiner did not record an explanation.");parent.append(card)}
 async function runProductionExaminer(){const btn=document.getElementById("runProductionExaminer");if(btn){btn.disabled=true;btn.textContent="Running production assessment…"}try{const outcome=await call("examiner_production_run");examinerSelected=outcome.run_key;await loadExaminerRuns();await loadExaminerProductionAccount()}catch(e){examinerError="Production run: "+e.message;render()}}
-let examinerV3=null,examinerV3Error="";
-async function loadExaminerV3(){try{examinerV3=await call("examiner_v3_results");examinerV3Error=""}catch(e){examinerV3Error=e.message}render()}
+let examinerV3=null,examinerV3Error="",examinerV3Acceptance=null;
+async function loadExaminerV3(){try{const values=await Promise.all([call("examiner_v3_results"),call("examiner_v3_acceptance")]);examinerV3=values[0];examinerV3Acceptance=values[1];examinerV3Error=""}catch(e){examinerV3Error=e.message}render()}
 async function runExaminerV3Pilot(){try{const x=await call("examiner_v3_run",{channel:"email",source_id:"d33d637f-dfb4-4581-84e6-02e577190e88"});await loadExaminerV3();if(x.error)examinerV3Error=x.error}catch(e){examinerV3Error=e.message;render()}}
 function showExaminerV3(c){
  const p=panel("Examiner V3 · autonomous investigations");
@@ -229,6 +229,7 @@ function showExaminerV3(c){
  const refresh=el("button","btn","Refresh V3 investigations");refresh.onclick=loadExaminerV3;p.append(refresh);
  const test=el("button","btn primary","Run V3 · Towel Rack validation");test.onclick=runExaminerV3Pilot;p.append(test);
  if(examinerV3Error)txt(p,"V3 error: "+examinerV3Error,"status");
+ (examinerV3Acceptance?.items||[]).forEach(t=>examinerSimple(p,"Acceptance test · "+t.test_key,(t.passed?"Passed":"Failed")+" · "+date(t.checked_at)+" · "+t.investigation_run_key));
  (examinerV3?.investigations||[]).forEach(x=>{
  const d=el("details","workspaceCard"),head=el("summary","workspaceTop");
  add(head,el("b","",x.channel+" · "+date(x.created_at)),el("span","workspacePill",examinerVerdict(x.status)));d.append(head);
