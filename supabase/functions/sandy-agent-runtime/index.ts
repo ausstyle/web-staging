@@ -349,7 +349,7 @@ Deno.serve(async req=>{
       const {data:parent,error:pe}=await db.from("sandy_tasks").select("id,metadata").eq("id",missionId).eq("customer_id",customerId).maybeSingle();
       if(pe||parent?.metadata?.sandy_mission!==true)result={error:"mission_unavailable"};
       else{
-       const {data:duplicate,error:de}=await db.from("sandy_tasks").select("id").eq("customer_id",customerId).eq("parent_task_id",missionId).eq("title",title).neq("status","completed").limit(1);
+       const {data:duplicate,error:de}=await db.from("sandy_tasks").select("id").eq("customer_id",customerId).eq("parent_task_id",missionId).eq("title",title).not("status","in", "(completed,cancelled,canceled,deleted)").limit(1);
        if(de)result={error:de.code};
        else if(duplicate?.length)result={ok:true,already_exists:true,task_id:duplicate[0].id};
        else{
@@ -361,8 +361,8 @@ Deno.serve(async req=>{
      trace.push({tool:c.name,success:result.ok===true,task_id:result.task_id||null});
     }
     if(c.name==="list_tasks"&&customerId){
-     const {data,error}=await db.from("sandy_tasks").select("id,title,status,priority,due_at,parent_task_id,responsible_customer_id,created_at").eq("customer_id",customerId).is("archived_at",null).neq("status","completed").order("due_at",{ascending:true,nullsFirst:false}).limit(150);
-     const {count:exactCount,error:countError}=await db.from("sandy_tasks").select("id",{count:"exact",head:true}).eq("customer_id",customerId).is("archived_at",null).neq("status","completed");
+     const {data,error}=await db.from("sandy_tasks").select("id,title,status,priority,due_at,parent_task_id,responsible_customer_id,created_at").eq("customer_id",customerId).is("archived_at",null).not("status","in", "(completed,cancelled,canceled,deleted)").order("due_at",{ascending:true,nullsFirst:false}).limit(150);
+     const {count:exactCount,error:countError}=await db.from("sandy_tasks").select("id",{count:"exact",head:true}).eq("customer_id",customerId).is("archived_at",null).not("status","in", "(completed,cancelled,canceled,deleted)");
      const taskIds=(data||[]).map((t:any)=>t.id);
      const delegationQuery=taskIds.length?await db.from("sandy_task_delegations").select("task_id,assignee_customer_id,status,scope").in("task_id",taskIds):{data:[],error:null};
      const participantQuery=taskIds.length?await db.from("sandy_task_participants").select("task_id,customer_id,role,status").in("task_id",taskIds):{data:[],error:null};
@@ -518,7 +518,7 @@ Deno.serve(async req=>{
       if(!flag||!parent||parent.metadata?.sandy_mission!==true||description.length<5||description.length>2000)result={error:"image_approval_invalid"};
       else{
         const title="Approve paid image generation";
-        const {data:prior}=await db.from("sandy_tasks").select("id").eq("customer_id",customerId).eq("parent_task_id",mission).eq("title",title).neq("status","completed").limit(1);
+        const {data:prior}=await db.from("sandy_tasks").select("id").eq("customer_id",customerId).eq("parent_task_id",mission).eq("title",title).not("status","in", "(completed,cancelled,canceled,deleted)").limit(1);
         if(prior?.length)result={ok:true,approval_pending:true,task_id:prior[0].id};
         else{
           const {data:created,error:ce}=await db.from("sandy_tasks").insert({customer_id:customerId,parent_task_id:mission,title,details:"Requested image: "+description,status:"todo",priority:"high",metadata:{sandy_mission_step:true,assigned_to:"client",stage:"approval",image_generation:true,prompt:description,cost_approval_required:true}}).select("id").single();
