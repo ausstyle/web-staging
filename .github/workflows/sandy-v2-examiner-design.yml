@@ -8,7 +8,7 @@ on:
     paths:
       - '.github/workflows/sandy-v2-examiner-design.yml'
   schedule:
-    - cron: '17 2 * * *'
+    - cron: '1 */2 * * *'
   workflow_dispatch:
 permissions:
   contents: read
