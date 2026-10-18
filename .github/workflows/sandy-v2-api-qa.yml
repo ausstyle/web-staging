@@ -45,4 +45,16 @@ jobs:
             -H "Content-Type: application/json" \
             --data '{"operation":"v2_api_qa"}')"
           echo "${RESPONSE}" | jq -e '{ok,run_key,attempted,passed,failed,reviews,results}'
-          echo "${RESPONSE}" | jq -e '.ok == true' >/dev/null
+          # A transport-level ok is not a successful Examiner test.
+          # Fail closed on skipped/idempotent runs and missing evidence.
+          echo "${RESPONSE}" | jq -e '
+            .ok == true and
+            (.attempted | type == "number" and . >= 1) and
+            (.passed | type == "number" and . >= 0) and
+            (.failed | type == "number" and . >= 0) and
+            (.passed + .failed <= .attempted) and
+            (.results | type == "array" and length >= 1)
+          ' >/dev/null || {
+            echo "::error::Examiner API QA produced no verifiable executions or invalid counters; refusing false success."
+            exit 1
+          }
