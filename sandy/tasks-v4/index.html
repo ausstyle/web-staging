@@ -320,6 +320,52 @@ body{background:#f8f8f5!important;color:#292d29!important}
 #app .tab.active,#app .viewBtn.chosen{background:#e6eae3!important;color:#273d31!important;border-color:#dce2d9!important}
 #app .keyboardHint{color:#8b938b!important}
 @media(max-width:850px){#app.shell{margin:0!important;padding:15px 15px 95px!important}#app header{height:auto!important;min-height:50px!important}#app .top h1{font-size:35px!important}#app .outlineHeader{flex-wrap:wrap!important}#app .taskrow{padding:10px 8px!important}.agendaSide{width:min(290px,85vw)!important}}
+
+/* V4 refined compact minimal outline — preserve existing task behaviours. */
+#app.shell{padding-top:12px!important}
+#app .top{margin:12px 0 17px!important}
+#app .top h1{margin:0!important;font-size:clamp(34px,3.6vw,46px)!important}
+#app .intro{margin-top:4px!important}
+#app .workspaceBar{padding-top:5px!important;padding-bottom:5px!important;margin-bottom:9px!important;border:0!important;background:transparent!important}
+#app .categoryBar{margin-bottom:6px!important}
+#app .summary{gap:7px!important;margin-bottom:10px!important}
+#app .metric{padding:7px 11px!important;border:0!important;background:#eff1ed!important;border-radius:9px!important;box-shadow:none!important}
+#app .metric span{font-size:11px!important}
+#app .missionOverview{padding:11px 14px!important;margin-bottom:9px!important}
+#app .requestPanel{padding:9px 12px!important;margin-bottom:8px!important}
+#app .quickPanel{padding:8px 12px!important;margin-bottom:8px!important;border:0!important;box-shadow:none!important;background:#f0f2ee!important}
+#app .quick input{padding:4px!important;font-size:14px!important}
+#app .helper{font-size:10px!important;margin-top:2px!important}
+#app .collabBar{padding:3px 0!important;margin:0 0 5px!important;border:0!important}
+#app .toolbar{padding:4px 0 9px!important;margin:0!important;border:0!important;background:transparent!important}
+#app .tabs{gap:3px!important}
+#app .tab{padding:7px 10px!important;border:0!important;border-radius:9px!important;background:transparent!important;font-size:12px!important}
+#app .search{padding:8px 11px!important;max-width:225px!important}
+#app .outlineHeader{padding:9px 13px!important;background:#fff!important;border-color:#e9ebe6!important;border-radius:12px 12px 0 0!important}
+#app .outlineHeader strong{font-size:14px!important}
+#app .outlineControls{gap:3px!important}
+#app .outlineSmall,#app .viewBtn{padding:5px 7px!important;font-size:11px!important}
+#app .rootLine{min-height:40px!important;padding:5px 10px!important;gap:8px!important;border-color:#ecede9!important}
+#app .rootLine input{font-size:13px!important}
+#app .rootLine select{font-size:11px!important;padding:4px!important}
+#app .rootAdd{padding:6px 11px!important;font-size:12px!important}
+#app .tasklist{border-color:#e9ebe6!important}
+#app .task{border-bottom:1px solid #f1f2ef!important}
+#app .taskrow{min-height:0!important;align-items:center!important;padding:6px 11px!important;gap:7px!important}
+#app .taskrow:hover{background:#f8f9f6!important}
+#app .tasktitle{font-size:13px!important;font-weight:550!important;line-height:1.28!important}
+#app .taskdesc{font-size:11px!important;line-height:1.2!important;margin:1px 0!important}
+#app .taskcheck{width:15px!important;height:15px!important;margin:0!important}
+#app .right{gap:0!important;align-items:center!important}
+#app .iconbtn{padding:3px 5px!important;font-size:14px!important;line-height:1.2!important}
+#app .tag{padding:1px 5px!important;font-size:10px!important;font-weight:400!important;border-radius:5px!important}
+#app .meta{margin-top:3px!important;gap:4px!important}
+#app .children{margin-left:27px!important;padding-left:9px!important;margin-right:5px!important;margin-bottom:1px!important;border-left:1px solid #edf0ea!important}
+#app .childrow{border-bottom-color:#f5f5f2!important}
+#app .childrow .taskrow{padding:5px 8px!important}
+#app .keyboardHint{padding:7px 10px!important;font-size:10px!important}
+#app .draghandle,#app .dragHandle{opacity:.45!important}
+@media(max-width:850px){#app .taskrow{padding:7px 6px!important}#app .right{flex-wrap:wrap!important}#app .outlineHeader{padding:9px!important}}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../tasks-v4/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../v3/"><span class="sideSymbol">⌂</span>Home</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../tasks-v4/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
