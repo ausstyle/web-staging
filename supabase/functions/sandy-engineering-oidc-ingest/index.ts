@@ -666,7 +666,9 @@ Deno.serve(async(req:Request)=>{
         if(!clockOracle&&testcase.key!=="task_count"&&testcase.key!=="connections"&&judgeKey&&answer&&edgeStatus===200){
           try{
             const judgeInput={question,answer,oracle_key:testcase.key,oracle_verdict:verdict,
-              oracle_reason:reason,observed_tools:trace.map((t:any)=>({
+              oracle_reason:reason,
+              independent_evidence:{test_account_isolated:true,connection_count:Number(checks[0].count||0),clock_oracle:clockOracle},
+              observed_tools:trace.map((t:any)=>({
                 tool:String(t.tool||"").slice(0,65),success:t.success===true,
                 error:t.error?String(t.error).slice(0,65):null
               }))};
