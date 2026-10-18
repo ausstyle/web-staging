@@ -284,7 +284,7 @@ html,body{max-width:100%;overflow-x:clip}
 
 .missionOverview{background:#fff;border:1px solid #e2e6df;border-radius:13px;padding:15px;margin:8px 0 18px}.missionHeader{display:flex;justify-content:space-between;align-items:center;gap:12px}.missionHeader strong{font-size:16px}.missionHeader p{color:#68716a;font-size:12px;margin:3px 0 0}.missionCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:9px;margin-top:12px}.missionCard{text-align:left;background:#fafbf9;border:1px solid #e1e6de;border-radius:10px;padding:11px 13px;cursor:pointer;color:inherit;font:inherit;min-width:0}.missionCard:hover{background:#f1f6ef;border-color:#acbead}.missionCardTitle{font-weight:700;line-height:1.3;font-size:13px}.missionCardMeta{font-size:11px;color:#607060;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:7px 0}.missionProgress{height:5px;background:#e6ebe4;border-radius:8px;overflow:hidden}.missionProgress span{display:block;background:#668a6a;height:100%}.missionCardInfo{font-size:11px;color:#68716a;margin-top:7px}.missionEmpty{font-size:12px;color:#737973;padding:8px 0}.missionOverview button:focus-visible{outline:2px solid #658568;outline-offset:2px}@media(max-width:700px){.missionHeader{align-items:flex-start}.missionCards{grid-template-columns:1fr}.missionOverview{padding:12px}}
 .missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n</style>
-<link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018a"><style id="sandyTasksV4Theme">
+<link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
 body{background:#f8f8f5!important;color:#292d29!important}
 #app.shell{max-width:none!important;margin:0 0 0 244px!important;padding:18px clamp(20px,5vw,76px) 90px!important;min-height:100vh!important}
@@ -417,7 +417,7 @@ body{background:#f8f8f5!important;color:#292d29!important}
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {installSandyIdleLock} from "../security-lock.js";
-import {initTaskFiles} from "../agenda/task-attachments.js?v=20261018a";
+import {initTaskFiles} from "../agenda/task-attachments.js?v=20261018v4b";
 "use strict";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
