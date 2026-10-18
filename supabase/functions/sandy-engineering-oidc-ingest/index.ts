@@ -39,7 +39,7 @@ Deno.serve(async(req:Request)=>{
   const inlineFlow=claims.workflow_ref===ENGINEERING_REF&&claims.event_name==="workflow_dispatch";
   const qaFlow=claims.workflow_ref===QA_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const designFlow=claims.workflow_ref===DESIGN_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
-  const liveFlow=claims.workflow_ref===LIVE_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
+  const liveFlow=claims.workflow_ref===LIVE_REF&&["push","schedule","workflow_dispatch","workflow_run"].includes(String(claims.event_name));
   const labFlow=claims.workflow_ref===LAB_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   if(claims.repository!==REPO || String(claims.repository_id)!==REPO_ID ||
      (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow&&!liveFlow) || claims.ref!=="refs/heads/main")
