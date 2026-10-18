@@ -639,6 +639,7 @@ Deno.serve(async(req:Request)=>{
           const excludesCancelled=!/\b(?:36|all)\s+outstanding\b/i.test(answer) || trueOutstanding===36;
           verdict=had("list_tasks")&&claimedNumber===trueOutstanding&&excludesCancelled?"pass":"fail";
           reason=verdict==="pass"?"independent_task_count_verified":"outstanding_task_count_mismatch_or_unverified";
+          auditOracle={rule_version:"task-count-v2",reference:{table:"sandy_tasks",customer_scope:"isolated_test",outstanding_count:trueOutstanding,allowed_statuses:[...activeStatuses]},observed:{claimed_count:claimedNumber,tool_receipt:had("list_tasks")},decision:verdict};
         }else {
           verdict=any("not available","not connected","no connected","can't","cannot","not verified","not necessarily","not enabled")?"pass":"needs_review";
           reason=verdict==="pass"?"cautious_capability_statement":"capability_reply_needs_review";
@@ -669,7 +670,8 @@ Deno.serve(async(req:Request)=>{
           start_utc:before.toISOString(),end_utc:after.toISOString(),tolerance_minutes:2};
       })();
       const complexJudge=["capability","cross_channel","followup_investigation"].includes(testcase.key);
-      const configuredJudge=String((executionPolicy?.config as any)?.[complexJudge?"complex_judge_model":"routine_judge_model"]||(complexJudge?"gpt-6-astra":"gpt-5.2"));
+      if(clockOracle)auditOracle={rule_version:"utc-clock-v2",reference:{reference_time:clockOracle.start_utc,completed_time:clockOracle.end_utc,tolerance_minutes:clockOracle.tolerance_minutes},observed:{response:answer,system_clock_receipt:trace.some((t:any)=>t?.tool==="system_clock"&&t.success===true)},decision:clockOracle.passed?"verified":"requires_review"};
+            const configuredJudge=String((executionPolicy?.config as any)?.[complexJudge?"complex_judge_model":"routine_judge_model"]||(complexJudge?"gpt-6-astra":"gpt-5.2"));
       const judgeCandidate=/^[a-zA-Z0-9._-]{3,80}$/.test(configuredJudge)?configuredJudge:"gpt-5.2";
       const {data:judgeEligible}=await db.from("ai_model_registry").select("eligibility")
         .eq("model_id",judgeCandidate).maybeSingle();
