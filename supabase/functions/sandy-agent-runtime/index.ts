@@ -319,7 +319,7 @@ Deno.serve(async req=>{
    return json(200,{ok:true,task_id:id,response:reply,tools_used:toolTrace});
  }
  const clockOnlyRequest=prompt.length<=220 &&
-   /(?:what(?:'s| is)\\s+(?:the\\s+)?(?:current\\s+)?(?:time|date)|what time is it|current time|current date|time and date|date and time|tell me the time|what day is it)/i.test(prompt) &&
+   /(?:what(?:'s| is)\s+(?:the\s+)?(?:current\s+)?(?:time|date)|what time is it|current time|current date|time and date|date and time|tell me the time|what day is it)/i.test(prompt) &&
    !/(?:schedule|appointment|meeting|remind|timer|deadline|flight|calendar|email|send|book|when did|what time did)/i.test(prompt);
  if(clockOnlyRequest){
   const text="It's "+clock+" ("+timezone+").";

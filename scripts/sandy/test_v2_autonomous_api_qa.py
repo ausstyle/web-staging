@@ -21,6 +21,7 @@ class TestV2APIQA(unittest.TestCase):
         self.assertIn('clockOnlyRequest',source)
         self.assertIn('system_clock',source)
         self.assertIn('time and date',source)
+        self.assertNotIn(r'\\\\s',source[source.index('const clockOnlyRequest'):source.index('if(clockOnlyRequest)')])
 
     def test_exact_main_workflow_with_repo_identity(self):
         self.assertIn('QA_REF = REPO + "/.github/workflows/sandy-v2-api-qa.yml@refs/heads/main"', self.edge)
