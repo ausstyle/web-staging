@@ -837,7 +837,7 @@ function organiseTaskLater(id,originalTitle){
  setTimeout(()=>{
   api("update",{id,title:originalTitle,interpret:true}).then(()=>{
    const editing=document.activeElement?.closest?.(".outlineDraft")||document.activeElement?.classList?.contains("inlineTitle");
-   if(!editing)load().catch(()=>{});
+   if(editing){const active=document.activeElement;active?.addEventListener("blur",()=>{setTimeout(()=>{if(!document.activeElement?.closest?.(".outlineDraft"))load().catch(()=>{})},0)},{once:true})}else load().catch(()=>{});
   }).catch(e=>console.warn("Task saved; organisation deferred or unavailable",e));
  },0);
 }
