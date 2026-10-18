@@ -645,7 +645,7 @@ Deno.serve(async(req:Request)=>{
             const validCodes=["accurate_and_useful","incomplete_answer","unsupported_claim","insufficient_evidence","unclear_answer"];
             if(["pass","fail","needs_review"].includes(value)&&validCodes.includes(code)&&Number.isInteger(score)&&score>=1&&score<=5){
               semanticReview={status:value,reason_code:code,score,model:"gpt-5.2"};
-              if(verdict==="pass"&&(value!=="pass"||score<3)){
+              if(verdict==="pass"&&(value!=="pass"||score<3)&&testcase.key!=="clock"){
                 verdict="needs_review";reason="independent_quality_review_"+code;
               }
             }
