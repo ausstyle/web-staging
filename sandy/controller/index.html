@@ -208,7 +208,7 @@ function showActivity(c){
 }
 
 let examinerRuns=[],examinerSelected=null,examinerDetail=null,examinerProduction=[],examinerTotal=0,examinerPage=0,examinerChannel="all",examinerLoading=false,examinerError="";
-async function loadExaminerRuns(){examinerLoading=true;examinerError="";render();try{const r=await call("examiner_runs",{limit:100});examinerRuns=r.items||[];if(!examinerSelected&&examinerRuns.length)examinerSelected=examinerRuns[0].run_key;await loadExaminerDetail(false)}catch(e){examinerError=e.message}finally{examinerLoading=false;render()}}
+async function loadExaminerRuns(){examinerLoading=true;examinerError="";render();try{const r=await call("examiner_runs",{limit:100});examinerRuns=r.items||[];if(!examinerSelected&&examinerRuns.length)examinerSelected=(examinerRuns.find(x=>x.stream!=="live"&&Number(x.examined)>0)||examinerRuns.find(x=>Number(x.examined)>0)||examinerRuns[0]).run_key;await loadExaminerDetail(false)}catch(e){examinerError=e.message}finally{examinerLoading=false;render()}}
 async function loadExaminerDetail(redraw=true){try{const r=await call("examiner_run_detail",{run_key:examinerSelected});examinerDetail=r}catch(e){examinerError=e.message;examinerDetail=null}if(redraw)render()}
 async function loadExaminerProduction(){examinerError="";try{const r=await call("examiner_production",{channel:examinerChannel,page:examinerPage});examinerProduction=r.items||[];examinerTotal=r.count||0}catch(e){examinerError=e.message}render()}
 function examinerText(p,label,value){const wrap=el("div","workspaceDetail");add(wrap,el("b","",label),el("div","detail",value===null||value===undefined||value===""?"Not recorded":typeof value==="string"?value:JSON.stringify(value,null,2)));p.append(wrap)}
