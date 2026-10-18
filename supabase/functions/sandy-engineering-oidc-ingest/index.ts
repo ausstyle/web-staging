@@ -649,7 +649,8 @@ Deno.serve(async(req:Request)=>{
         return {passed,reason:passed?"independent_utc_verified":"clock_mismatch_or_date_unverified",
           start_utc:before.toISOString(),end_utc:after.toISOString(),tolerance_minutes:2};
       })();
-      const configuredJudge=String((executionPolicy?.config as any)?.judge_model||"gpt-5.2");
+      const complexJudge=["capability","cross_channel","followup_investigation"].includes(testcase.key);
+      const configuredJudge=String((executionPolicy?.config as any)?.[complexJudge?"complex_judge_model":"routine_judge_model"]||(complexJudge?"gpt-6-astra":"gpt-5.2"));
       const judgeCandidate=/^[a-zA-Z0-9._-]{3,80}$/.test(configuredJudge)?configuredJudge:"gpt-5.2";
       const {data:judgeEligible}=await db.from("ai_model_registry").select("eligibility")
         .eq("model_id",judgeCandidate).maybeSingle();
