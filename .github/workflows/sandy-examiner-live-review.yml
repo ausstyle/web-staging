@@ -1,5 +1,5 @@
 name: Sandy Examiner live conversation review
-# Manual production validation 2026-10-18
+# Production v3 WhatsApp matching regression
 on:
   schedule:
     - cron: '25 */2 * * *'
