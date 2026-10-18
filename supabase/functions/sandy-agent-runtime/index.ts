@@ -318,7 +318,10 @@ Deno.serve(async req=>{
    await update({status:"completed",model:"gmail-verified-reader",result:{text:reply},tool_trace:toolTrace});
    return json(200,{ok:true,task_id:id,response:reply,tools_used:toolTrace});
  }
- if(/^(?:(?:please|sandy|hey sandy|can you|tell me)\s+)*(?:what(?:'s| is)\s+(?:the\s+)?(?:current\s+)?time|what time is it|current time|tell me the time|what(?:'s| is)\s+(?:today(?:'s)?\s+)?date|what day is it)(?:\s+(?:now|today|please|right now))?[?.!\s]*$/i.test(prompt)){
+ const clockOnlyRequest=prompt.length<=220 &&
+   /(?:what(?:'s| is)\\s+(?:the\\s+)?(?:current\\s+)?(?:time|date)|what time is it|current time|current date|time and date|date and time|tell me the time|what day is it)/i.test(prompt) &&
+   !/(?:schedule|appointment|meeting|remind|timer|deadline|flight|calendar|email|send|book|when did|what time did)/i.test(prompt);
+ if(clockOnlyRequest){{
   const text="It's "+clock+" ("+timezone+").";
   await update({status:"completed",model:"system-clock",result:{text},tool_trace:[{tool:"system_clock",success:true,timezone}]});
   return json(200,{ok:true,task_id:id,model:"system-clock",response:text,tools_used:[{tool:"system_clock",success:true}]});
