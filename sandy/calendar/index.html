@@ -21,7 +21,9 @@ html,body{width:100%;max-width:100%;overflow-x:clip}body{padding-bottom:calc(75p
 }
 @media(min-width:761px){#calendarToolsToggle,.mobileCalendarNav{display:none!important}}
 </style></head><body><div class="wrap"><header><strong style="font-size:24px;letter-spacing:-1px">sandy.</strong><nav class="row"><a class="btn" href="../app/">Workspace</a><a class="btn" href="../agenda/">Tasks</a></nav></header><div class="bar"><div><h1>Calendar</h1><p class="muted">Events, matters and the tasks that lead up to them.</p><p id="timezoneDisplay" class="muted" style="font-size:13px;font-weight:700" aria-live="polite"></p></div><button class="btn" id="refresh">↻ Refresh</button></div><p class="notice" id="message" role="status" aria-live="polite"></p><div class="layout"><section><div class="panel"><div class="month"><button class="btn" id="prev" aria-label="Previous month">‹</button><h2 id="monthTitle"></h2><button class="btn" id="next" aria-label="Next month">›</button><button class="btn" id="today">Today</button></div><div class="calendarToolbar" id="calendarToolbar"><button class="btn" data-view="month">Month</button><button class="btn" data-view="week">Week</button><button class="btn" data-view="day">Day</button><button class="btn" data-view="agenda">Agenda</button><input id="calendarSearch" type="search" aria-label="Search calendar events" placeholder="Search events and tasks"><select id="calendarSource" aria-label="Filter calendar"><option value="all">All calendars</option><option value="event">Events</option><option value="task">Tasks</option></select></div><div id="calendarInspector" aria-live="polite"></div><div class="calendarHint" id="calendarHint">Select a day to open its schedule.</div><div class="grid" id="calendar"></div><div id="alternateView"></div><div id="dayView" class="hidden"></div></div><button class="btn" id="calendarToolsToggle" type="button" aria-expanded="false" aria-controls="calendarSide">Event editor, files &amp; tools ▾</button><div class="panel" style="margin-top:20px"><h2>Upcoming events</h2><div id="upcoming"></div><h2 style="margin-top:18px">Scheduling suggestions</h2><div id="calendarSuggestions"></div></div></section><aside id="calendarSide"><div class="panel"><h2 id="formTitle">Add an event</h2><form id="eventForm"><div class="field"><label for="title">Event title</label><input id="title" maxlength="240" required placeholder="Court hearing"></div><div class="field"><label for="matter">Matter or project</label><input id="matter" maxlength="200" placeholder="Sotheby’s litigation"></div><div class="field"><label for="start">Date and time (your timezone)</label><input id="start" type="datetime-local" required></div><div class="field"><label for="end">End (optional, your timezone)</label><input id="end" type="datetime-local"></div><button class="btn dark" id="save" type="submit">Save event</button><button class="btn hidden" id="clear" type="button">Cancel edit</button></form></div><div class="panel" style="margin-top:20px"><h2>Event files</h2><p class="muted" style="font-size:12px">Select a saved calendar event to attach files (maximum 10 MB each).</p><div class="field"><label for="fileEvent">Calendar event</label><select id="fileEvent"></select></div><div class="field"><label for="fileInput">Upload a file</label><input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.docx,.xlsx"></div><button class="btn" type="button" id="uploadFile">Upload file</button><div id="attachmentList"></div></div><div class="panel" style="margin-top:20px"><h2>Linked task deadlines</h2><p class="muted" style="font-size:12px">Choose an event, then attach a task with a relative deadline. Dates are proposed for review, never silently changed.</p><div class="field"><label for="eventSelect">Event</label><select id="eventSelect"></select></div><div class="field"><label for="taskSelect">Task</label><select id="taskSelect"></select></div><div class="field"><label for="offset">Days before event</label><input id="offset" type="number" min="0" max="3650" value="14"></div><button class="btn" id="link">Link task</button><div id="links"></div></div><div class="panel" style="margin-top:20px"><h2>Proposed deadline changes</h2><div id="reviews"></div></div><div class="panel" style="margin-top:20px"><h2>Calendar connections</h2><p class="muted" style="font-size:12px">Outlook and Apple Calendar synchronisation are not active yet. Sandy events are currently stored only in Sandy.</p></div></aside></div></div>
-<nav class="mobileCalendarNav" aria-label="Mobile Sandy navigation"><a href="../app/"><span>⌂</span>Home</a><a href="../agenda/"><span>☑</span>Tasks</a><a href="../calendar/" class="active" aria-current="page"><span>▦</span>Calendar</a><a href="../app/?channel=email"><span>✉</span>Email</a></nav><script type="module">
+<nav class="mobileCalendarNav" aria-label="Mobile Sandy navigation"><a href="../app/"><span>⌂</span>Home</a><a href="../agenda/"><span>☑</span>Tasks</a><a href="../calendar/" class="active" aria-current="page"><span>▦</span>Calendar</a><a href="../app/?channel=email"><span>✉</span>Email</a></nav><style>
+.calendarDragGhost{position:fixed;z-index:9999;pointer-events:none;background:#181818;color:#fff;padding:9px 12px;border-radius:9px;box-shadow:0 9px 25px #0003;max-width:220px;font-size:12px;opacity:.92}.calDropActive{outline:2px dashed #384e72!important;outline-offset:-3px;background:#edf2fb!important}.calResizeGrip{position:absolute;left:8px;right:8px;bottom:0;height:10px;cursor:ns-resize;touch-action:none;border-radius:4px}.calResizeGrip:after{content:"";display:block;width:32px;height:3px;background:currentColor;opacity:.45;border-radius:4px;margin:4px auto}.dayAppointment{touch-action:pan-y}.calendarDropHelp{font-size:11px;color:#666;margin:6px 0}@media(hover:none){.dayAppointment{touch-action:none}.calResizeGrip{height:15px}.calResizeGrip:after{margin:7px auto}}
+</style><script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {installSandyIdleLock} from "../security-lock.js";
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,storage:localStorage,autoRefreshToken:true}});
@@ -53,19 +55,74 @@ function renderAlternative(){
  for(let i=0;i<count;i++){
   const day=new Date(anchor);day.setDate(anchor.getDate()+i);const es=filteredEvents().filter(e=>sameCalendarDay(e.starts_at,day)),ts=filteredTasks().filter(t=>sameCalendarDay(t.start_at||t.due_at,day));
   if(calendarMode==="week"){
-   const col=node("div");col.className="weekCol"+(sameCalendarDay(day,new Date())?" today":"");
+   const col=node("div");col.dataset.calendarDate=calendarDateKey(day);col.className="weekCol"+(sameCalendarDay(day,new Date())?" today":"");
    const label=node("button",new Intl.DateTimeFormat(undefined,{weekday:"short",day:"numeric"}).format(day));label.onclick=()=>{calendarMode="day";showDay(day)};col.append(label);
-   for(const e of es){const b=node("button",e.title);b.className="event";b.onclick=()=>inspectEvent(e);col.append(b)}
-   for(const t of ts){const b=node("button","✓ "+t.title);b.className="event taskDueEvent";b.onclick=()=>location.assign("../agenda/#task-"+encodeURIComponent(t.id));col.append(b)}
+   for(const e of es){const b=node("button",e.title);b.className="event";b.onclick=()=>{if(Date.now()>suppressCalendarClickUntil)inspectEvent(e)};attachCalendarDrag(b,{kind:"event",event:e});col.append(b)}
+   for(const t of ts){const b=node("button","✓ "+t.title);b.className="event taskDueEvent";b.onclick=()=>location.assign("../agenda/#task-"+encodeURIComponent(t.id));attachCalendarDrag(b,{kind:"task",task:t,start:new Date(t.start_at||t.due_at)});col.append(b)}
    container.append(col);
   }else{
    const row=node("div");row.className="agendaRow";const label=node("button",new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric"}).format(day));label.onclick=()=>{calendarMode="day";showDay(day)};
-   const content=node("div");for(const e of es){const b=node("button",(e.all_day?"All day":new Date(e.starts_at).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}))+" · "+e.title);b.className="event";b.onclick=()=>inspectEvent(e);content.append(b)}
+   const content=node("div");for(const e of es){const b=node("button",(e.all_day?"All day":new Date(e.starts_at).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}))+" · "+e.title);b.className="event";b.onclick=()=>{if(Date.now()>suppressCalendarClickUntil)inspectEvent(e)};content.append(b)}
    for(const t of ts){const b=node("button","✓ "+t.title);b.className="event taskDueEvent";b.onclick=()=>location.assign("../agenda/#task-"+encodeURIComponent(t.id));content.append(b)}
    if(!content.children.length)content.append(node("span","No events"));row.append(label,content);container.append(row);
   }
  }
  area.append(container);
+}
+
+
+let suppressCalendarClickUntil=0;
+const calendarDrag={active:null};
+function dragPoint(event){return {x:event.clientX,y:event.clientY}}
+function calendarDropDate(element){const target=element?.closest?.("[data-calendar-date]");if(!target)return null;const parts=target.dataset.calendarDate.split("-").map(Number);return new Date(parts[0],parts[1]-1,parts[2])}
+function calendarDateKey(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")}
+function dateAtMinutes(date,minutes){const d=new Date(date.getFullYear(),date.getMonth(),date.getDate());d.setMinutes(minutes);return d}
+async function calendarMove(item,target,resize=false){
+ if(item.kind==="task"){message("Task scheduling must be changed in Tasks; calendar proposals cannot silently change task dates.");return}
+ const source=item.event;if(source.source_kind!=="manual"||source.external_event_id){message("Synced events must be rescheduled in their source calendar until two-way sync is enabled.");return}
+ const originalStart=new Date(source.starts_at),oldEnd=source.ends_at?new Date(source.ends_at):new Date(originalStart.getTime()+30*60000);
+ const proposedStart=resize?originalStart:target,proposedEnd=resize?target:new Date(target.getTime()+(oldEnd-originalStart));
+ if(proposedEnd<=proposedStart){message("End time must be after start time");return}
+ const updated={event_id:source.id,starts_at:proposedStart.toISOString(),ends_at:proposedEnd.toISOString()};
+ const snapshot={...source};Object.assign(source,updated);
+ try{await api("update",updated);await load();message(resize?"Event duration updated":"Event moved")}catch(err){Object.assign(source,snapshot);render();message("Could not save: "+err.message)}
+}
+function attachCalendarDrag(element,item,{resize=false}={}){
+ if(item.kind==="event"&&(item.event.source_kind!=="manual"||item.event.external_event_id))return;
+ element.addEventListener("pointerdown",event=>{
+  if(event.button!==0||event.target.closest("input,select"))return;
+  if(resize!==!!event.target.closest(".calResizeGrip"))return;
+  const origin=dragPoint(event),start=new Date(item.event?.starts_at||item.start),end=new Date(item.event?.ends_at||item.end||start.getTime()+1800000);
+  const state={id:event.pointerId,item,origin,start,end,resize,moved:false,ghost:null,source:element,hover:null};
+  calendarDrag.active=state;element.setPointerCapture(event.pointerId);
+  const moving=e=>{
+   if(calendarDrag.active!==state)return;
+   const distance=Math.hypot(e.clientX-origin.x,e.clientY-origin.y);
+   if(!state.moved&&distance<9)return;
+   if(!state.moved){state.moved=true;state.ghost=node("div",item.event?.title||item.task?.title||"Schedule");state.ghost.className="calendarDragGhost";document.body.append(state.ghost)}
+   state.ghost.style.left=Math.min(innerWidth-160,e.clientX+12)+"px";state.ghost.style.top=Math.max(0,e.clientY-18)+"px";
+   state.ghost.style.display="none";const over=document.elementFromPoint(e.clientX,e.clientY);state.ghost.style.display="";
+   state.hover?.classList.remove("calDropActive");state.hover=over?.closest?.("[data-calendar-date],.dayTimeline")||null;state.hover?.classList.add("calDropActive");
+  };
+  const finish=async e=>{
+   if(calendarDrag.active!==state)return;
+   element.removeEventListener("pointermove",moving);element.removeEventListener("pointerup",finish);element.removeEventListener("pointercancel",cancel);
+   state.hover?.classList.remove("calDropActive");state.ghost?.remove();calendarDrag.active=null;
+   if(!state.moved)return;
+   suppressCalendarClickUntil=Date.now()+400;
+   const target=document.elementFromPoint(e.clientX,e.clientY);
+   const timeline=target?.closest?.(".dayTimeline");let destination=null;
+   if(timeline&&selectedDay){const rect=timeline.getBoundingClientRect();const minute=Math.max(0,Math.min(1425,Math.round(((e.clientY-rect.top)/80)*4)*15));destination=dateAtMinutes(selectedDay,minute)}
+   else{const date=calendarDropDate(target);if(date){destination=new Date(date);destination.setHours(state.start.getHours(),state.start.getMinutes(),0,0)}}
+   if(!destination&&state.resize){const diff=Math.round((e.clientY-origin.y)/20)*15;destination=new Date(state.end.getTime()+diff*60000)}
+   if(!destination)return;
+   if(state.resize&&destination<=state.start)destination=new Date(state.start.getTime()+15*60000);
+   if(item.kind==="task"){message("Open Tasks to schedule this task; drag changes are not automatically applied.");return}
+   await calendarMove(item,destination,state.resize);
+  };
+  const cancel=()=>{state.hover?.classList.remove("calDropActive");state.ghost?.remove();calendarDrag.active=null};
+  element.addEventListener("pointermove",moving);element.addEventListener("pointerup",finish);element.addEventListener("pointercancel",cancel);
+ });
 }
 
 function showDay(date){
@@ -136,7 +193,7 @@ function renderDay(){
    card.style.top=topPx+"px";card.style.height=heightPx+"px";
    card.style.left="calc("+((ev.col/total)*100)+"% + 4px)";
    card.style.width="calc("+(100/total)+"% - 8px)";
-   card.title=ev.title+" — "+human(ev.start.toISOString());card.onclick=ev.click;if(ev.kind==="event"){const match=data.events.find(x=>x.title===ev.title&&new Date(x.starts_at).getTime()===ev.start.getTime());if(match&&match.source_kind==="manual"){card.draggable=true;card.ondragstart=e=>{e.dataTransfer.setData("application/x-sandy-event",match.id);e.dataTransfer.effectAllowed="move"}}}timeline.append(card);
+   card.title=ev.title+" — "+human(ev.start.toISOString());card.onclick=()=>{if(Date.now()>suppressCalendarClickUntil)ev.click()};if(ev.kind==="event"){const match=data.events.find(x=>x.title===ev.title&&new Date(x.starts_at).getTime()===ev.start.getTime());if(match&&match.source_kind==="manual"){card.draggable=true;card.ondragstart=e=>{e.dataTransfer.setData("application/x-sandy-event",match.id);e.dataTransfer.effectAllowed="move"}}}if(ev.kind==="event"){const source=data.events.find(x=>x.title===ev.title&&new Date(x.starts_at).getTime()===ev.start.getTime());if(source){const grip=node("span");grip.className="calResizeGrip";grip.title="Drag to change duration";card.append(grip);attachCalendarDrag(card,{kind:"event",event:source,start:ev.start,end:ev.end})}}timeline.append(card);
   }
  }
  const isToday=day.toDateString()===today.toDateString();
@@ -149,7 +206,7 @@ function moveDay(offset){if(!selectedDay)return;calendarMode="day";const d=new D
 function render(){
  $("monthTitle").textContent=calendarMode==="day"&&selectedDay?new Intl.DateTimeFormat(undefined,{month:"long",year:"numeric"}).format(selectedDay):fmt(current);document.querySelectorAll("[data-view]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.view===calendarMode)));$("calendarHint").textContent=calendarMode==="day"?"Click empty space to schedule an event.":calendarMode==="month"?"Select a day to open its schedule.":"Select an event for details or a date to open its day.";const grid=$("calendar");grid.classList.toggle("hidden",calendarMode!=="month");grid.replaceChildren();for(const d of ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]){const w=node("div",d);w.className="week";grid.append(w)}
  const first=(current.getDay()+6)%7,days=new Date(current.getFullYear(),current.getMonth()+1,0).getDate(),total=Math.ceil((first+days)/7)*7;
- for(let i=0;i<total;i++){const date=new Date(current.getFullYear(),current.getMonth(),i-first+1),el=node("div"),inMonth=date.getMonth()===current.getMonth();el.className="day"+(inMonth?"":" off")+(date.toDateString()===new Date().toDateString()?" today":"");el.title="Open day view";el.onclick=e=>{if(e.target.closest("button"))return;showDay(date)};{const n=node("span",String(date.getDate()));n.className="daynum";n.setAttribute("role","button");n.tabIndex=0;n.title="Open day view";n.onclick=()=>showDay(date);n.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showDay(date)}};el.append(n)}const matching=filteredEvents().filter(e=>new Date(e.starts_at).toDateString()===date.toDateString()&&e.status!=="cancelled");for(const e of matching){const b=node("button",e.title);b.className="event";b.title=human(e.starts_at)+" — "+e.title;b.onclick=()=>edit(e);el.append(b)}for(const t of filteredTasks().filter(t=>t.due_at&&!["cancelled","completed"].includes(t.status)&&new Date(t.due_at).toDateString()===date.toDateString())){const due=node("button","✓ "+t.title);due.className="event taskDueEvent";due.title="Task due: "+human(t.due_at);due.onclick=()=>{location.href="../agenda/#task-"+encodeURIComponent(t.id)};el.append(due)}grid.append(el)}
+ for(let i=0;i<total;i++){const date=new Date(current.getFullYear(),current.getMonth(),i-first+1),el=node("div"),inMonth=date.getMonth()===current.getMonth();el.dataset.calendarDate=calendarDateKey(date);el.className="day"+(inMonth?"":" off")+(date.toDateString()===new Date().toDateString()?" today":"");el.title="Open day view";el.onclick=e=>{if(e.target.closest("button"))return;showDay(date)};{const n=node("span",String(date.getDate()));n.className="daynum";n.setAttribute("role","button");n.tabIndex=0;n.title="Open day view";n.onclick=()=>showDay(date);n.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showDay(date)}};el.append(n)}const matching=filteredEvents().filter(e=>new Date(e.starts_at).toDateString()===date.toDateString()&&e.status!=="cancelled");for(const e of matching){const b=node("button",e.title);b.className="event";b.title=human(e.starts_at)+" — "+e.title;b.onclick=()=>{if(Date.now()>suppressCalendarClickUntil)edit(e)};attachCalendarDrag(b,{kind:"event",event:e});el.append(b)}for(const t of filteredTasks().filter(t=>t.due_at&&!["cancelled","completed"].includes(t.status)&&new Date(t.due_at).toDateString()===date.toDateString())){const due=node("button","✓ "+t.title);due.className="event taskDueEvent";due.title="Task due: "+human(t.due_at);due.onclick=()=>{location.href="../agenda/#task-"+encodeURIComponent(t.id)};attachCalendarDrag(due,{kind:"task",task:t,start:new Date(t.due_at)});el.append(due)}grid.append(el)}
  renderDay();
  renderAlternative();
  const up=$("upcoming");up.replaceChildren();let upcoming=data.events.filter(e=>e.status!=="cancelled"&&new Date(e.starts_at)>=new Date(Date.now()-86400000)).slice(0,30);const deadlines=data.tasks.filter(t=>t.due_at&&!["cancelled","completed"].includes(t.status)&&new Date(t.due_at)>=new Date(Date.now()-86400000)).sort((a,b)=>new Date(a.due_at)-new Date(b.due_at)).slice(0,30);if(!upcoming.length&&!deadlines.length)up.append(node("p","No upcoming events or task deadlines."));for(const t of deadlines){const div=node("div");div.className="item";const link=node("a","✓ "+t.title);link.href="../agenda/#task-"+encodeURIComponent(t.id);div.append(link,node("div","Task due · "+human(t.due_at)));up.append(div)}for(const e of upcoming){const div=node("div");div.className="item";const b=node("button",e.title);b.className="btn";b.onclick=()=>edit(e);div.append(b,node("div",human(e.starts_at)),node("small",e.matter_key||""));up.append(div)}
