@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- Sandy client publishing checkpoint 2026-10-17: mission planning, review, audit and task delegation UI. -->
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Sandy · Your agenda</title><style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>Sandy — Tasks</title><style>
 :root{font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#29342e;background:#fafaf7;--ink:#27372f;--muted:#7c8980;--line:#e7ebe5;--green:#326b53;--pale:#edf3ec;--white:#fff}
 *{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:not-allowed}
 .shell{max-width:1140px;margin:auto;padding:0 30px 70px}
@@ -284,11 +284,118 @@ html,body{max-width:100%;overflow-x:clip}
 
 .missionOverview{background:#fff;border:1px solid #e2e6df;border-radius:13px;padding:15px;margin:8px 0 18px}.missionHeader{display:flex;justify-content:space-between;align-items:center;gap:12px}.missionHeader strong{font-size:16px}.missionHeader p{color:#68716a;font-size:12px;margin:3px 0 0}.missionCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:9px;margin-top:12px}.missionCard{text-align:left;background:#fafbf9;border:1px solid #e1e6de;border-radius:10px;padding:11px 13px;cursor:pointer;color:inherit;font:inherit;min-width:0}.missionCard:hover{background:#f1f6ef;border-color:#acbead}.missionCardTitle{font-weight:700;line-height:1.3;font-size:13px}.missionCardMeta{font-size:11px;color:#607060;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:7px 0}.missionProgress{height:5px;background:#e6ebe4;border-radius:8px;overflow:hidden}.missionProgress span{display:block;background:#668a6a;height:100%}.missionCardInfo{font-size:11px;color:#68716a;margin-top:7px}.missionEmpty{font-size:12px;color:#737973;padding:8px 0}.missionOverview button:focus-visible{outline:2px solid #658568;outline-offset:2px}@media(max-width:700px){.missionHeader{align-items:flex-start}.missionCards{grid-template-columns:1fr}.missionOverview{padding:12px}}
 .missionQuestionActions{margin-top:9px}.missionQuestionActions button{font-size:11px;padding:5px 9px;border-color:#9db49f;background:#f1f7f0;color:#365d39}\n</style>
-<link rel="stylesheet" href="./task-attachments.css?v=20261018a"></head><body>
+<link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
+body{background:#f8f8f5!important;color:#292d29!important}
+#app.shell{max-width:none!important;margin:0 0 0 244px!important;padding:18px clamp(20px,5vw,76px) 90px!important;min-height:100vh!important}
+.agendaSide{width:244px!important;background:#f5f6f3!important;border-color:#e5e7e1!important;padding:22px 9px!important}
+.agendaSide .sideBrand{font-family:Georgia,serif!important;font-size:36px!important;font-weight:400!important;letter-spacing:-2px!important;margin:0 0 25px 4px!important;padding:0 9px!important}
+.agendaSide .sideBrand::first-letter{color:#292d29}
+.agendaSide .sideNav{border-radius:12px!important;padding:13px 15px!important;font-size:14px!important;margin:2px 0!important;color:#515950!important}
+.agendaSide .sideNav.current{background:#e6e9e2!important;color:#242923!important;font-weight:700!important}
+.agendaSide .sideHeading{font-size:10px!important;color:#899087!important;letter-spacing:.13em!important}
+#app header{height:38px!important;border:0!important;display:flex!important;justify-content:flex-end!important}
+#app header>.logo{display:none!important}
+#app .headright{gap:12px!important}
+#app .headright .topnav-link{display:none!important}
+#app .top{margin:18px 0 26px!important;align-items:center!important}
+#app .top h1{font-family:Georgia,"Times New Roman",serif!important;font-size:clamp(34px,4.3vw,52px)!important;font-weight:400!important;letter-spacing:-1.3px!important;color:#252725!important;line-height:1.14!important}
+#app .intro{font-size:15px!important;color:#6a7169!important}
+#app .btn.primary,#app .rootAdd{background:#263d31!important;border-color:#263d31!important;color:#fff!important}
+#app .btn{border-radius:10px!important}
+#app .workspaceBar,#app .summary,#app .missionOverview,#app .requestPanel,#app .quickPanel,#app .toolbar,#app .collabBar{border-color:#e6e9e3!important}
+#app .workspaceBar,#app .summary{margin-bottom:18px!important}
+#app .metric{border-radius:12px!important;padding:12px 14px!important}
+#app .panel,#app .missionOverview,#app .requestPanel{border-radius:16px!important;box-shadow:none!important}
+#app .tasklist{background:#fff!important;border:1px solid #e5e8e2!important;border-radius:0 0 16px 16px!important;border-top:0!important;box-shadow:none!important}
+#app .task{border:0!important;border-bottom:1px solid #ecefeb!important;border-radius:0!important;background:#fff!important;box-shadow:none!important}
+#app .taskrow{padding:13px 16px!important;gap:11px!important;min-height:57px!important}
+#app .taskrow:hover{background:#f9faf7!important}
+#app .taskcheck{border-radius:4px!important;width:17px!important;height:17px!important;border:1.5px solid #929a92!important;margin-top:5px!important}
+#app .outlineHeader{background:#fff!important;border:1px solid #e5e8e2!important;border-radius:16px 16px 0 0!important;padding:15px 18px!important;margin-bottom:0!important;color:#2d332d!important;gap:10px!important}
+#app .outlineHeader strong{font-size:16px!important;color:#252825!important}
+#app .rootLine{border:1px solid #e5e8e2!important;background:#fff!important;border-radius:0!important;padding:10px 15px!important}
+#app .rootLine input{font-size:15px!important;color:#292d29!important}
+#app .rootAdd{border-radius:10px!important}
+#app .quickPanel{background:#fff!important}
+#app .tab.active,#app .viewBtn.chosen{background:#e6eae3!important;color:#273d31!important;border-color:#dce2d9!important}
+#app .keyboardHint{color:#8b938b!important}
+@media(max-width:850px){#app.shell{margin:0!important;padding:15px 15px 95px!important}#app header{height:auto!important;min-height:50px!important}#app .top h1{font-size:35px!important}#app .outlineHeader{flex-wrap:wrap!important}#app .taskrow{padding:10px 8px!important}.agendaSide{width:min(290px,85vw)!important}}
+
+/* V4 refined compact minimal outline — preserve existing task behaviours. */
+#app.shell{padding-top:12px!important}
+#app .top{margin:12px 0 17px!important}
+#app .top h1{margin:0!important;font-size:clamp(34px,3.6vw,46px)!important}
+#app .intro{margin-top:4px!important}
+#app .workspaceBar{padding-top:5px!important;padding-bottom:5px!important;margin-bottom:9px!important;border:0!important;background:transparent!important}
+#app .categoryBar{margin-bottom:6px!important}
+#app .summary{gap:7px!important;margin-bottom:10px!important}
+#app .metric{padding:7px 11px!important;border:0!important;background:#eff1ed!important;border-radius:9px!important;box-shadow:none!important}
+#app .metric span{font-size:11px!important}
+#app .missionOverview{padding:11px 14px!important;margin-bottom:9px!important}
+#app .requestPanel{padding:9px 12px!important;margin-bottom:8px!important}
+#app .quickPanel{padding:8px 12px!important;margin-bottom:8px!important;border:0!important;box-shadow:none!important;background:#f0f2ee!important}
+#app .quick input{padding:4px!important;font-size:14px!important}
+#app .helper{font-size:10px!important;margin-top:2px!important}
+#app .collabBar{padding:3px 0!important;margin:0 0 5px!important;border:0!important}
+#app .toolbar{padding:4px 0 9px!important;margin:0!important;border:0!important;background:transparent!important}
+#app .tabs{gap:3px!important}
+#app .tab{padding:7px 10px!important;border:0!important;border-radius:9px!important;background:transparent!important;font-size:12px!important}
+#app .search{padding:8px 11px!important;max-width:225px!important}
+#app .outlineHeader{padding:9px 13px!important;background:#fff!important;border-color:#e9ebe6!important;border-radius:12px 12px 0 0!important}
+#app .outlineHeader strong{font-size:14px!important}
+#app .outlineControls{gap:3px!important}
+#app .outlineSmall,#app .viewBtn{padding:5px 7px!important;font-size:11px!important}
+#app .rootLine{min-height:40px!important;padding:5px 10px!important;gap:8px!important;border-color:#ecede9!important}
+#app .rootLine input{font-size:13px!important}
+#app .rootLine select{font-size:11px!important;padding:4px!important}
+#app .rootAdd{padding:6px 11px!important;font-size:12px!important}
+#app .tasklist{border-color:#e9ebe6!important}
+#app .task{border-bottom:1px solid #f1f2ef!important}
+#app .taskrow{min-height:0!important;align-items:center!important;padding:6px 11px!important;gap:7px!important}
+#app .taskrow:hover{background:#f8f9f6!important}
+#app .tasktitle{font-size:13px!important;font-weight:550!important;line-height:1.28!important}
+#app .taskdesc{font-size:11px!important;line-height:1.2!important;margin:1px 0!important}
+#app .taskcheck{width:15px!important;height:15px!important;margin:0!important}
+#app .right{gap:0!important;align-items:center!important}
+#app .iconbtn{padding:3px 5px!important;font-size:14px!important;line-height:1.2!important}
+#app .tag{padding:1px 5px!important;font-size:10px!important;font-weight:400!important;border-radius:5px!important}
+#app .meta{margin-top:3px!important;gap:4px!important}
+#app .children{margin-left:27px!important;padding-left:9px!important;margin-right:5px!important;margin-bottom:1px!important;border-left:1px solid #edf0ea!important}
+#app .childrow{border-bottom-color:#f5f5f2!important}
+#app .childrow .taskrow{padding:5px 8px!important}
+#app .keyboardHint{padding:7px 10px!important;font-size:10px!important}
+#app .draghandle,#app .dragHandle{opacity:.45!important}
+@media(max-width:850px){#app .taskrow{padding:7px 6px!important}#app .right{flex-wrap:wrap!important}#app .outlineHeader{padding:9px!important}}
+
+/* V4 compact outline correction: one row per task, not two. */
+#app .task>.children>.addchild,#app .childrow>.children>.addchild{display:none!important}
+#app .children{margin-top:0!important;margin-bottom:0!important;padding-bottom:0!important}
+#app .taskrow{padding:5px 10px!important;min-height:32px!important;align-items:center!important}
+#app .childrow .taskrow{padding:4px 8px!important;min-height:30px!important}
+#app .task{border-bottom:1px solid #f3f3f0!important}
+#app .taskdesc{display:none!important}
+#app .taskrow:hover .taskdesc,#app .taskrow:focus-within .taskdesc{display:block!important}
+#app .taskmain .meta:empty{display:none!important}
+#app .meta{margin:1px 0 0!important}
+#app .taskrow .branchToggle{width:16px!important;height:20px!important;line-height:20px!important;font-size:15px!important;padding:0!important;margin:0!important;border:0!important}
+#app .taskrow .branchToggle:disabled{visibility:hidden!important}
+#app .taskrow .right{gap:1px!important;white-space:nowrap!important}
+#app .taskrow .right .iconbtn{font-size:13px!important;padding:2px 4px!important}
+#app .taskrow .tasktitle{font-size:13px!important;line-height:1.3!important}
+#app .taskrow .titleArea{gap:4px!important}
+#app .workspaceHint,#app .stepCount{font-size:10px!important;padding:1px 4px!important}
+#app .quickPanel .helper{display:none!important}
+#app .keyboardHint{border:0!important}
+#app .taskrow .right>.iconbtn{opacity:0!important;transition:opacity .12s!important}
+#app .taskrow:hover .right>.iconbtn,#app .taskrow:focus-within .right>.iconbtn{opacity:1!important}
+@media(hover:none){#app .taskrow .right>.iconbtn{opacity:1!important}}
+@media(max-width:700px){#app .taskrow .right>.iconbtn{opacity:1!important}#app .taskrow{padding:6px 5px!important}}
+</style><style>.sandyFileDropTarget{background:#edf3eb!important;outline:2px dashed #637f67!important;outline-offset:-3px}.sandyTaskFiles{margin:2px 8px 5px 35px!important;padding:7px!important}.sandyFileToggle{font-size:11px!important}</style><style>.sandyQuickAttach{border:0!important;background:transparent!important;color:#68746c!important;font-size:12px!important;line-height:19px!important;padding:0 3px!important;cursor:pointer!important;border-radius:4px!important}.sandyQuickAttach:hover,.sandyQuickAttach:focus-visible{color:#263d31!important;background:#edf2eb!important}.sandyFileToggle{font-size:10px!important}</style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
-<div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
+<div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
 <header><button type="button" id="agendaMobileNav" aria-label="Open navigation" onclick="document.body.classList.add('agendaNavOpen')">☰</button><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
-<div class="top"><div><h1>Your agenda</h1><p class="intro">The important things, always moving forward.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
+<div class="top"><div><h1>Tasks, without the clutter.</h1><p class="intro">A clearer view of your work and what needs attention.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
 
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div id="categoryBar" class="categoryBar hidden" aria-label="Subcategories"></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
 <section id="missionOverview" class="missionOverview" aria-label="Sandy Missions"><div class="missionHeader"><div><strong>🚀 Sandy Missions</strong><p>Track the work Sandy is managing and jump into individual missions.</p></div><button type="button" class="btn small" id="missionShowAll">View all missions</button></div><div id="missionCards" class="missionCards"></div></section>
@@ -310,7 +417,7 @@ html,body{max-width:100%;overflow-x:clip}
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {installSandyIdleLock} from "../security-lock.js";
-import {initTaskFiles} from "./task-attachments.js?v=20261018a";
+import {initTaskFiles} from "../agenda/task-attachments.js?v=20261018v4b";
 "use strict";
 const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
@@ -902,7 +1009,7 @@ function renderTask(t,depth){
  const main=el("div","taskmain");
  const titleArea=el("div","titleArea");const title=outlineTitle(t);
   titleArea.append(title);
- titleArea.append(taskFiles.toggle(t,()=>outer.querySelector(".sandyTaskFiles")));
+ 
  if(t.metadata?.sandy_mission===true){const badge=el("span","sandyMissionBadge","Sandy project");badge.title="This project has been delegated to Sandy for planning and tracked delivery";titleArea.append(badge)}
  if(t.metadata?.sandy_mission_step===true){const assignee=t.metadata.assigned_to==="client"?"Action for you":"Sandy step";const badge=el("span","sandyMissionBadge",assignee);titleArea.append(badge)}
  const progress=countDesc(t);
@@ -923,6 +1030,11 @@ function renderTask(t,depth){
  if(t.contact_name)meta.append(el("span","tag","◉ "+t.contact_name));if(t.start_at)meta.append(el("span","tag","Start "+dateLabel(t.start_at)));const link=state.dependencies.find(x=>x.task_id===t.id);if(link){const dep=state.tasks.find(x=>x.id===link.depends_on_id);if(dep)meta.append(el("span","tag","↳ After "+dep.title))}if(t.waiting_on)meta.append(el("span","tag","↗ "+t.waiting_on));
  main.append(meta);row.append(main);
  const right=el("div","right");
+ if(!t.shared){
+  const attach=btn("📎","iconbtn sandyQuickAttach",()=>{const panel=outer.querySelector(".sandyTaskFiles");if(!panel)return;panel.classList.remove("hidden");panel.refresh();panel.querySelector('input[type="file"]')?.click()});
+  attach.title="Add files to "+t.title;attach.setAttribute("aria-label","Add files to "+t.title);right.append(attach);
+ }
+
  const notesButton=btn("✎","iconbtn",()=>{const panel=outer.querySelector(".inlineTaskNotes");if(!panel)return;panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){panel.loadHistory();panel.querySelector("textarea").focus()}});
  notesButton.title="Add or edit notes / comments";notesButton.setAttribute("aria-label","Notes for "+t.title);right.append(notesButton);
  if(!t.shared){right.append(quickTaskControls(t));right.append(shareTaskControl(t));right.append(delegationControl(t))}
@@ -950,7 +1062,11 @@ function renderTask(t,depth){
  notes.loadHistory=async()=>{history.textContent="Loading history…";try{const result=await api("task-history",{id:t.id});history.replaceChildren();if(!result.entries.length)history.textContent="No comments yet.";for(const entry of result.entries){const item=el("div","historyEntry");const who=el("div","historyMeta",(entry.actor||"Sandy")+" · "+new Date(entry.created_at).toLocaleString());const content=el("div","historyText",entry.snapshot?.text||"");item.append(who,content);history.append(item)}}catch(err){history.textContent="Could not load history: "+err.message}};
  notes.addEventListener("submit",async e=>{e.preventDefault();const content=notesField.value.trim();if(!content)return;saveNotes.disabled=true;try{await api("task-comment",{id:t.id,text:content});notesField.value="";await notes.loadHistory();toast("Comment added to history")}catch(err){toast("Comment was not saved: "+err.message,true)}finally{saveNotes.disabled=false}});
  outer.append(notes);
- outer.append(taskFiles.panel(t));
+ const filePanel=taskFiles.panel(t);outer.append(filePanel);
+ row.addEventListener("dragover",e=>{if(!Array.from(e.dataTransfer?.types||[]).includes("Files"))return;e.preventDefault();e.stopImmediatePropagation();e.dataTransfer.dropEffect="copy";row.classList.add("sandyFileDropTarget")},true);
+ row.addEventListener("dragleave",e=>{if(!row.contains(e.relatedTarget))row.classList.remove("sandyFileDropTarget")});
+ row.addEventListener("drop",e=>{if(!e.dataTransfer?.files?.length)return;e.preventDefault();e.stopImmediatePropagation();row.classList.remove("sandyFileDropTarget");if(t.shared){toast("File uploads are not available for shared tasks",true);return}filePanel.classList.remove("hidden");filePanel.upload([...e.dataTransfer.files])},true);
+
  if(!collapsed(t)){
    const childbox=el("div","children");
    for(const child of children)childbox.append(renderTask(child,depth+1));
