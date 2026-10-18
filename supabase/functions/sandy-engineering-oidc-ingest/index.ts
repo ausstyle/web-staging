@@ -547,6 +547,7 @@ Deno.serve(async(req:Request)=>{
     const {data:executionPolicy,error:executionPolicyError}=await db.from("sandy_v2_runtime_policy")
       .select("mode,config").eq("policy_key","examiner_dynamic_execution").maybeSingle();
     if(executionPolicyError)return fail("examiner_execution_policy_unavailable",503);
+    let selectionAudit:any={};
     let dynamicCandidates:any[]=[];
     let latestDesignRunKey:string|null=null;
     if(executionPolicy?.mode==="enabled"){
@@ -572,19 +573,25 @@ Deno.serve(async(req:Request)=>{
         let common=0;for(const w of x)if(y.has(w))common++;
         return common/Math.min(x.size,y.size);
       };
+      const rejected:Record<string,number>={};
+      const rejectionSamples:any[]=[];
+      const reject=(reason:string,x:any)=>{rejected[reason]=(rejected[reason]||0)+1;if(rejectionSamples.length<30)rejectionSamples.push({reason,oracle:x.oracle_key,question:String(x.question||"").slice(0,250)});return false;};
       const selectedQuestions:string[]=[];
       const selectedOracles=new Map<string,number>();
       dynamicCandidates=dynamicCandidates.filter((x:any)=>{
         const k=canonical(String(x.question||"")),oracle=String(x.oracle_key||"");
-        if(!k||seen.has(k)||selectedOracles.has(oracle))return false;
-        if(priorPasses.some((old:string)=>similarity(k,old)>=0.75))return false;
-        if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.65))return false;
+        if(!k)return reject("invalid_question",x);
+        if(seen.has(k))return reject("previously_executed",x);
+        if(selectedOracles.has(oracle))return reject("duplicate_oracle_in_batch",x);
+        if(priorPasses.some((old:string)=>similarity(k,old)>=0.75))return reject("similar_to_prior_pass",x);
+        if(selectedQuestions.some((old:string)=>similarity(k,old)>=0.65))return reject("similar_within_batch",x);
         seen.add(k);selectedQuestions.push(k);selectedOracles.set(oracle,1);return true;
       });
       const priorityByOracle:Record<string,number>={memory_retrieval:12,mission_awareness:11,calendar_awareness:10,integration_recovery:9,followup_investigation:8,cross_channel:7,web_history:6,capability:5,task_count:4,connections:3,location:2,clock:1};
       dynamicCandidates.sort((a:any,b:any)=>(priorityByOracle[String(b.oracle_key)]||0)-(priorityByOracle[String(a.oracle_key)]||0)
         ||Number(b.priority||0)-Number(a.priority||0));
       latestDesignRunKey=(design||[])[0]?.run_key||null;
+      selectionAudit={rejected,rejectionSamples,generated_candidates:(design||[]).reduce((n:number,r:any)=>n+(Array.isArray(r.proposals)?r.proposals.length:0),0),unique_eligible:dynamicCandidates.length};
     }
     // Evolution fix: a synthetic customer without Gmail cannot validate an email-outcome investigation.
     // Exclude only questions that require reading existing emails; retain missing-connection capability tests.
@@ -599,6 +606,7 @@ Deno.serve(async(req:Request)=>{
         return !emailRead;
       });
     }
+    selectionAudit={...selectionAudit,eligible_after_prerequisites:dynamicCandidates.length};
     const allowed=Math.min(10,Number(account.max_calls_per_run)||1,Math.max(0,Number(account.max_calls_per_day)-(used||0)),dynamicCandidates.length);
     if(targetedTen&&new Set(dynamicCandidates.map((x:any)=>String(x.question).trim().toLowerCase())).size<10)return fail("qa_targeted_suite_less_than_ten_unique",409);
     if(targetedTen&&allowed<10)return fail("qa_targeted_budget_or_novelty_insufficient",409);
