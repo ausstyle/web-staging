@@ -13,6 +13,7 @@ const OBSERVER_REF = REPO + "/.github/workflows/sandy-engineering-outcome-observ
 const ENGINEERING_REF = REPO + "/.github/workflows/sandy-codex-engineering.yml@refs/heads/main";
 const QA_REF = REPO + "/.github/workflows/sandy-v2-api-qa.yml@refs/heads/main";
 const DESIGN_REF = REPO + "/.github/workflows/sandy-v2-examiner-design.yml@refs/heads/main";
+const LIVE_REF = REPO + "/.github/workflows/sandy-examiner-live-review.yml@refs/heads/main";
 const LAB_REF = REPO + "/.github/workflows/sandy-examiner-google-lab.yml@refs/heads/main";
 const keys = createRemoteJWKSet(new URL(ISSUER + "/.well-known/jwks"));
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {
@@ -38,14 +39,28 @@ Deno.serve(async(req:Request)=>{
   const inlineFlow=claims.workflow_ref===ENGINEERING_REF&&claims.event_name==="workflow_dispatch";
   const qaFlow=claims.workflow_ref===QA_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const designFlow=claims.workflow_ref===DESIGN_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
+  const liveFlow=claims.workflow_ref===LIVE_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const labFlow=claims.workflow_ref===LAB_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   if(claims.repository!==REPO || String(claims.repository_id)!==REPO_ID ||
-     (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow) || claims.ref!=="refs/heads/main")
+     (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow&&!liveFlow) || claims.ref!=="refs/heads/main")
     return fail("unauthorized_workflow",403);
 
   let body:Record<string,unknown>;
   try {body=await req.json();} catch {return fail("invalid_json");}
 
+
+  if(liveFlow){
+    if(body.operation!=="v2_live_review"||Object.keys(body).some(k=>k!=="operation"))return fail("live_operation_restricted",403);
+    const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+    if(!url||!key)return fail("live_review_backend_unconfigured",503);
+    try {
+      const rsp=await fetch(url+"/functions/v1/sandy-examiner-live-review",{
+        method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},
+        body:"{}",signal:AbortSignal.timeout(250000)});
+      const result=await rsp.json().catch(()=>({ok:false,reason:"live_review_invalid_response"}));
+      return json(result,rsp.status);
+    }catch{return fail("live_review_dispatch_failed",503);}
+  }
 
   if(labFlow){
     if(body.operation!=="examiner_google_lab_verify"||Object.keys(body).some(k=>k!=="operation"))return fail("lab_operation_restricted",403);
