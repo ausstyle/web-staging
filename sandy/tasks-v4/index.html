@@ -1009,7 +1009,7 @@ function renderTask(t,depth){
  const main=el("div","taskmain");
  const titleArea=el("div","titleArea");const title=outlineTitle(t);
   titleArea.append(title);
- titleArea.append(taskFiles.toggle(t,()=>outer.querySelector(".sandyTaskFiles")));
+ 
  if(t.metadata?.sandy_mission===true){const badge=el("span","sandyMissionBadge","Sandy project");badge.title="This project has been delegated to Sandy for planning and tracked delivery";titleArea.append(badge)}
  if(t.metadata?.sandy_mission_step===true){const assignee=t.metadata.assigned_to==="client"?"Action for you":"Sandy step";const badge=el("span","sandyMissionBadge",assignee);titleArea.append(badge)}
  const progress=countDesc(t);
@@ -1031,7 +1031,7 @@ function renderTask(t,depth){
  main.append(meta);row.append(main);
  const right=el("div","right");
  if(!t.shared){
-  const attach=btn("📎","iconbtn sandyQuickAttach",()=>{const panel=outer.querySelector(".sandyTaskFiles");if(!panel)return;panel.querySelector('input[type="file"]')?.click()});
+  const attach=btn("📎","iconbtn sandyQuickAttach",()=>{const panel=outer.querySelector(".sandyTaskFiles");if(!panel)return;panel.classList.remove("hidden");panel.refresh();panel.querySelector('input[type="file"]')?.click()});
   attach.title="Add files to "+t.title;attach.setAttribute("aria-label","Add files to "+t.title);right.append(attach);
  }
 
