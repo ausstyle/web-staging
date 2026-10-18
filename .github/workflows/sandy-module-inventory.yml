@@ -1,0 +1,28 @@
+name: Sandy module inventory reconciliation
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sandy/reconcile_module_inventory.py'
+      - '.github/workflows/sandy-module-inventory.yml'
+permissions:
+  contents: read
+concurrency:
+  group: sandy-module-inventory
+  cancel-in-progress: false
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check inventory sync script syntax
+        run: python3 -m py_compile scripts/sandy/reconcile_module_inventory.py
+      - name: Reconcile deployed versions with live Supabase management inventory
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: python3 scripts/sandy/reconcile_module_inventory.py
