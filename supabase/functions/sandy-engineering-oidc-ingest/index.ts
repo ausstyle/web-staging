@@ -571,6 +571,7 @@ Deno.serve(async(req:Request)=>{
       const question=testcase.prompts[variant];
       const requestId="v2qa_"+crypto.randomUUID();
       const started=Date.now();
+      let auditOracle:any={rule_version:"examiner-audit-v2",reference:null,observed:null,decision:null};
       let edgeStatus=0,answer="",trace:any[]=[],taskModel:string|null=null,reason="",verdict:"pass"|"fail"|"needs_review"|"blocked"="needs_review";
       try{
         const followup=testcase.key==="followup_investigation";
@@ -603,9 +604,13 @@ Deno.serve(async(req:Request)=>{
         }else if(testcase.key==="web_history"){
           const {count,error}=await db.from("sandy_web_turns").select("id",{head:true,count:"exact"}).eq("customer_id",customerId);
           if(error)throw Error("web_count_evidence_unavailable");
-          const cited=normalized.includes(String(count??0))||((count??0)===0&&any("zero","no web","none recorded","no messages"));
-          verdict=had("v2_operational_read")&&cited&&any("web","chat")?"pass":"fail";
-          reason=verdict==="pass"?"matches_database_web_count":"message_count_mismatch";
+          const numeric=[...answer.matchAll(/\\b(\\d+)\\s+(?:web(?:\\s+chat)?\\s+)?(?:messages?|turns?|chats?)\\b/gi)].map(m=>Number(m[1]));
+          const zeroWords=/(?:zero|no|none)\\s+(?:recorded\\s+)?(?:web\\s+)?(?:messages?|turns?|chats?)/i.test(answer);
+          const claimed=numeric.length===1?numeric[0]:(numeric.length===0&&zeroWords?0:null);
+          const receipt=had("v2_operational_read");
+          auditOracle={rule_version:"web-count-v2",reference:{table:"sandy_web_turns",customer_scope:"isolated_test",count:count??0},observed:{claimed_count:claimed,extracted_values:numeric,operational_receipt:receipt},decision:claimed===count&&receipt?"verified":"unverified_or_mismatch"};
+          verdict=receipt&&claimed!==null&&claimed===count?"pass":claimed===null?"needs_review":"fail";
+          reason=verdict==="pass"?"verified_exact_web_count":verdict==="needs_review"?"web_count_not_unambiguously_extracted":"exact_web_count_mismatch";
         }else if(testcase.key==="cross_channel"){
           if(!had("v2_operational_read")){verdict="fail";reason="missing_cross_channel_inspection_receipt";}
           else if(["web","whatsapp","voice","email"].every(x=>normalized.includes(x))&&!any("cannot access any","have no access to any")){
@@ -613,9 +618,12 @@ Deno.serve(async(req:Request)=>{
           }else{verdict="fail";reason="incomplete_cross_channel_reply";}
         }else if(testcase.key==="followup_investigation"){
           const deferred=any("would you like me to","do you want me to","if you want me to","provide keywords");
-          const grounded=had("v2_operational_read")&&["web","whatsapp","voice","email"].every(x=>normalized.includes(x));
-          verdict=grounded&&!deferred?"pass":"fail";
-          reason=verdict==="pass"?"followup_scoped_inspection":"followup_failed_to_investigate";
+          const requestedChannels=["web","whatsapp","voice","email"].filter(x=>question.toLowerCase().includes(x));
+          const mentioned=requestedChannels.filter(x=>normalized.includes(x));
+          const receipt=had("v2_operational_read");
+          auditOracle={rule_version:"followup-v2",reference:{requested_channels:requestedChannels,question,prior_context:context},observed:{mentioned_channels:mentioned,operational_receipt:receipt,deferred},decision:"semantic_review_required"};
+          verdict=receipt&&!deferred&&(requestedChannels.length===0||mentioned.length===requestedChannels.length)?"needs_review":"fail";
+          reason=verdict==="fail"?"followup_missing_requested_scope_or_receipt":"followup_semantic_review_required";
         }else if(testcase.key==="location"){
           verdict=any("can't access","cannot access","don't have","do not have","not know","can't determine","cannot determine","not available","no access")?"pass":"needs_review";
           reason=verdict==="pass"?"location_not_inferred":"location_response_needs_review";
@@ -715,7 +723,7 @@ Deno.serve(async(req:Request)=>{
         run_key:runKey,case_key:recordCaseKey,request_id:requestId,customer_id:customerId,
         question,reply:answer,tool_trace:trace,verdict,reason,edge_status:edgeStatus||null,duration_ms:duration,
         evidence:{expected:testcase.expect,model_response_present:answer.length>0,tool_count:trace.length,
-          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel,ai_design_run:testcase.design_run_key||null,semantic_review:semanticReview,clock_oracle:clockOracle}
+          source:"authenticated_real_sandy_agent_runtime",independent_test_account:true,observed_model:taskModel,ai_design_run:testcase.design_run_key||null,semantic_review:semanticReview,clock_oracle:clockOracle,audit_oracle:auditOracle,final_verdict:verdict,final_reason:reason,audit_schema_version:2}
       });
       if(writeError){
         await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);
