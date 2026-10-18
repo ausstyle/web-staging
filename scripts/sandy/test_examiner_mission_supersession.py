@@ -15,6 +15,11 @@ class TestMissionSupersession(unittest.TestCase):
         self.assertIn('provider_http_', SOURCE)
         self.assertIn('empty_model_output', SOURCE)
 
+    def test_optional_preferences_do_not_block_reversible_drafts(self):
+        self.assertIn('Ask customer questions only when missing information prevents', SOURCE)
+        self.assertIn('If uncertain about an optional preference, discard it.', SOURCE)
+        self.assertIn('If uncertain about required safety or permission, keep it.', SOURCE)
+
     def test_old_steps_status_is_loaded_before_supersession(self):
         self.assertIn('.select("id,status,metadata").eq("customer_id",job.customer_id)', SOURCE)
         self.assertIn('t.status==="todo"', SOURCE)
