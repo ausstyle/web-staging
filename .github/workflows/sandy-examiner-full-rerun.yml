@@ -1,0 +1,30 @@
+name: Sandy Examiner full assessment rerun
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sandy-examiner-full-rerun.yml'
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandy-examiner-manual-full-rerun
+  cancel-in-progress: false
+jobs:
+  rerun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Launch authenticated full Examiner assessment
+        env:
+          PROJECT: zmqlyygzqoidkcwdysok
+        shell: bash
+        run: |
+          set -euo pipefail
+          AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
+          CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
+          TOKEN="$(curl --fail --silent --show-error --max-time 15 -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${CLAIM_URL}" | jq -er '.value')"
+          RESPONSE="$(curl --fail --silent --show-error --max-time 60 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data '{"operation":"v2_full_examiner_rerun"}')"
+          echo "${RESPONSE}" | jq '{ok,run_key,status,mode,synthetic_target,thread_review_required,reason}'
+          echo "${RESPONSE}" | jq -e '.ok == true and .status == "running" and .thread_review_required == true' >/dev/null
