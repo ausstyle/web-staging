@@ -76,7 +76,7 @@ const calendarDrag={active:null};let lastCalendarChange=null,undoCalendarBusy=fa
 const formatDragDate=d=>new Intl.DateTimeFormat(undefined,{weekday:"short",month:"short",day:"numeric",hour:"numeric",minute:"2-digit"}).format(d);
 function calendarUndoControl(){let b=$("calendarUndo");if(b)return b;b=node("button","↶ Undo");b.id="calendarUndo";b.type="button";b.className="btn";b.hidden=true;b.onclick=undoCalendarChange;$("calendarToolbar").append(b);return b}
 function offerCalendarUndo(change){lastCalendarChange=change;const b=calendarUndoControl();b.hidden=false;b.disabled=false;message("Saved · Press Ctrl+Z / Cmd+Z to undo")}
-async function undoCalendarChange(){const change=lastCalendarChange;if(!change||undoCalendarBusy)return;undoCalendarBusy=true;const b=calendarUndoControl();b.disabled=true;try{if(change.kind==="task"){await api("reschedule_task",{task_id:change.id,mode:change.mode,original_start_at:change.afterStart,starts_at:change.beforeStart,...(change.mode==="schedule"?{ends_at:change.beforeEnd}: {})})}else{const fresh=await api("list");const currentEvent=fresh.events?.find(e=>e.id===change.id);if(!currentEvent||currentEvent.starts_at!==change.afterStart||currentEvent.ends_at!==change.afterEnd)throw Error("Event changed since your drag; undo cancelled to protect newer changes");await api("update",{event_id:change.id,starts_at:change.beforeStart,ends_at:change.beforeEnd})}lastCalendarChange=null;b.hidden=true;await load();message("Calendar change undone")}catch(err){message("Undo failed: "+err.message);b.disabled=false}finally{undoCalendarBusy=false}}
+async function undoCalendarChange(){const change=lastCalendarChange;if(!change||undoCalendarBusy)return;undoCalendarBusy=true;const b=calendarUndoControl();b.disabled=true;try{if(change.kind==="task"){await api("reschedule_task",{task_id:change.id,mode:change.mode,original_start_at:change.afterStart,starts_at:change.beforeStart,...(change.mode==="schedule"?{ends_at:change.beforeEnd,move_deadline:change.moveDeadline,original_due_at:change.afterDue}: {})})}else{const fresh=await api("list");const currentEvent=fresh.events?.find(e=>e.id===change.id);if(!currentEvent||currentEvent.starts_at!==change.afterStart||currentEvent.ends_at!==change.afterEnd)throw Error("Event changed since your drag; undo cancelled to protect newer changes");await api("update",{event_id:change.id,starts_at:change.beforeStart,ends_at:change.beforeEnd})}lastCalendarChange=null;b.hidden=true;await load();message("Calendar change undone")}catch(err){message("Undo failed: "+err.message);b.disabled=false}finally{undoCalendarBusy=false}}
 
 function dragPoint(event){return {x:event.clientX,y:event.clientY}}
 function calendarDropDate(element){const target=element?.closest?.("[data-calendar-date]");if(!target)return null;const parts=target.dataset.calendarDate.split("-").map(Number);return new Date(parts[0],parts[1]-1,parts[2])}
@@ -87,12 +87,16 @@ async function calendarMove(item,target,resize=false){
   const task=item.task,old=task.start_at||task.due_at;
   if(!old)return message("Task has no existing calendar date");
   const mode=task.start_at?"schedule":"deadline";
+  let moveDeadline=false;
+  if(mode==="schedule"&&task.due_at&&!resize){
+   moveDeadline=confirm("Move scheduled time AND due deadline together?\n\nOK: move both (preserving the gap).\nCancel: move schedule only, leaving the deadline unchanged.");
+  }
   if(mode==="deadline"&&!resize&&!confirm("Move the task deadline to "+target.toLocaleString()+"? Choose Cancel to keep its deadline and schedule work separately from Tasks."))return;
   const oldStart=new Date(old),priorEnd=task.metadata?.scheduled_end_at?new Date(task.metadata.scheduled_end_at):new Date(oldStart.getTime()+30*60000);
   const proposedEnd=resize?target:new Date(target.getTime()+Math.max(15,(priorEnd-oldStart)/60000)*60000);
   if(resize&&mode==="deadline")return message("Set a scheduled start in Tasks before resizing a deadline-only task.");
   if(proposedEnd<=(resize?oldStart:target))return message("End must follow start");
-  try{await api("reschedule_task",{task_id:task.id,mode,original_start_at:old,starts_at:resize?old:target.toISOString(),...(mode==="schedule"?{ends_at:proposedEnd.toISOString()}:{})});await load();offerCalendarUndo({kind:"task",id:task.id,mode,beforeStart:old,afterStart:resize?old:target.toISOString(),beforeEnd:mode==="schedule"?priorEnd.toISOString():null})}catch(err){message("Task not updated: "+err.message)}
+  try{await api("reschedule_task",{task_id:task.id,mode,original_start_at:old,starts_at:resize?old:target.toISOString(),...(mode==="schedule"?{ends_at:proposedEnd.toISOString(),move_deadline:moveDeadline,original_due_at:task.due_at||null}:{})});await load();offerCalendarUndo({kind:"task",id:task.id,mode,beforeStart:old,afterStart:resize?old:target.toISOString(),beforeEnd:mode==="schedule"?priorEnd.toISOString():null,originalDue:task.due_at||null,afterDue:moveDeadline&&task.due_at?new Date(new Date(task.due_at).getTime()+target.getTime()-oldStart.getTime()).toISOString():task.due_at||null,moveDeadline})}catch(err){message("Task not updated: "+err.message)}
   return;
  }
  const source=item.event;if((source.source_kind&&source.source_kind!=="manual")||source.external_event_id){message("Synced events must be rescheduled in their source calendar until two-way sync is enabled.");return}
@@ -123,7 +127,7 @@ function attachCalendarDrag(element,item,{resize=false}={}){
    if(overTimeline&&selectedDay){const rect=overTimeline.getBoundingClientRect();proposed=dateAtMinutes(selectedDay,Math.max(0,Math.min(1425,Math.round(((e.clientY-rect.top)/80)*4)*15)));}
    else{const overDate=calendarDropDate(over);if(overDate){proposed=new Date(overDate);proposed.setHours(start.getHours(),start.getMinutes(),0,0)}}
    if(state.resize)proposed=new Date(end.getTime()+Math.round((e.clientY-origin.y)/20)*15*60000);
-   state.ghost.querySelector("small").textContent=proposed?(state.resize?"Ends ":"Starts ")+formatDragDate(proposed):"Move over a calendar date or time";
+   state.ghost.querySelector("small").textContent=proposed?(state.resize?"Ends ":"Starts ")+formatDragDate(proposed)+(item.kind==="task"?(item.task.start_at?(item.task.due_at?" · Deadline stays unless selected":" · Scheduled time"):" · Moves deadline"):""):"Move over a calendar date or time";
    state.preview?.remove();state.preview=null;
    if(overTimeline&&proposed){const preview=node("div",formatDragDate(proposed));preview.className="calendarDropPreview";preview.style.top=((proposed.getHours()*60+proposed.getMinutes())*80/60)+"px";preview.style.height=Math.max(28,Math.min(300,(end-start)/60000*80/60))+"px";overTimeline.append(preview);state.preview=preview;}
 
