@@ -1897,7 +1897,7 @@ function renderTimeline(){
    marker.setAttribute("aria-label","Schedule "+t.title);
    marker.title="Unscheduled · click to set a date, or drag onto a week to schedule";
    marker.style.left="8px";
-   let drag=null;
+   let drag=null,suppressClick=false;
    marker.addEventListener("pointerdown",e=>{
     if(t.shared||e.button!==0)return;
     drag={x:e.clientX,y:e.clientY,active:false};
@@ -1915,7 +1915,7 @@ function renderTimeline(){
    });
    marker.addEventListener("pointerup",async e=>{
     if(!drag)return;
-    const moved=drag.active;drag=null;marker.classList.remove("timelineMarkerDragging");
+    const moved=drag.active;drag=null;suppressClick=moved;marker.classList.remove("timelineMarkerDragging");
     if(!moved)return;
     const rect=track.getBoundingClientRect();
     const days=Math.max(0,Math.min(83,Math.floor((e.clientX-rect.left)/rect.width*84)));
@@ -1926,7 +1926,7 @@ function renderTimeline(){
     catch(err){t.due_at=before;renderTimeline();toast("Scheduling failed: "+err.message,true)}
    });
    marker.addEventListener("pointercancel",()=>{drag=null;marker.classList.remove("timelineMarkerDragging");marker.style.left="8px"});
-   marker.addEventListener("click",e=>{if(drag)return;state.edit=t;state.parent=null;openDialog();$("taskDue")?.focus()});
+   marker.addEventListener("click",e=>{if(suppressClick){suppressClick=false;e.preventDefault();return}state.edit=t;state.parent=null;openDialog();$("taskDue")?.focus()});
    track.append(marker);
   }
   line.append(track);box.append(line);
