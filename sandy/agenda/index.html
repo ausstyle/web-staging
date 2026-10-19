@@ -558,7 +558,7 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .sandyTaskHoverPreview{position:fixed;z-index:9999;width:min(390px,calc(100vw - 24px));max-height:min(320px,60vh);overflow:auto;box-sizing:border-box;background:#fff;color:#222;border:1px solid #ddd;border-radius:10px;box-shadow:0 10px 35px rgba(0,0,0,.13);padding:12px 14px;pointer-events:auto;opacity:0;transition:opacity 150ms ease;font:13px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow-wrap:anywhere}
 .sandyTaskHoverPreview.visible{opacity:1}
 .sandyTaskHoverPreview .hoverTitle{font-weight:650;margin-bottom:7px}
-.sandyTaskHoverPreview .hoverDescription{color:#555;white-space:normal;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.sandyTaskHoverPreview{max-height:none;overflow:visible;width:min(350px,calc(100vw - 24px))}.sandyTaskHoverPreview .hoverFooter{margin-top:9px;font-size:11px;color:#777}
+.sandyTaskHoverPreview .hoverDescription{color:#555;white-space:normal;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.sandyTaskHoverPreview{max-height:none;overflow:visible;width:min(350px,calc(100vw - 24px))}.sandyTaskHoverPreview .hoverFooter{margin-top:9px;font-size:11px;color:#777}.sandyTaskHoverPreview .hoverOpenDetails{display:inline-block;border:0;background:transparent;padding:5px 0 1px;color:#356f55;font:600 12px/1.3 inherit;cursor:pointer;text-align:left}.sandyTaskHoverPreview .hoverOpenDetails:hover{text-decoration:underline}.sandyTaskHoverPreview .hoverOpenDetails:focus-visible{outline:2px solid #356f55;outline-offset:3px}
 @media(hover:none),(pointer:coarse){.sandyTaskHoverPreview{display:none!important}}
 @media(prefers-reduced-motion:reduce){.sandyTaskHoverPreview{transition:none}}
 </style></head><body>
@@ -2127,7 +2127,7 @@ function open(row){
  preview=document.createElement('div');preview.className='sandyTaskHoverPreview';preview.setAttribute('role','tooltip');
  const h=document.createElement('div');h.className='hoverTitle';h.textContent=title?.textContent?.trim()||'Task details';
  const d=document.createElement('div');d.className='hoverDescription';d.textContent=summary;
- const footer=document.createElement("div");footer.className="hoverFooter";footer.textContent="Click task to view full details";preview.append(h,d,footer);document.body.append(preview);
+ const footer=document.createElement("button");footer.type="button";footer.className="hoverFooter hoverOpenDetails";footer.textContent="View full task details →";footer.addEventListener("click",e=>{e.stopPropagation();const edit=row.querySelector('button[title="Task details"]');if(edit){close();edit.click()}else{close()}});preview.append(h,d,footer);document.body.append(preview);
  preview.addEventListener('mouseenter',()=>clearTimeout(leaveTimer));
  preview.addEventListener('mouseleave',scheduleClose);
  const rect=row.getBoundingClientRect(),width=preview.offsetWidth,height=preview.offsetHeight;
