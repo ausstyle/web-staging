@@ -300,7 +300,16 @@ document.querySelectorAll("[data-calendar-connect]").forEach(button=>button.oncl
 async function loadCalendarSources(){
  const host=document.getElementById("connectedSourceList");if(!host)return;
  try{
-  const result=await api("sources");host.replaceChildren();
+  let result=await api("sources");
+  // Reconcile existing Sandy Composio accounts before presenting connection choices.
+  try{
+   const {data:{session}}=await sb.auth.getSession();
+   if(session){
+    const sync=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-composio-gateway",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts","content-type":"application/json"},body:JSON.stringify({operation:"sync_connections"})});
+    if(sync.ok)result=await api("sources");
+   }
+  }catch(error){console.warn("Existing calendar connection reconciliation deferred",error)}
+  host.replaceChildren();
   const sources=result.sources||[],connections=result.connections||[];
   const selector=document.getElementById("calendarSource");
   if(selector){
