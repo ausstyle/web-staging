@@ -164,6 +164,7 @@ function showIntelligence(c){
 }
 async function showDeploymentApprovals(host){
  const section=panel("Deployment approvals");
+ const refresh=el("button","btn","↻ Refresh job statuses");refresh.type="button";refresh.onclick=()=>{section.remove();showDeploymentApprovals(host)};section.append(refresh);
  const status=el("p","small muted","Loading pending deployment jobs…");section.append(status);host.prepend(section);
  try{
   const result=await call("deployment_approvals");section.removeChild(status);
@@ -177,7 +178,7 @@ async function showDeploymentApprovals(host){
    const p=job.payload||{};if(p.title)txt(card,p.title,"small");
    if(p.expected_behavior)txt(card,"Expected: "+p.expected_behavior,"small muted");
    if(job.status==="pending_approval"&&!job.engineering_change_id){
-    txt(card,"Engineering change required before approval. Register and approve a change in Sandy Engineering Control, then link it to this deployment.","small muted");
+    txt(card,"Not eligible for approval: an approved engineering change must be linked to this job first.","small muted");
    }else if(job.status==="pending_approval"){
     const button=el("button","btn","Approve deployment");button.type="button";
     const feedback=el("div","small muted","Approval does not execute deployment; execution requires an enabled deployment worker.");
@@ -189,6 +190,7 @@ async function showDeploymentApprovals(host){
     };
     card.append(button,feedback);
    }else if(job.status==="approved")txt(card,"Approved · Awaiting an enabled deployment executor.","small muted");
+   else if(job.status==="failed")txt(card,"Execution failed: "+(job.error||"See deployment logs")+". This job cannot be approved again.","small muted");
    section.append(card);
   }
  }catch(e){status.textContent="Unable to load deployment approvals: "+e.message}
