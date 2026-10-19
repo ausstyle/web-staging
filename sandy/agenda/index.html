@@ -400,6 +400,7 @@ html,body{max-width:100%;overflow-x:clip}
 .activityRow button{border:0;background:none;padding:4px;font-size:11px;color:#69766e}
 .activityReviewFoot{margin-top:7px}
 @media(max-width:680px){.activityReview{padding:8px;margin:8px 0}.activityReviewHead{gap:5px}.activityReviewHead span{display:none}.activityReviewHead input{max-width:128px;font-size:11px}.activityTopActions{gap:4px}.activityTopActions .btn{min-height:35px!important;padding:7px 9px!important}#activityQuickInput{font-size:16px}#activityQuickSave{padding:6px 8px}.activityRow{min-height:32px}}
+.activityInsights{font-size:11px;color:#708077;margin:6px 0 2px}.activityRow .activityClock{max-width:160px}.activityReview #activityQuickForm{min-height:33px;padding-block:2px}.activityReview #activityQuickSave{font-size:11px;padding:5px 9px}@media(max-width:680px){.activityInsights{font-size:10px}.activityRow .activityClock{max-width:100px}}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -2071,6 +2072,9 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
   return json;
  }
  const esc=s=>String(s||"");
+ const pendingActivities=new Map();
+ const activitySummary=document.createElement("div");activitySummary.className="activityInsights";entries.after(activitySummary);
+ const saveQueue={pending:0};
  async function refreshActivities(){
   if(panel.classList.contains("hidden"))return;
   entries.replaceChildren();feedback.textContent="Loading…";
@@ -2080,7 +2084,11 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
    const result=await activityRequest({action:"list",day:selected,timezone:tz,from:a.toISOString(),to:b.toISOString()});
    feedback.textContent="";
    const rows=result.activities||[];
-   if(!rows.length){const empty=el("p","small muted","No completed tasks or activities recorded for this day.");entries.append(empty);return}
+   const completed=rows.filter(x=>x.source_kind==="completed_task").length;
+   const personal=rows.filter(x=>x.source_kind!=="completed_task").length;
+   const duration=rows.filter(x=>x.source_kind!=="completed_task").reduce((n,x)=>n+(x.duration_minutes||0),0);
+   activitySummary.textContent=completed+" completed tasks · "+personal+" other activities"+(duration?" · "+(duration/60).toFixed(1)+"h recorded":"");
+   if(!rows.length&&!pendingActivities.size){const empty=el("p","small muted","No completed tasks or activities recorded for this day.");entries.append(empty);return}
    for(const item of rows){
     const row=el("div","activityRow");
     const check=el("span","activityDoneIcon","✓");
@@ -2089,23 +2097,38 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
     if(item.source_kind==="completed_task"){const source=el("span","activityClock","Task");source.title="Automatically included from completed Tasks";row.append(check,label,time,source);entries.append(row);continue}
     const edit=btn("Edit","",async()=>{const revised=prompt("Edit completed activity",item.description);if(revised===null||!revised.trim()||revised.trim()===item.description)return;try{await activityRequest({action:"update",id:item.id,description:revised.trim()});await refreshActivities()}catch(e){feedback.textContent=e.message}});
     const remove=btn("×","",async()=>{if(!confirm("Remove this activity from your day?"))return;try{await activityRequest({action:"delete",id:item.id});await refreshActivities()}catch(e){feedback.textContent=e.message}});
-    remove.setAttribute("aria-label","Delete activity");row.append(check,label,time,edit,remove);entries.append(row)
+    remove.setAttribute("aria-label","Delete activity");row.append(check,label,time,edit,remove);if(item.analysis_status==="processing"||item.analysis_status==="pending")row.append(el("span","activityClock","Analysing…"));else if(item.analysis_status==="failed"||item.analysis_status==="unavailable")row.append(el("span","activityClock","Analysis pending"));else if(Array.isArray(item.connections)&&item.connections.length){const links=el("span","activityClock","✧ "+item.connections.length+" suggested link"+(item.connections.length===1?"":"s"));links.title=item.connections.map(x=>x.reason||"Suggested connection").join("; ");row.append(links)}entries.append(row)
    }
+   for(const [key,item] of pendingActivities){const row=el("div","activityRow");row.dataset.optimisticId=key;row.append(el("span","activityDoneIcon","✓"),el("span","activityText",item.description),el("span","activityClock",item.failed?"Save failed":"Saving…"));if(item.failed){const retry=btn("Retry","",()=>persistActivity(key));row.append(retry)}entries.append(row)}
   }catch(e){feedback.textContent=e.message||"Could not load activities"}
  }
  toggle.addEventListener("click",()=>{const shown=panel.classList.toggle("hidden")===false;toggle.setAttribute("aria-expanded",String(shown));if(shown){refreshActivities();input.focus()}});
  day.addEventListener("change",refreshActivities);
- form.addEventListener("submit",async e=>{
-  e.preventDefault();const description=input.value.trim();if(!description)return;
-  const button=$("activityQuickSave");button.disabled=true;feedback.textContent="Saving…";
+ async function persistActivity(key){
+  const item=pendingActivities.get(key);if(!item)return;
+  item.failed=false;
   try{
-   const selected=day.value||localDay(),now=new Date(),current=localDay();
-   const occurred=selected===current?now:new Date(selected+"T12:00:00");
-   await activityRequest({action:"create",description,occurred_at:occurred.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"});
-   input.value="";feedback.textContent="Saved";await refreshActivities();input.focus();
-  }catch(err){feedback.textContent=err.message||"Unable to save"}
-  finally{button.disabled=false}
+   await activityRequest({action:"create",description:item.description,occurred_at:item.occurred_at,timezone:item.timezone});
+   pendingActivities.delete(key);
+   await refreshActivities();
+  }catch(err){
+   item.failed=true;feedback.textContent="An activity could not be saved. Select Retry.";
+   await refreshActivities();
+  }
+ }
+ form.addEventListener("submit",e=>{
+  e.preventDefault();const description=input.value.trim();if(!description)return;
+  const selected=day.value||localDay(),now=new Date();
+  const occurred=selected===localDay()?now:new Date(selected+"T12:00:00");
+  const id=crypto.randomUUID();
+  pendingActivities.set(id,{description,occurred_at:occurred.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC",failed:false});
+  input.value="";input.focus();feedback.textContent="";
+  const row=el("div","activityRow");row.dataset.optimisticId=id;
+  row.append(el("span","activityDoneIcon","✓"),el("span","activityText",description),el("span","activityClock","Saving…"));
+  entries.append(row);
+  void persistActivity(id);
  });
+
 }
 </script><script id="sandy-nonshifting-task-preview-script">
 (function(){
