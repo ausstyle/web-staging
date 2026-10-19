@@ -1050,14 +1050,14 @@ async function runInstantQueue(){
     for(const t of state.tasks)if(t.parent_task_id===job.id)t.parent_task_id=result.id;
     instantPending.delete(job.id);persistInstantQueue();
     document.querySelectorAll(".instantSaveStatus").forEach(n=>{if(n.closest(".task,.childrow")?.id==="task-"+job.id)n.remove()});
-    if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    if(state.view==="timeline"&&document.querySelector(".timelineInlineDraft")){ /* Preserve unsaved timeline input. */ }else if(!document.activeElement?.closest?.(".outlineDraft"))render();
     api("update",{id:result.id,position:job.position}).catch(()=>{});
     organiseTaskLater(result.id,job.title);
    }catch(e){
     job.status="failed";job.error=e.message||String(e);persistInstantQueue();
     const badge=document.getElementById("task-"+job.id)?.querySelector(".instantSaveStatus");
     if(badge){badge.textContent="Not saved · retry";badge.classList.add("instantFailed");badge.title=job.error;badge.onclick=()=>{job.status="saving";job.error=null;persistInstantQueue();badge.textContent="Saving…";badge.classList.remove("instantFailed");runInstantQueue()}}
-    if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    if(state.view==="timeline"&&document.querySelector(".timelineInlineDraft")){ /* Preserve unsaved timeline input. */ }else if(!document.activeElement?.closest?.(".outlineDraft"))render();
     toast("Task has not been confirmed saved. Retry the task.",true);
     continue;
    }
@@ -1779,7 +1779,8 @@ function timelineNewRow(parent=null,after=null,company=state.entryWorkspace,init
    else if(e.shiftKey&&parent){const p=state.tasks.find(x=>x.id===parent);if(p)draft(p.parent_task_id||null,p.id)}
   }
  });
- field.addEventListener("blur",()=>{if(!closed){if(field.value.trim())save();else form.remove()}});
+ // A blur is not consent to create a task. Keep the draft until Enter or Escape.
+ form.addEventListener("submit",e=>{e.preventDefault();save()});
  queueMicrotask(()=>field.focus());
 }
 function timelineEditTitle(t,label){
@@ -1884,7 +1885,7 @@ function renderTimeline(){
   const company=workspace.value||state.entryWorkspace;
   const previous=roots.length?roots[roots.length-1].id:null;
   instantEntry(title,null,previous,company,undefined);
-  input.value="";renderTimeline();
+  input.value="";if(!document.querySelector(".timelineInlineDraft"))renderTimeline();
   $("timeline")?.querySelector(".timelineQuickAdd input")?.focus();
   setTimeout(runInstantQueue,0);
  });
