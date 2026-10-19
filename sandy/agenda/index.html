@@ -93,6 +93,7 @@ body{background:#fafbf8;color:#253a2c}
 .viewSwitch{display:flex;padding:3px;background:#eef3ec;border-radius:10px;gap:2px}.viewBtn{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:650;color:#7b907e}.viewBtn.chosen{background:#fff;color:#2e6a4b;box-shadow:0 1px 5px #0001}
 .rootLine{display:flex;align-items:center;gap:12px;border:1px solid #dbe8da;border-top:0;background:#f8fbf7;padding:12px 18px;border-radius:0 0 14px 14px}.rootLine span{font-size:20px;color:#538066}.rootLine input{border:0;outline:0;background:transparent;flex:1;font-size:14px;min-width:0;color:#314938}.keyboardHint{font-size:11px;color:#9aaa9b;padding:12px 5px}.timeline{background:white;border:1px solid var(--line);border-radius:14px;overflow-x:auto}.timelineHead{padding:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.timelineHead span{color:#849487;font-size:11px}.timelineGrid{display:grid;grid-template-columns:minmax(170px,240px) repeat(12,minmax(55px,1fr));min-width:860px}.timelineWeeks{background:#f6f9f5;border-block:1px solid #e4ece3}.timelineLabel{text-align:left;padding:10px 12px;border:0;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#38543e}.timelineRow{border-bottom:1px solid #eff3ed;min-height:41px}.timelineRow:hover{background:#fbfdfb}.week{font-size:10px;color:#89998c;padding:11px 5px;text-align:center;border-left:1px solid #ebf0ea}.track{position:relative;grid-row:1;height:40px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(8.333333% - 1px),#edf2ec calc(8.333333% - 1px),#edf2ec 8.333333%)}.ganttBar{position:absolute;top:12px;height:16px;min-width:8px;border-radius:6px;background:#559a72;cursor:pointer}.ganttDone{background:#b4c5b7}.unscheduled{font-size:10px;color:#b2bcb1;margin:12px;display:inline-block}
 .timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
+.timelineInlineDraft{border-bottom:1px solid #dbe7da;background:#f5faf4;min-height:45px;align-items:center}.timelineNewHint{font-size:11px;color:#819184;padding:6px 12px}.timelineLabel .inlineTitle{width:100%;font-size:12px;border:1px solid #a7c7af;border-radius:4px;padding:5px;background:white}
 .timelineQuickFields{display:flex;align-items:center;gap:6px;min-width:0;padding:5px 10px}
 .timelinePlus{color:#59916e;font-size:19px}
 .timelineQuickFields input{width:100%;min-width:0;background:transparent;border:0;outline:0;color:#294534;font:inherit;font-size:12px}
@@ -1488,7 +1489,7 @@ function openTaskContextMenu(t,x,y){
  action("Edit task",()=>{state.edit=t;state.parent=null;openDialog()});
  action("Set due date",()=>{state.edit=t;state.parent=null;openDialog();$("taskDue").focus()});
  action("Change priority",()=>{state.edit=t;state.parent=null;openDialog();$("taskPriority").focus()});
- action("Add subtask",()=>outlineDraft(t.id,null,t.company_id||"personal"));
+ action("Add subtask",()=>state.view==="timeline"?timelineNewRow(t.id,null,t.company_id||"personal"):outlineDraft(t.id,null,t.company_id||"personal"));
  if(!t.shared){
   const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];
   if(previous&&!["completed","cancelled"].includes(previous.status))action("↳ Make subtask of previous",()=>moveOutlineTask(t.id,previous.id,"inside"));
@@ -1747,6 +1748,75 @@ function render(){renderPinnedTasks();renderWorkspaces();renderMissionOverview()
 }
 
 
+// Timeline shares the outline's task API and instant-save queue, without changing views.
+function timelineNewRow(parent=null,after=null,company=state.entryWorkspace,initial=""){
+ const box=$("timeline"),at=after?box.querySelector('[data-timeline-id="'+CSS.escape(after)+'"]'):null;
+ const parentRow=parent?box.querySelector('[data-timeline-id="'+CSS.escape(parent)+'"]'):null;
+ const form=el("form","timelineGrid timelineInlineDraft");
+ const left=el("div","timelineQuickFields");
+ const field=document.createElement("input");field.className="inlineTitle";field.maxLength=240;field.placeholder="New task…";field.value=initial;
+ left.append(el("span","timelinePlus","＋"),field);form.append(left);
+ const hint=el("span","timelineNewHint","Enter to save · Tab to indent · Shift+Tab to outdent · Esc to cancel");
+ hint.style.gridColumn="2 / span 12";form.append(hint);
+ const current=at||parentRow;
+ if(current)current.insertAdjacentElement("afterend",form);
+ else box.querySelector(".timelineQuickAdd")?.insertAdjacentElement("afterend",form);
+ let closed=false;
+ function draft(nextParent,nextAfter){closed=true;form.remove();timelineNewRow(nextParent,nextAfter,company,field.value)}
+ function save(){
+  if(closed||!field.value.trim())return;
+  closed=true;const job=instantEntry(field.value.trim(),parent,after,company);
+  form.remove();renderTimeline();setTimeout(runInstantQueue,0);
+  timelineNewRow(parent,job.id,company);
+ }
+ field.addEventListener("keydown",e=>{
+  if(e.isComposing)return;
+  if(e.key==="Enter"){e.preventDefault();save()}
+  else if(e.key==="Escape"){e.preventDefault();closed=true;form.remove()}
+  else if(e.key==="Tab"){
+   e.preventDefault();
+   if(!e.shiftKey&&after)draft(after,childOf(after).at(-1)?.id||null);
+   else if(e.shiftKey&&parent){const p=state.tasks.find(x=>x.id===parent);if(p)draft(p.parent_task_id||null,p.id)}
+  }
+ });
+ field.addEventListener("blur",()=>{if(!closed){if(field.value.trim())save();else form.remove()}});
+ queueMicrotask(()=>field.focus());
+}
+function timelineEditTitle(t,label){
+ if(label.querySelector("input")||!label.isConnected)return;
+ const field=document.createElement("input");field.className="inlineTitle";field.maxLength=240;field.value=t.title;
+ field.setAttribute("aria-label","Edit "+t.title);
+ label.replaceChildren(field);
+ let done=false;
+ async function commit(mode){
+  if(done)return;
+  const value=field.value.trim();if(!value){toast("Task title is required",true);field.focus();return}
+  done=true;field.disabled=true;
+  try{
+   if(value!==t.title){await api(t.shared?"shared-update":"update",{id:t.id,title:value});t.title=value}
+   if(mode==="indent"||mode==="outdent"){
+    if(t.shared){toast("Shared task hierarchy cannot be changed here",true)}
+    else if(mode==="indent"){
+     const peers=outlinePeers(t.parent_task_id||null),i=peers.findIndex(x=>x.id===t.id);
+     if(i>0)await moveOutlineTask(t.id,peers[i-1].id,"inside");
+     else toast("No preceding task to indent beneath",true);
+    }else if(t.parent_task_id){const p=state.tasks.find(x=>x.id===t.parent_task_id);if(p)await moveOutlineTask(t.id,p.id,"after")}
+    else toast("Already a top-level task");
+   }
+   if(mode==="enter"){
+    renderTimeline();timelineNewRow(t.parent_task_id||null,t.id,t.company_id||"personal");
+   }else renderTimeline();
+  }catch(e){done=false;field.disabled=false;toast("Could not save task: "+e.message,true);field.focus()}
+ }
+ field.addEventListener("keydown",e=>{
+  if(e.isComposing)return;
+  if(e.key==="Enter"){e.preventDefault();commit("enter")}
+  else if(e.key==="Tab"){e.preventDefault();commit(e.shiftKey?"outdent":"indent")}
+  else if(e.key==="Escape"){e.preventDefault();done=true;renderTimeline()}
+ });
+ field.addEventListener("blur",()=>{if(!done)commit("blur")});
+ queueMicrotask(()=>{field.focus();field.select()});
+}
 function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
@@ -1760,8 +1830,14 @@ function renderTimeline(){
   const children=childOf(t.id);
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");
+  line.dataset.timelineId=t.id;
   const label=el("button","timelineLabel",("  ".repeat(Math.min(depth,5)))+(depth?"↳ ":"")+t.title);
-  label.type="button";label.addEventListener("click",()=>{state.edit=t;state.parent=null;openDialog()});line.append(label);
+  label.type="button";label.title="Click to edit · Enter adds next task · Tab indents · Shift+Tab outdents";
+  label.addEventListener("click",()=>timelineEditTitle(t,label));
+  label.addEventListener("contextmenu",e=>{e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
+  label.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();timelineEditTitle(t,label)}});
+  line.addEventListener("contextmenu",e=>{if(e.target.closest(".ganttBar"))return;e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
+  line.append(label);
   const track=el("div","track");track.style.gridColumn="2 / span 12";
   if(hasDate){
    const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
@@ -1812,7 +1888,7 @@ function renderTimeline(){
   $("timeline")?.querySelector(".timelineQuickAdd input")?.focus();
   setTimeout(runInstantQueue,0);
  });
- box.append(add);
+ box.insertBefore(add,header.nextSibling);
 }
 
 
