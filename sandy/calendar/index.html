@@ -283,11 +283,20 @@ const calendarConnectDialog=document.getElementById("connectCalendarDialog");
 const openCalendarConnect=()=>{document.getElementById("calendarConnectFeedback").textContent="";calendarConnectDialog.showModal()};
 document.getElementById("connectCalendarTop").onclick=openCalendarConnect;
 document.getElementById("closeCalendarDialog").onclick=()=>calendarConnectDialog.close();
-document.querySelectorAll("[data-calendar-connect]").forEach(button=>button.onclick=()=>{
- const provider=button.dataset.calendarConnect;
- const descriptions={google:"Google sign-in and Calendar API authorisation have not yet been enabled for Sandy.",outlook:"Microsoft Graph calendar authorisation has not yet been enabled for Sandy.",icloud:"Secure iCloud CalDAV credential setup has not yet been enabled.",ics:"iCal subscription import has not yet been enabled."};
- document.getElementById("calendarConnectFeedback").textContent=descriptions[provider]||"Connection unavailable.";
+document.querySelectorAll("[data-calendar-connect]").forEach(button=>button.onclick=async()=>{
+ const provider=button.dataset.calendarConnect,feedback=document.getElementById("calendarConnectFeedback");
+ if(provider==="icloud"||provider==="ics"){feedback.textContent=provider==="icloud"?"iCloud CalDAV authentication is not available yet. Do not enter your Apple credentials here.":"ICS subscriptions are not yet supported by the sync engine.";return}
+ const toolkit=provider==="google"?"googlecalendar":"outlook";
+ button.disabled=true;feedback.textContent="Preparing secure "+(provider==="google"?"Google":"Microsoft")+" authorisation…";
+ try{
+  const {data:{session}}=await sb.auth.getSession();if(!session)throw Error("Please sign in to Sandy first.");
+  const response=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-composio-gateway",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts","content-type":"application/json"},body:JSON.stringify({operation:"create_connect_link",toolkit_slug:toolkit,company_id:null})});
+  const body=await response.json();if(!response.ok||!body.connect_url)throw Error(body.error||"Connection could not be started");
+  sessionStorage.setItem("sandy_calendar_connect_pending",provider);
+  location.assign(body.connect_url);
+ }catch(e){feedback.textContent="Could not start connection: "+e.message;button.disabled=false}
 });
+
 async function loadCalendarSources(){
  const host=document.getElementById("connectedSourceList");if(!host)return;
  try{
