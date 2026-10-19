@@ -24,3 +24,5 @@ jobs:
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify package scripts
         run: npm run check
+      - name: Run HTTP authentication smoke tests
+        run: node --test test/server.test.mjs
