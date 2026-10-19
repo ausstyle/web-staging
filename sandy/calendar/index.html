@@ -46,7 +46,8 @@ function filteredTasks(){return data.tasks.filter(t=>t.status!=="cancelled"&&(sh
 function inspectEvent(e){const area=$("calendarInspector");area.replaceChildren();const card=node("div");card.className="calendarInspector";card.append(node("h3",e.title),node("p",human(e.starts_at)+(e.ends_at?" – "+human(e.ends_at):"")),node("p",e.matter_key||""));const actions=node("div");actions.className="row";const editBtn=node("button","Edit event");editBtn.className="btn";editBtn.onclick=()=>edit(e);const files=node("button","Files");files.className="btn";files.onclick=()=>{$("fileEvent").value=e.id;refreshFiles();$("fileEvent").scrollIntoView({behavior:"smooth",block:"center"})};actions.append(editBtn,files);card.append(actions);area.append(card)}
 function moveMonth(n){if(calendarMode==="day"){moveDay(n);return}if(calendarMode==="week"){current.setDate(current.getDate()+n*7)}else if(calendarMode==="agenda"){current.setDate(current.getDate()+n*14)}else{current.setDate(1);current.setMonth(current.getMonth()+n)}render()}
 function setCalendarMode(mode){calendarMode=mode;if(mode==="day"&&!selectedDay)selectedDay=new Date();if(mode==="week"||mode==="agenda"){if(selectedDay)current=new Date(selectedDay)}if(mode==="month"){selectedDay=null;current.setDate(1)}render()}
-function taskCalendarEntries(t,day){const entries=[];if(t.start_at&&sameCalendarDay(t.start_at,day))entries.push({date:t.start_at,deadline:false,label:(t.status==="completed"?"✓ ":"")+"Work · "+t.title});if(t.due_at&&sameCalendarDay(t.due_at,day))entries.push({date:t.due_at,deadline:true,label:(t.status==="completed"?"✓ ":"")+"⚑ Due"+(t.metadata?.due_time_specified?" "+new Date(t.due_at).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}):"")+" · "+t.title});return entries}
+function hasExplicitDueTime(task){if(!task?.due_at)return false;if(task.metadata?.due_time_specified===true)return true;if(task.metadata?.due_time_specified===false)return false;const due=new Date(task.due_at);if(!Number.isFinite(due.getTime()))return false;return due.getUTCHours()!==0||due.getUTCMinutes()!==0||due.getUTCSeconds()!==0}
+function taskCalendarEntries(t,day){const entries=[];if(t.start_at&&sameCalendarDay(t.start_at,day))entries.push({date:t.start_at,deadline:false,label:(t.status==="completed"?"✓ ":"")+"Work · "+t.title});if(t.due_at&&sameCalendarDay(t.due_at,day))entries.push({date:t.due_at,deadline:true,label:(t.status==="completed"?"✓ ":"")+"⚑ Due"+(hasExplicitDueTime(t)?" "+new Date(t.due_at).toLocaleTimeString(undefined,{hour:"numeric",minute:"2-digit"}):"")+" · "+t.title});return entries}
 function renderAlternative(){
  const area=$("alternateView");area.replaceChildren();area.classList.toggle("hidden",calendarMode==="month"||calendarMode==="day");
  if(calendarMode==="month"||calendarMode==="day")return;
@@ -195,7 +196,7 @@ function renderDay(){
     scheduled.push({start:new Date(st),end:new Date(Math.max(en,st+60000)),title:"Work · "+task.title,kind:"task",task,click:open});
   }
   if(task.due_at&&sameCalendarDay(task.due_at,day)){
-   if(task.metadata?.due_time_specified){
+   if(hasExplicitDueTime(task)){
     const due=new Date(task.due_at),expired=task.status!=="completed"&&due.getTime()<Date.now();
     scheduled.push({start:due,end:new Date(due.getTime()+15*60000),title:"Due · "+task.title,kind:"deadline",task,overdue:expired,click:open});
    }else{
