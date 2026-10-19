@@ -902,8 +902,11 @@ function matched(t){
  if(state.tab==="today")return t.status!=="completed"&&t.status!=="cancelled"&&(t.priority==="urgent"||(t.due_at&&new Date(t.due_at).getTime() <= Date.now()+172800000));
  return t.status!=="cancelled";
 }
+function searchDirectMatch(t){const q=state.search.toLowerCase().trim();return !!q&&!t.archived_at&&workspaceMatches(t)&&(t.title+" "+(t.details||"")).toLowerCase().includes(q)}
+function searchAncestorMatch(t){let cursor=t,steps=0;while(cursor&&steps++<50){if(searchDirectMatch(cursor))return true;cursor=state.tasks.find(x=>x.id===cursor.parent_task_id)}return false}
 function isVisible(t,seen){
  if(seen.has(t.id))return false;seen.add(t.id);
+ if(state.search.trim()&&searchAncestorMatch(t))return !t.archived_at&&workspaceMatches(t);
  return matched(t)||childOf(t.id).some(c=>isVisible(c,new Set(seen)));
 }
 function countDesc(t){
@@ -911,7 +914,7 @@ function countDesc(t){
  for(const c of children){total++;if(c.status==="completed")done++;const nested=countDesc(c);done+=nested.done;total+=nested.total}
  return {done,total}
 }
-function collapsed(t){return state.expanded.has(t.id)}
+function collapsed(t){return !state.search.trim()&&state.expanded.has(t.id)}
 function toggleBranch(t){if(collapsed(t))state.expanded.delete(t.id);else state.expanded.add(t.id);localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));render()}
 
 function outlinePeers(parent){
@@ -1079,6 +1082,7 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
 }
 function outlineTitle(t){
  const span=el("span","tasktitle"+(t.status==="completed"?" done":""),t.title);
+ if(state.search.trim()){const q=state.search.trim(),idx=t.title.toLowerCase().indexOf(q.toLowerCase());if(idx>=0){span.replaceChildren(document.createTextNode(t.title.slice(0,idx)));const mark=document.createElement("mark");mark.textContent=t.title.slice(idx,idx+q.length);mark.style.cssText="background:#fff18b;color:inherit;border-radius:3px;padding:0 1px";span.append(mark,document.createTextNode(t.title.slice(idx+q.length)))}}
  span.title="Click to edit task name";span.tabIndex=0;span.setAttribute("role","button");span.setAttribute("aria-label","Edit "+t.title);
  span.addEventListener("click",()=>span.replaceWith(inlineEditor(t,true)));
  span.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();span.replaceWith(inlineEditor(t,true))}});
