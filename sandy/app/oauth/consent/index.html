@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sandy — Authorize access</title><meta name="referrer" content="no-referrer">
+<style>body{margin:0;background:#fafafa;color:#151515;font:15px/1.5 system-ui,-apple-system,sans-serif}main{max-width:480px;margin:8vh auto;padding:30px;background:white;border:1px solid #e4e4e4;border-radius:18px}h1{font:600 30px Georgia,serif}button,input{font:inherit;padding:12px;border-radius:9px}button{background:#111;color:#fff;border:0;cursor:pointer}button:disabled{opacity:.5}input{width:100%;box-sizing:border-box;border:1px solid #aaa}section{margin:20px 0}p{color:#555}small{color:#777}#actions{display:flex;gap:10px}#deny{background:#eee;color:#111}#error{color:#9c2424;white-space:pre-wrap}#client{font-weight:700}</style></head><body>
+<main><h1>Sandy</h1><h2>Authorize an application</h2>
+<p id="status">Checking your authorization request…</p>
+<section id="details" hidden><p><span id="client"></span> is requesting access to your Sandy identity.</p><p>Requested permissions: <strong id="scopes"></strong></p><p>Redirect destination: <small id="redirect"></small></p><p>Only approve applications you recognize. This authorization does not itself approve production deployments.</p><div id="actions"><button id="approve">Approve access</button><button id="deny">Deny</button></div></section>
+<section id="login" hidden><p>Sign in to your Sandy account to continue. Use the same email address as your Sandy workspace.</p><input id="email" type="email" placeholder="Email address" autocomplete="email"><p><button id="send">Email me a sign-in link</button></p><small>Return to this authorization page after signing in. Your request will be preserved.</small></section>
+<p id="error" role="alert"></p></main>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true}});
+const el=id=>document.getElementById(id);
+const authorizationId=new URLSearchParams(location.search).get("authorization_id");
+const owner="ffba8e24-f452-44c8-ba9d-228b8657e3cc";
+const setError=e=>{el("error").textContent=e?.message||String(e);el("status").textContent="Unable to continue."};
+const showLogin=()=>{el("login").hidden=false;el("status").textContent="Sign in required."};
+async function init(){
+ if(!authorizationId||!/^[0-9a-f-]{36}$/i.test(authorizationId))throw Error("Missing or invalid authorization request.");
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session){showLogin();return}
+ const {data:userResult,error:userError}=await sb.auth.getUser();
+ if(userError||userResult.user?.id!==owner)throw Error("This operation is restricted to the Sandy administrator account.");
+ const {data,error}=await sb.auth.oauth.getAuthorizationDetails(authorizationId);
+ if(error)throw error;
+ const details=data||{};
+ const app=details.client||details;
+ el("client").textContent=app.client_name||app.name||"An external application";
+ el("scopes").textContent=(details.scopes||details.scope||[]).toString().replace(/,/g,", ")||"Basic identity";
+ el("redirect").textContent=details.redirect_uri||app.redirect_uri||"Verified by Supabase Auth";
+ el("details").hidden=false;el("status").textContent="Review the application before approving.";
+}
+async function decide(approve){
+ el("approve").disabled=el("deny").disabled=true;
+ try{
+  const response=approve?await sb.auth.oauth.approveAuthorization(authorizationId):await sb.auth.oauth.denyAuthorization(authorizationId);
+  if(response.error)throw response.error;
+  const destination=response.data?.redirect_url;
+  if(!destination||!/^https:\/\//.test(destination))throw Error("Authorization server returned no secure redirect.");
+  location.assign(destination);
+ }catch(e){setError(e);el("approve").disabled=el("deny").disabled=false}
+}
+el("approve").onclick=()=>decide(true);
+el("deny").onclick=()=>decide(false);
+el("send").onclick=async()=>{
+ const email=el("email").value.trim().toLowerCase();
+ if(!email){setError(Error("Enter your email address."));return}
+ el("send").disabled=true;
+ const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.href}});
+ if(error){setError(error);el("send").disabled=false}else{el("status").textContent="Sign-in link sent. Check your email.";el("error").textContent=""}
+};
+init().catch(setError);
+</script></body></html>
