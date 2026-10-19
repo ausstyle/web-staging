@@ -104,6 +104,10 @@ body{background:#fafbf8;color:#253a2c}
 .ganttBar .sandyGanttResize{right:-5px!important;top:-6px!important;height:28px!important;width:15px!important;background:#4d8867!important;z-index:2;opacity:.8}
 .sandyGanttStart:hover,.ganttBar .sandyGanttResize:hover{opacity:1}
 .ganttBar.timelineMilestone{width:12px!important;min-width:12px;height:12px;top:14px;border-radius:50%;cursor:pointer}
+.timelineLinkHandle{position:absolute;right:-20px;top:0px;width:16px;height:16px;border:2px solid #478962;background:white;border-radius:50%;cursor:crosshair;z-index:5;box-shadow:0 1px 4px #0002}
+.timelineLinkHandle:after{content:"";position:absolute;inset:4px;background:#478962;border-radius:50%}
+.ganttBar:hover .timelineLinkHandle{transform:scale(1.18)}
+.timelineDragCreate{position:absolute;top:10px;height:20px;border:2px dashed #367c55;border-radius:5px;background:#91caa777;pointer-events:none;z-index:4}
 .timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
 .timelineInlineDraft{border-bottom:1px solid #dbe7da;background:#f5faf4;min-height:45px;align-items:center}.timelineNewHint{font-size:11px;color:#819184;padding:6px 12px}.timelineLabel .inlineTitle{width:100%;font-size:12px;border:1px solid #a7c7af;border-radius:4px;padding:5px;background:white}
 .timelineQuickFields{display:flex;align-items:center;gap:6px;min-width:0;padding:5px 10px}
@@ -1929,6 +1933,40 @@ function timelineDrawDependencies(){
  }
  box.style.position="relative";box.append(layer);
 }
+function timelineConnectFrom(source,e,handle){
+ const box=$("timeline");let active=false;
+ const rect=box.getBoundingClientRect(),line=document.createElementNS("http://www.w3.org/2000/svg","svg");
+ line.setAttribute("class","timelineLinkPreview");line.style.cssText="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:10";
+ const path=document.createElementNS("http://www.w3.org/2000/svg","path");path.setAttribute("stroke","#397c59");path.setAttribute("stroke-width","2.5");path.setAttribute("stroke-dasharray","5 4");path.setAttribute("fill","none");line.append(path);
+ box.append(line);
+ const origin=handle.getBoundingClientRect(),x0=origin.left+origin.width/2-rect.left,y0=origin.top+origin.height/2-rect.top;
+ const move=ev=>{active=true;const x=ev.clientX-rect.left,y=ev.clientY-rect.top;path.setAttribute("d","M"+x0+","+y0+" C"+(x0+32)+","+y0+" "+(x-32)+","+y+" "+x+","+y);};
+ const stop=async ev=>{
+  document.removeEventListener("pointermove",move,true);
+  document.removeEventListener("pointerup",stop,true);
+  document.removeEventListener("pointercancel",cancel,true);
+  line.remove();
+  if(!active)return;
+  const target=document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".timelineRow[data-timeline-id]");
+  const task=target&&state.tasks.find(t=>t.id===target.dataset.timelineId);
+  if(!task||task.id===source.id||task.shared)return;
+  if(!confirm("Make “"+task.title+"” start after “"+source.title+"” finishes?"))return;
+  try{
+   await api("dependency",{task_id:task.id,depends_on_id:source.id});
+   if(!state.dependencies.some(d=>d.task_id===task.id&&d.depends_on_id===source.id))state.dependencies.push({task_id:task.id,depends_on_id:source.id});
+   // Align the successor with its predecessor unless it has a deliberate later start.
+   const finish=Date.parse(source.due_at||source.start_at||"");
+   const begin=Date.parse(task.start_at||task.due_at||"");
+   if(Number.isFinite(finish)&&Number.isFinite(begin)&&begin<finish){
+    const duration=Math.max(0,Date.parse(task.due_at||task.start_at)-begin);
+    await timelineSaveSchedule(task,finish,finish+duration);
+   }else renderTimeline();
+   toast("Finish-to-start dependency linked");
+  }catch(err){toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})}
+ };
+ const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
+ document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",stop,true);document.addEventListener("pointercancel",cancel,true);
+}
 function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
@@ -1968,6 +2006,11 @@ function renderTimeline(){
     bar.style.left=Math.max(0,start)+"%";bar.style.width=milestone?"12px":Math.max(1.2,end-Math.max(0,start))+"%";
     bar.title=t.title+" · "+dateLabel(a.from)+" → "+dateLabel(a.to);
     bar.style.touchAction="pan-y";bar.style.cursor="grab";
+    const connector=el("span","timelineLinkHandle","");
+    connector.title="Drag to another task to create a finish-to-start dependency";
+    connector.setAttribute("role","button");connector.setAttribute("aria-label","Connect "+t.title+" to dependent task");
+    connector.addEventListener("pointerdown",e=>{if(t.shared)return;e.preventDefault();e.stopPropagation();timelineConnectFrom(t,e,connector)});
+    bar.append(connector);
     const startHandle=el("span","sandyGanttStart","");startHandle.title="Drag to adjust start date";if(!milestone)bar.append(startHandle);
     const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
@@ -2016,6 +2059,29 @@ function renderTimeline(){
    marker.addEventListener("click",e=>{if(suppressClick){suppressClick=false;e.preventDefault();return}state.edit=t;state.parent=null;openDialog();$("taskDue")?.focus()});
    track.append(marker);
   }
+  track.addEventListener("pointerdown",e=>{
+   if(e.button!==0||e.target!==track||t.shared)return;
+   const rect=track.getBoundingClientRect();
+   const start=Math.max(0,Math.min(83,Math.floor((e.clientX-rect.left)/rect.width*84)));
+   const preview=el("div","timelineDragCreate");
+   preview.style.left=(start/84*100)+"%";preview.style.width="1.2%";track.append(preview);
+   let moved=false;
+   const move=ev=>{
+    if(Math.abs(ev.clientX-e.clientX)>5)moved=true;
+    const day=Math.max(0,Math.min(83,Math.floor((ev.clientX-rect.left)/rect.width*84)));
+    preview.style.left=Math.min(start,day)/84*100+"%";
+    preview.style.width=Math.max(1.2,(Math.abs(day-start)+1)/84*100)+"%";
+    preview.title=dateLabel(new Date(monday.getTime()+Math.min(start,day)*86400000))+" → "+dateLabel(new Date(monday.getTime()+Math.max(start,day)*86400000));
+   };
+   const end=async ev=>{
+    document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",end,true);
+    preview.remove();if(!moved)return;
+    const day=Math.max(0,Math.min(83,Math.floor((ev.clientX-rect.left)/rect.width*84)));
+    const a=monday.getTime()+Math.min(start,day)*86400000,b=monday.getTime()+Math.max(start,day)*86400000;
+    await timelineSaveSchedule(t,a,b);
+   };
+   document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",end,true);
+  });
   line.append(track);box.append(line);
   if(!collapsed(t))children.forEach(c=>row(c,depth+1))
  }
