@@ -2086,7 +2086,8 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
     const check=el("span","activityDoneIcon","✓");
     const label=el("span","activityText",esc(item.description));if(item.source_kind==="completed_task")label.title="Completed task from Sandy Tasks";
     const time=el("span","activityClock",new Date(item.occurred_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
-    if(item.source_kind==="completed_task"){const source=el("span","activityClock","Task");source.title="Automatically included from completed Tasks";row.append(check,label,time,source);entries.append(row);continue}\n    const edit=btn("Edit","",async()=>{const revised=prompt("Edit completed activity",item.description);if(revised===null||!revised.trim()||revised.trim()===item.description)return;try{await activityRequest({action:"update",id:item.id,description:revised.trim()});await refreshActivities()}catch(e){feedback.textContent=e.message}});
+    if(item.source_kind==="completed_task"){const source=el("span","activityClock","Task");source.title="Automatically included from completed Tasks";row.append(check,label,time,source);entries.append(row);continue}
+    const edit=btn("Edit","",async()=>{const revised=prompt("Edit completed activity",item.description);if(revised===null||!revised.trim()||revised.trim()===item.description)return;try{await activityRequest({action:"update",id:item.id,description:revised.trim()});await refreshActivities()}catch(e){feedback.textContent=e.message}});
     const remove=btn("×","",async()=>{if(!confirm("Remove this activity from your day?"))return;try{await activityRequest({action:"delete",id:item.id});await refreshActivities()}catch(e){feedback.textContent=e.message}});
     remove.setAttribute("aria-label","Delete activity");row.append(check,label,time,edit,remove);entries.append(row)
    }
