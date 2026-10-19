@@ -1862,7 +1862,8 @@ function timelineEditTitle(t,label){
  }
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
-  if(e.key==="Enter"){e.preventDefault();commit("enter")}
+  if(e.key==="Enter"||e.key==="Tab")e.stopPropagation();
+  if(e.key==="Enter"{e.preventDefault();commit("enter")}
   else if(e.key==="Tab"){e.preventDefault();commit(e.shiftKey?"outdent":"indent")}
   else if(e.key==="Escape"){e.preventDefault();closed=true;label.textContent=(t.parent_task_id?"↳ ":"")+t.title}
  });
