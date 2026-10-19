@@ -2067,34 +2067,42 @@ function renderTimeline(){
    marker.title="Drag to a date to schedule; then drag its start/end handles to adjust duration";
    marker.style.left="8px";
    let drag=null,suppressClick=false;
+   const dayAt=x=>{const rect=track.getBoundingClientRect();return Math.max(0,Math.min(days-1,Math.floor((x-rect.left)/rect.width*days)))};
+   const showPreview=(first,last)=>{
+    let preview=track.querySelector(".timelineMarkerPreview");
+    if(!preview){preview=el("div","timelineDragCreate timelineMarkerPreview");track.append(preview)}
+    preview.style.left=Math.min(first,last)/days*100+"%";
+    preview.style.width=Math.max(1.2,(Math.abs(last-first)+1)/days*100)+"%";
+    preview.title=dateLabel(new Date(monday.getTime()+Math.min(first,last)*86400000))+" → "+dateLabel(new Date(monday.getTime()+Math.max(first,last)*86400000));
+   };
    marker.addEventListener("pointerdown",e=>{
     if(t.shared||e.button!==0)return;
-    drag={x:e.clientX,y:e.clientY,active:false};
-    marker.setPointerCapture(e.pointerId);
-    e.stopPropagation();
+    drag={x:e.clientX,y:e.clientY,active:false,first:null};
+    marker.setPointerCapture(e.pointerId);e.preventDefault();e.stopPropagation();
    });
    marker.addEventListener("pointermove",e=>{
     if(!drag)return;
-    if(Math.abs(e.clientX-drag.x)>5||Math.abs(e.clientY-drag.y)>5)drag.active=true;
-    if(drag.active){
-     const rect=track.getBoundingClientRect();
-     marker.style.left=Math.max(8,Math.min(rect.width-8,e.clientX-rect.left))+"px";
-     marker.classList.add("timelineMarkerDragging");
-    }
+    if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>5)drag.active=true;
+    if(!drag.active)return;
+    const at=dayAt(e.clientX);
+    if(drag.first===null)drag.first=at;
+    showPreview(drag.first,at);
+    marker.classList.add("timelineMarkerDragging");
    });
    marker.addEventListener("pointerup",async e=>{
     if(!drag)return;
-    const moved=drag.active;drag=null;suppressClick=moved;marker.classList.remove("timelineMarkerDragging");
-    if(!moved)return;
-    const rect=track.getBoundingClientRect();
-    const days=Math.max(0,Math.min(days-1,Math.floor((e.clientX-rect.left)/rect.width*days)));
+    const gesture=drag;drag=null;suppressClick=gesture.active;
+    marker.classList.remove("timelineMarkerDragging");
+    track.querySelector(".timelineMarkerPreview")?.remove();
+    if(!gesture.active)return;
     if(await timelineDropDependency(t,e))return;
-    const scheduled=new Date(monday.getTime()+days*86400000);
-    // Only a due date is assigned; no duration or time is invented.
-    await timelineSaveSchedule(t,scheduled.getTime(),scheduled.getTime()+86400000);
+    const last=dayAt(e.clientX),first=gesture.first===null?last:gesture.first;
+    const start=monday.getTime()+Math.min(first,last)*86400000;
+    const end=monday.getTime()+(Math.max(first,last)+1)*86400000;
+    await timelineSaveSchedule(t,start,end);
    });
-   marker.addEventListener("pointercancel",()=>{drag=null;marker.classList.remove("timelineMarkerDragging");marker.style.left="8px"});
-   marker.addEventListener("click",e=>{if(suppressClick){suppressClick=false;e.preventDefault();return}e.preventDefault();toast("Drag this marker onto the timeline to schedule, then resize its ends")});
+   marker.addEventListener("pointercancel",()=>{drag=null;marker.classList.remove("timelineMarkerDragging");track.querySelector(".timelineMarkerPreview")?.remove()});
+   marker.addEventListener("click",e=>{if(suppressClick){suppressClick=false;e.preventDefault();return}e.preventDefault();toast("Drag the + marker along the row to create a duration")});
    track.append(marker);
   }
   track.addEventListener("pointerdown",e=>{
