@@ -110,7 +110,7 @@ body{background:#fafbf8;color:#253a2c}
 .timelinePreviewLinked{outline:2px dashed #477d60;outline-offset:3px;opacity:.85}
 .timelineDragCreate{position:absolute;top:10px;height:20px;border:2px dashed #367c55;border-radius:5px;background:#91caa777;pointer-events:none;z-index:4}
 .timelineZoom{display:flex;gap:4px;margin-left:auto}.timelineZoomButton{border:1px solid #d6e5d9;border-radius:7px;background:white;color:#52745d;padding:5px 9px;font-size:11px;cursor:pointer}.timelineZoomButton.selected{background:#dbece0;color:#285a3d;font-weight:700}.timelineHead{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.timelineAlternatingDays{background-image:repeating-linear-gradient(90deg,#ffffff 0%,#ffffff calc(14.285714% - 1px),#f0f5f0 calc(14.285714% - 1px),#f0f5f0 28.571428%)!important;background-size:28.571428% 100%!important}
+.timelineAlternatingDays{background-image:repeating-linear-gradient(90deg,#ffffff 0%,#ffffff calc(100% / 14 - 1px),#edf4ee calc(100% / 14 - 1px),#edf4ee calc(100% / 7))!important;background-size:100% 100%!important}
 .timelineHourly{background-image:repeating-linear-gradient(90deg,#f8fbf8 0,#f8fbf8 calc(4.166667% - 1px),#d9e6dc calc(4.166667% - 1px),#d9e6dc 4.166667%)!important;background-size:100% 100%!important}
 .timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
 .timelineInlineDraft{border-bottom:1px solid #dbe7da;background:#f5faf4;min-height:45px;align-items:center}.timelineNewHint{font-size:11px;color:#819184;padding:6px 12px}.timelineLabel .inlineTitle{width:100%;font-size:12px;border:1px solid #a7c7af;border-radius:4px;padding:5px;background:white}
@@ -2043,7 +2043,7 @@ function renderTimeline(){
    const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
    const start=Math.max(0,(from-monday.getTime())/range)*100,end=Math.min(100,((to-monday.getTime())/range)*100);
    if(end>=0&&start<=100){
-    const milestone=Math.abs(to-from)<86400000;
+    const milestone=!t.start_at&&!!t.due_at;
     const bar=el("div","ganttBar"+(milestone?" timelineMilestone":"")+(t.status==="completed"?" ganttDone":""));
     bar.style.left=Math.max(0,start)+"%";bar.style.width=milestone?"12px":Math.max(1.2,end-Math.max(0,start))+"%";
     bar.title=t.title+" · "+dateLabel(a.from)+" → "+dateLabel(a.to);
@@ -2057,7 +2057,7 @@ function renderTimeline(){
     const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
     bar.addEventListener("pointerdown",e=>{if(t.shared||e.button!==0)return;gesture={x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};bar.setPointerCapture(e.pointerId);e.stopPropagation()});
-    bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*snapSteps);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*snapMs:gesture.from;const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*snapMs:gesture.to;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=dateLabel(new Date(nextFrom))+" → "+dateLabel(new Date(nextTo));timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range)});
+    bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*snapSteps);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*snapMs:gesture.from;const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*snapMs:gesture.to;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=new Date(nextFrom).toLocaleString()+" → "+new Date(nextTo).toLocaleString();timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range)});
     bar.addEventListener("pointerup",async e=>{if(!gesture)return;const g=gesture;gesture=null;if(!g.moved){state.edit=t;state.parent=null;openDialog();return}if(await timelineDropDependency(t,e))return;const delta=Math.round((e.clientX-g.x)/g.width*snapSteps);const nextFrom=g.mode==="move"||g.mode==="start"?g.from+delta*snapMs:g.from,nextTo=g.mode==="move"||g.mode==="resize"?g.to+delta*snapMs:g.to;if(nextTo<nextFrom){renderTimeline();return}await timelineSaveSchedule(t,nextFrom,nextTo)});
     bar.addEventListener("pointercancel",()=>{gesture=null;renderTimeline()});track.append(bar)
    }
@@ -2119,13 +2119,13 @@ function renderTimeline(){
     const day=Math.max(0,Math.min(snapSteps-1,Math.floor((ev.clientX-rect.left)/rect.width*snapSteps)));
     preview.style.left=Math.min(start,day)/snapSteps*100+"%";
     preview.style.width=Math.max(1.2,(Math.abs(day-start)+1)/snapSteps*100)+"%";
-    preview.title=dateLabel(new Date(monday.getTime()+Math.min(start,day)*snapMs))+" → "+dateLabel(new Date(monday.getTime()+Math.max(start,day)*snapMs));
+    preview.title=new Date(monday.getTime()+Math.min(start,day)*snapMs).toLocaleString()+" → "+new Date(monday.getTime()+(Math.max(start,day)+1)*snapMs).toLocaleString();
    };
    const end=async ev=>{
     document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",end,true);
     preview.remove();if(!moved)return;
     const day=Math.max(0,Math.min(snapSteps-1,Math.floor((ev.clientX-rect.left)/rect.width*snapSteps)));
-    const a=monday.getTime()+Math.min(start,day)*snapMs,b=monday.getTime()+Math.max(start,day)*snapMs;
+    const a=monday.getTime()+Math.min(start,day)*snapMs,b=monday.getTime()+(Math.max(start,day)+1)*snapMs;
     await timelineSaveSchedule(t,a,b);
    };
    document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",end,true);
