@@ -309,7 +309,7 @@ async function loadCalendarSources(){
   }
   if(!silent)message("");
   calendarRefreshPending=false;
- }catch(e){if(!silent)message(e.message);else calendarSyncStatus("Live refresh delayed — retrying")}
+ }catch(e){if(!silent){message("Calendar could not load: "+e.message);render()}else calendarSyncStatus("Live refresh delayed — retrying")}
  finally{calendarRefreshBusy=false}
 }
 function calendarSyncStatus(text){const el=$("calendarLiveStatus");if(el)el.textContent=text}
