@@ -612,6 +612,7 @@ const sandyAuth=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publ
 const sandyIdle=installSandyIdleLock(sandyAuth.auth);
 const $ = id => document.getElementById(id);
 const state={showAllMissions:false,missionRuns:[],missionQuestions:[],tasks:[],suggestions:[],attention:[],dependencies:[],companies:[],categories:[],category:null,delegations:[],participants:[],externalInvitations:[],collaborators:[],receivedDelegations:[],outlineBusy:false,customer_id:null,assigneeFilter:"all",workspace:"all",entryWorkspace:"personal",view:"tree",tab:"open",sort:["newest","oldest","due","priority","status","az","manual"].includes(localStorage.getItem("sandy_task_sort"))?localStorage.getItem("sandy_task_sort"):"newest",search:"",edit:null,parent:null,email:"",expanded:new Set(JSON.parse(localStorage.getItem("sandy_tree_collapsed")||"[]"))};
+state.view=new URLSearchParams(location.search).get("view")==="timeline"?"timeline":"tree";
 const requestedTab=new URLSearchParams(location.search).get("tab");if(["open","doing","waiting","done","today","all"].includes(requestedTab))state.tab=requestedTab;
 const base="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-agenda";
 const internalWorkspace=new URLSearchParams(location.search).get("workspace")==="sandy";
@@ -2119,11 +2120,26 @@ $("taskSort").value=state.sort;
  $("taskSort").addEventListener("change",e=>{state.sort=e.target.value;localStorage.setItem("sandy_task_sort",state.sort);render()});
  $("expandAll").addEventListener("click",()=>{state.expanded.clear();localStorage.setItem("sandy_tree_collapsed","[]");state.view="tree";render()});
  $("collapseAll").addEventListener("click",()=>{state.expanded=new Set(state.tasks.filter(t=>!t.archived_at).map(t=>t.id));localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));state.view="tree";render()});
- $("treeView").addEventListener("click",()=>{state.view="tree";render()});
-$("timelineView").addEventListener("click",()=>{state.view="timeline";render()});
+ function agendaNavigateView(view,fromHistory=false){
+ state.view=view==="timeline"?"timeline":"tree";
+ if(!fromHistory){
+  const url=new URL(location.href);
+  url.searchParams.set("view",state.view==="timeline"?"timeline":"outline");
+  history.pushState(null,"",url);
+ }
+ render();
+}
+$("treeView").addEventListener("click",()=>agendaNavigateView("tree"));
+$("timelineView").addEventListener("click",()=>agendaNavigateView("timeline"));
+window.addEventListener("popstate",()=>{
+ const params=new URLSearchParams(location.search);
+ const tab=params.get("tab");
+ if(["open","doing","waiting","done","today","all"].includes(tab))state.tab=tab;
+ agendaNavigateView(params.get("view")==="timeline"?"timeline":"tree",true);
+});
 $("rootLine").addEventListener("submit",async e=>{e.preventDefault();const field=$("rootLineInput");const title=field.value.trim();if(!title)return;const ok=await outlineCreate(title,null,outlineLast(null),$("rootWorkspace").value);if(ok)field.value=""});
  $("search").addEventListener("input",e=>{state.search=e.target.value;render()});
-function openTaskTab(tab){state.tab=tab;state.view="tree";state.search="";$("search").value="";const url=new URL(location.href);url.searchParams.set("tab",tab);history.replaceState(null,"",url);render();$("tasks").scrollIntoView({behavior:"smooth",block:"start"})}
+function openTaskTab(tab){state.tab=tab;state.view="tree";state.search="";$("search").value="";const url=new URL(location.href);url.searchParams.set("tab",tab);url.searchParams.set("view","outline");history.pushState(null,"",url);render();$("tasks").scrollIntoView({behavior:"smooth",block:"start"})}
  document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>openTaskTab(b.dataset.tab)));
  document.querySelectorAll("[data-summary-tab]").forEach(b=>b.addEventListener("click",()=>openTaskTab(b.dataset.summaryTab)));
 $("loginForm").addEventListener("submit",async e=>{e.preventDefault();const button=e.currentTarget.querySelector("button");button.disabled=true;const email=$("loginEmail").value.trim();try{await api("request-code",{email});$("loginMessage").textContent="If this address is registered with Sandy, your six-digit code is on its way.";$("loginMessage").className="message";$("codeForm").classList.remove("hidden");$("loginForm").classList.add("hidden");$("loginCode").focus()}catch(err){$("loginMessage").textContent=err.message;$("loginMessage").className="message error"}finally{button.disabled=false}});
