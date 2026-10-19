@@ -1853,7 +1853,7 @@ async function timelineDropDependency(task,event){
  if(!target||target.id===task.id||task.shared||target.shared)return false;
  if(String(task.id).startsWith("pending-")||String(target.id).startsWith("pending-")){toast("Wait until both tasks are saved",true);return true}
  if(!confirm("Make “"+task.title+"” dependent on “"+target.title+"”?"))return true;
- try{await api("dependency",{task_id:task.id,depends_on_id:target.id});toast("Task dependency saved");}
+ try{await api("dependency",{task_id:task.id,depends_on_id:target.id});state.dependencies.push({task_id:task.id,depends_on_id:target.id});renderTimeline();toast("Task dependency saved");}
  catch(err){toast("Dependency not saved: "+err.message,true)}
  return true;
 }
