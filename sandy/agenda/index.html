@@ -92,6 +92,11 @@ body{background:#fafbf8;color:#253a2c}
 
 .viewSwitch{display:flex;padding:3px;background:#eef3ec;border-radius:10px;gap:2px}.viewBtn{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:650;color:#7b907e}.viewBtn.chosen{background:#fff;color:#2e6a4b;box-shadow:0 1px 5px #0001}
 .rootLine{display:flex;align-items:center;gap:12px;border:1px solid #dbe8da;border-top:0;background:#f8fbf7;padding:12px 18px;border-radius:0 0 14px 14px}.rootLine span{font-size:20px;color:#538066}.rootLine input{border:0;outline:0;background:transparent;flex:1;font-size:14px;min-width:0;color:#314938}.keyboardHint{font-size:11px;color:#9aaa9b;padding:12px 5px}.timeline{background:white;border:1px solid var(--line);border-radius:14px;overflow-x:auto}.timelineHead{padding:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.timelineHead span{color:#849487;font-size:11px}.timelineGrid{display:grid;grid-template-columns:minmax(170px,240px) repeat(12,minmax(55px,1fr));min-width:860px}.timelineWeeks{background:#f6f9f5;border-block:1px solid #e4ece3}.timelineLabel{text-align:left;padding:10px 12px;border:0;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#38543e}.timelineRow{border-bottom:1px solid #eff3ed;min-height:41px}.timelineRow:hover{background:#fbfdfb}.week{font-size:10px;color:#89998c;padding:11px 5px;text-align:center;border-left:1px solid #ebf0ea}.track{position:relative;grid-row:1;height:40px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(8.333333% - 1px),#edf2ec calc(8.333333% - 1px),#edf2ec 8.333333%)}.ganttBar{position:absolute;top:12px;height:16px;min-width:8px;border-radius:6px;background:#559a72;cursor:pointer}.ganttDone{background:#b4c5b7}.unscheduled{font-size:10px;color:#b2bcb1;margin:12px;display:inline-block}
+.timelineTaskCell{display:flex;align-items:center;min-width:0;gap:2px;grid-column:1;grid-row:1}
+.timelineTaskCell .timelineLabel{min-width:0;flex:1;padding:10px 4px;text-overflow:ellipsis}
+.timelineBranchToggle{flex:0 0 19px;width:19px;height:25px;padding:0;border:0;background:transparent;color:#4f8060;font-size:14px;cursor:pointer}
+.timelineBranchToggle:disabled{opacity:0;cursor:default}
+.timelineBranchToggle:not(:disabled):hover{background:#e8f1e8;border-radius:4px}
 .timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
 .timelineInlineDraft{border-bottom:1px solid #dbe7da;background:#f5faf4;min-height:45px;align-items:center}.timelineNewHint{font-size:11px;color:#819184;padding:6px 12px}.timelineLabel .inlineTitle{width:100%;font-size:12px;border:1px solid #a7c7af;border-radius:4px;padding:5px;background:white}
 .timelineQuickFields{display:flex;align-items:center;gap:6px;min-width:0;padding:5px 10px}
@@ -1833,13 +1838,21 @@ function renderTimeline(){
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");
   line.dataset.timelineId=t.id;
-  const label=el("button","timelineLabel",("  ".repeat(Math.min(depth,5)))+(depth?"↳ ":"")+t.title);
+  const cell=el("div","timelineTaskCell");
+  cell.style.paddingLeft=(10+Math.min(depth,12)*18)+"px";
+  const toggle=el("button","timelineBranchToggle",children.length?(collapsed(t)?"▸":"▾"):"");
+  toggle.type="button";toggle.disabled=!children.length;
+  toggle.setAttribute("aria-label",children.length?((collapsed(t)?"Expand ":"Collapse ")+t.title):"No subtasks");
+  toggle.setAttribute("aria-expanded",String(children.length>0&&!collapsed(t)));
+  toggle.addEventListener("click",e=>{e.stopPropagation();toggleBranch(t)});
+  cell.append(toggle);
+  const label=el("button","timelineLabel",(depth?"↳ ":"")+t.title);
   label.type="button";label.title="Click to edit · Enter adds next task · Tab indents · Shift+Tab outdents";
   label.addEventListener("click",()=>timelineEditTitle(t,label));
   label.addEventListener("contextmenu",e=>{e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
   label.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();timelineEditTitle(t,label)}});
   line.addEventListener("contextmenu",e=>{if(e.target.closest(".ganttBar"))return;e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
-  line.append(label);
+  cell.append(label);line.append(cell);
   const track=el("div","track");track.style.gridColumn="2 / span 12";
   if(hasDate){
    const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
