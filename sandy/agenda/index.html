@@ -1505,6 +1505,7 @@ function openTaskContextMenu(t,x,y){
 
  action("Duplicate task",()=>outlineCreate(t.title+" (copy)",t.parent_task_id||null,t.id,t.company_id||"personal",t.category_id||null));
  action("Share or delegate",()=>{state.edit=t;state.parent=null;openDialog()});
+ if(!t.shared)action("Delete task…",()=>{state.edit=t;state.parent=null;$("deleteTask").click()});
  taskContextMenu.classList.remove("hidden");
  taskContextMenu.style.left=Math.max(8,Math.min(innerWidth-taskContextMenu.offsetWidth-8,x))+"px";
  taskContextMenu.style.top=Math.max(8,Math.min(innerHeight-taskContextMenu.offsetHeight-8,y))+"px";
