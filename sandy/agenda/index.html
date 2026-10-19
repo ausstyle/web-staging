@@ -1056,14 +1056,14 @@ async function runInstantQueue(){
     for(const t of state.tasks)if(t.parent_task_id===job.id)t.parent_task_id=result.id;
     instantPending.delete(job.id);persistInstantQueue();
     document.querySelectorAll(".instantSaveStatus").forEach(n=>{if(n.closest(".task,.childrow")?.id==="task-"+job.id)n.remove()});
-    if(state.view==="timeline"&&document.querySelector(".timelineInlineDraft")){ /* Preserve unsaved timeline input. */ }else if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    if(state.view==="timeline"&&document.querySelector(".timelineInlineDraft,.timelineLabel .inlineTitle")){ /* Preserve unsaved timeline input. */ }else if(!document.activeElement?.closest?.(".outlineDraft"))render();
     api("update",{id:result.id,position:job.position}).catch(()=>{});
     organiseTaskLater(result.id,job.title);
    }catch(e){
     job.status="failed";job.error=e.message||String(e);persistInstantQueue();
     const badge=document.getElementById("task-"+job.id)?.querySelector(".instantSaveStatus");
     if(badge){badge.textContent="Not saved · retry";badge.classList.add("instantFailed");badge.title=job.error;badge.onclick=()=>{job.status="saving";job.error=null;persistInstantQueue();badge.textContent="Saving…";badge.classList.remove("instantFailed");runInstantQueue()}}
-    if(state.view==="timeline"&&document.querySelector(".timelineInlineDraft")){ /* Preserve unsaved timeline input. */ }else if(!document.activeElement?.closest?.(".outlineDraft"))render();
+    if(state.view==="timeline"&&document.querySelector(".timelineInlineDraft,.timelineLabel .inlineTitle")){ /* Preserve unsaved timeline input. */ }else if(!document.activeElement?.closest?.(".outlineDraft"))render();
     toast("Task has not been confirmed saved. Retry the task.",true);
     continue;
    }
@@ -1790,36 +1790,51 @@ function timelineNewRow(parent=null,after=null,company=state.entryWorkspace,init
  queueMicrotask(()=>field.focus());
 }
 function timelineEditTitle(t,label){
- if(label.querySelector("input")||!label.isConnected)return;
+ if(label.querySelector("input"))return;
  const field=document.createElement("input");field.className="inlineTitle";field.maxLength=240;field.value=t.title;
- field.setAttribute("aria-label","Edit "+t.title);
- label.replaceChildren(field);
+ field.setAttribute("aria-label","Edit "+t.title);label.replaceChildren(field);
  let done=false;
- async function commit(mode){
+ function editAgain(){const row=$("timeline").querySelector('[data-timeline-id="'+CSS.escape(t.id)+'"]');const next=row?.querySelector(".timelineLabel");if(next)timelineEditTitle(t,next)}
+ function commit(mode){
   if(done)return;
-  const value=field.value.trim();if(!value){toast("Task title is required",true);field.focus();return}
-  done=true;field.disabled=true;
-  try{
-   if(value!==t.title){await api(t.shared?"shared-update":"update",{id:t.id,title:value});t.title=value}
-   if(mode==="indent"||mode==="outdent"){
-    if(t.shared){toast("Shared task hierarchy cannot be changed here",true)}
-    else if(mode==="indent"){
-     const peers=outlinePeers(t.parent_task_id||null),i=peers.findIndex(x=>x.id===t.id);
-     if(i>0)await moveOutlineTask(t.id,peers[i-1].id,"inside");
-     else toast("No preceding task to indent beneath",true);
-    }else if(t.parent_task_id){const p=state.tasks.find(x=>x.id===t.parent_task_id);if(p)await moveOutlineTask(t.id,p.id,"after")}
-    else toast("Already a top-level task");
-   }
-   if(mode==="enter"){
-    renderTimeline();timelineNewRow(t.parent_task_id||null,t.id,t.company_id||"personal");
-   }else renderTimeline();
-  }catch(e){done=false;field.disabled=false;toast("Could not save task: "+e.message,true);field.focus()}
+  const title=field.value.trim();if(!title){toast("Task title is required",true);return}
+  if((mode==="indent"||mode==="outdent")&&t.shared){toast("Shared task hierarchy cannot be changed here",true);return}
+  let newParent=t.parent_task_id||null,newPosition=t.position;
+  if(mode==="indent"){
+   const rows=[...$("timeline").querySelectorAll(".timelineRow[data-timeline-id]")];
+   const i=rows.findIndex(r=>r.dataset.timelineId===t.id);
+   let previous=null;
+   for(let n=i-1;n>=0;n--){const candidate=state.tasks.find(x=>x.id===rows[n].dataset.timelineId);if(candidate&&(candidate.parent_task_id||null)===newParent){previous=candidate;break}}
+   if(!previous){toast("No preceding task to indent under",true);return}
+   if(["completed","cancelled"].includes(previous.status)){toast("Reopen the preceding task first",true);return}
+   newParent=previous.id;newPosition=(Number(childOf(newParent).at(-1)?.position)||0)+1000;
+  }else if(mode==="outdent"){
+   const parent=state.tasks.find(x=>x.id===newParent);
+   if(!parent){toast("Already top-level",true);return}
+   newParent=parent.parent_task_id||null;newPosition=(Number(parent.position)||0)+1;
+  }
+  done=true;
+  const old={title:t.title,parent:t.parent_task_id,position:t.position};
+  t.title=title;t.parent_task_id=newParent;t.position=newPosition;
+  const patch={id:t.id};if(title!==old.title)patch.title=title;
+  if(mode==="indent"||mode==="outdent"){patch.parent_task_id=newParent;patch.position=newPosition}
+  // Render immediately. The server response does not gate visual hierarchy changes.
+  if(mode==="enter"){label.textContent=(newParent?"↳ ":"")+title;timelineNewRow(newParent,t.id,t.company_id||"personal")}
+  else if(mode==="indent"||mode==="outdent"){renderTimeline();editAgain()}
+  else label.textContent=(newParent?"↳ ":"")+title;
+  if(Object.keys(patch).length>1){
+   api(t.shared?"shared-update":"update",patch).catch(err=>{
+    t.title=old.title;t.parent_task_id=old.parent;t.position=old.position;
+    toast("Task update failed: "+err.message,true);
+    // Keep any ongoing new-task draft untouched.
+    if(!document.querySelector(".timelineInlineDraft,.timelineLabel .inlineTitle"))renderTimeline();
+   });
+  }
  }
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
-  if(e.key==="Enter"){e.preventDefault();commit("enter")}
-  else if(e.key==="Tab"){e.preventDefault();commit(e.shiftKey?"outdent":"indent")}
-  else if(e.key==="Escape"){e.preventDefault();done=true;renderTimeline()}
+  if(e.key==="Enter"||e.key==="Tab"){e.preventDefault();e.stopPropagation();commit(e.key==="Enter"?"enter":e.shiftKey?"outdent":"indent")}
+  else if(e.key==="Escape"){e.preventDefault();done=true;label.textContent=(t.parent_task_id?"↳ ":"")+t.title}
  });
  field.addEventListener("blur",()=>{if(!done)commit("blur")});
  queueMicrotask(()=>{field.focus();field.select()});
