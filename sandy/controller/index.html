@@ -176,7 +176,9 @@ async function showDeploymentApprovals(host){
    txt(card,"Job: "+job.id,"small muted");
    const p=job.payload||{};if(p.title)txt(card,p.title,"small");
    if(p.expected_behavior)txt(card,"Expected: "+p.expected_behavior,"small muted");
-   if(job.status==="pending_approval"){
+   if(job.status==="pending_approval"&&!job.engineering_change_id){
+    txt(card,"Engineering change required before approval. Register and approve a change in Sandy Engineering Control, then link it to this deployment.","small muted");
+   }else if(job.status==="pending_approval"){
     const button=el("button","btn","Approve deployment");button.type="button";
     const feedback=el("div","small muted","Approval does not execute deployment; execution requires an enabled deployment worker.");
     button.onclick=async()=>{
