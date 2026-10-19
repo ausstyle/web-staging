@@ -1547,7 +1547,7 @@ function renderTask(t,depth){
   restore.title="Restore: "+original.title;restore.setAttribute("aria-label","Restore original text for "+t.title);titleArea.append(restore);
  }
  main.append(titleArea);
- if(t.details)main.append(el("div","taskdesc",t.details.slice(0,130)));
+ if(t.details)row.dataset.taskPreviewDetails=String(t.details).slice(0,1200);
  const meta=el("div","meta");
  if(t.due_at&&t.shared){const late=new Date(t.due_at)<new Date()&&t.status!=="completed";meta.append(el("span","tag"+(late?" overdue":""),(late?"Overdue · ":"")+dateLabel(t.due_at)))}else if(t.due_at&&new Date(t.due_at)<new Date()&&t.status!=="completed"){meta.append(el("span","tag overdue","Overdue"))}
  if(t.status==="waiting"||t.status==="blocked"||t.status==="in_progress")meta.append(el("span","tag",t.status.replace("_"," ")));
@@ -2117,9 +2117,8 @@ function close(){clearTimers();currentRow=null;if(preview){preview.remove();prev
 function scheduleClose(){clearTimeout(timer);clearTimeout(leaveTimer);leaveTimer=setTimeout(close,DISMISS)}
 function open(row){
  if(!row.isConnected||currentRow!==row||!suitable())return;
- const desc=row.querySelector('.taskdesc');
  const title=row.querySelector('.tasktitle');
- const description=desc?.textContent?.trim();
+ const description=row.dataset.taskPreviewDetails?.trim();
  if(!description)return;
  if(preview)preview.remove();
  preview=document.createElement('div');preview.className='sandyTaskHoverPreview';preview.setAttribute('role','tooltip');
