@@ -355,6 +355,28 @@ html,body{max-width:100%;overflow-x:clip}
 #taskForm .sandyTaskFileDialog{padding:5px 8px}
 #taskForm .dialogfooter{position:sticky;bottom:-12px;background:var(--surface,#fff);padding:6px 0 2px;z-index:3}
 @media(max-width:580px){#dialogOverlay .dialog{padding:9px;width:calc(100vw - 8px);max-height:calc(100dvh - 8px)}#taskForm{gap:5px;column-gap:6px}#taskForm .editDelegation{grid-template-columns:1fr}#taskForm .two{gap:5px}#taskForm input:not([type=checkbox]),#taskForm select{font-size:12px;min-height:29px;height:29px}}
+
+/* iPhone task rows: actions remain available in the task menu, not wrapped below every row. */
+@media(max-width:750px){
+ .taskrow,.childrow .taskrow{display:flex!important;flex-wrap:nowrap!important;align-items:center!important;gap:6px!important;padding:6px 7px!important;min-height:48px!important;position:relative}
+ .taskrow>.taskmain{flex:1 1 auto!important;min-width:0!important;max-width:none!important;width:auto!important}
+ .taskrow .titleArea{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:3px 5px!important;min-width:0!important}
+ .taskrow .tasktitle,.taskrow .outlineTitle{overflow-wrap:anywhere;line-height:1.24!important}
+ .taskrow>.right{display:flex!important;flex:0 0 30px!important;width:30px!important;min-width:30px!important;align-items:center!important;justify-content:flex-end!important;gap:0!important;flex-wrap:nowrap!important;margin:0!important;padding:0!important}
+ .taskrow>.right>*{display:none!important}
+ .taskrow>.right>.mobileTaskMenu{display:inline-flex!important;align-items:center;justify-content:center;width:30px!important;height:38px!important;min-width:30px!important;padding:0!important;font-size:21px!important}
+ .taskrow .taskcheck{flex:0 0 21px!important;width:21px!important;height:21px!important;min-width:21px!important;margin:0!important}
+ .taskrow .branchToggle{flex:0 0 19px!important;width:19px!important;min-width:19px!important;padding:0!important}
+ .taskrow .dragHandle{flex:0 0 14px!important;width:14px!important;min-width:14px!important;opacity:.42}
+ .taskrow .taskdesc{display:none!important}
+ .taskrow .meta{margin-top:1px!important;line-height:1.15!important;font-size:10px!important}
+ .taskrow .workspaceHint,.taskrow .stepCount{font-size:10px!important;padding:1px 4px!important}
+ .children{margin-left:13px!important;padding-left:5px!important;margin-right:0!important}
+ .childrow .taskrow{min-height:43px!important;padding:5px 5px!important}
+ .taskrow.swipeIndent{background:#eaf4eb!important;box-shadow:inset 3px 0 #326b53}
+ .taskrow.swipeOutdent{background:#f1f1f1!important;box-shadow:inset -3px 0 #666}
+ .taskrow .sandyTaskFilesIndicator{max-width:22px}
+}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -1410,6 +1432,12 @@ function openTaskContextMenu(t,x,y){
  action("Set due date",()=>{state.edit=t;state.parent=null;openDialog();$("taskDue").focus()});
  action("Change priority",()=>{state.edit=t;state.parent=null;openDialog();$("taskPriority").focus()});
  action("Add subtask",()=>outlineDraft(t.id,null,t.company_id||"personal"));
+ if(!t.shared){
+  const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];
+  if(previous&&!["completed","cancelled"].includes(previous.status))action("↳ Make subtask of previous",()=>moveOutlineTask(t.id,previous.id,"inside"));
+  if(t.parent_task_id){const parent=state.tasks.find(p=>p.id===t.parent_task_id);if(parent)action("⇤ Promote one level",()=>moveOutlineTask(t.id,parent.id,"after"))}
+ }
+
  action("Duplicate task",()=>outlineCreate(t.title+" (copy)",t.parent_task_id||null,t.id,t.company_id||"personal",t.category_id||null));
  action("Share or delegate",()=>{state.edit=t;state.parent=null;openDialog()});
  taskContextMenu.classList.remove("hidden");
@@ -1425,7 +1453,14 @@ function attachTaskContext(row,t){
  let timer,startX=0,startY=0;
  row.addEventListener("touchstart",e=>{if(e.touches.length!==1)return;startX=e.touches[0].clientX;startY=e.touches[0].clientY;timer=setTimeout(()=>openTaskContextMenu(t,startX,startY),550)},{passive:true});
  row.addEventListener("touchmove",e=>{if(Math.hypot(e.touches[0].clientX-startX,e.touches[0].clientY-startY)>12)clearTimeout(timer)},{passive:true});
- for(const ev of ["touchend","touchcancel"])row.addEventListener(ev,()=>clearTimeout(timer));
+ let swipeActive=false,swipeX=0,swipeY=0;
+ row.addEventListener("touchstart",e=>{if(e.touches.length!==1||e.target.closest("button,input,select,textarea,a")){swipeActive=false;return}swipeActive=true;swipeX=e.touches[0].clientX;swipeY=e.touches[0].clientY},{passive:true});
+ row.addEventListener("touchmove",e=>{if(!swipeActive)return;const dx=e.touches[0].clientX-swipeX,dy=e.touches[0].clientY-swipeY;row.classList.toggle("swipeIndent",dx>65&&Math.abs(dx)>Math.abs(dy)*1.6);row.classList.toggle("swipeOutdent",dx< -65&&Math.abs(dx)>Math.abs(dy)*1.6)},{passive:true});
+ row.addEventListener("touchend",e=>{clearTimeout(timer);row.classList.remove("swipeIndent","swipeOutdent");if(!swipeActive||!e.changedTouches.length)return;swipeActive=false;const dx=e.changedTouches[0].clientX-swipeX,dy=e.changedTouches[0].clientY-swipeY;if(Math.abs(dx)<85||Math.abs(dx)<Math.abs(dy)*1.6||t.shared)return;
+  if(dx>0){const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];if(previous&&!["completed","cancelled"].includes(previous.status))moveOutlineTask(t.id,previous.id,"inside");else toast("No eligible preceding task to nest under",true)}
+  else if(t.parent_task_id){const parent=state.tasks.find(p=>p.id===t.parent_task_id);if(parent)moveOutlineTask(t.id,parent.id,"after")}else toast("Already a top-level task");
+ },{passive:true});
+ for(const ev of ["touchend","touchcancel"])row.addEventListener(ev,()=>{clearTimeout(timer);if(ev==="touchcancel"){swipeActive=false;row.classList.remove("swipeIndent","swipeOutdent")}});
 }
 
 function renderTask(t,depth){
@@ -1500,7 +1535,9 @@ function renderTask(t,depth){
   mission.setAttribute("aria-label",mission.title);
   right.append(mission);
  }
- const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";right.append(edit);row.append(right);outer.append(row);
+ const edit=btn("···","iconbtn",()=>{state.edit=t;state.parent=null;openDialog()});edit.title="Task details";right.append(edit);
+ const mobileMenu=btn("⋯","iconbtn mobileTaskMenu",()=>{const rect=row.getBoundingClientRect();openTaskContextMenu(t,Math.min(innerWidth-15,rect.right-12),Math.min(innerHeight-20,rect.bottom))});mobileMenu.title="Task actions";mobileMenu.setAttribute("aria-label","Actions for "+t.title);right.append(mobileMenu);
+ row.append(right);outer.append(row);
  const notes=el("form","inlineTaskNotes hidden");
  const history=el("div","taskHistory");history.textContent="Open to load conversation history…";notes.append(history);
  const notesField=el("textarea");notesField.placeholder="Write a new comment or progress update…";notesField.maxLength=12000;notesField.setAttribute("aria-label","New comment for "+t.title);notes.append(notesField);
