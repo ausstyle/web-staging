@@ -1,0 +1,28 @@
+name: Sandy Engineering MCP Checks
+on:
+  pull_request:
+    paths:
+      - "services/sandy-engineering-mcp/**"
+      - ".github/workflows/sandy-engineering-mcp-check.yml"
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: services/sandy-engineering-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: services/sandy-engineering-mcp/package-lock.json
+      - name: Verify syntax
+        run: node --check src/server.mjs
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts --no-audit
+      - name: Verify package scripts
+        run: npm run check
