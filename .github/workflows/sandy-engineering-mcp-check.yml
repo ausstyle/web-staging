@@ -18,11 +18,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-          cache-dependency-path: services/sandy-engineering-mcp/package-lock.json
       - name: Verify syntax
         run: node --check src/server.mjs
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts --no-audit
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify package scripts
         run: npm run check
