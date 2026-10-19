@@ -107,6 +107,7 @@ body{background:#fafbf8;color:#253a2c}
 .timelineLinkHandle{position:absolute;right:-20px;top:0px;width:16px;height:16px;border:2px solid #478962;background:white;border-radius:50%;cursor:crosshair;z-index:5;box-shadow:0 1px 4px #0002}
 .timelineLinkHandle:after{content:"";position:absolute;inset:4px;background:#478962;border-radius:50%}
 .ganttBar:hover .timelineLinkHandle{transform:scale(1.18)}
+.timelinePreviewLinked{outline:2px dashed #477d60;outline-offset:3px;opacity:.85}
 .timelineDragCreate{position:absolute;top:10px;height:20px;border:2px dashed #367c55;border-radius:5px;background:#91caa777;pointer-events:none;z-index:4}
 .timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
 .timelineInlineDraft{border-bottom:1px solid #dbe7da;background:#f5faf4;min-height:45px;align-items:center}.timelineNewHint{font-size:11px;color:#819184;padding:6px 12px}.timelineLabel .inlineTitle{width:100%;font-size:12px;border:1px solid #a7c7af;border-radius:4px;padding:5px;background:white}
@@ -1933,6 +1934,25 @@ function timelineDrawDependencies(){
  }
  box.style.position="relative";box.append(layer);
 }
+function timelinePreviewSuccessors(rootId,delta,monday,range){
+ const seen=new Set([rootId]),queue=[rootId];
+ while(queue.length){
+  const id=queue.shift();
+  for(const dep of state.dependencies.filter(d=>d.depends_on_id===id)){
+   if(seen.has(dep.task_id))continue;
+   seen.add(dep.task_id);queue.push(dep.task_id);
+   const task=state.tasks.find(x=>x.id===dep.task_id);
+   const node=[...$("timeline").querySelectorAll(".timelineRow[data-timeline-id]")].find(n=>n.dataset.timelineId===dep.task_id);
+   const bar=node?.querySelector(".ganttBar");
+   if(!bar||!task)continue;
+   const start=Date.parse(task.start_at||task.due_at),end=Date.parse(task.due_at||task.start_at);
+   if(!Number.isFinite(start)||!Number.isFinite(end))continue;
+   bar.style.left=Math.max(0,(start+delta-monday.getTime())/range*100)+"%";
+   bar.style.width=bar.classList.contains("timelineMilestone")?"12px":Math.max(1.2,(end-start)/range*100)+"%";
+   bar.classList.add("timelinePreviewLinked");
+  }
+ }
+}
 function timelineConnectFrom(source,e,handle){
  const box=$("timeline");let active=false;
  const rect=box.getBoundingClientRect(),line=document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -2015,7 +2035,7 @@ function renderTimeline(){
     const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
     bar.addEventListener("pointerdown",e=>{if(t.shared||e.button!==0)return;gesture={x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};bar.setPointerCapture(e.pointerId);e.stopPropagation()});
-    bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*84);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*86400000:gesture.from;const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*86400000:gesture.to;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=dateLabel(new Date(nextFrom))+" → "+dateLabel(new Date(nextTo))});
+    bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*84);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*86400000:gesture.from;const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*86400000:gesture.to;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=dateLabel(new Date(nextFrom))+" → "+dateLabel(new Date(nextTo));timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range)});
     bar.addEventListener("pointerup",async e=>{if(!gesture)return;const g=gesture;gesture=null;if(!g.moved){state.edit=t;state.parent=null;openDialog();return}if(await timelineDropDependency(t,e))return;const delta=Math.round((e.clientX-g.x)/g.width*84);const nextFrom=g.mode==="move"||g.mode==="start"?g.from+delta*86400000:g.from,nextTo=g.mode==="move"||g.mode==="resize"?g.to+delta*86400000:g.to;if(nextTo<nextFrom){renderTimeline();return}await timelineSaveSchedule(t,nextFrom,nextTo)});
     bar.addEventListener("pointercancel",()=>{gesture=null;renderTimeline()});track.append(bar)
    }
