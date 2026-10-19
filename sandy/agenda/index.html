@@ -1430,7 +1430,8 @@ function renderTask(t,depth){
   attach.title="Add files to "+t.title;attach.setAttribute("aria-label","Add files to "+t.title);right.append(attach);
  }
 
- const notesButton=btn("✎","iconbtn",()=>{const panel=outer.querySelector(".inlineTaskNotes");if(!panel)return;panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){panel.loadHistory();panel.querySelector("textarea").focus()}});
+ const todayPin=btn(todayPinIds().has(t.id)?"☀":"☆","iconbtn",()=>{const pins=todayPinIds();if(pins.has(t.id))pins.delete(t.id);else pins.add(t.id);localStorage.setItem(todayPinnedKey,JSON.stringify([...pins]));render()});todayPin.title=todayPinIds().has(t.id)?"Remove from Today":"Pin to Today";todayPin.setAttribute("aria-label",todayPin.title);right.append(todayPin);
+  const notesButton=btn("✎","iconbtn",()=>{const panel=outer.querySelector(".inlineTaskNotes");if(!panel)return;panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){panel.loadHistory();panel.querySelector("textarea").focus()}});
  notesButton.title="Add or edit notes / comments";notesButton.setAttribute("aria-label","Notes for "+t.title);right.append(notesButton);
  if(!t.shared){right.append(quickTaskControls(t));right.append(shareTaskControl(t));right.append(delegationControl(t))}
  const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
@@ -1577,8 +1578,8 @@ $("sandyToday").open=localStorage.getItem("sandy_today_open")!=="0";
 $("sandyTodayAdd").addEventListener("submit",async e=>{
  e.preventDefault();const input=$("sandyTodayTitle"),title=input.value.trim();if(!title)return;
  const button=e.currentTarget.querySelector("button");button.disabled=true;
- try{const result=await api("create",{title,company_id:null});if(!result.id)throw Error("Task was not confirmed");
-  const due=todayMidnight().toISOString();
+ try{const result=await api("create",{title,company_id:normalizeWorkspace("personal")});if(!result.id)throw Error("Task was not confirmed");
+  const due=new Date(todayMidnight().getTime()+12*3600000).toISOString();
   try{await api("update",{id:result.id,due_at:due,due_time_specified:false})}catch(err){toast("Task created but due date was not saved: "+err.message,true)}
   input.value="";await load();
  }catch(err){toast("Could not create Today task: "+err.message,true)}finally{button.disabled=false}
