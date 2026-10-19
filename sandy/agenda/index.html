@@ -1435,6 +1435,7 @@ function openTaskContextMenu(t,x,y){
  if(!t.shared){
   const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];
   if(previous&&!["completed","cancelled"].includes(previous.status))action("↳ Make subtask of previous",()=>moveOutlineTask(t.id,previous.id,"inside"));
+  action("↳ Move under another task…",()=>window.sandyChooseParentTask(t,previous));
   if(t.parent_task_id){const parent=state.tasks.find(p=>p.id===t.parent_task_id);if(parent)action("⇤ Promote one level",()=>moveOutlineTask(t.id,parent.id,"after"))}
  }
 
@@ -1455,12 +1456,12 @@ function attachTaskContext(row,t){
  row.addEventListener("touchmove",e=>{if(Math.hypot(e.touches[0].clientX-startX,e.touches[0].clientY-startY)>12)clearTimeout(timer)},{passive:true});
  let swipeActive=false,swipeX=0,swipeY=0;
  row.addEventListener("touchstart",e=>{if(e.touches.length!==1||e.target.closest("button,input,select,textarea,a")){swipeActive=false;return}swipeActive=true;swipeX=e.touches[0].clientX;swipeY=e.touches[0].clientY},{passive:true});
- row.addEventListener("touchmove",e=>{if(!swipeActive)return;const dx=e.touches[0].clientX-swipeX,dy=e.touches[0].clientY-swipeY;row.classList.toggle("swipeIndent",dx>65&&Math.abs(dx)>Math.abs(dy)*1.6);row.classList.toggle("swipeOutdent",dx< -65&&Math.abs(dx)>Math.abs(dy)*1.6)},{passive:true});
- row.addEventListener("touchend",e=>{clearTimeout(timer);row.classList.remove("swipeIndent","swipeOutdent");if(!swipeActive||!e.changedTouches.length)return;swipeActive=false;const dx=e.changedTouches[0].clientX-swipeX,dy=e.changedTouches[0].clientY-swipeY;if(Math.abs(dx)<85||Math.abs(dx)<Math.abs(dy)*1.6||t.shared)return;
+ row.addEventListener("touchmove",e=>{if(!swipeActive)return;const dx=e.touches[0].clientX-swipeX,dy=e.touches[0].clientY-swipeY;row.classList.toggle("swipeIndent",dx>65&&Math.abs(dx)>Math.abs(dy)*1.6);row.classList.toggle("swipeOutdent",dx< -65&&Math.abs(dx)>Math.abs(dy)*1.6);window.sandySwipeFeedback(row,dx,dy)},{passive:true});
+ row.addEventListener("touchend",e=>{clearTimeout(timer);row.classList.remove("swipeIndent","swipeOutdent");window.sandyClearSwipeFeedback(row);if(!swipeActive||!e.changedTouches.length)return;swipeActive=false;const dx=e.changedTouches[0].clientX-swipeX,dy=e.changedTouches[0].clientY-swipeY;if(Math.abs(dx)<85||Math.abs(dx)<Math.abs(dy)*1.6||t.shared)return;
   if(dx>0){const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];if(previous&&!["completed","cancelled"].includes(previous.status))moveOutlineTask(t.id,previous.id,"inside");else toast("No eligible preceding task to nest under",true)}
   else if(t.parent_task_id){const parent=state.tasks.find(p=>p.id===t.parent_task_id);if(parent)moveOutlineTask(t.id,parent.id,"after")}else toast("Already a top-level task");
  },{passive:true});
- for(const ev of ["touchend","touchcancel"])row.addEventListener(ev,()=>{clearTimeout(timer);if(ev==="touchcancel"){swipeActive=false;row.classList.remove("swipeIndent","swipeOutdent")}});
+ for(const ev of ["touchend","touchcancel"])row.addEventListener(ev,()=>{clearTimeout(timer);if(ev==="touchcancel"){swipeActive=false;row.classList.remove("swipeIndent","swipeOutdent");window.sandyClearSwipeFeedback(row)}});
 }
 
 function renderTask(t,depth){
@@ -1967,4 +1968,4 @@ const initial=await sandyAuth.auth.getSession();
 if(!initial.data.session){if(internalWorkspace){$("loginScreen").classList.remove("hidden");$("loginMessage").textContent="Sign in to Sandy Master Control before opening Sandy’s internal Agenda.";}else{sessionStorage.setItem("sandy_agenda_return",location.pathname+location.search);location.replace("../app/?return="+encodeURIComponent(location.pathname+location.search))}}else{
  load().then(()=>{recoverInstantEntries();render();reloadPinnedTasks();return processInvitationLink()}).catch(e=>{const box=$("loginScreen");box.classList.remove("hidden");$("app").classList.add("hidden");$("loginForm").classList.add("hidden");$("codeForm").classList.add("hidden");$("loginMessage").textContent="Agenda access could not be verified: "+e.message;const a=document.createElement("a");a.href="../app/";a.textContent="Return to Sandy workspace";a.className="btn";box.querySelector(".loginbox").append(a);});
 }
-</script></body></html>
+</script><script src="./task-mobile-hierarchy.js?v=20261019"></script></body></html>
