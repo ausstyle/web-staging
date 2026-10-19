@@ -16,7 +16,7 @@ const owner="ffba8e24-f452-44c8-ba9d-228b8657e3cc";
 const setError=e=>{el("error").textContent=e?.message||String(e);el("status").textContent="Unable to continue."};
 const showLogin=()=>{el("login").hidden=false;el("status").textContent="Sign in required."};
 async function init(){
- if(!authorizationId||!/^[0-9a-f-]{36}$/i.test(authorizationId))throw Error("Missing or invalid authorization request.");
+ if(!authorizationId||!/^[A-Za-z0-9_-]{12,256}$/.test(authorizationId))throw Error("Missing or invalid authorization request.");
  const {data:{session}}=await sb.auth.getSession();
  if(!session){showLogin();return}
  const {data:userResult,error:userError}=await sb.auth.getUser();
