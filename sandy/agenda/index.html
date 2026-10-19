@@ -92,6 +92,16 @@ body{background:#fafbf8;color:#253a2c}
 
 .viewSwitch{display:flex;padding:3px;background:#eef3ec;border-radius:10px;gap:2px}.viewBtn{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-size:12px;font-weight:650;color:#7b907e}.viewBtn.chosen{background:#fff;color:#2e6a4b;box-shadow:0 1px 5px #0001}
 .rootLine{display:flex;align-items:center;gap:12px;border:1px solid #dbe8da;border-top:0;background:#f8fbf7;padding:12px 18px;border-radius:0 0 14px 14px}.rootLine span{font-size:20px;color:#538066}.rootLine input{border:0;outline:0;background:transparent;flex:1;font-size:14px;min-width:0;color:#314938}.keyboardHint{font-size:11px;color:#9aaa9b;padding:12px 5px}.timeline{background:white;border:1px solid var(--line);border-radius:14px;overflow-x:auto}.timelineHead{padding:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.timelineHead span{color:#849487;font-size:11px}.timelineGrid{display:grid;grid-template-columns:minmax(170px,240px) repeat(12,minmax(55px,1fr));min-width:860px}.timelineWeeks{background:#f6f9f5;border-block:1px solid #e4ece3}.timelineLabel{text-align:left;padding:10px 12px;border:0;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#38543e}.timelineRow{border-bottom:1px solid #eff3ed;min-height:41px}.timelineRow:hover{background:#fbfdfb}.week{font-size:10px;color:#89998c;padding:11px 5px;text-align:center;border-left:1px solid #ebf0ea}.track{position:relative;grid-row:1;height:40px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(8.333333% - 1px),#edf2ec calc(8.333333% - 1px),#edf2ec 8.333333%)}.ganttBar{position:absolute;top:12px;height:16px;min-width:8px;border-radius:6px;background:#559a72;cursor:pointer}.ganttDone{background:#b4c5b7}.unscheduled{font-size:10px;color:#b2bcb1;margin:12px;display:inline-block}
+.timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
+.timelineQuickFields{display:flex;align-items:center;gap:6px;min-width:0;padding:5px 10px}
+.timelinePlus{color:#59916e;font-size:19px}
+.timelineQuickFields input{width:100%;min-width:0;background:transparent;border:0;outline:0;color:#294534;font:inherit;font-size:12px}
+.timelineQuickFields input:focus{box-shadow:inset 0 -1px #58966e}
+.timelineQuickOptions{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:4px 10px}
+.timelineQuickOptions select{max-width:230px;font-size:11px}
+.timelineQuickOptions button{white-space:nowrap}
+@media(max-width:680px){.timelineQuickOptions select{max-width:155px}}
+
 @media(max-width:680px){.outlineHeader{align-items:center}.viewBtn{padding:6px 9px}.rootLine{padding:11px}.timelineHead span{display:none}}
 
 .workspaceBar{display:flex;gap:12px;align-items:center;margin:0 0 18px;flex-wrap:wrap}.workspaceLabel{font-size:10px;font-weight:750;letter-spacing:.11em;color:#96a59b}.workspaceTabs{display:flex;gap:5px;overflow-x:auto;min-width:0;flex:1;scrollbar-width:thin}.workspacePill{white-space:nowrap;border:1px solid #e4ebe2;background:#fff;border-radius:99px;padding:8px 14px;color:#6a7d6d;font-size:12px;font-weight:620}.workspacePill.selected{background:#dcebe0;color:#265b41;border-color:#c6dfcc}.addCompany{border:1px dashed #9db6a5;background:#f9fbf8;color:#377253;border-radius:9px;padding:8px 13px;font-size:12px;white-space:nowrap}.entryWorkspace{max-width:145px;flex-shrink:0;border:0;background:#edf4eb;border-radius:9px;padding:7px;color:#37684c;font-size:12px;outline:0}.rootLine .entryWorkspace{max-width:125px}
@@ -1776,6 +1786,33 @@ function renderTimeline(){
  const roots=state.tasks.filter(t=>(!t.parent_task_id||t.shared&&!state.tasks.some(x=>x.id===t.parent_task_id))&&!t.archived_at&&t.status!=="cancelled"&&workspaceMatches(t)).sort(compareTaskOrder);
  if(!roots.length)box.append(el("div","empty","Add a task to build your timeline."));
  roots.forEach(t=>row(t,0));
+ // Same instant-save queue as the Tasks outline; keep the user in Timeline.
+ const add=el("form","timelineGrid timelineQuickAdd");
+ add.setAttribute("aria-label","Quick add timeline task");
+ const left=el("div","timelineQuickFields");
+ const plus=el("span","timelinePlus","＋");plus.setAttribute("aria-hidden","true");
+ const input=document.createElement("input");input.type="text";input.maxLength=240;
+ input.placeholder="Add a task… press Enter";input.setAttribute("aria-label","New timeline task");
+ input.autocomplete="off";
+ left.append(plus,input);
+ const right=el("div","timelineQuickOptions");right.style.gridColumn="2 / span 12";
+ const workspace=document.createElement("select");workspace.setAttribute("aria-label","Task company or category");
+ workspace.className="entryWorkspace";
+ const source=$("rootWorkspace");
+ if(source)workspace.innerHTML=source.innerHTML;
+ workspace.value=source?.value||state.entryWorkspace||"personal";
+ const submit=el("button","rootAdd","Add task");submit.type="submit";
+ right.append(workspace,submit);add.append(left,right);
+ add.addEventListener("submit",e=>{
+  e.preventDefault();const title=input.value.trim();if(!title)return;
+  const company=workspace.value||state.entryWorkspace;
+  const previous=roots.length?roots[roots.length-1].id:null;
+  instantEntry(title,null,previous,company,undefined);
+  input.value="";renderTimeline();
+  $("timeline")?.querySelector(".timelineQuickAdd input")?.focus();
+  setTimeout(runInstantQueue,0);
+ });
+ box.append(add);
 }
 
 
