@@ -97,6 +97,10 @@ body{background:#fafbf8;color:#253a2c}
 .timelineBranchToggle{flex:0 0 19px;width:19px;height:25px;padding:0;border:0;background:transparent;color:#4f8060;font-size:14px;cursor:pointer}
 .timelineBranchToggle:disabled{opacity:0;cursor:default}
 .timelineBranchToggle:not(:disabled):hover{background:#e8f1e8;border-radius:4px}
+.timelineUnscheduledMarker{position:absolute;top:11px;width:18px;height:18px;border:2px dashed #69a180;border-radius:50%;background:white;color:#56916f;display:grid;place-items:center;font-size:12px;line-height:1;padding:0;cursor:grab;z-index:2;touch-action:none}
+.timelineUnscheduledMarker:hover,.timelineUnscheduledMarker:focus-visible{background:#e7f3ea;outline:2px solid #85b394;outline-offset:2px}
+.timelineUnscheduledMarker.timelineMarkerDragging{cursor:grabbing;background:#d5eddb}
+.ganttBar.timelineMilestone{width:12px!important;min-width:12px;height:12px;top:14px;border-radius:50%;cursor:pointer}
 .timelineQuickAdd{border-top:1px solid #dbe7da;background:#f9fcf8;min-height:45px;align-items:center}
 .timelineInlineDraft{border-bottom:1px solid #dbe7da;background:#f5faf4;min-height:45px;align-items:center}.timelineNewHint{font-size:11px;color:#819184;padding:6px 12px}.timelineLabel .inlineTitle{width:100%;font-size:12px;border:1px solid #a7c7af;border-radius:4px;padding:5px;background:white}
 .timelineQuickFields{display:flex;align-items:center;gap:6px;min-width:0;padding:5px 10px}
@@ -1874,11 +1878,12 @@ function renderTimeline(){
    const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
    const start=Math.max(0,(from-monday.getTime())/range)*100,end=Math.min(100,((to-monday.getTime())/range)*100);
    if(end>=0&&start<=100){
-    const bar=el("div","ganttBar"+(t.status==="completed"?" ganttDone":""));
-    bar.style.left=Math.max(0,start)+"%";bar.style.width=Math.max(1.2,end-Math.max(0,start))+"%";
+    const milestone=Math.abs(to-from)<86400000;
+    const bar=el("div","ganttBar"+(milestone?" timelineMilestone":"")+(t.status==="completed"?" ganttDone":""));
+    bar.style.left=Math.max(0,start)+"%";bar.style.width=milestone?"12px":Math.max(1.2,end-Math.max(0,start))+"%";
     bar.title=t.title+" · "+dateLabel(a.from)+" → "+dateLabel(a.to);
     bar.style.touchAction="pan-y";bar.style.cursor="grab";
-    const resize=el("span","sandyGanttResize","⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";bar.append(resize);
+    const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
     bar.addEventListener("pointerdown",e=>{if(t.shared||e.button!==0)return;gesture={x:e.clientX,from,to,mode:e.target===resize?"resize":"move",width:track.getBoundingClientRect().width,moved:false};bar.setPointerCapture(e.pointerId);e.stopPropagation()});
     bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*84);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"?gesture.from+delta*86400000:gesture.from;const nextTo=gesture.to+delta*86400000;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=dateLabel(new Date(nextFrom))+" → "+dateLabel(new Date(nextTo))});
@@ -1886,7 +1891,44 @@ function renderTimeline(){
     bar.addEventListener("pointercancel",()=>{gesture=null;renderTimeline()});track.append(bar)
    }
   }
-  if(!hasDate&&depth===0){const dot=el("span","unscheduled","No dates set");track.append(dot)}
+  if(!hasDate){
+   const marker=el("button","timelineUnscheduledMarker","+");
+   marker.type="button";
+   marker.setAttribute("aria-label","Schedule "+t.title);
+   marker.title="Unscheduled · click to set a date, or drag onto a week to schedule";
+   marker.style.left="8px";
+   let drag=null;
+   marker.addEventListener("pointerdown",e=>{
+    if(t.shared||e.button!==0)return;
+    drag={x:e.clientX,y:e.clientY,active:false};
+    marker.setPointerCapture(e.pointerId);
+    e.stopPropagation();
+   });
+   marker.addEventListener("pointermove",e=>{
+    if(!drag)return;
+    if(Math.abs(e.clientX-drag.x)>5||Math.abs(e.clientY-drag.y)>5)drag.active=true;
+    if(drag.active){
+     const rect=track.getBoundingClientRect();
+     marker.style.left=Math.max(8,Math.min(rect.width-8,e.clientX-rect.left))+"px";
+     marker.classList.add("timelineMarkerDragging");
+    }
+   });
+   marker.addEventListener("pointerup",async e=>{
+    if(!drag)return;
+    const moved=drag.active;drag=null;marker.classList.remove("timelineMarkerDragging");
+    if(!moved)return;
+    const rect=track.getBoundingClientRect();
+    const days=Math.max(0,Math.min(83,Math.floor((e.clientX-rect.left)/rect.width*84)));
+    const scheduled=new Date(monday.getTime()+days*86400000);
+    // Only a due date is assigned; no duration or time is invented.
+    const before=t.due_at;t.due_at=scheduled.toISOString();renderTimeline();
+    try{await api("update",{id:t.id,due_at:t.due_at});toast("Task scheduled for "+dateLabel(scheduled))}
+    catch(err){t.due_at=before;renderTimeline();toast("Scheduling failed: "+err.message,true)}
+   });
+   marker.addEventListener("pointercancel",()=>{drag=null;marker.classList.remove("timelineMarkerDragging");marker.style.left="8px"});
+   marker.addEventListener("click",e=>{if(drag)return;state.edit=t;state.parent=null;openDialog();$("taskDue")?.focus()});
+   track.append(marker);
+  }
   line.append(track);box.append(line);
   if(!collapsed(t))children.forEach(c=>row(c,depth+1))
  }
