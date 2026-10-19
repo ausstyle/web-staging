@@ -1844,6 +1844,16 @@ function timelineEditTitle(t,label){
  field.addEventListener("blur",()=>{if(!done)commit("blur")});
  queueMicrotask(()=>{field.focus();field.select()});
 }
+async function timelineDropDependency(task,event){
+ const targetRow=document.elementFromPoint(event.clientX,event.clientY)?.closest(".timelineRow[data-timeline-id]");
+ const target=targetRow&&state.tasks.find(x=>x.id===targetRow.dataset.timelineId);
+ if(!target||target.id===task.id||task.shared||target.shared)return false;
+ if(String(task.id).startsWith("pending-")||String(target.id).startsWith("pending-")){toast("Wait until both tasks are saved",true);return true}
+ if(!confirm("Make “"+task.title+"” dependent on “"+target.title+"”?"))return true;
+ try{await api("dependency",{task_id:task.id,depends_on_id:target.id});toast("Task dependency saved");}
+ catch(err){toast("Dependency not saved: "+err.message,true)}
+ return true;
+}
 function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
@@ -1887,7 +1897,7 @@ function renderTimeline(){
     let gesture=null;
     bar.addEventListener("pointerdown",e=>{if(t.shared||e.button!==0)return;gesture={x:e.clientX,from,to,mode:e.target===resize?"resize":"move",width:track.getBoundingClientRect().width,moved:false};bar.setPointerCapture(e.pointerId);e.stopPropagation()});
     bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*84);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"?gesture.from+delta*86400000:gesture.from;const nextTo=gesture.to+delta*86400000;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=dateLabel(new Date(nextFrom))+" → "+dateLabel(new Date(nextTo))});
-    bar.addEventListener("pointerup",async e=>{if(!gesture)return;const g=gesture;gesture=null;if(!g.moved){state.edit=t;state.parent=null;openDialog();return}const delta=Math.round((e.clientX-g.x)/g.width*84);const nextFrom=g.mode==="move"?g.from+delta*86400000:g.from,nextTo=g.to+delta*86400000;if(nextTo<nextFrom){renderTimeline();return}try{await api("update",{id:t.id,start_at:new Date(nextFrom).toISOString(),due_at:new Date(nextTo).toISOString()});await load();toast("Task schedule saved")}catch(err){await load().catch(()=>{});toast("Schedule update failed: "+err.message,true)}});
+    bar.addEventListener("pointerup",async e=>{if(!gesture)return;const g=gesture;gesture=null;if(!g.moved){state.edit=t;state.parent=null;openDialog();return}if(await timelineDropDependency(t,e))return;const delta=Math.round((e.clientX-g.x)/g.width*84);const nextFrom=g.mode==="move"?g.from+delta*86400000:g.from,nextTo=g.to+delta*86400000;if(nextTo<nextFrom){renderTimeline();return}try{await api("update",{id:t.id,start_at:new Date(nextFrom).toISOString(),due_at:new Date(nextTo).toISOString()});await load();toast("Task schedule saved")}catch(err){await load().catch(()=>{});toast("Schedule update failed: "+err.message,true)}});
     bar.addEventListener("pointercancel",()=>{gesture=null;renderTimeline()});track.append(bar)
    }
   }
@@ -1919,6 +1929,7 @@ function renderTimeline(){
     if(!moved)return;
     const rect=track.getBoundingClientRect();
     const days=Math.max(0,Math.min(83,Math.floor((e.clientX-rect.left)/rect.width*84)));
+    if(await timelineDropDependency(t,e))return;
     const scheduled=new Date(monday.getTime()+days*86400000);
     // Only a due date is assigned; no duration or time is invented.
     const before=t.due_at;t.due_at=scheduled.toISOString();renderTimeline();
