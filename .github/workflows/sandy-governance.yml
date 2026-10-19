@@ -1,0 +1,17 @@
+name: Sandy governance integrity
+on:
+  push:
+    paths:
+      - 'sandy/governance/**'
+      - '.github/workflows/sandy-governance.yml'
+  pull_request:
+    paths:
+      - 'sandy/governance/**'
+      - '.github/workflows/sandy-governance.yml'
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate policy and regression coverage
+        run: python3 sandy/governance/check_policy.py
