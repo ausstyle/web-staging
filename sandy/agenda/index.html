@@ -570,8 +570,9 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 
 <section id="activityReview" class="activityReview hidden" aria-label="Day in Review">
 <div class="activityReviewHead"><div><strong>Day in Review</strong><span>Record what actually happened, without creating more open tasks.</span></div><input id="activityDay" type="date" aria-label="Activity date"></div>
-<form id="activityQuickForm" autocomplete="off"><span class="activityDoneIcon" aria-hidden="true">✓</span><input id="activityQuickInput" maxlength="2000" placeholder="Add completed activity… Enter to save" aria-label="Completed activity" required><button id="activityQuickSave" type="submit">＋ Add</button></form>
+
 <div id="activityFeedback" role="status" aria-live="polite"></div><div id="activityEntries" class="activityEntries"></div>
+<form id="activityQuickForm" autocomplete="off"><span class="activityDoneIcon" aria-hidden="true">✓</span><input id="activityQuickInput" maxlength="2000" placeholder="Add completed activity… Enter to save" aria-label="Completed activity" required><button id="activityQuickSave" type="submit">＋ Add</button></form>
 <div class="activityReviewFoot">Personal activities are private. Sandy can suggest connections to your work; no new task is created.</div>
 </section>
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div id="categoryBar" class="categoryBar hidden" aria-label="Subcategories"></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
@@ -2077,12 +2078,14 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
  const saveQueue={pending:0};
  async function refreshActivities(){
   if(panel.classList.contains("hidden"))return;
-  entries.replaceChildren();feedback.textContent="Loading…";
+  // Keep current rows in place while fetching; do not flash or collapse the review.
   try{
    const selected=day.value||localDay(),tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
    const a=new Date(selected+"T00:00:00"),b=new Date(a);b.setDate(b.getDate()+1);
    const result=await activityRequest({action:"list",day:selected,timezone:tz,from:a.toISOString(),to:b.toISOString()});
    feedback.textContent="";
+   if(panel.classList.contains("hidden") || day.value!==selected)return;
+   entries.replaceChildren();
    const rows=result.activities||[];
    const completed=rows.filter(x=>x.source_kind==="completed_task").length;
    const personal=rows.filter(x=>x.source_kind!=="completed_task").length;
