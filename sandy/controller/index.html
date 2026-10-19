@@ -162,7 +162,37 @@ function showIntelligence(c){
  else d.evaluations.slice(0,20).forEach(x=>{const item=el("div","visualCard");add(item,el("strong","",x.scenario),el("p","small muted",x.verdict+" · "+date(x.created_at)));experiments.append(item)});
  c.append(experiments);
 }
+async function showDeploymentApprovals(host){
+ const section=panel("Deployment approvals");
+ const status=el("p","small muted","Loading pending deployment jobs…");section.append(status);host.prepend(section);
+ try{
+  const result=await call("deployment_approvals");section.removeChild(status);
+  const jobs=(result.jobs||[]).filter(j=>["pending_approval","approved","failed"].includes(j.status));
+  if(!jobs.length){section.append(el("div","workspaceEmpty","No pending or recently approved deployments."));return}
+  for(const job of jobs){
+   const card=el("div","workspaceCard");
+   const top=el("div","workspaceTop");add(top,el("b","",job.target+" · "+job.operation),el("span","workspacePill",job.status));card.append(top);
+   txt(card,"Provider: "+job.provider+" · Requested: "+date(job.created_at),"small muted");
+   txt(card,"Job: "+job.id,"small muted");
+   const p=job.payload||{};if(p.title)txt(card,p.title,"small");
+   if(p.expected_behavior)txt(card,"Expected: "+p.expected_behavior,"small muted");
+   if(job.status==="pending_approval"){
+    const button=el("button","btn","Approve deployment");button.type="button";
+    const feedback=el("div","small muted","Approval does not execute deployment; execution requires an enabled deployment worker.");
+    button.onclick=async()=>{
+     if(!confirm("Approve deployment job "+job.id+"? This records owner approval only; it will not execute automatically."))return;
+     button.disabled=true;feedback.textContent="Recording approval…";
+     try{const response=await call("deployment_approve",{job_id:job.id});feedback.textContent=response.notice||"Approval recorded";button.remove();top.querySelector(".workspacePill").textContent="approved"}
+     catch(e){feedback.textContent="Approval failed: "+e.message;button.disabled=false}
+    };
+    card.append(button,feedback);
+   }else if(job.status==="approved")txt(card,"Approved · Awaiting an enabled deployment executor.","small muted");
+   section.append(card);
+  }
+ }catch(e){status.textContent="Unable to load deployment approvals: "+e.message}
+}
 function showEngineering(c){
+ showDeploymentApprovals(c);
  const p=panel("Improvement pipeline"),items=missionTelemetry?.improvements||data.proposals||[];
  txt(p,"Track proposed improvements and investigate issues. Only verified results should be marked complete.","small muted");
  const summary=el("div","workspaceKpis");
