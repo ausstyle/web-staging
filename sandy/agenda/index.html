@@ -2120,8 +2120,8 @@ function open(row){
  if(!row.isConnected||currentRow!==row||!suitable())return;
  const title=row.querySelector('.tasktitle');
  const raw=row.dataset.taskPreviewDetails?.trim()||'';
- const description=raw.split(/(?:\\n|\\r)?\\s*Email context\\s*:/i)[0].replace(/\\s+/g,' ').trim().slice(0,190).trim();
- const summary=description.length>=190?description.replace(/\\s+\\S*$/,'')+'…':description;
+ const description=raw.split(/Email context\s*:/i)[0].replace(/\s+/g,' ').trim().slice(0,190).trim();
+ const summary=description.length>=190?description.replace(/\s+\S*$/,'')+'…':description;
  if(!description)return;
  if(preview)preview.remove();
  preview=document.createElement('div');preview.className='sandyTaskHoverPreview';preview.setAttribute('role','tooltip');
