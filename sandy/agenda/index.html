@@ -1992,14 +1992,29 @@ function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
  const monday=new Date(today);monday.setDate(today.getDate()-((today.getDay()+6)%7));
- const weeks=[4,12,24].includes(Number(localStorage.getItem("sandy_timeline_zoom")))?Number(localStorage.getItem("sandy_timeline_zoom")):12,days=weeks*7,range=days*86400000;
- const cols="minmax(170px,240px) repeat("+weeks+",minmax(55px,1fr))";
- const applyGrid=element=>{element.style.gridTemplateColumns=cols;element.style.minWidth=(240+weeks*55)+"px"};
- const title=el("div","timelineHead");title.append(el("strong","",weeks+"-week project plan"));title.append(el("span","","Drag a bar to move dates · drag its right edge to resize"));const zoom=el("div","timelineZoom");
- for(const n of [4,12,24]){const control=el("button","timelineZoomButton"+(n===weeks?" selected":""),n===4?"Month":n===12?"Quarter":"6 months");control.type="button";control.setAttribute("aria-pressed",String(n===weeks));control.addEventListener("click",()=>{localStorage.setItem("sandy_timeline_zoom",String(n));renderTimeline()});zoom.append(control)}
+ const zoomValue=Number(localStorage.getItem("sandy_timeline_zoom"));
+ const zoomOptions=[7,14,28,84,168];
+ const days=zoomOptions.includes(zoomValue)?zoomValue:84,dayMode=days<=14,slots=dayMode?days:days/7,range=days*86400000;
+ const cols="minmax(170px,240px) repeat("+slots+",minmax("+(dayMode?75:55)+"px,1fr))";
+ const applyGrid=element=>{element.style.gridTemplateColumns=cols;element.style.minWidth=(240+slots*(dayMode?75:55))+"px"};
+ const title=el("div","timelineHead");
+ title.append(el("strong","",dayMode?days+"-day project plan":(days/7)+"-week project plan"));
+ title.append(el("span","","Drag to set dates · drag left/right edges to resize"));
+ const zoom=el("div","timelineZoom");
+ for(const [n,name] of [[7,"7 days"],[14,"14 days"],[28,"Month"],[84,"Quarter"],[168,"6 months"]]){
+  const control=el("button","timelineZoomButton"+(n===days?" selected":""),name);
+  control.type="button";control.setAttribute("aria-pressed",String(n===days));
+  control.addEventListener("click",()=>{localStorage.setItem("sandy_timeline_zoom",String(n));renderTimeline()});
+  zoom.append(control);
+ }
  title.append(zoom);box.append(title);
- const header=el("div","timelineGrid timelineWeeks");applyGrid(header);header.append(el("div","timelineLabel","Project / task"));
- for(let w=0;w<weeks;w++){const d=new Date(monday.getTime()+w*7*86400000);header.append(el("div","week",d.toLocaleDateString(undefined,{month:"short",day:"numeric"})))}box.append(header);
+ const header=el("div","timelineGrid timelineWeeks");applyGrid(header);
+ header.append(el("div","timelineLabel","Project / task"));
+ for(let i=0;i<slots;i++){
+  const d=new Date(monday.getTime()+i*(dayMode?1:7)*86400000);
+  header.append(el("div","week",d.toLocaleDateString(undefined,dayMode?{weekday:"short",day:"numeric",month:"short"}:{month:"short",day:"numeric"})));
+ }
+ box.append(header);
  const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
  function row(t,depth){
   const children=childOf(t.id);
@@ -2021,7 +2036,7 @@ function renderTimeline(){
   label.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();timelineEditTitle(t,label)}});
   line.addEventListener("contextmenu",e=>{if(e.target.closest(".ganttBar"))return;e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
   cell.append(label);line.append(cell);
-  const track=el("div","track");track.style.gridColumn="2 / span "+weeks;track.style.backgroundSize=(100/weeks)+"% 100%";
+  const track=el("div","track");track.style.gridColumn="2 / span "+slots;track.style.backgroundSize=(100/slots)+"% 100%";
   if(hasDate){
    const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
    const start=Math.max(0,(from-monday.getTime())/range)*100,end=Math.min(100,((to-monday.getTime())/range)*100);
@@ -2120,7 +2135,7 @@ function renderTimeline(){
  input.placeholder="Add a task… press Enter";input.setAttribute("aria-label","New timeline task");
  input.autocomplete="off";
  left.append(plus,input);
- const right=el("div","timelineQuickOptions");right.style.gridColumn="2 / span "+weeks;
+ const right=el("div","timelineQuickOptions");right.style.gridColumn="2 / span "+slots;
  const workspace=document.createElement("select");workspace.setAttribute("aria-label","Task company or category");
  workspace.className="entryWorkspace";
  const source=$("rootWorkspace");
