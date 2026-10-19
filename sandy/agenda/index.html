@@ -377,6 +377,28 @@ html,body{max-width:100%;overflow-x:clip}
  .taskrow.swipeOutdent{background:#f1f1f1!important;box-shadow:inset -3px 0 #666}
  .taskrow .sandyTaskFilesIndicator{max-width:22px}
 }
+
+/* Compact activity ledger, visually consistent with inline task entry */
+.activityTopActions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.activityReview{margin:10px 0 14px;border:1px solid #e4ebe2;background:#fff;border-radius:12px;padding:10px 12px}
+.activityReview.hidden{display:none!important}
+.activityReviewHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.activityReviewHead strong{display:block;font-size:14px;color:#27372f}
+.activityReviewHead span,.activityReviewFoot{display:block;color:#7c8980;font-size:11px}
+.activityReviewHead input{font:inherit;font-size:12px;border:1px solid #e4ebe2;border-radius:7px;padding:5px;background:white;max-width:147px}
+#activityQuickForm{display:flex;align-items:center;gap:7px;background:#fafbf9;border:1px solid #dce5db;border-radius:9px;padding:4px 5px 4px 10px;min-height:37px}
+.activityDoneIcon{color:#326b53;font-weight:800}
+#activityQuickInput{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:13px;padding:3px 0;color:#27372f}
+#activityQuickSave{border:0;background:#326b53;color:#fff;border-radius:7px;padding:6px 10px;font-weight:650;font-size:12px;white-space:nowrap}
+#activityQuickSave:disabled{opacity:.5}
+#activityFeedback{font-size:11px;color:#476b53;min-height:0}
+.activityEntries{max-height:310px;overflow:auto}
+.activityRow{display:flex;align-items:center;gap:8px;min-height:34px;border-bottom:1px solid #f0f2ed;padding:4px 2px}
+.activityRow .activityText{font-size:12px;flex:1;min-width:0;overflow-wrap:anywhere}
+.activityRow .activityClock{font-size:11px;color:#849087;white-space:nowrap}
+.activityRow button{border:0;background:none;padding:4px;font-size:11px;color:#69766e}
+.activityReviewFoot{margin-top:7px}
+@media(max-width:680px){.activityReview{padding:8px;margin:8px 0}.activityReviewHead{gap:5px}.activityReviewHead span{display:none}.activityReviewHead input{max-width:128px;font-size:11px}.activityTopActions{gap:4px}.activityTopActions .btn{min-height:35px!important;padding:7px 9px!important}#activityQuickInput{font-size:16px}#activityQuickSave{padding:6px 8px}.activityRow{min-height:32px}}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -530,8 +552,14 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
 <header><button type="button" id="agendaMobileNav" aria-label="Open navigation" onclick="document.body.classList.add('agendaNavOpen')">☰</button><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
-<div class="top"><div><h1>Tasks, without the clutter.</h1><p class="intro">A clearer view of your work and what needs attention.</p></div><button id="newTask" class="btn primary">＋ New task</button></div>
+<div class="top"><div><h1>Tasks, without the clutter.</h1><p class="intro">A clearer view of your work and what needs attention.</p></div><div class="activityTopActions"><button type="button" id="showDayReview" class="btn small" aria-expanded="false" aria-controls="activityReview">◷ Day in Review</button><button id="newTask" class="btn primary">＋ New task</button></div></div>
 
+<section id="activityReview" class="activityReview hidden" aria-label="Day in Review">
+<div class="activityReviewHead"><div><strong>Day in Review</strong><span>Record what actually happened, without creating more open tasks.</span></div><input id="activityDay" type="date" aria-label="Activity date"></div>
+<form id="activityQuickForm" autocomplete="off"><span class="activityDoneIcon" aria-hidden="true">✓</span><input id="activityQuickInput" maxlength="2000" placeholder="Add completed activity… Enter to save" aria-label="Completed activity" required><button id="activityQuickSave" type="submit">＋ Add</button></form>
+<div id="activityFeedback" role="status" aria-live="polite"></div><div id="activityEntries" class="activityEntries"></div>
+<div class="activityReviewFoot">Personal activities are private. Sandy can suggest connections to your work; no new task is created.</div>
+</section>
 <div class="workspaceBar"><span class="workspaceLabel">WORKSPACES</span><div id="workspaceTabs" class="workspaceTabs"></div><button type="button" id="addCompany" class="addCompany">＋ Company</button></div><div id="categoryBar" class="categoryBar hidden" aria-label="Subcategories"></div><div class="summary"><button type="button" class="metric metricLink hidden" id="pendingApprovalMetric" aria-label="View requests awaiting approval"><span>Awaiting approval →</span><b id="countPendingApproval">0</b></button><button type="button" class="metric metricLink" data-summary-tab="open" aria-label="View open tasks"><span>Open tasks →</span><b id="countOpen">0</b></button><button type="button" class="metric metricLink" data-summary-tab="doing" aria-label="View in-progress tasks"><span>In progress →</span><b id="countDoing">0</b></button><button type="button" class="metric metricLink" data-summary-tab="waiting" aria-label="View waiting tasks"><span>Waiting on someone →</span><b id="countWaiting">0</b></button><button type="button" class="metric metricLink" data-summary-tab="done" aria-label="View completed tasks"><span>Completed →</span><b id="countDone">0</b></button></div>
 <details id="missionOverview" class="missionOverview" aria-label="Sandy Missions"><summary class="compactMissionSummary">🚀 Sandy Missions <span>· expand to view missions and questions</span></summary><div class="missionHeader"><div><strong>🚀 Sandy Missions</strong><p>Track the work Sandy is managing and jump into individual missions.</p></div><button type="button" class="btn small" id="missionShowAll">View all missions</button></div><div id="missionCards" class="missionCards"></div></details>
 <section class="requestPanel hidden" id="taskRequestPanel" ><div class="requestPanelHeader"><strong id="taskRequestsHeading">Task requests · Awaiting approval</strong><span class="muted small">Requests require recipient approval</span></div><div id="pendingTaskRequests"></div></section>
@@ -2013,4 +2041,56 @@ window.sandySwipeFeedback=function(row,dx,dy){
 };
 window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-preview');row.style.removeProperty('--sandy-swipe-x');row.querySelector('.sandy-swipe-caption')?.remove()};
 })();
+
+/* Day in Review: compact completed-activity entry, separate from planned Tasks. */
+{
+ const toggle=$("showDayReview"),panel=$("activityReview"),day=$("activityDay");
+ const form=$("activityQuickForm"),input=$("activityQuickInput"),entries=$("activityEntries"),feedback=$("activityFeedback");
+ const localDay=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
+ day.value=localDay();
+ const service="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-activity-ledger";
+ async function activityRequest(body){
+  const {data:{session}}=await sandyAuth.auth.getSession();
+  if(!session?.access_token)throw Error("Sign in to view your activities");
+  const r=await fetch(service,{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"content-type":"application/json"},body:JSON.stringify(body)});
+  const json=await r.json().catch(()=>({}));
+  if(!r.ok)throw Error(json.error||"Could not save activity");
+  return json;
+ }
+ const esc=s=>String(s||"");
+ async function refreshActivities(){
+  if(panel.classList.contains("hidden"))return;
+  entries.replaceChildren();feedback.textContent="Loading…";
+  try{
+   const selected=day.value||localDay(),tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC";
+   const a=new Date(selected+"T00:00:00"),b=new Date(a);b.setDate(b.getDate()+1);
+   const result=await activityRequest({action:"list",day:selected,timezone:tz,from:a.toISOString(),to:b.toISOString()});
+   feedback.textContent="";
+   const rows=result.activities||[];
+   if(!rows.length){const empty=el("p","small muted","No completed activities recorded yet.");entries.append(empty);return}
+   for(const item of rows){
+    const row=el("div","activityRow");
+    const check=el("span","activityDoneIcon","✓");
+    const label=el("span","activityText",esc(item.description));
+    const time=el("span","activityClock",new Date(item.occurred_at).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}));
+    const edit=btn("Edit","",async()=>{const revised=prompt("Edit completed activity",item.description);if(revised===null||!revised.trim()||revised.trim()===item.description)return;try{await activityRequest({action:"update",id:item.id,description:revised.trim()});await refreshActivities()}catch(e){feedback.textContent=e.message}});
+    const remove=btn("×","",async()=>{if(!confirm("Remove this activity from your day?"))return;try{await activityRequest({action:"delete",id:item.id});await refreshActivities()}catch(e){feedback.textContent=e.message}});
+    remove.setAttribute("aria-label","Delete activity");row.append(check,label,time,edit,remove);entries.append(row)
+   }
+  }catch(e){feedback.textContent=e.message||"Could not load activities"}
+ }
+ toggle.addEventListener("click",()=>{const shown=panel.classList.toggle("hidden")===false;toggle.setAttribute("aria-expanded",String(shown));if(shown){refreshActivities();input.focus()}});
+ day.addEventListener("change",refreshActivities);
+ form.addEventListener("submit",async e=>{
+  e.preventDefault();const description=input.value.trim();if(!description)return;
+  const button=$("activityQuickSave");button.disabled=true;feedback.textContent="Saving…";
+  try{
+   const selected=day.value||localDay(),now=new Date(),current=localDay();
+   const occurred=selected===current?now:new Date(selected+"T12:00:00");
+   await activityRequest({action:"create",description,occurred_at:occurred.toISOString(),timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||"UTC"});
+   input.value="";feedback.textContent="Saved";await refreshActivities();input.focus();
+  }catch(err){feedback.textContent=err.message||"Unable to save"}
+  finally{button.disabled=false}
+ });
+}
 </script></body></html>
