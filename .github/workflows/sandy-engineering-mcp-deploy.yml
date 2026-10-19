@@ -1,5 +1,9 @@
 name: Deploy Sandy Engineering MCP
 on:
+  pull_request:
+    paths:
+      - 'services/sandy-engineering-mcp/**'
+      - '.github/workflows/sandy-engineering-mcp-deploy.yml'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -29,7 +33,7 @@ jobs:
           npm install --ignore-scripts --no-audit --no-fund
           node --test test/server.test.mjs
   deploy:
-    if: ${{ !inputs.dry_run }}
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run }}
     needs: verify
     runs-on: ubuntu-latest
     environment: sandy-production
