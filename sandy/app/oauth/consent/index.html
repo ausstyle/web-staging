@@ -24,6 +24,13 @@ async function init(){
  const {data,error}=await sb.auth.oauth.getAuthorizationDetails(authorizationId);
  if(error)throw error;
  const details=data||{};
+ if(!("authorization_id" in details)){
+   const destination=details.redirect_url;
+   if(!destination||!/^https:\/\//.test(destination))throw Error("Authorization response has no secure redirect.");
+   el("status").textContent="Authorization already granted. Returning to ChatGPT…";
+   location.replace(destination);
+   return;
+ }
  const app=details.client||details;
  el("client").textContent=app.client_name||app.name||"An external application";
  el("scopes").textContent=(details.scopes||details.scope||[]).toString().replace(/,/g,", ")||"Basic identity";
