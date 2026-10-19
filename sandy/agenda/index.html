@@ -2104,6 +2104,7 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
  }
  toggle.addEventListener("click",()=>{const shown=panel.classList.toggle("hidden")===false;toggle.setAttribute("aria-expanded",String(shown));if(shown){refreshActivities();input.focus()}});
  day.addEventListener("change",refreshActivities);
+ setInterval(()=>{if(!document.hidden&&!panel.classList.contains("hidden")&&!pendingActivities.size)void refreshActivities()},15000);
  async function persistActivity(key){
   const item=pendingActivities.get(key);if(!item)return;
   item.failed=false;
