@@ -558,7 +558,7 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .sandyTaskHoverPreview{position:fixed;z-index:9999;width:min(390px,calc(100vw - 24px));max-height:min(320px,60vh);overflow:auto;box-sizing:border-box;background:#fff;color:#222;border:1px solid #ddd;border-radius:10px;box-shadow:0 10px 35px rgba(0,0,0,.13);padding:12px 14px;pointer-events:auto;opacity:0;transition:opacity 150ms ease;font:13px/1.45 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;overflow-wrap:anywhere}
 .sandyTaskHoverPreview.visible{opacity:1}
 .sandyTaskHoverPreview .hoverTitle{font-weight:650;margin-bottom:7px}
-.sandyTaskHoverPreview .hoverDescription{color:#555;white-space:pre-wrap;max-height:215px;overflow:auto}
+.sandyTaskHoverPreview .hoverDescription{color:#555;white-space:normal;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.sandyTaskHoverPreview{max-height:none;overflow:visible;width:min(350px,calc(100vw - 24px))}.sandyTaskHoverPreview .hoverFooter{margin-top:9px;font-size:11px;color:#777}
 @media(hover:none),(pointer:coarse){.sandyTaskHoverPreview{display:none!important}}
 @media(prefers-reduced-motion:reduce){.sandyTaskHoverPreview{transition:none}}
 </style></head><body>
@@ -2110,22 +2110,24 @@ window.sandyClearSwipeFeedback=function(row){row.classList.remove('sandy-swipe-p
 (function(){
 if(window.__sandyTaskHoverPreviewInstalled)return;
 window.__sandyTaskHoverPreviewInstalled=true;
-const DELAY=350,DISMISS=200;
+const DELAY=350,DISMISS=350;
 let timer=null,leaveTimer=null,currentRow=null,preview=null;
 const suitable=()=>window.matchMedia('(hover:hover) and (pointer:fine)').matches;
 function clearTimers(){clearTimeout(timer);clearTimeout(leaveTimer);timer=leaveTimer=null}
 function close(){clearTimers();currentRow=null;if(preview){preview.remove();preview=null}}
-function scheduleClose(){clearTimeout(timer);clearTimeout(leaveTimer);leaveTimer=setTimeout(close,DISMISS)}
+function scheduleClose(){clearTimeout(timer);clearTimeout(leaveTimer);leaveTimer=setTimeout(()=>{if(preview?.matches(":hover")||currentRow?.matches(":hover"))return;close()},DISMISS)}
 function open(row){
  if(!row.isConnected||currentRow!==row||!suitable())return;
  const title=row.querySelector('.tasktitle');
- const description=row.dataset.taskPreviewDetails?.trim();
+ const raw=row.dataset.taskPreviewDetails?.trim()||'';
+ const description=raw.split(/(?:\\n|\\r)?\\s*Email context\\s*:/i)[0].replace(/\\s+/g,' ').trim().slice(0,190).trim();
+ const summary=description.length>=190?description.replace(/\\s+\\S*$/,'')+'…':description;
  if(!description)return;
  if(preview)preview.remove();
  preview=document.createElement('div');preview.className='sandyTaskHoverPreview';preview.setAttribute('role','tooltip');
  const h=document.createElement('div');h.className='hoverTitle';h.textContent=title?.textContent?.trim()||'Task details';
- const d=document.createElement('div');d.className='hoverDescription';d.textContent=description;
- preview.append(h,d);document.body.append(preview);
+ const d=document.createElement('div');d.className='hoverDescription';d.textContent=summary;
+ const footer=document.createElement("div");footer.className="hoverFooter";footer.textContent="Click task to view full details";preview.append(h,d,footer);document.body.append(preview);
  preview.addEventListener('mouseenter',()=>clearTimeout(leaveTimer));
  preview.addEventListener('mouseleave',scheduleClose);
  const rect=row.getBoundingClientRect(),width=preview.offsetWidth,height=preview.offsetHeight;
@@ -2146,7 +2148,7 @@ document.addEventListener('mouseout',e=>{
  const row=e.target.closest?.('#app .taskrow');
  if(row&&row===currentRow&&!row.contains(e.relatedTarget)&&!(preview&&preview.contains(e.relatedTarget)))scheduleClose();
 });
-document.addEventListener('scroll',close,true);
+document.addEventListener('scroll',e=>{if(preview?.contains(e.target))return;close()},true);
 window.addEventListener('resize',close);
 document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});
 document.addEventListener('pointerdown',e=>{if(preview&&!preview.contains(e.target))close()});
