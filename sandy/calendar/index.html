@@ -308,7 +308,7 @@ async function loadCalendarSources(){
   }
  }catch(e){host.textContent="Could not load calendar connections: "+e.message}
 }
-\nasync function load({silent=false,force=false}={}){
+async function load({silent=false,force=false}={}){
  if(calendarRefreshBusy)return;
  if(silent&&(document.hidden||calendarIsEditing())){calendarRefreshPending=true;return}
  calendarRefreshBusy=true;
