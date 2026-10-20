@@ -15,6 +15,7 @@ const reply = (status: number, data: unknown) =>
   Response.json(data, { status, headers: { "cache-control": "no-store", "x-content-type-options": "nosniff" } });
 const allowedHandlers: Record<string, { functionName: string; action: string }> = {
   "engineering.preflight": { functionName: "sandy-engineering-control", action: "preflight" },
+  "deployment.management.release": { functionName: "sandy-deployment-api", action: "engineering_release" },
 };
 function validOperation(s: unknown): s is string {
   return typeof s === "string" && /^[a-z][a-z0-9_.-]{2,100}$/.test(s);
@@ -50,8 +51,26 @@ Deno.serve(async (request) => {
   if (error) return reply(503, { error: "operation_registry_unavailable" });
   if (!entry?.api_exposed) return reply(404, { error: "operation_not_registered" });
   if (action === "describe") return reply(200, { ok: true, operation: entry });
-  if (!entry.ai_exposed || entry.is_mutation || !allowedHandlers[operation]) {
+  if (!entry.ai_exposed || !allowedHandlers[operation]) {
     return reply(422, { ok: false, error: "executor_not_implemented_or_not_enabled", operation, executed: false });
+  }
+  if (operation === "deployment.management.release") {
+    if (admin.role !== "owner") return reply(403, { error: "owner_required" });
+    const args = body.arguments as Record<string,unknown> | undefined;
+    if (!args || typeof args !== "object" || Array.isArray(args) ||
+      !["sandy-operation-api","sandy-api-mcp"].includes(String(args.function_slug||"")) ||
+      args.source_ref !== "main" ||
+      typeof args.change_id !== "string" || !/^[a-f0-9-]{36}$/i.test(args.change_id)) {
+      return reply(400, { error: "invalid_release_parameters" });
+    }
+    const backend = await fetch(`${base}/functions/v1/sandy-deployment-api`, {
+      method: "POST", headers: { authorization: `Bearer ${service}`, apikey: anon, "content-type": "application/json" },
+      body: JSON.stringify({action:"engineering_release",function_slug:args.function_slug,source_ref:args.source_ref,change_id:args.change_id}),
+      signal: AbortSignal.timeout(45000),
+    }).catch(()=>null);
+    if (!backend) return reply(502,{error:"release_backend_unavailable",executed:false});
+    const result = await backend.json().catch(()=>({error:"invalid_release_response"}));
+    return reply(backend.status,{operation,executed:true,result});
   }
   const args = body.arguments;
   if (args !== undefined && (typeof args !== "object" || args === null || Array.isArray(args) || Object.keys(args as object).length)) {
