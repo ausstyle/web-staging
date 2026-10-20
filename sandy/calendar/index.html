@@ -280,23 +280,66 @@ $("eventForm").addEventListener("input",markCalendarDirty);
 $("eventForm").addEventListener("change",markCalendarDirty);
 
 const calendarConnectDialog=document.getElementById("connectCalendarDialog");
-const openCalendarConnect=()=>{document.getElementById("calendarConnectFeedback").textContent="";calendarConnectDialog.showModal()};
+const calendarGatewayUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-composio-gateway";
+const calendarGatewayKey="sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts";
+async function calendarConnectionInventory(){
+ const {data:{session}}=await sb.auth.getSession();
+ if(!session)throw Error("Please sign in to Sandy first.");
+ const call=async(operation)=>{
+  const response=await fetch(calendarGatewayUrl,{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":calendarGatewayKey,"content-type":"application/json"},body:JSON.stringify({operation})});
+  const body=await response.json();
+  if(!response.ok||!body.ok)throw Error(body.error||"Connection status could not be checked");
+  return body;
+ };
+ // Read known connections first; never launch another OAuth flow if verification fails.
+ const known=await call("list_connections");
+ try{await call("sync_connections");return {session,connections:(await call("list_connections")).connections||[]}}
+ catch(error){console.warn("Calendar connection refresh deferred",error);return {session,connections:known.connections||[]}}
+}
+const calendarToolkitNames={google:["googlecalendar","google_calendar"],outlook:["outlook","office365","microsoft_outlook"]};
+function calendarProviderConnected(connections,provider){
+ return (connections||[]).some(item=>calendarToolkitNames[provider]?.includes(String(item.toolkit_slug||"").toLowerCase())&&String(item.status||"").toUpperCase()==="ACTIVE");
+}
+async function refreshCalendarConnectOptions(){
+ const feedback=document.getElementById("calendarConnectFeedback");
+ const buttons=[...document.querySelectorAll("[data-calendar-connect]")].filter(b=>["google","outlook"].includes(b.dataset.calendarConnect));
+ buttons.forEach(b=>b.disabled=true);
+ feedback.textContent="Checking your existing Sandy connections…";
+ try{
+  const {connections}=await calendarConnectionInventory();
+  for(const button of buttons){
+   const provider=button.dataset.calendarConnect,connected=calendarProviderConnected(connections,provider);
+   button.disabled=connected;
+   button.textContent=(provider==="google"?"Google Calendar":"Microsoft Outlook")+(connected?" · Account already connected":" →");
+   button.title=connected?"Account linked to Sandy. Calendar permissions and synchronisation are not yet verified.":"Connect a new account";
+  }
+  feedback.textContent=buttons.some(b=>b.disabled)?"Existing accounts are recognised. Account connection does not confirm calendar permissions or event synchronisation. Manage existing accounts in Sandy Connections.":"Choose a provider to connect a new account.";
+ }catch(error){
+  feedback.textContent="Cannot check existing connections: "+error.message+". No new authorisation will start until this check succeeds.";
+ }
+}
+const openCalendarConnect=()=>{calendarConnectDialog.showModal();void refreshCalendarConnectOptions()};
 document.getElementById("connectCalendarTop").onclick=openCalendarConnect;
 document.getElementById("closeCalendarDialog").onclick=()=>calendarConnectDialog.close();
 document.querySelectorAll("[data-calendar-connect]").forEach(button=>button.onclick=async()=>{
  const provider=button.dataset.calendarConnect,feedback=document.getElementById("calendarConnectFeedback");
  if(provider==="icloud"||provider==="ics"){feedback.textContent=provider==="icloud"?"iCloud CalDAV authentication is not available yet. Do not enter your Apple credentials here.":"ICS subscriptions are not yet supported by the sync engine.";return}
  const toolkit=provider==="google"?"googlecalendar":"outlook";
- button.disabled=true;feedback.textContent="Preparing secure "+(provider==="google"?"Google":"Microsoft")+" authorisation…";
+ button.disabled=true;feedback.textContent="Checking existing accounts before authorisation…";
  try{
-  const {data:{session}}=await sb.auth.getSession();if(!session)throw Error("Please sign in to Sandy first.");
-  const response=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-composio-gateway",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts","content-type":"application/json"},body:JSON.stringify({operation:"create_connect_link",toolkit_slug:toolkit,company_id:null})});
+  const {session,connections}=await calendarConnectionInventory();
+  if(calendarProviderConnected(connections,provider)){
+   feedback.textContent="This account provider is already connected to Sandy. Calendar permissions and synchronisation are not yet verified; manage the connection in Sandy Connections.";
+   await refreshCalendarConnectOptions();
+   return;
+  }
+  feedback.textContent="Preparing secure "+(provider==="google"?"Google":"Microsoft")+" authorisation…";
+  const response=await fetch(calendarGatewayUrl,{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":calendarGatewayKey,"content-type":"application/json"},body:JSON.stringify({operation:"create_connect_link",toolkit_slug:toolkit,company_id:null})});
   const body=await response.json();if(!response.ok||!body.connect_url)throw Error(body.error||"Connection could not be started");
   sessionStorage.setItem("sandy_calendar_connect_pending",provider);
   location.assign(body.connect_url);
- }catch(e){feedback.textContent="Could not start connection: "+e.message;button.disabled=false}
+ }catch(error){feedback.textContent="Could not start connection: "+error.message;button.disabled=false}
 });
-
 async function loadCalendarSources(){
  const host=document.getElementById("connectedSourceList");if(!host)return;
  try{
