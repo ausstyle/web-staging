@@ -1,0 +1,30 @@
+name: Sandy calendar sync deployment
+on:
+  workflow_dispatch:
+    inputs:
+      engineering_job_id:
+        description: Approved Sandy engineering job UUID
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Validate deployment source
+        run: |
+          test -s supabase/functions/sandy-calendar-sync/index.ts
+          test -s supabase/functions/sandy-calendar-api/index.ts
+      - name: Deploy calendar services
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SANDY_SUPABASE_ACCESS_TOKEN }}
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || exit 1
+          supabase functions deploy sandy-calendar-sync --project-ref zmqlyygzqoidkcwdysok
+          supabase functions deploy sandy-calendar-api --project-ref zmqlyygzqoidkcwdysok --no-verify-jwt
