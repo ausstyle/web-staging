@@ -1720,3 +1720,107 @@ Deno.test("discovery omits read contracts that fixed dispatch cannot execute", a
     "video.status",
   ]);
 });
+
+Deno.test("engineering API reads preserve real user context and normalize complete legacy responses", async () => {
+  const entry = {
+    ...preflight,
+    operation: "engineering.change.list",
+    handler: "sandy-engineering-control",
+  };
+  const h = harness({
+    rows: [entry],
+    backend: () => Response.json({ changes: [] }),
+  });
+  const response = await h.request({
+    action: "execute",
+    operation: entry.operation,
+    arguments: {},
+  });
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.result.ok, true);
+  assert.equal(result.result.contract_version, "1.0.0");
+  assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+    action: "list",
+  });
+  assert.equal(
+    h.calls[0].url,
+    "https://example.supabase.co/functions/v1/sandy-engineering-control",
+  );
+  assert.equal(
+    new Headers(h.calls[0].init?.headers).get("authorization"),
+    "Bearer test-user-jwt",
+  );
+  for (const role of ["viewer", null]) {
+    const denied = harness({ rows: [entry], role, tenant: "fixture-tenant" });
+    assert.equal(
+      (await denied.request({
+        action: "execute",
+        operation: entry.operation,
+        arguments: {},
+      })).status,
+      403,
+    );
+    assert.equal(denied.calls.length, 0);
+  }
+});
+Deno.test("engineering API read admission rejects action overrides, corrupt contracts and partial responses", async () => {
+  const entry = {
+    ...preflight,
+    operation: "engineering.change.list",
+    handler: "sandy-engineering-control",
+  };
+  for (
+    const alteration of [{ is_mutation: true }, {
+      permission_scope: "engineering:write",
+    }]
+  ) {
+    const h = harness({ rows: [{ ...entry, ...alteration }] });
+    assert.deepEqual(
+      (await (await h.request({ action: "list" })).json()).operations,
+      [],
+    );
+    assert.equal(
+      (await h.request({
+        action: "execute",
+        operation: entry.operation,
+        arguments: {},
+      })).status,
+      503,
+    );
+    assert.equal(h.calls.length, 0);
+  }
+  const h = harness({
+    rows: [entry],
+    backend: () => Response.json({ changes: null }),
+  });
+  const override = await h.request({
+    action: "execute",
+    operation: entry.operation,
+    arguments: { action: "approve_job" },
+  });
+  assert.equal(override.status, 400);
+  assert.equal(h.calls.length, 0);
+  const malformed = await h.request({
+    action: "execute",
+    operation: entry.operation,
+    arguments: {},
+  });
+  assert.equal(malformed.status, 502);
+  assert.equal((await malformed.json()).ok, false);
+  const unavailable = harness({
+    rows: [entry],
+    backend: () => {
+      throw Error("private diagnostic");
+    },
+  });
+  const unknown = await unavailable.request({
+    action: "execute",
+    operation: entry.operation,
+    arguments: {},
+  });
+  assert.equal(unknown.status, 502);
+  const body = await unknown.json();
+  assert.equal(body.executed, null);
+  assert.equal(JSON.stringify(body).includes("private diagnostic"), false);
+});

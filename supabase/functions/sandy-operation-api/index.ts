@@ -5,6 +5,13 @@ import {
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import { requestReadJobRetry } from "./retry_read_job.ts";
+import {
+  buildEngineeringReadRequest,
+  engineeringReadActions,
+  engineeringReadTransportFailure,
+  isEngineeringReadOperation,
+  normalizeEngineeringReadResponse,
+} from "./engineering_read.ts";
 
 /**
  * Sandy API owns discovery, permissions and dispatch. Registry metadata alone
@@ -105,6 +112,11 @@ const videoReadActions: Readonly<Record<string, string>> = Object.freeze({
 const allowedHandlers: Readonly<
   Record<string, { functionName: string; action?: string }>
 > = Object.freeze({
+  ...Object.fromEntries(
+    Object.entries(engineeringReadActions).map((
+      [operation, action],
+    ) => [operation, { functionName: "sandy-engineering-control", action }]),
+  ),
   "deployment.jobs.retry": {
     functionName: "sandy-operation-api",
     action: "retry_read_job",
@@ -193,6 +205,11 @@ function discoverableContract(entry: Record<string, unknown>): boolean {
       entry.is_mutation === false &&
       entry.permission_scope === "infrastructure:read";
   }
+  if (isEngineeringReadOperation(operation)) {
+    return entry.handler === "sandy-engineering-control" &&
+      entry.is_mutation === false &&
+      entry.permission_scope === "engineering:read";
+  }
   if (isCustomerRead(operation)) {
     return entry.is_mutation === false &&
       entry.permission_scope === `${operation.split(".")[0]}:read`;
@@ -224,6 +241,7 @@ function ownerOnly(operation: string) {
     operation === "deployment.jobs.cancel" ||
     operation === "deployment.jobs.retry" ||
     Object.hasOwn(videoReadActions, operation) ||
+    isEngineeringReadOperation(operation) ||
     infrastructureOperations.includes(
       operation as typeof infrastructureOperations[number],
     ) ||
@@ -542,6 +560,38 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         error: "operation_schema_unavailable",
         executed: false,
       });
+    }
+    if (isEngineeringReadOperation(operation)) {
+      if (!discoverableContract(entry)) {
+        return reply(503, {
+          error: "engineering_read_executor_contract_conflict",
+          executed: false,
+        });
+      }
+      const forwarded = buildEngineeringReadRequest(
+        base,
+        anon,
+        bearer,
+        operation,
+        body.arguments ?? {},
+      );
+      if (!forwarded) {
+        return reply(400, {
+          error: "invalid_operation_arguments",
+          executed: false,
+        });
+      }
+      try {
+        const response = await fetchBackend(forwarded.url, forwarded.init);
+        const normalized = await normalizeEngineeringReadResponse(
+          operation,
+          body.arguments ?? {},
+          response,
+        );
+        return upstreamResult(operation, normalized, entry.output_schema);
+      } catch {
+        return reply(502, engineeringReadTransportFailure());
+      }
     }
     if (operation === "deployment.jobs.retry") {
       if (entry.verified !== true) {
