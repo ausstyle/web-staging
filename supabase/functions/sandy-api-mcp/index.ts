@@ -187,6 +187,7 @@ export function createHandler(api: InvokeApi) {
         }
         const a = await api(bearer, {
           action: "execute",
+          channel: "mcp",
           operation: params.name,
           arguments: params.arguments ?? {},
         });

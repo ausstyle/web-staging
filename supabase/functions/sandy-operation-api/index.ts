@@ -2,6 +2,8 @@ import {
   createClient,
   type SupabaseClient,
 } from "npm:@supabase/supabase-js@2.57.0";
+import { Ajv } from "npm:ajv@8.17.1";
+import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 
 /**
  * Sandy API owns discovery, permissions and dispatch. Registry metadata alone
@@ -22,7 +24,46 @@ const reply = (status: number, data: unknown) =>
       "x-content-type-options": "nosniff",
     },
   });
-const allowedHandlers = Object.freeze({
+const infrastructureOperations = [
+  "supabase.functions.list",
+  "supabase.functions.get",
+  "supabase.project.status",
+  "system.registry.list",
+  "system.registry.describe",
+  "system.registry.summary",
+  "deployment.jobs.get",
+  "deployment.jobs.list",
+  "deployment.jobs.events",
+  "deployment.audit.list",
+  "engineering.changes.list",
+  "engineering.change.detail",
+  "engineering.change.events",
+  "engineering.change.tests",
+  "engineering.change.artifacts",
+] as const;
+const providerReadOperations = [
+  "supabase.projects.get",
+  "supabase.project.health",
+  "supabase.branches.list",
+  "supabase.branches.get",
+  "supabase.network.restrictions.get",
+  "supabase.domains.get",
+  "supabase.functions.secrets.list",
+  "supabase.backups.list",
+] as const;
+// This is an installed executor map, not a second schema or discovery catalogue.
+// Existing registry contracts and exposure flags remain authoritative.
+const allowedHandlers: Readonly<
+  Record<string, { functionName: string; action?: string }>
+> = Object.freeze({
+  ...Object.fromEntries(providerReadOperations.map((operation) => [operation, {
+    functionName: "sandy-provider-read-api",
+  }])),
+  ...Object.fromEntries(
+    infrastructureOperations.map((operation) => [operation, {
+      functionName: "sandy-infrastructure-read",
+    }]),
+  ),
   "engineering.preflight": {
     functionName: "sandy-engineering-control",
     action: "preflight",
@@ -32,6 +73,25 @@ const allowedHandlers = Object.freeze({
     action: "engineering_release",
   },
 });
+const ajv = new Ajv({ strict: true, allErrors: false, validateFormats: true });
+for (const [name, format] of Object.entries(fullFormats)) {
+  ajv.addFormat(name, format);
+}
+function schemaValid(schema: unknown, value: unknown): boolean | null {
+  if (
+    !isObject(schema) || schema.type !== "object" || schema.$async !== undefined
+  ) return null;
+  try {
+    // No coercion, defaults, remote references, or schema-controlled code execution.
+    // Do not cache arbitrary mutable registry schemas across requests.
+    const validate = ajv.compile(schema);
+    const valid = validate(value);
+    ajv.removeSchema(schema);
+    return valid === true;
+  } catch {
+    return null;
+  }
+}
 const registryColumns =
   "operation,domain,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ai_exposed,verified,last_verified_at";
 function validOperation(value: unknown): value is string {
@@ -47,13 +107,31 @@ function enabledEntry(
 } {
   return isObject(entry) && typeof entry.operation === "string" &&
     Object.hasOwn(allowedHandlers, entry.operation) &&
-    entry.handler === "sandy-operation-api" && entry.api_exposed === true &&
-    entry.ai_exposed === true;
+    (entry.handler === "sandy-operation-api" ||
+      entry.handler === allowedHandlers[entry.operation].functionName) &&
+    entry.api_exposed === true &&
+    (entry.ai_exposed === true ||
+      infrastructureOperations.includes(
+        entry.operation as typeof infrastructureOperations[number],
+      ) ||
+      providerReadOperations.includes(
+        entry.operation as typeof providerReadOperations[number],
+      ));
 }
 function ownerOnly(operation: string) {
-  return operation === "deployment.management.release";
+  return operation === "deployment.management.release" ||
+    infrastructureOperations.includes(
+      operation as typeof infrastructureOperations[number],
+    ) ||
+    providerReadOperations.includes(
+      operation as typeof providerReadOperations[number],
+    );
 }
-async function upstreamResult(operation: string, response: Response) {
+async function upstreamResult(
+  operation: string,
+  response: Response,
+  outputSchema: unknown,
+) {
   let result: unknown;
   try {
     result = await response.json();
@@ -77,6 +155,15 @@ async function upstreamResult(operation: string, response: Response) {
     });
   }
   const ok = response.ok && result.ok === true && result.error == null;
+  if (ok && schemaValid(outputSchema, result) !== true) {
+    return reply(502, {
+      ok: false,
+      operation,
+      executed: true,
+      upstream_status: response.status,
+      error: "upstream_output_schema_mismatch",
+    });
+  }
   return reply(response.ok && !ok ? 502 : response.status, {
     ok,
     operation,
@@ -97,8 +184,43 @@ export function createOperationHandler(dependencies: OperationDependencies) {
   const { base, service, anon, db } = dependencies;
   const fetchBackend = dependencies.fetch ?? fetch;
   return async (request: Request): Promise<Response> => {
-    if (request.method !== "POST") {
+    const url = new URL(request.url);
+    const path = url.pathname.replace(
+      /^\/functions\/v1\/sandy-operation-api/,
+      "",
+    );
+    let routedBody: Record<string, unknown> | undefined;
+    const describePath = path.match(
+      /^\/v1\/capabilities\/([a-z][a-z0-9_.-]{2,100})$/,
+    );
+    const executePath = path.match(
+      /^\/v1\/operations\/([a-z][a-z0-9_.-]{2,100}):execute$/,
+    );
+    const jobPath = path.match(/^\/v1\/jobs\/([a-f0-9-]{36})(\/events)?$/i);
+    if (request.method === "GET") {
+      if (path === "/v1/capabilities") routedBody = { action: "list" };
+      else if (describePath) {
+        routedBody = { action: "describe", operation: describePath[1] };
+      } else if (jobPath) {
+        const job_id = jobPath[1];
+        if (
+          !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+            .test(job_id)
+        ) {
+          return reply(400, { error: "invalid_job_id" });
+        }
+        routedBody = {
+          action: "execute",
+          operation: jobPath[2]
+            ? "deployment.jobs.events"
+            : "deployment.jobs.get",
+          arguments: { job_id },
+        };
+      } else return reply(405, { error: "method_not_allowed" });
+    } else if (request.method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
+    } else if (path !== "" && path !== "/" && !executePath) {
+      return reply(404, { error: "route_not_found" });
     }
     if (!base || !service) {
       return reply(503, { error: "api_configuration_missing" });
@@ -120,9 +242,18 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     }
     let body: Record<string, unknown>;
     try {
-      const value = await request.json();
+      const value = routedBody ?? await request.json();
       if (!isObject(value)) throw Error();
-      body = value;
+      body = executePath
+        ? {
+          action: "execute",
+          operation: executePath[1],
+          arguments: value.arguments ?? {},
+        }
+        : value;
+      if (
+        executePath && Object.keys(value).some((key) => key !== "arguments")
+      ) throw Error();
     } catch {
       return reply(400, { error: "invalid_request" });
     }
@@ -138,7 +269,15 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         )
         // executable means an enabled source dispatch exists, not production verification.
         .map((entry) => ({ ...entry, executable: true }));
-      return reply(200, { ok: true, operations });
+      const bytes = new TextEncoder().encode(JSON.stringify(operations));
+      const digest = new Uint8Array(
+        await crypto.subtle.digest("SHA-256", bytes),
+      );
+      const catalogue_version = Array.from(
+        digest,
+        (b) => b.toString(16).padStart(2, "0"),
+      ).join("");
+      return reply(200, { ok: true, operations, catalogue_version });
     }
     if (body.action !== "describe" && body.action !== "execute") {
       return reply(400, { error: "unknown_action" });
@@ -155,6 +294,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     const entry: unknown = storedEntry;
     if (!isObject(entry) || entry.api_exposed !== true) {
       return reply(404, { error: "operation_not_registered" });
+    }
+    if (body.channel === "mcp" && entry.ai_exposed !== true) {
+      return reply(403, {
+        error: "operation_not_mcp_exposed",
+        executed: false,
+      });
     }
     if (!enabledEntry(entry)) {
       return reply(422, {
@@ -174,6 +319,73 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       });
     }
     const handler = allowedHandlers[entry.operation];
+    const inputValidation = schemaValid(
+      entry.input_schema,
+      body.arguments ?? {},
+    );
+    if (inputValidation !== true) {
+      return reply(inputValidation === null ? 503 : 400, {
+        error: inputValidation === null
+          ? "operation_schema_unavailable"
+          : "invalid_operation_arguments",
+        executed: false,
+      });
+    }
+    if (schemaValid(entry.output_schema, {}) === null) {
+      return reply(503, {
+        error: "operation_schema_unavailable",
+        executed: false,
+      });
+    }
+    if (
+      ["sandy-infrastructure-read", "sandy-provider-read-api"].includes(
+        handler.functionName,
+      )
+    ) {
+      if (entry.is_mutation !== false) {
+        return reply(503, {
+          error: "read_executor_contract_conflict",
+          executed: false,
+        });
+      }
+      // These are global infrastructure records. Never grant a tenant caller
+      // the service credential; only the already authenticated Controller admin
+      // reaches this fixed read-only handler through this gateway.
+      const args = body.arguments ?? {};
+      if (
+        !isObject(args) ||
+        (args.limit !== undefined &&
+          (!Number.isInteger(args.limit) || Number(args.limit) < 1 ||
+            Number(args.limit) > 200))
+      ) {
+        return reply(400, {
+          error: "invalid_operation_arguments",
+          executed: false,
+        });
+      }
+      try {
+        const response = await fetchBackend(
+          `${base}/functions/v1/${handler.functionName}`,
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${service}`,
+              apikey: anon,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({ operation, arguments: args }),
+            signal: AbortSignal.timeout(20000),
+          },
+        );
+        return upstreamResult(operation, response, entry.output_schema);
+      } catch {
+        return reply(502, {
+          ok: false,
+          error: "upstream_unavailable",
+          executed: false,
+        });
+      }
+    }
     if (operation === "deployment.management.release") {
       const args = body.arguments;
       if (
@@ -216,7 +428,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           executed: false,
         });
       }
-      return upstreamResult(operation, response);
+      return upstreamResult(operation, response, entry.output_schema);
     }
     const args = body.arguments;
     if (
@@ -250,7 +462,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    return upstreamResult(operation, response);
+    return upstreamResult(operation, response, entry.output_schema);
   };
 }
 

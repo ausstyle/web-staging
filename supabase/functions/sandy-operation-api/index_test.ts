@@ -16,6 +16,19 @@ const release = {
   ...preflight,
   operation: "deployment.management.release",
   is_mutation: true,
+  input_schema: {
+    type: "object",
+    required: ["function_slug", "source_ref", "change_id"],
+    properties: {
+      function_slug: {
+        type: "string",
+        enum: ["sandy-operation-api", "sandy-api-mcp"],
+      },
+      source_ref: { type: "string", const: "main" },
+      change_id: { type: "string" },
+    },
+    additionalProperties: false,
+  },
 };
 type Row = Record<string, unknown>;
 type Options = {
@@ -374,4 +387,250 @@ Deno.test("release dispatch preserves approved identifiers without claiming func
     action: "engineering_release",
     ...releaseArgs,
   });
+});
+
+const infrastructure = (operation = "supabase.functions.list") => ({
+  ...preflight,
+  operation,
+  handler: "sandy-infrastructure-read",
+  ai_exposed: false,
+});
+
+Deno.test("all installed infrastructure reads delegate through API with service authentication and retain exposure flags", async () => {
+  const operations = [
+    "supabase.functions.list",
+    "supabase.functions.get",
+    "supabase.project.status",
+    "system.registry.list",
+    "system.registry.describe",
+    "system.registry.summary",
+    "deployment.jobs.get",
+    "deployment.jobs.list",
+    "deployment.jobs.events",
+    "deployment.audit.list",
+    "engineering.changes.list",
+    "engineering.change.detail",
+    "engineering.change.events",
+    "engineering.change.tests",
+    "engineering.change.artifacts",
+  ];
+  for (const operation of operations) {
+    const entry = infrastructure(operation);
+    const h = harness({ rows: [entry] });
+    const catalogue = await (await h.request({ action: "list" })).json();
+    assert.equal(catalogue.operations[0].ai_exposed, false);
+    assert.equal(catalogue.operations[0].executable, true);
+    const r = await h.request({ action: "execute", operation, arguments: {} });
+    assert.equal(r.status, 200);
+    assert.equal(
+      h.calls[0].url,
+      "https://example.supabase.co/functions/v1/sandy-infrastructure-read",
+    );
+    assert.equal(
+      new Headers(h.calls[0].init?.headers).get("authorization"),
+      "Bearer test-service-credential",
+    );
+    assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+      operation,
+      arguments: {},
+    });
+    const mcp = await h.request({
+      action: "execute",
+      channel: "mcp",
+      operation,
+    });
+    assert.equal(mcp.status, 403);
+    assert.equal(h.calls.length, 1);
+  }
+});
+
+Deno.test("global infrastructure reads require owner and cannot execute mutations", async () => {
+  const entry = infrastructure();
+  const h = harness({ rows: [entry], role: "administrator" });
+  assert.deepEqual(
+    (await (await h.request({ action: "list" })).json()).operations,
+    [],
+  );
+  for (const action of ["describe", "execute"]) {
+    assert.equal(
+      (await h.request({ action, operation: entry.operation })).status,
+      403,
+    );
+  }
+  assert.equal(h.calls.length, 0);
+  const conflicting = harness({ rows: [{ ...entry, is_mutation: true }] });
+  assert.equal(
+    (await conflicting.request({
+      action: "execute",
+      operation: entry.operation,
+    })).status,
+    503,
+  );
+  assert.equal(conflicting.calls.length, 0);
+});
+
+Deno.test("registry input validation rejects malformed nested inputs without coercing or dispatching", async () => {
+  const entry = {
+    ...infrastructure(),
+    input_schema: {
+      type: "object",
+      required: ["target"],
+      additionalProperties: false,
+      properties: {
+        target: {
+          type: "object",
+          required: ["id"],
+          additionalProperties: false,
+          properties: {
+            id: { type: "string", format: "uuid" },
+            count: { type: "integer", minimum: 1, maximum: 5 },
+          },
+        },
+      },
+    },
+  };
+  const h = harness({ rows: [entry] });
+  for (
+    const args of [{}, { target: { id: "bad" } }, {
+      target: { id: "11111111-2222-4333-8444-555555555555", count: "2" },
+    }, { target: { id: "11111111-2222-4333-8444-555555555555", count: 6 } }]
+  ) {
+    assert.equal(
+      (await h.request({
+        action: "execute",
+        operation: entry.operation,
+        arguments: args,
+      })).status,
+      400,
+    );
+  }
+  assert.equal(h.calls.length, 0);
+});
+
+Deno.test("invalid and asynchronous registry schemas fail closed before dispatch", async () => {
+  for (
+    const input_schema of [
+      null,
+      { type: "object", properties: { id: { type: "imaginary" } } },
+      { type: "object", $ref: "https://untrusted.invalid/schema" },
+      { type: "object", $async: true },
+    ]
+  ) {
+    const entry = { ...infrastructure(), input_schema };
+    const h = harness({ rows: [entry] });
+    assert.equal(
+      (await h.request({ action: "execute", operation: entry.operation }))
+        .status,
+      503,
+    );
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test("output schema mismatch is an executed failure rather than verified success", async () => {
+  const entry = {
+    ...infrastructure(),
+    output_schema: {
+      type: "object",
+      required: ["items"],
+      properties: { items: { type: "array" } },
+    },
+  };
+  const h = harness({
+    rows: [entry],
+    backend: () => Response.json({ ok: true, items: "wrong" }),
+  });
+  const response = await h.request({
+    action: "execute",
+    operation: entry.operation,
+  });
+  assert.equal(response.status, 502);
+  const body = await response.json();
+  assert.equal(body.executed, true);
+  assert.equal(body.error, "upstream_output_schema_mismatch");
+  assert.equal(body.result, undefined);
+});
+
+Deno.test("canonical capabilities routes use existing authorization and version the caller's catalogue", async () => {
+  const h = harness();
+  const request = (path: string) =>
+    h.handler(
+      new Request(
+        "https://example.supabase.co/functions/v1/sandy-operation-api" + path,
+        {
+          headers: { authorization: "Bearer test-user-jwt" },
+        },
+      ),
+    );
+  const catalogue = await (await request("/v1/capabilities")).json();
+  assert.match(catalogue.catalogue_version, /^[a-f0-9]{64}$/);
+  const again = await (await request("/v1/capabilities")).json();
+  assert.equal(again.catalogue_version, catalogue.catalogue_version);
+  assert.equal(
+    (await request("/v1/capabilities/engineering.preflight")).status,
+    200,
+  );
+  assert.equal(
+    (await h.handler(new Request("https://example.invalid/v1/capabilities")))
+      .status,
+    401,
+  );
+  assert.equal(h.calls.length, 0);
+});
+
+Deno.test("canonical execute route binds operation to URL and rejects conflicting envelopes", async () => {
+  const h = harness();
+  const request = (body: unknown) =>
+    h.handler(
+      new Request(
+        "https://example.invalid/v1/operations/engineering.preflight:execute",
+        {
+          method: "POST",
+          headers: {
+            authorization: "Bearer test-user-jwt",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(body),
+        },
+      ),
+    );
+  assert.equal((await request({ arguments: {} })).status, 200);
+  assert.equal(
+    (await request({
+      operation: "deployment.management.release",
+      arguments: {},
+    })).status,
+    400,
+  );
+  assert.equal(h.calls.length, 1);
+});
+
+Deno.test("canonical job routes delegate exact job identifier to installed read handler", async () => {
+  const job_id = "11111111-2222-4333-8444-555555555555";
+  const h = harness({
+    rows: [
+      infrastructure("deployment.jobs.get"),
+      infrastructure("deployment.jobs.events"),
+    ].map((entry) => ({
+      ...entry,
+      input_schema: {
+        type: "object",
+        required: ["job_id"],
+        properties: { job_id: { type: "string", format: "uuid" } },
+        additionalProperties: false,
+      },
+    })),
+  });
+  for (const suffix of ["", "/events"]) {
+    const response = await h.handler(
+      new Request("https://example.invalid/v1/jobs/" + job_id + suffix, {
+        headers: { authorization: "Bearer test-user-jwt" },
+      }),
+    );
+    assert.equal(response.status, 200);
+    assert.deepEqual(JSON.parse(String(h.calls.at(-1)?.init?.body)), {
+      operation: suffix ? "deployment.jobs.events" : "deployment.jobs.get",
+      arguments: { job_id },
+    });
+  }
 });

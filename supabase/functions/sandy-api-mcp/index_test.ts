@@ -153,6 +153,7 @@ Deno.test("tool invocation forwards caller and arguments only to Sandy API", asy
     equal(token, "test.identity.token");
     equal(body, {
       action: "execute",
+      channel: "mcp",
       operation: "resource.inspect",
       arguments: { id: "abc" },
     });

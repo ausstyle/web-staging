@@ -6,6 +6,7 @@ on:
       - 'supabase/functions/sandy-operation-api/**'
       - 'supabase/functions/sandy-api-mcp/**'
       - 'supabase/functions/sandy-deployment-api/**'
+      - 'supabase/functions/sandy-provider-read-api/**'
       - 'scripts/sandy/*api*'
       - '.github/workflows/sandy-api-contract-check.yml'
   push:
@@ -14,6 +15,7 @@ on:
       - 'supabase/functions/sandy-operation-api/**'
       - 'supabase/functions/sandy-api-mcp/**'
       - 'supabase/functions/sandy-deployment-api/**'
+      - 'supabase/functions/sandy-provider-read-api/**'
       - 'scripts/sandy/*api*'
       - '.github/workflows/sandy-api-contract-check.yml'
 permissions:
@@ -33,6 +35,7 @@ jobs:
           supabase/functions/sandy-operation-api/
           supabase/functions/sandy-api-mcp/
           supabase/functions/sandy-deployment-api/
+          supabase/functions/sandy-provider-read-api/
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
