@@ -190,3 +190,18 @@ Deno.test("unknown operations and malformed provider responses cannot claim exec
     502,
   );
 });
+
+Deno.test("provider add-on prerequisite is explicit and excludes billing details", async () => {
+  const h = harness({
+    message: "Private billing data",
+    error: {
+      code: "entitlement_required",
+      upgrade_url: "https://billing.invalid/private",
+    },
+  }, 400);
+  const response = await h.request("supabase.domains.get");
+  assert.equal(response.status, 424);
+  const text = await response.text();
+  assert.equal(JSON.parse(text).error, "provider_entitlement_required");
+  assert.ok(!text.includes("billing"));
+});

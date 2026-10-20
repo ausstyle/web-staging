@@ -51,11 +51,28 @@ const providerReadOperations = [
   "supabase.functions.secrets.list",
   "supabase.backups.list",
 ] as const;
+const customerReadOperations = [
+  "tasks.list",
+  "tasks.get",
+  "calendar.list",
+  "calendar.get",
+  "calendar.conflicts",
+  "files.list",
+  "files.get",
+  "files.search",
+] as const;
+const isCustomerRead = (operation: string) =>
+  customerReadOperations.includes(
+    operation as typeof customerReadOperations[number],
+  );
 // This is an installed executor map, not a second schema or discovery catalogue.
 // Existing registry contracts and exposure flags remain authoritative.
 const allowedHandlers: Readonly<
   Record<string, { functionName: string; action?: string }>
 > = Object.freeze({
+  ...Object.fromEntries(customerReadOperations.map((operation) => [operation, {
+    functionName: "sandy-operations-api",
+  }])),
   ...Object.fromEntries(providerReadOperations.map((operation) => [operation, {
     functionName: "sandy-provider-read-api",
   }])),
@@ -237,9 +254,6 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       .select("role,enabled").eq("auth_user_id", user.id).eq("enabled", true)
       .maybeSingle();
     if (roleError) return reply(503, { error: "authorisation_unavailable" });
-    if (!admin) {
-      return reply(403, { error: "controller_administrator_required" });
-    }
     let body: Record<string, unknown>;
     try {
       const value = routedBody ?? await request.json();
@@ -257,6 +271,31 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     } catch {
       return reply(400, { error: "invalid_request" });
     }
+    // Reuse the existing customer-access directory; never trust a caller's
+    // customer_id. The downstream customer handler independently verifies the
+    // same user session and scopes every resource query to that tenant.
+    let tenantAccess = false;
+    const customerRequest = typeof body.operation === "string" &&
+      isCustomerRead(body.operation);
+    if (
+      typeof user.email === "string" &&
+      (customerRequest || body.action === "list" || !admin)
+    ) {
+      const { data: access, error: accessError } = await db.from(
+        "sandy_agenda_access",
+      )
+        .select("customer_id").eq("email", user.email.toLowerCase()).eq(
+          "enabled",
+          true,
+        ).maybeSingle();
+      if (accessError && customerRequest) {
+        return reply(503, { error: "tenant_authorisation_unavailable" });
+      }
+      tenantAccess = !accessError && typeof access?.customer_id === "string";
+    }
+    if (!admin && !tenantAccess) {
+      return reply(403, { error: "controller_administrator_required" });
+    }
     if (body.action === "list") {
       const { data, error } = await db.from("sandy_operation_registry")
         .select(registryColumns).eq("api_exposed", true)
@@ -265,7 +304,10 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       const entries: unknown[] = data ?? [];
       const operations = entries.filter(enabledEntry)
         .filter((entry) =>
-          !ownerOnly(entry.operation) || admin.role === "owner"
+          isCustomerRead(entry.operation) ? tenantAccess : !!admin
+        )
+        .filter((entry) =>
+          !ownerOnly(entry.operation) || admin?.role === "owner"
         )
         // executable means an enabled source dispatch exists, not production verification.
         .map((entry) => ({ ...entry, executable: true }));
@@ -309,7 +351,15 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (ownerOnly(operation) && admin.role !== "owner") {
+    if (isCustomerRead(operation) ? !tenantAccess : !admin) {
+      return reply(403, {
+        error: isCustomerRead(operation)
+          ? "customer_access_required"
+          : "controller_administrator_required",
+        executed: false,
+      });
+    }
+    if (ownerOnly(operation) && admin?.role !== "owner") {
       return reply(403, { error: "owner_required", executed: false });
     }
     if (body.action === "describe") {
@@ -336,6 +386,42 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         error: "operation_schema_unavailable",
         executed: false,
       });
+    }
+    if (handler.functionName === "sandy-operations-api") {
+      if (
+        entry.is_mutation !== false ||
+        entry.permission_scope !== `${operation.split(".")[0]}:read`
+      ) {
+        return reply(503, {
+          error: "customer_executor_contract_conflict",
+          executed: false,
+        });
+      }
+      try {
+        const response = await fetchBackend(
+          `${base}/functions/v1/sandy-operations-api`,
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${bearer}`,
+              apikey: anon,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({
+              operation,
+              arguments: body.arguments ?? {},
+            }),
+            signal: AbortSignal.timeout(20000),
+          },
+        );
+        return upstreamResult(operation, response, entry.output_schema);
+      } catch {
+        return reply(502, {
+          ok: false,
+          error: "upstream_unavailable",
+          executed: false,
+        });
+      }
     }
     if (
       ["sandy-infrastructure-read", "sandy-provider-read-api"].includes(

@@ -2,8 +2,7 @@
 const PROJECT = "zmqlyygzqoidkcwdysok";
 const routes: Readonly<Record<string, string>> = Object.freeze({
   "supabase.projects.get": "",
-  "supabase.project.health":
-    "/health?services=auth,db,rest,storage,realtime&timeout_ms=5000",
+  "supabase.project.health": "/health?services=auth,db,rest,storage,realtime",
   "supabase.branches.list": "/branches",
   "supabase.branches.get": "/branches/",
   "supabase.network.restrictions.get": "/network-restrictions",
@@ -153,6 +152,19 @@ export function createProviderReadHandler(options: {
       const provider_request_id = response.headers.get("x-request-id") ??
         response.headers.get("sb-request-id");
       if (!response.ok) {
+        const failure = await response.json().catch(() => null);
+        if (
+          response.status === 400 && object(failure) && object(failure.error) &&
+          failure.error.code === "entitlement_required"
+        ) {
+          return reply(424, {
+            ok: false,
+            operation,
+            error: "provider_entitlement_required",
+            upstream_status: response.status,
+            provider_request_id,
+          });
+        }
         // Do not return provider error bodies, credentials, or redirect targets.
         return reply(
           response.status === 404 ? 404 : response.status === 429 ? 429 : 502,

@@ -37,6 +37,8 @@ type Options = {
   registryError?: boolean;
   authError?: boolean;
   roleError?: boolean;
+  tenant?: string | null;
+  tenantError?: boolean;
   backend?: (input: string, init?: RequestInit) => Response | Promise<Response>;
 };
 function harness(options: Options = {}) {
@@ -46,13 +48,26 @@ function harness(options: Options = {}) {
       getUser: () =>
         Promise.resolve({
           data: {
-            user: options.authError ? null : { id: "controller-test-user" },
+            user: options.authError ? null : {
+              id: "controller-test-user",
+              ...(options.tenant !== undefined
+                ? { email: "fixture-user@example.invalid" }
+                : {}),
+            },
           },
           error: options.authError ? { message: "invalid" } : null,
         }),
     },
     from(table: string) {
-      let rows = table === "sandy_operation_registry"
+      let rows = table === "sandy_agenda_access"
+        ? options.tenant
+          ? [{
+            customer_id: options.tenant,
+            email: "fixture-user@example.invalid",
+            enabled: true,
+          }]
+          : []
+        : table === "sandy_operation_registry"
         ? options.rows ?? [preflight, release]
         : options.role === null
         ? []
@@ -61,7 +76,9 @@ function harness(options: Options = {}) {
           enabled: true,
           auth_user_id: "controller-test-user",
         }];
-      const error = table === "sandy_operation_registry"
+      const error = table === "sandy_agenda_access"
+        ? options.tenantError
+        : table === "sandy_operation_registry"
         ? options.registryError
         : options.roleError;
       const result = () => ({
@@ -632,5 +649,105 @@ Deno.test("canonical job routes delegate exact job identifier to installed read 
       operation: suffix ? "deployment.jobs.events" : "deployment.jobs.get",
       arguments: { job_id },
     });
+  }
+});
+
+const customerRead = (operation = "tasks.list") => ({
+  ...preflight,
+  operation,
+  handler: "sandy-operations-api",
+  permission_scope: `${operation.split(".")[0]}:read`,
+});
+Deno.test("customer sessions discover only their installed tenant reads and forward their identity, never service credentials", async () => {
+  const entry = customerRead();
+  const h = harness({
+    role: null,
+    tenant: "tenant-one",
+    rows: [entry, preflight, release, infrastructure()],
+  });
+  const catalogue = await (await h.request({ action: "list" })).json();
+  assert.deepEqual(catalogue.operations.map((row: Row) => row.operation), [
+    "tasks.list",
+  ]);
+  const response = await h.request({
+    action: "execute",
+    channel: "mcp",
+    operation: entry.operation,
+  });
+  assert.equal(response.status, 200);
+  assert.equal(
+    h.calls[0].url,
+    "https://example.supabase.co/functions/v1/sandy-operations-api",
+  );
+  assert.equal(
+    new Headers(h.calls[0].init?.headers).get("authorization"),
+    "Bearer test-user-jwt",
+  );
+  assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+    operation: "tasks.list",
+    arguments: {},
+  });
+  assert.equal(
+    (await h.request({ action: "execute", operation: preflight.operation }))
+      .status,
+    403,
+  );
+  assert.equal(h.calls.length, 1);
+});
+Deno.test("Controller membership alone never grants access to a customer's reads", async () => {
+  const h = harness({ tenant: null, rows: [customerRead(), preflight] });
+  const catalogue = await (await h.request({ action: "list" })).json();
+  assert.deepEqual(catalogue.operations.map((row: Row) => row.operation), [
+    "engineering.preflight",
+  ]);
+  assert.equal(
+    (await h.request({ action: "execute", operation: "tasks.list" })).status,
+    403,
+  );
+  assert.equal(h.calls.length, 0);
+});
+Deno.test("tenant directory failures, forged tenant arguments and conflicting scope or mutation contracts fail closed", async () => {
+  const h = harness({
+    role: null,
+    tenant: "tenant-one",
+    tenantError: true,
+    rows: [customerRead()],
+  });
+  assert.equal(
+    (await h.request({ action: "execute", operation: "tasks.list" })).status,
+    503,
+  );
+  assert.equal(h.calls.length, 0);
+  const tenant = harness({
+    role: null,
+    tenant: "tenant-one",
+    rows: [customerRead()],
+  });
+  assert.equal(
+    (await tenant.request({
+      action: "execute",
+      operation: "tasks.list",
+      arguments: { customer_id: "tenant-two" },
+    })).status,
+    400,
+  );
+  assert.equal(tenant.calls.length, 0);
+  for (
+    const entry of [{ ...customerRead(), is_mutation: true }, {
+      ...customerRead(),
+      permission_scope: "infrastructure:read",
+    }]
+  ) {
+    const conflict = harness({
+      role: null,
+      tenant: "tenant-one",
+      rows: [entry],
+    });
+    assert.equal(
+      (await conflict.request({ action: "execute", operation: "tasks.list" }))
+        .status,
+      503,
+    );
+    assert.equal(conflict.calls.length, 0);
   }
 });
