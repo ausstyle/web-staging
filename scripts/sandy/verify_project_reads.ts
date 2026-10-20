@@ -11,6 +11,12 @@ const tests: Record<string, unknown>[] = [];
 let branchName: string | undefined;
 for (
   const operation of [
+    "supabase.db.migrations.list",
+    "supabase.database.inspect",
+    "supabase.schema.tables.list",
+    "supabase.schema.functions.list",
+    "supabase.schema.indexes.list",
+    "supabase.database.connections.list",
     "supabase.projects.get",
     "supabase.project.health",
     "supabase.branches.list",

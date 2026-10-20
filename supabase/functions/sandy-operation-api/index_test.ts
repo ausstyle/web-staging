@@ -751,3 +751,91 @@ Deno.test("tenant directory failures, forged tenant arguments and conflicting sc
     assert.equal(conflict.calls.length, 0);
   }
 });
+
+Deno.test("lost release response is ambiguous and requires reconciliation rather than reporting no execution", async () => {
+  const h = harness({
+    backend: () => {
+      throw Error("connection lost after request");
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation: release.operation,
+    arguments: releaseArgs,
+  });
+  const body = await response.json();
+  assert.equal(response.status, 502);
+  assert.equal(body.executed, null);
+  assert.equal(body.reconciliation_required, true);
+  assert.equal(body.ok, false);
+});
+
+Deno.test("all provider reads and customer reads are installed at the correct fixed backend", async () => {
+  const providerOperations = [
+    "supabase.projects.get",
+    "supabase.project.health",
+    "supabase.branches.list",
+    "supabase.branches.get",
+    "supabase.network.restrictions.get",
+    "supabase.domains.get",
+    "supabase.functions.secrets.list",
+    "supabase.backups.list",
+    "supabase.db.migrations.list",
+    "supabase.database.inspect",
+    "supabase.schema.tables.list",
+    "supabase.schema.functions.list",
+    "supabase.schema.indexes.list",
+    "supabase.database.connections.list",
+  ];
+  for (const operation of providerOperations) {
+    const entry = {
+      ...infrastructure(operation),
+      handler: "sandy-provider-read-api",
+      ai_exposed: true,
+    };
+    const h = harness({ rows: [entry] });
+    assert.equal(
+      (await h.request({ action: "execute", channel: "mcp", operation }))
+        .status,
+      200,
+    );
+    assert.equal(
+      h.calls[0].url,
+      "https://example.supabase.co/functions/v1/sandy-provider-read-api",
+    );
+    assert.equal(
+      new Headers(h.calls[0].init?.headers).get("authorization"),
+      "Bearer test-service-credential",
+    );
+  }
+  for (
+    const operation of [
+      "tasks.list",
+      "tasks.get",
+      "calendar.list",
+      "calendar.get",
+      "calendar.conflicts",
+      "files.list",
+      "files.get",
+      "files.search",
+    ]
+  ) {
+    const h = harness({
+      rows: [customerRead(operation)],
+      role: null,
+      tenant: "tenant-one",
+    });
+    assert.equal(
+      (await h.request({ action: "execute", operation })).status,
+      200,
+    );
+    assert.equal(
+      h.calls[0].url,
+      "https://example.supabase.co/functions/v1/sandy-operations-api",
+    );
+    assert.equal(
+      new Headers(h.calls[0].init?.headers).get("authorization"),
+      "Bearer test-user-jwt",
+    );
+  }
+});

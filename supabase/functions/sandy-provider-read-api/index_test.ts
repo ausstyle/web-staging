@@ -205,3 +205,57 @@ Deno.test("provider add-on prerequisite is explicit and excludes billing details
   assert.equal(JSON.parse(text).error, "provider_entitlement_required");
   assert.ok(!text.includes("billing"));
 });
+
+Deno.test("database metadata operations use fixed provider-enforced read-only queries and omit SQL bodies and private data", async () => {
+  const cases: [string, Record<string, unknown>][] = [
+    ["supabase.db.migrations.list", { version: "20261020", name: "test" }],
+    ["supabase.database.inspect", { schema_name: "public" }],
+    ["supabase.schema.tables.list", {
+      table_schema: "public",
+      table_name: "test_table",
+      table_type: "BASE TABLE",
+    }],
+    ["supabase.schema.functions.list", {
+      schema: "public",
+      name: "test_function",
+      arguments: "id uuid",
+      result: "jsonb",
+    }],
+    ["supabase.schema.indexes.list", {
+      schemaname: "public",
+      tablename: "test_table",
+      indexname: "test_index",
+    }],
+    ["supabase.database.connections.list", {
+      state: "idle",
+      wait_event_type: "Client",
+      count: 3,
+    }],
+  ];
+  for (const [operation, expected] of cases) {
+    const h = harness([{
+      ...expected,
+      statements: ["private SQL body"],
+      query: "private customer query",
+      api_key: "private",
+    }]);
+    const response = await h.request(operation);
+    assert.equal(response.status, 200);
+    assert.deepEqual((await response.json()).result, [expected]);
+    const request = h.calls[0];
+    assert.equal(request.method, "POST");
+    assert.ok(
+      request.url.endsWith("/projects/zmqlyygzqoidkcwdysok/database/query"),
+    );
+    const body = await request.json();
+    assert.equal(body.read_only, true);
+    assert.match(body.query, /^SELECT /);
+    assert.ok(!body.query.includes("*") || body.query.includes("count(*)"));
+    const injection = await h.request(operation, {
+      query: "DROP TABLE customer_data",
+      project_ref: "another",
+    });
+    assert.equal(injection.status, 400);
+    assert.equal(h.calls.length, 1);
+  }
+});

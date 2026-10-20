@@ -42,6 +42,12 @@ const infrastructureOperations = [
   "engineering.change.artifacts",
 ] as const;
 const providerReadOperations = [
+  "supabase.db.migrations.list",
+  "supabase.database.inspect",
+  "supabase.schema.tables.list",
+  "supabase.schema.functions.list",
+  "supabase.schema.indexes.list",
+  "supabase.database.connections.list",
   "supabase.projects.get",
   "supabase.project.health",
   "supabase.branches.list",
@@ -511,7 +517,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         return reply(502, {
           ok: false,
           error: "release_backend_unavailable",
-          executed: false,
+          executed: null,
+          reconciliation_required: true,
         });
       }
       return upstreamResult(operation, response, entry.output_schema);

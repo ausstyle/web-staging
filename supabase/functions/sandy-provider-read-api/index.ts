@@ -1,6 +1,45 @@
 /** Project-scoped Management API reads. Called only by Sandy API after owner authorization. */
 const PROJECT = "zmqlyygzqoidkcwdysok";
+const metadataQueries: Readonly<
+  Record<string, { query: string; fields: string[] }>
+> = Object.freeze({
+  "supabase.db.migrations.list": {
+    query:
+      "SELECT version, name FROM supabase_migrations.schema_migrations ORDER BY version DESC LIMIT 200",
+    fields: ["version", "name"],
+  },
+  "supabase.database.inspect": {
+    query:
+      "SELECT schema_name FROM information_schema.schemata ORDER BY schema_name LIMIT 200",
+    fields: ["schema_name"],
+  },
+  "supabase.schema.tables.list": {
+    query:
+      "SELECT table_schema, table_name, table_type FROM information_schema.tables WHERE table_schema = 'public' ORDER BY table_name LIMIT 1000",
+    fields: ["table_schema", "table_name", "table_type"],
+  },
+  "supabase.schema.functions.list": {
+    query:
+      "SELECT n.nspname AS schema, p.proname AS name, pg_get_function_identity_arguments(p.oid) AS arguments, pg_get_function_result(p.oid) AS result FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace WHERE n.nspname = 'public' ORDER BY p.proname, p.oid LIMIT 1000",
+    fields: ["schema", "name", "arguments", "result"],
+  },
+  "supabase.schema.indexes.list": {
+    query:
+      "SELECT schemaname, tablename, indexname FROM pg_indexes WHERE schemaname = 'public' ORDER BY tablename, indexname LIMIT 1000",
+    fields: ["schemaname", "tablename", "indexname"],
+  },
+  "supabase.database.connections.list": {
+    query:
+      "SELECT state, wait_event_type, count(*)::integer AS count FROM pg_stat_activity GROUP BY state, wait_event_type ORDER BY state NULLS LAST, wait_event_type NULLS LAST LIMIT 200",
+    fields: ["state", "wait_event_type", "count"],
+  },
+});
 const routes: Readonly<Record<string, string>> = Object.freeze({
+  ...Object.fromEntries(
+    Object.keys(metadataQueries).map((
+      operation,
+    ) => [operation, "/database/query"]),
+  ),
   "supabase.projects.get": "",
   "supabase.project.health": "/health?services=auth,db,rest,storage,realtime",
   "supabase.branches.list": "/branches",
@@ -20,6 +59,10 @@ const pick = (value: unknown, keys: string[]): ObjectValue => {
   );
 };
 function projectResult(operation: string, data: unknown): unknown {
+  if (Object.hasOwn(metadataQueries, operation)) {
+    if (!Array.isArray(data)) throw Error("invalid_provider_response");
+    return data.map((value) => pick(value, metadataQueries[operation].fields));
+  }
   const branch = (value: unknown) =>
     pick(value, [
       "id",
@@ -141,12 +184,23 @@ export function createProviderReadHandler(options: {
     }${branchRead ? encodeURIComponent(String(args.name)) : ""}`;
     try {
       const response = await requestProvider(url, {
-        method: "GET",
+        method: Object.hasOwn(metadataQueries, operation) ? "POST" : "GET",
         redirect: "error",
         headers: {
           authorization: `Bearer ${options.management}`,
           accept: "application/json",
+          ...(Object.hasOwn(metadataQueries, operation)
+            ? { "content-type": "application/json" }
+            : {}),
         },
+        ...(Object.hasOwn(metadataQueries, operation)
+          ? {
+            body: JSON.stringify({
+              query: metadataQueries[operation].query,
+              read_only: true,
+            }),
+          }
+          : {}),
         signal: AbortSignal.timeout(20000),
       });
       const provider_request_id = response.headers.get("x-request-id") ??
