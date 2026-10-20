@@ -91,7 +91,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertNotIn('db.from("sandy_whatsapp_messages")', design_block)
 
     def test_dedupe_and_receipts(self):
-        for text in ('snapshotHash','sandy_examiner_design_runs','unchanged_snapshot_within_20_hours',
+        for text in ('snapshotHash','sandy_examiner_design_runs','unchanged_snapshot_within_75_min_schedule_only',
                      'examiner_design_provider_http_','source_summary:','policy.mode==="disabled"'):
             self.assertIn(text, EDGE)
 
@@ -134,12 +134,9 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('Mandatory validation: every question must contain language matching its oracle', EDGE)
         self.assertIn('grounding_keys exactly matching source keys', EDGE)
         instructions = EDGE.split('const instructions=[',1)[1].split('].join(" ")',1)[0].lower()
-        requirement = re.search(r'include at least one[^"\n]*question', instructions)
-        self.assertIsNotNone(requirement, 'Explicit coverage instructions are required')
-        self.assertIn('connections', requirement.group())
-        self.assertIn('task_count', requirement.group())
-        self.assertIn('clock', requirement.group())
-        self.assertIn('capability', requirement.group())
+        self.assertIn("do not include routine clock, connections, location, basic task_count or capability questions merely to fill a quota", instructions)
+        for oracle in ("mission_awareness", "memory_retrieval", "calendar_awareness", "integration_recovery", "followup_investigation", "cross_channel"):
+            self.assertIn(oracle, instructions)
 
     def test_proposal_rejection_diagnostics_are_aggregate_only(self):
         for text in ('proposal_rejections:rejectionCounts','proposals_returned:data.tests.length','proposals_accepted:accepted.length'):
@@ -154,7 +151,7 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('examiner_dynamic_execution', EDGE)
         self.assertIn('executionPolicy?.mode==="enabled"', EDGE)
         # Production now iterates a bounded generated suite, not one fixed slot.
-        for text in ('safeOracles.has(x?.oracle_key)', '!disallow.test(x.question)',
+        for text in ('safeOracles.has(x?.oracle_key)', '!(disallow.test(x.question)',
                      'x.execution_status==="shadow_not_executed"',
                      'x.requires_current_production_retest===true',
                      'Array.isArray(x.grounding_keys)&&x.grounding_keys.length>0',
