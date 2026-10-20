@@ -3,7 +3,7 @@ import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 
 /**
  * Sandy API operation gateway v1.
- * Source of truth is sandy_api_operations, not MCP. No external provider call occurs here.
+ * Source of truth is sandy_operation_registry, not MCP. No external provider call occurs here.
  * Supports read-only discovery and explicitly registered read-only handler delegation.
  * Mutations remain disabled until each backend executor is implemented and tested.
  */
@@ -15,7 +15,6 @@ const reply = (status: number, data: unknown) =>
   Response.json(data, { status, headers: { "cache-control": "no-store", "x-content-type-options": "nosniff" } });
 const allowedHandlers: Record<string, { functionName: string; action: string }> = {
   "engineering.preflight": { functionName: "sandy-engineering-control", action: "preflight" },
-  "deployment.management.preflight": { functionName: "sandy-deployment-api", action: "management_preflight" },
 };
 function validOperation(s: unknown): s is string {
   return typeof s === "string" && /^[a-z][a-z0-9_.-]{2,100}$/.test(s);
@@ -36,7 +35,7 @@ Deno.serve(async (request) => {
   catch { return reply(400, { error: "invalid_request" }); }
   const action = body.action;
   if (action === "list") {
-    const { data, error } = await db.from("sandy_api_operations")
+    const { data, error } = await db.from("sandy_operation_registry")
       .select("operation,domain,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ai_exposed,verified,last_verified_at")
       .eq("api_exposed", true).order("operation").limit(300);
     if (error) return reply(503, { error: "operation_registry_unavailable" });
@@ -45,7 +44,7 @@ Deno.serve(async (request) => {
   if (action !== "describe" && action !== "execute") return reply(400, { error: "unknown_action" });
   if (!validOperation(body.operation)) return reply(400, { error: "invalid_operation" });
   const operation = body.operation;
-  const { data: entry, error } = await db.from("sandy_api_operations")
+  const { data: entry, error } = await db.from("sandy_operation_registry")
     .select("operation,domain,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ai_exposed,verified,last_verified_at")
     .eq("operation", operation).maybeSingle();
   if (error) return reply(503, { error: "operation_registry_unavailable" });
