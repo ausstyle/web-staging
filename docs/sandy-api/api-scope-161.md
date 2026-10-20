@@ -3,6 +3,23 @@
 Source: original *Sandy API Function Inventory* and *Sandy Autonomous Control API Specification*, v1.0 (20 October 2026).
 Each numbered entry is a **requirement or function family**, not necessarily one callable endpoint. Implement provider-supported operations with specific typed contracts. Confirm the full PDF context before interpreting wildcard families. The runtime registry is `public.sandy_operation_registry` in Supabase `zmqlyygzqoidkcwdysok`.
 
+## Mandatory universal API and MCP architecture
+
+**Normative requirement, applies to all 161 scope items and every expanded sub-operation.** Every action Sandy supports—customer-facing, internal, administrative, engineering, infrastructure or third-party integration—MUST have a uniquely named, versioned Sandy API operation with a documented input/output contract and an actual server-side implementation. Wildcard function families MUST be expanded into discrete callable operations. This requirement also applies to future Sandy functionality.
+
+**Execution path:** ChatGPT / other MCP clients → Sandy MCP → Sandy API gateway → authorized Sandy API handler → Supabase, GitHub, Google Cloud, Microsoft Graph, Composio or other provider. Sandy MCP MUST be an adapter for discovery, schema translation, authentication context and invocation of Sandy API; it MUST NOT independently implement provider operations or use a parallel privileged deployment path. Internal Sandy applications and agents MUST use the same Sandy API contracts for supported operations (shared libraries may call the gateway or the same centrally governed application service, without duplicating business rules).
+
+**Canonical catalogue:** `public.sandy_operation_registry` in Supabase project `zmqlyygzqoidkcwdysok` is the authoritative runtime source for operation identifiers, schemas, handler mapping, permission requirements, dependencies, implementation status, deployment version, test evidence and MCP exposure. Sandy API serves catalogue/discovery endpoints from this registry; Sandy MCP must dynamically discover or synchronize from those API endpoints with version/change detection, rather than maintain a divergent hard-coded allowlist. Registry entries alone do not establish executability: only an installed, permitted, healthy handler may execute, and only tests with evidence can mark an operation verified.
+
+**Universal operational contracts:** For each operation provide identity/tenant scope, required authorization, provider prerequisite, typed schema, synchronous or durable asynchronous execution, idempotency, structured errors, progress/result, audit trail, cancellation/retry/rollback where meaningful, rate/cost controls, and test cases. Provider-specific restrictions and approvals still apply. Unauthorized, unsupported or unverified mutations MUST fail closed rather than acknowledge success.
+
+**Platform-wide acceptance gates:**
+1. Each of the 161 scope entries maps to one or more concrete Sandy API operation IDs; every constituent provider action in a wildcard family is accounted for.
+2. Sandy MCP offers corresponding callable tools whose execution traverses Sandy API, with no independent provider-execution implementation.
+3. All customer applications, Controller, agents, Examiner and engineering services discover and use the same operation contracts, with migration/compatibility tests for any legacy direct calls.
+4. A real provider-side readback or functional test demonstrates outcome; changes are version-controlled, deployed and recorded in the canonical registry.
+5. No missing, placeholder or registry-only operation is counted as implemented or verified.
+
 ## Core orchestration (1–11)
 1. GET /v1/capabilities — executable operations, scopes and verification.
 2. GET /v1/capabilities/{operation} — schema, handler and required grants.
