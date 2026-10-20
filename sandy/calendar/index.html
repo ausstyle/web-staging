@@ -318,6 +318,21 @@ async function refreshCalendarConnectOptions(){
   feedback.textContent="Cannot check existing connections: "+error.message+". No new authorisation will start until this check succeeds.";
  }
 }
+let googleSyncRunning=false,lastGoogleSyncAt=0;
+async function syncGoogleCalendarSilently(){
+ if(googleSyncRunning||document.hidden||Date.now()-lastGoogleSyncAt<240000)return;
+ googleSyncRunning=true;lastGoogleSyncAt=Date.now();
+ try{
+  const {data:{session}}=await sb.auth.getSession();if(!session)return;
+  const r=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-google-calendar-import",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":calendarGatewayKey,"content-type":"application/json"},body:"{}"});
+  const result=await r.json();if(!r.ok||!result.ok)throw Error(result.error||"sync_failed");
+  if(result.imported||result.updated||result.pushed)await load({silent:true,force:true});
+  calendarSyncStatus("Google sync checked · "+new Date().toLocaleTimeString());
+ }catch(e){console.warn("google_calendar_sync",e);calendarSyncStatus("Google sync needs attention · "+e.message)}
+ finally{googleSyncRunning=false}
+}
+setInterval(()=>{void syncGoogleCalendarSilently()},300000);
+window.addEventListener("focus",()=>{void syncGoogleCalendarSilently()});
 async function importGoogleCalendarNow(){
  const feedback=document.getElementById("calendarConnectFeedback");
  const button=document.getElementById("importGoogleCalendarNow");button.disabled=true;
@@ -327,7 +342,7 @@ async function importGoogleCalendarNow(){
   if(!session)throw Error("Sign in to Sandy first");
   const r=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-google-calendar-import",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":calendarGatewayKey,"content-type":"application/json"},body:"{}"});
   const result=await r.json();if(!r.ok||!result.ok)throw Error(result.error+(result.detail?": "+result.detail:""));
-  feedback.textContent="Google import complete: "+result.imported+" new, "+result.updated+" updated, "+result.skipped+" unchanged. Two-way sync is not enabled.";
+  feedback.textContent="Google import complete: "+result.imported+" new, "+result.updated+" updated, "+result.skipped+" unchanged. Google changes are exchanged when sync runs; background server sync is not yet configured.";
   await load({force:true});
  }catch(e){feedback.textContent="Google import failed: "+e.message}
  finally{button.disabled=false}
