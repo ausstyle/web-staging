@@ -40,6 +40,12 @@ function registerTools(server, bearer) {
     {change_id:z.string().uuid(),model_id:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{1,90}$/),
      case_key:z.enum(["simple_reasoning","research_uncertainty","document_summary","tool_call","routine_email"])},
     async (args) => outcome(await invoke("sandy-engineering-test-api", bearer, {...args,action:"model_canary"})));
+  server.tool("sandy_video_install_preflight",
+    "Inspect the existing Sandy Video VM and installation prerequisites. Read-only; never installs software.",
+    {}, async () => outcome(await invoke("sandy-operations-mcp",bearer,{jsonrpc:"2.0",id:"video-preflight",method:"tools/call",params:{name:"operations_execute",arguments:{operation:"video.install.preflight",arguments:{}}}})));
+  server.tool("sandy_video_execution_preflight",
+    "Inspect OS Config execution readiness for Sandy Video. Read-only; does not approve or execute installation.",
+    {}, async () => outcome(await invoke("sandy-operations-mcp",bearer,{jsonrpc:"2.0",id:"video-execution-preflight",method:"tools/call",params:{name:"operations_execute",arguments:{operation:"video.execution.preflight",arguments:{}}}})));
   server.tool("sandy_engineering_change_details",
     "Read registered Engineering Control change and its tests, events, artifacts, and rollback requests.",
     {change_id:z.string().uuid()},
