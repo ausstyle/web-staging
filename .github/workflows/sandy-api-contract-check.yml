@@ -1,0 +1,44 @@
+name: Sandy API contract checks
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-operation-api/**'
+      - 'supabase/functions/sandy-api-mcp/**'
+      - 'supabase/functions/sandy-deployment-api/**'
+      - 'scripts/sandy/*api*'
+      - '.github/workflows/sandy-api-contract-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/functions/sandy-operation-api/**'
+      - 'supabase/functions/sandy-api-mcp/**'
+      - 'supabase/functions/sandy-deployment-api/**'
+      - 'scripts/sandy/*api*'
+      - '.github/workflows/sandy-api-contract-check.yml'
+permissions:
+  contents: read
+jobs:
+  api-contract-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Test API, MCP and deployment evidence boundaries
+        run: >-
+          deno test
+          supabase/functions/sandy-operation-api/
+          supabase/functions/sandy-api-mcp/
+          supabase/functions/sandy-deployment-api/
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install spreadsheet test dependency
+        run: python -m pip install openpyxl==3.1.5
+      - name: Test inventory and read-only production inspection
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m unittest discover -s scripts/sandy -p 'test_*api*.py' -v

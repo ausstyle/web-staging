@@ -1,13 +1,21 @@
-import { createClient } from "npm:@supabase/supabase-js@2.57.0";
-const url=Deno.env.get("SUPABASE_URL")||"";
-const secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+import type { SupabaseClient } from "npm:@supabase/supabase-js@2.57.0";
+export type DeploymentDependencies = {
+ url: string;
+ secret: string;
+ db: Pick<SupabaseClient, "from" | "rpc">;
+ fetch?: typeof fetch;
+ env?: (name: string) => string | undefined;
+};
 const respond=(data:unknown,status=200)=>Response.json(data,{status,headers:{"cache-control":"no-store"}});
-Deno.serve(async(req)=>{
+export function createDeploymentHandler(dependencies: DeploymentDependencies) {
+ const {url,secret,db}=dependencies;
+ const fetch=dependencies.fetch??globalThis.fetch;
+ const env=dependencies.env??(()=>undefined);
+ return async(req: Request): Promise<Response>=>{
  if(req.method!=="POST")return respond({error:"method_not_allowed"},405);
- const bearer=(req.headers.get("authorization")||"").replace(/^Bearer\s+/i,"");
+ const bearer=(req.headers.get("authorization")||"").match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
  if(!secret||!url||bearer!==secret)return respond({error:"unauthorized"},403);
- const db=createClient(url,secret,{auth:{persistSession:false}});
- let input:any;try{input=await req.json()}catch{return respond({error:"invalid_json"},400)}
+ let input:any;try{input=await req.json();if(!input||typeof input!=="object"||Array.isArray(input))throw Error()}catch{return respond({error:"invalid_json"},400)}
  const action=String(input.action||"");
  if(action==="video_provision_policy"){
   const t=await db.from("sandy_cloud_targets").select("name,project_id,zone,protected").eq("name","sandy-video").maybeSingle();
@@ -26,7 +34,7 @@ Deno.serve(async(req)=>{
   return respond({ok:true,target:t.data,provisioning:pending?.status==="pending_approval"?"requires_approval":pending?.status||"not_provisioned",provisioning_job_id:pending?.id||null,livekit_status:"not_verified",service_operational:false});
  }
  if(action==="management_deploy_smoke"){
-  const token=Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
+  const token=env("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
   if(!token)return respond({ok:false,error:"management_token_missing"},424);
   const slug="sandy-mcp-smoke-20261020";
   const api="https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/functions";
@@ -62,8 +70,8 @@ Deno.serve(async(req)=>{
   }catch(e){return respond({ok:false,error:"smoke_incomplete",reason:String(e).slice(0,130),notes,cleanup_required:created},502);}
  } 
  if(action==="engineering_release_preflight"){
-  const gh=Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
-  const sb=Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
+  const gh=env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
+  const sb=env("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
   const target=String(input.function_slug||"");
   if(!/^[a-z][a-z0-9-]{2,90}$/.test(target))return respond({ok:false,error:"invalid_function_slug"},400);
   if(!gh||!sb)return respond({ok:false,error:"management_credential_not_configured"},424);
@@ -83,8 +91,8 @@ Deno.serve(async(req)=>{
   const record=await db.from("sandy_engineering_changes").select("id,status,scope,requested_by").eq("id",change).maybeSingle();
   if(record.error||!record.data||!["approved","implementing"].includes(record.data.status)||!record.data.scope?.includes("supabase:"+slug))
     return respond({ok:false,error:"approved_scoped_engineering_change_required"},403);
-  const gh=Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
-  const sb=Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
+  const gh=env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
+  const sb=env("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
   if(!gh||!sb)return respond({ok:false,error:"release_credential_missing"},424);
   const ghHeaders={"authorization":"Bearer "+gh,"accept":"application/vnd.github+json"};
   const root="https://api.github.com/repos/ausstyle/web-staging/contents/supabase/functions/"+slug+"/";
@@ -92,7 +100,11 @@ Deno.serve(async(req)=>{
   if(!source.ok)return respond({ok:false,error:"versioned_source_missing",github_http:source.status},424);
   const src=await source.json();
   if(src.type!=="file"||typeof src.content!=="string"||!src.sha)return respond({ok:false,error:"source_integrity_unavailable"},424);
-  const sourceText=atob(src.content.replace(/\s/g,""));
+  let sourceText:string;
+  try{
+   const binary=atob(src.content.replace(/\s/g,""));
+   sourceText=new TextDecoder("utf-8",{fatal:true}).decode(Uint8Array.from(binary,c=>c.charCodeAt(0)));
+  }catch{return respond({ok:false,error:"source_encoding_invalid"},424)}
   const management="https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/functions";
   const headers={"authorization":"Bearer "+sb};
   const prior=await fetch(management+"/"+slug,{headers,signal:AbortSignal.timeout(10000)});
@@ -101,18 +113,32 @@ Deno.serve(async(req)=>{
   const form=new FormData();
   form.append("metadata",JSON.stringify({name:slug,entrypoint_path:"index.ts",verify_jwt:true}));
   form.append("file",new Blob([sourceText],{type:"text/plain"}),"index.ts");
-  const d=await fetch(management+"/deploy?slug="+slug,{method:"POST",headers,body:form,signal:AbortSignal.timeout(25000)});
-  const result=await d.json().catch(()=>({}));
-  if(!d.ok)return respond({ok:false,error:"provider_deployment_failed",provider_http:d.status},502);
-  const verified=await fetch(management+"/"+slug,{headers,signal:AbortSignal.timeout(10000)});
-  const info=await verified.json().catch(()=>({}));
-  const receipt={function_slug:slug,change_id:change,source_blob_sha:src.sha,provider_http:d.status,verification_http:verified.status,version:info.version||null};
-  await db.from("sandy_engineering_change_events").insert({change_id:change,event_type:"sandy_api_release_attempt",actor:record.data.requested_by,detail:receipt});
-  return respond({ok:verified.ok,verified:verified.ok,receipt,rollback_mode:"delete_new_function_only"},verified.ok?200:502);
+  const evidence={verified:false,functionally_verified:false,rollback_tested:false};
+  let deployed:Response;
+  try{deployed=await fetch(management+"/deploy?slug="+slug,{method:"POST",headers,body:form,signal:AbortSignal.timeout(25000)})}
+  catch{return respond({ok:false,error:"deployment_outcome_unknown",reconciliation_required:true,deployed:null,metadata_observed:false,...evidence,receipt:{function_slug:slug,change_id:change,source_blob_sha:src.sha,provider_http:null}},503)}
+  await deployed.body?.cancel().catch(()=>{});
+  if(!deployed.ok)return respond({ok:false,error:"provider_deployment_failed",deployed:false,metadata_observed:false,...evidence,provider_http:deployed.status},502);
+  const deploymentCompleted=deployed.status===200||deployed.status===201;
+  let metadata:Response|null=null,info:any=null;
+  try{
+   metadata=await fetch(management+"/"+slug,{headers,signal:AbortSignal.timeout(10000)});
+   info=await metadata.json().catch(()=>null);
+  }catch{/* The provider accepted a write; retain its receipt for reconciliation. */}
+  const observed=metadata?.ok===true&&info!==null&&typeof info==="object"&&!Array.isArray(info);
+  const receipt={function_slug:slug,change_id:change,source_blob_sha:src.sha,provider_http:deployed.status,metadata_http:metadata?.status??null,version:observed?info.version??null:null,deployed:deploymentCompleted,metadata_observed:observed,...evidence};
+  let persisted=false;
+  try{
+   const saved=await db.from("sandy_engineering_change_events").insert({change_id:change,event_type:"sandy_api_release_attempt",actor:record.data.requested_by,detail:receipt});
+   persisted=!saved.error;
+  }catch{/* Do not convert an unpersisted provider write into a successful release. */}
+  if(!persisted)return respond({ok:false,error:"release_receipt_persistence_failed",reconciliation_required:true,...receipt,receipt},503);
+  const ok=deploymentCompleted&&observed;
+  return respond({ok,...(!ok?{error:deploymentCompleted?"deployment_metadata_unavailable":"provider_deployment_pending",reconciliation_required:true}:{}),...receipt,receipt,rollback_mode:"requires_explicit_new_function_cleanup"},ok?200:deploymentCompleted?502:202);
  }
  if(action==="management_preflight"){
-   const ghToken=Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
-   const sbToken=Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
+   const ghToken=env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
+   const sbToken=env("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
    let githubHttp:number|null=null,githubWrite=false;
    if(ghToken){try{const v=await fetch("https://api.github.com/repos/ausstyle/web-staging",{headers:{"authorization":"Bearer "+ghToken,"accept":"application/vnd.github+json"},signal:AbortSignal.timeout(8000)});githubHttp=v.status;if(v.ok){const d=await v.json();githubWrite=d.permissions?.push===true;}}catch{}}
    let sbHttp:number|null=null,sbRead=false;
@@ -126,13 +152,13 @@ Deno.serve(async(req)=>{
    return respond({ok:true,production_writes_enabled:false,require_approval:true,require_idempotency:true,require_verification:true,rollback_required:true});
  }
  if(action==="executor_ready"){
-   return respond({ok:true,configured:{github:!!Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN"),supabase:!!Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")},execution_enabled:false});
+   return respond({ok:true,configured:{github:!!env("SANDY_GITHUB_APP_INSTALLATION_TOKEN"),supabase:!!env("SANDY_SUPABASE_MANAGEMENT_TOKEN")},execution_enabled:false});
  }
  if(action==="executor_preflight"){
-   return respond({ok:true,github_credential_present:!!Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN"),supabase_credential_present:!!Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN"),github_write_ready:false,supabase_write_ready:false});
+   return respond({ok:true,github_credential_present:!!env("SANDY_GITHUB_APP_INSTALLATION_TOKEN"),supabase_credential_present:!!env("SANDY_SUPABASE_MANAGEMENT_TOKEN"),github_write_ready:false,supabase_write_ready:false});
  }
  if(action==="github_write_preflight"){
-   const token=Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
+   const token=env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
    if(!token)return respond({ok:false,error:"github_credential_unavailable"},424);
    const headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};
    const response=await fetch("https://api.github.com/repos/ausstyle/web-staging",{headers,signal:AbortSignal.timeout(18000)});
@@ -140,18 +166,18 @@ Deno.serve(async(req)=>{
    return respond({ok:response.ok,github_http:response.status,repository:"ausstyle/web-staging",permissions:repo.permissions||null,write_capable:response.ok&&Boolean(repo.permissions?.push),credential_present:true},response.ok?200:502);
  }
  if(action==="verify_github_management"){
-   const configured=Boolean(Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN"));
+   const configured=Boolean(env("SANDY_GITHUB_APP_INSTALLATION_TOKEN"));
    return respond({ok:true,configured,verification:"credential_presence_only"});
  }
  if(action==="verify_supabase_management"){
-   const token=Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
+   const token=env("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
    if(!token)return respond({ok:false,configured:false,reason:"management_token_missing"},424);
    const res=await fetch("https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/functions",{headers:{"authorization":"Bearer "+token},signal:AbortSignal.timeout(16000)});
    const data=await res.json().catch(()=>null);
    return respond({ok:res.ok,configured:true,http_status:res.status,function_count:Array.isArray(data)?data.length:null},res.ok?200:502);
  }
  if(action==="executor_capabilities"){
-   return respond({ok:true,google_cloud_read:true,supabase_write:false,github_update_file_implemented:true,github_update_file_credential_present:!!(Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")),github_push_files_implemented:false,github_write_live_tested:false,github_external_reconciliation_verified:true,executor_ready:false,management_credentials:{supabase:!!Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN"),github:!!(Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN"))}});
+   return respond({ok:true,google_cloud_read:true,supabase_write:false,github_update_file_implemented:true,github_update_file_credential_present:!!(env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN")),github_push_files_implemented:false,github_write_live_tested:false,github_external_reconciliation_verified:true,executor_ready:false,management_credentials:{supabase:!!env("SANDY_SUPABASE_MANAGEMENT_TOKEN"),github:!!(env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN"))}});
  }
  if(action==="register_deployed_function"){
   const slug=String(input.function_slug||"");
@@ -184,7 +210,7 @@ if(action==="execute"){
     if(art.error||!art.data||!/^[a-f0-9]{40}$/.test(art.data.after_ref||""))return respond({error:"external_commit_evidence_missing"},409);
     const match=String(rec.data.target).match(/^([\w.-]+\/[\w.-]+):([\w./-]+)$/);
     if(!match||match[1]!=="ausstyle/web-staging")return respond({error:"invalid_target"},403);
-    const token=Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN");
+    const token=env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN");
     if(!token)return respond({error:"github_credential_unavailable"},503);
     const headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28"};
     const commit=await fetch("https://api.github.com/repos/"+match[1]+"/commits/"+art.data.after_ref,{headers,signal:AbortSignal.timeout(18000)});
@@ -210,7 +236,7 @@ if(action==="execute"){
     if(typeof content!=="string"||content.length>350000||!/^[0-9a-f]{64}$/.test(String(expected||"")))return respond({error:"immutable_source_required",detail:"Approved job has no source bytes and SHA-256. Existing external commits must be reconciled, not replayed."},422);
     const digest=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(content)))).map(x=>x.toString(16).padStart(2,"0")).join("");
     if(digest!==expected)return respond({error:"source_digest_mismatch"},409);
-    const token=Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN");
+    const token=env("SANDY_GITHUB_APP_INSTALLATION_TOKEN")||env("SANDY_ENGINEERING_GITHUB_TOKEN");
     if(!token)return respond({error:"github_credential_unavailable"},503);
     const headers={"Authorization":"Bearer "+token,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","Content-Type":"application/json"};
     const endpoint="https://api.github.com/repos/"+match[1]+"/contents/"+match[2];
@@ -280,4 +306,11 @@ const payload=input.payload;
   return respond({ok:true,job_id:data.id,status:data.status,executed:false},202);
  }
  return respond({error:"action_not_allowed"},400);
-});
+ };
+}
+if(import.meta.main){
+ const {createClient}=await import("npm:@supabase/supabase-js@2.57.0");
+ const url=Deno.env.get("SUPABASE_URL")||"";
+ const secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+ Deno.serve(createDeploymentHandler({url,secret,db:createClient(url,secret,{auth:{persistSession:false}}),env:(name)=>Deno.env.get(name)}));
+}
