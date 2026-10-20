@@ -259,3 +259,170 @@ Deno.test("database metadata operations use fixed provider-enforced read-only qu
     assert.equal(h.calls.length, 1);
   }
 });
+
+Deno.test("bounded metadata projections omit definitions, credentials, policies and scheduler commands", async () => {
+  const cases: [string, Record<string, unknown>, number][] = [
+    [
+      "supabase.schema.views.list",
+      { schema: "public", name: "test_view" },
+      1000,
+    ],
+    ["supabase.schema.materialized_views.list", {
+      schema: "public",
+      name: "test_materialized_view",
+      populated: true,
+      has_indexes: false,
+    }, 1000],
+    ["supabase.schema.triggers.list", {
+      schema: "public",
+      table_name: "test_table",
+      name: "test_trigger",
+      enabled: "O",
+      on_insert: true,
+      on_update: false,
+      on_delete: false,
+      on_truncate: false,
+    }, 1000],
+    ["supabase.schema.constraints.list", {
+      schema: "public",
+      table_name: "test_table",
+      name: "test_constraint",
+      type: "p",
+      deferrable: false,
+      initially_deferred: false,
+      validated: true,
+    }, 1000],
+    ["supabase.schema.types.list", {
+      schema: "public",
+      name: "test_type",
+      type: "c",
+      category: "C",
+    }, 1000],
+    ["supabase.schema.extensions.list", {
+      name: "test_extension",
+      schema: "public",
+      version: "1.0",
+      relocatable: true,
+    }, 200],
+    ["supabase.database.roles.list", {
+      name: "test_role",
+      can_login: false,
+      inherit: true,
+      create_role: false,
+      create_database: false,
+      replication: false,
+      bypass_rls: false,
+      connection_limit: -1,
+    }, 1000],
+    ["supabase.database.grants.list", {
+      object_schema: "public",
+      object_name: "test_table",
+      object_type: "table",
+      grantor: "test_owner",
+      grantee: "test_reader",
+      privilege_type: "SELECT",
+      is_grantable: false,
+    }, 1000],
+    ["supabase.database.default_privileges.list", {
+      owner_role: "test_owner",
+      schema: null,
+      object_type: "r",
+      grantee: "test_reader",
+      privilege_type: "SELECT",
+      is_grantable: false,
+    }, 1000],
+    ["supabase.database.rls.policies.list", {
+      schema: "public",
+      table_name: "test_table",
+      name: "test_policy",
+      permissive: "PERMISSIVE",
+      roles: ["test_reader"],
+      command: "SELECT",
+    }, 1000],
+    ["supabase.database.locks.list", {
+      lock_type: "relation",
+      mode: "AccessShareLock",
+      granted: true,
+      count: 2,
+    }, 200],
+    ["supabase.database.cron.jobs.list", {
+      job_id: "123",
+      name: null,
+      schedule: "*/5 * * * *",
+      active: false,
+    }, 200],
+  ];
+  for (const [operation, expected, limit] of cases) {
+    const h = harness([{
+      ...expected,
+      definition: "PRIVATE VIEW SQL",
+      function_body: "PRIVATE FUNCTION SQL",
+      policy_expression: "PRIVATE CUSTOMER SCOPE",
+      rolpassword: "PRIVATE PASSWORD HASH",
+      rolconfig: ["PRIVATE CONFIGURATION"],
+      query: "PRIVATE CUSTOMER QUERY",
+      username: "PRIVATE CONNECTION USER",
+      nodehost: "PRIVATE CONNECTION HOST",
+      command: operation === "supabase.database.rls.policies.list"
+        ? expected.command
+        : "PRIVATE SCHEDULER COMMAND",
+    }]);
+    const response = await h.request(operation);
+    assert.equal(response.status, 200, operation);
+    const text = await response.text();
+    assert.ok(!text.includes("PRIVATE"), operation);
+    const result = JSON.parse(text);
+    assert.deepEqual(result.result, [expected], operation);
+    assert.equal(result.result_limit, limit, operation);
+    assert.equal(result.possibly_truncated, false, operation);
+    const request = h.calls[0];
+    assert.equal(request.method, "POST", operation);
+    assert.equal(
+      request.url,
+      "https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/database/query",
+      operation,
+    );
+    const submitted = await request.json();
+    assert.equal(submitted.read_only, true, operation);
+    assert.match(submitted.query, /^SELECT /, operation);
+    assert.ok(submitted.query.endsWith(`LIMIT ${limit}`), operation);
+    assert.ok(!submitted.query.includes("SELECT *"), operation);
+    assert.ok(!submitted.query.includes("pg_get_triggerdef"), operation);
+    assert.ok(!submitted.query.includes("pg_get_constraintdef"), operation);
+    assert.ok(!submitted.query.includes("rolpassword"), operation);
+    assert.equal(
+      (await h.request(operation, {
+        query: "UPDATE cron.job SET active = true",
+      }))
+        .status,
+      400,
+      operation,
+    );
+    assert.equal(h.calls.length, 1, operation);
+  }
+});
+
+Deno.test("bounded lists conservatively signal a full page and cap provider overrun without claiming completeness", async () => {
+  const h = harness(Array.from({ length: 1001 }, (_, index) => ({
+    schema: "public",
+    name: `test_view_${index}`,
+  })));
+  const response = await h.request("supabase.schema.views.list");
+  const body = await response.json();
+  assert.equal(response.status, 200);
+  assert.equal(body.result.length, 1000);
+  assert.equal(body.result_limit, 1000);
+  assert.equal(body.possibly_truncated, true);
+  const empty = harness([]);
+  const emptyResponse = await empty.request(
+    "supabase.schema.materialized_views.list",
+  );
+  const emptyBody = await emptyResponse.json();
+  assert.equal(emptyBody.possibly_truncated, false);
+  assert.deepEqual(emptyBody.result, []);
+  const invalid = harness({ data: [] });
+  assert.equal(
+    (await invalid.request("supabase.schema.views.list")).status,
+    502,
+  );
+});
