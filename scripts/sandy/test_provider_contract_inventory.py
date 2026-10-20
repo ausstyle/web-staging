@@ -58,6 +58,25 @@ def quota_fixture(root, service=QUOTA_SERVICE, resources=QUOTA_RESOURCES):
 
 
 class ProviderContractInventoryTests(unittest.TestCase):
+    def test_new_installed_retry_and_catalogue_reads_are_linked_without_being_certified(self):
+        mappings = {
+            "deployment.jobs.retry": 7, "supabase.schema.views.list": 91,
+            "supabase.schema.materialized_views.list": 91, "supabase.schema.triggers.list": 92,
+            "supabase.schema.constraints.list": 93, "supabase.schema.types.list": 93,
+            "supabase.schema.extensions.list": 93, "supabase.database.roles.list": 94,
+            "supabase.database.grants.list": 94, "supabase.database.default_privileges.list": 94,
+            "supabase.database.rls.policies.list": 95, "supabase.database.locks.list": 99,
+            "supabase.database.cron.jobs.list": 101,
+        }
+        report = {"observations": {"operation_registry": {"state": "observed", "complete": True,
+                    "data": [{"operation": operation} for operation in mappings]}}}
+        linked = runtime_candidates(report, "fixture-source-checksum")
+        self.assertEqual(len(linked), len(mappings))
+        for candidate in linked:
+            self.assertEqual(candidate["requirement_ids"], [mappings[candidate["provider_operation_id"]]])
+            self.assertFalse(candidate["executable"])
+            self.assertFalse(candidate["registration_eligible"])
+
     def test_gcp_nested_methods_keep_required_parameters_and_source_identity(self):
         schema = {"name": "compute", "resources": {"instances": {"methods": {
             "get": {"id": "compute.instances.get", "path": "projects/{project}/zones/{zone}/instances/{instance}",

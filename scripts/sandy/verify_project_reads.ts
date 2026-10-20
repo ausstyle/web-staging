@@ -118,6 +118,8 @@ for (
           "20261020202000",
           "20261020210000",
           "20261020213000",
+          "20261020220000",
+          "20261020222000",
         ]
           .every((version) => result.some((row) => row.version === version));
     } else if (operation === "supabase.schema.tables.list") {

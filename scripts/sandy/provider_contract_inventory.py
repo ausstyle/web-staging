@@ -486,7 +486,7 @@ def runtime_candidates(report: dict[str, Any], source_sha256: str) -> list[dict[
         raise ValueError("Runtime registry inspection must be complete")
     explicit = {
         "deployment.jobs.get": [4], "deployment.jobs.list": [4], "deployment.jobs.events": [5],
-        "deployment.jobs.cancel": [6], "deployment.management.release": [83],
+        "deployment.jobs.cancel": [6], "deployment.jobs.retry": [7], "deployment.management.release": [83],
         "deployment.audit.list": [9], "system.registry.list": [1], "system.registry.describe": [2],
         "system.registry.summary": [1], "supabase.projects.get": [76], "supabase.project.status": [76, 86],
         "supabase.project.health": [86], "supabase.branches.list": [80], "supabase.branches.get": [80],
@@ -496,6 +496,12 @@ def runtime_candidates(report: dict[str, Any], source_sha256: str) -> list[dict[
         "supabase.db.migrations.list": [82], "supabase.database.inspect": [98],
         "supabase.schema.tables.list": [91], "supabase.schema.functions.list": [92],
         "supabase.schema.indexes.list": [93], "supabase.database.connections.list": [99],
+        "supabase.schema.views.list": [91], "supabase.schema.materialized_views.list": [91],
+        "supabase.schema.triggers.list": [92], "supabase.schema.constraints.list": [93],
+        "supabase.schema.types.list": [93], "supabase.schema.extensions.list": [93],
+        "supabase.database.roles.list": [94], "supabase.database.grants.list": [94],
+        "supabase.database.default_privileges.list": [94], "supabase.database.rls.policies.list": [95],
+        "supabase.database.locks.list": [99], "supabase.database.cron.jobs.list": [101],
         "supabase.apply_migration": [82], "supabase.deploy_edge_function": [83],
         "github.read": [117], "github.update_file": [117], "github.push_files": [117],
         "github.commit": [118], "github.merge": [119],
