@@ -1,16 +1,317 @@
 """Reconcile provider schemas with all scope rows without registering fictitious executors.
 
-Input contracts retain JSON references to the checksum-identified source document.
+Input contracts retain references to checksum-identified source documents.
 These are review candidates, never executable Sandy contracts or runtime grants.
 """
 from __future__ import annotations
 
 import argparse
+import ast
 import hashlib
 import json
 from pathlib import Path
 import re
 from typing import Any
+
+from fetch_provider_contracts import read_cached_contract
+
+
+def _proto_tokens(text: str) -> list[tuple[str, str]]:
+    """Tokenize annotations without treating braces or comments inside strings as syntax."""
+    result = []
+    offset = 0
+    while offset < len(text):
+        if text[offset].isspace():
+            offset += 1
+            continue
+        if text.startswith("//", offset):
+            newline = text.find("\n", offset)
+            offset = len(text) if newline < 0 else newline + 1
+            continue
+        if text.startswith("/*", offset):
+            end = text.find("*/", offset + 2)
+            if end < 0:
+                raise ValueError("Unterminated protobuf comment")
+            offset = end + 2
+            continue
+        if text[offset] in {"\"", "'"}:
+            quote = text[offset]
+            match = re.match(quote + r"(?:\\[^\r\n]|[^" + quote + r"\\\r\n])*" + quote, text[offset:])
+            if not match:
+                raise ValueError("Unterminated protobuf string")
+            value = ast.literal_eval(match.group())
+            if not isinstance(value, str):
+                raise ValueError("Unsupported protobuf string")
+            result.append(("string", value))
+            offset += match.end()
+            continue
+        match = re.match(r"[A-Za-z_][A-Za-z0-9_]*|[0-9]+", text[offset:])
+        if match:
+            result.append(("word", match.group()))
+            offset += match.end()
+        else:
+            result.append(("symbol", text[offset]))
+            offset += 1
+    stack = []
+    for kind, value in result:
+        if kind != "symbol":
+            continue
+        if value in {"(", "[", "{"}:
+            stack.append(value)
+        elif value in {")", "]", "}"}:
+            if not stack or {"(": ")", "[": "]", "{": "}"}[stack.pop()] != value:
+                raise ValueError("Unbalanced protobuf structure")
+    if stack:
+        raise ValueError("Unbalanced protobuf structure")
+    return result
+
+
+def _proto_group_end(tokens: list[tuple[str, str]], start: int) -> int:
+    opening = tokens[start]
+    closing = ("symbol", {"(": ")", "[": "]", "{": "}"}[opening[1]])
+    depth = 0
+    for index in range(start, len(tokens)):
+        if tokens[index] == opening:
+            depth += 1
+        elif tokens[index] == closing:
+            depth -= 1
+            if depth == 0:
+                return index
+    raise ValueError("Unbalanced protobuf group")
+
+
+def _proto_items(tokens: list[tuple[str, str]]):
+    """Yield statements and named blocks at the current structural depth."""
+    offset = 0
+    while offset < len(tokens):
+        start = offset
+        while offset < len(tokens):
+            token = tokens[offset]
+            if token in {("symbol", "("), ("symbol", "[")}:
+                offset = _proto_group_end(tokens, offset) + 1
+            elif token == ("symbol", "{"):
+                end = _proto_group_end(tokens, offset)
+                yield tokens[start:offset], tokens[offset + 1:end]
+                offset = end + 1
+                if offset < len(tokens) and tokens[offset] == ("symbol", ";"):
+                    offset += 1
+                break
+            elif token == ("symbol", ";"):
+                if offset > start:
+                    yield tokens[start:offset], None
+                offset += 1
+                break
+            else:
+                offset += 1
+        else:
+            raise ValueError("Unterminated protobuf statement")
+
+
+def _proto_name(tokens: list[tuple[str, str]]) -> str:
+    name = "".join(value for _, value in tokens)
+    if not re.fullmatch(r"\.?[A-Za-z_][A-Za-z0-9_]*(?:\.[A-Za-z_][A-Za-z0-9_]*)*", name):
+        raise ValueError("Invalid protobuf qualified name")
+    expected = [("symbol", ".")] if name.startswith(".") else []
+    for part in name.lstrip(".").split("."):
+        if expected and expected[-1] != ("symbol", "."):
+            expected.append(("symbol", "."))
+        expected.append(("word", part))
+    if tokens != expected:
+        raise ValueError("Invalid protobuf name tokens")
+    return name
+
+
+def _proto_option(header: list[tuple[str, str]]) -> tuple[str, list[tuple[str, str]]]:
+    if header[0] != ("word", "option"):
+        raise ValueError("Expected protobuf option")
+    if len(header) > 1 and header[1] == ("symbol", "("):
+        end = _proto_group_end(header, 1)
+        name = _proto_name(header[2:end])
+        remainder = header[end + 1:]
+    else:
+        name = _proto_name(header[1:2])
+        remainder = header[2:]
+    if not remainder or remainder[0] != ("symbol", "="):
+        raise ValueError("Malformed protobuf option")
+    return name, remainder[1:]
+
+
+def _proto_string(tokens: list[tuple[str, str]]) -> str:
+    if not tokens or any(kind != "string" for kind, _ in tokens):
+        raise ValueError("Expected protobuf string value")
+    return "".join(value for _, value in tokens)
+
+
+def _http_bindings(tokens: list[tuple[str, str]], allow_additional: bool = True) -> list[dict[str, str]]:
+    """Extract only simple google.api.http bindings; unsupported rules fail closed."""
+    verbs = {"get", "post", "patch", "put", "delete"}
+    fields = {}
+    additional = []
+    offset = 0
+    while offset < len(tokens):
+        if tokens[offset] in {("symbol", ","), ("symbol", ";")}:
+            offset += 1
+            continue
+        kind, field = tokens[offset]
+        if kind != "word":
+            raise ValueError("Malformed HTTP annotation field")
+        offset += 1
+        colon = offset < len(tokens) and tokens[offset] == ("symbol", ":")
+        if colon:
+            offset += 1
+        if field == "additional_bindings":
+            if not allow_additional or offset >= len(tokens) or tokens[offset] != ("symbol", "{"):
+                raise ValueError("Unsupported nested HTTP binding")
+            end = _proto_group_end(tokens, offset)
+            additional.extend(_http_bindings(tokens[offset + 1:end], False))
+            offset = end + 1
+            continue
+        if field not in verbs | {"body", "response_body"} or field in fields or not colon:
+            raise ValueError("Unsupported or duplicate HTTP annotation field")
+        start = offset
+        while offset < len(tokens) and tokens[offset][0] == "string":
+            offset += 1
+        fields[field] = _proto_string(tokens[start:offset])
+    methods = verbs.intersection(fields)
+    if len(methods) != 1:
+        raise ValueError("HTTP binding must contain one simple method")
+    method = methods.pop()
+    path = fields.pop(method)
+    if not re.fullmatch(r"/(?:[^{}\s?#]|\{[^{}\s?#]+\})*", path):
+        raise ValueError("Invalid HTTP annotation path template")
+    result = [{"method": method.upper(), "path": path, **fields}, *additional]
+    if len({(item["method"], item["path"]) for item in result}) != len(result):
+        raise ValueError("Duplicate HTTP binding")
+    return result
+
+
+def _proto_service(body: list[tuple[str, str]]) -> dict[str, Any]:
+    result: dict[str, Any] = {"methods": []}
+    for header, inner in _proto_items(body):
+        if header[0] == ("word", "option"):
+            name, value = _proto_option(header)
+            if name in {"google.api.default_host", "google.api.oauth_scopes"}:
+                if inner is not None or name in result:
+                    raise ValueError("Duplicate or malformed service annotation")
+                result[name] = _proto_string(value)
+            continue
+        if header[0] != ("word", "rpc") or inner is None or len(header) < 9 or header[1][0] != "word" or header[2] != ("symbol", "("):
+            raise ValueError("Unsupported protobuf service member")
+        request_end = _proto_group_end(header, 2)
+        tail = header[request_end + 1:]
+        if len(tail) < 4 or tail[:2] != [("word", "returns"), ("symbol", "(")] or _proto_group_end(tail, 1) != len(tail) - 1:
+            raise ValueError("Unsupported protobuf RPC signature")
+        method = {"rpc": header[1][1], "request": _proto_name(header[3:request_end]),
+                  "response": _proto_name(tail[2:-1])}
+        for option, annotation in _proto_items(inner):
+            name, value = _proto_option(option)
+            if name == "google.api.http":
+                if value or annotation is None or "http_bindings" in method:
+                    raise ValueError("Duplicate or malformed HTTP annotation")
+                method["http_bindings"] = _http_bindings(annotation)
+        if "http_bindings" not in method:
+            raise ValueError("RPC lacks a supported HTTP annotation")
+        result["methods"].append(method)
+    if not result["methods"] or len({item["rpc"] for item in result["methods"]}) != len(result["methods"]):
+        raise ValueError("Missing or duplicate RPC identity")
+    bindings = [(item["method"], item["path"]) for method in result["methods"] for item in method["http_bindings"]]
+    if len(set(bindings)) != len(bindings):
+        raise ValueError("RPC HTTP binding collision")
+    return result
+
+
+def _proto_document(text: str) -> dict[str, Any]:
+    result: dict[str, Any] = {"messages": [], "services": {}}
+    for header, body in _proto_items(_proto_tokens(text)):
+        if header[0] in {("word", "syntax"), ("word", "package")}:
+            key = header[0][1]
+            if key in result or body is not None:
+                raise ValueError("Duplicate protobuf document identity")
+            if key == "syntax":
+                if header[1:] != [("symbol", "="), ("string", "proto3")]:
+                    raise ValueError("Supplemental contracts must use proto3")
+                result[key] = "proto3"
+            else:
+                result[key] = _proto_name(header[1:])
+        elif header[0] in {("word", "message"), ("word", "service")}:
+            if len(header) != 2 or header[1][0] != "word" or body is None:
+                raise ValueError("Malformed protobuf definition")
+            name = header[1][1]
+            if header[0][1] == "message":
+                if name in result["messages"]:
+                    raise ValueError("Duplicate protobuf message")
+                result["messages"].append(name)
+            else:
+                if name in result["services"]:
+                    raise ValueError("Duplicate protobuf service")
+                result["services"][name] = _proto_service(body)
+    if "syntax" not in result or "package" not in result:
+        raise ValueError("Supplemental protobuf document lacks identity")
+    return result
+
+
+def supplemental_candidates(source: dict[str, Any], cache: Path) -> list[dict[str, Any]]:
+    """Account for pinned proto evidence while leaving Discovery and executors unverified."""
+    sources = source.get("alternative_contract_sources", [])
+    if not sources:
+        return []
+    if source["provider"] != "gcp-cloudquotas":
+        raise ValueError("Unsupported supplemental provider contract")
+    messages, services, contracts = {}, {}, []
+    for item in sources:
+        filename = item.get("cache_file", "")
+        if item.get("format") != "protobuf" or not isinstance(filename, str) or not filename.startswith(source["provider"] + "-"):
+            raise ValueError("Unsupported supplemental contract cache file")
+        if filename in {contract["cache_file"] for contract in contracts}:
+            raise ValueError("Duplicate supplemental contract cache file")
+        document = _proto_document(read_cached_contract(item, cache, filename, "protobuf").decode("utf-8"))
+        contracts.append({key: item[key] for key in ["format", "source", "sha256", "bytes", "cache_file"]})
+        for message in document["messages"]:
+            qualified = document["package"] + "." + message
+            if qualified in messages:
+                raise ValueError("Duplicate supplemental message identity")
+            messages[qualified] = filename
+        for name, service in document["services"].items():
+            qualified = document["package"] + "." + name
+            if qualified in services:
+                raise ValueError("Duplicate supplemental service identity")
+            services[qualified] = {**service, "package": document["package"], "source": item}
+    expected = source.get("alternative_contract_service")
+    if expected != "google.api.cloudquotas.v1.CloudQuotas" or set(services) != {expected}:
+        raise ValueError("Supplemental service identity mismatch")
+    service = services[expected]
+    if service.get("google.api.default_host") != "cloudquotas.googleapis.com" or not service.get("google.api.oauth_scopes"):
+        raise ValueError("Supplemental service host or OAuth scopes are missing")
+    methods = service["methods"]
+    advertised = source.get("alternative_contract_methods")
+    observed = [{"rpc": item["rpc"], "http_bindings": [{key: binding[key] for key in ["method", "path"]}
+                 for binding in item["http_bindings"]]} for item in methods]
+    if advertised is not None and advertised != observed:
+        raise ValueError("Advertised supplemental HTTP methods do not match pinned source")
+    result = []
+    for method in methods:
+        references = {}
+        for key in ["request", "response"]:
+            name = method[key].lstrip(".")
+            if "." not in name:
+                name = service["package"] + "." + name
+            if name not in messages:
+                raise ValueError("RPC message is absent from pinned supplemental sources: " + name)
+            references[key] = {"protobuf_message": name, "cache_file": messages[name]}
+        primary = method["http_bindings"][0]
+        result.append({"candidate_id": "gcp.cloudquotas." + method["rpc"], "provider": "gcp",
+                       "provider_operation_id": expected + "." + method["rpc"], "resource": "cloudquotas",
+                       "method": method["rpc"], "http_method": primary["method"], "path_template": primary["path"],
+                       "provider_contract": {"format": "http_annotated_protobuf", "service": expected,
+                                             "default_host": service["google.api.default_host"],
+                                             "scopes": [value.strip() for value in service["google.api.oauth_scopes"].split(",")],
+                                             "http_bindings": method["http_bindings"], **references,
+                                             "source_contracts": contracts},
+                       "source_sha256": service["source"]["sha256"], "source_kind": "supplemental_protobuf",
+                       "discovery_observed": False, "requirement_ids": classify("gcp", "cloudquotas", method["rpc"]),
+                       "executable": False, "registration_eligible": False,
+                       "missing": ["reviewed_sandy_contract", "installed_executor", "scoped_policy", "live_attestation"]})
+    return result
 
 
 def scope_rows(text: str) -> list[dict[str, Any]]:
@@ -230,14 +531,11 @@ def main():
     for source in manifest:
         if source["state"] != "downloaded":
             unavailable.append(source)
-            continue
-        path = args.schemas / (source["provider"] + ".json")
-        raw = path.read_bytes()
-        digest = hashlib.sha256(raw).hexdigest()
-        if digest != source["sha256"]:
-            raise ValueError("Schema checksum mismatch: " + path.name)
-        provider = "gcp" if source["provider"].startswith("gcp-") else source["provider"]
-        operations.extend(candidates(provider, json.loads(raw), digest))
+        else:
+            raw = read_cached_contract(source, args.schemas, source["provider"] + ".json")
+            provider = "gcp" if source["provider"].startswith("gcp-") else source["provider"]
+            operations.extend(candidates(provider, json.loads(raw), source["sha256"]))
+        operations.extend(supplemental_candidates(source, args.schemas))
     if args.registry_report:
         raw = args.registry_report.read_bytes()
         operations.extend(runtime_candidates(json.loads(raw), hashlib.sha256(raw).hexdigest()))

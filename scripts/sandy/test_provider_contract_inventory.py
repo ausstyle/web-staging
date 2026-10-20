@@ -1,5 +1,60 @@
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
-from provider_contract_inventory import candidates, classify, reconcile, scope_rows, runtime_candidates
+from provider_contract_inventory import candidates, classify, reconcile, scope_rows, runtime_candidates, supplemental_candidates
+
+
+QUOTA_SERVICE = '''syntax = "proto3";
+package google.api.cloudquotas.v1;
+// rpc Commented(Request) returns (Response) { option (google.api.http) = { get: "/fake" }; }
+/* Misleading braces } { and a quoted "//" must be ignored. */
+service CloudQuotas {
+  option (google.api.default_host) = "cloudquotas.googleapis.com";
+  option (google.api.oauth_scopes) = "https://www.googleapis.com/auth/cloud-platform";
+  rpc ListQuotaInfos(ListQuotaInfosRequest) returns (ListQuotaInfosResponse) {
+    option (google.api.http) = {
+      get: "/v1/{parent=projects/*/locations/*/services/*}/quotaInfos"
+      additional_bindings { get: "/v1/{parent=folders/*/locations/*/services/*}/quotaInfos" }
+    };
+  }
+  rpc UpdateQuotaPreference(UpdateQuotaPreferenceRequest) returns (QuotaPreference) {
+    option (google.api.http) = {
+      patch: "/v1/{quota_preference.name=projects/*/locations/*/quotaPreferences/*}"
+      body: "quota_preference"
+      additional_bindings {
+        patch: "/v1/{quota_preference.name=organizations/*/locations/*/quotaPreferences/*}"
+        body: "quota_preference"
+      }
+    };
+    option (google.api.method_signature) = "quota_preference,update_mask";
+  }
+}
+message ListQuotaInfosRequest { string parent = 1; }
+message ListQuotaInfosResponse { repeated QuotaInfo quota_infos = 1; }
+message UpdateQuotaPreferenceRequest { QuotaPreference quota_preference = 1; }
+'''
+QUOTA_RESOURCES = '''syntax = "proto3";
+package google.api.cloudquotas.v1;
+message QuotaInfo { string name = 1; }
+message QuotaPreference { string name = 1; }
+'''
+
+
+def quota_fixture(root, service=QUOTA_SERVICE, resources=QUOTA_RESOURCES):
+    sources = []
+    for name, content in [("cloudquotas", service), ("resources", resources)]:
+        raw = content.encode()
+        filename = "gcp-cloudquotas-v1-" + name + ".proto"
+        (root / filename).write_bytes(raw)
+        sources.append({"format": "protobuf", "cache_file": filename, "bytes": len(raw),
+                        "sha256": hashlib.sha256(raw).hexdigest(),
+                        "source": "https://raw.githubusercontent.com/googleapis/googleapis/" + "a" * 40 + "/google/api/cloudquotas/v1/" + name + ".proto"})
+    return {"provider": "gcp-cloudquotas", "state": "unavailable", "alternative_contract_sources": sources,
+            "alternative_contract_service": "google.api.cloudquotas.v1.CloudQuotas"}
 
 
 class ProviderContractInventoryTests(unittest.TestCase):
@@ -62,6 +117,89 @@ class ProviderContractInventoryTests(unittest.TestCase):
         report["observations"]["operation_registry"]["complete"] = False
         with self.assertRaises(ValueError):
             runtime_candidates(report, "checksum")
+
+    def test_pinned_proto_http_bindings_and_message_provenance_are_review_candidates_only(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = quota_fixture(root)
+            result = supplemental_candidates(source, root)
+        self.assertEqual([row["method"] for row in result], ["ListQuotaInfos", "UpdateQuotaPreference"])
+        self.assertEqual(result[0]["candidate_id"], "gcp.cloudquotas.ListQuotaInfos")
+        self.assertEqual(result[0]["provider_contract"]["scopes"], ["https://www.googleapis.com/auth/cloud-platform"])
+        self.assertEqual(result[1]["provider_contract"]["http_bindings"][1], {
+            "method": "PATCH", "path": "/v1/{quota_preference.name=organizations/*/locations/*/quotaPreferences/*}", "body": "quota_preference"})
+        self.assertEqual(result[1]["provider_contract"]["response"], {
+            "protobuf_message": "google.api.cloudquotas.v1.QuotaPreference", "cache_file": "gcp-cloudquotas-v1-resources.proto"})
+        for row in result:
+            self.assertEqual(row["requirement_ids"], [16])
+            self.assertEqual(row["source_kind"], "supplemental_protobuf")
+            self.assertEqual(row["provider_contract"]["source_contracts"], source["alternative_contract_sources"])
+            self.assertFalse(row["discovery_observed"])
+            self.assertFalse(row["executable"])
+            self.assertFalse(row["registration_eligible"])
+
+    def test_advertised_proto_methods_and_paths_are_validated_against_source_content(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = quota_fixture(root)
+            actual = supplemental_candidates(source, root)
+            source["alternative_contract_methods"] = [
+                {"rpc": row["method"], "http_bindings": [{key: binding[key] for key in ["method", "path"]}
+                 for binding in row["provider_contract"]["http_bindings"]]} for row in actual]
+            self.assertEqual(len(supplemental_candidates(source, root)), 2)
+            source["alternative_contract_methods"][0]["http_bindings"][0]["path"] = "/invented"
+            with self.assertRaisesRegex(ValueError, "do not match pinned source"):
+                supplemental_candidates(source, root)
+
+    def test_every_supplemental_file_is_verified_before_inventory_uses_it(self):
+        for corruption in ["service", "resources", "bytes"]:
+            with self.subTest(corruption=corruption), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = quota_fixture(root)
+                if corruption == "bytes":
+                    source["alternative_contract_sources"][1]["bytes"] += 1
+                else:
+                    index = 0 if corruption == "service" else 1
+                    path = root / source["alternative_contract_sources"][index]["cache_file"]
+                    path.write_bytes(path.read_bytes() + b'// changed\n')
+                with self.assertRaisesRegex(ValueError, "mismatch"):
+                    supplemental_candidates(source, root)
+
+    def test_unsupported_or_ambiguous_proto_contracts_fail_closed(self):
+        variants = [
+            QUOTA_SERVICE.replace('get: "/v1/{parent=projects/*/locations/*/services/*}/quotaInfos"', 'custom { kind: "GET" path: "/custom" }'),
+            QUOTA_SERVICE.replace('folders/*/locations/*/services/*', 'projects/*/locations/*/services/*'),
+            QUOTA_SERVICE.replace('rpc UpdateQuotaPreference(', 'rpc ListQuotaInfos('),
+            QUOTA_SERVICE.replace('cloudquotas.googleapis.com', 'wrong.googleapis.com'),
+            QUOTA_SERVICE.replace('message ListQuotaInfosRequest', 'message MissingRequest'),
+            QUOTA_SERVICE + '/* unfinished comment',
+            QUOTA_SERVICE + 'message Unbalanced {',
+            QUOTA_SERVICE.replace('syntax = "proto3";', '// syntax = "proto3";'),
+        ]
+        for service in variants:
+            with self.subTest(service=service[-80:]), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                source = quota_fixture(root, service)
+                with self.assertRaises(ValueError):
+                    supplemental_candidates(source, root)
+
+    def test_report_accounts_for_proto_even_when_discovery_remains_unavailable(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = quota_fixture(root)
+            (root / "manifest.json").write_text(json.dumps([source]))
+            scope = root / "scope.md"
+            scope.write_text("\n".join(f"{number}. requirement {number}" for number in range(1, 162)))
+            report = root / "report.json"
+            subprocess.run([sys.executable, str(Path(__file__).with_name("provider_contract_inventory.py")),
+                            "--schemas", str(root), "--scope", str(scope), "--output", str(report)],
+                           check=True, capture_output=True, text=True)
+            result = json.loads(report.read_text())
+        self.assertEqual(result["candidate_count"], 2)
+        self.assertEqual(result["unavailable_sources"], [source])
+        self.assertEqual(len(result["requirements"][15]["provider_candidate_ids"]), 2)
+        self.assertFalse(result["runtime_registration_performed"])
+        self.assertEqual(result["completed_requirements"], 0)
 
 
 if __name__ == "__main__":

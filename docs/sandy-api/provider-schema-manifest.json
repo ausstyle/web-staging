@@ -20,7 +20,139 @@
     "error": "HTTPError",
     "http_status": 404,
     "authoritative_source": "https://cloudquotas.googleapis.com/$discovery/rest?version=v1",
-    "authoritative_source_failure": "network_proxy_denied"
+    "authoritative_source_failure": "network_proxy_denied",
+    "alternative_contract_status": "http_annotated_protobuf_available_discovery_unavailable",
+    "alternative_contract_sources": [
+      {
+        "format": "protobuf",
+        "source": "https://raw.githubusercontent.com/googleapis/googleapis/ba591f1d7fdedc610639425448756cd8a64adc0f/google/api/cloudquotas/v1/cloudquotas.proto",
+        "sha256": "4c7d8a51f37b1f6687136938a972c5cfd27d0cc1e7bc64033de60fe0a1e334a9",
+        "bytes": 12614,
+        "cache_file": "gcp-cloudquotas-v1-cloudquotas.proto"
+      },
+      {
+        "format": "protobuf",
+        "source": "https://raw.githubusercontent.com/googleapis/googleapis/ba591f1d7fdedc610639425448756cd8a64adc0f/google/api/cloudquotas/v1/resources.proto",
+        "sha256": "d82b88db0e7967c4646a986b5e1e56aea5f6cc876a90b3608901bc026da0ae7f",
+        "bytes": 12695,
+        "cache_file": "gcp-cloudquotas-v1-resources.proto"
+      }
+    ],
+    "alternative_contract_methods": [
+      {
+        "rpc": "ListQuotaInfos",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{parent=projects/*/locations/*/services/*}/quotaInfos"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=organizations/*/locations/*/services/*}/quotaInfos"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=folders/*/locations/*/services/*}/quotaInfos"
+          }
+        ]
+      },
+      {
+        "rpc": "GetQuotaInfo",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{name=projects/*/locations/*/services/*/quotaInfos/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=organizations/*/locations/*/services/*/quotaInfos/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=folders/*/locations/*/services/*/quotaInfos/*}"
+          }
+        ]
+      },
+      {
+        "rpc": "ListQuotaPreferences",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{parent=projects/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=folders/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=organizations/*/locations/*}/quotaPreferences"
+          }
+        ]
+      },
+      {
+        "rpc": "GetQuotaPreference",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{name=projects/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=organizations/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=folders/*/locations/*/quotaPreferences/*}"
+          }
+        ]
+      },
+      {
+        "rpc": "CreateQuotaPreference",
+        "http_bindings": [
+          {
+            "method": "POST",
+            "path": "/v1/{parent=projects/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "POST",
+            "path": "/v1/{parent=folders/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "POST",
+            "path": "/v1/{parent=organizations/*/locations/*}/quotaPreferences"
+          }
+        ]
+      },
+      {
+        "rpc": "UpdateQuotaPreference",
+        "http_bindings": [
+          {
+            "method": "PATCH",
+            "path": "/v1/{quota_preference.name=projects/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "PATCH",
+            "path": "/v1/{quota_preference.name=folders/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "PATCH",
+            "path": "/v1/{quota_preference.name=organizations/*/locations/*/quotaPreferences/*}"
+          }
+        ]
+      }
+    ],
+    "alternative_contract_service": "google.api.cloudquotas.v1.CloudQuotas",
+    "alternative_contract_runtime_executable": false,
+    "authoritative_source_check": {
+      "checked_at": "2026-10-20T17:24:53.476657+00:00",
+      "result": "network_proxy_denied",
+      "proxy_connect_status": 403,
+      "provider_http_status": null,
+      "authenticated": false
+    },
+    "discovery_index_source": "https://raw.githubusercontent.com/googleapis/discovery-artifact-manager/2598333f74a86f57dde516cc8c681548c61f4d06/discoveries/index.json",
+    "discovery_index_contains_service": false
   },
   {
     "provider": "gcp-iam",
