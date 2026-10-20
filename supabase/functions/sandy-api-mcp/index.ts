@@ -38,9 +38,9 @@ Deno.serve(async (req) => {
       if (a.status !== 200) return Response.json(error(id, -32000, "Sandy API discovery unavailable"));
       const entries = Array.isArray(a.result.operations) ? a.result.operations : [];
       // Only API-advertised, nonmutating, explicitly implemented operations appear in v1.
-      const implemented = new Set(["engineering.preflight", "deployment.management.preflight"]);
-      const tools = entries.filter((x: any) => x.ai_exposed && !x.is_mutation && implemented.has(x.operation))
-        .map((x: any) => ({ name: x.operation, description: `Sandy API operation: ${x.operation}`, inputSchema: { type: "object", properties: {}, additionalProperties: false } }));
+      const implemented = new Set(["engineering.preflight","deployment.management.release"]);
+      const tools = entries.filter((x: any) => x.ai_exposed && implemented.has(x.operation))
+        .map((x: any) => ({ name: x.operation, description: `Sandy API operation: ${x.operation}`, inputSchema: x.operation==="deployment.management.release" ? {type:"object",properties:{function_slug:{type:"string",enum:["sandy-operation-api","sandy-api-mcp"]},source_ref:{type:"string",const:"main"},change_id:{type:"string"}},required:["function_slug","source_ref","change_id"],additionalProperties:false} : { type: "object", properties: {}, additionalProperties: false } }));
       return Response.json(rpc(id, { tools }));
     }
     if (msg.method === "tools/call") {
