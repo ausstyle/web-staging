@@ -318,9 +318,25 @@ async function refreshCalendarConnectOptions(){
   feedback.textContent="Cannot check existing connections: "+error.message+". No new authorisation will start until this check succeeds.";
  }
 }
+async function importGoogleCalendarNow(){
+ const feedback=document.getElementById("calendarConnectFeedback");
+ const button=document.getElementById("importGoogleCalendarNow");button.disabled=true;
+ feedback.textContent="Importing events from your existing Google Calendar connection…";
+ try{
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session)throw Error("Sign in to Sandy first");
+  const r=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-google-calendar-import",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":calendarGatewayKey,"content-type":"application/json"},body:"{}"});
+  const result=await r.json();if(!r.ok||!result.ok)throw Error(result.error+(result.detail?": "+result.detail:""));
+  feedback.textContent="Google import complete: "+result.imported+" new, "+result.updated+" updated, "+result.skipped+" unchanged. Two-way sync is not enabled.";
+  await load({force:true});
+ }catch(e){feedback.textContent="Google import failed: "+e.message}
+ finally{button.disabled=false}
+}
 const openCalendarConnect=()=>{calendarConnectDialog.showModal();void refreshCalendarConnectOptions()};
 document.getElementById("connectCalendarTop").onclick=openCalendarConnect;
 document.getElementById("closeCalendarDialog").onclick=()=>calendarConnectDialog.close();
+const importButton=document.createElement("button");importButton.type="button";importButton.className="btn";importButton.id="importGoogleCalendarNow";importButton.textContent="↻ Import existing Google events";importButton.style.marginTop="10px";importButton.onclick=importGoogleCalendarNow;
+document.getElementById("calendarConnectChoices").after(importButton);
 document.querySelectorAll("[data-calendar-connect]").forEach(button=>button.onclick=async()=>{
  const provider=button.dataset.calendarConnect,feedback=document.getElementById("calendarConnectFeedback");
  if(provider==="icloud"||provider==="ics"){feedback.textContent=provider==="icloud"?"iCloud CalDAV authentication is not available yet. Do not enter your Apple credentials here.":"ICS subscriptions are not yet supported by the sync engine.";return}
