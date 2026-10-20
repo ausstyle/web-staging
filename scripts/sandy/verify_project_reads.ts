@@ -45,10 +45,77 @@ for (
     operation === "supabase.branches.list" && body.ok && body.result?.length
   ) branchName = body.result[0].name;
   const negativeBranch = operation === "supabase.branches.get" && !branchName;
-  const passed = negativeBranch
+  let passed = negativeBranch
     ? response.status === 404 && body.upstream_status === 404
     : response.status === 200 && body.ok === true &&
-      body.project_id === "zmqlyygzqoidkcwdysok";
+      body.project_id === "zmqlyygzqoidkcwdysok" &&
+      body.contract_version === "1.0.0" &&
+      Number.isFinite(Date.parse(body.observed_at));
+  const result = body.result;
+  let oracle = negativeBranch
+    ? "missing branch is a real provider 404, never empty success"
+    : "typed project-scoped provider response";
+  if (passed && !negativeBranch) {
+    if (operation === "supabase.db.migrations.list") {
+      oracle = "all four applied release migration versions are visible";
+      passed = Array.isArray(result) &&
+        ["20261020183000", "20261020190000", "20261020193000", "20261020200000"]
+          .every((version) => result.some((row) => row.version === version));
+    } else if (operation === "supabase.schema.tables.list") {
+      oracle = "public operation registry exists in the live table catalogue";
+      passed = Array.isArray(result) &&
+        result.some((row) =>
+          row.table_schema === "public" &&
+          row.table_name === "sandy_operation_registry"
+        );
+    } else if (operation === "supabase.schema.functions.list") {
+      oracle =
+        "deployed cancellation routine is present in live routine signatures";
+      passed = Array.isArray(result) &&
+        result.some((row) => row.name === "sandy_api_cancel_deployment_job");
+    } else if (operation === "supabase.schema.indexes.list") {
+      oracle =
+        "registry primary-key index is visible without expression bodies";
+      passed = Array.isArray(result) && result.some((row) =>
+        row.indexname === "sandy_operation_registry_pkey"
+      ) && result.every((row) =>
+        !("indexdef" in row)
+      );
+    } else if (operation === "supabase.database.inspect") {
+      passed = Array.isArray(result) &&
+        result.some((row) => row.schema_name === "public");
+    } else if (operation === "supabase.database.connections.list") {
+      passed = Array.isArray(result) && result.length > 0 &&
+        result.every((row) =>
+          Number.isInteger(row.count) && row.count >= 0 && !("query" in row)
+        );
+    } else if (operation === "supabase.projects.get") {
+      passed = result?.id === "zmqlyygzqoidkcwdysok";
+    } else if (operation === "supabase.project.health") {
+      oracle = "all five requested services have observed health states";
+      passed = Array.isArray(result) &&
+        ["auth", "db", "rest", "storage", "realtime"].every((name) =>
+          result.some((row) =>
+            row.name === name &&
+            ["COMING_UP", "ACTIVE_HEALTHY", "UNHEALTHY"].includes(row.status)
+          )
+        );
+    } else if (operation === "supabase.functions.secrets.list") {
+      oracle =
+        "deployed management binding name is present and no secret values escape";
+      passed = Array.isArray(result) && result.some((row) =>
+        row.name === "SANDY_SUPABASE_MANAGEMENT_TOKEN"
+      ) && result.every((row) =>
+        Object.keys(row).every((key) => ["name", "updated_at"].includes(key))
+      );
+    } else if (operation === "supabase.branches.list") {
+      passed = Array.isArray(result);
+    } else if (operation === "supabase.network.restrictions.get") {
+      passed = result && ["applied", "stored"].includes(result.status);
+    } else if (operation === "supabase.backups.list") {
+      passed = result && Array.isArray(result.backups);
+    }
+  }
   tests.push({
     operation,
     passed,
@@ -57,6 +124,7 @@ for (
     upstream_status: body.upstream_status ?? null,
     scenario: negativeBranch ? "missing_branch_negative_test" : "provider_read",
     error: body.error ?? null,
+    oracle,
   });
 }
 const report = {
