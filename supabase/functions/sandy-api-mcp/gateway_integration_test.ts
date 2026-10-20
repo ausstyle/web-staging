@@ -171,7 +171,9 @@ Deno.test("composed discovery carries registry schemas through API and MCP witho
   });
   const response = await h.request("tools/list");
   assert.equal(response.status, 200);
-  const tools = (await response.json()).result.tools;
+  const first = (await response.json()).result;
+  const tools = first.tools;
+  assert.match(first._meta.sandy_catalogue_version, /^[a-f0-9]{64}$/);
   assert.equal(tools.length, 2);
   assert.deepEqual(tools[0].inputSchema, registered.input_schema);
   assert.deepEqual(tools[0].outputSchema, registered.output_schema);
@@ -181,8 +183,12 @@ Deno.test("composed discovery carries registry schemas through API and MCP witho
   assert.equal(apiRows[0].verified, false);
   registered.input_schema.title =
     "Revised registry schema, same running adapter";
-  const revisedTools =
-    (await (await h.request("tools/list")).json()).result.tools;
+  const revised = (await (await h.request("tools/list")).json()).result;
+  const revisedTools = revised.tools;
+  assert.notEqual(
+    revised._meta.sandy_catalogue_version,
+    first._meta.sandy_catalogue_version,
+  );
   assert.equal(
     revisedTools[0].inputSchema.title,
     registered.input_schema.title,

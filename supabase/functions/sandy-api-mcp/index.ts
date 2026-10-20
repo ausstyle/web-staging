@@ -166,13 +166,19 @@ export function createHandler(api: InvokeApi) {
           return json(rpc(id, {
             protocolVersion: "2025-03-26",
             capabilities: { tools: {} },
-            serverInfo: { name: "sandy-api-mcp", version: "0.2.0" },
+            serverInfo: { name: "sandy-api-mcp", version: "0.3.0" },
           }));
         }
         if (!Array.isArray(a.result.operations)) {
           return json(rpcError(id, -32000, "Invalid Sandy API catalogue"), 502);
         }
-        return json(rpc(id, { tools: discoveryTools(a.result) }));
+        return json(rpc(id, {
+          tools: discoveryTools(a.result),
+          ...(typeof a.result.catalogue_version === "string" &&
+              /^[a-f0-9]{64}$/.test(a.result.catalogue_version)
+            ? { _meta: { sandy_catalogue_version: a.result.catalogue_version } }
+            : {}),
+        }));
       }
       if (msg.method === "tools/call") {
         if (
