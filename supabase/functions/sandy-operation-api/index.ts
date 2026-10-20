@@ -4,6 +4,7 @@ import {
 } from "npm:@supabase/supabase-js@2.57.0";
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
+import { requestReadJobRetry } from "./retry_read_job.ts";
 
 /**
  * Sandy API owns discovery, permissions and dispatch. Registry metadata alone
@@ -48,6 +49,18 @@ const providerReadOperations = [
   "supabase.schema.functions.list",
   "supabase.schema.indexes.list",
   "supabase.database.connections.list",
+  "supabase.schema.views.list",
+  "supabase.schema.materialized_views.list",
+  "supabase.schema.triggers.list",
+  "supabase.schema.constraints.list",
+  "supabase.schema.types.list",
+  "supabase.schema.extensions.list",
+  "supabase.database.roles.list",
+  "supabase.database.grants.list",
+  "supabase.database.default_privileges.list",
+  "supabase.database.rls.policies.list",
+  "supabase.database.locks.list",
+  "supabase.database.cron.jobs.list",
   "supabase.projects.get",
   "supabase.project.health",
   "supabase.branches.list",
@@ -71,15 +84,30 @@ const isCustomerRead = (operation: string) =>
   customerReadOperations.includes(
     operation as typeof customerReadOperations[number],
   );
+const videoReadActions: Readonly<Record<string, string>> = Object.freeze({
+  "video.status": "video_status",
+  "video.install.preflight": "video_install_preflight",
+  "video.execution.preflight": "video_execution_preflight",
+});
 // This is an installed executor map, not a second schema or discovery catalogue.
 // Existing registry contracts and exposure flags remain authoritative.
 const allowedHandlers: Readonly<
   Record<string, { functionName: string; action?: string }>
 > = Object.freeze({
+  "deployment.jobs.retry": {
+    functionName: "sandy-operation-api",
+    action: "retry_read_job",
+  },
   "deployment.jobs.cancel": {
     functionName: "sandy-operation-api",
     action: "cancel_pending_job",
   },
+  ...Object.fromEntries(
+    Object.entries(videoReadActions).map(([operation, action]) => [operation, {
+      functionName: "sandy-deploy-provision",
+      action,
+    }]),
+  ),
   ...Object.fromEntries(customerReadOperations.map((operation) => [operation, {
     functionName: "sandy-operations-api",
   }])),
@@ -138,6 +166,7 @@ function enabledEntry(
       entry.handler === allowedHandlers[entry.operation].functionName) &&
     entry.api_exposed === true &&
     (entry.ai_exposed === true ||
+      Object.hasOwn(videoReadActions, entry.operation) ||
       infrastructureOperations.includes(
         entry.operation as typeof infrastructureOperations[number],
       ) ||
@@ -145,9 +174,41 @@ function enabledEntry(
         entry.operation as typeof providerReadOperations[number],
       ));
 }
+// Discovery must not advertise a malformed read contract that dispatch refuses.
+function discoverableContract(entry: Record<string, unknown>): boolean {
+  const operation = String(entry.operation);
+  if (Object.hasOwn(videoReadActions, operation)) {
+    return entry.handler === "sandy-deploy-provision" &&
+      entry.is_mutation === false &&
+      entry.permission_scope === "infrastructure:read";
+  }
+  if (isCustomerRead(operation)) {
+    return entry.is_mutation === false &&
+      entry.permission_scope === `${operation.split(".")[0]}:read`;
+  }
+  if (
+    infrastructureOperations.includes(
+      operation as typeof infrastructureOperations[number],
+    ) ||
+    providerReadOperations.includes(
+      operation as typeof providerReadOperations[number],
+    )
+  ) {
+    const family = operation.split(".")[0];
+    const expectedScope =
+      ["deployment", "engineering", "system"].includes(family)
+        ? `${family}:read`
+        : "infrastructure:read";
+    return entry.is_mutation === false &&
+      entry.permission_scope === expectedScope;
+  }
+  return true;
+}
 function ownerOnly(operation: string) {
   return operation === "deployment.management.release" ||
     operation === "deployment.jobs.cancel" ||
+    operation === "deployment.jobs.retry" ||
+    Object.hasOwn(videoReadActions, operation) ||
     infrastructureOperations.includes(
       operation as typeof infrastructureOperations[number],
     ) ||
@@ -228,6 +289,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     const cancelPath = path.match(
       /^\/v1\/jobs\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}):cancel$/i,
     );
+    const retryPath = path.match(
+      /^\/v1\/jobs\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}):retry$/i,
+    );
     if (request.method === "GET") {
       if (path === "/v1/capabilities") routedBody = { action: "list" };
       else if (describePath) {
@@ -250,7 +314,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       } else return reply(405, { error: "method_not_allowed" });
     } else if (request.method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
-    } else if (path !== "" && path !== "/" && !executePath && !cancelPath) {
+    } else if (
+      path !== "" && path !== "/" && !executePath && !cancelPath && !retryPath
+    ) {
       return reply(404, { error: "route_not_found" });
     }
     if (!base || !service) {
@@ -282,12 +348,14 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (
         executePath && Object.keys(value).some((key) => key !== "arguments")
       ) throw Error();
-      if (cancelPath) {
+      if (cancelPath || retryPath) {
         if (Object.keys(value).length) throw Error();
         body = {
           action: "execute",
-          operation: "deployment.jobs.cancel",
-          arguments: { job_id: cancelPath[1] },
+          operation: cancelPath
+            ? "deployment.jobs.cancel"
+            : "deployment.jobs.retry",
+          arguments: { job_id: (cancelPath ?? retryPath)![1] },
         };
       }
     } catch {
@@ -325,6 +393,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (error) return reply(503, { error: "operation_registry_unavailable" });
       const entries: unknown[] = data ?? [];
       const operations = entries.filter(enabledEntry)
+        .filter(discoverableContract)
         .filter((entry) =>
           isCustomerRead(entry.operation) ? tenantAccess : !!admin
         )
@@ -385,6 +454,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       return reply(403, { error: "owner_required", executed: false });
     }
     if (body.action === "describe") {
+      if (!discoverableContract(entry)) {
+        return reply(503, {
+          error: "executor_contract_conflict",
+          executed: false,
+        });
+      }
       return reply(200, {
         ok: true,
         operation: { ...entry, executable: true },
@@ -409,6 +484,41 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
+    if (operation === "deployment.jobs.retry") {
+      if (entry.verified !== true) {
+        return reply(424, {
+          error: "operation_requires_live_verification",
+          executed: false,
+        });
+      }
+      if (
+        entry.handler !== "sandy-operation-api" || entry.is_mutation !== true ||
+        entry.permission_scope !== "deployment:write"
+      ) {
+        return reply(503, {
+          error: "retry_executor_contract_conflict",
+          executed: false,
+        });
+      }
+      const admission = await requestReadJobRetry(
+        db,
+        user.id,
+        body.arguments ?? {},
+      );
+      const receipt: Record<string, unknown> = { ...admission.body, operation };
+      if (
+        receipt.ok === true &&
+        schemaValid(entry.output_schema, receipt) !== true
+      ) {
+        return reply(502, {
+          error: "retry_result_invalid",
+          accepted: null,
+          executed: null,
+          reconciliation_required: true,
+        });
+      }
+      return reply(admission.status, receipt);
+    }
     if (operation === "deployment.jobs.cancel") {
       if (entry.verified !== true) {
         return reply(424, {
@@ -416,10 +526,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           executed: false,
         });
       }
-      const { data, error } = await Promise.resolve().then(() => db.rpc("sandy_api_cancel_deployment_job", {
-        p_job_id: (body.arguments as Record<string, unknown>).job_id,
-        p_actor_id: user.id,
-      })).catch(() => ({ data: null, error: true }));
+      const { data, error } = await Promise.resolve().then(() =>
+        db.rpc("sandy_api_cancel_deployment_job", {
+          p_job_id: (body.arguments as Record<string, unknown>).job_id,
+          p_actor_id: user.id,
+        })
+      ).catch(() => ({ data: null, error: true }));
       if (error) {
         return reply(502, {
           error: "cancellation_outcome_unknown",
@@ -491,7 +603,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         handler.functionName,
       )
     ) {
-      if (entry.is_mutation !== false) {
+      if (!discoverableContract(entry)) {
         return reply(503, {
           error: "read_executor_contract_conflict",
           executed: false,
@@ -524,6 +636,55 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             },
             body: JSON.stringify({ operation, arguments: args }),
             signal: AbortSignal.timeout(20000),
+          },
+        );
+        return upstreamResult(operation, response, entry.output_schema);
+      } catch {
+        return reply(502, {
+          ok: false,
+          error: "upstream_unavailable",
+          executed: false,
+        });
+      }
+    }
+    if (Object.hasOwn(videoReadActions, operation)) {
+      if (
+        entry.handler !== "sandy-deploy-provision" ||
+        entry.is_mutation !== false ||
+        entry.permission_scope !== "infrastructure:read"
+      ) {
+        return reply(503, {
+          error: "video_read_executor_contract_conflict",
+          executed: false,
+        });
+      }
+      const args = body.arguments ?? {};
+      if (
+        !isObject(args) || Object.keys(args).some((key) =>
+          operation !== "video.status" || key !== "target"
+        ) || (args.target !== undefined && args.target !== "sandy-video")
+      ) {
+        return reply(400, {
+          error: "invalid_operation_arguments",
+          executed: false,
+        });
+      }
+      try {
+        // Retain the existing fixed read actions, including the effective
+        // single OS Config check for video.execution.preflight. The API owns
+        // caller authorization; the provider handler receives only its service
+        // identity and cannot be retargeted or given an action by the caller.
+        const response = await fetchBackend(
+          `${base}/functions/v1/sandy-deploy-provision`,
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${service}`,
+              apikey: anon,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify({ action: videoReadActions[operation] }),
+            signal: AbortSignal.timeout(45000),
           },
         );
         return upstreamResult(operation, response, entry.output_schema);

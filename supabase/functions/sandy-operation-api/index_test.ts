@@ -32,8 +32,9 @@ const release = {
 };
 type Row = Record<string, unknown>;
 type Options = {
-  rows?: Row[];
+  rows?: readonly Row[];
   role?: string | null;
+  actorId?: string;
   registryError?: boolean;
   authError?: boolean;
   roleError?: boolean;
@@ -46,6 +47,7 @@ type Options = {
 function harness(options: Options = {}) {
   const calls: { url: string; init?: RequestInit }[] = [];
   const rpcCalls: { name: string; args: unknown }[] = [];
+  const identityTokens: string[] = [];
   const db = {
     rpc(name: string, args: unknown) {
       rpcCalls.push({ name, args });
@@ -55,18 +57,20 @@ function harness(options: Options = {}) {
       });
     },
     auth: {
-      getUser: () =>
-        Promise.resolve({
+      getUser: (token: string) => {
+        identityTokens.push(token);
+        return Promise.resolve({
           data: {
             user: options.authError ? null : {
-              id: "controller-test-user",
+              id: options.actorId ?? "controller-test-user",
               ...(options.tenant !== undefined
                 ? { email: "fixture-user@example.invalid" }
                 : {}),
             },
           },
           error: options.authError ? { message: "invalid" } : null,
-        }),
+        });
+      },
     },
     from(table: string) {
       let rows = table === "sandy_agenda_access"
@@ -84,7 +88,7 @@ function harness(options: Options = {}) {
         : [{
           role: options.role ?? "owner",
           enabled: true,
-          auth_user_id: "controller-test-user",
+          auth_user_id: options.actorId ?? "controller-test-user",
         }];
       const error = table === "sandy_agenda_access"
         ? options.tenantError
@@ -150,7 +154,7 @@ function harness(options: Options = {}) {
         body: JSON.stringify(body),
       }),
     );
-  return { handler, request, calls, rpcCalls };
+  return { handler, request, calls, rpcCalls, identityTokens };
 }
 
 Deno.test("gateway requires authenticated controller membership", async () => {
@@ -420,6 +424,10 @@ const infrastructure = (operation = "supabase.functions.list") => ({
   ...preflight,
   operation,
   handler: "sandy-infrastructure-read",
+  permission_scope:
+    ["deployment", "engineering", "system"].includes(operation.split(".")[0])
+      ? `${operation.split(".")[0]}:read`
+      : "infrastructure:read",
   ai_exposed: false,
 });
 
@@ -796,6 +804,18 @@ Deno.test("all provider reads and customer reads are installed at the correct fi
     "supabase.schema.functions.list",
     "supabase.schema.indexes.list",
     "supabase.database.connections.list",
+    "supabase.schema.views.list",
+    "supabase.schema.materialized_views.list",
+    "supabase.schema.triggers.list",
+    "supabase.schema.constraints.list",
+    "supabase.schema.types.list",
+    "supabase.schema.extensions.list",
+    "supabase.database.roles.list",
+    "supabase.database.grants.list",
+    "supabase.database.default_privileges.list",
+    "supabase.database.rls.policies.list",
+    "supabase.database.locks.list",
+    "supabase.database.cron.jobs.list",
   ];
   for (const operation of providerOperations) {
     const entry = {
@@ -848,6 +868,224 @@ Deno.test("all provider reads and customer reads are installed at the correct fi
       "Bearer test-user-jwt",
     );
   }
+});
+
+const videoRead = (operation = "video.execution.preflight") => ({
+  ...preflight,
+  operation,
+  handler: "sandy-deploy-provision",
+  permission_scope: "infrastructure:read",
+  verified: true,
+});
+
+Deno.test("video reads use the original fixed service actions and preserve provider payloads without promoting verification", async () => {
+  const cases = [
+    {
+      operation: "video.status",
+      action: "video_status",
+      arguments: { target: "sandy-video" },
+      result: { ok: true, name: "sandy-video", status: "RUNNING" },
+    },
+    {
+      operation: "video.install.preflight",
+      action: "video_install_preflight",
+      arguments: {},
+      result: {
+        ok: true,
+        installation_authorized: false,
+        livekit_verified: false,
+      },
+    },
+    {
+      operation: "video.execution.preflight",
+      action: "video_execution_preflight",
+      arguments: {},
+      result: {
+        ok: true,
+        osconfig_http: 200,
+        osconfig_enabled: true,
+        installation_executed: false,
+      },
+    },
+  ];
+  for (const expected of cases) {
+    const entry = {
+      ...videoRead(expected.operation),
+      input_schema: expected.operation === "video.status"
+        ? {
+          type: "object",
+          properties: { target: { const: "sandy-video" } },
+        }
+        : videoRead().input_schema,
+    };
+    const h = harness({
+      rows: [entry],
+      backend: () => Response.json(expected.result),
+    });
+    const catalogue = await (await h.request({ action: "list" })).json();
+    assert.deepEqual(catalogue.operations, [{ ...entry, executable: true }]);
+    const response = await h.request({
+      action: "execute",
+      channel: "mcp",
+      operation: expected.operation,
+      arguments: expected.arguments,
+    });
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assert.deepEqual(body.result, expected.result);
+    assert.equal(body.executed, true);
+    assert.equal(body.verified, undefined);
+    assert.deepEqual(h.identityTokens, ["test-user-jwt", "test-user-jwt"]);
+    assert.equal(h.calls.length, 1);
+    assert.equal(
+      h.calls[0].url,
+      "https://example.supabase.co/functions/v1/sandy-deploy-provision",
+    );
+    assert.equal(
+      new Headers(h.calls[0].init?.headers).get("authorization"),
+      "Bearer test-service-credential",
+    );
+    assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+      action: expected.action,
+    });
+  }
+});
+
+Deno.test("video infrastructure reads require an owner independently of tenant access and retain registry exposure policy", async () => {
+  for (
+    const operation of [
+      "video.status",
+      "video.install.preflight",
+      "video.execution.preflight",
+    ]
+  ) {
+    for (
+      const options of [
+        { role: "administrator" },
+        { role: null, tenant: "fixture-tenant" },
+      ]
+    ) {
+      const h = harness({ ...options, rows: [videoRead(operation)] });
+      assert.deepEqual(
+        (await (await h.request({ action: "list" })).json()).operations,
+        [],
+      );
+      for (const action of ["describe", "execute"]) {
+        assert.equal((await h.request({ action, operation })).status, 403);
+      }
+      assert.equal(h.calls.length, 0);
+    }
+    const disabled = harness({
+      rows: [{ ...videoRead(operation), api_exposed: false }],
+    });
+    assert.equal(
+      (await disabled.request({ action: "execute", operation })).status,
+      404,
+    );
+    assert.equal(disabled.calls.length, 0);
+    const apiOnly = harness({
+      rows: [{ ...videoRead(operation), ai_exposed: false }],
+    });
+    const catalogue = await (await apiOnly.request({ action: "list" })).json();
+    assert.equal(catalogue.operations[0].ai_exposed, false);
+    assert.equal(
+      (await apiOnly.request({
+        action: "execute",
+        channel: "mcp",
+        operation,
+      })).status,
+      403,
+    );
+    assert.equal(apiOnly.calls.length, 0);
+    assert.equal(
+      (await apiOnly.request({ action: "execute", operation })).status,
+      200,
+    );
+  }
+});
+
+Deno.test("video dispatch refuses registry mutation, scope and handler conflicts and caller action or target overrides", async () => {
+  for (
+    const [override, expected] of [
+      [{ is_mutation: true }, 503],
+      [{ permission_scope: "infrastructure:write" }, 503],
+      [{ handler: "sandy-operation-api" }, 503],
+      [{ handler: "untrusted-provisioner" }, 422],
+    ] as [Row, number][]
+  ) {
+    const h = harness({ rows: [{ ...videoRead(), ...override }] });
+    const response = await h.request({
+      action: "execute",
+      operation: "video.execution.preflight",
+    });
+    assert.equal(response.status, expected);
+    assert.equal((await response.json()).executed, false);
+    assert.equal(h.calls.length, 0);
+  }
+  for (
+    const operation of [
+      "video.status",
+      "video.install.preflight",
+      "video.execution.preflight",
+    ]
+  ) {
+    // Even a loosened registry schema cannot select a write action or another VM.
+    for (
+      const args of [
+        { action: "create_video" },
+        { target: "other-vm" },
+        { job_id: "11111111-2222-4333-8444-555555555555" },
+      ]
+    ) {
+      const h = harness({
+        rows: [{ ...videoRead(operation), input_schema: { type: "object" } }],
+      });
+      const response = await h.request({
+        action: "execute",
+        operation,
+        arguments: args,
+      });
+      assert.equal(response.status, 400);
+      assert.equal((await response.json()).executed, false);
+      assert.equal(h.calls.length, 0);
+    }
+  }
+});
+
+Deno.test("video provider failure and transport failure retain truthful execution outcomes", async () => {
+  for (const status of [200, 502]) {
+    const h = harness({
+      rows: [videoRead()],
+      backend: () =>
+        Response.json({ ok: false, error: "google_sts_unavailable" }, {
+          status,
+        }),
+    });
+    const response = await h.request({
+      action: "execute",
+      operation: "video.execution.preflight",
+    });
+    const body = await response.json();
+    assert.equal(response.status, 502);
+    assert.equal(body.ok, false);
+    assert.equal(body.error, "google_sts_unavailable");
+    assert.equal(body.executed, true);
+    assert.equal(body.verified, undefined);
+    assert.equal(h.calls.length, 1);
+  }
+  const unavailable = harness({
+    rows: [videoRead()],
+    backend: () => Promise.reject(new TypeError("network unavailable")),
+  });
+  const response = await unavailable.request({
+    action: "execute",
+    operation: "video.execution.preflight",
+  });
+  const body = await response.json();
+  assert.equal(response.status, 502);
+  assert.equal(body.ok, false);
+  assert.equal(body.executed, false);
+  assert.equal(body.error, "upstream_unavailable");
 });
 
 const cancelOperation = {
@@ -976,4 +1214,150 @@ Deno.test("canonical cancellation route rejects actor overrides and uses the reg
   assert.equal((await request({})).status, 200);
   assert.equal((await request({ actor_id: "forged" })).status, 400);
   assert.equal(h.rpcCalls.length, 1);
+});
+
+const retryJobId = "10000000-0000-4000-8000-000000000001";
+const retryChildId = "10000000-0000-4000-8000-000000000002";
+const retryActorId = "10000000-0000-4000-8000-000000000003";
+const retryEntry = {
+  ...preflight,
+  operation: "deployment.jobs.retry",
+  verified: true,
+  permission_scope: "deployment:write",
+  is_mutation: true,
+  input_schema: {
+    type: "object",
+    required: ["job_id"],
+    properties: { job_id: { type: "string", format: "uuid" } },
+    additionalProperties: false,
+  },
+};
+const retryReceipt = {
+  ok: true,
+  accepted: true,
+  executed: false,
+  request_state: "recorded",
+  source_job_id: retryJobId,
+  retry_job_id: retryChildId,
+  retry_job_status: "approved",
+  reused: false,
+  retry_depth: 1,
+  dispatch_required: true,
+};
+Deno.test("canonical retry records a receipt through one fixed RPC with authenticated actor", async () => {
+  const h = harness({
+    rows: [retryEntry],
+    actorId: retryActorId,
+    rpcData: retryReceipt,
+  });
+  const response = await h.handler(
+    new Request(`https://local.invalid/v1/jobs/${retryJobId}:retry`, {
+      method: "POST",
+      headers: {
+        authorization: "Bearer user-session",
+        "content-type": "application/json",
+      },
+      body: "{}",
+    }),
+  );
+  assert.equal(response.status, 202);
+  const result = await response.json();
+  assert.equal(result.accepted, true);
+  assert.equal(result.executed, false);
+  assert.equal(result.dispatch_required, true);
+  assert.equal(result.retry_job_id, retryChildId);
+  assert.equal(result.operation, "deployment.jobs.retry");
+  assert.deepEqual(h.rpcCalls, [{
+    name: "sandy_api_retry_read_deployment_job",
+    args: { p_job_id: retryJobId, p_actor_id: retryActorId },
+  }]);
+  assert.equal(h.calls.length, 0);
+  assert.deepEqual(h.identityTokens, ["user-session"]);
+});
+Deno.test("retry refuses nonowners, unverified and MCP-disabled mutations before RPC", async () => {
+  for (
+    const [options, expected] of [
+      [{ role: "viewer", rows: [retryEntry] }, 403],
+      [{ rows: [{ ...retryEntry, verified: false }] }, 424],
+      [{ rows: [{ ...retryEntry, ai_exposed: false }] }, 403],
+      [{ rows: [{ ...retryEntry, is_mutation: false }] }, 503],
+    ] as const
+  ) {
+    const h = harness({ ...options, actorId: retryActorId });
+    const response = await h.request({
+      action: "execute",
+      operation: "deployment.jobs.retry",
+      arguments: { job_id: retryJobId },
+      ...(options.rows?.[0]?.ai_exposed === false ? { channel: "mcp" } : {}),
+    });
+    assert.equal(response.status, expected);
+    assert.equal(h.rpcCalls.length, 0);
+    assert.equal(h.calls.length, 0);
+  }
+});
+Deno.test("retry rejects route arguments and preserves ambiguous RPC receipt", async () => {
+  const h = harness({
+    rows: [retryEntry],
+    actorId: retryActorId,
+    rpcError: true,
+  });
+  const invalid = await h.handler(
+    new Request(`https://local.invalid/v1/jobs/${retryJobId}:retry`, {
+      method: "POST",
+      headers: {
+        authorization: "Bearer user-session",
+        "content-type": "application/json",
+      },
+      body: '{"actor":"forged"}',
+    }),
+  );
+  assert.equal(invalid.status, 400);
+  assert.equal(h.rpcCalls.length, 0);
+  const unknown = await h.request({
+    action: "execute",
+    operation: "deployment.jobs.retry",
+    arguments: { job_id: retryJobId },
+  });
+  assert.equal(unknown.status, 503);
+  const body = await unknown.json();
+  assert.equal(body.accepted, null);
+  assert.equal(body.executed, null);
+  assert.equal(body.reconciliation_required, true);
+});
+
+Deno.test("discovery omits read contracts that fixed dispatch cannot execute", async () => {
+  const rows = [
+    {
+      ...preflight,
+      operation: "video.status",
+      handler: "sandy-deploy-provision",
+      permission_scope: "infrastructure:read",
+    },
+    {
+      ...preflight,
+      operation: "video.install.preflight",
+      handler: "sandy-deploy-provision",
+      permission_scope: "infrastructure:read",
+      is_mutation: true,
+    },
+    {
+      ...preflight,
+      operation: "supabase.schema.views.list",
+      handler: "sandy-provider-read-api",
+      permission_scope: "tenant:write",
+    },
+    {
+      ...preflight,
+      operation: "tasks.list",
+      handler: "sandy-operations-api",
+      permission_scope: "tasks:write",
+    },
+  ];
+  const h = harness({ rows, tenant: "fixture-tenant" });
+  const response = await h.request({ action: "list" });
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  assert.deepEqual(data.operations.map((row: Row) => row.operation), [
+    "video.status",
+  ]);
 });
