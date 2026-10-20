@@ -188,6 +188,9 @@ def dispatch():
             raise ValueError("Invalid run")
         if utc(r["created_at"]).tzinfo is None or (r["id"] in seen and seen[r["id"]] != r):
             raise ValueError("Inconsistent history")
+        if r["id"] in seen:
+            print("Duplicate workflow run history; dispatch withheld pending clean evidence")
+            return
         seen[r["id"]] = r
     dry = os.environ.get("SANDY_DISPATCH_DRY_RUN") == "1"
     evidence = [(i, history_for(i, runs), *marked(i["number"])) for i in issues if authorised(i)]
