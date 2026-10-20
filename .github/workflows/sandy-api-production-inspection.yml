@@ -1,0 +1,30 @@
+name: Sandy API production inspection
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read production registry and function metadata
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN || secrets.SANDY_SUPABASE_ACCESS_TOKEN || secrets.SUPABASE_ACCESS_TOKEN }}
+          SANDY_CONTROLLER_ACCESS_TOKEN: ${{ secrets.SANDY_CONTROLLER_ACCESS_TOKEN }}
+          INSPECTION_OUTPUT: ${{ runner.temp }}/sandy-api-production-inspection.json
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python -m scripts.sandy.inspect_api_production --output "$INSPECTION_OUTPUT"
+      - name: Retain sanitized observations, including blocked results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandy-api-production-inspection-${{ github.run_id }}
+          path: ${{ runner.temp }}/sandy-api-production-inspection.json
+          if-no-files-found: error
+          retention-days: 14
