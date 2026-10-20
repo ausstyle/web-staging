@@ -69,6 +69,6 @@ jobs:
             --region europe-west1 \
             --source services/sandy-engineering-mcp \
             --service-account "sandy-mcp-runtime@$PROJECT.iam.gserviceaccount.com" \
-            --no-allow-unauthenticated \
+            --allow-unauthenticated \
             --quiet
           echo "Deployment submitted. Cloud Run IAM, external MCP access and tool authentication require independent verification."
