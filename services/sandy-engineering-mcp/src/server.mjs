@@ -48,6 +48,12 @@ function registerTools(server, bearer) {
 app.post("/mcp", async (req,res) => {
   const bearer=suppliedBearer(req);
   if (!bearer) return res.status(401).json({error:"bearer_token_required"});
+  // Authenticate with Sandy before exposing any MCP tool definitions.
+  let preflight;
+  try { preflight = await invoke("sandy-engineering-test-api",bearer,{action:"readiness"}); }
+  catch { return res.status(503).json({error:"authorization_service_unavailable"}); }
+  if (preflight.http_status===401) return res.status(401).json({error:"invalid_identity"});
+  if (preflight.http_status!==200) return res.status(403).json({error:"engineering_admin_required"});
   // Stateless transport: a fresh server/tool set per authenticated HTTP call.
   const server = new McpServer({name:"sandy-engineering-mcp",version:"0.1.0"});
   registerTools(server,bearer);
