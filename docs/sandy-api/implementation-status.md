@@ -62,6 +62,14 @@ behavior. The existing Node MCP health/authentication test also passed during
 environment setup. Production integration, tenant-isolation, rollback and
 provider end-to-end suites remain unrun.
 
+Both GitHub checks passed for code commit
+`5a7489e459118aa5361b0a3f98c637ab426e16b6`:
+[API contracts](https://github.com/ausstyle/web-staging/actions/runs/39450253537)
+and [engineering regression](https://github.com/ausstyle/web-staging/actions/runs/39450253084).
+[PR #135](https://github.com/ausstyle/web-staging/pull/135) merged as
+`ad4d499de4dbb9357da4bcc9e0e363910b0b099b`. These are source/CI references,
+not production release references.
+
 ## Access observations and blockers
 
 API egress initially returned proxy HTTP 403. After saving the required network
@@ -80,6 +88,15 @@ The new **Sandy API production inspection** workflow retains that environment
 gate and reads only registry/function metadata using existing approved secret
 bindings. It does not deploy or change database state. A queued or waiting audit
 is not a completed inspection.
+
+The concrete [production inspection run](https://github.com/ausstyle/web-staging/actions/runs/39450438412)
+is waiting for that environment review. GitHub reports the current user is an
+eligible reviewer, but the authorized approval attempt returned HTTP 403,
+`Resource not accessible by integration`. The integration cannot approve this
+run. An eligible reviewer must approve it through GitHub, or authorized direct
+management/controller bindings must be made available securely. The environment
+gate was preserved. This pending run supplies no live registry or deployment
+evidence yet; once released, inspect its actual output and continue the backlog.
 
 Before deployment: obtain authorized live metadata and deployed-source access,
 establish source parity and recovery artifacts, inspect effective provider and
