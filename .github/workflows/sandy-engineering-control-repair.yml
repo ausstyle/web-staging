@@ -1,0 +1,25 @@
+name: Sandy engineering-control repair
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Validate source
+        run: deno fmt --check supabase/functions/sandy-engineering-control/index.ts
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Deploy to Sandy
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SANDY_SUPABASE_ACCESS_TOKEN }}
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Missing Sandy deployment credential"; exit 1; }
+          supabase functions deploy sandy-engineering-control --project-ref zmqlyygzqoidkcwdysok --no-verify-jwt
