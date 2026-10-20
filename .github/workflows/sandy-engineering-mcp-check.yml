@@ -1,0 +1,28 @@
+name: Sandy Engineering MCP Checks
+on:
+  pull_request:
+    paths:
+      - "services/sandy-engineering-mcp/**"
+      - ".github/workflows/sandy-engineering-mcp-check.yml"
+  workflow_dispatch:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: services/sandy-engineering-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Verify syntax
+        run: node --check src/server.mjs
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify package scripts
+        run: npm run check
+      - name: Run HTTP authentication smoke tests
+        run: node --test test/server.test.mjs

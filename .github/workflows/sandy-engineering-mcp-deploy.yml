@@ -1,0 +1,74 @@
+name: Deploy Sandy Engineering MCP
+on:
+  pull_request:
+    paths:
+      - 'services/sandy-engineering-mcp/**'
+      - '.github/workflows/sandy-engineering-mcp-deploy.yml'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Validate deployment configuration without changing Google Cloud
+        required: true
+        default: true
+        type: boolean
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate MCP source
+        working-directory: services/sandy-engineering-mcp
+        run: |
+          set -euo pipefail
+          node --check src/server.mjs
+          npm install --ignore-scripts --no-audit --no-fund
+          node --test test/server.test.mjs
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' && !inputs.dry_run }}
+    needs: verify
+    runs-on: ubuntu-latest
+    environment: sandy-production
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate release configuration
+        env:
+          DEPLOYMENT_ENABLED: ${{ vars.PRODUCTION_DEPLOYMENT_ENABLED }}
+          GCP_PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
+          WIF_PROVIDER: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          DEPLOYER_SA: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test "$DEPLOYMENT_ENABLED" = "true" || { echo "::error::Production deployment disabled"; exit 1; }
+          test "$GCP_PROJECT" = "elaborate-haven-511518-a5" || { echo "::error::Unexpected Google Cloud project"; exit 1; }
+          test -n "$WIF_PROVIDER" || { echo "::error::Missing WIF provider"; exit 1; }
+          test -n "$DEPLOYER_SA" || { echo "::error::Missing scoped deploy service account"; exit 1; }
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Deploy isolated MCP service to Cloud Run
+        env:
+          PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+          gcloud run deploy sandy-engineering-mcp \
+            --project "$PROJECT" \
+            --region europe-west1 \
+            --source services/sandy-engineering-mcp \
+            --service-account "sandy-mcp-runtime@$PROJECT.iam.gserviceaccount.com" \
+            --no-allow-unauthenticated \
+            --quiet
+          echo "Deployment submitted. Cloud Run IAM, external MCP access and tool authentication require independent verification."
