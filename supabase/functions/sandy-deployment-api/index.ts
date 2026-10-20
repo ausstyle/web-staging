@@ -92,7 +92,7 @@ Deno.serve(async(req)=>{
   if(!source.ok)return respond({ok:false,error:"versioned_source_missing",github_http:source.status},424);
   const src=await source.json();
   if(src.type!=="file"||typeof src.content!=="string"||!src.sha)return respond({ok:false,error:"source_integrity_unavailable"},424);
-  const sourceText=atob(src.content.replace(/\\s/g,""));
+  const sourceText=atob(src.content.replace(/\s/g,""));
   const management="https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/functions";
   const headers={"authorization":"Bearer "+sb};
   const prior=await fetch(management+"/"+slug,{headers,signal:AbortSignal.timeout(10000)});
