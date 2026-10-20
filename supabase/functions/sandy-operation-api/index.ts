@@ -84,6 +84,17 @@ const isCustomerRead = (operation: string) =>
   customerReadOperations.includes(
     operation as typeof customerReadOperations[number],
   );
+// Only passive portal reads belong here. The backend's ask action can create
+// tasks; search/biography actions invoke paid models and need separate contracts.
+const memoryReadActions: Readonly<Record<string, string>> = Object.freeze({
+  "memory.overview": "overview",
+  "memory.tree": "memory_tree",
+  "memory.evidence": "evidence",
+  "memory.life_brief": "life_brief",
+  "memory.life_spaces": "life_spaces",
+});
+const isMemoryRead = (operation: string) =>
+  Object.hasOwn(memoryReadActions, operation);
 const videoReadActions: Readonly<Record<string, string>> = Object.freeze({
   "video.status": "video_status",
   "video.install.preflight": "video_install_preflight",
@@ -111,6 +122,12 @@ const allowedHandlers: Readonly<
   ...Object.fromEntries(customerReadOperations.map((operation) => [operation, {
     functionName: "sandy-operations-api",
   }])),
+  ...Object.fromEntries(
+    Object.entries(memoryReadActions).map(([operation, action]) => [operation, {
+      functionName: "sandy-memory-centre",
+      action,
+    }]),
+  ),
   ...Object.fromEntries(providerReadOperations.map((operation) => [operation, {
     functionName: "sandy-provider-read-api",
   }])),
@@ -160,19 +177,13 @@ function enabledEntry(
 ): entry is Record<string, unknown> & {
   operation: keyof typeof allowedHandlers;
 } {
+  // API exposure and AI exposure are independent. MCP applies its own discovery
+  // filter and every channel:mcp execution checks the registry's AI flag below.
   return isObject(entry) && typeof entry.operation === "string" &&
     Object.hasOwn(allowedHandlers, entry.operation) &&
     (entry.handler === "sandy-operation-api" ||
       entry.handler === allowedHandlers[entry.operation].functionName) &&
-    entry.api_exposed === true &&
-    (entry.ai_exposed === true ||
-      Object.hasOwn(videoReadActions, entry.operation) ||
-      infrastructureOperations.includes(
-        entry.operation as typeof infrastructureOperations[number],
-      ) ||
-      providerReadOperations.includes(
-        entry.operation as typeof providerReadOperations[number],
-      ));
+    entry.api_exposed === true;
 }
 // Discovery must not advertise a malformed read contract that dispatch refuses.
 function discoverableContract(entry: Record<string, unknown>): boolean {
@@ -185,6 +196,10 @@ function discoverableContract(entry: Record<string, unknown>): boolean {
   if (isCustomerRead(operation)) {
     return entry.is_mutation === false &&
       entry.permission_scope === `${operation.split(".")[0]}:read`;
+  }
+  if (isMemoryRead(operation)) {
+    return entry.handler === "sandy-memory-centre" &&
+      entry.is_mutation === false && entry.permission_scope === "memory:read";
   }
   if (
     infrastructureOperations.includes(
@@ -367,6 +382,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     let tenantAccess = false;
     const customerRequest = typeof body.operation === "string" &&
       isCustomerRead(body.operation);
+    const memoryRequest = typeof body.operation === "string" &&
+      isMemoryRead(body.operation);
     if (
       typeof user.email === "string" &&
       (customerRequest || body.action === "list" || !admin)
@@ -383,7 +400,37 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       }
       tenantAccess = !accessError && typeof access?.customer_id === "string";
     }
-    if (!admin && !tenantAccess) {
+    // Memory Portal has its own grant and verified primary-email check. Agenda
+    // access and Controller membership confer no access to these private records.
+    let memoryAccess = false;
+    if (
+      typeof user.email === "string" && user.email_confirmed_at &&
+      (memoryRequest || body.action === "list" || !admin)
+    ) {
+      const { data: portal, error: portalError } = await db.from(
+        "sandy_memory_portal_accounts",
+      ).select("customer_id").eq("auth_user_id", user.id).is(
+        "revoked_at",
+        null,
+      ).maybeSingle();
+      if (portalError && memoryRequest) {
+        return reply(503, { error: "memory_authorisation_unavailable" });
+      }
+      if (!portalError && typeof portal?.customer_id === "string") {
+        const { data: address, error: addressError } = await db.from(
+          "email_customer_addresses",
+        ).select("normalized_email").eq("customer_id", portal.customer_id).eq(
+          "is_primary",
+          true,
+        ).maybeSingle();
+        if (addressError && memoryRequest) {
+          return reply(503, { error: "memory_authorisation_unavailable" });
+        }
+        memoryAccess = !addressError &&
+          address?.normalized_email === user.email.toLowerCase();
+      }
+    }
+    if (!admin && !tenantAccess && !memoryAccess) {
       return reply(403, { error: "controller_administrator_required" });
     }
     if (body.action === "list") {
@@ -395,7 +442,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       const operations = entries.filter(enabledEntry)
         .filter(discoverableContract)
         .filter((entry) =>
-          isCustomerRead(entry.operation) ? tenantAccess : !!admin
+          isMemoryRead(entry.operation)
+            ? memoryAccess
+            : isCustomerRead(entry.operation)
+            ? tenantAccess
+            : !!admin
         )
         .filter((entry) =>
           !ownerOnly(entry.operation) || admin?.role === "owner"
@@ -442,9 +493,17 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (isCustomerRead(operation) ? !tenantAccess : !admin) {
+    if (
+      isMemoryRead(operation)
+        ? !memoryAccess
+        : isCustomerRead(operation)
+        ? !tenantAccess
+        : !admin
+    ) {
       return reply(403, {
-        error: isCustomerRead(operation)
+        error: isMemoryRead(operation)
+          ? "memory_access_required"
+          : isCustomerRead(operation)
           ? "customer_access_required"
           : "controller_administrator_required",
         executed: false,
@@ -587,6 +646,55 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               arguments: body.arguments ?? {},
             }),
             signal: AbortSignal.timeout(20000),
+          },
+        );
+        return upstreamResult(operation, response, entry.output_schema);
+      } catch {
+        return reply(502, {
+          ok: false,
+          error: "upstream_unavailable",
+          executed: false,
+        });
+      }
+    }
+    if (handler.functionName === "sandy-memory-centre") {
+      if (!discoverableContract(entry)) {
+        return reply(503, {
+          error: "memory_executor_contract_conflict",
+          executed: false,
+        });
+      }
+      const args = body.arguments ?? {};
+      // Keep this check even if a registry contract is accidentally broadened:
+      // neither tenant identity nor backend action can be caller-controlled.
+      if (
+        !isObject(args) ||
+        (operation === "memory.evidence"
+          ? Object.keys(args).some((key) => key !== "id") ||
+            typeof args.id !== "string" ||
+            !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+              .test(args.id)
+          : Object.keys(args).length !== 0)
+      ) {
+        return reply(400, {
+          error: "invalid_operation_arguments",
+          executed: false,
+        });
+      }
+      try {
+        const response = await fetchBackend(
+          `${base}/functions/v1/sandy-memory-centre?op=${
+            memoryReadActions[operation]
+          }`,
+          {
+            method: "POST",
+            headers: {
+              authorization: `Bearer ${bearer}`,
+              apikey: anon,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(args),
+            signal: AbortSignal.timeout(25000),
           },
         );
         return upstreamResult(operation, response, entry.output_schema);

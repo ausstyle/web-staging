@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createOperationHandler, type OperationDependencies } from "./index.ts";
+import { createApi, createHandler } from "../sandy-api-mcp/index.ts";
 
 const preflight = {
   operation: "engineering.preflight",
@@ -40,6 +41,13 @@ type Options = {
   roleError?: boolean;
   tenant?: string | null;
   tenantError?: boolean;
+  memoryTenant?: string | null;
+  memoryEmail?: string;
+  memoryError?: boolean;
+  memoryAddressError?: boolean;
+  memoryRevoked?: boolean;
+  memoryPrimary?: boolean;
+  emailConfirmed?: boolean;
   rpcData?: Row;
   rpcError?: boolean;
   backend?: (input: string, init?: RequestInit) => Response | Promise<Response>;
@@ -63,8 +71,13 @@ function harness(options: Options = {}) {
           data: {
             user: options.authError ? null : {
               id: options.actorId ?? "controller-test-user",
-              ...(options.tenant !== undefined
+              ...(options.tenant !== undefined ||
+                  options.memoryTenant !== undefined
                 ? { email: "fixture-user@example.invalid" }
+                : {}),
+              ...(options.memoryTenant !== undefined &&
+                  options.emailConfirmed !== false
+                ? { email_confirmed_at: "2026-10-20T00:00:00Z" }
                 : {}),
             },
           },
@@ -73,7 +86,24 @@ function harness(options: Options = {}) {
       },
     },
     from(table: string) {
-      let rows = table === "sandy_agenda_access"
+      let rows = table === "sandy_memory_portal_accounts"
+        ? options.memoryTenant
+          ? [{
+            customer_id: options.memoryTenant,
+            auth_user_id: options.actorId ?? "controller-test-user",
+            revoked_at: options.memoryRevoked ? "2026-10-20T00:00:00Z" : null,
+          }]
+          : []
+        : table === "email_customer_addresses"
+        ? options.memoryTenant
+          ? [{
+            customer_id: options.memoryTenant,
+            normalized_email: options.memoryEmail ??
+              "fixture-user@example.invalid",
+            is_primary: options.memoryPrimary !== false,
+          }]
+          : []
+        : table === "sandy_agenda_access"
         ? options.tenant
           ? [{
             customer_id: options.tenant,
@@ -90,7 +120,11 @@ function harness(options: Options = {}) {
           enabled: true,
           auth_user_id: options.actorId ?? "controller-test-user",
         }];
-      const error = table === "sandy_agenda_access"
+      const error = table === "sandy_memory_portal_accounts"
+        ? options.memoryError
+        : table === "email_customer_addresses"
+        ? options.memoryAddressError
+        : table === "sandy_agenda_access"
         ? options.tenantError
         : table === "sandy_operation_registry"
         ? options.registryError
@@ -102,6 +136,10 @@ function harness(options: Options = {}) {
       const query = {
         select: (_columns: string) => query,
         eq(key: string, value: unknown) {
+          rows = rows.filter((row) => row[key] === value);
+          return query;
+        },
+        is(key: string, value: unknown) {
           rows = rows.filter((row) => row[key] === value);
           return query;
         },
@@ -179,7 +217,6 @@ Deno.test("discovery exposes only enabled known handlers and preserves registry 
       release,
       { ...preflight, operation: "unimplemented.operation" },
       { ...preflight, operation: "constructor" },
-      { ...preflight, ai_exposed: false },
       { ...preflight, api_exposed: false },
       { ...preflight, handler: "untrusted-function" },
     ],
@@ -215,7 +252,6 @@ Deno.test("describe and execute fail closed for unimplemented or incorrectly reg
       { ...preflight, operation: "unimplemented.operation" },
       { ...preflight, operation: "constructor" },
       { ...preflight, handler: "unexpected-handler" },
-      { ...preflight, ai_exposed: false },
     ]
   ) {
     const h = harness({ rows: [entry] });
@@ -676,6 +712,329 @@ const customerRead = (operation = "tasks.list") => ({
   handler: "sandy-operations-api",
   permission_scope: `${operation.split(".")[0]}:read`,
 });
+const memoryRead = (operation = "memory.tree") => ({
+  ...preflight,
+  operation,
+  handler: "sandy-memory-centre",
+  permission_scope: "memory:read",
+  input_schema: operation === "memory.evidence"
+    ? {
+      type: "object",
+      required: ["id"],
+      properties: { id: { type: "string", format: "uuid" } },
+      additionalProperties: false,
+    }
+    : preflight.input_schema,
+  output_schema: {
+    type: "object",
+    required: operation === "memory.evidence"
+      ? ["ok", "item"]
+      : operation === "memory.overview"
+      ? ["ok", "overview"]
+      : operation === "memory.life_brief"
+      ? ["ok", "brief"]
+      : operation === "memory.life_spaces"
+      ? ["ok", "spaces", "areas", "suggestions"]
+      : ["ok", "subjects", "links"],
+    properties: {
+      ok: { const: true },
+      item: { type: "object" },
+      overview: { type: "object" },
+      brief: { type: "object" },
+      spaces: { type: "array", items: { type: "object" } },
+      areas: { type: "array", items: { type: "object" } },
+      suggestions: { type: "array", items: { type: "object" } },
+      subjects: { type: "array", items: { type: "object" } },
+      links: { type: "array", items: { type: "object" } },
+    },
+    additionalProperties: false,
+  },
+});
+
+Deno.test("passive memory reads use a separate portal grant, fixed query action and original user session", async () => {
+  const id = "11111111-2222-4333-8444-555555555555";
+  for (
+    const [operation, action] of [
+      ["memory.overview", "overview"],
+      ["memory.tree", "memory_tree"],
+      ["memory.evidence", "evidence"],
+      ["memory.life_brief", "life_brief"],
+      ["memory.life_spaces", "life_spaces"],
+    ]
+  ) {
+    const args = operation === "memory.evidence" ? { id } : {};
+    const result = operation === "memory.evidence"
+      ? { ok: true, item: { id, content: "Synthetic source" } }
+      : operation === "memory.overview"
+      ? { ok: true, overview: { name: "Synthetic fixture", settings: null } }
+      : operation === "memory.life_brief"
+      ? { ok: true, brief: { enabled: false } }
+      : operation === "memory.life_spaces"
+      ? { ok: true, spaces: [], areas: [], suggestions: [] }
+      : { ok: true, subjects: [], links: [] };
+    const h = harness({
+      role: null,
+      memoryTenant: "memory-tenant-one",
+      rows: [memoryRead(operation), customerRead(), preflight, release],
+      backend: (url, init) => {
+        // This models the backend's independent session check, not a service call.
+        assert.equal(
+          new Headers(init?.headers).get("authorization"),
+          "Bearer test-user-jwt",
+        );
+        assert.equal(new URL(url).searchParams.get("op"), action);
+        assert.deepEqual(JSON.parse(String(init?.body)), args);
+        return Response.json(result);
+      },
+    });
+    const catalogue = await (await h.request({ action: "list" })).json();
+    assert.deepEqual(catalogue.operations.map((row: Row) => row.operation), [
+      operation,
+    ]);
+    const response = await h.request({
+      action: "execute",
+      channel: "mcp",
+      operation,
+      arguments: args,
+    });
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assert.deepEqual(body.result, result);
+    assert.equal(body.verified, undefined);
+    assert.equal(h.calls.length, 1);
+    assert.equal(
+      h.calls[0].url,
+      "https://example.supabase.co/functions/v1/sandy-memory-centre?op=" +
+        action,
+    );
+    assert.equal(h.calls[0].init?.method, "POST");
+    assert.equal(
+      new Headers(h.calls[0].init?.headers).get("apikey"),
+      "test-anon-key",
+    );
+  }
+});
+
+Deno.test("Controller and Agenda grants cannot substitute for a verified Memory Portal grant", async () => {
+  for (
+    const options of [
+      { tenant: "agenda-tenant", memoryTenant: null },
+      { memoryTenant: "memory-tenant", memoryRevoked: true },
+      { memoryTenant: "memory-tenant", memoryPrimary: false },
+      { memoryTenant: "memory-tenant", memoryEmail: "other@example.invalid" },
+      { memoryTenant: "memory-tenant", emailConfirmed: false },
+    ]
+  ) {
+    const h = harness({ ...options, rows: [memoryRead(), preflight] });
+    const catalogue = await (await h.request({ action: "list" })).json();
+    assert.deepEqual(catalogue.operations.map((row: Row) => row.operation), [
+      "engineering.preflight",
+    ]);
+    for (const action of ["describe", "execute"]) {
+      const response = await h.request({ action, operation: "memory.tree" });
+      assert.equal(response.status, 403);
+      assert.equal((await response.json()).error, "memory_access_required");
+    }
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test("Memory Portal identity and email directory errors fail closed before dispatch", async () => {
+  for (const error of [{ memoryError: true }, { memoryAddressError: true }]) {
+    const h = harness({
+      role: null,
+      memoryTenant: "memory-tenant",
+      rows: [memoryRead()],
+      ...error,
+    });
+    const response = await h.request({
+      action: "execute",
+      operation: "memory.tree",
+    });
+    assert.equal(response.status, 503);
+    assert.equal(
+      (await response.json()).error,
+      "memory_authorisation_unavailable",
+    );
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test("API exposure remains independent of AI exposure across Controller, Agenda and Memory handlers", async () => {
+  for (const candidate of [preflight, customerRead(), memoryRead()]) {
+    const entry = { ...candidate, ai_exposed: false };
+    const isMemory = entry.operation.startsWith("memory.");
+    const h = harness({
+      role: entry.operation.startsWith("engineering.") ? "owner" : null,
+      tenant: entry.operation.startsWith("tasks.") ? "agenda-tenant" : null,
+      memoryTenant: isMemory ? "memory-tenant" : null,
+      rows: [entry],
+      backend: () =>
+        Response.json(
+          isMemory ? { ok: true, subjects: [], links: [] } : { ok: true },
+        ),
+    });
+    const catalogue = await (await h.request({ action: "list" })).json();
+    assert.deepEqual(catalogue.operations, [{ ...entry, executable: true }]);
+    assert.equal(
+      (await h.request({ action: "describe", operation: entry.operation }))
+        .status,
+      200,
+    );
+    // Compose the actual MCP adapter and API handlers. MCP discovery excludes
+    // API-only rows and a direct tool call still reaches API's channel gate.
+    const mcp = createHandler(createApi(
+      "https://example.supabase.co",
+      "test-anon-key",
+      ((input: RequestInfo | URL, init?: RequestInit) =>
+        h.handler(new Request(input, init))) as typeof fetch,
+    ));
+    const mcpRequest = (method: string, params: Row = {}) =>
+      mcp(
+        new Request("https://mcp.fixture.invalid", {
+          method: "POST",
+          headers: {
+            authorization: "Bearer test-user-jwt",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: "exposure-test",
+            method,
+            params,
+          }),
+        }),
+      );
+    const tools = await (await mcpRequest("tools/list")).json();
+    assert.deepEqual(tools.result.tools, []);
+    const blocked = await (await mcpRequest("tools/call", {
+      name: entry.operation,
+      arguments: {},
+    })).json();
+    assert.equal(blocked.result.isError, true);
+    const denial = JSON.parse(blocked.result.content[0].text);
+    assert.equal(denial.status, 403);
+    assert.equal(
+      denial.result.error,
+      "operation_not_mcp_exposed",
+    );
+    assert.equal(h.calls.length, 0);
+    assert.equal(
+      (await h.request({ action: "execute", operation: entry.operation }))
+        .status,
+      200,
+    );
+    assert.equal(h.calls.length, 1);
+  }
+});
+
+Deno.test("passive memory dispatch rejects forged identity/action fields even if registry schemas become permissive", async () => {
+  for (const operation of ["memory.tree", "memory.evidence"]) {
+    const h = harness({
+      role: null,
+      memoryTenant: "memory-tenant",
+      rows: [{ ...memoryRead(operation), input_schema: { type: "object" } }],
+    });
+    for (
+      const args of [
+        { customer_id: "another-tenant" },
+        { owner_customer_id: "another-tenant" },
+        { action: "forget" },
+        { op: "ask" },
+        { id: "not-a-uuid" },
+        { id: "11111111-2222-4333-8444-555555555555", confirm: true },
+      ]
+    ) {
+      const response = await h.request({
+        action: "execute",
+        operation,
+        arguments: args,
+      });
+      assert.equal(response.status, 400);
+      assert.equal((await response.json()).executed, false);
+    }
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test("memory contract drift, hidden exposure and side-effecting read labels never enable dispatch", async () => {
+  for (
+    const entry of [
+      { ...memoryRead(), is_mutation: true },
+      { ...memoryRead(), permission_scope: "memory:write" },
+      { ...memoryRead(), handler: "sandy-operation-api" },
+      { ...memoryRead(), api_exposed: false },
+      ...[
+        "memory.ask",
+        "memory.search",
+        "memory.life_search",
+        "memory.biography",
+      ]
+        .map((operation) => memoryRead(operation)),
+    ]
+  ) {
+    const h = harness({
+      role: null,
+      memoryTenant: "memory-tenant",
+      rows: [entry],
+    });
+    assert.deepEqual(
+      (await (await h.request({ action: "list" })).json()).operations,
+      [],
+    );
+    const response = await h.request({
+      action: "execute",
+      channel: "mcp",
+      operation: entry.operation,
+    });
+    assert.equal(response.status >= 400, true);
+    assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test("memory backend authorization errors and invalid outputs preserve failure", async () => {
+  for (
+    const [provider, expectedStatus, expectedError] of [
+      [
+        () =>
+          Response.json({
+            error: "Sign in with your verified customer account.",
+          }, { status: 401 }),
+        401,
+        "Sign in with your verified customer account.",
+      ],
+      [
+        () => Response.json({ error: "source_not_found" }, { status: 404 }),
+        404,
+        "source_not_found",
+      ],
+      [
+        () => Response.json({ ok: true, subjects: [], links: "invalid" }),
+        502,
+        "upstream_output_schema_mismatch",
+      ],
+    ] as [() => Response, number, string][]
+  ) {
+    const h = harness({
+      role: null,
+      memoryTenant: "memory-tenant",
+      rows: [memoryRead()],
+      backend: provider,
+    });
+    const response = await h.request({
+      action: "execute",
+      operation: "memory.tree",
+    });
+    const body = await response.json();
+    assert.equal(response.status, expectedStatus);
+    assert.equal(body.ok, false);
+    assert.equal(body.error, expectedError);
+    assert.equal(body.executed, true);
+    assert.equal(body.verified, undefined);
+    assert.equal(h.calls.length, 1);
+  }
+});
+
 Deno.test("customer sessions discover only their installed tenant reads and forward their identity, never service credentials", async () => {
   const entry = customerRead();
   const h = harness({
