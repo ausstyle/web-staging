@@ -189,7 +189,7 @@ async function showDeploymentApprovals(host){
      catch(e){feedback.textContent="Approval failed: "+e.message;button.disabled=false}
     };
     card.append(button,feedback);
-   }else if(job.status==="approved")txt(card,"Approved · Awaiting an enabled deployment executor.","small muted");
+   }else if(job.status==="approved")txt(card,"Approved · Awaiting "+(job.provider==="github"?"GitHub":job.provider==="supabase"?"Supabase":job.provider==="google_cloud"?"Google Cloud":"the")+" deployment execution through Sandy.","small muted");
    else if(job.status==="failed")txt(card,"Execution failed: "+(job.error||"See deployment logs")+". This job cannot be approved again.","small muted");
    section.append(card);
   }
