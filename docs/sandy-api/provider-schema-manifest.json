@@ -18,7 +18,9 @@
     "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudquotas/v1/cloudquotas-api.json",
     "state": "unavailable",
     "error": "HTTPError",
-    "http_status": 404
+    "http_status": 404,
+    "authoritative_source": "https://cloudquotas.googleapis.com/$discovery/rest?version=v1",
+    "authoritative_source_failure": "network_proxy_denied"
   },
   {
     "provider": "gcp-iam",

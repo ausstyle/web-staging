@@ -1,0 +1,523 @@
+{
+  "project_id": "zmqlyygzqoidkcwdysok",
+  "project_access": {
+    "authenticated_management_get_http": 200,
+    "name": "Email AI",
+    "status": "ACTIVE_HEALTHY"
+  },
+  "local_validation": {
+    "deno_passed": 66,
+    "python_passed": 221
+  },
+  "real_provider_integration": {
+    "project": "zmqlyygzqoidkcwdysok",
+    "tested_at": "2026-10-20T17:14:33.753Z",
+    "layer": "local_versioned_handler_to_real_management_api",
+    "deployed_endpoint_tested": false,
+    "controller_session_tested": false,
+    "tests": [
+      {
+        "operation": "supabase.db.migrations.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "all four applied release migration versions are visible"
+      },
+      {
+        "operation": "supabase.database.inspect",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.schema.tables.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "public operation registry exists in the live table catalogue"
+      },
+      {
+        "operation": "supabase.schema.functions.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "deployed cancellation routine is present in live routine signatures"
+      },
+      {
+        "operation": "supabase.schema.indexes.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "registry primary-key index is visible without expression bodies"
+      },
+      {
+        "operation": "supabase.database.connections.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.projects.get",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.project.health",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "all five requested services have observed health states"
+      },
+      {
+        "operation": "supabase.branches.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.branches.get",
+        "passed": true,
+        "http_status": 404,
+        "provider_request_id": null,
+        "upstream_status": 404,
+        "scenario": "missing_branch_negative_test",
+        "error": "provider_query_failed",
+        "oracle": "missing branch is a real provider 404, never empty success"
+      },
+      {
+        "operation": "supabase.network.restrictions.get",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.domains.get",
+        "passed": false,
+        "http_status": 424,
+        "provider_request_id": null,
+        "upstream_status": 400,
+        "scenario": "provider_read",
+        "error": "provider_entitlement_required",
+        "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.functions.secrets.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "deployed management binding name is present and no secret values escape"
+      },
+      {
+        "operation": "supabase.backups.list",
+        "passed": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "typed project-scoped provider response"
+      }
+    ]
+  },
+  "deployed_endpoint_checks": {
+    "executed": false,
+    "blocker": "cloud proxy denies zmqlyygzqoidkcwdysok.supabase.co"
+  },
+  "controller_session_checks": {
+    "executed": false,
+    "blocker": "no authenticated Controller user session"
+  },
+  "legacy_mcp_migrated": false,
+  "full_161_requirement_acceptance_complete": false,
+  "initial_deployment": {
+    "source_commit": "395b0eb50e915f4f4a5ca38dcbfc6715b1edd101",
+    "project": "zmqlyygzqoidkcwdysok",
+    "functions": [
+      {
+        "slug": "sandy-provider-read-api",
+        "deploy_http": 201,
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "source_sha256": "cd62d5ab9c340db48c6ecc0e1e5c95dcb16ca6180e9e196216ee73370de4bf88",
+        "previous_version": null,
+        "metadata_http": 200
+      },
+      {
+        "slug": "sandy-operation-api",
+        "deploy_http": 201,
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "source_sha256": "8ae826cf9095543eb76a94b7a30b04c76a569a10989b2d20e4179013dc346532",
+        "previous_version": 1,
+        "metadata_http": 200
+      },
+      {
+        "slug": "sandy-api-mcp",
+        "deploy_http": 201,
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "source_sha256": "7fddfc9f793ea1e8aad0cd313bcd58a489b416cd432fcbbbf2c19615eb994460",
+        "previous_version": 1,
+        "metadata_http": 200
+      }
+    ]
+  },
+  "read_corrections_deployment": {
+    "source_commit": "c3e68ed31a53af29329e9725e5ba418d9bd7a48b",
+    "project": "zmqlyygzqoidkcwdysok",
+    "functions": [
+      {
+        "slug": "sandy-provider-read-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "previous_version": 1,
+        "version": 2,
+        "verify_jwt": true,
+        "status": "ACTIVE",
+        "source_sha256": "2a5012fc401ab70ed03a3173f53ee681aee1f07f7532914aa32240dbc65f5424"
+      },
+      {
+        "slug": "sandy-operation-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "previous_version": 2,
+        "version": 3,
+        "verify_jwt": true,
+        "status": "ACTIVE",
+        "source_sha256": "37366b5d843a314ed1c38c4a992b71e9b1630a24d560e1e4870522d038dd883d"
+      }
+    ],
+    "customer_contract_migration_http": 201
+  },
+  "metadata_deployment": {
+    "source_commit": "e7de783a16e1a3ae454b46c7dd74015cc14f9a6d",
+    "project": "zmqlyygzqoidkcwdysok",
+    "functions": [
+      {
+        "slug": "sandy-provider-read-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "previous_version": 2,
+        "version": 3,
+        "verify_jwt": true,
+        "status": "ACTIVE",
+        "source_sha256": "38b44da210d1ee1f324251b7744775c0d4d1820643581c0fbd05977fc4a403e2"
+      },
+      {
+        "slug": "sandy-operation-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "previous_version": 3,
+        "version": 4,
+        "verify_jwt": true,
+        "status": "ACTIVE",
+        "source_sha256": "5d705127b98da614b991fe020714e2e356a9d0939c721a69fc3e23c466b96300"
+      }
+    ],
+    "metadata_contract_migration_http": 201
+  },
+  "cancellation_deployment": {
+    "source_commit": "56d9dbb846b5eb3d9bc53f5002a84b89ad91b932",
+    "slug": "sandy-operation-api",
+    "deploy_http": 201,
+    "metadata_http": 200,
+    "previous_version": 4,
+    "version": 5,
+    "status": "ACTIVE",
+    "verify_jwt": true,
+    "source_sha256": "aed450cbdead3926ef678c4aeffc81e5a4b2708aae35809cd402becbf0fd5f02",
+    "cancellation_exposed": false
+  },
+  "migration_ledger": {
+    "http_status": 201,
+    "readback_http": 201,
+    "migrations": [
+      {
+        "version": "20261020183000",
+        "file": "20261020183000_sandy_project_read_contracts.sql",
+        "sha256": "1e7e6b417d0f4feaaa61e85a554a307a137a66120573a081743b7f9f0bb1c89b"
+      },
+      {
+        "version": "20261020190000",
+        "file": "20261020190000_sandy_customer_read_contracts.sql",
+        "sha256": "60af196f1eab91785d3902e126fc7158c6361d14c0b6c208b279e93a421f38eb"
+      },
+      {
+        "version": "20261020193000",
+        "file": "20261020193000_sandy_database_metadata_read_contracts.sql",
+        "sha256": "4ac35e17d2321180128e47afa773c32b55898c53918e5ce808dbd15824edcc15"
+      },
+      {
+        "version": "20261020200000",
+        "file": "20261020200000_sandy_cancel_pending_deployment_job.sql",
+        "sha256": "b6082e3480e3c4f46ea056797c04d2934a425cb3110af635c9d52856c095115c"
+      }
+    ],
+    "readback": [
+      {
+        "version": "20261020183000",
+        "name": "sandy_project_read_contracts"
+      },
+      {
+        "version": "20261020190000",
+        "name": "sandy_customer_read_contracts"
+      },
+      {
+        "version": "20261020193000",
+        "name": "sandy_database_metadata_read_contracts"
+      },
+      {
+        "version": "20261020200000",
+        "name": "sandy_cancel_pending_deployment_job"
+      }
+    ]
+  },
+  "database_integration": {
+    "http_status": 201,
+    "evidence": [
+      {
+        "evidence": {
+          "layer": "service_role_database_rpc",
+          "checks": [
+            "owner_only",
+            "customer_rpc_denied",
+            "missing_job",
+            "pending_cancel",
+            "idempotency",
+            "single_audit_event",
+            "running_refused"
+          ],
+          "passed": true,
+          "fixtures": "rolled_back",
+          "controller_session_tested": false
+        }
+      }
+    ],
+    "test_sql": "scripts/sandy/test_cancel_pending_deployment_job.sql"
+  },
+  "registry_evidence_readback": {
+    "updated_at": "2026-10-20T17:15:13.230599+00:00",
+    "write_http": 201,
+    "readback_http": 201,
+    "rows": [
+      {
+        "operation": "deployment.jobs.cancel",
+        "handler": "sandy-operation-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": false,
+        "ai_exposed": false,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.backups.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.branches.get",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.branches.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.connections.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.inspect",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.db.migrations.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.domains.get",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "blocked_provider_entitlement",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.functions.secrets.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.network.restrictions.get",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.project.health",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.projects.get",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.functions.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.indexes.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.tables.list",
+        "handler": "sandy-provider-read-api",
+        "implementation_state": "deployed_unverified",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "release_evidence_recorded": true
+      }
+    ]
+  },
+  "catalogue_revision_deployment": {
+    "source_commit": "75f27faf0370d1ce46e73d6660c43931a1a82669",
+    "slug": "sandy-api-mcp",
+    "deploy_http": 201,
+    "metadata_http": 200,
+    "version": 3,
+    "previous_version": 2,
+    "status": "ACTIVE",
+    "verify_jwt": true,
+    "source_sha256": "1ac8bb6c6de925f501ec79fde45dbcdb1287b93fc6941b40da66312f724a4b3f"
+  },
+  "current_deployment_versions": {
+    "sandy-operation-api": 5,
+    "sandy-api-mcp": 3,
+    "sandy-provider-read-api": 3
+  },
+  "deployed_source_readback": [
+    {
+      "slug": "sandy-operation-api",
+      "source_map_contains_original": true,
+      "exact_uploaded_source_match": true,
+      "expected_sha256": "aed450cbdead3926ef678c4aeffc81e5a4b2708aae35809cd402becbf0fd5f02"
+    },
+    {
+      "slug": "sandy-api-mcp",
+      "source_map_contains_original": true,
+      "exact_uploaded_source_match": true,
+      "expected_sha256": "1ac8bb6c6de925f501ec79fde45dbcdb1287b93fc6941b40da66312f724a4b3f"
+    },
+    {
+      "slug": "sandy-provider-read-api",
+      "source_map_contains_original": true,
+      "exact_uploaded_source_match": true,
+      "expected_sha256": "38b44da210d1ee1f324251b7744775c0d4d1820643581c0fbd05977fc4a403e2"
+    }
+  ],
+  "final_database_readback": {
+    "registry_rows": 105,
+    "verified_rows": 3,
+    "persisted_test_jobs": 0
+  }
+}

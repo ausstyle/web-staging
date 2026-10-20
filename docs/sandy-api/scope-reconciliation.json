@@ -1,0 +1,1828 @@
+{
+  "specification_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
+  "scope_requirements": 161,
+  "runtime_registry_rows": 105,
+  "provider_schema_candidates": 3787,
+  "schema_and_runtime_candidates": 3892,
+  "requirements_with_candidate_evidence": 117,
+  "completed_requirements": 0,
+  "unavailable_schema_sources": [
+    {
+      "provider": "gcp-cloudquotas",
+      "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudquotas/v1/cloudquotas-api.json",
+      "state": "unavailable",
+      "error": "HTTPError",
+      "http_status": 404,
+      "authoritative_source": "https://cloudquotas.googleapis.com/$discovery/rest?version=v1",
+      "authoritative_source_failure": "network_proxy_denied"
+    }
+  ],
+  "requirements": [
+    {
+      "requirement_id": 1,
+      "requirement": "GET /v1/capabilities \u2014 executable operations, scopes and verification.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "system.registry.list",
+        "system.registry.summary"
+      ],
+      "installed_gateway_operation_ids": [
+        "system.registry.list",
+        "system.registry.summary"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Caller-filtered executable catalogue and change digest are implemented; complete provider availability, grants and verification aggregation remain incomplete."
+    },
+    {
+      "requirement_id": 2,
+      "requirement": "GET /v1/capabilities/{operation} \u2014 schema, handler and required grants.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "system.registry.describe"
+      ],
+      "installed_gateway_operation_ids": [
+        "system.registry.describe"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Typed describe route exists; uniform version/example/grant/readiness metadata for every scope operation remains incomplete."
+    },
+    {
+      "requirement_id": 3,
+      "requirement": "POST /v1/operations/{operation}:execute \u2014 synchronous/asynchronous execution.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Synchronous typed dispatch exists for installed reads; durable orchestration, uniform envelopes, quotas and all scoped executors remain incomplete."
+    },
+    {
+      "requirement_id": 4,
+      "requirement": "GET /v1/jobs/{jobId} \u2014 status, provider request IDs and result.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "deployment.jobs.get",
+        "deployment.jobs.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "deployment.jobs.get",
+        "deployment.jobs.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Owner-only job read route exists; complete tenant/job ownership and provider request-ID lifecycle contracts remain incomplete."
+    },
+    {
+      "requirement_id": 5,
+      "requirement": "GET /v1/jobs/{jobId}/events \u2014 structured progress events.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "deployment.jobs.events"
+      ],
+      "installed_gateway_operation_ids": [
+        "deployment.jobs.events"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Owner-only bounded event read exists; streaming, resume cursors and complete progress semantics remain incomplete."
+    },
+    {
+      "requirement_id": 6,
+      "requirement": "POST /v1/jobs/{jobId}:cancel \u2014 cancel eligible job.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "deployment.jobs.cancel"
+      ],
+      "installed_gateway_operation_ids": [
+        "deployment.jobs.cancel"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Pending/approved cancellation is deployed and transactionally tested but API/MCP exposure is disabled pending authenticated attestation; running/provider cancellation is unsupported."
+    },
+    {
+      "requirement_id": 7,
+      "requirement": "POST /v1/jobs/{jobId}:retry \u2014 retry idempotent failed steps.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Idempotent step retry API, classified failures, backoff/jitter, leases, dead-letter flow and ambiguous provider-result reconciliation."
+    },
+    {
+      "requirement_id": 8,
+      "requirement": "POST /v1/jobs/{jobId}:rollback \u2014 verified compensation.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General durable job rollback with verified compensations, provider state restoration, migration recovery and rollback drills. Revert preparation/requests are not proof rollback executed."
+    },
+    {
+      "requirement_id": 9,
+      "requirement": "GET /v1/audit?resource=... \u2014 tamper-evident audit.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "deployment.audit.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "deployment.audit.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Canonical audit query and cryptographic append-only/tamper-evident chain, retention/access policy and immutable evidence verification are not established by event inserts."
+    },
+    {
+      "requirement_id": 10,
+      "requirement": "POST /v1/plans:validate \u2014 dry-run, permissions, cost and blast radius.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General multi-provider dry-run plan validation, target grants/dependencies, cost and blast-radius estimation, complete typed plan schema and policy evaluation."
+    },
+    {
+      "requirement_id": 11,
+      "requirement": "POST /v1/plans:execute \u2014 multi-service dependency graph.",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Canonical plans:execute and durable dependency-graph execution/leases/outbox/compensations; planning records do not execute provider work or establish atomicity."
+    },
+    {
+      "requirement_id": 12,
+      "requirement": "gcp.organizations.list/get",
+      "provider_schema_candidate_count": 8,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.organizations.list/get. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 13,
+      "requirement": "gcp.folders.list/create/move/delete",
+      "provider_schema_candidate_count": 16,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.folders.list/create/move/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 14,
+      "requirement": "gcp.projects.list/get/create/update/move/delete/undelete",
+      "provider_schema_candidate_count": 14,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.projects.list/get/create/update/move/delete/undelete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 15,
+      "requirement": "gcp.services.list/enable/disable",
+      "provider_schema_candidate_count": 10,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.services.list/enable/disable. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 16,
+      "requirement": "gcp.quotas.get/request",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.quotas.get/request. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 17,
+      "requirement": "gcp.iam.policy.get/set",
+      "provider_schema_candidate_count": 140,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.iam.policy.get/set. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 18,
+      "requirement": "gcp.iam.roles.list/create/update/delete",
+      "provider_schema_candidate_count": 15,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.iam.roles.list/create/update/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 19,
+      "requirement": "gcp.serviceAccounts.list/create/update/delete",
+      "provider_schema_candidate_count": 12,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.serviceAccounts.list/create/update/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 20,
+      "requirement": "gcp.serviceAccounts.keys.rotate",
+      "provider_schema_candidate_count": 7,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.serviceAccounts.keys.rotate. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 21,
+      "requirement": "gcp.workloadIdentity.configure",
+      "provider_schema_candidate_count": 44,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "WIF configuration API handler, workload identity policy/provider creation/update/verification, OS Login grants/revocation, registry mapping and production evidence are not established."
+    },
+    {
+      "requirement_id": 22,
+      "requirement": "gcp.osLogin.grant/revoke",
+      "provider_schema_candidate_count": 9,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.osLogin.grant/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 23,
+      "requirement": "gcp.billing.accounts.list",
+      "provider_schema_candidate_count": 23,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.billing.accounts.list. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 24,
+      "requirement": "gcp.billing.projects.link/unlink",
+      "provider_schema_candidate_count": 3,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.billing.projects.link/unlink. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 25,
+      "requirement": "gcp.budgets.manage",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.budgets.manage. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 26,
+      "requirement": "gcp.compute.instances.list/get/create/delete",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General typed instance list/get/create/delete handlers, Linux/Windows input coverage and provider-observed completion cannot be established. Queue admission and missing-worker delegation are not completion."
+    },
+    {
+      "requirement_id": 27,
+      "requirement": "gcp.compute.instances.start/stop/reset/suspend/resume",
+      "provider_schema_candidate_count": 6,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Executable lifecycle operations including start/stop/reset/suspend/resume and actual guest/Compute readiness verification."
+    },
+    {
+      "requirement_id": 28,
+      "requirement": "gcp.compute.instances.resize/setMachineType/setLabels/setTags/setMetadata",
+      "provider_schema_candidate_count": 4,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Executable resize/metadata mutations with typed parameters, authorization, provider polling, preconditions and verification."
+    },
+    {
+      "requirement_id": 29,
+      "requirement": "gcp.compute.instances.attachDisk/detachDisk",
+      "provider_schema_candidate_count": 2,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.instances.attachDisk/detachDisk. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 30,
+      "requirement": "gcp.disks.create/resize/delete",
+      "provider_schema_candidate_count": 18,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.disks.create/resize/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 31,
+      "requirement": "gcp.compute.images.create/list/delete",
+      "provider_schema_candidate_count": 9,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.images.create/list/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 32,
+      "requirement": "gcp.snapshots.create/list/restore/delete",
+      "provider_schema_candidate_count": 14,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Executable snapshot creation/list/restore/delete with disk consistency and restore verification evidence."
+    },
+    {
+      "requirement_id": 33,
+      "requirement": "gcp.compute.instances.serialOutput",
+      "provider_schema_candidate_count": 1,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.instances.serialOutput. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 34,
+      "requirement": "gcp.compute.operations.get/wait",
+      "provider_schema_candidate_count": 13,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.operations.get/wait. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 35,
+      "requirement": "gcp.vm.access.bootstrap/rotate/revoke",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.access.bootstrap/rotate/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 36,
+      "requirement": "gcp.vm.ssh.exec",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.ssh.exec. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 37,
+      "requirement": "gcp.vm.winrm.exec",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.winrm.exec. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 38,
+      "requirement": "gcp.vm.files.upload/download",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.files.upload/download. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 39,
+      "requirement": "gcp.vm.packages.install/update/remove",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Package install/update/remove API executors; signed guest execution with identity, OS/package verification and recovery. A preflight tool is not software installation."
+    },
+    {
+      "requirement_id": 40,
+      "requirement": "gcp.vm.services.start/stop/restart/status",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.services.start/stop/restart/status. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 41,
+      "requirement": "gcp.vm.reboot",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.reboot. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 42,
+      "requirement": "gcp.vm.firewallGuest.manage",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.firewallGuest.manage. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 43,
+      "requirement": "gcp.vm.agent.install/update/status",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Agent install/update/status, signed command/replay defenses, enrollment privilege model and provider/guest health verification."
+    },
+    {
+      "requirement_id": 44,
+      "requirement": "gcp.vm.bootstrap.getLogs",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.bootstrap.getLogs. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 45,
+      "requirement": "gcp.compute.instanceGroups.*",
+      "provider_schema_candidate_count": 57,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.instanceGroups.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 46,
+      "requirement": "gcp.compute.templates.*",
+      "provider_schema_candidate_count": 10,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.templates.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 47,
+      "requirement": "gcp.vpc.networks.*",
+      "provider_schema_candidate_count": 13,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vpc.networks.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 48,
+      "requirement": "gcp.vpc.subnets.*",
+      "provider_schema_candidate_count": 10,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vpc.subnets.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 49,
+      "requirement": "gcp.vpc.routes.*",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vpc.routes.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 50,
+      "requirement": "gcp.firewalls.*",
+      "provider_schema_candidate_count": 7,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.firewalls.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 51,
+      "requirement": "gcp.networkPolicies.*",
+      "provider_schema_candidate_count": 16,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.networkPolicies.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 52,
+      "requirement": "gcp.nat.*",
+      "provider_schema_candidate_count": 22,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.nat.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 53,
+      "requirement": "gcp.vpn.*",
+      "provider_schema_candidate_count": 20,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.vpn.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 54,
+      "requirement": "gcp.addresses.*",
+      "provider_schema_candidate_count": 15,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.addresses.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 55,
+      "requirement": "gcp.dns.zones.*",
+      "provider_schema_candidate_count": 41,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.dns.zones.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 56,
+      "requirement": "gcp.dns.records.*",
+      "provider_schema_candidate_count": 8,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.dns.records.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 57,
+      "requirement": "gcp.loadBalancers.*",
+      "provider_schema_candidate_count": 58,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.loadBalancers.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 58,
+      "requirement": "gcp.certificates.*",
+      "provider_schema_candidate_count": 9,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.certificates.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 59,
+      "requirement": "gcp.healthChecks.*",
+      "provider_schema_candidate_count": 15,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.healthChecks.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 60,
+      "requirement": "gcp.cloudRun.services.*",
+      "provider_schema_candidate_count": 10,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Cloud Run service API catalogue/handler coverage beyond this fixed deployment, lifecycle/traffic/revision control, API-owned orchestration, tested rollback and live functional evidence."
+    },
+    {
+      "requirement_id": 61,
+      "requirement": "gcp.cloudRun.jobs.*",
+      "provider_schema_candidate_count": 14,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.cloudRun.jobs.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 62,
+      "requirement": "gcp.gke.*",
+      "provider_schema_candidate_count": 71,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.gke.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 63,
+      "requirement": "gcp.artifacts.repositories.*",
+      "provider_schema_candidate_count": 67,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.artifacts.repositories.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 64,
+      "requirement": "gcp.storage.buckets.*",
+      "provider_schema_candidate_count": 67,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.storage.buckets.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 65,
+      "requirement": "gcp.storage.objects.*",
+      "provider_schema_candidate_count": 14,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.storage.objects.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 66,
+      "requirement": "gcp.secrets.createVersion/access/rotate/revoke",
+      "provider_schema_candidate_count": 32,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.secrets.createVersion/access/rotate/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 67,
+      "requirement": "gcp.logging.query/sinks.manage",
+      "provider_schema_candidate_count": 246,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Logging query and sink-management implementations, typed query/pagination/tenant controls and provider verification; live worker inspection required."
+    },
+    {
+      "requirement_id": 68,
+      "requirement": "gcp.monitoring.metrics/alerts.*",
+      "provider_schema_candidate_count": 56,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.monitoring.metrics/alerts.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 69,
+      "requirement": "gcp.scheduler.jobs.*",
+      "provider_schema_candidate_count": 16,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.scheduler.jobs.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 70,
+      "requirement": "gcp.pubsub.topics/subscriptions.*",
+      "provider_schema_candidate_count": 38,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.pubsub.topics/subscriptions.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 71,
+      "requirement": "gcp.tasks.queues.*",
+      "provider_schema_candidate_count": 22,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.tasks.queues.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 72,
+      "requirement": "gcp.security.findings.list",
+      "provider_schema_candidate_count": 170,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.security.findings.list. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 73,
+      "requirement": "gcp.kms.keys.*",
+      "provider_schema_candidate_count": 77,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.kms.keys.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 74,
+      "requirement": "gcp.backups.*",
+      "provider_schema_candidate_count": 59,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "No equivalent executable operation established locally for gcp.backups.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
+    },
+    {
+      "requirement_id": 75,
+      "requirement": "supabase.orgs.list",
+      "provider_schema_candidate_count": 8,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Organization-level management listing and registry handler."
+    },
+    {
+      "requirement_id": 76,
+      "requirement": "supabase.projects.list/get/create/update/pause/restore/delete",
+      "provider_schema_candidate_count": 27,
+      "registered_operation_ids": [
+        "supabase.project.status",
+        "supabase.projects.get"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.project.status",
+        "supabase.projects.get"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 77,
+      "requirement": "supabase.project.config.get/set",
+      "provider_schema_candidate_count": 32,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Authorized get/set project configuration with change evidence and recovery."
+    },
+    {
+      "requirement_id": 78,
+      "requirement": "supabase.network.*",
+      "provider_schema_candidate_count": 6,
+      "registered_operation_ids": [
+        "supabase.network.restrictions.get"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.network.restrictions.get"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 79,
+      "requirement": "supabase.domains.*",
+      "provider_schema_candidate_count": 9,
+      "registered_operation_ids": [
+        "supabase.domains.get"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.domains.get"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 80,
+      "requirement": "supabase.branches.create/list/get/merge/delete",
+      "provider_schema_candidate_count": 11,
+      "registered_operation_ids": [
+        "supabase.branches.get",
+        "supabase.branches.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.branches.get",
+        "supabase.branches.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 81,
+      "requirement": "supabase.db.diff",
+      "provider_schema_candidate_count": 1,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Schema-diff execution and evidence."
+    },
+    {
+      "requirement_id": 82,
+      "requirement": "supabase.db.migrations.plan/apply/list/repair/verify",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "supabase.apply_migration",
+        "supabase.db.migrations.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.db.migrations.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 83,
+      "requirement": "supabase.functions.list/get/deploy/delete/invoke/logs",
+      "provider_schema_candidate_count": 9,
+      "registered_operation_ids": [
+        "deployment.management.release",
+        "supabase.deploy_edge_function",
+        "supabase.functions.get",
+        "supabase.functions.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "deployment.management.release",
+        "supabase.functions.get",
+        "supabase.functions.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 84,
+      "requirement": "supabase.functions.secrets.list/set/delete/rotate",
+      "provider_schema_candidate_count": 3,
+      "registered_operation_ids": [
+        "supabase.functions.secrets.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.functions.secrets.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 85,
+      "requirement": "supabase.project.logs.query",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Bounded platform log-query adapter and scope enforcement."
+    },
+    {
+      "requirement_id": 86,
+      "requirement": "supabase.project.health",
+      "provider_schema_candidate_count": 1,
+      "registered_operation_ids": [
+        "supabase.project.health",
+        "supabase.project.status"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.project.health",
+        "supabase.project.status"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 87,
+      "requirement": "supabase.backups.list/restore",
+      "provider_schema_candidate_count": 8,
+      "registered_operation_ids": [
+        "supabase.backups.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.backups.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 88,
+      "requirement": "supabase.sql.query",
+      "provider_schema_candidate_count": 1,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Bounded SQL-read executor, permissions, result limits and audit."
+    },
+    {
+      "requirement_id": 89,
+      "requirement": "supabase.sql.execute",
+      "provider_schema_candidate_count": 1,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Authorized SQL-write executor with transaction, approval-policy and recovery controls."
+    },
+    {
+      "requirement_id": 90,
+      "requirement": "supabase.sql.transaction",
+      "provider_schema_candidate_count": 1,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Typed transaction executor and connection/rollback semantics."
+    },
+    {
+      "requirement_id": 91,
+      "requirement": "supabase.schema.tables/views/materializedViews.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "supabase.schema.tables.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.schema.tables.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 92,
+      "requirement": "supabase.schema.functions/procedures/triggers.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "supabase.schema.functions.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.schema.functions.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 93,
+      "requirement": "supabase.schema.indexes/constraints/types/extensions.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "supabase.schema.indexes.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.schema.indexes.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 94,
+      "requirement": "supabase.database.roles/grants/defaultPrivileges.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General tenant-safe database role/grant/default-privilege management."
+    },
+    {
+      "requirement_id": 95,
+      "requirement": "supabase.database.rls.policies.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Typed RLS policy CRUD, effective-access tests and recovery."
+    },
+    {
+      "requirement_id": 96,
+      "requirement": "supabase.database.replication.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Replication adapter, provider support and permission checks."
+    },
+    {
+      "requirement_id": 97,
+      "requirement": "supabase.data.insert/upsert/update/delete/bulkImport/bulkExport",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General family coverage with table/tenant allowlists, bounded bulk jobs and evidence."
+    },
+    {
+      "requirement_id": 98,
+      "requirement": "supabase.database.inspect/explain/analyze/vacuum/reindex",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "supabase.database.inspect"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.database.inspect"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 99,
+      "requirement": "supabase.database.connections/pooler/slowQueries/locks",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "supabase.database.connections.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.database.connections.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 100,
+      "requirement": "supabase.database.backup/snapshot/restore/verify",
+      "provider_schema_candidate_count": 8,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Recoverable database backup pipeline and exercised restoration/integrity tests."
+    },
+    {
+      "requirement_id": 101,
+      "requirement": "supabase.database.cron/jobs.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Database cron/job management and provider support validation."
+    },
+    {
+      "requirement_id": 102,
+      "requirement": "supabase.database.webhooks.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Database webhook configuration and delivery verification."
+    },
+    {
+      "requirement_id": 103,
+      "requirement": "supabase.auth.users.list/get/create/update/disable/delete",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full user-administration verbs with tenant-bound identity policy and recovery."
+    },
+    {
+      "requirement_id": 104,
+      "requirement": "supabase.auth.providers/config/hooks/sessions/mfa.*",
+      "provider_schema_candidate_count": 18,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full authentication configuration/session/MFA family, effective-access and consent checks."
+    },
+    {
+      "requirement_id": 105,
+      "requirement": "supabase.storage.buckets.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Bucket CRUD/settings/access lifecycle handlers."
+    },
+    {
+      "requirement_id": 106,
+      "requirement": "supabase.storage.objects.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General storage-object family expansion, listing/search/copy/move/retention as required, explicit central registry mapping and live tenant tests."
+    },
+    {
+      "requirement_id": 107,
+      "requirement": "supabase.storage.policies.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Storage-policy CRUD and tenant isolation verification."
+    },
+    {
+      "requirement_id": 108,
+      "requirement": "supabase.realtime.channels/permissions/publications.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Typed realtime administration handlers and connection tests."
+    },
+    {
+      "requirement_id": 109,
+      "requirement": "supabase.vault.secrets.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Vault secret lifecycle API with redaction and auditable grants."
+    },
+    {
+      "requirement_id": 110,
+      "requirement": "supabase.logs.query",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Bounded platform/database log adapter and central registry exposure."
+    },
+    {
+      "requirement_id": 111,
+      "requirement": "supabase.tenant.export/erase/restore",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Consented tenant export/erase/restore orchestration, retention/legal holds and recovery tests."
+    },
+    {
+      "requirement_id": 112,
+      "requirement": "supabase.compliance.audit",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Compliance collection with tenant scope, immutable evidence and policy checks."
+    },
+    {
+      "requirement_id": 113,
+      "requirement": "github.apps.installations.list/verify",
+      "provider_schema_candidate_count": 17,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "App installation discovery/verification and scopes."
+    },
+    {
+      "requirement_id": 114,
+      "requirement": "github.repos.list/get/create/update/archive/delete",
+      "provider_schema_candidate_count": 7,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full repository-lifecycle adapter and recovery constraints."
+    },
+    {
+      "requirement_id": 115,
+      "requirement": "github.refs.list/create/update/delete",
+      "provider_schema_candidate_count": 4,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General refs lifecycle with CAS/branch protection and central registry mapping."
+    },
+    {
+      "requirement_id": 116,
+      "requirement": "github.branches.list/protect",
+      "provider_schema_candidate_count": 34,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Branch enumeration/protection administration and API-owned handlers."
+    },
+    {
+      "requirement_id": 117,
+      "requirement": "github.files.get/create/update/delete",
+      "provider_schema_candidate_count": 3,
+      "registered_operation_ids": [
+        "github.push_files",
+        "github.read",
+        "github.update_file"
+      ],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "All file verbs, generalized authorized scope, immutable artifacts and central API mapping with functional evidence."
+    },
+    {
+      "requirement_id": 118,
+      "requirement": "github.git.blobs/trees/commits.*",
+      "provider_schema_candidate_count": 6,
+      "registered_operation_ids": [
+        "github.commit"
+      ],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General atomic multi-file/object adapter with immutable source and CAS/recovery."
+    },
+    {
+      "requirement_id": 119,
+      "requirement": "github.pullRequests.list/create/update/review/merge/close",
+      "provider_schema_candidate_count": 42,
+      "registered_operation_ids": [
+        "github.merge"
+      ],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full PR family through Sandy API with permissions, protected-branch policy and independently observed checks."
+    },
+    {
+      "requirement_id": 120,
+      "requirement": "github.issues.*",
+      "provider_schema_candidate_count": 50,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Issue verb expansion, CRUD/assignment/state handlers, tenant/repository permissions and registry mapping."
+    },
+    {
+      "requirement_id": 121,
+      "requirement": "github.labels.*",
+      "provider_schema_candidate_count": 22,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full labels administration and API-owned exposure."
+    },
+    {
+      "requirement_id": 122,
+      "requirement": "github.milestones.*",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Milestone lifecycle operation expansion and provider adapter."
+    },
+    {
+      "requirement_id": 123,
+      "requirement": "github.discussions.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Discussion lifecycle operation expansion and provider GraphQL adapter where required."
+    },
+    {
+      "requirement_id": 124,
+      "requirement": "github.tags.*",
+      "provider_schema_candidate_count": 4,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Tag lifecycle, protected-reference policy and provider verification."
+    },
+    {
+      "requirement_id": 125,
+      "requirement": "github.releases.create/publish/delete",
+      "provider_schema_candidate_count": 15,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Release artifact creation/publication/deletion with immutable tag/commit references."
+    },
+    {
+      "requirement_id": 126,
+      "requirement": "github.packages.*",
+      "provider_schema_candidate_count": 24,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Package lifecycle expansion, package-scoped grants and adapter."
+    },
+    {
+      "requirement_id": 127,
+      "requirement": "github.actions.workflows.list/dispatch/enable/disable",
+      "provider_schema_candidate_count": 7,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General authorized workflow list/dispatch/enable/disable API and durable receipt tracking."
+    },
+    {
+      "requirement_id": 128,
+      "requirement": "github.actions.runs.get/cancel/rerun",
+      "provider_schema_candidate_count": 25,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full run get/cancel/rerun family with idempotency and verified terminal state."
+    },
+    {
+      "requirement_id": 129,
+      "requirement": "github.actions.artifacts.list/download/delete",
+      "provider_schema_candidate_count": 4,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General artifact lifecycle adapter, bounded downloads and retention verification."
+    },
+    {
+      "requirement_id": 130,
+      "requirement": "github.checks.*",
+      "provider_schema_candidate_count": 12,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Checks family expansion and provider-scoped adapter."
+    },
+    {
+      "requirement_id": 131,
+      "requirement": "github.statuses.*",
+      "provider_schema_candidate_count": 6,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Typed status read/write adapter and exact-commit attribution."
+    },
+    {
+      "requirement_id": 132,
+      "requirement": "github.deployments.create/status",
+      "provider_schema_candidate_count": 7,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "API-owned GitHub deployment records/status with independent runtime evidence."
+    },
+    {
+      "requirement_id": 133,
+      "requirement": "github.environments.list/update",
+      "provider_schema_candidate_count": 14,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Environment discovery/update and protection-rule verification."
+    },
+    {
+      "requirement_id": 134,
+      "requirement": "github.repoSecrets.set/remove",
+      "provider_schema_candidate_count": 14,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Provider public-key encryption, secret lifecycle and redacted durable evidence."
+    },
+    {
+      "requirement_id": 135,
+      "requirement": "github.variables.set/remove",
+      "provider_schema_candidate_count": 19,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Scoped variable administration adapter and provider verification."
+    },
+    {
+      "requirement_id": 136,
+      "requirement": "github.environmentSecrets.*",
+      "provider_schema_candidate_count": 5,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Environment secret lifecycle with key encryption, protection rules and audit."
+    },
+    {
+      "requirement_id": 137,
+      "requirement": "github.webhooks.list/create/update/delete/deliveries/redeliver",
+      "provider_schema_candidate_count": 23,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "GitHub webhook CRUD/delivery/redelivery and signature verification."
+    },
+    {
+      "requirement_id": 138,
+      "requirement": "github.collaborators/teams/permissions.*",
+      "provider_schema_candidate_count": 100,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Collaboration and grant-management family, organizational authorization and audit."
+    },
+    {
+      "requirement_id": 139,
+      "requirement": "github.rulesets.*",
+      "provider_schema_candidate_count": 18,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Ruleset list/get/create/update/delete expansion and protected-rule enforcement."
+    },
+    {
+      "requirement_id": 140,
+      "requirement": "github.audit.list",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Provider audit listing, pagination, retention and authorized organization scope."
+    },
+    {
+      "requirement_id": 141,
+      "requirement": "github.security.alerts/list",
+      "provider_schema_candidate_count": 10,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Security-alert listing and authorized remediation verbs."
+    },
+    {
+      "requirement_id": 142,
+      "requirement": "github.codeScanning.*",
+      "provider_schema_candidate_count": 25,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Code-scanning family expansion and provider permissions."
+    },
+    {
+      "requirement_id": 143,
+      "requirement": "sandy.tenancy_and_subscription.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Customer/org CRUD, suspend/reactivate, seats/roles/quotas, entitlements, subscription/invoice states and audited offboarding APIs are not implemented as a complete family in available source."
+    },
+    {
+      "requirement_id": 144,
+      "requirement": "sandy.authentication_and_security.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Complete account/session revocation, passkey/MFA/recovery, devices, OAuth consent lifecycle, access logs and tenant policy administration; browser locking does not establish API coverage."
+    },
+    {
+      "requirement_id": 145,
+      "requirement": "sandy.connections_composio.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "composio.discover_toolkits",
+        "composio.discover_tools",
+        "composio.execute_read",
+        "composio.execution_status"
+      ],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Authenticated general provider tool execution, webhook lifecycle, refresh/reconnect health contracts, pagination, scoped consent/grants and live provider verification; existing discover/connect subset is not entire family."
+    },
+    {
+      "requirement_id": 146,
+      "requirement": "sandy.email_and_microsoft_graph.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full mailbox/folder/message CRUD/search, attachments, drafts/replies/forwarding/rules, webhook renewals, delta sync and delivery reconciliation exposed through central API. Stored email/profile ingestion is not complete Graph administration."
+    },
+    {
+      "requirement_id": 147,
+      "requirement": "sandy.google_gmail.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full Gmail thread/label lifecycle, Drive CRUD/sharing, Google Calendar events/attendees, Contacts editing, cursor/push-sync and central catalogue mappings. Draft/send subset cannot satisfy domain family."
+    },
+    {
+      "requirement_id": 148,
+      "requirement": "sandy.calendar_and_scheduling.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "calendar.cancel",
+        "calendar.conflicts",
+        "calendar.create",
+        "calendar.get",
+        "calendar.list",
+        "calendar.update"
+      ],
+      "installed_gateway_operation_ids": [
+        "calendar.conflicts",
+        "calendar.get",
+        "calendar.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 149,
+      "requirement": "sandy.whatsapp.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Account/number/template administration, full media lifecycle, template sends/window/opt-in policies and complete call/tenant APIs; source subset and receipts do not establish complete family or live behavior."
+    },
+    {
+      "requirement_id": 150,
+      "requirement": "sandy.voice_sip_and_video.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "video.execution.preflight",
+        "video.install",
+        "video.install.preflight",
+        "video.logs",
+        "video.restart",
+        "video.status",
+        "video.verify_call"
+      ],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [
+        "video.execution.preflight",
+        "video.install.preflight",
+        "video.status"
+      ],
+      "complete": false,
+      "remaining_capability": "Conference/room/participant lifecycle, SIP trunks, tokens, recording, media bridge health and guest installation/service operation; video VM queue/status is not working media service."
+    },
+    {
+      "requirement_id": 151,
+      "requirement": "sandy.web_chat_and_conversations.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Conversation archive/message edit, streaming, complete attachments/channel-link/thread management and centralized API/MCP exposure; local conversation subset remains production-unverified."
+    },
+    {
+      "requirement_id": 152,
+      "requirement": "sandy.memory_and_social_graph.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "memory.ask",
+        "memory.biography",
+        "memory.evidence",
+        "memory.life_brief",
+        "memory.life_search",
+        "memory.life_spaces",
+        "memory.overview",
+        "memory.search",
+        "memory.settings",
+        "memory.tree"
+      ],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Complete fact revise/reject/provenance/search/privacy controls, biography and knowledge graph lifecycle, tenant erase/export and family-wide idempotency/postcondition proofs."
+    },
+    {
+      "requirement_id": 153,
+      "requirement": "sandy.agenda_tasks_and_projects.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "tasks.archive",
+        "tasks.complete",
+        "tasks.create",
+        "tasks.get",
+        "tasks.list",
+        "tasks.update"
+      ],
+      "installed_gateway_operation_ids": [
+        "tasks.get",
+        "tasks.list"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 154,
+      "requirement": "sandy.missions_and_autonomous_work.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Full pause/cancel/retry and durable autonomous provider execution, lease recovery, acceptance verification and central registry mappings; planning/awaiting approval is not execution completion."
+    },
+    {
+      "requirement_id": 155,
+      "requirement": "sandy.controller_and_qa.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "engineering.change.artifact",
+        "engineering.change.artifacts",
+        "engineering.change.auto_approve",
+        "engineering.change.detail",
+        "engineering.change.events",
+        "engineering.change.get",
+        "engineering.change.list",
+        "engineering.change.register",
+        "engineering.change.status",
+        "engineering.change.test",
+        "engineering.change.tests",
+        "engineering.changes.list",
+        "engineering.implementation.request",
+        "engineering.job.approve",
+        "engineering.job.auto_approve",
+        "engineering.job.execute",
+        "engineering.job.status",
+        "engineering.preflight",
+        "engineering.rollback.approve",
+        "engineering.rollback.create_pr",
+        "engineering.rollback.prepare",
+        "engineering.rollback.request",
+        "engineering.rollback.validate",
+        "engineering.rollback.verify"
+      ],
+      "installed_gateway_operation_ids": [
+        "engineering.change.artifacts",
+        "engineering.change.detail",
+        "engineering.change.events",
+        "engineering.change.tests",
+        "engineering.changes.list",
+        "engineering.preflight"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Complete incident/telemetry/dashboard/experiment/release-promotion operation catalogue and verified production execution; QA source records are not test certification. Preserve owner/scoped change gates."
+    },
+    {
+      "requirement_id": 156,
+      "requirement": "sandy.files_and_documents.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [
+        "files.archive",
+        "files.get",
+        "files.list",
+        "files.rename",
+        "files.search",
+        "files.set_description"
+      ],
+      "installed_gateway_operation_ids": [
+        "files.get",
+        "files.list",
+        "files.search"
+      ],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
+    },
+    {
+      "requirement_id": 157,
+      "requirement": "sandy.notifications_and_alerts.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "General notification templates/subscriptions/preferences/quiet-hours/opt-outs, push channels, retries/escalation and audited notification API family."
+    },
+    {
+      "requirement_id": 158,
+      "requirement": "sandy.payments_and_commerce.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Plans/prices, invoice/payment-intent/refund/payout/tax APIs, entitlement reconciliation, financial audit and PCI provider boundaries."
+    },
+    {
+      "requirement_id": 159,
+      "requirement": "sandy.customer_lifecycle_and_support.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "CRM/support ticketing/SLAs/churn, customer consent lifecycle, offboarding/deletion/export and data-subject-request APIs with retention/legal-hold enforcement."
+    },
+    {
+      "requirement_id": 160,
+      "requirement": "sandy.search_agents_tools_and_ai.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Complete model/prompt version administration, authoritative tool-catalogue mapping, per-tenant quotas/cost accounting, evaluation/guardrail lifecycle and production integration evidence."
+    },
+    {
+      "requirement_id": 161,
+      "requirement": "sandy.product_configuration.*",
+      "provider_schema_candidate_count": 0,
+      "registered_operation_ids": [],
+      "installed_gateway_operation_ids": [],
+      "historical_registry_verified_operation_ids": [],
+      "complete": false,
+      "remaining_capability": "Tenant-authorized branding/pages/templates/locales/currencies/feature/settings APIs, frontend build/deploy and configuration rollback with provider-verified receipts."
+    }
+  ]
+}

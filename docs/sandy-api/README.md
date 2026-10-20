@@ -31,7 +31,18 @@ See the normative section **Mandatory universal API and MCP architecture** in `a
 
 Codex writes progress to `docs/sandy-api/implementation-status.md` and commits code changes to this repository. ChatGPT reads those commits to review or continue work. New requirements go into `docs/sandy-api/api-scope-161.md`, and actual runtime state remains in Supabase. Never store credentials or customer secrets in this repository.
 
-## Last independently observed state (20 October 2026)
+## Latest engineering evidence
+
+See [implementation-status.md](implementation-status.md),
+[scope-reconciliation.json](scope-reconciliation.json) and
+[project-read-release-evidence.json](project-read-release-evidence.json).
+The latest release has API v5, MCP v3 and project-read handler v3; deployed source
+maps match the committed source. The live registry has 105 records. Fifteen new
+records retain `verified=false`, with actual provider/database evidence and the
+remaining test prerequisites recorded separately. Full scope acceptance and
+migration of the legacy MCP executor remain unfinished.
+
+## Historical baseline before this release (20 October 2026)
 
 - Sandy operation registry: 90 entries, 3 marked verified.
 - `sandy-infrastructure-read` deployed v4.
