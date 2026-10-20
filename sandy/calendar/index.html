@@ -460,6 +460,6 @@ try{
  await Promise.race([idle.check(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Security check timed out")),5000))]);
  const {data:{session}}=await Promise.race([sb.auth.getSession(),new Promise((_,reject)=>setTimeout(()=>reject(new Error("Sign-in check timed out")),8000))]);
  if(!session){message("Please sign in to load your calendar.");setTimeout(()=>location.replace("../app/?return="+encodeURIComponent(location.pathname)),1200)}
- else {await load();loadCalendarSources().catch(e=>console.error("calendar_sources",e));try{const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;if(timezone)api("timezone_observe",{timezone}).catch(e=>console.warn("timezone_observation_failed",e.message))}catch(e){console.warn("browser_timezone_unavailable",e)}}
+ else {await load();loadCalendarSources().catch(e=>console.error("calendar_sources",e));void syncGoogleCalendarSilently();try{const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;if(timezone)api("timezone_observe",{timezone}).catch(e=>console.warn("timezone_observation_failed",e.message))}catch(e){console.warn("browser_timezone_unavailable",e)}}
 }catch(e){console.error("calendar_bootstrap",e);message("Calendar sign-in or startup failed: "+e.message+" — refresh or sign in again.")}
 </script></body></html>
