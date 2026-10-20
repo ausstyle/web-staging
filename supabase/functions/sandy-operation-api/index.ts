@@ -13,7 +13,7 @@ export type OperationDependencies = {
   base: string;
   service: string;
   anon: string;
-  db: Pick<SupabaseClient, "auth" | "from">;
+  db: Pick<SupabaseClient, "auth" | "from" | "rpc">;
   fetch?: typeof fetch;
 };
 const reply = (status: number, data: unknown) =>
@@ -76,6 +76,10 @@ const isCustomerRead = (operation: string) =>
 const allowedHandlers: Readonly<
   Record<string, { functionName: string; action?: string }>
 > = Object.freeze({
+  "deployment.jobs.cancel": {
+    functionName: "sandy-operation-api",
+    action: "cancel_pending_job",
+  },
   ...Object.fromEntries(customerReadOperations.map((operation) => [operation, {
     functionName: "sandy-operations-api",
   }])),
@@ -143,6 +147,7 @@ function enabledEntry(
 }
 function ownerOnly(operation: string) {
   return operation === "deployment.management.release" ||
+    operation === "deployment.jobs.cancel" ||
     infrastructureOperations.includes(
       operation as typeof infrastructureOperations[number],
     ) ||
@@ -220,6 +225,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       /^\/v1\/operations\/([a-z][a-z0-9_.-]{2,100}):execute$/,
     );
     const jobPath = path.match(/^\/v1\/jobs\/([a-f0-9-]{36})(\/events)?$/i);
+    const cancelPath = path.match(
+      /^\/v1\/jobs\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}):cancel$/i,
+    );
     if (request.method === "GET") {
       if (path === "/v1/capabilities") routedBody = { action: "list" };
       else if (describePath) {
@@ -242,7 +250,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       } else return reply(405, { error: "method_not_allowed" });
     } else if (request.method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
-    } else if (path !== "" && path !== "/" && !executePath) {
+    } else if (path !== "" && path !== "/" && !executePath && !cancelPath) {
       return reply(404, { error: "route_not_found" });
     }
     if (!base || !service) {
@@ -274,6 +282,14 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (
         executePath && Object.keys(value).some((key) => key !== "arguments")
       ) throw Error();
+      if (cancelPath) {
+        if (Object.keys(value).length) throw Error();
+        body = {
+          action: "execute",
+          operation: "deployment.jobs.cancel",
+          arguments: { job_id: cancelPath[1] },
+        };
+      }
     } catch {
       return reply(400, { error: "invalid_request" });
     }
@@ -392,6 +408,47 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         error: "operation_schema_unavailable",
         executed: false,
       });
+    }
+    if (operation === "deployment.jobs.cancel") {
+      if (entry.verified !== true) {
+        return reply(424, {
+          error: "operation_requires_live_verification",
+          executed: false,
+        });
+      }
+      const { data, error } = await Promise.resolve().then(() => db.rpc("sandy_api_cancel_deployment_job", {
+        p_job_id: (body.arguments as Record<string, unknown>).job_id,
+        p_actor_id: user.id,
+      })).catch(() => ({ data: null, error: true }));
+      if (error) {
+        return reply(502, {
+          error: "cancellation_outcome_unknown",
+          executed: null,
+          reconciliation_required: true,
+        });
+      }
+      if (!isObject(data) || data.ok !== true) {
+        return reply(
+          isObject(data) && [403, 404, 409].includes(Number(data.http_status))
+            ? Number(data.http_status)
+            : 503,
+          {
+            ok: false,
+            error: isObject(data) && typeof data.error === "string"
+              ? data.error
+              : "cancellation_unavailable",
+            executed: false,
+          },
+        );
+      }
+      if (schemaValid(entry.output_schema, data) !== true) {
+        return reply(502, {
+          error: "cancellation_result_invalid",
+          executed: null,
+          reconciliation_required: true,
+        });
+      }
+      return reply(200, { ok: true, operation, executed: true, result: data });
     }
     if (handler.functionName === "sandy-operations-api") {
       if (

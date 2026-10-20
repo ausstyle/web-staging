@@ -39,11 +39,21 @@ type Options = {
   roleError?: boolean;
   tenant?: string | null;
   tenantError?: boolean;
+  rpcData?: Row;
+  rpcError?: boolean;
   backend?: (input: string, init?: RequestInit) => Response | Promise<Response>;
 };
 function harness(options: Options = {}) {
   const calls: { url: string; init?: RequestInit }[] = [];
+  const rpcCalls: { name: string; args: unknown }[] = [];
   const db = {
+    rpc(name: string, args: unknown) {
+      rpcCalls.push({ name, args });
+      return Promise.resolve({
+        data: options.rpcData ?? null,
+        error: options.rpcError ? { message: "connection lost" } : null,
+      });
+    },
     auth: {
       getUser: () =>
         Promise.resolve({
@@ -140,7 +150,7 @@ function harness(options: Options = {}) {
         body: JSON.stringify(body),
       }),
     );
-  return { handler, request, calls };
+  return { handler, request, calls, rpcCalls };
 }
 
 Deno.test("gateway requires authenticated controller membership", async () => {
@@ -838,4 +848,132 @@ Deno.test("all provider reads and customer reads are installed at the correct fi
       "Bearer test-user-jwt",
     );
   }
+});
+
+const cancelOperation = {
+  ...preflight,
+  operation: "deployment.jobs.cancel",
+  is_mutation: true,
+  verified: true,
+  input_schema: {
+    type: "object",
+    required: ["job_id"],
+    properties: { job_id: { type: "string", format: "uuid" } },
+    additionalProperties: false,
+  },
+  output_schema: {
+    type: "object",
+    required: ["ok", "job_id", "state", "already_cancelled"],
+    properties: {
+      ok: { const: true },
+      job_id: { type: "string", format: "uuid" },
+      state: { const: "cancelled" },
+      already_cancelled: { type: "boolean" },
+    },
+    additionalProperties: false,
+  },
+};
+const cancelJobId = "11111111-2222-4333-8444-555555555555";
+Deno.test("queued cancellation requires a verified exposed contract and owner; binds actor to the actual authenticated identity", async () => {
+  for (
+    const [entry, role, status] of [
+      [{ ...cancelOperation, api_exposed: false }, "owner", 404],
+      [{ ...cancelOperation, verified: false }, "owner", 424],
+      [cancelOperation, "operator", 403],
+    ] as [Row, string, number][]
+  ) {
+    const h = harness({ rows: [entry], role });
+    assert.equal(
+      (await h.request({
+        action: "execute",
+        operation: cancelOperation.operation,
+        arguments: { job_id: cancelJobId },
+      })).status,
+      status,
+    );
+    assert.equal(h.rpcCalls.length, 0);
+  }
+  const h = harness({
+    rows: [cancelOperation],
+    rpcData: {
+      ok: true,
+      job_id: cancelJobId,
+      state: "cancelled",
+      already_cancelled: false,
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation: cancelOperation.operation,
+    arguments: { job_id: cancelJobId },
+  });
+  assert.equal(response.status, 200);
+  assert.deepEqual(h.rpcCalls, [{
+    name: "sandy_api_cancel_deployment_job",
+    args: { p_job_id: cancelJobId, p_actor_id: "controller-test-user" },
+  }]);
+  assert.equal(h.calls.length, 0);
+  assert.equal(
+    (await h.request({
+      action: "execute",
+      operation: cancelOperation.operation,
+      arguments: { job_id: cancelJobId, actor_id: "forged-owner" },
+    })).status,
+    400,
+  );
+});
+Deno.test("cancellation preserves running-job refusal, ownership denial and ambiguous transaction outcomes", async () => {
+  for (
+    const [error, status] of [["job_not_cancellable", 409], [
+      "owner_required",
+      403,
+    ], ["job_not_found", 404]] as [string, number][]
+  ) {
+    const h = harness({
+      rows: [cancelOperation],
+      rpcData: { ok: false, error, http_status: status },
+    });
+    const response = await h.request({
+      action: "execute",
+      operation: cancelOperation.operation,
+      arguments: { job_id: cancelJobId },
+    });
+    assert.equal(response.status, status);
+    assert.equal((await response.json()).executed, false);
+  }
+  const uncertain = harness({ rows: [cancelOperation], rpcError: true });
+  const response = await uncertain.request({
+    action: "execute",
+    operation: cancelOperation.operation,
+    arguments: { job_id: cancelJobId },
+  });
+  const body = await response.json();
+  assert.equal(response.status, 502);
+  assert.equal(body.executed, null);
+  assert.equal(body.reconciliation_required, true);
+});
+Deno.test("canonical cancellation route rejects actor overrides and uses the registered operation", async () => {
+  const h = harness({
+    rows: [cancelOperation],
+    rpcData: {
+      ok: true,
+      job_id: cancelJobId,
+      state: "cancelled",
+      already_cancelled: true,
+    },
+  });
+  const request = (body: unknown) =>
+    h.handler(
+      new Request(`https://example.invalid/v1/jobs/${cancelJobId}:cancel`, {
+        method: "POST",
+        headers: {
+          authorization: "Bearer test-user-jwt",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body),
+      }),
+    );
+  assert.equal((await request({})).status, 200);
+  assert.equal((await request({ actor_id: "forged" })).status, 400);
+  assert.equal(h.rpcCalls.length, 1);
 });
