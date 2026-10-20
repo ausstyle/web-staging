@@ -9,7 +9,7 @@ This directory is the canonical **GitHub documentation handoff** between ChatGPT
 - **Live implementation and evidence:** Supabase project `zmqlyygzqoidkcwdysok`, table `public.sandy_operation_registry`.
 - **Runtime and source:** deployed Edge Functions and corresponding checked-in source, not assumptions derived from registry entries.
 
-The original requirements were also created as `Sandy_Autonomous_Control_API_Specification.pdf` and `Sandy_API_Function_Inventory.xlsx`. The scope document provides architectural context. The Markdown checklist is the convenient in-repo textual reference. Avoid treating the current 90 registry records as equivalent to the 161 requirements.
+The original requirements were also created as `Sandy_Autonomous_Control_API_Specification.pdf` and `Sandy_API_Function_Inventory.xlsx`. The scope document provides architectural context. The Markdown checklist is the convenient in-repo textual reference. Registry counts are not equivalent to the 161 requirements.
 
 ## Universal API routing rule (mandatory)
 
@@ -36,11 +36,13 @@ Codex writes progress to `docs/sandy-api/implementation-status.md` and commits c
 See [implementation-status.md](implementation-status.md),
 [scope-reconciliation.json](scope-reconciliation.json) and
 [project-read-release-evidence.json](project-read-release-evidence.json).
-The latest release has API v5, MCP v3 and project-read handler v3; deployed source
-maps match the committed source. The live registry has 105 records. Fifteen new
-records retain `verified=false`, with actual provider/database evidence and the
-remaining test prerequisites recorded separately. Full scope acceptance and
-migration of the legacy MCP executor remain unfinished.
+The latest release has API v7, MCP v3 and project-read handler v4; downloaded
+source maps match the committed source, including API helper modules. The live
+registry has 118 records. Evidence was updated for 39 operations while preserving
+all verification flags; three historical video flags remain and no new operation
+is declared verified. All 161 requirements are reconciled, with full acceptance
+and universal routing still incomplete. See [authentication requirements](auth-test-requirements.md)
+and [legacy MCP routing audit](mcp-routing-audit.md) for precise remaining work.
 
 ## Historical baseline before this release (20 October 2026)
 

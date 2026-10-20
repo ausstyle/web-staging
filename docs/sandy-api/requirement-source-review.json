@@ -6,12 +6,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Caller-filtered executable catalogue and change digest are implemented; complete provider availability, grants and verification aggregation remain incomplete.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "GET /v1/capabilities",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "system.registry.list",
       "system.registry.summary"
@@ -29,12 +29,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Typed describe route exists; uniform version/example/grant/readiness metadata for every scope operation remains incomplete.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "GET /v1/capabilities/{operation}",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "system.registry.describe"
     ],
@@ -51,12 +51,12 @@
       "supabase/functions/sandy-deployment-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Synchronous typed dispatch exists for installed reads; durable orchestration, uniform envelopes, quotas and all scoped executors remain incomplete.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "POST /v1/operations/{operation}:execute",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -70,12 +70,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Owner-only job read route exists; complete tenant/job ownership and provider request-ID lifecycle contracts remain incomplete.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "GET /v1/jobs/{jobId}",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "deployment.jobs.get",
       "deployment.jobs.list"
@@ -95,12 +95,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Owner-only bounded event read exists; streaming, resume cursors and complete progress semantics remain incomplete.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "GET /v1/jobs/{jobId}/events",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "deployment.jobs.events"
     ],
@@ -117,12 +117,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Pending/approved cancellation is deployed and transactionally tested but API/MCP exposure is disabled pending authenticated attestation; running/provider cancellation is unsupported.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "POST /v1/jobs/{jobId}:cancel",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "deployment.jobs.cancel"
     ],
@@ -133,18 +133,24 @@
   },
   {
     "requirement_id": 7,
-    "source_status": "no_local_handler",
+    "source_status": "partial_source",
     "source_paths": [
-      "supabase/functions/sandy-deployment-api/index.ts"
+      "supabase/functions/sandy-deployment-api/index.ts",
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "supabase/functions/sandy-deployment-api/index.ts:174-280 has execute/status/request branches and compare-and-swap claim for a scoped GitHub write, but no retry action.",
-    "missing_capability": "Idempotent step retry API, classified failures, backoff/jitter, leases, dead-letter flow and ambiguous provider-result reconciliation.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Owner-only retry admission is deployed with immutable approval snapshots, target pins, one child per parent and depth three; API exposure stays disabled pending authenticated attestation. It does not dispatch, perform automatic backoff, or implement general failed-step retry.",
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "POST /v1/jobs/{jobId}:retry",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
-    "live_registered_operations": [],
-    "gateway_source_operations": [],
+    "registry_status": "inspected_118_rows_20261020",
+    "live_registered_operations": [
+      "deployment.jobs.retry"
+    ],
+    "gateway_source_operations": [
+      "deployment.jobs.retry"
+    ],
     "complete": false
   },
   {
@@ -159,7 +165,7 @@
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "POST /v1/jobs/{jobId}:rollback",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -177,7 +183,7 @@
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "GET /v1/audit?resource=...",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "deployment.audit.list"
     ],
@@ -198,7 +204,7 @@
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "POST /v1/plans:validate",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -215,7 +221,7 @@
     "required_access": "Management and database access work. The project endpoint hostname is blocked by the cloud network proxy until saved egress changes apply. Controller user-session tests are deferred; independent code, deployment and database tests continued.",
     "original_operation": "POST /v1/plans:execute",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -233,7 +239,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -250,7 +256,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -267,7 +273,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -284,7 +290,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -301,7 +307,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -318,7 +324,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -335,7 +341,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -352,7 +358,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -369,7 +375,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -389,7 +395,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -406,7 +412,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -423,7 +429,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -440,7 +446,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -457,7 +463,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -478,7 +484,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -498,7 +504,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -518,7 +524,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -535,7 +541,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -552,7 +558,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -569,7 +575,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -589,7 +595,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -606,7 +612,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -623,7 +629,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -640,7 +646,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -657,7 +663,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -674,7 +680,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -691,7 +697,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -711,7 +717,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -728,7 +734,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -745,7 +751,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -762,7 +768,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -781,7 +787,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -798,7 +804,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -815,7 +821,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -832,7 +838,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -849,7 +855,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -866,7 +872,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -883,7 +889,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -900,7 +906,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -917,7 +923,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -934,7 +940,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -951,7 +957,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -968,7 +974,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -985,7 +991,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1002,7 +1008,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1019,7 +1025,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1036,7 +1042,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1053,7 +1059,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1073,7 +1079,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1090,7 +1096,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1107,7 +1113,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1124,7 +1130,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1141,7 +1147,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1158,7 +1164,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1175,7 +1181,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1195,7 +1201,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1212,7 +1218,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1229,7 +1235,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1246,7 +1252,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1263,7 +1269,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1280,7 +1286,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1297,7 +1303,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1314,7 +1320,7 @@
     "production_deployment": "not_attested_for_this_family",
     "functional_verification": "not_run_by_this_release",
     "complete": false,
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": []
   },
@@ -1325,7 +1331,7 @@
     "source_evidence": "No organization listing handler exists in the checked-in Edge API gateway or deployment executor. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Organization-level management listing and registry handler.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1338,10 +1344,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.project.status",
       "supabase.projects.get"
@@ -1359,7 +1365,7 @@
     "source_evidence": "Application environment reads are not administrative project-configuration APIs. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Authorized get/set project configuration with change evidence and recovery.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1372,10 +1378,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.network.restrictions.get"
     ],
@@ -1392,10 +1398,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.domains.get"
     ],
@@ -1412,10 +1418,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.branches.get",
       "supabase.branches.list"
@@ -1433,7 +1439,7 @@
     "source_evidence": "No database schema-diff handler found; source-file reconciliation is not a database diff. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Schema-diff execution and evidence.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1448,10 +1454,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.apply_migration",
       "supabase.db.migrations.list"
@@ -1473,10 +1479,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "deployment.management.release",
       "supabase.deploy_edge_function",
@@ -1498,10 +1504,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.functions.secrets.list"
     ],
@@ -1517,7 +1523,7 @@
     "source_evidence": "No Supabase project log-query handler found. Application event-table queries do not equal platform logs. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Bounded platform log-query adapter and scope enforcement.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1531,10 +1537,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.project.health",
       "supabase.project.status"
@@ -1553,10 +1559,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.backups.list"
     ],
@@ -1572,7 +1578,7 @@
     "source_evidence": "Supabase SDK from()/rpc() calls execute fixed application queries; no authorized arbitrary/parameterized SQL query control API exists locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Bounded SQL-read executor, permissions, result limits and audit.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1584,7 +1590,7 @@
     "source_evidence": "Fixed application CRUD and migration artifacts do not provide a SQL administrative execution handler. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Authorized SQL-write executor with transaction, approval-policy and recovery controls.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1596,7 +1602,7 @@
     "source_evidence": "No general SQL transaction operation handler found. Existing RPC atomicity is application-specific. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Typed transaction executor and connection/rollback semantics.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1611,15 +1617,19 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
-      "supabase.schema.tables.list"
+      "supabase.schema.materialized_views.list",
+      "supabase.schema.tables.list",
+      "supabase.schema.views.list"
     ],
     "gateway_source_operations": [
-      "supabase.schema.tables.list"
+      "supabase.schema.materialized_views.list",
+      "supabase.schema.tables.list",
+      "supabase.schema.views.list"
     ],
     "complete": false
   },
@@ -1633,15 +1643,17 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
-      "supabase.schema.functions.list"
+      "supabase.schema.functions.list",
+      "supabase.schema.triggers.list"
     ],
     "gateway_source_operations": [
-      "supabase.schema.functions.list"
+      "supabase.schema.functions.list",
+      "supabase.schema.triggers.list"
     ],
     "complete": false
   },
@@ -1654,15 +1666,21 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
-      "supabase.schema.indexes.list"
+      "supabase.schema.constraints.list",
+      "supabase.schema.extensions.list",
+      "supabase.schema.indexes.list",
+      "supabase.schema.types.list"
     ],
     "gateway_source_operations": [
-      "supabase.schema.indexes.list"
+      "supabase.schema.constraints.list",
+      "supabase.schema.extensions.list",
+      "supabase.schema.indexes.list",
+      "supabase.schema.types.list"
     ],
     "complete": false
   },
@@ -1670,14 +1688,25 @@
     "requirement_id": 94,
     "source_status": "partial_source",
     "source_paths": [
-      "supabase/migrations/20261017174534_sandy_agenda_nested_company_categories.sql"
+      "supabase/migrations/20261017174534_sandy_agenda_nested_company_categories.sql",
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts",
+      "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Migration explicitly revokes application-role access (:23) and grants service_role (:24); this is a fixed grant artifact, not role/default-privilege administration. Source observation only; live deployed equivalence and registry mapping remain unknown.",
-    "missing_capability": "General tenant-safe database role/grant/default-privilege management.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
-    "live_registered_operations": [],
-    "gateway_source_operations": [],
+    "registry_status": "inspected_118_rows_20261020",
+    "live_registered_operations": [
+      "supabase.database.default_privileges.list",
+      "supabase.database.grants.list",
+      "supabase.database.roles.list"
+    ],
+    "gateway_source_operations": [
+      "supabase.database.default_privileges.list",
+      "supabase.database.grants.list",
+      "supabase.database.roles.list"
+    ],
     "complete": false
   },
   {
@@ -1685,14 +1714,21 @@
     "source_status": "partial_source",
     "source_paths": [
       "supabase/migrations/20261017174534_sandy_agenda_nested_company_categories.sql",
-      "supabase/migrations/20261017202450_sandy_v2_qa_run_idempotency.sql"
+      "supabase/migrations/20261017202450_sandy_v2_qa_run_idempotency.sql",
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts",
+      "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Agenda migration enables RLS (:22); QA-run migration enables RLS and restricts grants (:9-11). No RLS policy administration operation exists locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
-    "missing_capability": "Typed RLS policy CRUD, effective-access tests and recovery.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
-    "live_registered_operations": [],
-    "gateway_source_operations": [],
+    "registry_status": "inspected_118_rows_20261020",
+    "live_registered_operations": [
+      "supabase.database.rls.policies.list"
+    ],
+    "gateway_source_operations": [
+      "supabase.database.rls.policies.list"
+    ],
     "complete": false
   },
   {
@@ -1702,7 +1738,7 @@
     "source_evidence": "No PostgreSQL publication/logical-replication/CDC administration handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Replication adapter, provider support and permission checks.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1718,7 +1754,7 @@
     "source_evidence": "Existing application handlers perform fixed tenant-scoped inserts/updates/deletes; they do not expose general data-plane bulkImport/bulkExport or arbitrary-table CRUD administration. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "General family coverage with table/tenant allowlists, bounded bulk jobs and evidence.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1732,10 +1768,10 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "supabase.database.inspect"
     ],
@@ -1752,15 +1788,17 @@
       "supabase/functions/sandy-api-mcp/index.ts",
       "supabase/functions/sandy-provider-read-api/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
-      "supabase.database.connections.list"
+      "supabase.database.connections.list",
+      "supabase.database.locks.list"
     ],
     "gateway_source_operations": [
-      "supabase.database.connections.list"
+      "supabase.database.connections.list",
+      "supabase.database.locks.list"
     ],
     "complete": false
   },
@@ -1771,21 +1809,29 @@
     "source_evidence": "No PostgreSQL backup/snapshot/restore/verify handler found. Git/source snapshots do not back up customer database state. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Recoverable database backup pipeline and exercised restoration/integrity tests.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
   },
   {
     "requirement_id": 101,
-    "source_status": "no_local_handler",
-    "source_paths": [],
-    "source_evidence": "GitHub schedules exist, but no PostgreSQL cron/job administration API handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
-    "missing_capability": "Database cron/job management and provider support validation.",
+    "source_status": "partial_source",
+    "source_paths": [
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts",
+      "supabase/functions/sandy-provider-read-api/index.ts"
+    ],
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
-    "live_registered_operations": [],
-    "gateway_source_operations": [],
+    "registry_status": "inspected_118_rows_20261020",
+    "live_registered_operations": [
+      "supabase.database.cron.jobs.list"
+    ],
+    "gateway_source_operations": [
+      "supabase.database.cron.jobs.list"
+    ],
     "complete": false
   },
   {
@@ -1795,7 +1841,7 @@
     "source_evidence": "Inbound application webhooks exist; no PostgreSQL database-webhook administration handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Database webhook configuration and delivery verification.",
     "required_access": "Management, registry, database metadata and deployed-source access work. Deployed endpoint tests need the project hostname egress update; owner-session tests need a real Controller session. Mutation/restore cases require recoverable disposable fixtures and provider entitlements.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1809,7 +1855,7 @@
     "source_evidence": "Agenda uses auth.admin.generateLink (:151,414) and getUserById (:376) for specific collaboration flows. It does not implement the required users list/get/create/update/disable/delete administrative family. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Full user-administration verbs with tenant-bound identity policy and recovery.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1823,7 +1869,7 @@
     "source_evidence": "Agenda uses magic-link generation and validates activation host (:414-417). This is not provider/config/hooks/sessions/MFA administration. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Full authentication configuration/session/MFA family, effective-access and consent checks.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1835,7 +1881,7 @@
     "source_evidence": "Customer attachment code uses named existing buckets; bucket lifecycle/policy administration is absent locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Bucket CRUD/settings/access lifecycle handlers.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1851,7 +1897,7 @@
     "source_evidence": "Task files implement signed upload (:89), object listing/size verification (:103-107), signed download (:114), and removal (:120), scoped to authorized task attachments. WhatsApp helper uploads to its named media bucket (:252). Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "General storage-object family expansion, listing/search/copy/move/retention as required, explicit central registry mapping and live tenant tests.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1863,7 +1909,7 @@
     "source_evidence": "Application permission checks exist, but no Supabase storage-policy administration API handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Storage-policy CRUD and tenant isolation verification.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1875,7 +1921,7 @@
     "source_evidence": "No realtime channels/permissions/publications administration operation found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Typed realtime administration handlers and connection tests.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1887,7 +1933,7 @@
     "source_evidence": "Environment secret references are not Supabase Vault lifecycle handlers; no vault.secrets administration source found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Vault secret lifecycle API with redaction and auditable grants.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1901,7 +1947,7 @@
     "source_evidence": "Engineering get action reads fixed change events/tests/artifacts (:54-60); this is application evidence retrieval, not general Supabase log query. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Bounded platform/database log adapter and central registry exposure.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1913,7 +1959,7 @@
     "source_evidence": "No end-to-end tenant export/erase/restore operation found. Tenant-scoped application CRUD is not a compliant tenant lifecycle job. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Consented tenant export/erase/restore orchestration, retention/legal holds and recovery tests.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1928,7 +1974,7 @@
     "source_evidence": "Engineering change events and exported read-only grant/schema references provide audit components; no tenant-wide compliance-audit API is implemented locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Compliance collection with tenant scope, immutable evidence and policy checks.",
     "required_access": "Management access works. Tenant-bound Auth/Storage/Realtime test identities, applicable grants, retention/consent fixtures and project endpoint egress are required for the remaining data-plane cases.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1942,7 +1988,7 @@
     "source_evidence": "github_write_preflight (:134-140) probes repository permissions using a configured installation/engineering token. It does not list/verify GitHub App installations. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "App installation discovery/verification and scopes.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1956,7 +2002,7 @@
     "source_evidence": "management_preflight (:117) and github_write_preflight (:138) GET one pinned repository. Repository list/create/update/archive/delete operations are absent locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Full repository-lifecycle adapter and recovery constraints.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1971,7 +2017,7 @@
     "source_evidence": "Rollback handler reads main ref (:272) and creates one scoped rollback ref (:286); observer verifies expected engineering branch refs (:62-82). No general refs list/update/delete family. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "General refs lifecycle with CAS/branch protection and central registry mapping.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -1986,7 +2032,7 @@
     "source_evidence": "Workflow creates/pushes a bounded engineering branch (:154-158); observer reads its ref. No generic branch list/protect API exists locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Branch enumeration/protection administration and API-owned handlers.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2001,7 +2047,7 @@
     "source_evidence": "Deployment execute update_file validates source SHA/hash/approved scope and PUTs repository contents (:201-236); Engineering Control creates only scoped engineering-smoke text files (:185-209). Reads exist as preflight/verification. General file delete is not exposed. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "All file verbs, generalized authorized scope, immutable artifacts and central API mapping with functional evidence.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "github.push_files",
       "github.read",
@@ -2019,7 +2065,7 @@
     "source_evidence": "Scoped rollback constructs a tree deleting one known smoke artifact (:279), a commit (:282), and branch ref (:286). This is not a general git blobs/trees/commits API. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "General atomic multi-file/object adapter with immutable source and CAS/recovery.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "github.commit"
     ],
@@ -2038,7 +2084,7 @@
     "source_evidence": "Scoped rollback creates a PR (:288) and verifies merge (:239-249); engineering workflow creates a bot draft PR (:159). Safe-automerge PUTs selected PR merge (:107) after narrow docs/tests policy. No general PR CRUD/review/close family. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Full PR family through Sandy API with permissions, protected-branch policy and independently observed checks.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "github.merge"
     ],
@@ -2055,7 +2101,7 @@
     "source_evidence": "Dispatcher reads authorized issues and posts labels/comments (:130-156); observer updates an engineering outcome comment (:127-147). This is scoped CI automation, not general Sandy issues API. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Issue verb expansion, CRUD/assignment/state handlers, tenant/repository permissions and registry mapping.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2069,7 +2115,7 @@
     "source_evidence": "Dispatcher creates its blocked label and applies it to an engineering issue (:146-148). No general labels lifecycle API. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Full labels administration and API-owned exposure.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2081,7 +2127,7 @@
     "source_evidence": "No GitHub milestones administration handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Milestone lifecycle operation expansion and provider adapter.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2093,7 +2139,7 @@
     "source_evidence": "No GitHub discussions administration handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Discussion lifecycle operation expansion and provider GraphQL adapter where required.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2105,7 +2151,7 @@
     "source_evidence": "No GitHub tag administration handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Tag lifecycle, protected-reference policy and provider verification.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2117,7 +2163,7 @@
     "source_evidence": "Repository verification explicitly differs from provider release publication; no GitHub releases create/publish/delete handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Release artifact creation/publication/deletion with immutable tag/commit references.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2129,7 +2175,7 @@
     "source_evidence": "No GitHub Packages administration handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Package lifecycle expansion, package-scoped grants and adapter.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2144,7 +2190,7 @@
     "source_evidence": "Dispatcher enumerates engineering workflow runs and dispatches one selected workflow (:181,214); engineering workflow dispatches the bounded merge lane (:199). List/enable/disable workflows not exposed as Sandy API family. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "General authorized workflow list/dispatch/enable/disable API and durable receipt tracking.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2160,7 +2206,7 @@
     "source_evidence": "Release verifier reads actions/runs to validate CI association (:41); OIDC ingest validates provider run (:1047); observer reads run (:50). No cancel/rerun execution handler. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Full run get/cancel/rerun family with idempotency and verified terminal state.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2175,7 +2221,7 @@
     "source_evidence": "CI uses upload/download-artifact actions for scoped architecture/audit artifacts; no API-owned artifacts list/download/delete adapter found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "General artifact lifecycle adapter, bounded downloads and retention verification.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2187,7 +2233,7 @@
     "source_evidence": "Workflows execute CI checks, but no GitHub Checks list/create/update/rerequest administration API handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Checks family expansion and provider-scoped adapter.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2199,7 +2245,7 @@
     "source_evidence": "No GitHub commit-status list/create administrative API handler found. Workflow conclusions do not implement the statuses resource. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Typed status read/write adapter and exact-commit attribution.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2214,7 +2260,7 @@
     "source_evidence": "Workflows target sandy-production and deploy selected services, but no GitHub deployments create/status API handler exists locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "API-owned GitHub deployment records/status with independent runtime evidence.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2229,7 +2275,7 @@
     "source_evidence": "Controlled deployment declares environment sandy-production; setup document requires configuring reviewers, variables and secrets. No environment list/update administrative adapter. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Environment discovery/update and protection-rule verification.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2241,7 +2287,7 @@
     "source_evidence": "Workflows consume repository secrets; no encrypted GitHub repository-secret set/remove handler exists locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Provider public-key encryption, secret lifecycle and redacted durable evidence.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2253,7 +2299,7 @@
     "source_evidence": "Workflows read configured variables; no GitHub variable set/remove handler found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Scoped variable administration adapter and provider verification.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2265,7 +2311,7 @@
     "source_evidence": "Workflows reference protected-environment secrets; no environment-secret lifecycle API exists locally. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Environment secret lifecycle with key encryption, protection rules and audit.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2277,7 +2323,7 @@
     "source_evidence": "Application webhook receivers are not GitHub repository webhook lifecycle/redelivery administration. No matching adapter found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "GitHub webhook CRUD/delivery/redelivery and signature verification.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2289,7 +2335,7 @@
     "source_evidence": "Preflight reads repository permissions but does not administer collaborators/teams/permissions. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Collaboration and grant-management family, organizational authorization and audit.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2301,7 +2347,7 @@
     "source_evidence": "Existing workflow/scope policies do not implement GitHub repository rulesets administration. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Ruleset list/get/create/update/delete expansion and protected-rule enforcement.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2313,7 +2359,7 @@
     "source_evidence": "Application change-event audit is not GitHub organization/repository audit API access. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Provider audit listing, pagination, retention and authorized organization scope.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2325,7 +2371,7 @@
     "source_evidence": "No GitHub security-alert administration adapter found. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Security-alert listing and authorized remediation verbs.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2337,7 +2383,7 @@
     "source_evidence": "No GitHub code-scanning API adapter found. Running local tests is not code-scanning administration. Source observation only; live deployed equivalence and registry mapping remain unknown.",
     "missing_capability": "Code-scanning family expansion and provider permissions.",
     "required_access": "Native Git read and branch push work for ausstyle/web-staging. GitHub API hostname egress is pending; specific App installation/API permissions still require attestation. Do not infer all GitHub administration grants from Git access.",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2354,7 +2400,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.tenancy_and_subscription.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2372,7 +2418,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.authentication_and_security.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2388,7 +2434,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.connections_composio.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "composio.discover_toolkits",
       "composio.discover_tools",
@@ -2411,7 +2457,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.email_and_microsoft_graph.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2428,7 +2474,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.google_gmail.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2442,12 +2488,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.calendar_and_scheduling.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "calendar.cancel",
       "calendar.conflicts",
@@ -2477,7 +2523,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.whatsapp.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2487,14 +2533,16 @@
     "source_status": "partial_source",
     "source_paths": [
       "supabase/functions/sandy-deployment-api/index.ts",
-      "supabase/functions/sandy-whatsapp-webhook/index.ts"
+      "supabase/functions/sandy-whatsapp-webhook/index.ts",
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "supabase/functions/sandy-deployment-api/index.ts:12-26 video policy/target status reports livekit_status:not_verified and service_operational:false; VM create delegates sandy-deploy-provision (source absent) at 242-247. supabase/functions/sandy-whatsapp-webhook/index.ts:26-28 records call lifecycle events but does not establish media sessions.",
-    "missing_capability": "Conference/room/participant lifecycle, SIP trunks, tokens, recording, media bridge health and guest installation/service operation; video VM queue/status is not working media service.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.voice_sip_and_video.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "video.execution.preflight",
       "video.install",
@@ -2504,7 +2552,11 @@
       "video.status",
       "video.verify_call"
     ],
-    "gateway_source_operations": [],
+    "gateway_source_operations": [
+      "video.execution.preflight",
+      "video.install.preflight",
+      "video.status"
+    ],
     "complete": false
   },
   {
@@ -2519,7 +2571,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.web_chat_and_conversations.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2531,14 +2583,16 @@
       "supabase/functions/sandy-people-network/index.ts",
       "supabase/functions/sandy-whatsapp-learn/index.ts",
       "supabase/functions/email-ai-refresh-profile/index.ts",
-      "supabase/functions/sandy-workspace/index.ts"
+      "supabase/functions/sandy-workspace/index.ts",
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "supabase/functions/sandy-people-network/index.ts:18-29 enforces verified owner identity and owner_customer_id before person list/edit/link/share with audit events; supabase/functions/sandy-whatsapp-learn/index.ts:12-25 extracts only scoped verified explicit facts; supabase/functions/email-ai-refresh-profile/index.ts:34 commits optimistic-versioned profile refresh; supabase/functions/sandy-workspace/index.ts:246-263 exposes topic history.",
-    "missing_capability": "Complete fact revise/reject/provenance/search/privacy controls, biography and knowledge graph lifecycle, tenant erase/export and family-wide idempotency/postcondition proofs.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.memory_and_social_graph.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "memory.ask",
       "memory.biography",
@@ -2551,7 +2605,13 @@
       "memory.settings",
       "memory.tree"
     ],
-    "gateway_source_operations": [],
+    "gateway_source_operations": [
+      "memory.evidence",
+      "memory.life_brief",
+      "memory.life_spaces",
+      "memory.overview",
+      "memory.tree"
+    ],
     "complete": false
   },
   {
@@ -2565,12 +2625,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.agenda_tasks_and_projects.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "tasks.archive",
       "tasks.complete",
@@ -2599,7 +2659,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.missions_and_autonomous_work.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2612,14 +2672,16 @@
       "supabase/functions/sandy-qualitative-qa/index.ts",
       "supabase/functions/sandy-examiner-live-review/index.ts",
       "supabase/functions/sandy-auto-improve/index.ts",
-      "supabase/functions/sandy-feature-discovery/index.ts"
+      "supabase/functions/sandy-feature-discovery/index.ts",
+      "supabase/functions/sandy-operation-api/index.ts",
+      "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "supabase/functions/sandy-engineering-control/index.ts:13-18 authenticates enabled controller admin; preflight/register/get/test/artifact/status and controlled approval actions exist. supabase/functions/sandy-qualitative-qa/index.ts:98 stores review verification state not_tested; examiner/feature-discovery and offline regression workflows exist.",
-    "missing_capability": "Complete incident/telemetry/dashboard/experiment/release-promotion operation catalogue and verified production execution; QA source records are not test certification. Preserve owner/scoped change gates.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.controller_and_qa.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "engineering.change.artifact",
       "engineering.change.artifacts",
@@ -2650,8 +2712,11 @@
       "engineering.change.artifacts",
       "engineering.change.detail",
       "engineering.change.events",
+      "engineering.change.get",
+      "engineering.change.list",
       "engineering.change.tests",
       "engineering.changes.list",
+      "engineering.job.status",
       "engineering.preflight"
     ],
     "complete": false
@@ -2666,12 +2731,12 @@
       "supabase/functions/sandy-operation-api/index.ts",
       "supabase/functions/sandy-api-mcp/index.ts"
     ],
-    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads and guarded pending-job cancellation. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
+    "source_evidence": "Source now installs the gateway operations listed in gateway_source_operations; canonical routes cover capabilities, execution, job reads, guarded pending-job cancellation and bounded durable read retry admission. Typed passive memory and engineering reads use separate user authorization. See project-read-release-evidence.json for exact source/deployment versions and test layers. Full family acceptance remains incomplete.",
     "missing_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.files_and_documents.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [
       "files.archive",
       "files.get",
@@ -2700,7 +2765,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.notifications_and_alerts.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2714,7 +2779,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.payments_and_commerce.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2732,7 +2797,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.customer_lifecycle_and_support.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2751,7 +2816,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.search_agents_tools_and_ai.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false
@@ -2769,7 +2834,7 @@
     "required_access": "The original PDF is now committed. Remaining live cases need authenticated isolated tenant fixtures and the relevant per-account provider consent/scopes. Provider secret names were inspected; credentials were not exported and customer identities were not impersonated.",
     "original_operation": "sandy.product_configuration.*",
     "production_status": "not_fully_verified",
-    "registry_status": "inspected_105_rows_20261020",
+    "registry_status": "inspected_118_rows_20261020",
     "live_registered_operations": [],
     "gateway_source_operations": [],
     "complete": false

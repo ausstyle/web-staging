@@ -1,11 +1,23 @@
 {
   "specification_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
   "scope_requirements": 161,
-  "runtime_registry_rows": 105,
-  "provider_schema_candidates": 3787,
-  "schema_and_runtime_candidates": 3892,
-  "requirements_with_candidate_evidence": 117,
+  "runtime_registry_rows": 118,
+  "provider_schema_candidates": 3793,
+  "schema_and_runtime_candidates": 3911,
+  "requirements_with_candidate_evidence": 122,
   "completed_requirements": 0,
+  "installed_gateway_operation_mappings": 64,
+  "unmapped_registered_operation_ids": [
+    "cloud.video.target_status",
+    "cloud.vm.exec",
+    "system.capabilities",
+    "system.catalog",
+    "system.connections",
+    "system.coverage",
+    "system.operation_catalog",
+    "system.operation_status",
+    "system.runtime"
+  ],
   "unavailable_schema_sources": [
     {
       "provider": "gcp-cloudquotas",
@@ -14,7 +26,139 @@
       "error": "HTTPError",
       "http_status": 404,
       "authoritative_source": "https://cloudquotas.googleapis.com/$discovery/rest?version=v1",
-      "authoritative_source_failure": "network_proxy_denied"
+      "authoritative_source_failure": "network_proxy_denied",
+      "alternative_contract_status": "http_annotated_protobuf_available_discovery_unavailable",
+      "alternative_contract_sources": [
+        {
+          "format": "protobuf",
+          "source": "https://raw.githubusercontent.com/googleapis/googleapis/ba591f1d7fdedc610639425448756cd8a64adc0f/google/api/cloudquotas/v1/cloudquotas.proto",
+          "sha256": "4c7d8a51f37b1f6687136938a972c5cfd27d0cc1e7bc64033de60fe0a1e334a9",
+          "bytes": 12614,
+          "cache_file": "gcp-cloudquotas-v1-cloudquotas.proto"
+        },
+        {
+          "format": "protobuf",
+          "source": "https://raw.githubusercontent.com/googleapis/googleapis/ba591f1d7fdedc610639425448756cd8a64adc0f/google/api/cloudquotas/v1/resources.proto",
+          "sha256": "d82b88db0e7967c4646a986b5e1e56aea5f6cc876a90b3608901bc026da0ae7f",
+          "bytes": 12695,
+          "cache_file": "gcp-cloudquotas-v1-resources.proto"
+        }
+      ],
+      "alternative_contract_methods": [
+        {
+          "rpc": "ListQuotaInfos",
+          "http_bindings": [
+            {
+              "method": "GET",
+              "path": "/v1/{parent=projects/*/locations/*/services/*}/quotaInfos"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{parent=organizations/*/locations/*/services/*}/quotaInfos"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{parent=folders/*/locations/*/services/*}/quotaInfos"
+            }
+          ]
+        },
+        {
+          "rpc": "GetQuotaInfo",
+          "http_bindings": [
+            {
+              "method": "GET",
+              "path": "/v1/{name=projects/*/locations/*/services/*/quotaInfos/*}"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{name=organizations/*/locations/*/services/*/quotaInfos/*}"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{name=folders/*/locations/*/services/*/quotaInfos/*}"
+            }
+          ]
+        },
+        {
+          "rpc": "ListQuotaPreferences",
+          "http_bindings": [
+            {
+              "method": "GET",
+              "path": "/v1/{parent=projects/*/locations/*}/quotaPreferences"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{parent=folders/*/locations/*}/quotaPreferences"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{parent=organizations/*/locations/*}/quotaPreferences"
+            }
+          ]
+        },
+        {
+          "rpc": "GetQuotaPreference",
+          "http_bindings": [
+            {
+              "method": "GET",
+              "path": "/v1/{name=projects/*/locations/*/quotaPreferences/*}"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{name=organizations/*/locations/*/quotaPreferences/*}"
+            },
+            {
+              "method": "GET",
+              "path": "/v1/{name=folders/*/locations/*/quotaPreferences/*}"
+            }
+          ]
+        },
+        {
+          "rpc": "CreateQuotaPreference",
+          "http_bindings": [
+            {
+              "method": "POST",
+              "path": "/v1/{parent=projects/*/locations/*}/quotaPreferences"
+            },
+            {
+              "method": "POST",
+              "path": "/v1/{parent=folders/*/locations/*}/quotaPreferences"
+            },
+            {
+              "method": "POST",
+              "path": "/v1/{parent=organizations/*/locations/*}/quotaPreferences"
+            }
+          ]
+        },
+        {
+          "rpc": "UpdateQuotaPreference",
+          "http_bindings": [
+            {
+              "method": "PATCH",
+              "path": "/v1/{quota_preference.name=projects/*/locations/*/quotaPreferences/*}"
+            },
+            {
+              "method": "PATCH",
+              "path": "/v1/{quota_preference.name=folders/*/locations/*/quotaPreferences/*}"
+            },
+            {
+              "method": "PATCH",
+              "path": "/v1/{quota_preference.name=organizations/*/locations/*/quotaPreferences/*}"
+            }
+          ]
+        }
+      ],
+      "alternative_contract_service": "google.api.cloudquotas.v1.CloudQuotas",
+      "alternative_contract_runtime_executable": false,
+      "authoritative_source_check": {
+        "checked_at": "2026-10-20T17:24:53.476657+00:00",
+        "result": "network_proxy_denied",
+        "proxy_connect_status": 403,
+        "provider_http_status": null,
+        "authenticated": false
+      },
+      "discovery_index_source": "https://raw.githubusercontent.com/googleapis/discovery-artifact-manager/2598333f74a86f57dde516cc8c681548c61f4d06/discoveries/index.json",
+      "discovery_index_contains_service": false
     }
   ],
   "requirements": [
@@ -106,11 +250,15 @@
       "requirement_id": 7,
       "requirement": "POST /v1/jobs/{jobId}:retry \u2014 retry idempotent failed steps.",
       "provider_schema_candidate_count": 0,
-      "registered_operation_ids": [],
-      "installed_gateway_operation_ids": [],
+      "registered_operation_ids": [
+        "deployment.jobs.retry"
+      ],
+      "installed_gateway_operation_ids": [
+        "deployment.jobs.retry"
+      ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Idempotent step retry API, classified failures, backoff/jitter, leases, dead-letter flow and ambiguous provider-result reconciliation."
+      "remaining_capability": "Owner-only retry admission is deployed with immutable approval snapshots, target pins, one child per parent and depth three; API exposure stays disabled pending authenticated attestation. It does not dispatch, perform automatic backoff, or implement general failed-step retry."
     },
     {
       "requirement_id": 8,
@@ -199,7 +347,7 @@
     {
       "requirement_id": 16,
       "requirement": "gcp.quotas.get/request",
-      "provider_schema_candidate_count": 0,
+      "provider_schema_candidate_count": 6,
       "registered_operation_ids": [],
       "installed_gateway_operation_ids": [],
       "historical_registry_verified_operation_ids": [],
@@ -999,10 +1147,14 @@
       "requirement": "supabase.schema.tables/views/materializedViews.*",
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
-        "supabase.schema.tables.list"
+        "supabase.schema.materialized_views.list",
+        "supabase.schema.tables.list",
+        "supabase.schema.views.list"
       ],
       "installed_gateway_operation_ids": [
-        "supabase.schema.tables.list"
+        "supabase.schema.materialized_views.list",
+        "supabase.schema.tables.list",
+        "supabase.schema.views.list"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
@@ -1013,10 +1165,12 @@
       "requirement": "supabase.schema.functions/procedures/triggers.*",
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
-        "supabase.schema.functions.list"
+        "supabase.schema.functions.list",
+        "supabase.schema.triggers.list"
       ],
       "installed_gateway_operation_ids": [
-        "supabase.schema.functions.list"
+        "supabase.schema.functions.list",
+        "supabase.schema.triggers.list"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
@@ -1027,10 +1181,16 @@
       "requirement": "supabase.schema.indexes/constraints/types/extensions.*",
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
-        "supabase.schema.indexes.list"
+        "supabase.schema.constraints.list",
+        "supabase.schema.extensions.list",
+        "supabase.schema.indexes.list",
+        "supabase.schema.types.list"
       ],
       "installed_gateway_operation_ids": [
-        "supabase.schema.indexes.list"
+        "supabase.schema.constraints.list",
+        "supabase.schema.extensions.list",
+        "supabase.schema.indexes.list",
+        "supabase.schema.types.list"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
@@ -1040,21 +1200,33 @@
       "requirement_id": 94,
       "requirement": "supabase.database.roles/grants/defaultPrivileges.*",
       "provider_schema_candidate_count": 0,
-      "registered_operation_ids": [],
-      "installed_gateway_operation_ids": [],
+      "registered_operation_ids": [
+        "supabase.database.default_privileges.list",
+        "supabase.database.grants.list",
+        "supabase.database.roles.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.database.default_privileges.list",
+        "supabase.database.grants.list",
+        "supabase.database.roles.list"
+      ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "General tenant-safe database role/grant/default-privilege management."
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 95,
       "requirement": "supabase.database.rls.policies.*",
       "provider_schema_candidate_count": 0,
-      "registered_operation_ids": [],
-      "installed_gateway_operation_ids": [],
+      "registered_operation_ids": [
+        "supabase.database.rls.policies.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.database.rls.policies.list"
+      ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Typed RLS policy CRUD, effective-access tests and recovery."
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 96,
@@ -1095,10 +1267,12 @@
       "requirement": "supabase.database.connections/pooler/slowQueries/locks",
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
-        "supabase.database.connections.list"
+        "supabase.database.connections.list",
+        "supabase.database.locks.list"
       ],
       "installed_gateway_operation_ids": [
-        "supabase.database.connections.list"
+        "supabase.database.connections.list",
+        "supabase.database.locks.list"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
@@ -1118,11 +1292,15 @@
       "requirement_id": 101,
       "requirement": "supabase.database.cron/jobs.*",
       "provider_schema_candidate_count": 0,
-      "registered_operation_ids": [],
-      "installed_gateway_operation_ids": [],
+      "registered_operation_ids": [
+        "supabase.database.cron.jobs.list"
+      ],
+      "installed_gateway_operation_ids": [
+        "supabase.database.cron.jobs.list"
+      ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Database cron/job management and provider support validation."
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 102,
@@ -1641,14 +1819,18 @@
         "video.status",
         "video.verify_call"
       ],
-      "installed_gateway_operation_ids": [],
+      "installed_gateway_operation_ids": [
+        "video.execution.preflight",
+        "video.install.preflight",
+        "video.status"
+      ],
       "historical_registry_verified_operation_ids": [
         "video.execution.preflight",
         "video.install.preflight",
         "video.status"
       ],
       "complete": false,
-      "remaining_capability": "Conference/room/participant lifecycle, SIP trunks, tokens, recording, media bridge health and guest installation/service operation; video VM queue/status is not working media service."
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 151,
@@ -1676,10 +1858,16 @@
         "memory.settings",
         "memory.tree"
       ],
-      "installed_gateway_operation_ids": [],
+      "installed_gateway_operation_ids": [
+        "memory.evidence",
+        "memory.life_brief",
+        "memory.life_spaces",
+        "memory.overview",
+        "memory.tree"
+      ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Complete fact revise/reject/provenance/search/privacy controls, biography and knowledge graph lifecycle, tenant erase/export and family-wide idempotency/postcondition proofs."
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 153,
@@ -1745,13 +1933,16 @@
         "engineering.change.artifacts",
         "engineering.change.detail",
         "engineering.change.events",
+        "engineering.change.get",
+        "engineering.change.list",
         "engineering.change.tests",
         "engineering.changes.list",
+        "engineering.job.status",
         "engineering.preflight"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Complete incident/telemetry/dashboard/experiment/release-promotion operation catalogue and verified production execution; QA source records are not test certification. Preserve owner/scoped change gates."
+      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 156,

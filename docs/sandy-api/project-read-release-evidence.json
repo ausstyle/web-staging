@@ -6,12 +6,12 @@
     "status": "ACTIVE_HEALTHY"
   },
   "local_validation": {
-    "deno_passed": 66,
-    "python_passed": 221
+    "deno_passed": 98,
+    "python_passed": 237
   },
   "real_provider_integration": {
     "project": "zmqlyygzqoidkcwdysok",
-    "tested_at": "2026-10-20T17:14:33.753Z",
+    "tested_at": "2026-10-20T18:01:35.876Z",
     "layer": "local_versioned_handler_to_real_management_api",
     "deployed_endpoint_tested": false,
     "controller_session_tested": false,
@@ -19,16 +19,18 @@
       {
         "operation": "supabase.db.migrations.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
         "scenario": "provider_read",
         "error": null,
-        "oracle": "all four applied release migration versions are visible"
+        "oracle": "all applied release migration versions are visible"
       },
       {
         "operation": "supabase.database.inspect",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -39,6 +41,7 @@
       {
         "operation": "supabase.schema.tables.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -49,6 +52,7 @@
       {
         "operation": "supabase.schema.functions.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -59,6 +63,7 @@
       {
         "operation": "supabase.schema.indexes.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -69,6 +74,7 @@
       {
         "operation": "supabase.database.connections.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -79,6 +85,7 @@
       {
         "operation": "supabase.projects.get",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -89,6 +96,7 @@
       {
         "operation": "supabase.project.health",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -99,6 +107,7 @@
       {
         "operation": "supabase.branches.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -109,6 +118,7 @@
       {
         "operation": "supabase.branches.get",
         "passed": true,
+        "output_contract_passed": null,
         "http_status": 404,
         "provider_request_id": null,
         "upstream_status": 404,
@@ -119,6 +129,7 @@
       {
         "operation": "supabase.network.restrictions.get",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -129,6 +140,7 @@
       {
         "operation": "supabase.domains.get",
         "passed": false,
+        "output_contract_passed": null,
         "http_status": 424,
         "provider_request_id": null,
         "upstream_status": 400,
@@ -139,6 +151,7 @@
       {
         "operation": "supabase.functions.secrets.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
@@ -149,12 +162,181 @@
       {
         "operation": "supabase.backups.list",
         "passed": true,
+        "output_contract_passed": true,
         "http_status": 200,
         "provider_request_id": null,
         "upstream_status": null,
         "scenario": "provider_read",
         "error": null,
         "oracle": "typed project-scoped provider response"
+      },
+      {
+        "operation": "supabase.schema.views.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 23,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.schema.materialized_views.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 0,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "observed public materialized-view catalogue (no existing-object fixture)"
+      },
+      {
+        "operation": "supabase.schema.triggers.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 88,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "existing task analysis trigger identity is visible without its body"
+      },
+      {
+        "operation": "supabase.schema.constraints.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 1000,
+        "result_limit": 1000,
+        "possibly_truncated": true,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.schema.types.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 351,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.schema.extensions.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 8,
+        "result_limit": 200,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.database.roles.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 31,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.database.grants.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 59,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.database.default_privileges.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 72,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.database.rls.policies.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 2,
+        "result_limit": 1000,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.database.locks.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 2,
+        "result_limit": 200,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
+      },
+      {
+        "operation": "supabase.database.cron.jobs.list",
+        "passed": true,
+        "output_contract_passed": true,
+        "row_count": 51,
+        "result_limit": 200,
+        "possibly_truncated": false,
+        "http_status": 200,
+        "provider_request_id": null,
+        "upstream_status": null,
+        "scenario": "provider_read",
+        "error": null,
+        "oracle": "actual typed bounded metadata; definitions, credentials and customer rows excluded"
       }
     ]
   },
@@ -166,6 +348,12 @@
     "executed": false,
     "blocker": "no authenticated Controller user session"
   },
+  "latest_versions": {
+    "sandy-operation-api": 7,
+    "sandy-api-mcp": 3,
+    "sandy-provider-read-api": 4
+  },
+  "installed_gateway_operation_mappings": 64,
   "legacy_mcp_migrated": false,
   "full_161_requirement_acceptance_complete": false,
   "initial_deployment": {
@@ -338,169 +526,594 @@
     "test_sql": "scripts/sandy/test_cancel_pending_deployment_job.sql"
   },
   "registry_evidence_readback": {
-    "updated_at": "2026-10-20T17:15:13.230599+00:00",
     "write_http": 201,
     "readback_http": 201,
+    "recorded_at": "2026-10-20T17:57:23.502818+00:00",
     "rows": [
       {
         "operation": "deployment.jobs.cancel",
         "handler": "sandy-operation-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": false,
         "ai_exposed": false,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "deployment.jobs.retry",
+        "handler": "sandy-operation-api",
+        "verified": false,
+        "api_exposed": false,
+        "ai_exposed": false,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "engineering.change.get",
+        "handler": "sandy-engineering-control",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "engineering.change.list",
+        "handler": "sandy-engineering-control",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "engineering.job.status",
+        "handler": "sandy-engineering-control",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "memory.evidence",
+        "handler": "sandy-memory-centre",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "memory.life_brief",
+        "handler": "sandy-memory-centre",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "memory.life_spaces",
+        "handler": "sandy-memory-centre",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "memory.overview",
+        "handler": "sandy-memory-centre",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "memory.tree",
+        "handler": "sandy-memory-centre",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.backups.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.branches.get",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.branches.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.database.connections.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.cron.jobs.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.default_privileges.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.grants.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.database.inspect",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.locks.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.rls.policies.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.database.roles.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.db.migrations.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.domains.get",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "blocked_provider_entitlement",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "blocked_provider_entitlement",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.functions.secrets.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.network.restrictions.get",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.project.health",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.projects.get",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.constraints.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.extensions.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.schema.functions.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.schema.indexes.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.materialized_views.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
         "release_evidence_recorded": true
       },
       {
         "operation": "supabase.schema.tables.list",
         "handler": "sandy-provider-read-api",
-        "implementation_state": "deployed_unverified",
         "verified": false,
         "api_exposed": true,
         "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.triggers.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.types.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "supabase.schema.views.list",
+        "handler": "sandy-provider-read-api",
+        "verified": false,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "deployed_unverified",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "video.execution.preflight",
+        "handler": "sandy-deploy-provision",
+        "verified": true,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "verified_read_only",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "video.install.preflight",
+        "handler": "sandy-deploy-provision",
+        "verified": true,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "verified_read_only",
+        "release_evidence_recorded": true
+      },
+      {
+        "operation": "video.status",
+        "handler": "sandy-deploy-provision",
+        "verified": true,
+        "api_exposed": true,
+        "ai_exposed": true,
+        "implementation_state": "verified_read_only",
         "release_evidence_recorded": true
       }
     ]
   },
-  "catalogue_revision_deployment": {
-    "source_commit": "75f27faf0370d1ce46e73d6660c43931a1a82669",
-    "slug": "sandy-api-mcp",
-    "deploy_http": 201,
-    "metadata_http": 200,
-    "version": 3,
-    "previous_version": 2,
-    "status": "ACTIVE",
-    "verify_jwt": true,
-    "source_sha256": "1ac8bb6c6de925f501ec79fde45dbcdb1287b93fc6941b40da66312f724a4b3f"
+  "bounded_metadata_and_retry_deployment": {
+    "project": "zmqlyygzqoidkcwdysok",
+    "source_commit": "530b11d6a6c8e0536e3215024d07bccafdb12be1",
+    "functions": [
+      {
+        "slug": "sandy-provider-read-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "version": 4,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "previous_version": 3,
+        "source_sha256": "f6b3215d185d61bc795e08e81b7a7276d3b8754994c6b11930e59c513f56fd24",
+        "sources": {
+          "index.ts": "f6b3215d185d61bc795e08e81b7a7276d3b8754994c6b11930e59c513f56fd24"
+        }
+      },
+      {
+        "slug": "sandy-operation-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "version": 6,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "previous_version": 5,
+        "source_sha256": "66863a4131170026b661be6fac851a3b3edc12f50331cba06c3fc636dcf26a66",
+        "sources": {
+          "index.ts": "66863a4131170026b661be6fac851a3b3edc12f50331cba06c3fc636dcf26a66",
+          "retry_read_job.ts": "327aa3602aa064a6a991bde0c4602acdf1ce539592dd6224cc3c3d4b5e476bc5"
+        }
+      }
+    ]
   },
-  "current_deployment_versions": {
-    "sandy-operation-api": 5,
-    "sandy-api-mcp": 3,
-    "sandy-provider-read-api": 3
+  "passive_read_deployment": {
+    "project": "zmqlyygzqoidkcwdysok",
+    "source_commit": "7e295b98a84908fb346ccd3c8eb556315e69eed2",
+    "functions": [
+      {
+        "slug": "sandy-operation-api",
+        "deploy_http": 201,
+        "metadata_http": 200,
+        "version": 7,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "previous_version": 6,
+        "source_sha256": "bc975ea901607e295cdbb990dc08316e282021936748181a7c810aaab4cb6f3a",
+        "sources": {
+          "index.ts": "bc975ea901607e295cdbb990dc08316e282021936748181a7c810aaab4cb6f3a",
+          "retry_read_job.ts": "327aa3602aa064a6a991bde0c4602acdf1ce539592dd6224cc3c3d4b5e476bc5",
+          "engineering_read.ts": "1452111e8a19b8bb467f3e8bb4ba8fa7a109fb04f3fb72f1b4494b2f64b6bd3e"
+        }
+      }
+    ]
   },
-  "deployed_source_readback": [
+  "final_migration_ledger": {
+    "readback_http": 201,
+    "migrations": [
+      {
+        "version": "20261020183000",
+        "file": "20261020183000_sandy_project_read_contracts.sql",
+        "sha256": "1e7e6b417d0f4feaaa61e85a554a307a137a66120573a081743b7f9f0bb1c89b"
+      },
+      {
+        "version": "20261020190000",
+        "file": "20261020190000_sandy_customer_read_contracts.sql",
+        "sha256": "60af196f1eab91785d3902e126fc7158c6361d14c0b6c208b279e93a421f38eb"
+      },
+      {
+        "version": "20261020193000",
+        "file": "20261020193000_sandy_database_metadata_read_contracts.sql",
+        "sha256": "4ac35e17d2321180128e47afa773c32b55898c53918e5ce808dbd15824edcc15"
+      },
+      {
+        "version": "20261020200000",
+        "file": "20261020200000_sandy_cancel_pending_deployment_job.sql",
+        "sha256": "b6082e3480e3c4f46ea056797c04d2934a425cb3110af635c9d52856c095115c"
+      },
+      {
+        "version": "20261020202000",
+        "file": "20261020202000_sandy_cloud_log_read_completion.sql",
+        "sha256": "f51e6ebaa0fe44eb145baeab0cc685cb98aeff9c607fd0de61e299d77b8c2ee4"
+      },
+      {
+        "version": "20261020210000",
+        "file": "20261020210000_sandy_retry_approved_read_job.sql",
+        "sha256": "6fd607b33eba155a2dd50e553d6e52f8370c102a1668b3ecd99e10de981784fa"
+      },
+      {
+        "version": "20261020213000",
+        "file": "20261020213000_sandy_bounded_metadata_read_contracts.sql",
+        "sha256": "d6e3d6b930501df2d2980433090b3734f092d2fa5eadbcd127aa34cd1a13f72f"
+      },
+      {
+        "version": "20261020220000",
+        "file": "20261020220000_sandy_passive_memory_read_contracts.sql",
+        "sha256": "d49623b831c6eba49b5854945c9989b42a1dd612d798f7247375a53160a7d6de"
+      },
+      {
+        "version": "20261020222000",
+        "file": "20261020222000_sandy_passive_engineering_read_contracts.sql",
+        "sha256": "19945d9a88d27ff70494d84fa1d31a13c296753e9d589e2ed395eae2b929b13d"
+      }
+    ],
+    "readback": [
+      {
+        "version": "20261020183000",
+        "name": "sandy_project_read_contracts",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020190000",
+        "name": "sandy_customer_read_contracts",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020193000",
+        "name": "sandy_database_metadata_read_contracts",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020200000",
+        "name": "sandy_cancel_pending_deployment_job",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020202000",
+        "name": "sandy_cloud_log_read_completion",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020210000",
+        "name": "sandy_retry_approved_read_job",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020213000",
+        "name": "sandy_bounded_metadata_read_contracts",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020220000",
+        "name": "sandy_passive_memory_read_contracts",
+        "exact_source_match": true
+      },
+      {
+        "version": "20261020222000",
+        "name": "sandy_passive_engineering_read_contracts",
+        "exact_source_match": true
+      }
+    ]
+  },
+  "log_completion_database_integration": {
+    "http_status": 201,
+    "result": [
+      {
+        "evidence": {
+          "layer": "service_role_database_rpc",
+          "checks": [
+            "anon_denied",
+            "authenticated_denied",
+            "service_role_allowed",
+            "get_logs_completion",
+            "get_vm_preserved",
+            "list_vms_preserved",
+            "single_completion_event",
+            "duplicate_returns_false_without_changes",
+            "write_jobs_refused",
+            "unsupported_jobs_refused",
+            "non_running_states_refused",
+            "missing_job_refused"
+          ],
+          "passed": true,
+          "fixtures": "rolled_back",
+          "provider_called": false,
+          "controller_session_tested": false
+        }
+      }
+    ]
+  },
+  "retry_database_integration": {
+    "http_status": 201,
+    "result": [
+      {
+        "evidence": {
+          "layer": "administrative_database_rpc",
+          "checks": [
+            "owner_only",
+            "customer_rpc_denied",
+            "minimal_table_privileges",
+            "trigger_only_functions",
+            "source_states_refused",
+            "writes_refused",
+            "ambiguous_outcomes_refused",
+            "transient_error_classification",
+            "revoked_approver_refused",
+            "legacy_approval_not_backfilled",
+            "historical_status_noop_not_backfilled",
+            "approval_snapshot_immutable",
+            "payload_operation_actor_timestamp_target_tamper_refused",
+            "target_drift_refused",
+            "standing_policy_approval_path",
+            "source_evidence_preserved",
+            "single_child_and_audit",
+            "active_target_scope_pinned",
+            "retry_child_scope_immutable",
+            "terminal_target_scope_released",
+            "replay_current_status_truthful",
+            "bounded_chain",
+            "three_read_families",
+            "idempotency_collision",
+            "service_role_invocation"
+          ],
+          "passed": true,
+          "dispatch": "required_separately",
+          "fixtures": "rolled_back",
+          "controller_session_tested": false,
+          "provider_execution_tested": false
+        }
+      }
+    ]
+  },
+  "exact_final_deployed_sources": [
     {
       "slug": "sandy-operation-api",
       "source_map_contains_original": true,
       "exact_uploaded_source_match": true,
-      "expected_sha256": "aed450cbdead3926ef678c4aeffc81e5a4b2708aae35809cd402becbf0fd5f02"
+      "expected_sha256": "bc975ea901607e295cdbb990dc08316e282021936748181a7c810aaab4cb6f3a",
+      "helper_source_match": true,
+      "helper_sha256": "327aa3602aa064a6a991bde0c4602acdf1ce539592dd6224cc3c3d4b5e476bc5",
+      "engineering_helper_source_match": true,
+      "engineering_helper_sha256": "1452111e8a19b8bb467f3e8bb4ba8fa7a109fb04f3fb72f1b4494b2f64b6bd3e"
     },
     {
       "slug": "sandy-api-mcp",
@@ -512,12 +1125,25 @@
       "slug": "sandy-provider-read-api",
       "source_map_contains_original": true,
       "exact_uploaded_source_match": true,
-      "expected_sha256": "38b44da210d1ee1f324251b7744775c0d4d1820643581c0fbd05977fc4a403e2"
+      "expected_sha256": "f6b3215d185d61bc795e08e81b7a7276d3b8754994c6b11930e59c513f56fd24"
     }
   ],
-  "final_database_readback": {
-    "registry_rows": 105,
-    "verified_rows": 3,
-    "persisted_test_jobs": 0
+  "final_endpoint_network_probe": {
+    "project": "zmqlyygzqoidkcwdysok",
+    "tested_at": "2026-10-20T17:57:36.632973+00:00",
+    "tests": [
+      {
+        "test": "project_endpoint_reachable_and_requires_authentication",
+        "outcome": "blocked",
+        "http_status": null,
+        "layer": "edge_authentication",
+        "blocker": "network_proxy_denied"
+      }
+    ],
+    "complete": false,
+    "deferred": [
+      "internal_handler_checks",
+      "authenticated_api_mcp_checks"
+    ]
   }
 }
