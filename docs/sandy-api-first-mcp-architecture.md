@@ -15,7 +15,7 @@
 ## Deployment and compatibility
 This is an incremental alternative adapter, **not** a replacement of active `sandy-operations-mcp` until tests have passed. The existing MCP must remain operational throughout rollout. Sandbox and production read-only discovery/execution must be tested first.
 
-**Schema gate:** The bootstrap API references `public.sandy_api_operations`. Before deploying, reconcile this reference against the actual canonical operation-registry table/view and its columns. Do not create a competing registry merely to satisfy the bootstrap. The PR must not be deployed until this compatibility check passes.
+**Schema gate:** The bootstrap API references `public.sandy_operation_registry`. Schema verified on production: `public.sandy_operation_registry` contains the operation, domain, permission and exposure columns required by the gateway. `engineering.preflight` is registered; `deployment.management.preflight` is not currently registered and is not enabled in the new API gateway. The PR must not be deployed until this compatibility check passes.
 
 ## Acceptance
 1. The gateway denies unauthenticated requests and users not in Sandy Controller.
