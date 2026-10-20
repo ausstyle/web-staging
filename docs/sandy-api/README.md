@@ -5,6 +5,7 @@ This directory is the canonical **GitHub documentation handoff** between ChatGPT
 ## Sources of truth
 
 - **Requirements:** `docs/sandy-api/api-scope-161.md` (161 scoped requirements, including function families).
+- **Original specification:** [Sandy Autonomous Control API Specification v1.0](Sandy_Autonomous_Control_API_Specification.pdf), supplied by the owner; SHA-256 `44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a`.
 - **Live implementation and evidence:** Supabase project `zmqlyygzqoidkcwdysok`, table `public.sandy_operation_registry`.
 - **Runtime and source:** deployed Edge Functions and corresponding checked-in source, not assumptions derived from registry entries.
 
