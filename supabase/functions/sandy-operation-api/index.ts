@@ -3,6 +3,8 @@ import {
   type SupabaseClient,
 } from "npm:@supabase/supabase-js@2.57.0";
 import { createRegistrySchemaValidator } from "./registry_schema_validator.ts";
+import { cataloguePage } from "../_shared/sandy_catalogue_page.ts";
+import { operationRequestPath } from "./request_path.ts";
 import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
@@ -664,10 +666,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
   const fetchBackend = dependencies.fetch ?? fetch;
   return async (request: Request): Promise<Response> => {
     const url = new URL(request.url);
-    const path = url.pathname.replace(
-      /^\/functions\/v1\/sandy-operation-api/,
-      "",
-    );
+    const path = operationRequestPath(url.pathname);
     let routedBody: Record<string, unknown> | undefined;
     const internalExecution = path === "/v1/internal/execute";
     const planAction = path === "/v1/plans:validate"
@@ -1026,7 +1025,10 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           .in("operation", Object.keys(allowedHandlers)).order("operation");
       if (error) return reply(503, { error: "operation_registry_unavailable" });
       const entries: unknown[] = data ?? [];
-      const operations = entries.filter(enabledEntry)
+      const operations: (Record<string, unknown> & {
+        operation: string;
+        executable: boolean;
+      })[] = entries.filter(enabledEntry)
         .filter(discoverableContract)
         .filter((entry) =>
           !delegation ||
@@ -1076,6 +1078,26 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         digest,
         (b) => b.toString(16).padStart(2, "0"),
       ).join("");
+      if (body.limit !== undefined || body.cursor !== undefined) {
+        const visible = body.channel === "mcp"
+          ? operations.filter((entry) =>
+            entry.ai_exposed === true && entry.executable === true
+          )
+          : operations;
+        const page = cataloguePage(
+          visible,
+          catalogue_version,
+          body.limit ?? 100,
+          body.cursor,
+        );
+        return page.ok
+          ? reply(200, { ...page, catalogue_version })
+          : reply(page.status, {
+            ok: false,
+            error: page.error,
+            executed: false,
+          });
+      }
       return reply(200, { ok: true, operations, catalogue_version });
     }
     if (body.action !== "describe" && body.action !== "execute") {
@@ -1491,10 +1513,15 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                   arguments: body.arguments ?? {},
                   channel: originalChannel,
                   ...(extensionOwnsUserAdmission(operation) &&
-                      request.headers.has("x-sandy-request-id")
-                    ? { request_id: request.headers.get("x-sandy-request-id") }
+                      (request.headers.has("x-sandy-request-id") ||
+                        kind === "composio_customer")
+                    ? {
+                      request_id: request.headers.get("x-sandy-request-id") ??
+                        crypto.randomUUID(),
+                    }
                     : {}),
                   ...(extensionOwnsUserAdmission(operation) &&
+                      kind !== "composio_customer" &&
                       request.headers.has("x-sandy-approval-id")
                     ? {
                       approval_id: request.headers.get("x-sandy-approval-id"),

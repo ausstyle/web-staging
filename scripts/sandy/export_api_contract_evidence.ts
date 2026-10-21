@@ -23,7 +23,7 @@ import {
   runtimeConversationContract,
   runtimeConversationOperation,
 } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation_contract.ts";
-import { productOperations } from "../../supabase/functions/sandy-product-service-api/contracts.ts";
+import { productStrictOperations as productOperations } from "../../supabase/functions/sandy-product-service-api/strict_gateway.ts";
 import { commerceStrictOperations as commerceOperations } from "../../supabase/functions/sandy-commerce-ledger-api/strict_gateway.ts";
 import { systemMetadataOperations } from "../../supabase/functions/sandy-system-metadata-api/contracts.ts";
 import { databaseOperations } from "../../supabase/functions/sandy-database-operation-api/gateway.ts";
@@ -37,6 +37,8 @@ import { supplementOperations } from "../../supabase/functions/sandy-provider-su
 import { sensitiveContracts } from "../../supabase/functions/sandy-provider-sensitive-api/contracts.ts";
 import { boundOperations } from "../../supabase/functions/sandy-provider-bound-api/gateway.ts";
 import { artifactOperations } from "../../supabase/functions/sandy-provider-artifact-api/gateway.ts";
+import { legacyOwnerOperations } from "../../supabase/functions/sandy-legacy-compatibility-api/gateway.ts";
+import { composioReadOperations } from "../../supabase/functions/sandy-composio-read-api/contracts.ts";
 import {
   runtimeConnectionPreflightContract,
   runtimeConnectionPreflightOperationName,
@@ -50,11 +52,15 @@ import {
   missionWorkProductOperation,
 } from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_contract.ts";
 import { internalMissionPlanningContracts } from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_contract.ts";
+import {
+  examinerReviewOperation,
+  internalExaminerReviewContract,
+} from "../../supabase/functions/_shared/sandy-agent-operations/worker_examiner_contract.ts";
 import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
 import { tenantExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/download.ts";
 import { contentExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/content_download.ts";
 import { contentExportAvailableOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/content_available.ts";
-import { financialConsentOverrides } from "../../supabase/functions/sandy-tenant-lifecycle-api/consent_financial.ts";
+import { redactionConsentOverrides } from "../../supabase/functions/sandy-tenant-lifecycle-api/consent_redaction.ts";
 import {
   financialExportAvailableOperation,
   financialExportDownloadOperation,
@@ -97,6 +103,13 @@ add(
   "sandy-operation-api/customer_operations.ts",
   customerOperationContracts,
   "",
+);
+add(
+  "customer_composio_governed_reads",
+  "sandy-composio-read-api/contracts.json",
+  composioReadOperations,
+  "sandy-composio-read-api",
+  "sandy-composio-read-api/index.ts",
 );
 add(
   "customer_services",
@@ -200,7 +213,7 @@ add(
   "sandy-supabase-service-api/tenant_consent.ts",
   {
     ...tenantConsentOperations,
-    ...financialConsentOverrides,
+    ...redactionConsentOverrides,
   },
   "sandy-operation-api",
 );
@@ -220,10 +233,10 @@ add(
 );
 add(
   "product_services",
-  "sandy-product-service-api/contracts.json",
+  "sandy-product-service-api/strict_contracts.json",
   productOperations,
   "sandy-product-service-api",
-  "sandy-product-service-api/index.ts",
+  "sandy-product-service-api/strict_entry.ts",
 );
 add(
   "commerce_internal",
@@ -378,6 +391,36 @@ add(
   ),
   "",
   "_shared/sandy-agent-operations/worker_mission_planning.ts",
+);
+add(
+  "internal_examiner_quality",
+  "_shared/sandy-agent-operations/worker_examiner_contract.ts",
+  { [examinerReviewOperation]: internalExaminerReviewContract },
+  `internal:${examinerReviewOperation}@1.0.0`,
+  "_shared/sandy-agent-operations/worker_examiner.ts",
+);
+const legacyRequirements: Record<string, number[]> = {
+  "github.read": [117],
+  "github.update_file": [117],
+  "github.commit": [118],
+  "github.merge": [119],
+  "github.push_files": [115, 117, 118],
+  "supabase.apply_migration": [82],
+  "supabase.deploy_edge_function": [83],
+};
+add(
+  "legacy_owner_compatibility",
+  "sandy-legacy-compatibility-api/gateway_manifest.json",
+  Object.fromEntries(
+    Object.entries(legacyOwnerOperations).map((
+      [operation, contract],
+    ) => [operation, {
+      ...contract,
+      requirement_ids: legacyRequirements[operation],
+    }]),
+  ),
+  "sandy-legacy-compatibility-api",
+  "sandy-legacy-compatibility-api/index.ts",
 );
 for (const group of groups) {
   for (const [operation, value] of Object.entries(group.contracts)) {

@@ -52,7 +52,7 @@ Deno.test("initialization authenticates through API discovery and preserves deni
   const handler = createHandler(async (token, body) => {
     calls++;
     equal(token, "test.identity.token");
-    equal(body, { action: "list" });
+    equal(body, { action: "list", channel: "mcp", limit: 1 });
     return {
       status: 403,
       result: { error: "controller_administrator_required" },

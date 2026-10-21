@@ -4,6 +4,7 @@
  * Keep this entrypoint self-contained for the existing release packaging.
  */
 type JsonObject = Record<string, unknown>;
+const CATALOGUE_CURSOR = /^sc1\.[a-f0-9]{64}\.[1-9][0-9]{0,5}$/;
 export type ApiResponse = { status: number; result: unknown };
 export type ApiExecutionMetadata = { approvalId?: string; requestId?: string };
 export type InvokeApi = (
@@ -239,15 +240,42 @@ export function createHandler(api: InvokeApi) {
             400,
           );
         }
-        if (msg.method === "tools/list" && params.cursor !== undefined) {
+        if (
+          msg.method === "tools/list" && params.cursor !== undefined &&
+          (typeof params.cursor !== "string" ||
+            !CATALOGUE_CURSOR.test(params.cursor))
+        ) {
           return json(
-            rpcError(id, -32602, "Pagination cursor is not supported"),
+            rpcError(id, -32602, "Invalid pagination cursor"),
             400,
           );
         }
         // Initialization authenticates through the same API as discovery.
-        const a = await api(bearer, { action: "list" }, apiKey, metadata);
+        const a = await api(
+          bearer,
+          {
+            action: "list",
+            channel: "mcp",
+            limit: msg.method === "tools/list" ? 100 : 1,
+            ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+          },
+          apiKey,
+          metadata,
+        );
         if (a.status !== 200 || !isObject(a.result) || failedResult(a.result)) {
+          if (
+            a.status === 409 && isObject(a.result) &&
+            a.result.error === "catalogue_changed_restart_discovery"
+          ) {
+            return json(
+              rpcError(
+                id,
+                -32001,
+                "Catalogue changed; restart tools/list without a cursor",
+              ),
+              409,
+            );
+          }
           const status = a.status >= 400 && a.status <= 599 ? a.status : 502;
           return json(
             rpcError(id, -32000, "Sandy API discovery unavailable"),
@@ -269,6 +297,10 @@ export function createHandler(api: InvokeApi) {
         }
         return json(rpc(id, {
           tools: discoveryTools(a.result),
+          ...(typeof a.result.next_cursor === "string" &&
+              CATALOGUE_CURSOR.test(a.result.next_cursor)
+            ? { nextCursor: a.result.next_cursor }
+            : {}),
           ...(typeof a.result.catalogue_version === "string" &&
               /^[a-f0-9]{64}$/.test(a.result.catalogue_version)
             ? { _meta: { sandy_catalogue_version: a.result.catalogue_version } }

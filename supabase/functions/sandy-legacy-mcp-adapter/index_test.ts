@@ -947,7 +947,13 @@ Deno.test("legacy adapter composes with the real Sandy API gateway and retains i
         getUser(token: string) {
           identities.push(token);
           return Promise.resolve({
-            data: { user: { id: changeId } },
+            data: {
+              user: {
+                id: changeId,
+                role: "authenticated",
+                is_anonymous: false,
+              },
+            },
             error: null,
           });
         },

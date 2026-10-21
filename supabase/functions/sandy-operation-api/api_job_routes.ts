@@ -5,6 +5,7 @@ import {
   requestJson,
 } from "../_shared/sandy_api_protocol.ts";
 import type { PolicyDb } from "./access_policy.ts";
+import { operationRequestPath } from "./request_path.ts";
 
 type Obj = Record<string, unknown>;
 export type ApiJobAction = "get" | "events" | "cancel" | "retry" | "rollback";
@@ -52,10 +53,7 @@ export async function parseApiJobRoute(
   request: Request,
 ): Promise<JobRouteResult<ApiJobRoute | null>> {
   const url = new URL(request.url);
-  const path = url.pathname.replace(
-    /^\/functions\/v1\/sandy-operation-api/,
-    "",
-  );
+  const path = operationRequestPath(url.pathname);
   const match = path.match(
     /^\/v1\/jobs\/([^/:]+)(\/events|:(cancel|retry|rollback))?$/,
   );

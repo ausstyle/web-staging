@@ -50,9 +50,9 @@ import {
   tenantConsentOperations,
 } from "../sandy-supabase-service-api/tenant_consent.ts";
 import {
-  executeFinancialConsent,
-  financialConsentOverrides,
-} from "../sandy-tenant-lifecycle-api/consent_financial.ts";
+  executeRedactionConsent,
+  redactionConsentOverrides,
+} from "../sandy-tenant-lifecycle-api/consent_redaction.ts";
 import {
   executeTenantExportDownload,
   tenantExportDownloadOperation,
@@ -76,10 +76,10 @@ import {
   tenantLifecycleOperations,
 } from "../sandy-tenant-lifecycle-api/gateway.ts";
 import {
-  productContractMatches,
-  productGatewayContracts,
-  productOperations,
-} from "../sandy-product-service-api/gateway.ts";
+  productStrictContractMatches as productContractMatches,
+  productStrictGatewayContracts as productGatewayContracts,
+  productStrictOperations as productOperations,
+} from "../sandy-product-service-api/strict_gateway.ts";
 import {
   commerceStrictContractMatches as commerceContractMatches,
   commerceStrictGatewayContracts as commerceGatewayContracts,
@@ -113,6 +113,15 @@ import {
   artifactExecutionScope,
   artifactOperations,
 } from "../sandy-provider-artifact-api/gateway.ts";
+import {
+  legacyOwnerContractMatches,
+  legacyOwnerExecutionScope,
+  legacyOwnerOperations,
+} from "../sandy-legacy-compatibility-api/gateway.ts";
+import {
+  composioReadContractMatches,
+  composioReadOperations,
+} from "../sandy-composio-read-api/contracts.ts";
 export {
   parsePackageRestoreBindings,
   type ScopeBinding,
@@ -140,6 +149,8 @@ export type ExtensionKind =
   | "provider_sensitive"
   | "provider_bound"
   | "provider_artifact"
+  | "legacy_owner"
+  | "composio_customer"
   | "lifecycle";
 export type ExtensionContract = {
   kind: ExtensionKind;
@@ -196,7 +207,7 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
     ...grouped(
       {
         ...tenantConsentOperations,
-        ...financialConsentOverrides,
+        ...redactionConsentOverrides,
       },
       "tenant_consent",
       "sandy-operation-api",
@@ -221,6 +232,16 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       artifactOperations,
       "provider_artifact",
       "sandy-provider-artifact-api",
+    ),
+    ...grouped(
+      legacyOwnerOperations,
+      "legacy_owner",
+      "sandy-legacy-compatibility-api",
+    ),
+    ...grouped(
+      composioReadOperations,
+      "composio_customer",
+      "sandy-composio-read-api",
     ),
     ...grouped(
       tenantLifecycleOperations,
@@ -265,7 +286,14 @@ export const extensionHandlers = Object.freeze(
 export const extensionKind = (operation: string): ExtensionKind | undefined =>
   extensionContracts[operation]?.kind;
 export const extensionNeedsPortal = (operation: string) =>
-  ["agenda", "memory", "agent", "tenant_consent", "tenant_download"].includes(
+  [
+    "agenda",
+    "memory",
+    "agent",
+    "tenant_consent",
+    "tenant_download",
+    "composio_customer",
+  ].includes(
     extensionKind(operation) ?? "",
   ) || (extensionKind(operation) === "product" &&
     productOperations[operation].authorization !== "owner") ||
@@ -284,6 +312,7 @@ export const extensionOwnsGrant = (operation: string) =>
     "provider_sensitive",
     "provider_bound",
     "provider_artifact",
+    "legacy_owner",
     "tenant_lifecycle",
     "system_metadata",
   ]
@@ -298,7 +327,9 @@ export const extensionOwnerOnly = (operation: string) =>
     commerceOperations[operation].authorization === "owner");
 /** These handlers derive and consume their own admission from the actual JWT. */
 export const extensionOwnsUserAdmission = (operation: string) =>
-  ["product", "commerce"].includes(extensionKind(operation) ?? "");
+  ["product", "commerce", "composio_customer"].includes(
+    extensionKind(operation) ?? "",
+  );
 export const extensionRequiresUserSession = (operation: string) =>
   !!extensionKind(operation) && operation !== "system.lifecycle.poll";
 export function extensionHasAccess(
@@ -316,6 +347,7 @@ export function extensionHasAccess(
       return !!principal.portalCustomerId;
     case "tenant_consent":
     case "tenant_download":
+    case "composio_customer":
       return !!principal.portalCustomerId && emailConfirmed;
     case "product":
       return emailConfirmed &&
@@ -347,6 +379,7 @@ export function extensionHasAccess(
     case "provider_sensitive":
     case "provider_bound":
     case "provider_artifact":
+    case "legacy_owner":
     case "tenant_lifecycle":
       return principal.controllerOwner;
     default:
@@ -373,6 +406,12 @@ export function extensionContractMatches(
     return providerLifecycleContractMatches(operation, entry);
   }
   if (c.kind === "product") return productContractMatches(operation, entry);
+  if (c.kind === "legacy_owner") {
+    return legacyOwnerContractMatches(operation, entry);
+  }
+  if (c.kind === "composio_customer") {
+    return composioReadContractMatches(operation, entry);
+  }
   if (c.kind === "commerce") return commerceContractMatches(operation, entry);
   if (c.kind === "system_metadata") {
     return systemMetadataContractMatches(operation, entry);
@@ -436,6 +475,7 @@ export function extensionAvailability(
     (entry.is_mutation === true ||
       (kind === "product" && productOperations[operation].sensitive) ||
       (kind === "commerce" && commerceOperations[operation].sensitive) ||
+      kind === "composio_customer" ||
       kind === "tenant_download" ||
       (kind === "provider_gap"
         ? extensionContracts[operation].requires_grant === true
@@ -483,7 +523,7 @@ export async function executeUserExtension(
       return executeMemoryOperation(deps, bearer, operation, args);
     case "tenant_consent":
       return deps.userDb
-        ? executeFinancialConsent(deps.userDb, operation, args)
+        ? executeRedactionConsent(deps.userDb, operation, args)
         : Response.json({
           ok: false,
           error: "tenant_consent_session_required",
@@ -542,6 +582,9 @@ export async function extensionExecutionScope(
   }
   if (kind === "provider_artifact") {
     return artifactExecutionScope(operation, args);
+  }
+  if (kind === "legacy_owner") {
+    return legacyOwnerExecutionScope(operation);
   }
   if (kind === "guest") {
     return guestOperations[operation].kind === "task_status"

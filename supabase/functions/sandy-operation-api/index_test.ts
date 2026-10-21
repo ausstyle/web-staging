@@ -28,7 +28,19 @@ import {
   createServiceHandler,
   type Dependencies as ServiceDependencies,
 } from "../sandy-supabase-service-api/index.ts";
-import { productOperations } from "../sandy-product-service-api/contracts.ts";
+import { productStrictOperations as productOperations } from "../sandy-product-service-api/strict_gateway.ts";
+import { createStrictProductHandler } from "../sandy-product-service-api/strict_entry.ts";
+import {
+  legacyOwnerExecutionScope,
+  legacyOwnerOperations,
+} from "../sandy-legacy-compatibility-api/gateway.ts";
+import { createLegacyProviderHandler } from "../sandy-legacy-compatibility-api/provider_handler.ts";
+import { composioReadOperations } from "../sandy-composio-read-api/contracts.ts";
+import { createComposioReadHandler } from "../sandy-composio-read-api/index.ts";
+import { financialRedactionScope } from "../sandy-tenant-lifecycle-api/financial_redaction_contracts.ts";
+import redactionManifest from "../sandy-tenant-lifecycle-api/financial_redaction_manifest.json" with {
+  type: "json",
+};
 import { supplementContracts } from "../sandy-provider-supplement-api/contracts.ts";
 import { createSupplementHandler } from "../sandy-provider-supplement-api/index.ts";
 import { sensitiveContracts } from "../sandy-provider-sensitive-api/contracts.ts";
@@ -3041,11 +3053,15 @@ function extensionRow(operation: string, verified = false): Row {
           "provider_sensitive",
           "provider_bound",
           "provider_artifact",
+          "legacy_owner",
         ]
           .includes(c.kind)
         ? {
           requires_approval: true,
           requires_grant: true,
+          ...(c.kind === "legacy_owner"
+            ? { requires_real_user_session: true }
+            : {}),
           api_key_delegable: false,
         }
         : {}),
@@ -3056,11 +3072,20 @@ function extensionRow(operation: string, verified = false): Row {
             (productOperations[operation].is_mutation ||
               productOperations[operation].sensitive),
           api_key_delegable: false,
+          requires_real_user_session: true,
         }
         : {}),
       ...(c.kind === "commerce"
         ? {
           requires_approval: commerceOperations[operation].requires_approval,
+          requires_real_user_session: true,
+          api_key_delegable: false,
+        }
+        : {}),
+      ...(c.kind === "composio_customer"
+        ? {
+          requires_approval: false,
+          requires_grant: true,
           requires_real_user_session: true,
           api_key_delegable: false,
         }
@@ -3079,18 +3104,54 @@ function extensionRow(operation: string, verified = false): Row {
 const productRequestId = "80000000-0000-4000-8000-000000000001";
 const productAdmissionId = "80000000-0000-4000-8000-000000000002";
 function productResponse(operation: string, patch: Row = {}): Response {
+  // Resource fields observed in the actual full-rollback PostgreSQL outputs:
+  // product-strict-rollback-evidence.json SHA256 2cff20858d70e6565717f638230283f04bb08c8f89d8f9761178165210a23a00.
+  // Only synthetic IDs, dates and request-specific values are normalized here.
+  assert.ok(
+    [
+      "customer.profile.get",
+      "product.configuration.providers.get",
+      "notifications.templates.create",
+    ].includes(operation),
+    "strict Product fixture must be explicit",
+  );
+  const item = operation === "customer.profile.get"
+    ? {
+      id: extensionTenant,
+      display_name: "Product rollback fixture",
+      created_at: "2026-10-21T00:00:00Z",
+      updated_at: "2026-10-21T00:00:00Z",
+    }
+    : operation === "product.configuration.providers.get"
+    ? {
+      provider_key: "openai",
+      model_name: "not_configured",
+      enabled: false,
+      is_default: false,
+      created_at: "2026-10-21T00:00:00Z",
+      updated_at: "2026-10-21T00:00:00Z",
+    }
+    : {
+      id: productRequestId,
+      name: "synthetic_template",
+      body_text: "Synthetic text",
+      version: 1,
+      deleted_at: null,
+      created_at: "2026-10-21T00:00:00Z",
+      updated_at: "2026-10-21T00:00:00Z",
+    };
   return Response.json({
     ok: true,
     operation,
-    contract_version: "1.0.0",
+    contract_version: "1.1.0",
     request_id: productRequestId,
     admission_id: productAdmissionId,
     request_state: "observed",
     executed: true,
     result: {
-      item: null,
+      item,
       items: [],
-      changed: false,
+      changed: operation === "notifications.templates.create",
       next_cursor: null,
       possibly_truncated: false,
       provider_id: null,
@@ -3482,8 +3543,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 538 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 538);
+Deno.test("all 552 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 552);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -3516,6 +3577,8 @@ Deno.test("all 538 service extensions are installed with their exact contracts a
         "provider_bound",
         "provider_artifact",
         "system_metadata",
+        "legacy_owner",
+        "composio_customer",
       ].includes(
         String(row.kind),
       ) ||
@@ -4155,14 +4218,14 @@ Deno.test("commerce untrusted replies cannot invent execution and closed sensiti
   );
   assert.deepEqual([closed.calls.length, closed.rpcCalls.length], [0, 0]);
 });
-Deno.test("recovery consent getter and setter retain all68 explicit choices through the actual customer JWT", async () => {
+Deno.test("recovery consent getter and setter retain all73 explicit choices through the actual customer JWT", async () => {
   const setter = "supabase.tenant.consent.set",
     getter = "supabase.tenant.consent.get";
   const schema = extensionContracts[setter].input_schema as {
     properties: { operations: { items: { enum: string[] } } };
   };
   const operations = schema.properties.operations.items.enum;
-  assert.equal(operations.length, 68);
+  assert.equal(operations.length, 73);
   const policy = {
     ok: true,
     tenant_id: extensionTenant,
@@ -4945,7 +5008,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2527);
+  assert.equal(installedOperationIds.length, 2541);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);
@@ -5695,4 +5758,601 @@ Deno.test("relationship-bound methods keep exact owner approval and configured p
     424,
   );
   assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 0]);
+});
+
+Deno.test("legacy original-ID handlers preserve exact scoped owner approval and consume once through the real merge executor", async () => {
+  assert.equal(Object.keys(legacyOwnerOperations).length, 7);
+  const operation = "github.merge", sha = "a".repeat(40);
+  const args = {
+    path: { pull_number: 123 },
+    body: { sha, merge_method: "merge" },
+  };
+  const approval = "80000000-0000-4000-8000-000000000003";
+  const scope = await argumentDigest(legacyOwnerExecutionScope(operation));
+  for (const merged of [true, false]) {
+    let admitted: Row | null = null;
+    let consumed = 0, finished = 0, providerCalls = 0;
+    const backend = createLegacyProviderHandler({
+      service: "test-service-credential",
+      authorizeContext: async (context, contract) => {
+        assert.ok(admitted);
+        assert.equal(context.actor_id, extensionActor);
+        assert.equal(context.tenant_id, null);
+        assert.equal(context.credential_id, null);
+        assert.equal(context.admission_id, productAdmissionId);
+        assert.equal(contract.operation, operation);
+        return { allowed: true };
+      },
+      consumeGrant: async (input) => {
+        assert.ok(admitted);
+        assert.equal(++consumed, 1);
+        assert.equal(input.operation, operation);
+        assert.equal(input.actor_id, extensionActor);
+        assert.equal(input.request_id, productRequestId);
+        assert.equal(input.grant_id, productRequestId);
+        assert.equal(input.input_sha256, admitted.p_input_sha256);
+        assert.equal(input.contract_sha256, admitted.p_contract_sha256);
+        assert.equal(input.scope_sha256, admitted.p_scope_sha256);
+        return {
+          allowed: true,
+          admission_id: productAdmissionId,
+          reused: false,
+        };
+      },
+      finishExecution: async (input) => {
+        finished++;
+        assert.equal(input.admission_id, productAdmissionId);
+        assert.equal(input.outcome, merged ? "accepted" : "failed");
+        assert.equal(input.provider_http_status, 200);
+        return { allowed: true };
+      },
+      credentialForExecution: async (_op, context) => {
+        assert.equal(consumed, 1);
+        assert.equal(context.admissionId, productAdmissionId);
+        return "synthetic-provider-token";
+      },
+      fetch: (async (url, init) => {
+        providerCalls++;
+        assert.equal(
+          String(url),
+          "https://api.github.com/repos/ausstyle/web-staging/pulls/123/merge",
+        );
+        assert.equal(init?.method, "PUT");
+        assert.deepEqual(JSON.parse(String(init?.body)), args.body);
+        return Response.json({
+          merged,
+          sha,
+          message: merged ? "Merged" : "Head refused",
+        });
+      }) as typeof fetch,
+    });
+    const h = harness({
+      actorId: extensionActor,
+      executionPolicy: true,
+      rows: [extensionRow(operation, true)],
+      rpcHandler: async (name, input) => {
+        assert.equal(
+          name,
+          "sandy_api_admit_execution",
+          "backend owns consume/finish",
+        );
+        assert.equal(input.p_actor_id, extensionActor);
+        assert.equal(input.p_tenant_id, null);
+        assert.equal(input.p_operation, operation);
+        assert.equal(input.p_request_id, productRequestId);
+        assert.equal(input.p_approval_id, approval);
+        assert.equal(input.p_input_sha256, await argumentDigest(args));
+        assert.equal(input.p_scope_sha256, scope);
+        assert.equal(
+          input.p_contract_sha256,
+          legacyOwnerOperations[operation].contract_sha256,
+        );
+        admitted = input;
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: productAdmissionId,
+          grant_id: productRequestId,
+          state: "admitted",
+          executed: false,
+          expires_at: "2099-01-01T00:00:00Z",
+        };
+      },
+      backend: (url, init) => {
+        assert.equal(
+          url,
+          "https://example.supabase.co/functions/v1/sandy-legacy-compatibility-api",
+        );
+        assert.equal(
+          new Headers(init?.headers).get("authorization"),
+          "Bearer test-service-credential",
+        );
+        const sent = JSON.parse(String(init?.body));
+        assert.equal(sent.operation, operation);
+        assert.deepEqual(sent.arguments, args);
+        return backend(new Request(url, init));
+      },
+    });
+    const response = await h.request(
+      { action: "execute", operation, arguments: args },
+      undefined,
+      {
+        "x-sandy-request-id": productRequestId,
+        "x-sandy-approval-id": approval,
+      },
+    );
+    assert.equal(
+      response.status,
+      merged ? 200 : 409,
+      await response.clone().text(),
+    );
+    const result = await response.json();
+    assert.equal(result.executed, merged);
+    if (!merged) {
+      assert.equal(result.reconciliation_required, false);
+      assert.equal(result.provider_attempted, true);
+    }
+    assert.deepEqual([
+      h.rpcCalls.length,
+      h.calls.length,
+      consumed,
+      finished,
+      providerCalls,
+    ], [1, 1, 1, 1, 1]);
+  }
+});
+
+Deno.test("financial text redaction composes all five owner routes with one scoped admission and strict policy results", async () => {
+  for (
+    const suffix of [
+      "policies.create",
+      "policies.get",
+      "policies.revoke",
+      "preview",
+      "apply",
+    ]
+  ) {
+    const operation = "supabase.tenant.financial.redaction." + suffix;
+    const base = {
+      tenant_id: extensionTenant,
+      manifest: redactionManifest.id,
+      expected_manifest_sha256: redactionManifest.manifest_sha256,
+    };
+    const args = suffix === "policies.create"
+      ? {
+        ...base,
+        resource: "sandy_commerce_accounts",
+        record_ids: [productRequestId],
+        source_cutoff: "2026-10-21T00:00:00Z",
+        effective_at: "2026-10-21T00:00:00Z",
+        expires_at: "2026-10-22T00:00:00Z",
+        basis: "subject_data_request",
+        policy_reference: productRequestId,
+        acknowledge_retained_financial_records: true,
+        acknowledge_retained_control_copies: true,
+      }
+      : {
+        ...base,
+        policy_id: productRequestId,
+        ...(suffix === "policies.revoke"
+          ? { confirm_policy_revocation: true }
+          : {}),
+        ...(suffix === "apply"
+          ? {
+            confirm_text_redaction: true,
+            expected_current_sha256: "d".repeat(64),
+          }
+          : {}),
+      };
+    let consumed = 0, finished = 0, sql = 0;
+    const backend = createTenantLifecycleHandler({
+      service: "test-service-credential",
+      projectUrl: "https://zmqlyygzqoidkcwdysok.supabase.co",
+      authorizeContext: async (context) => {
+        assert.equal(context.actor_id, extensionActor);
+        return { allowed: true };
+      },
+      consumeGrant: async (input) => {
+        consumed++;
+        assert.equal(
+          input.scope_sha256,
+          await argumentDigest(financialRedactionScope),
+        );
+        assert.equal(input.operation, operation);
+        assert.equal(input.tenant_id, null);
+        assert.equal(input.actor_id, extensionActor);
+        assert.equal(input.request_id, productRequestId);
+        assert.equal(input.grant_id, productRequestId);
+        assert.equal(input.input_sha256, await argumentDigest(args));
+        assert.equal(
+          input.contract_sha256,
+          extensionContracts[operation].contract_sha256,
+        );
+        return {
+          allowed: true,
+          reused: false,
+          admission_id: productAdmissionId,
+        };
+      },
+      finishExecution: async () => {
+        finished++;
+        return { allowed: true };
+      },
+      rpc: async (name, input) => {
+        sql++;
+        assert.equal(name, "sandy_tenant_financial_redaction_execute");
+        assert.deepEqual(input, {
+          p_actor: extensionActor,
+          p_admission: productAdmissionId,
+          p_canonical: canonicalJson(args),
+        });
+        return {
+          status: 200,
+          error: null,
+          data: {
+            ok: true,
+            reused: false,
+            result: {
+              policy_id: productRequestId,
+              tenant_id: extensionTenant,
+              manifest: redactionManifest.id,
+              manifest_sha256: redactionManifest.manifest_sha256,
+              schema_sha256: redactionManifest.schema_sha256,
+              resource: "sandy_commerce_accounts",
+              record_count: 1,
+              source_sha256: "d".repeat(64),
+              consent_revision: 1,
+              source_cutoff: "2026-10-21T00:00:00Z",
+              effective_at: "2026-10-21T00:00:00Z",
+              expires_at: "2026-10-22T00:00:00Z",
+              basis: "subject_data_request",
+              policy_reference: productRequestId,
+              policy_reference_verified: false,
+              state: suffix === "apply"
+                ? "applied"
+                : suffix === "policies.revoke"
+                ? "revoked"
+                : "active",
+              created_at: "2026-10-21T00:00:00Z",
+              redacted_fields: ["name"],
+              retained_categories: redactionManifest.retained_categories,
+              complete_tenant_coverage: false,
+              financial_records_preserved: true,
+              external_provider_assets_included: false,
+              retained_control_copies: true,
+              restore_supported: false,
+              ...(suffix === "preview"
+                ? {
+                  current_sha256: "d".repeat(64),
+                  source_changed: false,
+                  changed_count: 1,
+                  eligible: true,
+                  hold_or_retention_blocked: false,
+                  consent_current: true,
+                }
+                : {}),
+              ...(suffix === "apply"
+                ? {
+                  before_sha256: "d".repeat(64),
+                  after_sha256: "e".repeat(64),
+                  changed_count: 1,
+                  source_text_redacted: true,
+                }
+                : {}),
+            },
+          },
+        };
+      },
+    });
+    const h = harness({
+      actorId: extensionActor,
+      executionPolicy: true,
+      rows: [extensionRow(operation, true)],
+      rpcHandler: async (name, input) => {
+        assert.equal(name, "sandy_api_admit_execution");
+        assert.equal(input.p_actor_id, extensionActor);
+        assert.equal(input.p_tenant_id, null);
+        assert.equal(input.p_operation, operation);
+        assert.equal(input.p_approval_id, productAdmissionId);
+        assert.equal(input.p_request_id, productRequestId);
+        assert.equal(input.p_input_sha256, await argumentDigest(args));
+        assert.equal(
+          input.p_contract_sha256,
+          extensionContracts[operation].contract_sha256,
+        );
+        assert.equal(
+          input.p_scope_sha256,
+          await argumentDigest(financialRedactionScope),
+        );
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: productAdmissionId,
+          grant_id: productRequestId,
+          state: "admitted",
+          executed: false,
+          expires_at: "2099-01-01T00:00:00Z",
+        };
+      },
+      backend: (url, init) => {
+        assert.equal(
+          url,
+          "https://example.supabase.co/functions/v1/sandy-tenant-lifecycle-api",
+        );
+        return backend(new Request(url, init));
+      },
+    });
+    const response = await h.request(
+      { action: "execute", operation, arguments: args },
+      undefined,
+      {
+        "x-sandy-request-id": productRequestId,
+        "x-sandy-approval-id": productAdmissionId,
+      },
+    );
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.deepEqual([
+      h.rpcCalls.length,
+      h.calls.length,
+      consumed,
+      finished,
+      sql,
+    ], [1, 1, 1, 1, 1]);
+  }
+});
+
+Deno.test("Composio customer reads preserve JWT and channel, generate or retain request IDs and omit approval metadata", async () => {
+  for (const operation of Object.keys(composioReadOperations)) {
+    for (const suppliedId of [false, true]) {
+      let selectedRequest = "";
+      const args = operation === "composio.execute_read"
+        ? {
+          profile_id: "fixture_read",
+          company_id: null,
+          arguments: { query: "hello" },
+        }
+        : {};
+      const h = harness({
+        actorId: extensionActor,
+        role: null,
+        memoryTenant: extensionTenant,
+        executionPolicy: true,
+        rows: [extensionRow(operation, true)],
+        backend: (url, init) => {
+          assert.equal(
+            url,
+            "https://example.supabase.co/functions/v1/sandy-composio-read-api",
+          );
+          assert.equal(
+            new Headers(init?.headers).get("authorization"),
+            "Bearer test-user-jwt",
+          );
+          const body = JSON.parse(String(init?.body));
+          assert.deepEqual(Object.keys(body).sort(), [
+            "arguments",
+            "channel",
+            "operation",
+            "request_id",
+          ]);
+          assert.equal(body.operation, operation);
+          assert.equal(body.channel, "mcp");
+          assert.deepEqual(body.arguments, args);
+          assert.match(body.request_id, /^[a-f0-9-]{36}$/i);
+          selectedRequest = body.request_id;
+          if (suppliedId) assert.equal(body.request_id, productRequestId);
+          return Response.json({
+            ok: true,
+            operation,
+            contract_version: "1.0.0",
+            request_id: body.request_id,
+            admission_id: productAdmissionId,
+            request_state: "observed",
+            executed: true,
+            reconciliation_required: false,
+            result: {
+              toolkits: [],
+              data: operation.endsWith("execute_read")
+                ? { text: "synthetic read" }
+                : null,
+              profile_id: operation.endsWith("execute_read")
+                ? "fixture_read"
+                : null,
+              result_sha256: "a".repeat(64),
+              provider_verified: true,
+              source: "composio_customer_read_service",
+              payload_stored: false,
+            },
+          });
+        },
+      });
+      const response = await h.request(
+        { action: "execute", operation, arguments: args, channel: "mcp" },
+        undefined,
+        {
+          ...(suppliedId ? { "x-sandy-request-id": productRequestId } : {}),
+          "x-sandy-approval-id": productAdmissionId,
+        },
+      );
+      assert.equal(response.status, 200, await response.clone().text());
+      assert.ok(selectedRequest);
+      assert.deepEqual(
+        [h.calls.length, h.rpcCalls.length],
+        [1, 0],
+        "customer backend owns admission and receipt",
+      );
+      const ownerWithoutPortal = harness({
+        actorId: extensionActor,
+        rows: [extensionRow(operation, true)],
+      });
+      assert.equal(
+        (await ownerWithoutPortal.request({ action: "describe", operation }))
+          .status,
+        403,
+      );
+      assert.deepEqual([
+        ownerWithoutPortal.calls.length,
+        ownerWithoutPortal.rpcCalls.length,
+      ], [0, 0]);
+    }
+  }
+});
+
+Deno.test("strict Product actual handler validates recorded PostgreSQL resource shapes through one customer admission", async () => {
+  const operation = "customer.profile.get", calls: string[] = [];
+  const backend = createStrictProductHandler({
+    base: "https://example.supabase.co",
+    anon: "test-anon-key",
+    service: "test-service-credential",
+    env: () => undefined,
+    authenticate: async (token) => {
+      assert.equal(token, "test-user-jwt");
+      return { id: extensionActor, emailConfirmed: true };
+    },
+    fetch: (() => {
+      throw Error("No provider call expected");
+    }) as typeof fetch,
+    rpc: async (name, input, token, service) => {
+      calls.push(name);
+      assert.equal(token, "test-user-jwt");
+      assert.equal(service, false);
+      if (name === "sandy_product_admit") {
+        assert.equal(input.p_operation, operation);
+        assert.equal(input.p_request_id, productRequestId);
+        assert.equal(input.p_channel, "mcp");
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: productAdmissionId,
+          grant_id: productRequestId,
+        };
+      }
+      assert.equal(name, "sandy_product_execute_db");
+      return await productResponse(operation).json();
+    },
+  });
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    executionPolicy: true,
+    rows: [extensionRow(operation)],
+    backend: (url, init) => backend(new Request(url, init)),
+  });
+  const response = await h.request(
+    { action: "execute", operation, arguments: {}, channel: "mcp" },
+    undefined,
+    { "x-sandy-request-id": productRequestId },
+  );
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.deepEqual(calls, ["sandy_product_admit", "sandy_product_execute_db"]);
+  assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 1]);
+  assert.equal((await response.json()).result.contract_version, "1.1.0");
+});
+
+Deno.test("Composio actual customer handler owns admission binding and finish while the gateway forwards no tenant authority", async () => {
+  const operation = "composio.discover_toolkits", calls: string[] = [];
+  let requestId = "", bound = false, providers = 0;
+  const backend = createComposioReadHandler({
+    base: "https://example.supabase.co",
+    anon: "test-anon-key",
+    service: "test-service-credential",
+    key: "synthetic-composio-key",
+    authenticate: async (token) => {
+      assert.equal(token, "test-user-jwt");
+      return { id: extensionActor, confirmed: true };
+    },
+    rpc: async (name, input, token, service) => {
+      calls.push(name);
+      if (name === "sandy_composio_read_admit") {
+        assert.equal(token, "test-user-jwt");
+        assert.equal(service, false);
+        assert.equal(input.p_operation, operation);
+        assert.equal(input.p_channel, "mcp");
+        requestId = String(input.p_request_id);
+        assert.match(requestId, /^[a-f0-9-]{36}$/i);
+        return {
+          ok: true,
+          reused: false,
+          admission_id: productAdmissionId,
+          grant_id: productRequestId,
+          actor_id: extensionActor,
+          tenant_id: extensionTenant,
+          request_id: requestId,
+        };
+      }
+      assert.equal(token, "test-service-credential");
+      assert.equal(service, true);
+      if (name === "sandy_composio_read_bind") {
+        assert.equal(input.p_actor, extensionActor);
+        assert.equal(input.p_admission_id, productAdmissionId);
+        assert.equal(input.p_grant_id, productRequestId);
+        bound = true;
+        return {
+          ok: true,
+          admission_id: productAdmissionId,
+          claim_id: productRequestId,
+          actor_id: extensionActor,
+          tenant_id: extensionTenant,
+          request_id: requestId,
+          operation,
+          connections: [],
+          profiles: [],
+          profile: null,
+        };
+      }
+      assert.equal(name, "sandy_composio_read_finish");
+      assert.equal(providers, 1);
+      return {
+        ok: true,
+        admission_id: productAdmissionId,
+        request_id: requestId,
+        state: input.p_outcome,
+        result_sha256: input.p_result_sha256,
+      };
+    },
+    fetch: (async (url, init) => {
+      assert.equal(bound, true);
+      providers++;
+      assert.equal(new URL(String(url)).origin, "https://backend.composio.dev");
+      assert.equal(
+        new URL(String(url)).searchParams.get("user_ids"),
+        "sandy_customer_" + extensionTenant,
+      );
+      assert.equal(
+        new Headers(init?.headers).get("x-api-key"),
+        "synthetic-composio-key",
+      );
+      assert.equal(new Headers(init?.headers).has("authorization"), false);
+      return Response.json({ items: [], next_cursor: null });
+    }) as typeof fetch,
+  });
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    backend: (url, init) => {
+      const body = JSON.parse(String(init?.body));
+      assert.equal(Object.hasOwn(body, "tenant_id"), false);
+      assert.equal(Object.hasOwn(body, "actor_id"), false);
+      return backend(new Request(url, init));
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: {},
+    channel: "mcp",
+  });
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.deepEqual(calls, [
+    "sandy_composio_read_admit",
+    "sandy_composio_read_bind",
+    "sandy_composio_read_finish",
+  ]);
+  assert.deepEqual([h.rpcCalls.length, h.calls.length, providers], [0, 1, 1]);
 });

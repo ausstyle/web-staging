@@ -69,7 +69,13 @@ function compose(options: {
       getUser(token: string) {
         identityTokens.push(token);
         return Promise.resolve({
-          data: { user: { id: options.actorId ?? "fixture-controller" } },
+          data: {
+            user: {
+              id: options.actorId ?? "fixture-controller",
+              role: "authenticated",
+              is_anonymous: false,
+            },
+          },
           error: null,
         });
       },
@@ -132,7 +138,10 @@ function compose(options: {
       "https://sandy.fixture.invalid/functions/v1/sandy-operation-api",
     );
     apiRequests.push(request.clone());
-    const response = await gateway(request);
+    // Supabase Edge forwards the function-name path after removing /functions/v1.
+    const response = await gateway(
+      new Request("https://edge.fixture.invalid/sandy-operation-api", request),
+    );
     apiResponses.push({
       status: response.status,
       body: await response.clone().json(),
@@ -209,6 +218,46 @@ Deno.test("composed discovery carries registry schemas through API and MCP witho
     revisedTools[0].inputSchema.title,
     registered.input_schema.title,
   );
+  assert.equal(h.backendRequests.length, 0);
+});
+
+Deno.test("MCP discovery traverses byte-bounded API pages and refuses stale schema cursors", async () => {
+  const first = {
+      ...preflight(),
+      input_schema: {
+        ...preflight().input_schema,
+        description: "x".repeat(950000),
+      },
+    },
+    second = {
+      ...release(),
+      input_schema: {
+        ...release().input_schema,
+        title: "Original",
+        description: "y".repeat(950000),
+      },
+    };
+  const h = compose({ registry: [first, second] });
+  const one = await (await h.request("tools/list")).json();
+  assert.equal(one.result.tools.length, 1);
+  assert.match(one.result.nextCursor, /^sc1\.[a-f0-9]{64}\.1$/);
+  const two =
+    await (await h.request("tools/list", { cursor: one.result.nextCursor }))
+      .json();
+  assert.equal(two.result.tools.length, 1);
+  assert.equal(two.result.nextCursor, undefined);
+  assert.deepEqual([one.result.tools[0].name, two.result.tools[0].name], [
+    first.operation,
+    second.operation,
+  ]);
+  assert.deepEqual(one.result.tools[0].inputSchema, first.input_schema);
+  assert.deepEqual(two.result.tools[0].inputSchema, second.input_schema);
+  second.input_schema.title = "Changed while paging";
+  const stale = await h.request("tools/list", {
+    cursor: one.result.nextCursor,
+  });
+  assert.equal(stale.status, 409);
+  assert.match((await stale.json()).error.message, /restart/);
   assert.equal(h.backendRequests.length, 0);
 });
 
