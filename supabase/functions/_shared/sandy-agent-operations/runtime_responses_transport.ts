@@ -3,11 +3,11 @@
 export function fixedRuntimeResponses(
   body: Record<string, unknown>,
   openaiKey: string,
-  timeout: 18000 | 45000 | 65000 | 75000 | 80000 | 100000,
+  timeout: 16000 | 18000 | 45000 | 65000 | 75000 | 80000 | 100000,
   request: typeof fetch,
   strictRedirect: boolean,
 ): Promise<Response> {
-  if (!openaiKey || ![18000, 45000, 65000, 75000, 80000, 100000].includes(timeout)) {
+  if (!openaiKey || ![16000, 18000, 45000, 65000, 75000, 80000, 100000].includes(timeout)) {
     throw Error("runtime_response_transport_invalid");
   }
   return request("https://api.openai.com/v1/responses", {

@@ -83,7 +83,7 @@
         ]
       },
       "identity": "Existing renewal-key worker credential plus claimed persistent mission-run row; no customer/owner Auth session.",
-      "remaining": "Primary planning and optional clarification review are extracted to two closed shared application services in the source candidate. Commit, migration, deployment and source readback pending; no actual model execution test.",
+      "remaining": "Parent committed b46fc5f, applied exact10070 and deployed ACTIVE19 with all seven uploaded sources matched. Both operations remain private/unverified; no real model execution test.",
       "boundaries_to_preserve": [
         "atomic queued-to-running claim",
         "persisted customer/mission match",
@@ -100,8 +100,12 @@
         "agent.missions.plan.prepare@1.0.0",
         "agent.missions.questions.review@1.0.0"
       ],
-      "candidate_deployed": false,
-      "scope_strengthening": "Actual queued run/customer/mission capability; immutable recorded proposal-derived reviewer; atomic plan/questions/decisions; changed authoritative context refuses completion; unknown logical mission cannot repeat through another run ID."
+      "candidate_deployed": true,
+      "scope_strengthening": "Actual queued run/customer/mission capability; immutable recorded proposal-derived reviewer; atomic plan/questions/decisions; changed authoritative context refuses completion; unknown logical mission cannot repeat through another run ID.",
+      "candidate_commit": "b46fc5f",
+      "migration_applied": true,
+      "parent_attested_deployed_version": 19,
+      "parent_attested_source_readback_files": 7
     },
     {
       "slug": "sandy-mission-executor",
@@ -169,13 +173,20 @@
         ]
       },
       "identity": "Service automation bound to stored customer turn and review-run row.",
-      "remaining": "Direct Responses quality review at archived line 90; no actual quality model call performed during this audit.",
+      "remaining": "Actual-record context, fixed quality model profile and atomic review/investigation writes extracted to a closed shared application source candidate. Commit, migration, deployment and readback pending; no real model execution test.",
       "boundaries_to_preserve": [
         "actual persisted turn",
         "customer scope",
         "review run",
         "no model assertion as provider action evidence"
-      ]
+      ],
+      "inspected_live_version": 8,
+      "inspected_status": "ACTIVE",
+      "candidate_contract": "agent.reliability.interaction.review@1.0.0",
+      "candidate_deployed": false,
+      "scope_strengthening": "Separate service-automation capability; real customer or NULL unmapped channel; one-use source claim across runs; actual saved review reuse after cursor loss; changed primary source refusal; qualitative pass never proves external execution.",
+      "checked_in_stale_source_sha256": "a49c0c028953546671b4dd2086d8eaf34d4e2985ce57da1762c2d552a2183e21",
+      "live_quality_score_behavior_preserved": true
     },
     {
       "slug": "sandy-gmail-send-verification",
