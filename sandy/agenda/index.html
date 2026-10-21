@@ -2086,7 +2086,11 @@ function timelineConnectFrom(source,e,handle){
    const saved=await timelineSaveSchedule(task,alignedStart,alignedStart+duration);
    if(!saved)throw Error("Dependent schedule could not be saved");
    toast("Finish-to-start dependency linked");
-  }catch(err){toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})}
+  }catch(err){
+   // A failed schedule must not leave a persisted, misleading dependency link.
+   try{await api("dependency",{task_id:task.id,depends_on_id:source.id,remove:true})}catch(rollbackError){console.warn("Dependency rollback failed",rollbackError)}
+   toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})
+  }
  };
  const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
  document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",stop,true);document.addEventListener("pointercancel",cancel,true);
