@@ -33,6 +33,11 @@ import supportManifest from "./support_recovery_manifest.json" with {
 };
 import { financialExportScope } from "./financial_contracts.ts";
 import financialManifest from "./financial_manifest.json" with { type: "json" };
+import { financialRedactionScope } from "./financial_redaction_contracts.ts";
+import redactionManifest from "./financial_redaction_manifest.json" with {
+  type: "json",
+};
+import { tenantLifecycleOperations as routedTenantLifecycleOperations } from "./gateway.ts";
 const actor = "00000000-0000-4000-8000-000000000001",
   tenant = "00000000-0000-4000-8000-000000000002",
   snapshot = "00000000-0000-4000-8000-000000000003",
@@ -178,8 +183,8 @@ function fixture(overrides: Partial<Dependencies> = {}) {
   };
   return { deps, calls, handler, invoke };
 }
-Deno.test("twenty-one manifest operations and protected metadata have executable strict contracts", () =>
-  equal(validateTenantLifecycleContracts(), 22));
+Deno.test("27 fixed lifecycle operations have executable strict contracts", () =>
+  equal(validateTenantLifecycleContracts(), 27));
 
 Deno.test("private support recovery binds exact case scope with one common owner grant and refuses a different returned case", async () => {
   for (
@@ -874,8 +879,8 @@ Deno.test("financial artifacts use the same SQL fragment executor with their own
     );
   }
   assert(
-    !Object.keys(tenantLifecycleOperations).some((name) =>
-      name.startsWith("supabase.tenant.financial.redaction.")
+    !Object.keys(routedTenantLifecycleOperations).some((name) =>
+      name.startsWith("supabase.tenant.control.redaction.")
     ),
   );
 });
@@ -926,4 +931,187 @@ Deno.test("financial source snapshots cannot cross-bind to a different snapshot 
     equal(response.status, 502);
     equal(f.calls.map((c) => c.name), ["authorize", "consume", "finish"]);
   }
+});
+
+function redactionArgs(suffix: string): Record<string, unknown> {
+  const base = {
+    tenant_id: tenant,
+    manifest: redactionManifest.id,
+    expected_manifest_sha256: redactionManifest.manifest_sha256,
+  };
+  if (suffix === "policies.create") {
+    return {
+      ...base,
+      resource: "sandy_commerce_accounts",
+      record_ids: [snapshot],
+      source_cutoff: "2026-10-21T00:00:00Z",
+      effective_at: "2026-10-21T00:00:00Z",
+      expires_at: "2026-10-22T00:00:00Z",
+      basis: "subject_data_request",
+      policy_reference: requestId,
+      acknowledge_retained_financial_records: true,
+      acknowledge_retained_control_copies: true,
+    };
+  }
+  return {
+    ...base,
+    policy_id: grant,
+    ...(suffix === "policies.revoke"
+      ? { confirm_policy_revocation: true }
+      : {}),
+    ...(suffix === "apply"
+      ? {
+        expected_current_sha256: "d".repeat(64),
+        confirm_text_redaction: true,
+      }
+      : {}),
+  };
+}
+function redactionResult(suffix: string): Record<string, unknown> {
+  return {
+    policy_id: grant,
+    tenant_id: tenant,
+    manifest: redactionManifest.id,
+    manifest_sha256: redactionManifest.manifest_sha256,
+    schema_sha256: redactionManifest.schema_sha256,
+    resource: "sandy_commerce_accounts",
+    record_count: 1,
+    source_sha256: "d".repeat(64),
+    consent_revision: 1,
+    source_cutoff: "2026-10-21T00:00:00Z",
+    effective_at: "2026-10-21T00:00:00Z",
+    expires_at: "2026-10-22T00:00:00Z",
+    basis: "subject_data_request",
+    policy_reference: requestId,
+    policy_reference_verified: false,
+    state: suffix === "apply"
+      ? "applied"
+      : suffix === "policies.revoke"
+      ? "revoked"
+      : "active",
+    created_at: "2026-10-21T00:00:00Z",
+    redacted_fields: ["name"],
+    retained_categories: redactionManifest.retained_categories,
+    complete_tenant_coverage: false,
+    financial_records_preserved: true,
+    external_provider_assets_included: false,
+    retained_control_copies: true,
+    restore_supported: false,
+    ...(suffix === "preview"
+      ? {
+        current_sha256: "d".repeat(64),
+        source_changed: false,
+        changed_count: 1,
+        eligible: true,
+        hold_or_retention_blocked: false,
+        consent_current: true,
+      }
+      : {}),
+    ...(suffix === "apply"
+      ? {
+        before_sha256: "d".repeat(64),
+        after_sha256: "e".repeat(64),
+        changed_count: 1,
+        source_text_redacted: true,
+      }
+      : {}),
+  };
+}
+Deno.test("financial redaction five owner routes select exact private RPC/scope with one consumed admission and one finish", async () => {
+  equal(Object.keys(routedTenantLifecycleOperations).length, 27);
+  assert(
+    !Object.keys(routedTenantLifecycleOperations).some((name) =>
+      name.startsWith("supabase.tenant.control.")
+    ),
+  );
+  for (
+    const suffix of [
+      "policies.create",
+      "policies.get",
+      "policies.revoke",
+      "preview",
+      "apply",
+    ]
+  ) {
+    const operation = "supabase.tenant.financial.redaction." + suffix;
+    const args = redactionArgs(suffix);
+    let sqlCalls = 0;
+    const f = fixture({
+      rpc: async (name, params) => {
+        sqlCalls++;
+        equal(name, "sandy_tenant_financial_redaction_execute");
+        equal(params, {
+          p_actor: actor,
+          p_admission: admission,
+          p_canonical: canonicalJson(args),
+        });
+        return {
+          status: 200,
+          error: null,
+          data: { ok: true, reused: false, result: redactionResult(suffix) },
+        };
+      },
+    });
+    const response = await f.invoke(operation, args);
+    equal(response.status, 200);
+    equal(sqlCalls, 1);
+    equal(f.calls.map((c) => c.name), ["authorize", "consume", "finish"]);
+    equal(
+      (f.calls[1].value as { scope_sha256: string }).scope_sha256,
+      await argumentDigest(financialRedactionScope),
+    );
+    equal((await response.json()).result.policy_id, grant);
+  }
+});
+Deno.test("financial redaction rejects cross-policy/tenant/resource/digest and false broad erasure claims", async () => {
+  for (
+    const [suffix, patch] of [
+      ["apply", { policy_id: snapshot }],
+      ["apply", { before_sha256: "f".repeat(64) }],
+      ["apply", { tenant_id: actor }],
+      ["apply", { state: "active" }],
+      ["apply", { complete_tenant_coverage: true }],
+      ["policies.create", { resource: "sandy_commerce_entries" }],
+      ["policies.create", { record_count: 2 }],
+      ["policies.create", { policy_reference: actor }],
+    ] as const
+  ) {
+    const f = fixture({
+      rpc: async () => ({
+        status: 200,
+        error: null,
+        data: {
+          ok: true,
+          reused: false,
+          result: { ...redactionResult(suffix), ...patch },
+        },
+      }),
+    });
+    const response = await f.invoke(
+      "supabase.tenant.financial.redaction." + suffix,
+      redactionArgs(suffix),
+    );
+    equal(response.status, 502);
+    equal((await response.json()).executed, null);
+    equal(f.calls.map((c) => c.name), ["authorize", "consume", "finish"]);
+    equal((f.calls[2].value as FinishRequest).outcome, "unknown");
+  }
+});
+Deno.test("financial redaction grant refusal never enters its private SQL executor", async () => {
+  const f = fixture({
+    consumeGrant: async () => ({
+      allowed: true,
+      reused: true,
+      admission_id: admission,
+    }),
+    rpc: async () => {
+      throw Error("must not execute");
+    },
+  });
+  const response = await f.invoke(
+    "supabase.tenant.financial.redaction.apply",
+    redactionArgs("apply"),
+  );
+  equal(response.status, 409);
+  equal(f.calls.map((c) => c.name), ["authorize"]);
 });

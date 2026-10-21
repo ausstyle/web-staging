@@ -23,6 +23,10 @@ import {
   financialExportExecutionScope,
   financialExportOperations,
 } from "./financial_contracts.ts";
+import {
+  financialRedactionExecutionScope,
+  financialRedactionOperations,
+} from "./financial_redaction_contracts.ts";
 export const tenantLifecycleOperations = Object.freeze({
   ...manifestOperations,
   [protectedInventoryOperationName]: protectedInventoryOperation,
@@ -30,8 +34,12 @@ export const tenantLifecycleOperations = Object.freeze({
   ...contentExportOperations,
   ...supportRecoveryOperations,
   ...financialExportOperations,
+  ...financialRedactionOperations,
 });
 export function tenantLifecycleExecutionScope(operation: string) {
+  if (Object.hasOwn(financialRedactionOperations, operation)) {
+    return financialRedactionExecutionScope(operation);
+  }
   if (Object.hasOwn(financialExportOperations, operation)) {
     return financialExportExecutionScope(operation);
   }

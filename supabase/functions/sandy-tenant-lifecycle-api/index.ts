@@ -30,6 +30,11 @@ import {
   financialExportOperations,
   financialExportRpcName,
 } from "./financial_contracts.ts";
+import {
+  financialRedactionOperations,
+  financialRedactionResultMatches,
+  financialRedactionRpcName,
+} from "./financial_redaction_contracts.ts";
 export type Operation = {
   operation: string;
   is_mutation: boolean;
@@ -86,7 +91,8 @@ export type Dependencies = {
     name:
       | "sandy_tenant_lifecycle_execute"
       | typeof protectedInventoryRpcName
-      | typeof contentExportRpcName,
+      | typeof contentExportRpcName
+      | typeof financialRedactionRpcName,
     args: JsonObject,
   ): Promise<RpcResult>;
 };
@@ -189,6 +195,9 @@ function resultMatchesRequest(
   args: JsonObject,
   result: JsonObject,
 ): boolean {
+  if (Object.hasOwn(financialRedactionOperations, operation.operation)) {
+    return financialRedactionResultMatches(operation.operation, args, result);
+  }
   if (operation.operation === protectedInventoryOperationName) {
     return result.tenant_id === args.tenant_id &&
       result.offset === args.offset && result.limit === args.limit;
@@ -358,7 +367,9 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
           rpc: (name, params) => deps.rpc(name, params),
         }, parameters)
         : await deps.rpc(
-          Object.hasOwn(financialExportOperations, operation.operation)
+          Object.hasOwn(financialRedactionOperations, operation.operation)
+            ? financialRedactionRpcName
+            : Object.hasOwn(financialExportOperations, operation.operation)
             ? financialExportRpcName
             : Object.hasOwn(contentExportOperations, operation.operation)
             ? contentExportRpcName
