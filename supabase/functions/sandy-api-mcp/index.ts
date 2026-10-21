@@ -131,6 +131,39 @@ function failedResult(value: unknown): boolean {
   return isObject(value.result) && failedResult(value.result);
 }
 
+/** A backward-compatible tool envelope lets MCP clients supply per-call
+ * approvals without changing connection headers or the Sandy API arguments. */
+export function transportInputSchema(input: JsonObject): JsonObject {
+  const prefix = "#/$defs/sandy_api_arguments";
+  const relocate = (value: unknown): unknown => {
+    if (Array.isArray(value)) return value.map(relocate);
+    if (!isObject(value)) return value;
+    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key,
+      key === "$ref" && typeof child === "string" && child.startsWith("#")
+        ? prefix + child.slice(1) : relocate(child)]));
+  };
+  const metadata = { type: "object", minProperties: 1, additionalProperties: false,
+    properties: { approval_id: { type: "string", format: "uuid" }, request_id: { type: "string", format: "uuid" } } };
+  return { type: "object", $defs: { sandy_api_arguments: relocate(input) }, anyOf: [
+    { $ref: prefix },
+    { type: "object", required: ["__sandy_execution", "arguments"], additionalProperties: false,
+      properties: { __sandy_execution: metadata, arguments: { $ref: prefix } } },
+  ] };
+}
+function unpackExecution(arguments_: JsonObject, header: ApiExecutionMetadata) {
+  if (!Object.hasOwn(arguments_, "__sandy_execution")) return { arguments_, metadata: header };
+  const value = arguments_.__sandy_execution;
+  if (Object.keys(arguments_).length !== 2 || !isObject(arguments_.arguments) || !isObject(value) ||
+    Object.keys(value).length === 0 || Object.keys(value).some(key => !["approval_id", "request_id"].includes(key))) return null;
+  const metadata = { ...header };
+  for (const [field, key] of [["approval_id", "approvalId"], ["request_id", "requestId"]] as const) {
+    if (value[field] === undefined) continue;
+    if (!uuid(value[field]) || (header[key] !== undefined && header[key]!.toLowerCase() !== value[field].toLowerCase())) return null;
+    metadata[key] = value[field];
+  }
+  return { arguments_: arguments_.arguments, metadata };
+}
+
 function discoveryTools(result: JsonObject) {
   const entries = Array.isArray(result.operations) ? result.operations : [];
   const names = new Set<string>();
@@ -150,7 +183,9 @@ function discoveryTools(result: JsonObject) {
     description: typeof entry.description === "string"
       ? entry.description
       : `Sandy API operation: ${entry.operation}`,
-    inputSchema: entry.input_schema,
+    inputSchema: entry.is_mutation === true || isObject(entry.error_contract) &&
+        (entry.error_contract.requires_approval === true || entry.error_contract.requires_grant === true)
+      ? transportInputSchema(entry.input_schema as JsonObject) : entry.input_schema,
     ...(isObject(entry.output_schema) && entry.output_schema.type === "object"
       ? { outputSchema: entry.output_schema }
       : {}),
@@ -318,16 +353,18 @@ export function createHandler(api: InvokeApi) {
             400,
           );
         }
+        const execution = unpackExecution(params.arguments ?? {}, metadata);
+        if (!execution) return json(rpcError(id, -32602, "Invalid or conflicting execution metadata"), 400);
         const a = await api(
           bearer,
           {
             action: "execute",
             channel: "mcp",
             operation: params.name,
-            arguments: params.arguments ?? {},
+            arguments: execution.arguments_,
           },
           apiKey,
-          metadata,
+          execution.metadata,
         );
         const output = isObject(a.result) ? a.result.result : undefined;
         const accepted = isObject(a.result) && a.result.accepted === true &&

@@ -551,3 +551,29 @@ Deno.test("canonical MCP API response bound accepts exact capacity and refuses o
     }
   }
 });
+Deno.test("per-tool execution envelope forwards approval and request context while preserving API arguments", async () => {
+  const approvalId="abcdef12-3456-4789-abcd-ef1234567890", requestId="12345678-1234-4234-8234-1234567890ab";
+  let received: unknown;
+  const h=createHandler(async (token, body, key, metadata)=>{
+    received={token,body,key,metadata};return {status:200,result:{ok:true,executed:true,result:{ok:true}}};
+  });
+  const r=await h(request(message("tools/call",{name:"github.files.update",arguments:{__sandy_execution:{approval_id:approvalId,request_id:requestId},arguments:{path:{path:"engineering-smoke/test.txt"},body:{content:"Zm9v"}}}})));
+  equal(r.status,200);equal((await r.json()).result.isError,false);
+  equal(received,{token:"test.identity.token",body:{action:"execute",channel:"mcp",operation:"github.files.update",arguments:{path:{path:"engineering-smoke/test.txt"},body:{content:"Zm9v"}}},metadata:{approvalId,requestId}});
+});
+Deno.test("malformed, forged and header-conflicting tool envelopes never invoke Sandy API", async () => {
+  for(const metadata of [{actor_id:"forged"},{approval_id:"bad"},{},{approval_id:"abcdef12-3456-4789-abcd-ef1234567890",tenant_id:"forged"}]){
+    const r=await createHandler(noApi)(request(message("tools/call",{name:"fixture.execute",arguments:{__sandy_execution:metadata,arguments:{}}})));equal(r.status,400);
+  }
+  const r=await createHandler(noApi)(new Request("https://mcp.test.invalid",{method:"POST",headers:{authorization:"Bearer test.identity.token","x-sandy-approval-id":"12345678-1234-4234-8234-1234567890ab"},body:JSON.stringify(message("tools/call",{name:"fixture.execute",arguments:{__sandy_execution:{approval_id:"abcdef12-3456-4789-abcd-ef1234567890"},arguments:{}}}))}));equal(r.status,400);
+});
+Deno.test("approval tool discovery retains local schema references for ordinary and enveloped arguments", async () => {
+  const {Ajv}=await import("npm:ajv@8.17.1");const {fullFormats}=await import("npm:ajv-formats@3.0.1/dist/formats.js");
+  const input={type:"object",required:["body"],properties:{body:{$ref:"#/$defs/body"}},additionalProperties:false,$defs:{body:{type:"object",required:["value"],properties:{value:{type:"string"}},additionalProperties:false}}};
+  const r=await createHandler(async()=>({status:200,result:{ok:true,operations:[{operation:"fixture.mutate",api_exposed:true,ai_exposed:true,executable:true,is_mutation:true,input_schema:input}]}}))(request(message("tools/list")));
+  const schema=(await r.json()).result.tools[0].inputSchema;const ajv=new Ajv({strict:true});for(const [name,format] of Object.entries(fullFormats))ajv.addFormat(name,format as Parameters<typeof ajv.addFormat>[1]);const validate=ajv.compile(schema);
+  equal(validate({body:{value:"original"}}),true);
+  equal(validate({__sandy_execution:{approval_id:"abcdef12-3456-4789-abcd-ef1234567890"},arguments:{body:{value:"wrapped"}}}),true);
+  equal(validate({__sandy_execution:{actor_id:"forged"},arguments:{body:{value:"wrapped"}}}),false);
+  equal(validate({__sandy_execution:{request_id:"abcdef12-3456-4789-abcd-ef1234567890"},arguments:{body:{value:4}}}),false);
+});
