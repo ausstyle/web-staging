@@ -272,17 +272,32 @@ function showEngineeringChanges(c){
    }catch(e){alert("Unable to load change: "+e.message)}
   };buttons.append(inspect);
   if(item.status==="proposed"){
-   const approve=el("button","btn","Approve change");
-   approve.onclick=async()=>{
-    const out=await engineeringRequest("get",{change_id:item.id}),x=out.change||{};
-    const message="Approve change?\n\n"+x.title+"\nRisk: "+x.risk+"\nScope: "+JSON.stringify(x.scope||[])+"\nExpected: "+(x.expected_behavior||"")+"\n\nThis records owner approval; it DOES NOT deploy.";
-    if(!confirm(message))return;
-    const reason=prompt("Owner approval reason (include exact pinned commit/manifest):",x.expected_behavior||"");
-    if(!reason||!reason.trim())return;
-    approve.disabled=true;
-    try{await engineeringRequest("status",{change_id:item.id,status:"approved",reason:reason.trim()});alert("Owner approval recorded for "+item.id);await refreshEngineeringChanges()}
-    catch(e){alert("Approval failed: "+e.message)}finally{approve.disabled=false}
-   };buttons.append(approve);
+   const details=el("div");details.style.cssText="margin-top:10px;display:none";
+   const note=el("textarea");note.rows=3;note.placeholder="Approval reason, including pinned source and manifest";note.style.cssText="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font:inherit";
+   const status=el("p","small muted","");
+   const act=el("button","btn","Confirm owner approval");act.disabled=true;
+   const review=el("button","btn","Review & approve");
+   review.onclick=async()=>{
+    details.style.display="block";review.disabled=true;status.textContent="Loading the recorded change…";
+    try{
+     const result=await engineeringRequest("get",{change_id:item.id});
+     const change=result.change||{};
+     const info=el("pre","",["Purpose: "+(change.change_purpose||""),"Expected: "+(change.expected_behavior||""),"Scope: "+JSON.stringify(change.scope||[]),"Acceptance: "+JSON.stringify(change.acceptance_criteria||[]),"Regression rules: "+JSON.stringify(change.regression_rules||[])].join("\n\n"));
+     info.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f7f7;padding:12px;border-radius:10px;font-size:12px";
+     details.prepend(info);note.value=change.expected_behavior||"";act.disabled=false;status.textContent="Review the exact change and confirm below. Approval does not deploy.";
+    }catch(e){status.textContent="Cannot load change: "+e.message}
+    finally{review.disabled=false}
+   };
+   act.onclick=async()=>{
+    const reason=note.value.trim();if(reason.length<10){status.textContent="Enter a meaningful approval reason.";return}
+    act.disabled=true;status.textContent="Submitting authenticated owner approval…";
+    try{
+     const result=await engineeringRequest("status",{change_id:item.id,status:"approved",reason});
+     if(result.change?.status!=="approved")throw Error("Approval not confirmed by Engineering Control");
+     status.textContent="Approved: "+item.id+" (not deployed)";await refreshEngineeringChanges();
+    }catch(e){status.textContent="Approval failed: "+e.message;act.disabled=false}
+   };
+   details.append(note,act,status);buttons.append(review);card.append(details);
   }
   card.append(buttons);list.append(card);
  }
