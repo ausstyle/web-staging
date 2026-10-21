@@ -50,9 +50,9 @@ import {
   tenantConsentOperations,
 } from "../sandy-supabase-service-api/tenant_consent.ts";
 import {
-  executeRecoveryConsent,
-  recoveryConsentOverrides,
-} from "../sandy-tenant-lifecycle-api/consent_recovery.ts";
+  executeFinancialConsent,
+  financialConsentOverrides,
+} from "../sandy-tenant-lifecycle-api/consent_financial.ts";
 import {
   executeTenantExportDownload,
   tenantExportDownloadOperation,
@@ -66,6 +66,12 @@ import {
   executeContentExportAvailable,
 } from "../sandy-tenant-lifecycle-api/content_available.ts";
 import {
+  executeFinancialExportAvailable,
+  executeFinancialExportDownload,
+  financialExportAvailableOperation,
+  financialExportDownloadOperation,
+} from "../sandy-tenant-lifecycle-api/financial_user.ts";
+import {
   tenantLifecycleExecutionScope,
   tenantLifecycleOperations,
 } from "../sandy-tenant-lifecycle-api/gateway.ts";
@@ -75,10 +81,10 @@ import {
   productOperations,
 } from "../sandy-product-service-api/gateway.ts";
 import {
-  commerceContractMatches,
-  commerceGatewayContracts,
-  commerceOperations,
-} from "../sandy-commerce-ledger-api/gateway.ts";
+  commerceStrictContractMatches as commerceContractMatches,
+  commerceStrictGatewayContracts as commerceGatewayContracts,
+  commerceStrictOperations as commerceOperations,
+} from "../sandy-commerce-ledger-api/strict_gateway.ts";
 import {
   systemMetadataContractMatches,
   systemMetadataExecutionScope,
@@ -103,6 +109,10 @@ import {
   boundExecutionScope,
   boundOperations,
 } from "../sandy-provider-bound-api/gateway.ts";
+import {
+  artifactExecutionScope,
+  artifactOperations,
+} from "../sandy-provider-artifact-api/gateway.ts";
 export {
   parsePackageRestoreBindings,
   type ScopeBinding,
@@ -129,6 +139,7 @@ export type ExtensionKind =
   | "provider_supplement"
   | "provider_sensitive"
   | "provider_bound"
+  | "provider_artifact"
   | "lifecycle";
 export type ExtensionContract = {
   kind: ExtensionKind;
@@ -185,7 +196,7 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
     ...grouped(
       {
         ...tenantConsentOperations,
-        ...recoveryConsentOverrides,
+        ...financialConsentOverrides,
       },
       "tenant_consent",
       "sandy-operation-api",
@@ -207,6 +218,11 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       "sandy-provider-bound-api",
     ),
     ...grouped(
+      artifactOperations,
+      "provider_artifact",
+      "sandy-provider-artifact-api",
+    ),
+    ...grouped(
       tenantLifecycleOperations,
       "tenant_lifecycle",
       "sandy-tenant-lifecycle-api",
@@ -219,6 +235,10 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
           contentExportDownloadOperation,
         [contentExportAvailableOperation.operation]:
           contentExportAvailableOperation,
+        [financialExportDownloadOperation.operation]:
+          financialExportDownloadOperation,
+        [financialExportAvailableOperation.operation]:
+          financialExportAvailableOperation,
       },
       "tenant_download",
       "sandy-operation-api",
@@ -263,6 +283,7 @@ export const extensionOwnsGrant = (operation: string) =>
     "provider_supplement",
     "provider_sensitive",
     "provider_bound",
+    "provider_artifact",
     "tenant_lifecycle",
     "system_metadata",
   ]
@@ -325,6 +346,7 @@ export function extensionHasAccess(
     case "provider_supplement":
     case "provider_sensitive":
     case "provider_bound":
+    case "provider_artifact":
     case "tenant_lifecycle":
       return principal.controllerOwner;
     default:
@@ -356,7 +378,12 @@ export function extensionContractMatches(
     return systemMetadataContractMatches(operation, entry);
   }
   if (
-    ["provider_supplement", "provider_sensitive", "provider_bound"].includes(
+    [
+      "provider_supplement",
+      "provider_sensitive",
+      "provider_bound",
+      "provider_artifact",
+    ].includes(
       c.kind,
     ) &&
     (!object(entry.error_contract) ||
@@ -456,7 +483,7 @@ export async function executeUserExtension(
       return executeMemoryOperation(deps, bearer, operation, args);
     case "tenant_consent":
       return deps.userDb
-        ? executeRecoveryConsent(deps.userDb, operation, args)
+        ? executeFinancialConsent(deps.userDb, operation, args)
         : Response.json({
           ok: false,
           error: "tenant_consent_session_required",
@@ -468,6 +495,10 @@ export async function executeUserExtension(
           ? executeContentExportDownload(deps.userDb, args)
           : operation === contentExportAvailableOperation.operation
           ? executeContentExportAvailable(deps.userDb, args)
+          : operation === financialExportDownloadOperation.operation
+          ? executeFinancialExportDownload(deps.userDb, args)
+          : operation === financialExportAvailableOperation.operation
+          ? executeFinancialExportAvailable(deps.userDb, args)
           : executeTenantExportDownload(deps.userDb, args)
         : Response.json({
           ok: false,
@@ -508,6 +539,9 @@ export async function extensionExecutionScope(
   }
   if (kind === "provider_bound") {
     return boundExecutionScope(operation, options?.providerBindings);
+  }
+  if (kind === "provider_artifact") {
+    return artifactExecutionScope(operation, args);
   }
   if (kind === "guest") {
     return guestOperations[operation].kind === "task_status"

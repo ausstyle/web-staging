@@ -37,8 +37,8 @@ import { sensitiveExecutionScope } from "../sandy-provider-sensitive-api/gateway
 import { boundContracts } from "../sandy-provider-bound-api/contracts.ts";
 import { boundExecutionScope } from "../sandy-provider-bound-api/gateway.ts";
 import { createBoundHandler } from "../sandy-provider-bound-api/index.ts";
-import { commerceOperations } from "../sandy-commerce-ledger-api/contracts.ts";
-import { createCommerceHandler } from "../sandy-commerce-ledger-api/index.ts";
+import { commerceStrictOperations as commerceOperations } from "../sandy-commerce-ledger-api/strict_gateway.ts";
+import { createStrictCommerceHandler as createCommerceHandler } from "../sandy-commerce-ledger-api/strict_entry.ts";
 import { systemMetadataOperations } from "../sandy-system-metadata-api/contracts.ts";
 import { systemMetadataExecutionScope } from "../sandy-system-metadata-api/gateway.ts";
 import { createSystemMetadataHandler } from "../sandy-system-metadata-api/index.ts";
@@ -52,6 +52,9 @@ import tenantManifest from "../sandy-tenant-lifecycle-api/manifest.json" with {
   type: "json",
 };
 import contentManifest from "../sandy-tenant-lifecycle-api/content_manifest.json" with {
+  type: "json",
+};
+import financialManifest from "../sandy-tenant-lifecycle-api/financial_manifest.json" with {
   type: "json",
 };
 
@@ -2980,7 +2983,12 @@ function extensionRow(operation: string, verified = false): Row {
       ...(c.kind === "tenant_lifecycle"
         ? { requires_approval: true, api_key_delegable: false }
         : {}),
-      ...(["provider_supplement", "provider_sensitive", "provider_bound"]
+      ...([
+          "provider_supplement",
+          "provider_sensitive",
+          "provider_bound",
+          "provider_artifact",
+        ]
           .includes(c.kind)
         ? {
           requires_approval: true,
@@ -3000,6 +3008,7 @@ function extensionRow(operation: string, verified = false): Row {
       ...(c.kind === "commerce"
         ? {
           requires_approval: commerceOperations[operation].requires_approval,
+          requires_real_user_session: true,
           api_key_delegable: false,
         }
         : {}),
@@ -3420,8 +3429,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 532 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 532);
+Deno.test("all 538 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 538);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -3452,6 +3461,7 @@ Deno.test("all 532 service extensions are installed with their exact contracts a
         "provider_supplement",
         "provider_sensitive",
         "provider_bound",
+        "provider_artifact",
         "system_metadata",
       ].includes(
         String(row.kind),
@@ -3513,127 +3523,143 @@ Deno.test("scalar gateway admission uses its exact manifest scope before one pri
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("MCP content discovery and exact artifact download execute through API with the actual customer JWT", async () => {
-  const downloadOperation = "supabase.tenant.content.exports.download";
-  const availableOperation = "supabase.tenant.content.exports.available";
-  const artifact = {
-    manifest: contentManifest.id,
-    manifest_sha256: contentManifest.manifest_sha256,
-    tenant_id: extensionTenant,
-    table: "sandy_knowledge_documents",
-    sequence: 0,
-    table_sequence: 0,
-    table_complete: true,
-    table_row_count: 1,
-    table_row_chain_sha256: "a".repeat(64),
-    json_fragment: '{"title":"🍋 synthetic content"}\n',
-    snapshot_id: productRequestId,
-    schema_sha256: contentManifest.schema_sha256,
-    complete_tenant_coverage: false,
-    external_provider_assets_included: false,
-  };
-  const download = {
-    ok: true,
-    snapshot_id: productRequestId,
-    sequence: 0,
-    artifact_json: canonicalJson(artifact),
-    artifact_sha256: await argumentDigest(artifact),
-  };
-  const available = {
-    ok: true,
-    offset: 0,
-    limit: 1,
-    total_count: 1,
-    next_offset: null,
-    items: [{
-      snapshot_id: productRequestId,
+Deno.test("MCP content and financial discovery and exact artifact download execute through API with the actual customer JWT", async () => {
+  for (
+    const [family, manifest] of [["content", contentManifest], [
+      "financial",
+      financialManifest,
+    ]] as const
+  ) {
+    const downloadOperation = `supabase.tenant.${family}.exports.download`;
+    const availableOperation = `supabase.tenant.${family}.exports.available`;
+    const artifact = {
+      manifest: manifest.id,
+      manifest_sha256: manifest.manifest_sha256,
       tenant_id: extensionTenant,
-      manifest: contentManifest.id,
-      manifest_sha256: contentManifest.manifest_sha256,
-      schema_sha256: contentManifest.schema_sha256,
-      fragment_count: 20,
-      row_counts: Object.fromEntries(
-        contentManifest.tables.map((t) => [t.table, 0]),
-      ),
-      total_plaintext_bytes: 0,
-      artifact_index_sha256: "a".repeat(64),
-      state: "exported",
-      created_at: "2026-10-21T00:00:00Z",
-      expires_at: "2026-10-22T00:00:00Z",
+      table: family === "content"
+        ? "sandy_knowledge_documents"
+        : "sandy_commerce_entry_lines",
+      sequence: 0,
+      table_sequence: 0,
+      table_complete: true,
+      table_row_count: 1,
+      table_row_chain_sha256: "a".repeat(64),
+      json_fragment: '{"title":"🍋 synthetic content"}\n',
+      snapshot_id: productRequestId,
+      schema_sha256: manifest.schema_sha256,
       complete_tenant_coverage: false,
       external_provider_assets_included: false,
-      erasure_supported: false,
-      restore_supported: false,
-    }],
-  };
-  const tokens: string[] = [], calls: Row[] = [];
-  const h = harness({
-    actorId: extensionActor,
-    role: null,
-    memoryTenant: extensionTenant,
-    executionPolicy: true,
-    rows: [
-      extensionRow(downloadOperation, true),
-      extensionRow(availableOperation, true),
-    ],
-    authenticatedDb: (token) => {
-      tokens.push(token);
-      return {
-        rpc: async (name, args) => {
-          calls.push({ name, args });
-          return {
-            error: null,
-            data: name === "sandy_tenant_content_fragment_download"
-              ? download
-              : available,
-          };
-        },
-      };
-    },
-  });
-  const transport = createHandler(
-    createApi(
-      "https://example.supabase.co",
-      "test-anon-key",
-      ((url, init) => h.handler(new Request(url, init))) as typeof fetch,
-    ),
-  );
-  for (
-    const [operation, args, expected] of [
-      [
-        downloadOperation,
-        { snapshot_id: productRequestId, sequence: 0 },
-        download,
+    };
+    const download = {
+      ok: true,
+      snapshot_id: productRequestId,
+      sequence: 0,
+      artifact_json: canonicalJson(artifact),
+      artifact_sha256: await argumentDigest(artifact),
+    };
+    const available = {
+      ok: true,
+      offset: 0,
+      limit: 1,
+      total_count: 1,
+      next_offset: null,
+      items: [{
+        snapshot_id: productRequestId,
+        tenant_id: extensionTenant,
+        manifest: manifest.id,
+        manifest_sha256: manifest.manifest_sha256,
+        schema_sha256: manifest.schema_sha256,
+        fragment_count: manifest.tables.length,
+        row_counts: Object.fromEntries(
+          manifest.tables.map((t) => [t.table, 0]),
+        ),
+        total_plaintext_bytes: 0,
+        artifact_index_sha256: "a".repeat(64),
+        state: "exported",
+        created_at: "2026-10-21T00:00:00Z",
+        expires_at: "2026-10-22T00:00:00Z",
+        complete_tenant_coverage: false,
+        external_provider_assets_included: false,
+        erasure_supported: false,
+        restore_supported: false,
+        ...(family === "financial"
+          ? {
+            financial_source: "internal_commerce_records",
+            provider_verified: false,
+            payment_executed: false,
+          }
+          : {}),
+      }],
+    };
+    const tokens: string[] = [], calls: Row[] = [];
+    const h = harness({
+      actorId: extensionActor,
+      role: null,
+      memoryTenant: extensionTenant,
+      executionPolicy: true,
+      rows: [
+        extensionRow(downloadOperation, true),
+        extensionRow(availableOperation, true),
       ],
-      [availableOperation, { offset: 0, limit: 1 }, available],
-    ] as const
-  ) {
-    const response = await transport(
-      new Request("https://mcp.fixture.invalid", {
-        method: "POST",
-        headers: {
-          authorization: "Bearer test-user-jwt",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: 1,
-          method: "tools/call",
-          params: { name: operation, arguments: args },
-        }),
-      }),
+      authenticatedDb: (token) => {
+        tokens.push(token);
+        return {
+          rpc: async (name, args) => {
+            calls.push({ name, args });
+            return {
+              error: null,
+              data: name === `sandy_tenant_${family}_fragment_download`
+                ? download
+                : available,
+            };
+          },
+        };
+      },
+    });
+    const transport = createHandler(
+      createApi(
+        "https://example.supabase.co",
+        "test-anon-key",
+        ((url, init) => h.handler(new Request(url, init))) as typeof fetch,
+      ),
     );
-    assert.equal(response.status, 200);
-    const body = await response.json();
-    assert.equal(body.result.isError, false, JSON.stringify(body));
-    assert.deepEqual(body.result.structuredContent, expected);
+    for (
+      const [operation, args, expected] of [
+        [
+          downloadOperation,
+          { snapshot_id: productRequestId, sequence: 0 },
+          download,
+        ],
+        [availableOperation, { offset: 0, limit: 1 }, available],
+      ] as const
+    ) {
+      const response = await transport(
+        new Request("https://mcp.fixture.invalid", {
+          method: "POST",
+          headers: {
+            authorization: "Bearer test-user-jwt",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id: 1,
+            method: "tools/call",
+            params: { name: operation, arguments: args },
+          }),
+        }),
+      );
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.result.isError, false, JSON.stringify(body));
+      assert.deepEqual(body.result.structuredContent, expected);
+    }
+    assert.deepEqual(tokens, ["test-user-jwt", "test-user-jwt"]);
+    assert.deepEqual(calls.map((c) => c.name), [
+      `sandy_tenant_${family}_fragment_download`,
+      `sandy_tenant_${family}_exports_available`,
+    ]);
+    assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
   }
-  assert.deepEqual(tokens, ["test-user-jwt", "test-user-jwt"]);
-  assert.deepEqual(calls.map((c) => c.name), [
-    "sandy_tenant_content_fragment_download",
-    "sandy_tenant_content_exports_available",
-  ]);
-  assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
 });
 Deno.test("provider supplement composes the actual executor with one owner grant and filtered provider read", async () => {
   const operation = "gcp.projects.search_filtered";
@@ -3981,9 +4007,24 @@ Deno.test("commerce owner and customer calls retain the original JWT and exactly
           executed: true,
           reconciliation_required: commerceOperations[operation].is_mutation,
           result: {
-            item: null,
+            item: operation === "commerce.configuration.get"
+              ? { configured: false, version: 0, processor: null }
+              : operation === "commerce.accounts.create"
+              ? {
+                id: productRequestId,
+                code: "cash",
+                name: "Synthetic cash",
+                kind: "asset",
+                currency: "NZD",
+                minor_unit_exponent: 2,
+                active: true,
+                version: 1,
+                created_at: "2026-10-21T00:00:00Z",
+                updated_at: "2026-10-21T00:00:00Z",
+              }
+              : null,
             items: [],
-            changed: false,
+            changed: operation === "commerce.accounts.create",
             next_cursor: null,
             possibly_truncated: false,
             source: "internal_commerce_records",
@@ -4061,14 +4102,14 @@ Deno.test("commerce untrusted replies cannot invent execution and closed sensiti
   );
   assert.deepEqual([closed.calls.length, closed.rpcCalls.length], [0, 0]);
 });
-Deno.test("recovery consent getter and setter retain all65 explicit choices through the actual customer JWT", async () => {
+Deno.test("recovery consent getter and setter retain all68 explicit choices through the actual customer JWT", async () => {
   const setter = "supabase.tenant.consent.set",
     getter = "supabase.tenant.consent.get";
   const schema = extensionContracts[setter].input_schema as {
     properties: { operations: { items: { enum: string[] } } };
   };
   const operations = schema.properties.operations.items.enum;
-  assert.equal(operations.length, 65);
+  assert.equal(operations.length, 68);
   const policy = {
     ok: true,
     tenant_id: extensionTenant,
@@ -4851,7 +4892,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2521);
+  assert.equal(installedOperationIds.length, 2527);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);

@@ -24,7 +24,7 @@ import {
   runtimeConversationOperation,
 } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation_contract.ts";
 import { productOperations } from "../../supabase/functions/sandy-product-service-api/contracts.ts";
-import { commerceOperations } from "../../supabase/functions/sandy-commerce-ledger-api/contracts.ts";
+import { commerceStrictOperations as commerceOperations } from "../../supabase/functions/sandy-commerce-ledger-api/strict_gateway.ts";
 import { systemMetadataOperations } from "../../supabase/functions/sandy-system-metadata-api/contracts.ts";
 import { databaseOperations } from "../../supabase/functions/sandy-database-operation-api/gateway.ts";
 import { providerOperations } from "../../supabase/functions/sandy-provider-operation-api/gateway.ts";
@@ -36,14 +36,28 @@ import { gapGatewayOperations } from "../../supabase/functions/sandy-provider-ga
 import { supplementOperations } from "../../supabase/functions/sandy-provider-supplement-api/gateway.ts";
 import { sensitiveContracts } from "../../supabase/functions/sandy-provider-sensitive-api/contracts.ts";
 import { boundOperations } from "../../supabase/functions/sandy-provider-bound-api/gateway.ts";
-import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts";
-import { workerDiagnosisContract, workerDiagnosisOperation } from "../../supabase/functions/_shared/sandy-agent-operations/worker_diagnosis_contract.ts";
-import { missionWorkProductContract, missionWorkProductOperation } from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_contract.ts";
+import { artifactOperations } from "../../supabase/functions/sandy-provider-artifact-api/gateway.ts";
+import {
+  runtimeConnectionPreflightContract,
+  runtimeConnectionPreflightOperationName,
+} from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts";
+import {
+  workerDiagnosisContract,
+  workerDiagnosisOperation,
+} from "../../supabase/functions/_shared/sandy-agent-operations/worker_diagnosis_contract.ts";
+import {
+  missionWorkProductContract,
+  missionWorkProductOperation,
+} from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_contract.ts";
 import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
 import { tenantExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/download.ts";
 import { contentExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/content_download.ts";
 import { contentExportAvailableOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/content_available.ts";
-import { tenantLifecycleConsentOverride } from "../../supabase/functions/sandy-tenant-lifecycle-api/consent_extension.ts";
+import { financialConsentOverrides } from "../../supabase/functions/sandy-tenant-lifecycle-api/consent_financial.ts";
+import {
+  financialExportAvailableOperation,
+  financialExportDownloadOperation,
+} from "../../supabase/functions/sandy-tenant-lifecycle-api/financial_user.ts";
 import guestManifest from "../../supabase/functions/sandy-guest-operation-api/contracts.json" with {
   type: "json",
 };
@@ -185,7 +199,7 @@ add(
   "sandy-supabase-service-api/tenant_consent.ts",
   {
     ...tenantConsentOperations,
-    [tenantLifecycleConsentOverride.operation]: tenantLifecycleConsentOverride,
+    ...financialConsentOverrides,
   },
   "sandy-operation-api",
 );
@@ -212,10 +226,10 @@ add(
 );
 add(
   "commerce_internal",
-  "sandy-commerce-ledger-api/contracts.json",
+  "sandy-commerce-ledger-api/strict_contracts.json",
   commerceOperations,
   "sandy-commerce-ledger-api",
-  "sandy-commerce-ledger-api/index.ts",
+  "sandy-commerce-ledger-api/strict_entry.ts",
 );
 add(
   "system_metadata",
@@ -261,13 +275,18 @@ add(
 add(
   "tenant_content_download",
   "sandy-tenant-lifecycle-api/content_download.ts",
-  { [contentExportDownloadOperation.operation]: contentExportDownloadOperation },
+  {
+    [contentExportDownloadOperation.operation]: contentExportDownloadOperation,
+  },
   "sandy-operation-api",
 );
 add(
   "tenant_content_available",
   "sandy-tenant-lifecycle-api/content_available.ts",
-  { [contentExportAvailableOperation.operation]: contentExportAvailableOperation },
+  {
+    [contentExportAvailableOperation.operation]:
+      contentExportAvailableOperation,
+  },
   "sandy-operation-api",
 );
 add(
@@ -307,9 +326,30 @@ add(
   "sandy-provider-bound-api/index.ts",
 );
 add(
+  "provider_artifact_delivery",
+  "sandy-provider-artifact-api/contracts.json",
+  artifactOperations,
+  "sandy-provider-artifact-api",
+  "sandy-provider-artifact-api/index.ts",
+);
+add(
+  "tenant_financial_delivery",
+  "sandy-tenant-lifecycle-api/financial_user.ts",
+  {
+    [financialExportAvailableOperation.operation]:
+      financialExportAvailableOperation,
+    [financialExportDownloadOperation.operation]:
+      financialExportDownloadOperation,
+  },
+  "sandy-operation-api",
+);
+add(
   "internal_runtime_connection_preflight",
   "_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts",
-  { [runtimeConnectionPreflightOperationName]: runtimeConnectionPreflightContract },
+  {
+    [runtimeConnectionPreflightOperationName]:
+      runtimeConnectionPreflightContract,
+  },
   "internal:agent.runtime.connections.preflight@1.0.0",
   "_shared/sandy-agent-operations/runtime_connection_preflight.ts",
 );
