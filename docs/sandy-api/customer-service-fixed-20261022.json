@@ -277,7 +277,12 @@
       "calendar_outbox": 0,
       "memory_settings": 0,
       "agenda_grants": 0
-    }
+    },
+    "independent_temporal_fixture_counts": {
+      "facts": 0,
+      "links": 0
+    },
+    "temporal_cleanup_evidence": "customer-service-temporal-cleanup-20261022.json"
   },
   "credentials_recorded": false,
   "service_key_as_customer": false,

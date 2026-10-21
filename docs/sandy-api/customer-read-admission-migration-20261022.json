@@ -1,0 +1,14 @@
+{
+  "migration": "20261022020000_sandy_customer_read_admissions.sql",
+  "source_sha256": "1c770ba22ea33d80fe3772676bedc790fe6212a99e8f2130537c9e64961f2a71",
+  "apply_http": 201,
+  "version": "20261022020000",
+  "readback_http": 201,
+  "readback": [
+    {
+      "version": "20261022020000",
+      "name": "sandy_customer_read_admissions",
+      "exact_source_match": true
+    }
+  ]
+}

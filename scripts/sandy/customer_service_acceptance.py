@@ -213,6 +213,8 @@ class Acceptance:
                     raise RuntimeError('fixture_cleanup_ownership_not_proved')
                 customer = q(row['customer_id'])
                 self.r._sql('BEGIN;DELETE FROM public.sandy_task_pins WHERE customer_id=' + customer + ';DELETE FROM public.sandy_timezone_profiles WHERE customer_id=' + customer + ';DELETE FROM public.sandy_tasks WHERE customer_id=' + customer + ';DELETE FROM public.sandy_calendar_events WHERE customer_id=' + customer
+                            + ';DELETE FROM public.sandy_temporal_fact_links WHERE customer_id=' + customer
+                            + ';DELETE FROM public.sandy_temporal_facts WHERE customer_id=' + customer
                             + ';DELETE FROM public.sandy_agenda_access WHERE customer_id=' + customer
                             + ';DELETE FROM public.sandy_customer_onboarding_receipts WHERE actor_id=' + q(fixture['user'])
                             + ';DELETE FROM public.sandy_memory_portal_accounts WHERE auth_user_id=' + q(fixture['user'])
@@ -225,6 +227,12 @@ class Acceptance:
             rows = self.r._sql('SELECT (SELECT count(*) FROM auth.users WHERE id IN (' + users + ')) users,(SELECT count(*) FROM auth.sessions WHERE user_id IN (' + users + ')) sessions,(SELECT count(*) FROM public.sandy_memory_portal_accounts WHERE auth_user_id IN (' + users + ')) portal_accounts', True)
             self.report['cleanup']['remaining'] = rows[0]
             self.report['cleanup']['complete'] = all(v == 0 for v in rows[0].values())
+            if all(f.get('customer') for f in self.fixtures):
+                customers = ','.join(q(f['customer']) for f in self.fixtures)
+                temporal = self.r._sql('SELECT (SELECT count(*) FROM public.sandy_temporal_facts WHERE customer_id IN (' + customers
+                    + ')) facts,(SELECT count(*) FROM public.sandy_temporal_fact_links WHERE customer_id IN (' + customers + ')) links', True)[0]
+                self.report['cleanup']['independent_temporal_fixture_counts'] = temporal
+                self.report['cleanup']['complete'] = self.report['cleanup']['complete'] and all(v == 0 for v in temporal.values())
         self.save()
 
     def run(self):

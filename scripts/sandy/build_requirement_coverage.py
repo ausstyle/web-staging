@@ -106,6 +106,31 @@ def execution_evidence(docs=DOCS):
                         value = {"file": filename, "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"}
                         if value not in denied[call["operation"]]:
                             denied[call["operation"]].append(value)
+    filename = "customer-read-receipt-MCP-evidence-20261022.json"
+    path = docs / filename
+    if path.exists():
+        report = load(path)
+        live = report.get("normal_Auth_test", {})
+        if (report.get("registry_evidence_readback_matches") is True and live.get("complete") is True
+                and live.get("cleanup", {}).get("complete") is True):
+            for operation, proof in report.get("operation_proofs", {}).items():
+                calls = [c for c in live.get("calls", []) if c.get("operation") == operation
+                         and c.get("negative") is not True and c.get("discovered") is True]
+                receipts = proof.get("independent_receipts", [])
+                if (len(calls) == 2 and all(c.get("passed") is True and c.get("api_status") == 200
+                        and c.get("executed") is True and c.get("admission_id") for c in calls)
+                        and proof.get("durable_admission_receipt_present") is True
+                        and all(any(r.get("id") == c["admission_id"] and r.get("state") == "succeeded"
+                                    and r.get("audit_events") == 3 for r in receipts) for c in calls)):
+                    positive[operation].append({"file": filename,
+                        "level": "normal_customer_MCP_nonempty_read_shared_receipt_and_audit_verified",
+                        "durable_admission_receipt_present": True})
+            for call in live.get("calls", []):
+                if (call.get("request_replay") is True and call.get("passed") is True
+                        and call.get("api_status") == 409 and call.get("executed") is False):
+                    value = {"file": filename, "level": "MCP_request_replay_or_changed_operation_refused"}
+                    if value not in denied[call["operation"]]:
+                        denied[call["operation"]].append(value)
     return dict(positive), dict(denied)
 
 
@@ -143,7 +168,7 @@ def reconcile(requirements, registry, functions, disposition, positive, denied):
                     and certified.get("shared_and_contract_tests_passed") is True
                     and certified.get("representative_provider_acceptance_passed") is True
                     and certified.get("higher_risk_independent_verification_passed") is True
-                    and bool(certified.get("evidence_files")) and bool(required) and bool(actual)
+                    and bool(certified.get("evidence_files")) and bool(required) and required <= set(positive)
                     and required <= rows.keys()
                     and all(row.get("api_exposed") is True and row.get("ai_exposed") is True for row in required_rows))
         review = disposition.get("implementation_review", {}).get(str(ident), {})

@@ -24,5 +24,7 @@
   "workflow_dispatch": "working",
   "protection_bypassed": false,
   "older_waiting_candidate_run": 39674073790,
-  "older_candidate_cancelled": true
+  "older_candidate_cancelled": true,
+  "superseded_by": "shared-MCP-CloudRun-release-20261022.json",
+  "historical_run_now_cancelled": true
 }

@@ -70,3 +70,5 @@ preserved prior gateway before using
 `scripts/sandy/rollback_customer_read_admissions.sql`. Audit history is retained.
 Pre-release source regression: 408 passed. Real PostgreSQL boundary assertions:
 27 passed inside ROLLBACK. Production/MCP acceptance is pending this slice.
+
+Validated follow-up: gateway 43, source c103bbf, accounts for all 122 uploaded sources. Migration 20261022020000 matches the exact committed ledger SQL. Actual normal-Auth MCP acceptance passed 28/28 calls, independently settling 22 receipts (18 succeeded / four failed own-scoped foreign-resource queries) with three audit events each. Replays did not redispatch. The shared normal-workload REST/log/provider path also passed. All dedicated fixture customers, users, sessions and derived temporal records were cleaned; the shared audit/execution ledger is retained. Source checks 408, compact-artifact runtime checks 326, rollback-only PostgreSQL assertions 27. The lease is released. Other legacy customer reads and general mutation recovery still require adoption.

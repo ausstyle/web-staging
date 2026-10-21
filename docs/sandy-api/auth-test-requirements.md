@@ -1,7 +1,7 @@
 # Authentication requirements for Sandy integration tests
 
-Current checkpoint: 22 October 2026. The permanent dedicated engineering identity
-uses source `97bd825` (latest observed metadata runtime **11**), normal Supabase Auth verification and renewable short-lived
+Current checkpoint: 21 October 2026 UTC. The permanent dedicated engineering identity
+uses source `97bd825` (latest observed metadata runtime **13**), normal Supabase Auth verification and renewable short-lived
 user sessions. Its bootstrap credential stays in Vault; it has **zero Controller
 memberships**. The personal Controller token is not used for successful tests.
 The existing six-operation fixture delegation remains unchanged. A separate,

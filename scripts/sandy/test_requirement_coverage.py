@@ -33,6 +33,17 @@ class RequirementCoverageTests(unittest.TestCase):
         self.assertFalse(result[0]["fully_accepted"])
         self.assertEqual(result[0]["actual_MCP_success_operation_ids"], ["fixture.read"])
 
+    def test_claimed_family_certificate_cannot_hide_an_unexecuted_required_constituent(self):
+        families = requirements()
+        families[0]["registered_operation_ids"] = ["fixture.read", "fixture.write"]
+        policy = {"explicit_family_required_operations": {"1": ["fixture.read", "fixture.write"]},
+                  "family_acceptance": {"1": {"all_required_constituents_reviewed": True,
+                  "shared_and_contract_tests_passed": True, "representative_provider_acceptance_passed": True,
+                  "higher_risk_independent_verification_passed": True, "evidence_files": ["actual.json"]}}}
+        result = reconcile(families, [operation("fixture.read"), operation("fixture.write")], [], policy,
+                           {"fixture.read": ["actual.json"]}, {})
+        self.assertFalse(result[0]["fully_accepted"])
+
     def test_expanded_provider_candidates_do_not_create_unrequested_development_units(self):
         families = requirements()
         families[25]["registered_operation_ids"] = ["gcp.compute.instances.get", "gcp.compute.instances.simulate_maintenance_event"]

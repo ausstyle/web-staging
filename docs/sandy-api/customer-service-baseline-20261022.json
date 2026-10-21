@@ -651,7 +651,12 @@
       "sessions": 0,
       "portal_accounts": 0
     },
-    "complete": true
+    "complete": true,
+    "independent_temporal_fixture_counts": {
+      "facts": 0,
+      "links": 0
+    },
+    "temporal_cleanup_evidence": "customer-service-temporal-cleanup-20261022.json"
   },
   "credentials_recorded": false,
   "service_key_as_customer": false,

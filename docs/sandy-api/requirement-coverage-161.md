@@ -122,8 +122,8 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 108 | supabase.realtime.channels/permissions/publications.* | 10 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 109 | supabase.vault.secrets.* | 12 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 110 | supabase.logs.query | 1 | 1/1 | 1 | implemented_awaiting_real_family_acceptance | none established |
-| 111 | supabase.tenant.export/erase/restore | 34 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 112 | supabase.compliance.audit | 10 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 111 | supabase.tenant.export/erase/restore | 29 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 112 | supabase.compliance.audit | 5 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 113 | github.apps.installations.list/verify | 2 | 2/2 | 0 | implemented_awaiting_real_family_acceptance | none established |
 | 114 | github.repos.list/get/create/update/archive/delete | 6 | 3/3 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 115 | github.refs.list/create/update/delete | 4 | 1/1 | 0 | implemented_awaiting_real_family_acceptance | none established |
@@ -154,7 +154,7 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 140 | github.audit.list | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 141 | github.security.alerts/list | 18 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 142 | github.codeScanning.* | 22 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 143 | sandy.tenancy_and_subscription.* | 41 | 16/16 | 14 | implementation_or_constituent_reconciliation_required | none established |
+| 143 | sandy.tenancy_and_subscription.* | 26 | 3/3 | 2 | implementation_or_constituent_reconciliation_required | none established |
 | 144 | sandy.authentication_and_security.* | 32 | 4/4 | 2 | implementation_or_constituent_reconciliation_required | none established |
 | 145 | sandy.connections_composio.* | 21 | 9/9 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 146 | sandy.email_and_microsoft_graph.* | 41 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
@@ -166,13 +166,13 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 152 | sandy.memory_and_social_graph.* | 35 | 11/11 | 1 | implementation_or_constituent_reconciliation_required | none established |
 | 153 | sandy.agenda_tasks_and_projects.* | 82 | 23/23 | 9 | implementation_or_constituent_reconciliation_required | none established |
 | 154 | sandy.missions_and_autonomous_work.* | 19 | 4/4 | 2 | implementation_or_constituent_reconciliation_required | none established |
-| 155 | sandy.controller_and_qa.* | 94 | 58/53 | 5 | implementation_or_constituent_reconciliation_required | none established |
+| 155 | sandy.controller_and_qa.* | 93 | 58/53 | 5 | implementation_or_constituent_reconciliation_required | none established |
 | 156 | sandy.files_and_documents.* | 45 | 17/17 | 6 | implementation_or_constituent_reconciliation_required | none established |
 | 157 | sandy.notifications_and_alerts.* | 20 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 158 | sandy.payments_and_commerce.* | 51 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 159 | sandy.customer_lifecycle_and_support.* | 37 | 16/16 | 15 | implementation_or_constituent_reconciliation_required | none established |
-| 160 | sandy.search_agents_tools_and_ai.* | 41 | 9/9 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 161 | sandy.product_configuration.* | 45 | 12/12 | 12 | implementation_or_constituent_reconciliation_required | none established |
+| 159 | sandy.customer_lifecycle_and_support.* | 35 | 14/14 | 13 | implementation_or_constituent_reconciliation_required | none established |
+| 160 | sandy.search_agents_tools_and_ai.* | 40 | 9/9 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 161 | sandy.product_configuration.* | 35 | 2/2 | 2 | implementation_or_constituent_reconciliation_required | none established |
 
 Explicit-family optional candidates and the four legacy software/video-specific names are not new required implementation tasks. Wildcard expansion still needs semantic review; no unreviewed operation is declared globally out of scope.
 

@@ -1,50 +1,50 @@
 {
   "gateway": {
-    "source_commit": "5f8464553b9fc78e83e35f166a046748a70c5984",
+    "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
     "observed_metadata": {
-      "version": 40,
+      "version": 43,
       "status": "ACTIVE",
       "verify_jwt": true
     },
-    "source_files": 121,
+    "source_files": 122,
     "all_sources_accounted_for": true,
-    "evidence_sha256": "67f70be4f4c58ea4a60fb4bd6fc1869eaf31bee7c1f98e673dc609b56aed5995",
+    "evidence_sha256": "9e0855bca68b28c66a229a5a0b31a2a3672030953ff5adb529339b713f8d461a",
     "source_transforms": "Five pinned esbuild artifacts plus compiler-omitted type-only files are reconciled to committed source; readable source is retained in Git."
   },
   "MCP": {
     "source_commit": "a0078d526a0db94fb92857825b3b06040e084f0b",
     "observed_metadata": {
-      "version": 19,
+      "version": 21,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     "source_files": 2,
     "all_sources_accounted_for": true,
-    "evidence_sha256": "38b92d54ababe7a819ed96885cf23bb10829b0772d503962d70b0a0e51c83ab0"
+    "evidence_sha256": "09f7be4cc6757bbb628ad97e4ea6585de794300d937be570f5cd0a4113da4755"
   },
   "runtime": {
     "source_commit": "97bd82578ec0816d72343d4b1d443793313ea861",
     "observed_metadata": {
-      "version": 11,
+      "version": 13,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     "source_files": 7,
     "all_sources_accounted_for": true,
-    "evidence_sha256": "3235be8afba775c2d458af035bd953a7e01150fe64953a279e9ad9000f69f927"
+    "evidence_sha256": "b26b0d9ae78ec3b82002a69680fc25b95905a99eb5210d2bb049cfd4209a02e9"
   },
   "provider_engine": {
     "source_commit": "0334a878406663b8a683b519bc79c9c4d5e2abb6",
     "observed_metadata": {
-      "version": 16,
+      "version": 18,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     "source_files": 50,
     "all_sources_accounted_for": true,
-    "evidence_sha256": "88f05b855ada55f1218e6451eeb65027fed9190866f7afd639fd3cb45197acdd"
+    "evidence_sha256": "7c27fa63c61c299a90a63f02a20628e41a0f3eb47345673d03f3fb2f739edc16"
   },
-  "at_UTC": "2026-10-21T23:15:52.649610+00:00",
+  "at_UTC": "2026-10-21T23:37:21.922750+00:00",
   "own_deployments": [
     {
       "version": 35,
@@ -57,6 +57,10 @@
     {
       "version": 39,
       "source": "5f8464553b9fc78e83e35f166a046748a70c5984"
+    },
+    {
+      "version": 43,
+      "source": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91"
     }
   ],
   "metadata_reconciliation": {
@@ -66,10 +70,24 @@
   "regression": {
     "initial_full_source_checks": 400,
     "current_API_MCP_and_candidate_checks": 325,
-    "current_compact_API_MCP_artifact_checks": 322,
+    "current_compact_API_MCP_artifact_checks": 326,
     "real_SQL_checks_rolled_back": 13,
     "fixture_acceptance_parser_checks": 3,
-    "engineering_test_component_checks": 3
+    "engineering_test_component_checks": 3,
+    "current_full_source_checks": 408,
+    "real_SQL_checks_rolled_back_customer_admissions": 27,
+    "current_coverage_and_customer_parser_checks": 13
   },
-  "no_VM_LiveKit_or_media_changes": true
+  "no_VM_LiveKit_or_media_changes": true,
+  "customer_read_receipts": {
+    "real_MCP_calls": 28,
+    "passed": 28,
+    "independent_settled_receipts": 22,
+    "succeeded": 18,
+    "failed_foreign_resource_reads": 4,
+    "audit_events_per_receipt": 3,
+    "registry_rows_updated_without_flag_or_catalogue_increase": 8,
+    "component_lease_released": true,
+    "derived_synthetic_temporal_facts_cleaned": 6
+  }
 }
