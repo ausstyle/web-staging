@@ -27,6 +27,25 @@ user's explicit instruction. Do not generate a sign-in link for an existing user
 administratively, forge a JWT, reset an existing password, add owner membership
 to a test user, or use a service-role key as a user bearer token.
 
+## Existing Google Cloud machine identity
+
+Cloud Run deployment does not inherently require a human Controller session.
+The existing `_shared/sandy_machine_identity.ts` implements a separate dedicated
+machine flow: it resolves only `sandy-gcp-machine@sandy-ai.internal`, requires its
+unique Auth identity and `app_metadata.sandy_gcp_machine === true`, verifies the
+issued machine session through Auth, exchanges it with Google STS using the
+configured workload-identity audience, and requests a short-lived IAM Credentials
+token for the configured Sandy service account. Its requested access-token
+lifetime is 1,800 seconds. This dedicated machine flow must not be reused to mint
+an existing human owner's session or to grant customer access.
+
+The execution machine currently cannot reach the project Auth hostname because
+the managed network proxy rejects that destination. No independent local Google
+ADC credential is configured. Those machine-identity/egress and provider-IAM
+requirements are separate from the missing human Controller test session. A
+SQL relay, Edge relay, IP override or alternative proxy is not an authorized
+replacement for the published runtime network configuration.
+
 ## Independent tenant tests
 
 A separate, dedicated synthetic identity can exercise tenant authorization
