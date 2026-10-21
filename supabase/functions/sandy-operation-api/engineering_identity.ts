@@ -192,12 +192,18 @@ export async function engineeringRequest(
         object(entry.error_contract) &&
           entry.error_contract.requires_approval === true
       ) return fail(424, "engineering_vm_read_contract_unavailable");
-      if (
-        !object(args) || Object.keys(args).some((key) => key !== "target") ||
-        args.target !== undefined &&
-          args.target !== vmReadPolicy.instance_name ||
-        !deps.argumentsValid(entry.input_schema, args)
-      ) return fail(403, "engineering_vm_read_target_denied");
+      // The canonical provider read reuses its reviewed handler and grant path.
+      // Its path cannot widen the existing diagnostic delegation to another VM,
+      // project, zone or caller-selected query. Legacy diagnostics stay compatible.
+      const exactTarget = operation === "gcp.compute.instances.get"
+        ? object(args) && Object.keys(args).length === 1 && object(args.path) &&
+          Object.keys(args.path).length === 1 &&
+          args.path.instance === vmReadPolicy.instance_name
+        : object(args) && Object.keys(args).every((key) => key === "target") &&
+          (args.target === undefined || args.target === vmReadPolicy.instance_name);
+      if (!exactTarget || !deps.argumentsValid(entry.input_schema, args)) {
+        return fail(403, "engineering_vm_read_target_denied");
+      }
       if (
         request.headers.has("x-sandy-declared-units") &&
         request.headers.get("x-sandy-declared-units") !== "0"

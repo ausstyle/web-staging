@@ -13,8 +13,9 @@ BEGIN
  EXCEPTION WHEN insufficient_privilege THEN NULL;END;checks:=checks+1;
  result:=public.sandy_engineering_authorize_vm_reads(identity_id,source_id);IF result->>'authorized' IS DISTINCT FROM 'true' OR result->>'provider_writes_authorized' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'actual owner-approved read scope';END IF;checks:=checks+1;
  result:=public.sandy_engineering_resolve_identity(identity_id,session_id,epoch);scope:=result->'vm_read_scope';
- IF scope->>'owner_authority_id' IS DISTINCT FROM owner_id::text OR scope->>'source_change_id' IS DISTINCT FROM source_id::text OR jsonb_array_length(scope->'operations')<>9 OR (scope->'operations')?'video.install' OR (scope->'operations')?'video.ssh.iam_grant' THEN RAISE EXCEPTION 'mutation/authority scope leakage';END IF;checks:=checks+4;
+ IF scope->>'owner_authority_id' IS DISTINCT FROM owner_id::text OR scope->>'source_change_id' IS DISTINCT FROM source_id::text OR jsonb_array_length(scope->'operations')<>10 OR (scope->'operations')?'video.install' OR (scope->'operations')?'video.ssh.iam_grant' THEN RAISE EXCEPTION 'mutation/authority scope leakage';END IF;checks:=checks+4;
  result:=public.sandy_engineering_record_vm_read(identity_id,session_id,epoch,'video.status',gen_random_uuid());IF result->>'authorized' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'authorized recorded read';END IF;checks:=checks+1;
+ result:=public.sandy_engineering_record_vm_read(identity_id,session_id,epoch,'gcp.compute.instances.get',gen_random_uuid());IF result->>'authorized' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'canonical shared read denied';END IF;checks:=checks+1;
  result:=public.sandy_engineering_record_vm_read(identity_id,session_id,epoch,'video.install',gen_random_uuid());IF result->>'error' IS DISTINCT FROM 'engineering_vm_read_not_authorized' THEN RAISE EXCEPTION 'write accepted under read grant';END IF;checks:=checks+1;
  result:=public.sandy_engineering_record_vm_read(identity_id,gen_random_uuid(),epoch,'video.status',gen_random_uuid());IF result->>'error' IS DISTINCT FROM 'engineering_vm_read_not_authorized' THEN RAISE EXCEPTION 'unknown Auth session accepted';END IF;checks:=checks+1;
  UPDATE public.sandy_engineering_vm_read_scopes SET expires_at=clock_timestamp()-interval '1 second' WHERE identity_user_id=identity_id;
@@ -29,7 +30,7 @@ BEGIN
  result:=public.sandy_engineering_administrative_revoke_vm_reads(identity_id);IF result->>'revoked' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'administrative scope revocation';END IF;checks:=checks+1;
  result:=public.sandy_engineering_resolve_identity(identity_id,session_id,epoch);IF result->>'ok' IS DISTINCT FROM 'true' OR result->'vm_read_scope' IS DISTINCT FROM 'null'::jsonb THEN RAISE EXCEPTION 'admin optional revocation changed base scope';END IF;checks:=checks+1;
  PERFORM public.sandy_engineering_authorize_vm_reads(identity_id,source_id);
- FOR i IN 1..29 LOOP result:=public.sandy_engineering_record_vm_read(identity_id,session_id,epoch,'video.status',gen_random_uuid());IF result->>'authorized' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'read budget prematurely exhausted';END IF;END LOOP;checks:=checks+1;
+ FOR i IN 1..28 LOOP result:=public.sandy_engineering_record_vm_read(identity_id,session_id,epoch,'video.status',gen_random_uuid());IF result->>'authorized' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'read budget prematurely exhausted';END IF;END LOOP;checks:=checks+1;
  result:=public.sandy_engineering_record_vm_read(identity_id,session_id,epoch,'video.status',gen_random_uuid());IF result->>'error' IS DISTINCT FROM 'engineering_vm_read_rate_limited' THEN RAISE EXCEPTION 'read rate budget not enforced';END IF;checks:=checks+1;
  PERFORM public.sandy_engineering_rotate_identity(identity_id,false);
  IF public.sandy_engineering_vm_read_scope(identity_id,epoch) IS NOT NULL THEN RAISE EXCEPTION 'rotation retained stale VM scope';END IF;checks:=checks+1;

@@ -355,6 +355,26 @@ Deno.test("separate actual owner-approved VM scope delegates only fixed read too
     await argumentDigest(engineeringVmReadPolicy),
   );
 });
+Deno.test("canonical shared VM read is restricted to the existing approved VM without adding mutation authority", async () => {
+  const h = await vmHarness();
+  assert.equal((await h.call(req(msg("gcp.compute.instances.get", {
+    path: { instance: "sandy-video" },
+  })))).status, 200);
+  assert.equal(h.state.delegated, 1);
+  assert.equal(h.state.rpc[1].name, "sandy_engineering_record_vm_read");
+  for (const args of [
+    {}, { target: "sandy-video" },
+    { path: { instance: "sandy-windows" } },
+    { path: { instance: "sandy-video", project: "foreign" } },
+    { path: { instance: "sandy-video" }, query: {} },
+    { path: { instance: "sandy-video" }, command: "whoami" },
+  ]) {
+    const denied = await vmHarness();
+    assert.equal((await denied.call(req(msg("gcp.compute.instances.get", args)))).status, 403);
+    assert.equal(denied.state.delegated, 0);
+    assert.equal(denied.state.rpc.length, 1);
+  }
+});
 Deno.test("optional VM scope never authorizes install, IAM grants, provider writes or arbitrary arguments", async () => {
   for (
     const operation of [

@@ -1,5 +1,5 @@
 {
-  "version": "owner-approved-sandy-video-read-v1",
+  "version": "owner-approved-sandy-video-read-v2",
   "project_id": "elaborate-haven-511518-a5",
   "zone": "europe-west1-b",
   "instance_name": "sandy-video",
@@ -13,6 +13,7 @@
     "video.osconfig.access",
     "video.osconfig.agent_status",
     "video.osconfig.permissions",
-    "video.osconfig.policy_preflight"
+    "video.osconfig.policy_preflight",
+    "gcp.compute.instances.get"
   ]
 }
