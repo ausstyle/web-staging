@@ -220,15 +220,43 @@ function showEngineeringChanges(c){
  const bar=el("div","toolbar"),refresh=el("button","btn",engineeringChangesBusy?"Loading…":"↻ Refresh changes");
  refresh.disabled=engineeringChangesBusy;refresh.onclick=refreshEngineeringChanges;bar.append(refresh);p.append(bar);
  if(engineeringChangesError)txt(p,"Engineering Control: "+engineeringChangesError,"small");
- const field=el("textarea","");field.placeholder="Paste the exact engineering owner-request JSON from GitHub to register a change";field.rows=5;field.style.cssText="width:100%;max-width:100%;border:1px solid #d9d9d9;border-radius:10px;padding:12px;font:12px/1.5 ui-monospace,monospace;resize:vertical;margin:10px 0";
- p.append(field);
- const register=el("button","btn","Register pasted change");register.onclick=async()=>{
-  let req;try{req=JSON.parse(field.value);if(!req||req.action!=="register"||typeof req.title!=="string")throw Error("Expected an owner-request JSON object with action=register and title")}catch(e){alert("Invalid owner request: "+e.message);return}
-  if(!confirm("Register engineering change: "+req.title+"? Registration alone does not approve or deploy."))return;
-  register.disabled=true;
-  try{const out=await engineeringRequest("register",req);alert("Registered change: "+(out.change?.id||out.change_id||"Check Engineering Control response"));field.value="";await refreshEngineeringChanges()}
-  catch(e){alert("Registration failed: "+e.message)}finally{register.disabled=false}
- };p.append(register);
+
+ const prepared=panel("Examiner gateway · pending owner decision");
+ txt(prepared,"Repair fixed-pilot Examiner gateway authentication without optional secrets.","small");
+ txt(prepared,"Pinned source: 5eb1f2c84086db4a067b484cd3de7c5ce6cec182 · Only sandy-examiner-full-cycle · No automatic deployment.","small muted");
+ const approvePrepared=el("button","btn","Review & Approve Examiner fix");
+ approvePrepared.onclick=async()=>{
+   approvePrepared.disabled=true;
+   try{
+     const url="https://raw.githubusercontent.com/ausstyle/web-staging/ebc6bfc/docs/sandy-engineering/evaluations/p0-examiner-gateway-owner-request.json";
+     const response=await fetch(url,{cache:"no-store"});
+     if(!response.ok)throw Error("Unable to load the pinned owner request ("+response.status+")");
+     const req=await response.json();
+     if(req.action!=="register"||req.idempotency_key!=="sandy-p0-examiner-gateway-service-auth-5eb1f2c84086"||
+        !String(req.expected_behavior||"").includes("5eb1f2c84086db4a067b484cd3de7c5ce6cec182")||
+        !String(req.expected_behavior||"").includes("52e99810ee1d610c794bc9628b89fd3d19240739045ae12f59b63dec0bd512d4")||
+        JSON.stringify(req.scope||[])!==JSON.stringify(["github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021","sandy-examiner-full-cycle"]))
+       throw Error("Pinned request validation failed");
+     const detail="Repair fixed-pilot Examiner gateway authentication\\n\\n"+
+       "Risk: "+req.risk+"\\nScope: "+req.scope.join(", ")+"\\n"+
+       "Purpose: "+req.change_purpose+"\\nExpected: "+req.expected_behavior+"\\n"+
+       "Acceptance: "+req.acceptance_criteria.join("; ")+"\\n"+
+       "Rollback requirements: "+req.regression_rules.join("; ")+"\\n\\n"+
+       "Approve this exact change? This does not deploy anything.";
+     if(!confirm(detail))return;
+     const registered=await engineeringRequest("register",req);
+     const id=registered.change?.id||registered.change_id;
+     if(!id)throw Error("Registration returned no change ID");
+     const current=await engineeringRequest("get",{change_id:id});
+     if(current.change?.status==="approved"){alert("Change already approved: "+id);await refreshEngineeringChanges();return}
+     if(current.change?.status!=="proposed")throw Error("Change status is "+(current.change?.status||"unknown")+"; owner review required");
+     await engineeringRequest("status",{change_id:id,status:"approved",reason:"Owner approves source 5eb1f2c84086db4a067b484cd3de7c5ce6cec182; manifest 52e99810ee1d610c794bc9628b89fd3d19240739045ae12f59b63dec0bd512d4"});
+     alert("Owner approval recorded: "+id+"\\nNo deployment was performed.");
+     await refreshEngineeringChanges();
+   }catch(e){alert("Approval not completed: "+e.message)}
+   finally{approvePrepared.disabled=false}
+ };
+ prepared.append(approvePrepared);p.append(prepared);
  const list=el("div","");if(!engineeringChangesLoaded)txt(list,"Select Refresh changes to load the owner approval queue.","small muted");
  for(const item of engineeringChanges){
   const card=el("div","workspaceCard"),heading=el("div","workspaceTop");
