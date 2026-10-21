@@ -231,7 +231,7 @@ Rollback stops admission on server, revokes recorder grants, fences Mission leas
 
 | Completion item | Current result | Required evidence |
 | --- | --- | --- |
-| Scope committed / synced to catalogue | Pending actual readback | Git commit + sync run/hash |
+| Scope committed / synced to catalogue | VERIFIED: GitHub source and Supabase catalogue linked (21 October 2026) | Scope sync run #13; 13 scopes synchronized; original catalogue readback at source commit 656e6c2b9e21f5a20b1aea70c6d8adb04f63201a |
 | As-built baseline and ADR | Pending | Source/deployment inventory |
 | Extension recording and consent | Pending | Staging + privacy negative tests |
 | Passive and active learning | Pending | Fixture + authorized user scenario |
