@@ -61,7 +61,11 @@
     "entrypoint_typecheck_passed_with_offline_sdk_fallback": true,
     "deployed": false,
     "owner_request": "p0-web-deadlines-owner-request.json",
-    "owner_approval_request": "p0-web-deadlines-owner-approval.json"
+    "owner_approval_request": "p0-web-deadlines-owner-approval.json",
+    "user_explicit_authorization_received": true,
+    "owner_workflow_http_status": 401,
+    "database_approval_recorded": false,
+    "release_blocker_evidence": "p0-web-deadlines-approval-attempt.json"
   },
   "remaining_cross_channel_requirements": {
     "email": "Authoritative delivery still has an independent loop; deploy and verify shared outcome shadow correction, then governed migration through normal email ingest/reply/confirmation with actual receipts. No unsolicited send.",

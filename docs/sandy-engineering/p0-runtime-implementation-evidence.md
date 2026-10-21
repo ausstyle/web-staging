@@ -39,6 +39,19 @@ renewable workload with HTTP 201 after the old token's expiry. It remains
 **proposed, not approved or deployed**. The [exact owner approval request](evaluations/p0-web-deadlines-owner-approval.json)
 and [27-module manifest](evaluations/p0-web-deadlines-source-manifest.json) are reviewable.
 
+On 22 October 2026 at 01:56 Europe/Rome, the owner explicitly authorized this
+registered correction and asked Codex to record approval through the existing
+owner workflow. One request with the configured owner-session binding returned
+**HTTP 401 Unauthorized**. Independent database reads before and after show
+`proposed` with no authenticated owner approval event. Renewable engineering
+metadata still returns HTTP 200; its existing grant excludes owner status actions.
+All 27 candidate hashes and the unchanged published V4/workspace source were
+rechecked. The correction was **not deployed** and no new customer acceptance pass
+is claimed. See the [approval-attempt evidence](evaluations/p0-web-deadlines-approval-attempt.json).
+The user's authorization is explicit; working owner authentication is still needed
+to persist it through the deployed Controller checks. No SQL approval write,
+owner impersonation, grant change or secret substitution was attempted.
+
 Engineering runtime 13 and Controller 51 preserve their captured source; email
 generator 106, email shadow 17, WhatsApp 162, voice context 19 and gateway 16
 also retain byte-identical source. Voice-call revision 38 is metadata only,
@@ -203,7 +216,9 @@ The optional pilot secret remains skipped. The old personal Controller token was
 not retried, no unrelated credential was substituted, and no owner/customer session
 was minted. The existing renewable engineering identity successfully registered
 the concrete deadline repair (HTTP 201) and recorded its local test plus the real
-failed web acceptance. Current Controller expiry blockers are empty.
+failed web acceptance. The earlier canary release was not blocked by Controller expiry. The later deadline
+release owner-recording request is now blocked by HTTP 401 from its configured
+owner session; this does not invalidate successful scoped engineering renewal.
 
 The actual current Controller owner event independently authorized the pinned
 Examiner source and manifest; the existing configured Management credential

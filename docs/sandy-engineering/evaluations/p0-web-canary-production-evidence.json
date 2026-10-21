@@ -399,5 +399,15 @@
   "authenticated_web_ingress_verified": true,
   "web_customer_acceptance_passed": false,
   "current_examiner_evidence": "p0-examiner-gateway-production-evidence.json",
-  "current_web_evidence": "p0-web-customer-acceptance.json"
+  "current_web_evidence": "p0-web-customer-acceptance.json",
+  "latest_deadline_release_approval_attempt": {
+    "captured_at_europe_rome": "2026-10-22T01:56:27.610304+02:00",
+    "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+    "user_authorization_received": true,
+    "owner_workflow_http_status": 401,
+    "database_status": "proposed",
+    "database_owner_approval_recorded": false,
+    "deployment_attempted": false,
+    "evidence": "p0-web-deadlines-approval-attempt.json"
+  }
 }

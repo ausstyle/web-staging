@@ -95,9 +95,33 @@
       "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
       "principal": "existing scoped renewable engineering workload",
       "customer_or_owner_impersonation": false
+    },
+    {
+      "test": "record explicitly authorized deadline release through existing owner workflow",
+      "status": "blocked",
+      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+      "http_status": 401,
+      "blocker": "Configured owner-session binding was rejected as Unauthorized. Fresh database read still shows proposed and no authenticated owner approval event. Renewable engineering metadata succeeds, but its grant excludes owner status actions.",
+      "user_authorization_received": true,
+      "database_approval_recorded": false,
+      "new_secret_requested": false,
+      "credential_substituted": false,
+      "deployment_attempted": false,
+      "evidence": "p0-web-deadlines-approval-attempt.json"
     }
   ],
   "full_60_case_customer_quality_gate_passed": false,
   "same_customer_cross_channel_acceptance_passed": false,
-  "current_expired_controller_token_blockers": []
+  "current_expired_controller_token_blockers": [],
+  "current_controller_owner_authentication_blockers": [
+    {
+      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+      "operation": "status -> approved",
+      "http_status": 401,
+      "database_status": "proposed",
+      "new_owner_authorization_required": false,
+      "working_owner_authentication_required": true
+    }
+  ],
+  "current_release_blocked_by_owner_authentication": true
 }
