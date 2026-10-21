@@ -25,6 +25,7 @@ import {
   contentExportOperations,
   contentExportRpcName,
 } from "./content_contracts.ts";
+import { supportRecoveryOperations } from "./support_recovery_contracts.ts";
 export type Operation = {
   operation: string;
   is_mutation: boolean;
@@ -189,6 +190,10 @@ function resultMatchesRequest(
       result.offset === args.offset && result.limit === args.limit;
   }
   if (
+    Object.hasOwn(supportRecoveryOperations, operation.operation) &&
+    result.case_id !== args.case_id
+  ) return false;
+  if (
     result.tenant_id !== args.tenant_id ||
     result.manifest_sha256 !== operation.manifest_sha256 ||
     result.schema_sha256 !== operation.schema_sha256
@@ -215,6 +220,10 @@ function resultMatchesRequest(
     "supabase.tenant.manifests.exports.purge": "purged",
     "supabase.tenant.content.export": "exported",
     "supabase.tenant.content.exports.purge": "purged",
+    "supabase.tenant.support.snapshot": "exported",
+    "supabase.tenant.support.erase": "erased",
+    "supabase.tenant.support.restore": "restored",
+    "supabase.tenant.support.snapshots.purge": "purged",
   };
   return !state[operation.operation] ||
     result.state === state[operation.operation];
@@ -388,7 +397,7 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
         error: recorded
           ? "tenant_lifecycle_execution_failed"
           : "execution_receipt_state_unknown",
-        executed: true,
+        executed: knownRollback ? false : unknown ? null : true,
         operation: operation.operation,
         admission_id: admission,
         request_state: outcome,
@@ -409,7 +418,7 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
         error: recorded
           ? "tenant_lifecycle_result_invalid"
           : "execution_receipt_state_unknown",
-        executed: true,
+        executed: operation.is_mutation ? null : true,
         operation: operation.operation,
         admission_id: admission,
         request_state: outcome,

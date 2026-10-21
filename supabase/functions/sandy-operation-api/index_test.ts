@@ -31,6 +31,17 @@ import {
 import { productOperations } from "../sandy-product-service-api/contracts.ts";
 import { supplementContracts } from "../sandy-provider-supplement-api/contracts.ts";
 import { createSupplementHandler } from "../sandy-provider-supplement-api/index.ts";
+import { sensitiveContracts } from "../sandy-provider-sensitive-api/contracts.ts";
+import { createSensitiveHandler } from "../sandy-provider-sensitive-api/index.ts";
+import { sensitiveExecutionScope } from "../sandy-provider-sensitive-api/gateway.ts";
+import { boundContracts } from "../sandy-provider-bound-api/contracts.ts";
+import { boundExecutionScope } from "../sandy-provider-bound-api/gateway.ts";
+import { createBoundHandler } from "../sandy-provider-bound-api/index.ts";
+import { commerceOperations } from "../sandy-commerce-ledger-api/contracts.ts";
+import { createCommerceHandler } from "../sandy-commerce-ledger-api/index.ts";
+import { systemMetadataOperations } from "../sandy-system-metadata-api/contracts.ts";
+import { systemMetadataExecutionScope } from "../sandy-system-metadata-api/gateway.ts";
+import { createSystemMetadataHandler } from "../sandy-system-metadata-api/index.ts";
 import { scalarManifestScope } from "../sandy-tenant-lifecycle-api/scalar_contracts.ts";
 import { createTenantLifecycleHandler } from "../sandy-tenant-lifecycle-api/index.ts";
 import {
@@ -2952,6 +2963,10 @@ function extensionRow(operation: string, verified = false): Row {
   return {
     ...gapContracts[operation],
     ...supplementContracts[operation],
+    ...sensitiveContracts[operation],
+    ...boundContracts[operation],
+    ...commerceOperations[operation],
+    ...systemMetadataOperations[operation],
     ...c,
     operation,
     api_exposed: true,
@@ -2965,7 +2980,8 @@ function extensionRow(operation: string, verified = false): Row {
       ...(c.kind === "tenant_lifecycle"
         ? { requires_approval: true, api_key_delegable: false }
         : {}),
-      ...(c.kind === "provider_supplement"
+      ...(["provider_supplement", "provider_sensitive", "provider_bound"]
+          .includes(c.kind)
         ? {
           requires_approval: true,
           requires_grant: true,
@@ -2978,6 +2994,20 @@ function extensionRow(operation: string, verified = false): Row {
             productOperations[operation].authorization === "owner" &&
             (productOperations[operation].is_mutation ||
               productOperations[operation].sensitive),
+          api_key_delegable: false,
+        }
+        : {}),
+      ...(c.kind === "commerce"
+        ? {
+          requires_approval: commerceOperations[operation].requires_approval,
+          api_key_delegable: false,
+        }
+        : {}),
+      ...(c.kind === "system_metadata"
+        ? {
+          requires_approval:
+            systemMetadataOperations[operation].requires_approval,
+          requires_real_user_session: true,
           api_key_delegable: false,
         }
         : {}),
@@ -3390,8 +3420,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 401 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 401);
+Deno.test("all 532 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 532);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -3420,12 +3450,17 @@ Deno.test("all 401 service extensions are installed with their exact contracts a
         "tenant_lifecycle",
         "tenant_download",
         "provider_supplement",
+        "provider_sensitive",
+        "provider_bound",
+        "system_metadata",
       ].includes(
         String(row.kind),
       ) ||
       (row.kind === "provider_gap" && row.requires_grant === true) ||
       (row.kind === "product" &&
-        productOperations[String(row.operation)].sensitive);
+        productOperations[String(row.operation)].sensitive) ||
+      (row.kind === "commerce" &&
+        commerceOperations[String(row.operation)].sensitive);
     assert.equal(payload.operation.executable, !closed, String(row.operation));
     assert.equal(payload.operation.handler, row.handler);
   }
@@ -3740,6 +3775,349 @@ Deno.test("supplement discovery and execution require the same verified server p
     (await h.request({ action: "execute", operation, arguments: {} })).status,
     424,
   );
+  assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+});
+Deno.test("private provider captures use one exact owner grant and never return captured bytes", async () => {
+  const operation = "gcp.compute.instances.get_guest_attributes.capture";
+  const now = Date.parse("2026-10-21T01:00:00Z");
+  let consumed = 0, finished = 0, reads = 0, custody = 0;
+  const scopeSha = await argumentDigest(sensitiveExecutionScope(operation));
+  const backend = createSensitiveHandler({
+    service: "test-service-credential",
+    now: () => now,
+    authorizeContext: async () => ({ allowed: true }),
+    consumeGrant: async (input) => {
+      consumed++;
+      assert.equal(input.actor_id, extensionActor);
+      assert.equal(input.grant_id, productRequestId);
+      assert.equal(input.scope_sha256, scopeSha);
+      return { allowed: true, admission_id: productAdmissionId, reused: false };
+    },
+    finishExecution: async (input) => {
+      finished++;
+      assert.equal(input.outcome, "succeeded");
+      return { allowed: true };
+    },
+    credentialForExecution: async () => "synthetic-provider-token",
+    saveOpaque: async (input) => {
+      custody++;
+      assert.equal(input.actor, extensionActor);
+      assert.equal(input.operation, operation);
+      assert.equal(input.kind, "artifact");
+      return {
+        custody_id: productRequestId,
+        byte_length: input.byte_length,
+        sha256: input.payload_sha256,
+        media_type: input.media_type,
+        expires_at: new Date(now + 5 * 60000).toISOString(),
+      };
+    },
+    takeOpaque: async () => {
+      throw Error("No cursor or public retrieval expected");
+    },
+    fetch: (async (input, init) => {
+      reads++;
+      const url = new URL(String(input));
+      assert.equal(url.origin, "https://compute.googleapis.com");
+      assert.ok(
+        url.pathname.includes(
+          "/projects/elaborate-haven-511518-a5/zones/europe-west1-b/instances/fixture/",
+        ),
+      );
+      assert.equal(
+        new Headers(init?.headers).get("authorization"),
+        "Bearer synthetic-provider-token",
+      );
+      return Response.json({
+        kind: "compute#guestAttributes",
+        queryValue: {
+          items: [
+            {
+              namespace: "fixture",
+              key: "fixture",
+              value: "PRIVATE_FIXTURE_MUST_NOT_RETURN",
+            },
+          ],
+        },
+      });
+    }) as typeof fetch,
+  });
+  const h = harness({
+    actorId: extensionActor,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    rpcHandler: (name, args) => {
+      assert.equal(name, "sandy_api_admit_execution");
+      assert.equal(args.p_scope_sha256, scopeSha);
+      return {
+        ok: true,
+        allowed: true,
+        reused: false,
+        admission_id: productAdmissionId,
+        grant_id: productRequestId,
+        state: "admitted",
+        executed: false,
+        expires_at: "2099-01-01T00:00:00Z",
+      };
+    },
+    backend: (url, init) => {
+      assert.equal(
+        url,
+        "https://example.supabase.co/functions/v1/sandy-provider-sensitive-api",
+      );
+      return backend(new Request(url, init));
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: { resource: "fixture" },
+  });
+  assert.equal(response.status, 200, await response.clone().text());
+  const text = await response.text();
+  assert.equal(text.includes("PRIVATE_FIXTURE_MUST_NOT_RETURN"), false);
+  assert.equal(text.includes("synthetic-provider-token"), false);
+  assert.deepEqual([
+    consumed,
+    finished,
+    reads,
+    custody,
+    h.rpcCalls.length,
+    h.calls.length,
+  ], [1, 1, 1, 1, 1, 1]);
+});
+Deno.test("private capture reads retain closed verification and immutable approval metadata before admission", async () => {
+  const operation = "gcp.compute.instances.get_guest_attributes.capture";
+  const closed = harness({
+    actorId: extensionActor,
+    executionPolicy: true,
+    rows: [extensionRow(operation)],
+  });
+  assert.equal(
+    (await closed.request({
+      action: "execute",
+      operation,
+      arguments: { resource: "fixture" },
+    })).status,
+    424,
+  );
+  assert.deepEqual([closed.calls.length, closed.rpcCalls.length], [0, 0]);
+  for (
+    const patch of [{ requires_approval: false }, { api_key_delegable: true }, {
+      requires_grant: false,
+    }]
+  ) {
+    const row = extensionRow(operation, true);
+    row.error_contract = { ...(row.error_contract as Row), ...patch };
+    const h = harness({
+      actorId: extensionActor,
+      executionPolicy: true,
+      rows: [row],
+    });
+    assert.equal(
+      (await h.request({
+        action: "execute",
+        operation,
+        arguments: { resource: "fixture" },
+      })).status,
+      503,
+    );
+    assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+  }
+});
+Deno.test("commerce owner and customer calls retain the original JWT and exactly one backend-owned admission", async () => {
+  for (
+    const [operation, args] of [
+      ["commerce.configuration.get", {}],
+      ["commerce.accounts.create", {
+        code: "cash",
+        name: "Synthetic cash",
+        kind: "asset",
+        idempotency_key: productRequestId,
+      }],
+      ["commerce.plans.list", {}],
+    ] as const
+  ) {
+    const owner = commerceOperations[operation].authorization === "owner";
+    const approval = "80000000-0000-4000-8000-000000000003";
+    const calls: string[] = [];
+    const backend = createCommerceHandler({
+      base: "https://example.supabase.co",
+      anon: "test-anon-key",
+      service: "test-service-credential",
+      fetch: (() => {
+        throw Error("No provider calls expected");
+      }) as typeof fetch,
+      authenticate: async (token) => {
+        assert.equal(token, "test-user-jwt");
+        return { id: extensionActor, emailConfirmed: true };
+      },
+      rpc: async (name, parameters, token) => {
+        calls.push(name);
+        assert.equal(token, "test-user-jwt");
+        if (name === "sandy_commerce_admit") {
+          assert.equal(parameters.p_operation, operation);
+          assert.deepEqual(parameters.p_arguments, args);
+          assert.equal(parameters.p_canonical_arguments, canonicalJson(args));
+          assert.equal(parameters.p_request_id, productRequestId);
+          assert.equal(parameters.p_channel, "mcp");
+          assert.equal(parameters.p_approval_id, owner ? approval : null);
+          return {
+            ok: true,
+            allowed: true,
+            reused: false,
+            admission_id: productAdmissionId,
+            grant_id: productRequestId,
+          };
+        }
+        assert.equal(name, "sandy_commerce_execute");
+        return {
+          ok: true,
+          admission_id: productAdmissionId,
+          request_id: productRequestId,
+          request_state: commerceOperations[operation].is_mutation
+            ? "accepted"
+            : "observed",
+          executed: true,
+          reconciliation_required: commerceOperations[operation].is_mutation,
+          result: {
+            item: null,
+            items: [],
+            changed: false,
+            next_cursor: null,
+            possibly_truncated: false,
+            source: "internal_commerce_records",
+            payment_executed: false,
+            provider_verified: false,
+          },
+        };
+      },
+    });
+    const h = harness({
+      actorId: extensionActor,
+      role: owner ? "owner" : null,
+      memoryTenant: owner ? null : extensionTenant,
+      executionPolicy: true,
+      rows: [extensionRow(operation, true)],
+      backend: (url, init) => {
+        assert.equal(
+          url,
+          "https://example.supabase.co/functions/v1/sandy-commerce-ledger-api",
+        );
+        assert.equal(
+          new Headers(init?.headers).get("authorization"),
+          "Bearer test-user-jwt",
+        );
+        const body = JSON.parse(String(init?.body));
+        assert.equal(Object.hasOwn(body, "actor_id"), false);
+        assert.equal(Object.hasOwn(body, "tenant_id"), false);
+        return backend(new Request(url, init));
+      },
+    });
+    const response = await h.request(
+      { action: "execute", operation, arguments: args, channel: "mcp" },
+      undefined,
+      {
+        "x-sandy-request-id": productRequestId,
+        ...(owner ? { "x-sandy-approval-id": approval } : {}),
+      },
+    );
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.deepEqual(calls, ["sandy_commerce_admit", "sandy_commerce_execute"]);
+    assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 1]);
+  }
+});
+Deno.test("commerce untrusted replies cannot invent execution and closed sensitive reads cannot dispatch", async () => {
+  const operation = "commerce.configuration.get";
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    backend: () => new Response("not-json"),
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: {},
+  });
+  assert.equal(response.status, 502);
+  const body = await response.json();
+  assert.equal(body.executed, null);
+  assert.equal(body.reconciliation_required, true);
+  assert.equal(h.rpcCalls.length, 0);
+  const closed = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    executionPolicy: true,
+    rows: [extensionRow(operation)],
+  });
+  assert.equal(
+    (await closed.request({ action: "execute", operation, arguments: {} }))
+      .status,
+    424,
+  );
+  assert.deepEqual([closed.calls.length, closed.rpcCalls.length], [0, 0]);
+});
+Deno.test("recovery consent getter and setter retain all65 explicit choices through the actual customer JWT", async () => {
+  const setter = "supabase.tenant.consent.set",
+    getter = "supabase.tenant.consent.get";
+  const schema = extensionContracts[setter].input_schema as {
+    properties: { operations: { items: { enum: string[] } } };
+  };
+  const operations = schema.properties.operations.items.enum;
+  assert.equal(operations.length, 65);
+  const policy = {
+    ok: true,
+    tenant_id: extensionTenant,
+    operations,
+    approved_emails: [],
+    allow_erasure: false,
+    expires_at: "2026-10-22T00:00:00Z",
+    revision: 1,
+    legal_hold: false,
+    retention_until: null,
+  };
+  const calls: Row[] = [], tokens: string[] = [];
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    rows: [extensionRow(setter, true), extensionRow(getter, true)],
+    executionPolicy: true,
+    authenticatedDb: (token) => {
+      tokens.push(token);
+      return {
+        rpc: async (name, args) => {
+          calls.push({ name, args });
+          return { data: policy, error: null };
+        },
+      };
+    },
+  });
+  for (
+    const [operation, args] of [[setter, {
+      operations,
+      approved_emails: [],
+      allow_erasure: false,
+      expires_at: policy.expires_at,
+    }], [getter, {}]] as const
+  ) {
+    const response = await h.request({
+      action: "execute",
+      operation,
+      arguments: args,
+    });
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.deepEqual((await response.json()).result.operations, operations);
+  }
+  assert.deepEqual(tokens, ["test-user-jwt", "test-user-jwt"]);
+  assert.deepEqual(calls.map((c) => c.name), [
+    "sandy_supabase_tenant_consent_set",
+    "sandy_supabase_tenant_consent_get",
+  ]);
   assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
 });
 Deno.test("media capacity accepts one MiB base64 envelope and rejects oversized bodies before admission", async () => {
@@ -4473,7 +4851,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2390);
+  assert.equal(installedOperationIds.length, 2521);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);
@@ -4853,4 +5231,374 @@ Deno.test("canonical MCP sends expanded operation execution to Sandy API and pre
   );
   assert.equal(h.calls.length, 0);
   assert.equal(h.rpcCalls.length, 0);
+});
+
+Deno.test("owner metadata uses one customer-bound admission and preserves the original MCP channel", async () => {
+  for (
+    const [operation, args] of [
+      ["system.catalog", {}],
+      ["system.connections", {
+        customer_id: "ABCDEFAB-0000-4000-8000-000000000002",
+      }],
+    ] as [string, Row][]
+  ) {
+    let backendCalls = 0;
+    const scope = systemMetadataExecutionScope(operation, args);
+    const backend = createSystemMetadataHandler({
+      fetch: () => {
+        throw Error("unexpected provider request");
+      },
+      base: "https://zmqlyygzqoidkcwdysok.supabase.co",
+      service: "test-service-credential",
+      rpc: async (input) => {
+        backendCalls++;
+        assert.equal(input.p_operation, operation);
+        assert.deepEqual(input.p_arguments, args);
+        assert.equal(input.p_canonical_scope, canonicalJson(scope));
+        assert.equal(input.p_actor_id, extensionActor);
+        assert.equal(input.p_channel, "mcp");
+        assert.equal(input.p_admission_id, productAdmissionId);
+        return {
+          ok: true,
+          operation,
+          contract_version: "1.0.0",
+          admission_id: input.p_admission_id,
+          request_id: input.p_request_id,
+          request_state: "observed",
+          executed: true,
+          reconciliation_required: false,
+          result: {
+            items: [],
+            item: null,
+            next_cursor: null,
+            possibly_truncated: false,
+            source: "recorded_metadata",
+            provider_verified: false,
+            executability_not_implied: true,
+            schemas_via: "Sandy API describe",
+            notice: "Recorded metadata only.",
+          },
+        };
+      },
+    });
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: null,
+      executionPolicy: true,
+      rows: [extensionRow(operation, true)],
+      rpcHandler: async (name, input) => {
+        assert.equal(name, "sandy_api_admit_execution");
+        assert.equal(input.p_scope_sha256, await argumentDigest(scope));
+        assert.equal(input.p_input_sha256, await argumentDigest(args));
+        assert.equal(input.p_approval_id, productAdmissionId);
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: productAdmissionId,
+          grant_id: productRequestId,
+          state: "admitted",
+          executed: false,
+          expires_at: "2099-01-01T00:00:00Z",
+        };
+      },
+      backend: (url, init) => {
+        assert.equal(
+          url,
+          "https://example.supabase.co/functions/v1/sandy-system-metadata-api",
+        );
+        const headers = new Headers(init?.headers);
+        assert.equal(
+          headers.get("authorization"),
+          "Bearer test-service-credential",
+        );
+        const body = JSON.parse(String(init?.body));
+        assert.equal(body.tenant_id, null);
+        assert.equal(body.credential_id, null);
+        return backend(new Request(url, init));
+      },
+    });
+    const response = await h.request(
+      {
+        action: "execute",
+        operation,
+        arguments: args,
+        channel: "mcp",
+      },
+      "Bearer actual-owner-session",
+      {
+        "x-sandy-request-id": productRequestId,
+        "x-sandy-approval-id": productAdmissionId,
+      },
+    );
+    assert.equal(response.status, 200, await response.clone().text());
+    const body = await response.json();
+    assert.equal(body.executed, true);
+    assert.equal(body.reconciliation_required, false);
+    assert.deepEqual([h.rpcCalls.length, h.calls.length, backendCalls], [
+      1,
+      1,
+      1,
+    ]);
+  }
+});
+
+Deno.test("metadata refuses drift and non-owner sessions before admission and preserves atomic versus unknown outcomes", async () => {
+  const operation = "system.connections",
+    args = { customer_id: extensionTenant };
+  for (
+    const patch of [
+      { requires_approval: false },
+      { requires_real_user_session: false },
+      { api_key_delegable: true },
+    ]
+  ) {
+    const row = extensionRow(operation, true);
+    row.error_contract = { ...(row.error_contract as Row), ...patch };
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: null,
+      rows: [row],
+    });
+    assert.equal(
+      (await h.request({ action: "execute", operation, arguments: args }))
+        .status,
+      503,
+    );
+    assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 0]);
+  }
+  for (
+    const options of [
+      { role: null, memoryTenant: extensionTenant },
+      { emailConfirmed: false, memoryTenant: null },
+    ]
+  ) {
+    const h = harness({
+      actorId: extensionActor,
+      rows: [extensionRow(operation, true)],
+      ...options,
+    });
+    assert.equal(
+      (await h.request({ action: "execute", operation, arguments: args }))
+        .status,
+      403,
+    );
+    assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 0]);
+  }
+  for (const outcome of ["rollback", "unknown", "untyped"] as const) {
+    const backend = createSystemMetadataHandler({
+      fetch: () => {
+        throw Error("unexpected provider request");
+      },
+      base: "https://zmqlyygzqoidkcwdysok.supabase.co",
+      service: "test-service-credential",
+      rpc: async () => {
+        if (outcome === "unknown") throw Error("lost transport");
+        return {
+          ok: false,
+          error: "system_metadata_target_or_receipt_not_found",
+          http_status: 404,
+          executed: false,
+        };
+      },
+    });
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: null,
+      executionPolicy: true,
+      rows: [extensionRow(operation, true)],
+      rpcData: {
+        ok: true,
+        allowed: true,
+        reused: false,
+        admission_id: productAdmissionId,
+        grant_id: productRequestId,
+        state: "admitted",
+        executed: false,
+        expires_at: "2099-01-01T00:00:00Z",
+      },
+      backend: (url, init) =>
+        outcome === "untyped"
+          ? Response.json({ ok: true })
+          : backend(new Request(url, init)),
+    });
+    const response = await h.request({
+      action: "execute",
+      operation,
+      arguments: args,
+    });
+    assert.equal(
+      response.status,
+      outcome === "rollback" ? 404 : outcome === "unknown" ? 503 : 502,
+    );
+    const body = await response.json();
+    assert.equal(body.executed, outcome === "rollback" ? false : null);
+    assert.equal(body.reconciliation_required, outcome !== "rollback");
+    assert.deepEqual([h.rpcCalls.length, h.calls.length], [1, 1]);
+  }
+});
+
+Deno.test("relationship-bound branch reads prove the fixed parent before one sanitized provider observation", async () => {
+  const operation = "supabase.branches.get_config.bound";
+  const branch = "11111111-1111-4111-8111-111111111111";
+  const args = { path: { branch_id_or_ref: branch } };
+  const scope = boundExecutionScope(operation);
+  let consumed = 0, finished = 0;
+  const outcomes: string[] = [];
+  const providerUrls: string[] = [];
+  const backend = createBoundHandler({
+    service: "test-service-credential",
+    now: () => Date.parse("2026-10-21T01:00:00Z"),
+    authorizeContext: async () => ({ allowed: true }),
+    consumeGrant: async (input) => {
+      consumed++;
+      assert.equal(input.actor_id, extensionActor);
+      assert.equal(input.scope_sha256, await argumentDigest(scope));
+      assert.equal(
+        input.contract_sha256,
+        boundContracts[operation].contract_sha256,
+      );
+      return { allowed: true, admission_id: productAdmissionId, reused: false };
+    },
+    finishExecution: async (input) => {
+      finished++;
+      outcomes.push(input.outcome);
+      return { allowed: true };
+    },
+    credentialForExecution: async () => "synthetic-management-token",
+    saveOpaque: async () => {
+      throw Error("No private artifact expected");
+    },
+    takeOpaque: async () => {
+      throw Error("No opaque cursor expected");
+    },
+    fetch: (async (input, init) => {
+      const url = String(input);
+      providerUrls.push(url);
+      assert.equal(
+        new Headers(init?.headers).get("authorization"),
+        "Bearer synthetic-management-token",
+      );
+      assert.equal(init?.method, "GET");
+      if (providerUrls.length === 1) {
+        assert.equal(
+          url,
+          "https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/branches",
+        );
+        return Response.json([{
+          id: branch,
+          project_ref: "aaaaaaaaaaaaaaaaaaaa",
+          parent_project_ref: "zmqlyygzqoidkcwdysok",
+          is_default: false,
+        }]);
+      }
+      assert.equal(
+        url,
+        `https://api.supabase.com/v1/branches/${branch}`,
+      );
+      return Response.json({
+        ref: "aaaaaaaaaaaaaaaaaaaa",
+        postgres_version: "17",
+        postgres_engine: "postgres",
+        release_channel: "ga",
+        status: "ACTIVE_HEALTHY",
+        db_host: "fixture.supabase.co",
+        db_port: 5432,
+        db_pass: "PRIVATE_DB_PASSWORD_MUST_NOT_RETURN",
+      });
+    }) as typeof fetch,
+  });
+  const h = harness({
+    actorId: extensionActor,
+    memoryTenant: null,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    rpcHandler: async (name, input) => {
+      assert.equal(name, "sandy_api_admit_execution");
+      assert.equal(input.p_scope_sha256, await argumentDigest(scope));
+      return {
+        ok: true,
+        allowed: true,
+        reused: false,
+        admission_id: productAdmissionId,
+        grant_id: productRequestId,
+        state: "admitted",
+        executed: false,
+        expires_at: "2099-01-01T00:00:00Z",
+      };
+    },
+    backend: (url, init) => {
+      assert.equal(
+        url,
+        "https://example.supabase.co/functions/v1/sandy-provider-bound-api",
+      );
+      return backend(new Request(url, init));
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: args,
+  });
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.deepEqual(outcomes, ["succeeded"]);
+  const body = await response.text();
+  assert.equal(body.includes("PRIVATE_DB_PASSWORD_MUST_NOT_RETURN"), false);
+  assert.equal(body.includes("synthetic-management-token"), false);
+  assert.deepEqual([
+    h.rpcCalls.length,
+    h.calls.length,
+    consumed,
+    finished,
+    providerUrls.length,
+  ], [1, 1, 1, 1, 2]);
+});
+
+Deno.test("relationship-bound methods keep exact owner approval and configured parent fences before dispatch", async () => {
+  const operation = "supabase.branches.get_config.bound";
+  const args = { path: { branch_id_or_ref: productRequestId } };
+  for (
+    const patch of [
+      { requires_approval: false },
+      { requires_grant: false },
+      { api_key_delegable: true },
+    ]
+  ) {
+    const row = extensionRow(operation, true);
+    row.error_contract = { ...(row.error_contract as Row), ...patch };
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: null,
+      rows: [row],
+    });
+    assert.equal(
+      (await h.request({ action: "execute", operation, arguments: args }))
+        .status,
+      503,
+    );
+    assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 0]);
+  }
+  const firewall = "gcp.firewall_policies.get.bound";
+  const h = harness({
+    actorId: extensionActor,
+    memoryTenant: null,
+    executionPolicy: true,
+    rows: [extensionRow(firewall, true)],
+  });
+  const described =
+    await (await h.request({ action: "describe", operation: firewall })).json();
+  assert.equal(described.operation.executable, false);
+  assert.equal(
+    described.operation.unavailable_reason,
+    "verified_organization_scope_binding_required",
+  );
+  assert.equal(
+    (await h.request({
+      action: "execute",
+      operation: firewall,
+      arguments: { path: { firewallPolicy: "123" } },
+    })).status,
+    424,
+  );
+  assert.deepEqual([h.rpcCalls.length, h.calls.length], [0, 0]);
 });

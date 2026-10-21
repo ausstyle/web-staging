@@ -50,9 +50,9 @@ import {
   tenantConsentOperations,
 } from "../sandy-supabase-service-api/tenant_consent.ts";
 import {
-  executeLifecycleConsent,
-  tenantLifecycleConsentOverride,
-} from "../sandy-tenant-lifecycle-api/consent_extension.ts";
+  executeRecoveryConsent,
+  recoveryConsentOverrides,
+} from "../sandy-tenant-lifecycle-api/consent_recovery.ts";
 import {
   executeTenantExportDownload,
   tenantExportDownloadOperation,
@@ -74,6 +74,16 @@ import {
   productGatewayContracts,
   productOperations,
 } from "../sandy-product-service-api/gateway.ts";
+import {
+  commerceContractMatches,
+  commerceGatewayContracts,
+  commerceOperations,
+} from "../sandy-commerce-ledger-api/gateway.ts";
+import {
+  systemMetadataContractMatches,
+  systemMetadataExecutionScope,
+  systemMetadataGatewayContracts,
+} from "../sandy-system-metadata-api/gateway.ts";
 import { canonicalJson } from "../_shared/sandy_api_protocol.ts";
 import {
   gapExecutionScope,
@@ -85,6 +95,14 @@ import {
   supplementOperations,
 } from "../sandy-provider-supplement-api/gateway.ts";
 import type { VerifiedProviderBindings } from "../sandy-provider-operation-api/configured_scopes.ts";
+import {
+  sensitiveExecutionScope,
+  sensitiveOperations,
+} from "../sandy-provider-sensitive-api/gateway.ts";
+import {
+  boundExecutionScope,
+  boundOperations,
+} from "../sandy-provider-bound-api/gateway.ts";
 export {
   parsePackageRestoreBindings,
   type ScopeBinding,
@@ -105,8 +123,12 @@ export type ExtensionKind =
   | "tenant_download"
   | "tenant_lifecycle"
   | "product"
+  | "commerce"
+  | "system_metadata"
   | "provider_gap"
   | "provider_supplement"
+  | "provider_sensitive"
+  | "provider_bound"
   | "lifecycle";
 export type ExtensionContract = {
   kind: ExtensionKind;
@@ -163,8 +185,7 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
     ...grouped(
       {
         ...tenantConsentOperations,
-        [tenantLifecycleConsentOverride.operation]:
-          tenantLifecycleConsentOverride,
+        ...recoveryConsentOverrides,
       },
       "tenant_consent",
       "sandy-operation-api",
@@ -174,6 +195,16 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       supplementOperations,
       "provider_supplement",
       "sandy-provider-supplement-api",
+    ),
+    ...grouped(
+      sensitiveOperations,
+      "provider_sensitive",
+      "sandy-provider-sensitive-api",
+    ),
+    ...grouped(
+      boundOperations,
+      "provider_bound",
+      "sandy-provider-bound-api",
     ),
     ...grouped(
       tenantLifecycleOperations,
@@ -193,6 +224,16 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       "sandy-operation-api",
     ),
     ...grouped(productGatewayContracts, "product", "sandy-product-service-api"),
+    ...grouped(
+      commerceGatewayContracts,
+      "commerce",
+      "sandy-commerce-ledger-api",
+    ),
+    ...grouped(
+      systemMetadataGatewayContracts,
+      "system_metadata",
+      "sandy-system-metadata-api",
+    ),
   ]));
 export const extensionHandlers = Object.freeze(
   Object.fromEntries(
@@ -207,7 +248,9 @@ export const extensionNeedsPortal = (operation: string) =>
   ["agenda", "memory", "agent", "tenant_consent", "tenant_download"].includes(
     extensionKind(operation) ?? "",
   ) || (extensionKind(operation) === "product" &&
-    productOperations[operation].authorization !== "owner");
+    productOperations[operation].authorization !== "owner") ||
+  (extensionKind(operation) === "commerce" &&
+    commerceOperations[operation].authorization !== "owner");
 export const extensionNeedsAgenda = (operation: string) =>
   ["agenda", "customer_key"].includes(extensionKind(operation) ?? "");
 export const extensionOwnsGrant = (operation: string) =>
@@ -218,7 +261,10 @@ export const extensionOwnsGrant = (operation: string) =>
     "supabase_service",
     "provider_gap",
     "provider_supplement",
+    "provider_sensitive",
+    "provider_bound",
     "tenant_lifecycle",
+    "system_metadata",
   ]
     .includes(extensionKind(operation) ?? "");
 export const extensionOwnerOnly = (operation: string) =>
@@ -226,10 +272,12 @@ export const extensionOwnerOnly = (operation: string) =>
   (extensionKind(operation) === "agent" &&
     agentOperationContracts[operation].owner_only) ||
   (extensionKind(operation) === "product" &&
-    productOperations[operation].authorization === "owner");
+    productOperations[operation].authorization === "owner") ||
+  (extensionKind(operation) === "commerce" &&
+    commerceOperations[operation].authorization === "owner");
 /** These handlers derive and consume their own admission from the actual JWT. */
 export const extensionOwnsUserAdmission = (operation: string) =>
-  extensionKind(operation) === "product";
+  ["product", "commerce"].includes(extensionKind(operation) ?? "");
 export const extensionRequiresUserSession = (operation: string) =>
   !!extensionKind(operation) && operation !== "system.lifecycle.poll";
 export function extensionHasAccess(
@@ -255,6 +303,15 @@ export function extensionHasAccess(
           : productOperations[operation].authorization === "portal"
           ? !!principal.portalCustomerId
           : principal.controllerOwner || !!principal.portalCustomerId);
+    case "commerce":
+      return emailConfirmed &&
+        (commerceOperations[operation].authorization === "owner"
+          ? principal.controllerOwner
+          : commerceOperations[operation].authorization === "portal"
+          ? !!principal.portalCustomerId
+          : principal.controllerOwner || !!principal.portalCustomerId);
+    case "system_metadata":
+      return emailConfirmed && principal.controllerOwner;
     case "agent":
       return !!principal.portalCustomerId &&
         (!agentOperationContracts[operation].owner_only ||
@@ -266,6 +323,8 @@ export function extensionHasAccess(
     case "supabase_service":
     case "provider_gap":
     case "provider_supplement":
+    case "provider_sensitive":
+    case "provider_bound":
     case "tenant_lifecycle":
       return principal.controllerOwner;
     default:
@@ -292,8 +351,14 @@ export function extensionContractMatches(
     return providerLifecycleContractMatches(operation, entry);
   }
   if (c.kind === "product") return productContractMatches(operation, entry);
+  if (c.kind === "commerce") return commerceContractMatches(operation, entry);
+  if (c.kind === "system_metadata") {
+    return systemMetadataContractMatches(operation, entry);
+  }
   if (
-    c.kind === "provider_supplement" &&
+    ["provider_supplement", "provider_sensitive", "provider_bound"].includes(
+      c.kind,
+    ) &&
     (!object(entry.error_contract) ||
       entry.error_contract.requires_approval !== true ||
       entry.error_contract.requires_grant !== true ||
@@ -343,6 +408,7 @@ export function extensionAvailability(
   if (
     (entry.is_mutation === true ||
       (kind === "product" && productOperations[operation].sensitive) ||
+      (kind === "commerce" && commerceOperations[operation].sensitive) ||
       kind === "tenant_download" ||
       (kind === "provider_gap"
         ? extensionContracts[operation].requires_grant === true
@@ -355,9 +421,11 @@ export function extensionAvailability(
     };
   }
   if (kind === "database") return databaseCapability(operation);
-  if (kind === "provider_supplement") {
+  if (kind === "provider_supplement" || kind === "provider_bound") {
     try {
-      supplementExecutionScope(operation, providerBindings);
+      if (kind === "provider_bound") {
+        boundExecutionScope(operation, providerBindings);
+      } else supplementExecutionScope(operation, providerBindings);
     } catch (error) {
       return {
         executable: false,
@@ -388,7 +456,7 @@ export async function executeUserExtension(
       return executeMemoryOperation(deps, bearer, operation, args);
     case "tenant_consent":
       return deps.userDb
-        ? executeLifecycleConsent(deps.userDb, operation, args)
+        ? executeRecoveryConsent(deps.userDb, operation, args)
         : Response.json({
           ok: false,
           error: "tenant_consent_session_required",
@@ -421,6 +489,9 @@ export async function extensionExecutionScope(
   },
 ): Promise<unknown> {
   const kind = extensionKind(operation);
+  if (kind === "system_metadata") {
+    return systemMetadataExecutionScope(operation, args);
+  }
   if (kind === "database") return databaseExecutionScope(operation);
   if (kind === "supabase_service") return serviceExecutionScope(operation);
   if (kind === "tenant_lifecycle") {
@@ -431,6 +502,12 @@ export async function extensionExecutionScope(
   }
   if (kind === "provider_supplement") {
     return supplementExecutionScope(operation, options?.providerBindings);
+  }
+  if (kind === "provider_sensitive") {
+    return sensitiveExecutionScope(operation);
+  }
+  if (kind === "provider_bound") {
+    return boundExecutionScope(operation, options?.providerBindings);
   }
   if (kind === "guest") {
     return guestOperations[operation].kind === "task_status"

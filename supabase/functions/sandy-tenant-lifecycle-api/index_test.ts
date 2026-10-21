@@ -27,6 +27,10 @@ import {
 import scalarManifest from "./scalar_manifest.json" with { type: "json" };
 import { contentExportScope } from "./content_contracts.ts";
 import contentManifest from "./content_manifest.json" with { type: "json" };
+import { supportRecoveryScope } from "./support_recovery_contracts.ts";
+import supportManifest from "./support_recovery_manifest.json" with {
+  type: "json",
+};
 const actor = "00000000-0000-4000-8000-000000000001",
   tenant = "00000000-0000-4000-8000-000000000002",
   snapshot = "00000000-0000-4000-8000-000000000003",
@@ -172,8 +176,71 @@ function fixture(overrides: Partial<Dependencies> = {}) {
   };
   return { deps, calls, handler, invoke };
 }
-Deno.test("thirteen manifest operations and protected metadata have executable strict contracts", () =>
-  equal(validateTenantLifecycleContracts(), 14));
+Deno.test("eighteen manifest operations and protected metadata have executable strict contracts", () =>
+  equal(validateTenantLifecycleContracts(), 19));
+
+Deno.test("private support recovery binds exact case scope with one common owner grant and refuses a different returned case", async () => {
+  for (
+    const [returnedCase, expectedStatus] of [[snapshot, 200], [
+      grant,
+      502,
+    ]] as const
+  ) {
+    const operation = "supabase.tenant.support.snapshot";
+    let sqlCalls = 0;
+    const f = fixture({
+      rpc: async (name) => {
+        sqlCalls++;
+        equal(name, "sandy_tenant_lifecycle_execute");
+        return {
+          status: 200,
+          error: null,
+          data: {
+            ok: true,
+            reused: false,
+            result: {
+              snapshot_id: snapshot,
+              tenant_id: tenant,
+              case_id: returnedCase,
+              manifest: supportManifest.id,
+              manifest_sha256: supportManifest.manifest_sha256,
+              schema_sha256: supportManifest.schema_sha256,
+              snapshot_sha256: "d".repeat(64),
+              state: "exported",
+              created_at: "2026-10-21T00:00:00Z",
+              expires_at: "2026-10-22T00:00:00Z",
+              row_counts: {
+                sandy_product_support_cases: 1,
+                sandy_product_support_comments: 0,
+              },
+              complete_tenant_coverage: false,
+              external_provider_assets_included: false,
+              private_recovery_only: true,
+              retained_control_copies: true,
+            },
+          },
+        };
+      },
+    });
+    const response = await f.invoke(operation, {
+      tenant_id: tenant,
+      case_id: snapshot,
+      manifest: supportManifest.id,
+      expected_manifest_sha256: supportManifest.manifest_sha256,
+    });
+    equal(response.status, expectedStatus);
+    equal(sqlCalls, 1);
+    equal(f.calls.map((c) => c.name), ["authorize", "consume", "finish"]);
+    equal(
+      (f.calls[1].value as { scope_sha256: string }).scope_sha256,
+      await argumentDigest(supportRecoveryScope),
+    );
+    if (expectedStatus !== 200) {
+      equal((await response.json()).executed, null);
+      equal((f.calls[2].value as { outcome: string }).outcome, "unknown");
+    }
+  }
+});
 
 Deno.test("scalar manifest execution binds its own scope and uses the existing grant and SQL boundary once", async () => {
   const operation = "supabase.tenant.manifests.export";
@@ -682,7 +749,9 @@ Deno.test("only an explicit PostgreSQL rollback proof is a known failed mutation
   ) {
     const f = fixture({ rpc: async () => ({ data: null, error, status }) });
     const r = await f.invoke();
-    assert(!(await r.text()).includes("private-"));
+    const body = await r.json();
+    assert(!JSON.stringify(body).includes("private-"));
+    equal(body.executed, expected === "unknown" ? null : false);
     equal(
       (f.calls.find((c) => c.name === "finish")!.value as FinishRequest)
         .outcome,

@@ -15,13 +15,21 @@ import {
   contentExportExecutionScope,
   contentExportOperations,
 } from "./content_contracts.ts";
+import {
+  supportRecoveryExecutionScope,
+  supportRecoveryOperations,
+} from "./support_recovery_contracts.ts";
 export const tenantLifecycleOperations = Object.freeze({
   ...manifestOperations,
   [protectedInventoryOperationName]: protectedInventoryOperation,
   ...scalarManifestOperations,
   ...contentExportOperations,
+  ...supportRecoveryOperations,
 });
 export function tenantLifecycleExecutionScope(operation: string) {
+  if (Object.hasOwn(supportRecoveryOperations, operation)) {
+    return supportRecoveryExecutionScope(operation);
+  }
   if (Object.hasOwn(contentExportOperations, operation)) {
     return contentExportExecutionScope(operation);
   }

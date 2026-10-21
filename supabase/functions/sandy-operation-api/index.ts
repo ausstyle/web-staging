@@ -1452,7 +1452,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         }
         let response: Response;
         try {
-          if (kind === "agent" || kind === "product") {
+          if (kind === "agent" || extensionOwnsUserAdmission(operation)) {
             response = await fetchBackend(
               `${base}/functions/v1/${extensionContracts[operation].handler}`,
               {
@@ -1467,11 +1467,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                   operation,
                   arguments: body.arguments ?? {},
                   channel: originalChannel,
-                  ...(kind === "product" &&
+                  ...(extensionOwnsUserAdmission(operation) &&
                       request.headers.has("x-sandy-request-id")
                     ? { request_id: request.headers.get("x-sandy-request-id") }
                     : {}),
-                  ...(kind === "product" &&
+                  ...(extensionOwnsUserAdmission(operation) &&
                       request.headers.has("x-sandy-approval-id")
                     ? {
                       approval_id: request.headers.get("x-sandy-approval-id"),
@@ -1479,7 +1479,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                     : {}),
                 }),
                 signal: AbortSignal.timeout(
-                  kind === "product" ? 120000 : 60000,
+                  extensionOwnsUserAdmission(operation) ? 120000 : 60000,
                 ),
               },
             );
@@ -1510,6 +1510,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                   grant_id: _admission.grantId,
                   admission_id: _admission.admissionId,
                   credential_id: null,
+                  ...(kind === "system_metadata"
+                    ? { channel: originalChannel }
+                    : {}),
                 }),
                 signal: AbortSignal.timeout(60000),
               },
@@ -1528,7 +1531,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           operation,
           response,
           entry.output_schema,
-          kind === "product",
+          extensionOwnsUserAdmission(operation) || kind === "system_metadata",
         );
       }
       if (isCustomerMutationOperation(operation)) {
