@@ -1,0 +1,362 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-10-21T04:33:24.720285+00:00",
+  "mode": "current_repository_literal_call_inventory_source_only",
+  "production_ui_readback": false,
+  "authenticated_browser_tested": false,
+  "ui_git_publication_status": "Parent owns publication; deployed UI source not attested here. Network/Git publication limitations are separate from source implementation.",
+  "files_with_matches": 16,
+  "literal_endpoints": [
+    "sandy-activity-ledger",
+    "sandy-agenda",
+    "sandy-calendar-api",
+    "sandy-composio-gateway",
+    "sandy-controller-api",
+    "sandy-files",
+    "sandy-google-calendar-import",
+    "sandy-login-email",
+    "sandy-memory-centre",
+    "sandy-operations-api",
+    "sandy-promote-mission",
+    "sandy-social-graph-api",
+    "sandy-task-files",
+    "sandy-temporal-api",
+    "sandy-v3-portal",
+    "sandy-workspace"
+  ],
+  "scope_notes": [
+    "Literal matches are candidates, not proof of duplicated execution or complete client coverage.",
+    "Authentication bootstrap and documented examples must not be mechanically forwarded through an authenticated business-operation API.",
+    "Root owns the existing-contract passive Workspace subset; preserve real bearer/401 refresh, pagination/generation and actual canonical envelope without fallback replay.",
+    "Signed storage uploads/downloads are transport continuations of approved tickets, not arbitrary alternative execution routes."
+  ],
+  "existing_contract_subset": {
+    "owner": "root",
+    "source": "sandy/app/index.html",
+    "mapping": {
+      "overview": "workspace.overview",
+      "command_centre": "workspace.command_centre",
+      "global_search": "workspace.search",
+      "history": "workspace.history",
+      "mission_overview": "workspace.missions.list"
+    },
+    "contract_source": "supabase/functions/sandy-operation-api/customer_operations.ts"
+  },
+  "files": [
+    {
+      "path": "sandy/agenda/index.html",
+      "source_sha256": "7d9fca76b5a7b24aad0ea4026ced703e5a0fdecbc85300a1fb566904302aab6f",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 637,
+          "literal_function_endpoints": [
+            "sandy-agenda"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 1655,
+          "literal_function_endpoints": [
+            "sandy-promote-mission"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 1693,
+          "literal_function_endpoints": [
+            "sandy-promote-mission"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 2469,
+          "literal_function_endpoints": [
+            "sandy-activity-ledger"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/agenda/task-attachments.js",
+      "source_sha256": "6a4e6f078b97a8e5c69b607144244bba48a7815e29d6999d2e70d47a351e5494",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 3,
+          "literal_function_endpoints": [
+            "sandy-task-files"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/app/api-reference.html",
+      "source_sha256": "655b01e8711b7241411e0c026d7bbf26148d9c3091a8461287d1a4d5470b1dd2",
+      "classification": "documentation_examples",
+      "calls": [
+        {
+          "line": 1,
+          "literal_function_endpoints": [
+            "sandy-operations-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/app/index.html",
+      "source_sha256": "7ffacffa46f66cc572a4b3cb44e5c32fcf6d8fcede9e68719892a7613835a4ed",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 174,
+          "literal_function_endpoints": [
+            "sandy-workspace"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 456,
+          "literal_function_endpoints": [
+            "sandy-calendar-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/apps/index.html",
+      "source_sha256": "64ab07e82e3818dcdca190ef95a6a4ba331783a0addbeecdb2a8adc19ab4a204",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 33,
+          "literal_function_endpoints": [
+            "sandy-composio-gateway"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/calendar/index.html",
+      "source_sha256": "4bafdbe12a4b7399f057c9152cca9439f534cd562ff6f19e87917b79fff86d53",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 54,
+          "literal_function_endpoints": [
+            "sandy-calendar-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 283,
+          "literal_function_endpoints": [
+            "sandy-composio-gateway"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 327,
+          "literal_function_endpoints": [
+            "sandy-google-calendar-import"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 343,
+          "literal_function_endpoints": [
+            "sandy-google-calendar-import"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 382,
+          "literal_function_endpoints": [
+            "sandy-composio-gateway"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/chat/index.html",
+      "source_sha256": "c8d7aa5a1276ce386371369b1101fdaa330dd7749a4a280ad84f03aafafe7f73",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 6,
+          "literal_function_endpoints": [
+            "sandy-workspace"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/controller/index.html",
+      "source_sha256": "710c53395d6059a9e64cc88919cb648144a9354cfde9b2ebe33288ea0cf96aa0",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 74,
+          "literal_function_endpoints": [
+            "sandy-controller-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/files/index.html",
+      "source_sha256": "ee1c2ebd9a7eb860f0af41d9a81193c5144216b2299d49fd82868be0f8cb455c",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 12,
+          "literal_function_endpoints": [
+            "sandy-files"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/memory/app.js",
+      "source_sha256": "bbb45c975bf28cc86af0e69fce53e283f5a2433742c676331b5f563a46f699bf",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 5,
+          "literal_function_endpoints": [
+            "sandy-memory-centre"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 480,
+          "literal_function_endpoints": [
+            "sandy-login-email"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/memory/social.html",
+      "source_sha256": "7b055695fd990bd2389bd8687b0014da8c4af3af6809cffdbf21f4020b15e8ed",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 13,
+          "literal_function_endpoints": [
+            "sandy-social-graph-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/tasks-v4/index.html",
+      "source_sha256": "6b509f8a1ade31ed5df29a37adab85ffa4c18a114057a4e319d2bf3789c5d322",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 431,
+          "literal_function_endpoints": [
+            "sandy-agenda"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 1133,
+          "literal_function_endpoints": [
+            "sandy-promote-mission"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 1171,
+          "literal_function_endpoints": [
+            "sandy-promote-mission"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/temporal/index.html",
+      "source_sha256": "cebd0d9bb366fbccf1533222d58dca89fc3b9c0eeaa9e25b7c10ff1f5ae1fc39",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 5,
+          "literal_function_endpoints": [
+            "sandy-temporal-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/v3/index.html",
+      "source_sha256": "de00cd06b3f9bb722118fec28de0e529956c88bbff6046896a21d822f5ac2ae4",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 16,
+          "literal_function_endpoints": [
+            "sandy-v3-portal"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/v3/agenda/index.html",
+      "source_sha256": "7fb2db8ffb077be5b3dc5cb9546fa609155ef553d6802eb0598dc0ff98cd32ac",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 317,
+          "literal_function_endpoints": [
+            "sandy-agenda"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 968,
+          "literal_function_endpoints": [
+            "sandy-promote-mission"
+          ],
+          "dynamic_sdk_or_rpc": false
+        },
+        {
+          "line": 1006,
+          "literal_function_endpoints": [
+            "sandy-promote-mission"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    },
+    {
+      "path": "sandy/v3/calendar/index.html",
+      "source_sha256": "e0e1f8708c7442355aef28b27b7208cb6d2657f5ae307bcd354edd2b075900c6",
+      "classification": "executable_client_source_candidate",
+      "calls": [
+        {
+          "line": 16,
+          "literal_function_endpoints": [
+            "sandy-calendar-api"
+          ],
+          "dynamic_sdk_or_rpc": false
+        }
+      ]
+    }
+  ]
+}

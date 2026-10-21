@@ -106,7 +106,7 @@
         ]
       },
       "identity": "Existing renewal-key worker credential plus claimed execute-stage mission run.",
-      "remaining": "Direct Responses internal draft at archived line 39; needs queue-bound contract and source adapter.",
+      "remaining": "All executor behavior extracted to a closed shared application service source candidate; commit, migration, deployment and readback pending. No actual model execution test.",
       "boundaries_to_preserve": [
         "approved/provisional plan state",
         "ready prerequisite milestones",
@@ -115,7 +115,12 @@
         "client review task",
         "tenant-owned work product",
         "event audit"
-      ]
+      ],
+      "inspected_live_version": 8,
+      "inspected_status": "ACTIVE",
+      "candidate_contract": "agent.missions.work_product.prepare@1.0.0",
+      "candidate_deployed": false,
+      "scope_strengthening": "Actual completed same-tenant plan run; context change/cancellation refusal; unknown milestone cannot repeat through another run ID."
     },
     {
       "slug": "sandy-computer-worker",
@@ -202,9 +207,9 @@
         ]
       },
       "identity": "Existing dedicated automation secret; service credential is only DB transport. Private proof binds actual source/reference/problem and reserved job, with no customer/Auth/owner identity.",
-      "remaining": "Source candidate extracts all diagnosis work into agent.reliability.diagnosis.propose@1.0.0. Commit, migration, deployment and source readback pending; actual model run not performed.",
+      "remaining": "Committed and source-accounted deployed private shared diagnosis service; no actual model/customer execution test or verification claim.",
       "candidate_contract": "agent.reliability.diagnosis.propose@1.0.0",
-      "candidate_deployed": false,
+      "candidate_deployed": true,
       "boundaries_to_preserve": [
         "dedicated existing automation key",
         "actual stored job/source/problem",
@@ -212,7 +217,9 @@
         "proposal-only output and separate approval",
         "actual QA issue foreign key and unverified handoff",
         "no unknown paid redispatch"
-      ]
+      ],
+      "source_commit": "718f9a8",
+      "deployed_version": 13
     }
   ],
   "UI": [
