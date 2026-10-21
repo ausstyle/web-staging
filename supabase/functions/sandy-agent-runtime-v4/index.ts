@@ -1,5 +1,6 @@
 import {isGmailAction} from "../_shared/sandy-agent-operations/connected-gmail.ts";
-import {authenticateRuntime,bindRuntimeTask} from "../_shared/sandy-agent-operations/identity.ts";
+import {authenticateRuntime,bindRuntimeTask,bindRuntimeConversationTask} from "../_shared/sandy-agent-operations/identity.ts";
+import {bindV4RuntimeConversation,executeRuntimeConversation,type RuntimeConversation} from "../_shared/sandy-agent-operations/runtime_conversation.ts";
 import {executeRuntimeOperation} from "../_shared/sandy-agent-operations/service.ts";
 import {executingBuild,getVersionAwareness,needsVersionInspection,versionInstructions,versionFactsForModel} from "./version-awareness.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -271,10 +272,18 @@ Deno.serve(async req=>{
   return json(200,{ok:true,task_id:id,model:"system-clock",response:text,tools_used:[{tool:"system_clock",success:true}]});
  }
 
+ let conversation:RuntimeConversation|null=null;
+ let conversationRound=0;
  const call=async(body:any)=>{
-  const res=await fetch((Deno.env.get("SUPABASE_URL")||"")+"/functions/v1/sandy-openai-gateway-v4",{method:"POST",headers:{"x-sandy-integration-token":Deno.env.get("SANDY_INTEGRATION_API_TOKEN")||"","x-sandy-purpose":"web","x-sandy-task":String(prompt||"").replace(/[^\x20-\x7E]/g," ").slice(0,240),"authorization":"Bearer "+key,"content-type":"application/json"},body:JSON.stringify(body),signal:AbortSignal.timeout(100000)});
-  if(!res.ok)throw Error("model_http_"+res.status+" "+(await res.text()).slice(0,150));
-  return await res.json();
+  if(!conversation){
+   const task=await bindRuntimeConversationTask(runtimeProof,db,{taskId:id,customerId,channel,requestId});
+   if(!task)throw Error("runtime_conversation_task_binding_failed");
+   conversation=await bindV4RuntimeConversation(task,body);
+  }
+  const outcome=await executeRuntimeConversation(conversation,{round:conversationRound,tool_results:conversationRound===0?[]:body.input},{db,openaiKey:aiKey,v4Broker:{base:url,serviceCredential:key,integrationToken:Deno.env.get("SANDY_INTEGRATION_API_TOKEN")||""}});
+  if(outcome.status!==200)throw Error(String(outcome.body.error||"runtime_conversation_failed"));
+  conversationRound++;
+  return outcome.body.response;
  };
  try{
   const capabilityContext=" Sandy V2 recorded web conversation activity: "+JSON.stringify(activityFacts)+". Cross-channel customer-scoped communication activity: "+JSON.stringify(communicationFacts)+". These are authoritative source-scoped records; distinguish verified authorship, incoming records and partial completeness. They are not limited to the last twelve model context turns. " + " Sandy V2 runtime context (database sourced, customer scoped): "+(v2ConnectionError?"connection lookup failed; do not infer access":JSON.stringify(v2Services))+". These records are local and provider status has not been checked unless a tool actually verified it. Connected is not equivalent to executable. Unoffered tools must not be claimed. V2 executive mode: "+v2Mode+". ";

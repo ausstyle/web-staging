@@ -146,6 +146,78 @@
         }
       ],
       "prior_shared_eight_candidate_sha256": "40ddf2a83f9d02f46ebbcd3cd28e460646caba535d33977a4e2abcc7e8b5b265"
+    },
+    {
+      "runtime": "sandy-agent-runtime-v4",
+      "baseline_version": 12,
+      "baseline_version_note": "Original expanded-source deployment observation. Secret-only metadata refresh may increment the active numeric version without changing this exact source.",
+      "baseline_source_sha256": "3aadfb520f651e9a6807cbb24b5d4409fcfbb25fb69fe5d72036916e44db8679",
+      "candidate_source_sha256": "c94f4399359f066be620cf796b7c9e248e57a0b20ccff92526059057adbd88b4",
+      "path": "supabase/functions/sandy-agent-runtime-v4/index.ts",
+      "independent_remaining_calls": {
+        "openai_responses": 0,
+        "composio_execute": 0,
+        "conversation_broker": 0
+      },
+      "preserved_sections": [
+        {
+          "name": "tool_schemas",
+          "start": "const json=",
+          "end": "Deno.serve(",
+          "sha256": "eda75d88cf2466030245535de73b6a8e9533ff1fc12bdf202840c77402ec648c",
+          "bytes": 5207
+        },
+        {
+          "name": "request_validation",
+          "start": " let input:any;",
+          "end": " const trustedServiceCaller=",
+          "sha256": "6e456583984185a49a43b00c730273cdfa63402b73362e6fff3223beb1ccaf98",
+          "bytes": 1092
+        },
+        {
+          "name": "tenant_context_flags_and_model_routing",
+          "start": " // V2 executive:",
+          "end": " const recentGmailRequest=",
+          "sha256": "8f5855e208a2ddbc47281fd8bf1d92b786005ca22182dfc0c0e7bff436f5ff9d",
+          "bytes": 15876
+        },
+        {
+          "name": "clock_fast_path",
+          "start": " const clockOnlyRequest=",
+          "end": " const call=",
+          "candidate_end": " let conversation:RuntimeConversation",
+          "sha256": "79ae545d44c7ac297e615907c578f11770b095546c2e26cf21ae2457da7626f4",
+          "bytes": 723
+        },
+        {
+          "name": "conversation_instructions_request_and_tool_loop",
+          "start": " try{\n  const capabilityContext=",
+          "end": "    if(c.name===\"request_client_action\"",
+          "sha256": "95b034792886cd55c728b482ceb0c9d854f4bb6add33c7c7cbbe5afa83ae1b9d",
+          "bytes": 6328
+        },
+        {
+          "name": "tenant_tasks_and_operational_reads",
+          "start": "    if(c.name===\"request_client_action\"",
+          "end": "    if(c.name===\"prepare_gmail_message\"",
+          "sha256": "9366596c93d935b5892d9663bd2620efd43a08f54fc757a8dcd6dd4b05a8772c",
+          "bytes": 9125
+        },
+        {
+          "name": "tenant_history",
+          "start": "    if(c.name===\"search_history\"",
+          "end": "    if(c.name===\"research_web\"",
+          "sha256": "bc89b58076d034c3355c3ee925ac6760c4f652da982a401d03bf259d5de1bc1f",
+          "bytes": 489
+        },
+        {
+          "name": "image_approval_and_result_persistence",
+          "start": "    if(c.name===\"request_image_approval\"",
+          "end": null,
+          "sha256": "96ed3e10807214b865f48ec890764906da2ddee72409f81082c24026402a03c9",
+          "bytes": 3217
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -158,6 +230,11 @@
       "path": "supabase/functions/sandy-agent-runtime-v2/version-awareness.js",
       "sha256": "f7c344fb99f2760e2bac13b09f173549f240ba917912cc0f9f4cb6320c6834a2",
       "reason": "Exact archived v2 dependency; no version registry or release-router semantics changed."
+    },
+    {
+      "path": "supabase/functions/sandy-agent-runtime-v4/version-awareness.js",
+      "sha256": "f7c344fb99f2760e2bac13b09f173549f240ba917912cc0f9f4cb6320c6834a2",
+      "reason": "Active v4 exact version-awareness dependency is unchanged."
     }
   ],
   "prior_shared_eight_commit": "6e0354f"

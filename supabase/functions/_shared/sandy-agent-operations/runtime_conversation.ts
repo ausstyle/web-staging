@@ -6,13 +6,14 @@ import {
 } from "./identity.ts";
 import { runtimeConversationContract, runtimeConversationOperation, runtimeConversationVersion } from "./runtime_conversation_contract.ts";
 import { fixedRuntimeResponses } from "./runtime_responses_transport.ts";
+import { fixedV4ConversationBroker, v4RuntimeConversationSource, type V4ConversationBroker } from "./runtime_conversation_v4_transport.ts";
 
 type Obj = Record<string, any>;
-type Runtime = "sandy-agent-runtime-v2" | "sandy-agent-runtime-v1-backup-r50";
+type Runtime = "sandy-agent-runtime-v2" | "sandy-agent-runtime-v1-backup-r50" | "sandy-agent-runtime-v4";
 type ToolResult = { type: "function_call_output"; call_id: string; output: string };
 export type RuntimeConversationArguments = { round: number; tool_results: ToolResult[] };
 export type RuntimeConversation = Readonly<{ operation: typeof runtimeConversationOperation; runtime: Runtime; sourceSha256: string }>;
-export type ConversationDependencies = { db: any; openaiKey: string; fetch?: typeof fetch };
+export type ConversationDependencies = { db: any; openaiKey: string; fetch?: typeof fetch; v4Broker?: V4ConversationBroker };
 type Session = {
   task: RuntimeConversationTask;
   initial: Obj;
@@ -31,6 +32,10 @@ const profiles = {
   "sandy-agent-runtime-v1-backup-r50": {
     source: "f4bfcd9191660fb4f2784d1e9d30151f204bee5eca096d49d02fa9fe330ab993",
     tools: "0217409b152fa55babcb907084edc00f93ef82065b4c52d8b7f078224a6b60fb",
+  },
+  "sandy-agent-runtime-v4": {
+    source: v4RuntimeConversationSource.sourceSha256,
+    tools: v4RuntimeConversationSource.toolSchemaSha256,
   },
 } as const;
 const object = (v: unknown): v is Obj => !!v && typeof v === "object" && !Array.isArray(v);
@@ -77,6 +82,7 @@ async function bind(task: RuntimeConversationTask, runtime: Runtime, firstReques
 }
 export const bindV2RuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj) => bind(task, "sandy-agent-runtime-v2", firstRequest);
 export const bindV1BackupRuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj) => bind(task, "sandy-agent-runtime-v1-backup-r50", firstRequest);
+export const bindV4RuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj) => bind(task, "sandy-agent-runtime-v4", firstRequest);
 
 async function responseJson(response: Response): Promise<Obj | null> {
   const reader = response.body?.getReader();
@@ -118,6 +124,10 @@ export async function executeRuntimeConversation(
     new Set(args.tool_results.map(v => v.call_id)).size !== args.tool_results.length ||
     args.tool_results.some(v => !session.pendingCallIds.includes(v.call_id))) return denied(400, "runtime_conversation_tool_results_mismatch");
   if (!deps.openaiKey) return denied(503, "runtime_conversation_provider_not_configured");
+  if (capability.runtime === "sandy-agent-runtime-v4" && (!deps.v4Broker ||
+    deps.v4Broker.base !== "https://zmqlyygzqoidkcwdysok.supabase.co" || !deps.v4Broker.serviceCredential)) {
+    return denied(503, "runtime_conversation_v4_broker_not_configured");
+  }
   const { task } = session;
   const current = await deps.db.from("sandy_agent_tasks").select("id,customer_id,channel,request_id,status,user_request")
     .eq("id", task.taskId).maybeSingle();
@@ -145,7 +155,9 @@ export async function executeRuntimeConversation(
     let data: Obj | null = null, providerAttempted = false;
     try {
       providerAttempted = true;
-      const response = await fixedRuntimeResponses(request, deps.openaiKey, 100000, deps.fetch ?? fetch, false);
+      const response = capability.runtime === "sandy-agent-runtime-v4"
+        ? await fixedV4ConversationBroker(task, request, deps.v4Broker!, deps.fetch ?? fetch)
+        : await fixedRuntimeResponses(request, deps.openaiKey, 100000, deps.fetch ?? fetch, false);
       data = await responseJson(response);
       if (!response.ok || !data) data = null;
     } catch { data = null; }

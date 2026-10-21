@@ -9,8 +9,10 @@ The shared-eight extraction was committed as `6e0354f` and deployed as ACTIVE
 v2 version 15 and backup version 5. Release receipts account for all seven/six
 uploaded source modules respectively; authenticated runtime execution was not
 established. Eight registry evidence rows were updated while verification fields
-were preserved. The subsequent conversation extraction described below is a
-separate, uncommitted candidate.
+were preserved. Conversation extraction was subsequently committed as
+`65f331b`, migration `10000` applied, and the fallbacks deployed as v2 version 16
+and backup version 6 with exact source readbacks. The active-v4 follow-on below
+is a separate source candidate.
 
 The archived v2 source was observed at version 13 with SHA-256
 `d4354d6202851117b36b5e507bfecf52b0497524fb260f29c72f124d36986b78`.
@@ -51,6 +53,7 @@ python3 scripts/sandy/verify_fallback_source.py
 deno test --allow-env --allow-read=supabase/functions,scripts/sandy/testing \
   --import-map=scripts/sandy/testing/fallback_import_map.json \
   scripts/sandy/fallback_runtime_test.ts \
+  supabase/functions/_shared/sandy-agent-operations/runtime_conversation_v4_transport_test.ts \
   supabase/functions/_shared/sandy-agent-operations/runtime_profiles_test.ts \
   supabase/functions/sandy-agent-operation-api/index_test.ts
 ```
@@ -61,8 +64,8 @@ The test-only import map replaces Supabase transport and Edge declarations; it
 is not deployed. All provider hosts are intercepted and no network permission is
 granted. Six profile regressions additionally verify transport restrictions and
 the default v4 broker, alongside the existing 19 service/API regressions. The
-conversation candidate passes 46 tests in total (21 adapter/capability tests,
-six profile tests and 19 existing service/API tests).
+active-v4 candidate passes 56 tests in total (29 adapter/capability tests,
+two v4 transport tests, six profile tests and 19 existing service/API tests).
 
 The follow-on `agent.runtime.conversation.respond` operation has a concrete
 versioned contract and a process-local capability bound to the actual persisted
@@ -74,7 +77,7 @@ operation arguments contain only the round number and provider-bound tool
 results. It makes model requests only and never executes a tool. Public callers
 cannot serialize the capability or select its legacy transport.
 
-Both candidates delegate conversation-model requests to this operation and
+All three runtime candidates delegate conversation-model requests to this operation and
 share the fixed provider transport with the legacy action profiles. The original
 100-second timeout, initial/continuation payloads, history framing, adaptive
 model policy and three tool rounds remain. A private audit claim precedes every
@@ -90,6 +93,21 @@ with `internal:agent.runtime.conversation.respond@1.0.0`; all public/UI/AI
 exposure and verified flags stay false. No public HTTP handler readiness is
 claimed. Its table/trigger and metadata passed 19 actual PostgreSQL checks in a
 full rollback, without model requests or permanent registry changes.
+
+The active v4 source is pinned to SHA-256
+`3aadfb520f651e9a6807cbb24b5d4409fcfbb25fb69fe5d72036916e44db8679`.
+Its private profile retains the fixed v4 broker, existing automation service
+credential, integration token, `web` purpose and sanitized task header. These
+authenticate an internal runtime call and never establish a customer or
+Controller session. Its original 13-tool schema, extra narrow context lookup,
+non-sensitive temporal context, adaptive model selection and 100-second deadline
+remain. The three runtime sources contain no independent conversation-model
+transport after extraction; the v4 provider-call implementation lives in the
+shared profile module. Additive migration `10010` admits only that exact source
+profile, preserving both fallback profiles and every exposure/verified flag. It
+passed eight actual PostgreSQL checks in a full rollback, with no broker/model
+requests. The source guards verify 24 unchanged archived sections and three
+exact dependencies across the three runtimes.
 
 Other internal workers, runtime task/context/history branches, connection
 preflight and existing UI endpoints remain distinct migration work. Source

@@ -16,15 +16,18 @@ const fixtures = {
   SUPABASE_URL: "https://zmqlyygzqoidkcwdysok.supabase.co",
   OPENAI_API_KEY: "fixture-runtime-openai-credential",
   COMPOSIO_API_KEY: "fixture-runtime-composio-credential",
+  SANDY_INTEGRATION_API_TOKEN: "fixture-runtime-broker-credential",
   DENO_DEPLOYMENT_ID: "test-unverified-build",
 };
-const slugs = ["sandy-agent-runtime-v2", "sandy-agent-runtime-v1-backup-r50"];
+const slugs = ["sandy-agent-runtime-v2", "sandy-agent-runtime-v1-backup-r50", "sandy-agent-runtime-v4"];
 type Obj = Record<string, any>;
 class Database {
   serial = 0;
   bindForeignTask = false;
   failConversationAudit = false;
   failConversationCompletion = false;
+  rpcValues: Record<string, any> = {};
+  rpcCalls: { name: string; args: Obj }[] = [];
   queries: { table: string; filters: [string, unknown][] }[] = [];
   tables: Record<string, Obj[]> = {
     sandy_agent_tasks: [], sandy_agent_operation_audit: [],
@@ -69,6 +72,7 @@ class Database {
       in: (key: string, allowed: unknown[]) => { filters.push(row => allowed.includes(row[key])); return query; },
       not: (key: string, operator: string, expected: any) => { filters.push(row => operator === "is" ? row[key] != null : !String(expected).replace(/[()]/g, "").split(",").includes(row[key])); return query; },
       order: () => query,
+      ilike: (key: string, value: string) => { const text = value.replace(/^%|%$/g, "").toLowerCase(); filters.push(row => String(row[key] || "").toLowerCase().includes(text)); return query; },
       limit: (n: number) => { maximum = n; return query; },
       insert: (row: Obj) => { mode = "insert"; value = row; return query; },
       upsert: (row: Obj) => { mode = "upsert"; value = row; return query; },
@@ -78,8 +82,11 @@ class Database {
     };
     return query;
   }
-  rpc(name: string) {
-    const result = Promise.resolve({ data: null, error: { code: name + "_fixture_unavailable" } });
+  rpc(name: string, args: Obj = {}) {
+    this.rpcCalls.push({ name, args });
+    const result = Promise.resolve(Object.hasOwn(this.rpcValues, name)
+      ? { data: this.rpcValues[name], error: null }
+      : { data: null, error: { code: name + "_fixture_unavailable" } });
     return Object.assign(result, { abortSignal: () => result });
   }
 }
@@ -97,9 +104,15 @@ async function runtime(slug: string, db: Database, requests: Recorded[], options
     const headers = new Headers(init?.headers);
     const target = String(url);
     requests.push({ url: target, body, headers });
-    if (target === "https://api.openai.com/v1/responses") {
-      assert.equal(headers.get("authorization"), "Bearer " + fixtures.OPENAI_API_KEY);
-      assert.equal(headers.has("x-sandy-integration-token"), false);
+    if (target === "https://api.openai.com/v1/responses" || target === fixtures.SUPABASE_URL + "/functions/v1/sandy-openai-gateway-v4") {
+      const broker = target !== "https://api.openai.com/v1/responses";
+      const conversation = body.max_output_tokens === 1600 || body.previous_response_id;
+      assert.equal(headers.get("authorization"), "Bearer " + (broker && conversation ? fixtures.SUPABASE_SERVICE_ROLE_KEY : fixtures.OPENAI_API_KEY));
+      assert.equal(headers.has("x-sandy-integration-token"), broker);
+      if (broker) {
+        assert.equal(headers.get("x-sandy-integration-token"), fixtures.SANDY_INTEGRATION_API_TOKEN);
+        assert.equal(headers.get("x-sandy-purpose"), "web");
+      }
       if (body.max_output_tokens === 1600 || body.previous_response_id) {
         if (++conversations === 1 && options.tools?.length) return Response.json({ id: "resp_fixture", output: options.tools.map((tool, i) => ({ type: "function_call", call_id: "call_" + i, name: tool.name, arguments: JSON.stringify(tool.args || {}) })) });
         return Response.json({ id: "resp_finished", output: [{ type: "message", content: [{ type: "output_text", text: "Fixture conversation complete." }] }] });
@@ -212,7 +225,7 @@ for (const slug of slugs) {
     try {
       const result = await app.invoke("Research and plan the next work");
       assert.equal(result.status, 200);
-      const modelCalls = requests.filter(r => r.url === "https://api.openai.com/v1/responses");
+      const modelCalls = requests.filter(r => r.url === "https://api.openai.com/v1/responses" || r.url === fixtures.SUPABASE_URL + "/functions/v1/sandy-openai-gateway-v4");
       assert.equal(modelCalls.length, 5, "two original conversation rounds plus three shared paid operations");
       assert.equal(modelCalls[0].body.model, "gpt-5.2");
       assert.equal(modelCalls[1].body.model, "gpt-4.1-mini"); assert.equal(modelCalls[1].body.tools[0].type, "web_search_preview");
@@ -259,6 +272,34 @@ Deno.test("fallback v2 public version fast path preserves authoritative metadata
     const result = await app.invoke("What Sandy version are you running?");
     assert.equal(result.status, 200); assert.equal(result.body.response, "I'm running Sandy 2.7.3.");
     assert.equal(requests.length, 0); assert.equal(audits(db).length, 0);
+  } finally { app.close(); }
+});
+
+Deno.test("active v4 preserves non-sensitive temporal context and tenant-bound extra lookup tool through its broker conversation", async () => {
+  const db = new Database(), requests: Recorded[] = [], foreignTask = "62000000-0000-4000-8000-000000000001";
+  db.tables.sandy_tasks = [
+    { id: DRAFT, customer_id: CUSTOMER, title: "Owned task", archived_at: null, status: "todo" },
+    { id: foreignTask, customer_id: FOREIGN, title: "Foreign task", archived_at: null, status: "todo" },
+  ];
+  db.rpcValues.sandy_temporal_current = [
+    { predicate: "fixture_preference", value: "owned non-sensitive temporal fact", sensitivity: "normal", state: "active", source_ref: "fixture-owned-ref" },
+    { predicate: "fixture_private", value: "sensitive fact must not enter model context", sensitivity: "sensitive", state: "active", source_ref: "fixture-sensitive-ref" },
+  ];
+  const app = await runtime("sandy-agent-runtime-v4", db, requests, { tools: [
+    { name: "sandy_context_lookup", args: { operation: "tasks_get", query: "", id: DRAFT } },
+    { name: "sandy_context_lookup", args: { operation: "tasks_get", query: "", id: foreignTask } },
+  ] });
+  try {
+    const result = await app.invoke("Find the project record");
+    assert.equal(result.status, 200); assert.equal(requests.length, 2);
+    assert.equal(requests[0].body.tools.length, 13);
+    assert.match(requests[0].body.instructions, /owned non-sensitive temporal fact/);
+    assert.doesNotMatch(requests[0].body.instructions, /sensitive fact must not enter/);
+    const temporal = db.rpcCalls.find(call => call.name === "sandy_temporal_current");
+    assert.deepEqual(temporal?.args, { p_customer_id: CUSTOMER, p_limit: 40 });
+    const results = requests[1].body.input.map((item: Obj) => JSON.parse(item.output));
+    assert.equal(results[0].records[0].title, "Owned task"); assert.deepEqual(results[1].records, []);
+    assert.ok(db.tables.sandy_runtime_conversation_audit.every(row => row.customer_id === CUSTOMER && row.source_runtime === "sandy-agent-runtime-v4"));
   } finally { app.close(); }
 });
 
