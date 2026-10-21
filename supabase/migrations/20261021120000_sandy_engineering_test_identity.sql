@@ -1,3 +1,4 @@
+BEGIN;
 -- Dedicated normal Auth workload; never a global Controller owner.
 -- Standing fixture delegation is distinct from a human session. Administrative
 -- bootstrap must reference an existing, genuinely owner-approved change and is
@@ -346,3 +347,5 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$ BEGIN
 END $$;
 REVOKE ALL ON FUNCTION public.sandy_engineering_claim_auth_issue(uuid,integer),public.sandy_engineering_release_auth_issue(uuid,uuid) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.sandy_engineering_claim_auth_issue(uuid,integer),public.sandy_engineering_release_auth_issue(uuid,uuid) TO service_role;
+
+COMMIT;
