@@ -2,9 +2,9 @@ import {seed,clone,ms,iso,dateText,HOUR,DAY,SNAP,byId,duration,topo,requiredStar
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const KEY="sandy.timeline.lab.v1";
 let state;try{state=JSON.parse(localStorage.getItem(KEY))}catch{}if(!state?.tasks?.length)state=seed();
-let scenario=null,scenarioBase=null,view="timeline",selected=null,collapsed=new Set(),search="",owner="",zoom=2,showCritical=true,showBaseline=false,showEvents=false;
+let scenario=null,scenarioBase=null,view="timeline",selected=null,collapsed=new Set(),search="",owner="",zoom=4,showCritical=true,showBaseline=false,showEvents=false;
 let undo=[],redo=[],dragId=null,activeLink=null,scrollPosition=null,toastTimer=null,dragging=false;
-const ZOOMS=[{name:"Hours",px:48,tick:4},{name:"Day",px:13,tick:12},{name:"Week",px:4.7,tick:24},{name:"Month",px:2.0,tick:24},{name:"Quarter",px:.85,tick:24*7}];
+const ZOOMS=[{name:"15 min",px:168,tick:1},{name:"Hour",px:72,tick:2},{name:"Hours",px:48,tick:4},{name:"Day",px:13,tick:12},{name:"Week",px:4.7,tick:24},{name:"Month",px:2.0,tick:24},{name:"Quarter",px:.85,tick:168},{name:"Year",px:.35,tick:720}];
 const active=()=>scenario||state;
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){console.warn("Browser storage unavailable",e)}};
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -72,6 +72,30 @@ function timeBounds(s){
  const hours=Math.max(14*24,Math.ceil((max-origin+4*DAY)/HOUR));
  return {origin,hours};
 }
+function descendants(id){const ids=new Set([id]);let again=true;while(again){again=false;for(const t of active().tasks)if(t.parent&&ids.has(t.parent)&&!ids.has(t.id)){ids.add(t.id);again=true}}return [...ids].map(k=>byId(active(),k)).filter(Boolean)}
+function taskSpan(t){const members=active().tasks.some(c=>c.parent===t.id)?descendants(t.id):[t];return {start:Math.min(...members.map(v=>ms(v.start))),end:Math.max(...members.map(v=>ms(v.end)))}}
+function toggleTaskCompletion(id){
+ const task=byId(active(),id);if(!task)return;
+ if(task.status!=="completed"){
+  commit(s=>{const next=clone(s);const t=byId(next,id);const before=Object.fromEntries(next.tasks.map(v=>[v.id,{start:v.start,end:v.end}]));const done=completion(next,id);byId(done,id).priorSchedule=before;return done});return
+ }
+ const pop=$("#popover");pop.innerHTML='<h3>Reopen task?</h3><p class="muted">Would you like to restore the schedule from before this task was completed, including its dependent tasks?</p><div class="actions"><button data-mode="cancel">Cancel</button><button data-mode="keep">Keep current dates</button><button data-mode="restore" class="primary">Restore schedule</button></div>';
+ menuAt(pop,innerWidth/2,innerHeight/3);
+ pop.querySelector('[data-mode="cancel"]').onclick=hideMenu;
+ const reopen=restore=>{hideMenu();commit(s=>{const n=clone(s),t=byId(n,id),snap=t.priorSchedule;t.status="todo";t.completedAt=null;if(restore&&snap){for(const q of n.tasks){if(snap[q.id]){q.start=snap[q.id].start;q.end=snap[q.id].end}}}delete t.priorSchedule;record(n,"Reopened "+t.name+(restore?" and restored schedule":""));return n})};
+ pop.querySelector('[data-mode="keep"]').onclick=()=>reopen(false);
+ pop.querySelector('[data-mode="restore"]').onclick=()=>reopen(true);
+}
+function outlineRename(id,label){
+ const t=byId(active(),id),input=document.createElement("input");input.className="outline-edit";input.value=t.name;label.replaceWith(input);input.focus();input.select();let done=false;
+ const saveName=()=>{if(done)return;done=true;let name=input.value.trim();if(name&&name!==t.name)commit(s=>setFields(s,id,{name}));else renderView()};
+ input.onkeydown=e=>{
+ if(e.key==="Escape"){done=true;renderView();return}
+ if(e.key==="Enter"){e.preventDefault();const name=input.value.trim();if(name&&name!==t.name){commit(s=>setFields(s,id,{name}))}else renderView();commit(s=>{const next=addTask(s,"New task",t.parent,ms(t.end));const fresh=next.tasks.at(-1);const peers=next.tasks.filter(q=>q.parent===t.parent).sort((a,b)=>a.order-b.order);fresh.order=t.order+0.01;return next});return}
+ if(e.key==="Tab"){e.preventDefault();done=true;commit(s=>{const next=clone(s),cur=byId(next,id),siblings=next.tasks.filter(q=>q.parent===cur.parent&&q.id!==id).sort((a,b)=>a.order-b.order);if(e.shiftKey){cur.parent=cur.parent?byId(next,cur.parent)?.parent||null:null}else{const previous=siblings.filter(q=>q.order<cur.order).at(-1);if(previous)cur.parent=previous.id}record(next,"Changed task indentation");return next})}
+ };
+ input.onblur=saveName;
+}
 function renderTimeline(){
  const root=$("#view"),s=active(),rows=filteredRows(),{origin,hours}=timeBounds(s),scale=ZOOMS[zoom].px,trackWidth=Math.min(90000,Math.max(1250,hours*scale));
  const fullWidth=310+trackWidth,totalH=rows.length*54,critical=new Set(showCritical?criticalPath(s).ids:[]);
@@ -84,25 +108,25 @@ function renderTimeline(){
  for(const [i,{task:t,depth}] of rows.entries()){
   const row=document.createElement("div");row.className="time-row";row.dataset.id=t.id;row.style.width=fullWidth+"px";row.style.height="54px";
   const hasChildren=s.tasks.some(c=>c.parent===t.id);
-  row.innerHTML='<div class="task-name" style="padding-left:'+(8+depth*17)+'px"><button class="task-toggle" aria-label="'+(collapsed.has(t.id)?"Expand":"Collapse")+'" '+(hasChildren?"":"disabled")+">"+(hasChildren?(collapsed.has(t.id)?"▸":"▾"):"·")+'</button><input class="task-checkbox" type="checkbox" aria-label="Complete '+esc(t.name)+'" '+(t.status==="completed"?"checked":"")+'><button class="task-text '+(t.status==="completed"?"done":"")+'" title="Edit task">'+esc(t.name)+'</button><span class="task-mini">'+(t.mission&&t.mission!=="none"?"✳":"")+'</span><span class="task-grip" draggable="true" title="Drag to reorder or nest task" aria-label="Drag task">⠿</span></div><div class="time-track" style="width:'+trackWidth+'px;--stripe:'+(24*scale)+'px"></div>';
+  row.innerHTML='<div class="task-name" style="padding-left:'+(8+depth*17)+'px"><span class="task-grip" draggable="true" title="Drag to reorder or nest task" aria-label="Drag task">⠿</span><button class="task-toggle" aria-label="'+(collapsed.has(t.id)?"Expand":"Collapse")+'" '+(hasChildren?"":"disabled")+">"+(hasChildren?(collapsed.has(t.id)?"▸":"▾"):"·")+'</button><input class="task-checkbox" type="checkbox" aria-label="Complete '+esc(t.name)+'" '+(t.status==="completed"?"checked":"")+'><button class="task-text '+(t.status==="completed"?"done":"")+'" title="Edit task">'+esc(t.name)+'</button><span class="task-mini">'+(t.mission&&t.mission!=="none"?"✳":"")+'</span></div><div class="time-track" style="width:'+trackWidth+'px;--stripe:'+(24*scale)+'px"></div>';
   layer.append(row);
   row.querySelector(".task-toggle").onclick=()=>{collapsed.has(t.id)?collapsed.delete(t.id):collapsed.add(t.id);renderView()};
-  row.querySelector(".task-checkbox").onchange=()=>commit(a=>completion(a,t.id));
-  row.querySelector(".task-text").onclick=()=>openDetail(t.id);
+  row.querySelector(".task-checkbox").onchange=()=>toggleTaskCompletion(t.id);
+  row.querySelector(".task-text").onclick=e=>outlineRename(t.id,e.currentTarget);
   installReorder(row,t);
-  const track=row.querySelector(".time-track");const left=x(t.start),w=Math.max(0,x(t.end)-left),milestone=duration(t)===0;
+  const track=row.querySelector(".time-track");const envelope=taskSpan(t),isSummary=hasChildren,displayStart=isSummary?envelope.start:ms(t.start),displayEnd=isSummary?envelope.end:ms(t.end);const left=x(displayStart),w=Math.max(0,x(displayEnd)-left),milestone=displayStart===displayEnd;
   if(showEvents)for(const ev of s.events){const b=document.createElement("div");b.className="event-band";b.style.left=x(ev.at)+"px";b.style.width=Math.max(4,ev.duration/60*scale)+"px";b.title=ev.name+" · "+dateText(ev.at);track.append(b)}
   if(showBaseline){const bl=s.baseline?.[t.id];if(bl){const b=document.createElement("div");b.className="baseline-bar";b.style.left=x(bl.start)+"px";b.style.width=Math.max(3,x(bl.end)-x(bl.start))+"px";track.append(b)}}
   if(Number.isFinite(left)&&left>=-20&&left<trackWidth+40){
-   const bar=document.createElement("div");bar.className="bar "+(milestone?"milestone ":"")+(critical.has(t.id)?"critical ":"")+(t.status==="completed"?"completed ":"")+(t.status==="waiting"||t.status==="blocked"?"blocked":"");
+   const bar=document.createElement("div");bar.className="bar "+(isSummary?"summary ":"")+(milestone?"milestone ":"")+(critical.has(t.id)?"critical ":"")+(t.status==="completed"?"completed ":"")+(t.status==="waiting"||t.status==="blocked"?"blocked":"");
    bar.style.left=left+"px";if(!milestone)bar.style.width=Math.max(3,w)+"px";
    bar.tabIndex=0;bar.setAttribute("role","button");bar.setAttribute("aria-label",esc(t.name)+" "+dateText(t.start)+" to "+dateText(t.end));
-   bar.title=t.name+" · "+dateText(t.start)+" → "+dateText(t.end);
+   bar.title=t.name+" · "+dateText(displayStart)+" → "+dateText(displayEnd)+(isSummary?" · subtask schedule summary":"");
    if(t.progress>0&&t.status!=="completed"&&!milestone){bar.innerHTML='<div class="bar-progress" style="width:'+t.progress+'%"></div>'}
    if(!milestone){const a=document.createElement("span"),b=document.createElement("span");a.className="handle start";a.dataset.handle="start";b.className="handle finish";b.dataset.handle="finish";bar.append(a,b)}
    const c=document.createElement("span");c.className="handle link-handle";c.dataset.handle="link";c.title="Drag to another task to create a dependency";bar.append(c);
    c.addEventListener("pointerdown",e=>beginLinkDrag(e,t,row,origin,scale));
-   bar.addEventListener("pointerdown",e=>beginBarDrag(e,t,bar,track,origin,scale));
+   bar.addEventListener("pointerdown",e=>{if(isSummary){e.preventDefault();openDetail(t.id);return}beginBarDrag(e,t,bar,track,origin,scale)});
    bar.addEventListener("keydown",e=>{if(e.key==="Enter")openDetail(t.id)});
    track.append(bar);
   }
@@ -210,7 +234,7 @@ function openDetail(id){
  const localTime=x=>{const d=new Date(x),n=new Date(d.getTime()-d.getTimezoneOffset()*60000);return n.toISOString().slice(0,16)};
  const asUTC=x=>new Date(x).toISOString();
  $("#taskStart").value=localTime(t.start);$("#taskEnd").value=localTime(t.end);$("#taskConstraint").value=t.constraint?localTime(t.constraint):"";
- $("#completeDetail").onclick=()=>{commit(a=>completion(a,id));openDetail(id)};
+ $("#completeDetail").onclick=()=>{toggleTaskCompletion(id)};
  $("#deleteTask").onclick=()=>showConfirm("Delete this test task?",t.name+" and its dependencies will be removed from the demo.",()=>{commit(a=>{const next=clone(a);next.tasks=next.tasks.filter(x=>x.id!==id);next.dependencies=next.dependencies.filter(x=>x.from!==id&&x.to!==id);next.tasks.filter(x=>x.parent===id).forEach(x=>x.parent=t.parent);record(next,"Deleted · "+t.name);return next});closeDetail()});
  $("#addChild").onclick=()=>{const name=prompt("Subtask name");if(name?.trim())commit(a=>addTask(a,name.trim(),id))};
  $("#saveDetail").onclick=()=>{
@@ -243,7 +267,7 @@ function askDemo(q){
 }
 function renderOutline(){
  const s=active(),rows=filteredRows();$("#view").innerHTML='<div class="panel-view"><div class="muted">Outline and Timeline share the same demo task records. Drag a task by its grip in the Timeline to nest/reorder.</div><div id="outlineList"></div></div>';
- const root=$("#outlineList");for(const {task:t,depth}of rows){const r=document.createElement("div");r.className="table-row";r.style.paddingLeft=(15+depth*22)+"px";r.innerHTML='<span><input type="checkbox" '+(t.status==="completed"?"checked":"")+' aria-label="Complete '+esc(t.name)+'"> <b>'+esc(t.name)+'</b> <small>'+dateText(t.start)+' → '+dateText(t.end)+'</small></span><button>Details</button>';r.querySelector("input").onchange=()=>commit(a=>completion(a,t.id));r.querySelector("button").onclick=()=>openDetail(t.id);root.append(r)}}
+ const root=$("#outlineList");for(const {task:t,depth}of rows){const r=document.createElement("div");r.className="table-row";r.style.paddingLeft=(15+depth*22)+"px";r.innerHTML='<span><input type="checkbox" '+(t.status==="completed"?"checked":"")+' aria-label="Complete '+esc(t.name)+'"> <b>'+esc(t.name)+'</b> <small>'+dateText(t.start)+' → '+dateText(t.end)+'</small></span><button>Details</button>';r.querySelector("input").onchange=()=>toggleTaskCompletion(t.id);r.querySelector("button").onclick=()=>openDetail(t.id);root.append(r)}}
 function renderNetwork(){
  const s=active(),order=topo(s),cp=new Set(criticalPath(s).ids),layers=new Map();
  for(const id of order){const parents=s.dependencies.filter(d=>d.to===id);layers.set(id,Math.max(0,...parents.map(d=>(layers.get(d.from)||0)+1)))}
