@@ -1,4 +1,5 @@
 import {createClient} from "npm:@supabase/supabase-js@2.57.0";
+import {prepareVideoNetwork} from "./video_network.ts";
 const P="elaborate-haven-511518-a5",Z="europe-west1-b",SA="sandy-computer@"+P+".iam.gserviceaccount.com",VM_SA="sandy-vm-runtime@"+P+".iam.gserviceaccount.com";
 const AUD="//iam.googleapis.com/projects/1030223524306/locations/global/workloadIdentityPools/sandy-supabase/providers/sandy-supabase-auth";
 const MACHINE="sandy-gcp-machine@sandy-ai.internal";
@@ -14,7 +15,7 @@ Deno.serve(async(req)=>{
  if(!ok)return reply({error:"unauthorized"},403);
  let input:any;try{input=await req.json()}catch{return reply({error:"bad_json"},400)}
  const action=String(input.action??"status");
- if(!["status","video_status","create_video","verify_video","create_linux","linux_status","vm_metadata_status","stage_bootstrap","cloud_run_status","video_network_preflight","cloud_run_permissions","mcp_build_preflight","mcp_build_permissions","mcp_build_bootstrap","mcp_container_build","mcp_build_status","mcp_cloud_run_deploy","mcp_endpoint_probe","mcp_public_ingress","mcp_release_temp_iam","mcp_registry_writer_grant","mcp_builder_project_grant","iam_project_policy_read","iam_deployment_grant","runtime_service_account_prepare","runtime_service_account_create","video_install_preflight","video_execution_preflight","video_ssh_preflight","video_ssh_iam_grant","video_enable_osconfig","video_osconfig_permissions","video_vm_osconfig_prepare","video_osconfig_agent_status","video_osconfig_policy_preflight","video_osconfig_access","vm_service_status","vm_bootstrap_probe","enable_guest_reporting","reboot_bootstrap","bootstrap_serial_status"].includes(action))return reply({error:"action_not_allowed",windows_requires_paid_billing:true},403);
+ if(!["video_network_prepare","status","video_status","create_video","verify_video","create_linux","linux_status","vm_metadata_status","stage_bootstrap","cloud_run_status","video_network_preflight","cloud_run_permissions","mcp_build_preflight","mcp_build_permissions","mcp_build_bootstrap","mcp_container_build","mcp_build_status","mcp_cloud_run_deploy","mcp_endpoint_probe","mcp_public_ingress","mcp_release_temp_iam","mcp_registry_writer_grant","mcp_builder_project_grant","iam_project_policy_read","iam_deployment_grant","runtime_service_account_prepare","runtime_service_account_create","video_install_preflight","video_execution_preflight","video_ssh_preflight","video_ssh_iam_grant","video_enable_osconfig","video_osconfig_permissions","video_vm_osconfig_prepare","video_osconfig_agent_status","video_osconfig_policy_preflight","video_osconfig_access","vm_service_status","vm_bootstrap_probe","enable_guest_reporting","reboot_bootstrap","bootstrap_serial_status"].includes(action))return reply({error:"action_not_allowed",windows_requires_paid_billing:true},403);
  try{
   const users=await db.auth.admin.listUsers({page:1,perPage:1000});
   if(users.error)throw Error("machine_lookup_failed");
@@ -33,6 +34,7 @@ Deno.serve(async(req)=>{
   const impersonate=await fetch("https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/"+SA+":generateAccessToken",{method:"POST",headers:{"authorization":"Bearer "+st.access_token,"content-type":"application/json"},body:JSON.stringify({scope:["https://www.googleapis.com/auth/cloud-platform"],lifetime:"1800s"}),signal:AbortSignal.timeout(22000)});
   const i=await impersonate.json();if(!impersonate.ok||!i.accessToken)throw Error("impersonation_"+impersonate.status+":"+String(i.error?.message??"").slice(0,160));
   const auth={"authorization":"Bearer "+i.accessToken,"content-type":"application/json"};
+  if(action==="video_network_prepare")return await prepareVideoNetwork({db,token:i.accessToken,fetch},input);
   if(action==="video_ssh_preflight"||action==="video_ssh_iam_grant"){
     const vmUrl="https://compute.googleapis.com/compute/v1/projects/"+P+"/zones/"+Z+"/instances/sandy-video";
     const vmResp=await fetch(vmUrl,{headers:auth,signal:AbortSignal.timeout(16000)});
