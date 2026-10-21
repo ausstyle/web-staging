@@ -12,7 +12,8 @@ established. Eight registry evidence rows were updated while verification fields
 were preserved. Conversation extraction was subsequently committed as
 `65f331b`, migration `10000` applied, and the fallbacks deployed as v2 version 16
 and backup version 6 with exact source readbacks. The active-v4 follow-on below
-is a separate source candidate.
+was committed as `d020ab1` and deployed as ACTIVE v4 version 14. The runtime
+record extraction described at the end is a separate source candidate.
 
 The archived v2 source was observed at version 13 with SHA-256
 `d4354d6202851117b36b5e507bfecf52b0497524fb260f29c72f124d36986b78`.
@@ -109,7 +110,33 @@ passed eight actual PostgreSQL checks in a full rollback, with no broker/model
 requests. The source guards verify 24 unchanged archived sections and three
 exact dependencies across the three runtimes.
 
-Other internal workers, runtime task/context/history branches, connection
+The next extraction adds nine separately exported internal record contracts:
+task listing/client actions, unified history, connection listing, client image
+cost-approval records, and four narrow task/file/memory lookups. All three
+runtimes share the five common action branches; v4 also uses the four narrow
+lookups. These use the existing central audit executor and actual trusted runtime
+customer-task principal. A nullable-customer conversation capability cannot
+authorize them. The public agent API still enumerates exactly eight operations
+and rejects actual customer sessions/JSON attempting an internal route. Additive
+migration `10020` keeps all nine API/UI/AI/verified flags false; it passed 16
+actual PostgreSQL metadata checks in a full rollback, without a real customer or
+provider execution.
+
+Canonical record results retain the runtime task ID in the outer receipt and a
+created client/approval child ID in `result`, while legacy callers receive their
+original raw output shape. Stable write claims return the same saved child ID;
+an interrupted committed write becomes unknown and is not repeated. Image
+approval creates a client cost-approval record and never generates an image.
+Task listing preserves tenant filters, exact counts and delegation/participant
+context; history/memory retain their original bounded content. A failed image
+duplicate lookup now fails closed instead of risking a duplicate approval task.
+The composed suite passes 64 tests, including full three-runtime tool loops,
+actual customer/API refusal, tenant isolation, child-ID replay and lost-write
+reconciliation. Source guards verify 21 unchanged archived sections and the
+three exact version/Gmail dependencies; extracted action block hashes are kept
+separately.
+
+Other internal workers, operational inspection/context snapshots, connection
 preflight and existing UI endpoints remain distinct migration work. Source
-extraction does not establish universal production routing or verified
-customer/provider operations.
+extraction does not establish universal production routing or verified customer
+or provider operations.

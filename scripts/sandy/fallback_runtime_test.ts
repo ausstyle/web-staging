@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { setRuntimeDatabase } from "./testing/fallback_client.ts";
-import { authenticateRuntime, bindRuntimeConversationTask, isAgentPrincipal, type RuntimeConversationTask } from "../../supabase/functions/_shared/sandy-agent-operations/identity.ts";
+import { authenticateRuntime, authenticatePortalUser, bindRuntimeTask, bindRuntimeConversationTask, isAgentPrincipal, type RuntimeConversationTask } from "../../supabase/functions/_shared/sandy-agent-operations/identity.ts";
 import { bindV2RuntimeConversation, bindV1BackupRuntimeConversation, executeRuntimeConversation, type RuntimeConversation } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation.ts";
-import { executeAgentOperation } from "../../supabase/functions/_shared/sandy-agent-operations/service.ts";
+import { executeAgentOperation, executeRuntimeOperation } from "../../supabase/functions/_shared/sandy-agent-operations/service.ts";
+import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
+import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts";
+import { createAgentOperationHandler } from "../../supabase/functions/sandy-agent-operation-api/index.ts";
 
 // Run with the test-only import map in testing/fallback_import_map.json. The
 // actual candidate handlers, identity capabilities, Gmail code, contracts and
@@ -26,6 +29,7 @@ class Database {
   bindForeignTask = false;
   failConversationAudit = false;
   failConversationCompletion = false;
+  loseTaskWriteResponse = false;
   rpcValues: Record<string, any> = {};
   rpcCalls: { name: string; args: Obj }[] = [];
   queries: { table: string; filters: [string, unknown][] }[] = [];
@@ -45,7 +49,8 @@ class Database {
   };
   from(table: string) {
     const filters: ((row: Obj) => boolean)[] = [], recorded: [string, unknown][] = [];
-    let mode = "read", value: Obj, maximum = Infinity, head = false;
+    let mode = "read", value: Obj, maximum = Infinity, head = false, columns: string[] | null = null;
+    const project = (row: Obj | null) => row && columns ? Object.fromEntries(columns.filter(key => key in row).map(key => [key, row[key]])) : row;
     const run = (single: boolean) => {
       this.queries.push({ table, filters: structuredClone(recorded) });
       const rows = this.tables[table] ??= [];
@@ -58,15 +63,16 @@ class Database {
         if (table === "sandy_connected_gmail_outbox") row.status ??= "awaiting_confirmation";
         if (table === "sandy_agent_tasks" && this.bindForeignTask) row.customer_id = FOREIGN;
         rows.push(row);
-        return { data: single ? structuredClone(row) : [structuredClone(row)], error: null };
+        if (table === "sandy_tasks" && this.loseTaskWriteResponse) return { data: null, error: { code: "fixture_committed_write_response_lost" } };
+        return { data: single ? structuredClone(project(row)) : [structuredClone(project(row))], error: null };
       }
       const selected = rows.filter(row => filters.every(f => f(row))).slice(0, maximum);
       if (table === "sandy_runtime_conversation_audit" && mode === "update" && this.failConversationCompletion) return { data: null, error: { code: "fixture_completion_unavailable" } };
       if (mode === "update") for (const row of selected) Object.assign(row, structuredClone(value));
-      return { data: head ? null : single ? structuredClone(selected[0] ?? null) : structuredClone(selected), error: null, count: selected.length };
+      return { data: head ? null : single ? structuredClone(project(selected[0] ?? null)) : structuredClone(selected.map(project)), error: null, count: selected.length };
     };
     const query: any = {
-      select: (_columns: string, options?: Obj) => { head = !!options?.head; return query; },
+      select: (selected: string, options?: Obj) => { columns = selected === "*" ? null : selected.split(",").map(value => value.trim()); head = !!options?.head; return query; },
       eq: (key: string, expected: unknown) => { recorded.push([key, expected]); filters.push(row => row[key] === expected); return query; },
       is: (key: string, expected: unknown) => { recorded.push([key, expected]); filters.push(row => (row[key] ?? null) === expected); return query; },
       in: (key: string, allowed: unknown[]) => { filters.push(row => allowed.includes(row[key])); return query; },
@@ -408,4 +414,121 @@ Deno.test("known incomplete/failed envelopes preserve actual provider status and
     assert.equal(db.tables.sandy_runtime_conversation_audit[0].state, "succeeded");
     assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)).status, 409); assert.equal(calls, 1);
   }
+});
+
+const RECORD_TASK = "70000000-0000-4000-8000-000000000001";
+const MISSION = "71000000-0000-4000-8000-000000000001";
+async function recordPrincipal(db: Database) {
+  db.tables.sandy_agent_tasks.push({ id: RECORD_TASK, customer_id: CUSTOMER, channel: "web", request_id: "runtime-records-request", user_request: "Perform the bounded customer record lookup", status: "running" });
+  const proof = await authenticateRuntime(new Request("https://internal.invalid", { headers: { authorization: "Bearer fixture-worker" } }), db, "fixture-worker");
+  assert.ok(proof);
+  const principal = await bindRuntimeTask(proof, db, { taskId: RECORD_TASK, customerId: CUSTOMER, channel: "web", requestId: "runtime-records-request" });
+  assert.ok(principal); return principal;
+}
+const recordServices = (db: Database) => ({ db, base: fixtures.SUPABASE_URL, openaiKey: "", composioKey: "", integrationToken: "", fetch: (() => { throw Error("record operation must never call a provider"); }) as typeof fetch });
+function mission(db: Database) {
+  db.tables.sandy_tasks = [{ id: MISSION, customer_id: CUSTOMER, title: "Actual owned mission", status: "in_progress", archived_at: null, metadata: { sandy_mission: true } }];
+}
+Deno.test("nine runtime record contracts remain separately exported and closed to actual customer sessions and JSON/API selection", async () => {
+  assert.equal(Object.keys(agentOperationContracts).length, 8); assert.equal(Object.keys(internalRuntimeRecordContracts).length, 9);
+  assert.ok(Object.values(internalRuntimeRecordContracts).every(item => item.internal_only && item.sensitive && !item.api_exposed && !item.ui_exposed && !item.ai_exposed));
+  const db = new Database(), userId = "72000000-0000-4000-8000-000000000001";
+  db.tables.sandy_memory_portal_accounts = [{ auth_user_id: userId, customer_id: CUSTOMER, revoked_at: null }];
+  db.tables.email_customer_addresses = [{ customer_id: CUSTOMER, is_primary: true, normalized_email: "fixture@example.invalid" }];
+  const auth = { auth: { getUser: async () => ({ data: { user: { id: userId, email: "fixture@example.invalid", email_confirmed_at: "2026-10-20T00:00:00Z" } }, error: null }) } };
+  const request = new Request("https://internal.invalid/api", { method: "POST", headers: { authorization: "Bearer fixture-real-user", "content-type": "application/json" }, body: JSON.stringify({ operation: "agent.runtime.tasks.list", arguments: {} }) });
+  const user = await authenticatePortalUser(request, db, auth, "fixture-service"); assert.ok(user);
+  assert.equal((await executeAgentOperation(user, "agent.runtime.tasks.list", {}, recordServices(db))).status, 403);
+  const handler = createAgentOperationHandler({ ...recordServices(db), auth, serviceCredential: "fixture-service" });
+  assert.equal((await handler(request)).status, 400);
+  assert.equal(audits(db).length, 0);
+});
+Deno.test("shared runtime task listing preserves exact owned totals, delegation names and real in-progress status", async () => {
+  const db = new Database(), principal = await recordPrincipal(db);
+  db.tables.sandy_tasks = [
+    { id: MISSION, customer_id: CUSTOMER, title: "Todo task", status: "todo", archived_at: null },
+    { id: DRAFT, customer_id: CUSTOMER, title: "Doing task", status: "in_progress", archived_at: null },
+    { id: COMPANY, customer_id: CUSTOMER, title: "Waiting task", status: "waiting", archived_at: null },
+    { id: "73000000-0000-4000-8000-000000000001", customer_id: CUSTOMER, title: "Completed task", status: "completed", archived_at: null },
+    { id: "73000000-0000-4000-8000-000000000002", customer_id: CUSTOMER, title: "Archived task", status: "todo", archived_at: "2026-10-20" },
+    { id: "73000000-0000-4000-8000-000000000003", customer_id: FOREIGN, title: "Foreign task", status: "todo", archived_at: null },
+  ];
+  db.tables.sandy_task_delegations = [{ task_id: MISSION, assignee_customer_id: FOREIGN, status: "accepted", scope: "fixture delegation" }];
+  db.tables.email_customers = [{ id: FOREIGN, display_name: "Delegated person" }];
+  const result = await executeAgentOperation(principal, "agent.runtime.tasks.list", {}, recordServices(db));
+  assert.equal(result.status, 200); assert.equal(result.body.task_id, RECORD_TASK);
+  assert.equal(result.legacy.outstanding_count, 3); assert.equal(result.legacy.in_progress_count, 1); assert.equal(result.legacy.todo_is_in_progress, false);
+  assert.deepEqual(result.legacy.status_breakdown, { todo: 1, in_progress: 1, waiting: 1 });
+  assert.equal(result.legacy.tasks[0].delegations[0].assignee, "Delegated person");
+  assert.equal(result.legacy.tasks.some((task: Obj) => task.title === "Foreign task"), false);
+});
+Deno.test("client-action and image-approval writes preserve mission ownership, immutable child IDs and same-key/deduplicated replay", async () => {
+  const db = new Database(), principal = await recordPrincipal(db); mission(db);
+  db.tables.sandy_ai_integrations.push({ integration_key: "openai_image", deployment_status: "staged_not_generated" });
+  const deps = recordServices(db), args = { mission_id: MISSION, title: "Provide the document", details: "Upload the actual source document" };
+  const first = await executeRuntimeOperation(principal, "agent.runtime.tasks.request_client_action", args, deps, "client-action-step");
+  assert.equal(first.ok, true); assert.notEqual(first.task_id, RECORD_TASK);
+  const repeat = await executeRuntimeOperation(principal, "agent.runtime.tasks.request_client_action", args, deps, "client-action-step");
+  assert.equal(repeat.task_id, first.task_id);
+  const duplicate = await executeRuntimeOperation(principal, "agent.runtime.tasks.request_client_action", args, deps, "separate-client-action-step");
+  assert.equal(duplicate.task_id, first.task_id); assert.equal(duplicate.already_exists, true);
+  const approval = await executeRuntimeOperation(principal, "agent.runtime.images.request_approval", { mission_id: MISSION, prompt: "A proposed image requiring client cost approval" }, deps, "image-approval-step");
+  assert.equal(approval.ok, true); assert.equal(approval.approval_pending, true);
+  const saved = db.tables.sandy_tasks.find(row => row.id === approval.task_id);
+  assert.equal(saved?.metadata.cost_approval_required, true); assert.equal(saved?.metadata.assigned_to, "client");
+  assert.equal(db.tables.sandy_tasks.length, 3);
+  const foreign = await executeRuntimeOperation(principal, "agent.runtime.tasks.request_client_action", { ...args, mission_id: FOREIGN }, deps, "foreign-mission-step");
+  assert.equal(foreign.error, "mission_unavailable"); assert.equal(db.tables.sandy_tasks.length, 3);
+});
+Deno.test("lost committed record write is unknown and the same audited step never repeats the write", async () => {
+  const db = new Database(), principal = await recordPrincipal(db); mission(db); db.loseTaskWriteResponse = true;
+  const args = { mission_id: MISSION, title: "Provide the document", details: "Actual client action" }, deps = recordServices(db);
+  const first = await executeRuntimeOperation(principal, "agent.runtime.tasks.request_client_action", args, deps, "lost-child-result");
+  assert.equal(first.state, "unknown"); assert.equal(db.tables.sandy_tasks.length, 2);
+  assert.equal(audits(db)[0].state, "unknown");
+  db.loseTaskWriteResponse = false;
+  const repeat = await executeRuntimeOperation(principal, "agent.runtime.tasks.request_client_action", args, deps, "lost-child-result");
+  assert.equal(repeat.error, "agent_operation_outcome_requires_reconciliation"); assert.equal(db.tables.sandy_tasks.length, 2);
+});
+Deno.test("history, connection and narrow record reads preserve customer scope and original bounded content", async () => {
+  const db = new Database(), principal = await recordPrincipal(db), deps = recordServices(db);
+  db.rpcValues.sandy_search_unified_history = [{ source: "fixture-owned-source", content: "x".repeat(2000) }];
+  const history = await executeRuntimeOperation(principal, "agent.runtime.history.search", { query: "Earlier facts" }, deps, "history");
+  assert.equal(history.matches[0].content.length, 1500); assert.deepEqual(db.rpcCalls.at(-1)?.args, { p_customer_id: CUSTOMER, p_query: "Earlier facts", p_limit: 8 });
+  const connections = await executeRuntimeOperation(principal, "agent.runtime.connections.list", {}, deps, "connections");
+  assert.deepEqual(connections.services.map((item: Obj) => item.account_id), ["ca_owned", "ca_company"]);
+  db.tables.sandy_universal_files = [
+    { id: DRAFT, owner_customer_id: CUSTOMER, display_name: "Owned file", library_state: "ready" },
+    { id: MISSION, owner_customer_id: CUSTOMER, display_name: "Owned deleted file", library_state: "deleted" },
+    { id: FOREIGN, owner_customer_id: FOREIGN, display_name: "Foreign file", library_state: "ready" },
+  ];
+  const files = await executeRuntimeOperation(principal, "agent.runtime.context.files.find", { query: "file" }, deps, "files");
+  assert.deepEqual(files.records.map((item: Obj) => item.display_name), ["Owned file"]);
+  db.tables.sandy_memory_archive = [
+    { id: DRAFT, owner_customer_id: CUSTOMER, state: "active", channel: "web", content: "needle " + "x".repeat(1500) },
+    { id: FOREIGN, owner_customer_id: FOREIGN, state: "active", channel: "web", content: "needle foreign" },
+  ];
+  const memory = await executeRuntimeOperation(principal, "agent.runtime.context.memory.search", { query: "needle" }, deps, "memory");
+  assert.equal(memory.records.length, 1); assert.equal(memory.records[0].content.length, 900);
+  assert.ok(audits(db).every(row => row.customer_id === CUSTOMER && row.task_id === RECORD_TASK && row.state === "succeeded"));
+});
+
+for (const slug of slugs) Deno.test(`${slug}: common record tool loop calls central audited contracts without changing the outer runtime result`, async () => {
+  const db = new Database(), requests: Recorded[] = []; mission(db);
+  db.rpcValues.sandy_search_unified_history = [{ channel: "web", content: "Owned history fixture" }];
+  db.tables.sandy_ai_integrations.push({ integration_key: "openai_image", deployment_status: "staged" });
+  const app = await runtime(slug, db, requests, { tools: [
+    { name: "request_client_action", args: { mission_id: MISSION, title: "Provide the source", details: "Actual client action" } },
+    { name: "list_tasks" }, { name: "search_history", args: { query: "Owned facts" } }, { name: "list_connected_services" },
+    { name: "request_image_approval", args: { mission_id: MISSION, prompt: "An image proposed for client approval" } },
+  ] });
+  try {
+    const result = await app.invoke("Help with the project plan");
+    assert.equal(result.status, 200); assert.equal(requests.length, 2);
+    const returned = requests[1].body.input.map((item: Obj) => JSON.parse(item.output));
+    assert.equal(returned[0].ok, true); assert.notEqual(returned[0].task_id, result.body.task_id);
+    assert.equal(returned[1].outstanding_count, 2); assert.equal(returned[2].matches[0].content, "Owned history fixture");
+    assert.equal(returned[3].services.length, 2); assert.equal(returned[4].approval_pending, true);
+    assert.equal(audits(db).length, 5); assert.ok(audits(db).every(row => row.state === "succeeded" && row.task_id === result.body.task_id));
+  } finally { app.close(); }
 });

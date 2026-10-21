@@ -2,6 +2,8 @@ import { prepareConnectedGmail, confirmConnectedGmail } from "./connected-gmail.
 import { agentOperationContracts, validAgentInput, validAgentOutput } from "./contracts.ts";
 import { AgentDb, AgentPrincipal, isAgentPrincipal } from "./identity.ts";
 import { isBoundLegacyRuntimeProfile, legacyRuntimeResponses, type LegacyRuntimeProfile } from "./runtime_profiles.ts";
+import { internalRuntimeRecordContracts, validRuntimeRecordInput, validRuntimeRecordOutput } from "./runtime_record_contracts.ts";
+import { runtimeRecordOperation } from "./runtime_records.ts";
 
 type Obj = Record<string, any>;
 export type AgentServices = {
@@ -126,6 +128,7 @@ async function recentGmail(ctx: AgentPrincipal, limit: number, deps: AgentServic
 }
 async function rawOperation(ctx: AgentPrincipal, operation: string, args: Obj, deps: AgentServices): Promise<Obj> {
   const { db } = deps;
+  if (internalRuntimeRecordContracts[operation]) return await runtimeRecordOperation(ctx, operation, args, db);
   if (operation === "gmail.drafts.prepare") return await prepareConnectedGmail(db, ctx.customerId, args);
   if (operation === "gmail.drafts.confirm_send") {
     const expected = new RegExp("^confirm send\\s+" + args.draft_id + "\\s*$", "i");
@@ -216,9 +219,13 @@ export async function executeAgentOperation(
   if (!isAgentPrincipal(context)) return refused(403, "agent_principal_required");
   if (deps.legacyRuntimeProfile && !isBoundLegacyRuntimeProfile(deps.legacyRuntimeProfile, context))
     return refused(403, "runtime_transport_profile_denied");
-  const contract = agentOperationContracts[operation];
+  const internal = internalRuntimeRecordContracts[operation];
+  const contract = agentOperationContracts[operation] || internal;
   if (!contract) return refused(404, "agent_operation_not_supported");
-  if (!validAgentInput(operation, args)) return refused(400, "invalid_agent_arguments");
+  if (internal && context.kind !== "trusted_runtime") return refused(403, "trusted_runtime_customer_task_required");
+  const validInput = internal ? validRuntimeRecordInput : validAgentInput;
+  const validOutput = internal ? validRuntimeRecordOutput : validAgentOutput;
+  if (!validInput(operation, args)) return refused(400, "invalid_agent_arguments");
   if (contract.owner_only && context.kind === "auth_user" && !context.controllerOwner)
     return refused(403, "controller_owner_required");
   const requestHash = await digest(stable(args));
@@ -234,8 +241,8 @@ export async function executeAgentOperation(
       .eq("operation", operation).eq("idempotency_key", idempotencyKey).maybeSingle();
     if (previous.error || !previous.data) return refused(503, "agent_idempotency_lookup_failed");
     if (previous.data.request_sha256 !== requestHash) return refused(409, "idempotency_scope_mismatch");
-    if (previous.data.state === "succeeded" && validAgentOutput(operation, previous.data.result))
-      return { status: 200, body: previous.data.result, legacy: previous.data.result };
+    if (previous.data.state === "succeeded" && validOutput(operation, previous.data.result))
+      return { status: 200, body: previous.data.result, legacy: internal ? previous.data.result.result : previous.data.result };
     return refused(409, "agent_operation_outcome_requires_reconciliation", { executed: null, reconciliation_required: true });
   }
   if (claim.error || !claim.data?.id) return refused(503, "agent_audit_unavailable");
@@ -248,9 +255,9 @@ export async function executeAgentOperation(
   }) as typeof fetch };
   try { legacy = await rawOperation(context, operation, args, observed); }
   catch { legacy = failure("agent_operation_interrupted"); }
-  const candidate = { ...legacy, ok: true, contract_version: "1.0.0",
+  const candidate = { ...(internal ? { result: legacy } : legacy), ok: true, contract_version: "1.0.0",
     principal_kind: context.kind, task_id: context.taskId };
-  const success = !legacy.error && validAgentOutput(operation, candidate);
+  const success = !legacy.error && validOutput(operation, candidate);
   const uncertain = !success && ((contract.consumes_model_resources && providerAttempted) ||
     legacy.error === "draft_save_failed" ||
     ["unknown", "sending", "recorded_sent_unverified"].includes(legacy.state));
@@ -280,7 +287,7 @@ export async function executeRuntimeOperation(
 ): Promise<Obj> {
   if (!context || context.kind !== "trusted_runtime") return failure("runtime_customer_binding_required");
   const input = { ...args };
-  if (["gmail.drafts.prepare", "agent.web.research", "agent.documents.search", "agent.execution_plan.draft"].includes(operation))
+  if (["gmail.drafts.prepare", "agent.web.research", "agent.documents.search", "agent.execution_plan.draft"].includes(operation) || internalRuntimeRecordContracts[operation]?.is_mutation)
     input.idempotency_key = "runtime:" + context.taskId + ":" + (await digest(step)).slice(0, 40);
   const outcome = await executeAgentOperation(context, operation, input, deps);
   return outcome.legacy;

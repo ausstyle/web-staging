@@ -6,10 +6,7 @@
   "current_numeric_versions_not_attested_by_this_report": true,
   "universal_production_routing_operational": false,
   "remaining_runtime_branches": [
-    "request_client_action/list_tasks inline tenant DB business rules",
-    "operational state and customer connection snapshot",
-    "search_history tenant RPC",
-    "request_image_approval parent mission and duplicate checks",
+    "operational state and source-qualified customer/channel snapshots",
     "connected-account provider preflight/status reconciliation and auto-improve dispatch"
   ],
   "functions": [
@@ -264,5 +261,14 @@
     "Custom Domain provider entitlement"
   ],
   "implementation_gaps_are_separate_from_external_dependencies": true,
-  "real_provider_or_model_calls": 0
+  "real_provider_or_model_calls": 0,
+  "runtime_follow_on_source_status": {
+    "closed_named_record_contracts": 9,
+    "public_agent_catalogue_unchanged": 8,
+    "real_customer_execution_tested": false,
+    "remaining_inline_runtime_logic": [
+      "operational inspection and its customer/channel/context fact reads",
+      "connected-account provider preflight/status reconciliation and auto-improve dispatch"
+    ]
+  }
 }
