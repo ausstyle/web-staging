@@ -907,7 +907,8 @@ async function moveOutlineTask(dragId,targetId,zone){
  if(index<0)return;
  const reordered=peers.slice();reordered.splice(index,0,drag);
  const originalParent=drag.parent_task_id||null;
- const previous=new Map(state.tasks.map(t=>[t.id,{parent_task_id:t.parent_task_id,position:t.position}]));
+ const previous=state.dragPositionBaseline||new Map(state.tasks.map(t=>[t.id,{parent_task_id:t.parent_task_id,position:t.position}]));
+ state.dragPositionBaseline=null;
  // Update the entire affected sibling set locally before any network request.
  drag.parent_task_id=parentId;
  reordered.forEach((t,i)=>{t.position=(i+1)*1000});
@@ -934,7 +935,7 @@ function enableTaskDrag(row,t){
  handle.addEventListener("dragstart",e=>{
   if(state.sort!=="manual"){
    // Freeze the displayed order as the manual baseline, not the old database order.
-   const previousSort=state.sort;
+   state.dragPositionBaseline=new Map(state.tasks.map(task=>[task.id,{parent_task_id:task.parent_task_id,position:task.position}]));
    const groups=new Map();
    for(const task of state.tasks){
     if(task.shared||task.archived_at)continue;
@@ -947,9 +948,7 @@ function enableTaskDrag(row,t){
     group.forEach((task,i)=>{task.position=(i+1)*1000});
    }
    state.sort="manual";localStorage.setItem("sandy_task_sort","manual");$("taskSort").value="manual";
-   // The drop operation persists the changed task; retain the baseline for unchanged rows.
-   state.dragSortBaseline=previousSort;
-  }
+   }
   draggingTaskId=t.id;e.stopPropagation();e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",t.id);
   row.classList.add("draggingTask");
  });
