@@ -37,6 +37,33 @@ Deno.serve(async(req)=>{
  if(bearer){const {data,error}=await db.auth.getUser(bearer);if(!error&&data.user)userId=data.user.id;}
  if(!userId && action!=="join")return reply(401,{error:"sign_in_required"},origin);
  try{
+ if(["transcript_append","transcript_list","transcript_summary"].includes(action)){
+  const id=String(body.meeting_id||"");
+  if(!/^[a-f0-9-]{36}$/i.test(id))return reply(400,{error:"invalid_meeting"},origin);
+  const found=await db.from("sandy_video_meetings").select("owner_id").eq("id",id).maybeSingle();
+  if(found.error)throw found.error;
+  if(!found.data||found.data.owner_id!==userId)return reply(403,{error:"owner_required"},origin);
+  if(action==="transcript_append"){
+   if(body.consented!==true)return reply(403,{error:"transcription_consent_required"},origin);
+   const content=String(body.text||"").trim();
+   if(!content||content.length>1800)return reply(400,{error:"invalid_transcript_segment"},origin);
+   const insert=await db.from("sandy_video_transcript_segments").insert({meeting_id:id,actor_id:userId,speaker:"Host",content});
+   if(insert.error)throw insert.error;
+   return reply(200,{ok:true},origin);
+  }
+  const records=await db.from("sandy_video_transcript_segments").select("speaker,content,created_at").eq("meeting_id",id).order("created_at",{ascending:true}).limit(500);
+  if(records.error)throw records.error;
+  if(action==="transcript_list")return reply(200,{ok:true,segments:records.data},origin);
+  if(!records.data?.length)return reply(409,{error:"no_consented_transcript"},origin);
+  const modelKey=Deno.env.get("OPENAI_API_KEY");
+  if(!modelKey)return reply(503,{error:"ai_service_not_configured"},origin);
+  const text=records.data.map((x:any)=>x.speaker+": "+x.content).join("\n").slice(0,28000);
+  const ai=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",store:false,max_output_tokens:950,instructions:"Summarize only what is actually supported by this PARTIAL opt-in meeting transcript. Return concise sections: Discussion, Decisions, Action candidates, Open questions. Never invent details. Explicitly state transcript only includes consented host microphone segments.",input:text}),signal:AbortSignal.timeout(30000)});
+  const data=await ai.json().catch(()=>({}));
+  if(!ai.ok)return reply(502,{error:"ai_summary_unavailable"},origin);
+  const summary=(data.output||[]).flatMap((x:any)=>x.content||[]).filter((x:any)=>x.type==="output_text").map((x:any)=>x.text).join("\n").trim();
+  return reply(200,{ok:true,summary,partial:true},origin);
+ }
  if(action==="list"){
   const {data,error}=await db.from("sandy_video_meetings").select("id,title,state,starts_at,created_at").eq("owner_id",userId!).order("created_at",{ascending:false}).limit(50);
   if(error)throw error;
