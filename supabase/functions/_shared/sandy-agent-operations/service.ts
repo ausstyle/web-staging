@@ -4,6 +4,8 @@ import { AgentDb, AgentPrincipal, isAgentPrincipal } from "./identity.ts";
 import { isBoundLegacyRuntimeProfile, legacyRuntimeResponses, type LegacyRuntimeProfile } from "./runtime_profiles.ts";
 import { internalRuntimeRecordContracts, validRuntimeRecordInput, validRuntimeRecordOutput } from "./runtime_record_contracts.ts";
 import { runtimeRecordOperation } from "./runtime_records.ts";
+import { runtimeOperationalContract, validRuntimeOperationalInput, validRuntimeOperationalOutput } from "./runtime_operational_contracts.ts";
+import { runtimeOperationalOperation, type RuntimeOperationalContext } from "./runtime_operational.ts";
 
 type Obj = Record<string, any>;
 export type AgentServices = {
@@ -14,6 +16,7 @@ export type AgentServices = {
   integrationToken: string;
   fetch?: typeof fetch;
   legacyRuntimeProfile?: LegacyRuntimeProfile;
+  runtimeContext?: RuntimeOperationalContext;
 };
 export type AgentOutcome = { status: number; body: Obj; legacy: Obj };
 const object = (x: unknown): x is Obj => x !== null && typeof x === "object" && !Array.isArray(x);
@@ -128,6 +131,7 @@ async function recentGmail(ctx: AgentPrincipal, limit: number, deps: AgentServic
 }
 async function rawOperation(ctx: AgentPrincipal, operation: string, args: Obj, deps: AgentServices): Promise<Obj> {
   const { db } = deps;
+  if (runtimeOperationalContract(operation)) return await runtimeOperationalOperation(ctx, operation, db, deps.runtimeContext);
   if (internalRuntimeRecordContracts[operation]) return await runtimeRecordOperation(ctx, operation, args, db);
   if (operation === "gmail.drafts.prepare") return await prepareConnectedGmail(db, ctx.customerId, args);
   if (operation === "gmail.drafts.confirm_send") {
@@ -219,12 +223,14 @@ export async function executeAgentOperation(
   if (!isAgentPrincipal(context)) return refused(403, "agent_principal_required");
   if (deps.legacyRuntimeProfile && !isBoundLegacyRuntimeProfile(deps.legacyRuntimeProfile, context))
     return refused(403, "runtime_transport_profile_denied");
-  const internal = internalRuntimeRecordContracts[operation];
+  const record = internalRuntimeRecordContracts[operation];
+  const operational = runtimeOperationalContract(operation);
+  const internal = record || operational;
   const contract = agentOperationContracts[operation] || internal;
   if (!contract) return refused(404, "agent_operation_not_supported");
   if (internal && context.kind !== "trusted_runtime") return refused(403, "trusted_runtime_customer_task_required");
-  const validInput = internal ? validRuntimeRecordInput : validAgentInput;
-  const validOutput = internal ? validRuntimeRecordOutput : validAgentOutput;
+  const validInput = record ? validRuntimeRecordInput : operational ? validRuntimeOperationalInput : validAgentInput;
+  const validOutput = record ? validRuntimeRecordOutput : operational ? validRuntimeOperationalOutput : validAgentOutput;
   if (!validInput(operation, args)) return refused(400, "invalid_agent_arguments");
   if (contract.owner_only && context.kind === "auth_user" && !context.controllerOwner)
     return refused(403, "controller_owner_required");

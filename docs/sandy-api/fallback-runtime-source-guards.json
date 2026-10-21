@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "status": "runtime_record_source_candidate_not_deployed",
+  "status": "operational_source_candidate_not_deployed",
   "production_readback_required": true,
   "runtimes": [
     {
       "runtime": "sandy-agent-runtime-v2",
       "baseline_version": 13,
       "baseline_source_sha256": "d4354d6202851117b36b5e507bfecf52b0497524fb260f29c72f124d36986b78",
-      "candidate_source_sha256": "db4c9b0c2f949bad218927003d189c8c0b857107f3eceed82794dbfc4af994a6",
+      "candidate_source_sha256": "242e26d19ad30b5cb86e2535e2783b51ee56efbc4db5f2cf42d68c3fa45876c4",
       "independent_remaining_calls": {
         "openai_responses": 0,
         "composio_execute": 0
@@ -42,7 +42,7 @@
           "end": " const call=",
           "sha256": "79ae545d44c7ac297e615907c578f11770b095546c2e26cf21ae2457da7626f4",
           "bytes": 723,
-          "candidate_end": " let conversation:RuntimeConversation"
+          "candidate_end": " operationServices.runtimeContext="
         },
         {
           "name": "conversation_instructions_request_and_tool_loop",
@@ -50,13 +50,6 @@
           "end": "    if(c.name===\"request_client_action\"",
           "sha256": "e0a72d053622895670914767d02051832fb50b356924fe98b6255f0fe14b6473",
           "bytes": 5446
-        },
-        {
-          "name": "operational_inspection",
-          "start": "    if(c.name===\"inspect_sandy_operational_state\"",
-          "end": "    if(c.name===\"list_connected_services\"",
-          "sha256": "5d98549e2a231b01e70fca87fa222544678de890d3ad25af9282a1c1a4ff0bb1",
-          "bytes": 3594
         },
         {
           "name": "tool_result_and_task_finalization",
@@ -67,13 +60,14 @@
         }
       ],
       "prior_shared_eight_candidate_sha256": "620ae13e91ddf5d8730a2856bea73525020e0269f380551987f8fb59774ae312",
-      "prior_conversation_candidate_sha256": "f82cf263a54c57bf77cb3ed31fa6e2268dcb021e535f8148994d47ba4c374b12"
+      "prior_conversation_candidate_sha256": "f82cf263a54c57bf77cb3ed31fa6e2268dcb021e535f8148994d47ba4c374b12",
+      "prior_record_candidate_sha256": "db4c9b0c2f949bad218927003d189c8c0b857107f3eceed82794dbfc4af994a6"
     },
     {
       "runtime": "sandy-agent-runtime-v1-backup-r50",
       "baseline_version": 3,
       "baseline_source_sha256": "f4bfcd9191660fb4f2784d1e9d30151f204bee5eca096d49d02fa9fe330ab993",
-      "candidate_source_sha256": "5412f6571f92ba981d4cfc37ad45a96005f862bc66b61330e405accb52d90283",
+      "candidate_source_sha256": "61983301c2e76172e8462f9737619ccdfe903005a92997716c34bdda51fb68dd",
       "independent_remaining_calls": {
         "openai_responses": 0,
         "composio_execute": 0
@@ -108,7 +102,7 @@
           "end": " const call=",
           "sha256": "f2cb97cc4f0ee42689a2403e37834b3534950278d77f901f4477c50dbb8a6091",
           "bytes": 690,
-          "candidate_end": " let conversation:RuntimeConversation"
+          "candidate_end": " operationServices.runtimeContext="
         },
         {
           "name": "conversation_instructions_request_and_tool_loop",
@@ -116,13 +110,6 @@
           "end": "    if(c.name===\"request_client_action\"",
           "sha256": "016de25a6c3fdec7aac5d8c2c38b02a2196cafab37b2fee6e1ff26205c0bb1f3",
           "bytes": 4942
-        },
-        {
-          "name": "operational_inspection",
-          "start": "    if(c.name===\"inspect_sandy_operational_state\"",
-          "end": "    if(c.name===\"list_connected_services\"",
-          "sha256": "2855ca93c78dc7518b144e49b6279fed59c99d0b6530e4152bcc7b99220f8e7c",
-          "bytes": 3385
         },
         {
           "name": "tool_result_and_task_finalization",
@@ -133,14 +120,15 @@
         }
       ],
       "prior_shared_eight_candidate_sha256": "40ddf2a83f9d02f46ebbcd3cd28e460646caba535d33977a4e2abcc7e8b5b265",
-      "prior_conversation_candidate_sha256": "1bceeeb50b2b3b33b798f9c9b20f628a9bd4738ae9c86a93b8fde115601ebc25"
+      "prior_conversation_candidate_sha256": "1bceeeb50b2b3b33b798f9c9b20f628a9bd4738ae9c86a93b8fde115601ebc25",
+      "prior_record_candidate_sha256": "5412f6571f92ba981d4cfc37ad45a96005f862bc66b61330e405accb52d90283"
     },
     {
       "runtime": "sandy-agent-runtime-v4",
       "baseline_version": 12,
       "baseline_version_note": "Original expanded-source deployment observation. Secret-only metadata refresh may increment the active numeric version without changing this exact source.",
       "baseline_source_sha256": "3aadfb520f651e9a6807cbb24b5d4409fcfbb25fb69fe5d72036916e44db8679",
-      "candidate_source_sha256": "292f8bb73158f06424d26cc8946fa5e1c749ea6b9fbc6a643c772282fef331ae",
+      "candidate_source_sha256": "1aa64692af52f13987eb54de0d17487ab83796a8cd5447bdee76f9e98d61ee7d",
       "path": "supabase/functions/sandy-agent-runtime-v4/index.ts",
       "independent_remaining_calls": {
         "openai_responses": 0,
@@ -173,7 +161,7 @@
           "name": "clock_fast_path",
           "start": " const clockOnlyRequest=",
           "end": " const call=",
-          "candidate_end": " let conversation:RuntimeConversation",
+          "candidate_end": " operationServices.runtimeContext=",
           "sha256": "79ae545d44c7ac297e615907c578f11770b095546c2e26cf21ae2457da7626f4",
           "bytes": 723
         },
@@ -185,13 +173,6 @@
           "bytes": 6328
         },
         {
-          "name": "operational_inspection",
-          "start": "    if(c.name===\"inspect_sandy_operational_state\"",
-          "end": "    if(c.name===\"list_connected_services\"",
-          "sha256": "5d98549e2a231b01e70fca87fa222544678de890d3ad25af9282a1c1a4ff0bb1",
-          "bytes": 3594
-        },
-        {
           "name": "tool_result_and_task_finalization",
           "start": "    results.push(",
           "end": null,
@@ -199,7 +180,8 @@
           "bytes": 1632
         }
       ],
-      "prior_conversation_candidate_sha256": "c94f4399359f066be620cf796b7c9e248e57a0b20ccff92526059057adbd88b4"
+      "prior_conversation_candidate_sha256": "c94f4399359f066be620cf796b7c9e248e57a0b20ccff92526059057adbd88b4",
+      "prior_record_candidate_sha256": "292f8bb73158f06424d26cc8946fa5e1c749ea6b9fbc6a643c772282fef331ae"
     }
   ],
   "dependencies": [
@@ -302,6 +284,23 @@
           "source_block_sha256": "c4c290d744af1966a07c1683362eeb9a18dcba7b96d476b9896a8aecc93c24d6"
         }
       ]
+    }
+  ],
+  "operational_action_extractions": [
+    {
+      "runtime": "sandy-agent-runtime-v2",
+      "source_block_sha256": "5d98549e2a231b01e70fca87fa222544678de890d3ad25af9282a1c1a4ff0bb1",
+      "candidate_source_sha256": "242e26d19ad30b5cb86e2535e2783b51ee56efbc4db5f2cf42d68c3fa45876c4"
+    },
+    {
+      "runtime": "sandy-agent-runtime-v1-backup-r50",
+      "source_block_sha256": "2855ca93c78dc7518b144e49b6279fed59c99d0b6530e4152bcc7b99220f8e7c",
+      "candidate_source_sha256": "61983301c2e76172e8462f9737619ccdfe903005a92997716c34bdda51fb68dd"
+    },
+    {
+      "runtime": "sandy-agent-runtime-v4",
+      "source_block_sha256": "5d98549e2a231b01e70fca87fa222544678de890d3ad25af9282a1c1a4ff0bb1",
+      "candidate_source_sha256": "1aa64692af52f13987eb54de0d17487ab83796a8cd5447bdee76f9e98d61ee7d"
     }
   ]
 }

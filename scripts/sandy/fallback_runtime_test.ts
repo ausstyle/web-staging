@@ -6,6 +6,8 @@ import { executeAgentOperation, executeRuntimeOperation } from "../../supabase/f
 import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
 import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts";
 import { createAgentOperationHandler } from "../../supabase/functions/sandy-agent-operation-api/index.ts";
+import { bindRuntimeOperationalContext, type RuntimeOperationalFacts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational.ts";
+import { internalRuntimeOperationalContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational_contracts.ts";
 
 // Run with the test-only import map in testing/fallback_import_map.json. The
 // actual candidate handlers, identity capabilities, Gmail code, contracts and
@@ -439,6 +441,7 @@ Deno.test("nine runtime record contracts remain separately exported and closed t
   const request = new Request("https://internal.invalid/api", { method: "POST", headers: { authorization: "Bearer fixture-real-user", "content-type": "application/json" }, body: JSON.stringify({ operation: "agent.runtime.tasks.list", arguments: {} }) });
   const user = await authenticatePortalUser(request, db, auth, "fixture-service"); assert.ok(user);
   assert.equal((await executeAgentOperation(user, "agent.runtime.tasks.list", {}, recordServices(db))).status, 403);
+  assert.equal((await executeAgentOperation(user, "agent.runtime.operational.activity", {}, recordServices(db))).status, 403);
   const handler = createAgentOperationHandler({ ...recordServices(db), auth, serviceCredential: "fixture-service" });
   assert.equal((await handler(request)).status, 400);
   assert.equal(audits(db).length, 0);
@@ -530,5 +533,61 @@ for (const slug of slugs) Deno.test(`${slug}: common record tool loop calls cent
     assert.equal(returned[1].outstanding_count, 2); assert.equal(returned[2].matches[0].content, "Owned history fixture");
     assert.equal(returned[3].services.length, 2); assert.equal(returned[4].approval_pending, true);
     assert.equal(audits(db).length, 5); assert.ok(audits(db).every(row => row.state === "succeeded" && row.task_id === result.body.task_id));
+  } finally { app.close(); }
+});
+
+function operationalFacts(): RuntimeOperationalFacts {
+  return { channel: "web", activityFacts: { status: "verified", scope: "web_only", all_web_messages: 5, current_conversation_messages: null, current_conversation_state: "not_supplied_or_not_authorized" },
+    communicationFacts: { status: "unavailable" }, services: [], connectionError: null, clock: "Tuesday, 20 October 2026 at 10:00 am", timezone: "UTC" };
+}
+Deno.test("operational snapshots bind the exact live principal and cannot be serialized, shared with another task principal or selected by JSON", async () => {
+  const db = new Database(), principal = await recordPrincipal(db), facts = operationalFacts();
+  const cap = bindRuntimeOperationalContext(principal, facts); assert.ok(cap);
+  facts.activityFacts.all_web_messages = 999;
+  const deps = { ...recordServices(db), runtimeContext: cap };
+  const actual = await executeAgentOperation(principal, "agent.runtime.operational.activity", {}, deps);
+  assert.equal(actual.status, 200); assert.equal(actual.legacy.all_web_messages, 5);
+  assert.equal((await executeAgentOperation(principal, "agent.runtime.operational.activity", { context: cap }, deps)).status, 400);
+  const forged = await executeAgentOperation(principal, "agent.runtime.operational.activity", {}, { ...deps, runtimeContext: JSON.parse(JSON.stringify(cap)) });
+  assert.equal(forged.legacy.error, "runtime_operational_context_required");
+  const otherDb = new Database(), otherPrincipal = await recordPrincipal(otherDb);
+  const foreign = await executeAgentOperation(otherPrincipal, "agent.runtime.operational.activity", {}, { ...recordServices(otherDb), runtimeContext: cap });
+  assert.equal(foreign.legacy.error, "runtime_operational_context_required");
+  db.tables.sandy_agent_tasks[0].channel = "email";
+  assert.equal((await executeAgentOperation(principal, "agent.runtime.operational.activity", {}, deps)).legacy.error, "runtime_operational_task_binding_mismatch");
+  assert.ok(Object.values(internalRuntimeOperationalContracts).every(c => c.internal_only && c.sensitive && !c.api_exposed && !c.ui_exposed && !c.ai_exposed));
+});
+Deno.test("operational unknown activity and absent versions remain unknown while server timezone never becomes physical-location proof", async () => {
+  const db = new Database(), principal = await recordPrincipal(db), facts = operationalFacts(); facts.activityFacts = { status: "unavailable" };
+  const deps = { ...recordServices(db), runtimeContext: bindRuntimeOperationalContext(principal, facts) };
+  assert.equal((await executeRuntimeOperation(principal, "agent.runtime.operational.activity", {}, deps, "activity")).error, "conversation_activity_unavailable");
+  assert.equal((await executeRuntimeOperation(principal, "agent.runtime.operational.versions", {}, deps, "versions")).error, "unsupported_operational_domain");
+  const environment = await executeRuntimeOperation(principal, "agent.runtime.operational.environment", {}, deps, "environment");
+  assert.equal(environment.timezone, "UTC"); assert.equal(environment.physical_location, "not_available"); assert.equal(environment.precision, "none");
+});
+Deno.test("operational capability inspection respects channel filters and invalidates stale module status without claiming provider execution", async () => {
+  const db = new Database(), principal = await recordPrincipal(db), deps = { ...recordServices(db), runtimeContext: bindRuntimeOperationalContext(principal, operationalFacts()) };
+  db.tables.sandy_capability_catalog = [{ feature_key: "web-fixture", channels: ["web"] }, { feature_key: "email-fixture", channels: ["email"] }];
+  db.tables.sandy_module_status = [{ module_key: "stale-fixture", operational_status: "operational", last_tested_at: "2000-01-01T00:00:00Z" }, { module_key: "fresh-fixture", operational_status: "partial", last_tested_at: new Date().toISOString() }];
+  const result = await executeAgentOperation(principal, "agent.runtime.operational.capabilities", {}, deps);
+  assert.equal(result.status, 200); assert.deepEqual(result.legacy.capabilities.map((item: Obj) => item.key), ["web-fixture"]);
+  assert.equal(result.legacy.modules[0].operational_status, "unverified"); assert.equal(result.legacy.modules[0].stale, true);
+  assert.equal(result.legacy.modules[1].operational_status, "partial"); assert.equal(result.legacy.modules[1].stale, false);
+  assert.match(result.legacy.note, /not necessarily operational/);
+});
+for (const slug of slugs) Deno.test(`${slug}: operational tool domains share fixed contracts with preserved source-qualified counts and no fabricated version or location`, async () => {
+  const db = new Database(), requests: Recorded[] = [], domains = ["conversation_activity", "communication_activity", "connections", "environment", "capabilities", "versions"];
+  const app = await runtime(slug, db, requests, { tools: domains.map(domain => ({ name: "inspect_sandy_operational_state", args: { domain } })) });
+  try {
+    const result = await app.invoke("Inspect the recorded operational facts"); assert.equal(result.status, 200);
+    const returned = requests[1].body.input.map((item: Obj) => JSON.parse(item.output));
+    assert.equal(returned[0].scope, "web_only"); assert.equal(returned[0].all_web_messages, 0);
+    assert.equal(returned[1].counts.email_authored_by_verified_customer, null);
+    assert.match(returned[1].caveat, /not combine unverified email counts/);
+    assert.ok(returned[2].services.every((item: Obj) => item.state === "locally_recorded_active_not_provider_verified"));
+    assert.equal(returned[3].physical_location, "not_available");
+    assert.equal(returned[5].error, slug === "sandy-agent-runtime-v1-backup-r50" ? "unsupported_operational_domain" : "version_registry_unavailable");
+    assert.equal(audits(db).length, slug === "sandy-agent-runtime-v1-backup-r50" ? 5 : 6);
+    assert.equal(Object.keys(agentOperationContracts).length, 8);
   } finally { app.close(); }
 });

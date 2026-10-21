@@ -2,6 +2,7 @@ import {isGmailAction} from "../_shared/sandy-agent-operations/connected-gmail.t
 import {authenticateRuntime,bindRuntimeTask,bindRuntimeConversationTask} from "../_shared/sandy-agent-operations/identity.ts";
 import {bindV1BackupRuntimeConversation,executeRuntimeConversation,type RuntimeConversation} from "../_shared/sandy-agent-operations/runtime_conversation.ts";
 import {executeRuntimeOperation} from "../_shared/sandy-agent-operations/service.ts";
+import {bindRuntimeOperationalContext,type RuntimeOperationalContext} from "../_shared/sandy-agent-operations/runtime_operational.ts";
 import {bindV1BackupFallbackTransport} from "../_shared/sandy-agent-operations/runtime_profiles.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
@@ -44,7 +45,7 @@ Deno.serve(async req=>{
  const id=existing.id;
  const operationPrincipal=customerId?await bindRuntimeTask(runtimeProof,db,{taskId:id,customerId,channel,requestId}):null;
  const legacyRuntimeProfile=operationPrincipal?bindV1BackupFallbackTransport(operationPrincipal):undefined;
- const operationServices={db,base:url,composioKey:Deno.env.get("COMPOSIO_API_KEY")||"",openaiKey:aiKey,integrationToken:"",legacyRuntimeProfile};
+ const operationServices={db,base:url,composioKey:Deno.env.get("COMPOSIO_API_KEY")||"",openaiKey:aiKey,integrationToken:"",legacyRuntimeProfile,runtimeContext:undefined as RuntimeOperationalContext|undefined};
  const runOperation=(operation:string,args:any,step:string)=>executeRuntimeOperation(operationPrincipal,operation,args,operationServices,step);
  const update=async(fields:any)=>{const{error}=await db.from("sandy_agent_tasks").update({...fields,updated_at:new Date().toISOString()}).eq("id",id);if(error)console.error("task_write",error.code)};
 
@@ -250,6 +251,7 @@ Deno.serve(async req=>{
   return json(200,{ok:true,task_id:id,model:"system-clock",response:text,tools_used:[{tool:"system_clock",success:true}]});
  }
 
+ operationServices.runtimeContext=bindRuntimeOperationalContext(operationPrincipal,{channel,activityFacts,communicationFacts,services:v2Services,connectionError:v2ConnectionError,clock,timezone});
  let conversation:RuntimeConversation|null=null;
  let conversationRound=0;
  const call=async(body:any)=>{
@@ -286,36 +288,8 @@ Deno.serve(async req=>{
     if(c.name==="inspect_sandy_operational_state"&&customerId){
      let args:any={};try{args=JSON.parse(c.arguments||"{}")}catch{args={}};
      const domain=String(args.domain||"");
-     if(domain==="conversation_activity"){
-       result=activityFacts.status==="verified"
-         ?{ok:true,source:"sandy_web_turns",...activityFacts,
-           cross_channel_available:communicationFacts.status!=="unavailable",
-           note:"This field is web-only. Use communication_activity to inspect records from other channels."}
-         :{error:"conversation_activity_unavailable",note:"Cannot verify a customer-scoped web count; do not guess."};
-     }else if(domain==="communication_activity"){
-       result=communicationFacts.status!=="unavailable"?{ok:true,...communicationFacts}:
-         {error:"communication_activity_unavailable",reason:"authoritative_channel_metrics_not_available"};
-     }else if(domain==="connections"){
-       result=v2ConnectionError?{error:"customer_connections_unavailable"}:
-         {ok:true,source:"sandy_composio_connections",services:v2Services,note:"Recorded active connections are not independent evidence of executable permissions."};
-     }else if(domain==="capabilities"){
-       const [caps,integrations,moduleRegistry,masterRegistry]=await Promise.all([
-         db.from("sandy_capability_catalog").select("feature_key,channels,last_verified_at,verification_note").limit(100),
-         db.from("sandy_ai_integrations").select("integration_key,enabled,deployment_status,last_verified_at").limit(100),
-         db.from("sandy_module_status").select("module_key,module_group,deployed_version,deployment_state,operational_status,remaining_steps,evidence,last_tested_at,observed_at").limit(250),
- db.from("sandy_master_modules").select("module_key,module_name,description,component_patterns,sort_order,acceptance_requirements").order("sort_order")
-       ]);
-       result=caps.error||integrations.error?{error:"capability_catalog_unavailable"}:{
-         ok:true,source:["sandy_capability_catalog","sandy_ai_integrations"],
-         capabilities:(caps.data||[]).filter((x:any)=>Array.isArray(x.channels)&&x.channels.includes(channel)).map((x:any)=>({key:x.feature_key,verified_at:x.last_verified_at,verification_note:x.verification_note})),
-         integration_configuration:(integrations.data||[]).map((x:any)=>({key:x.integration_key,enabled:x.enabled,status:x.deployment_status,verified_at:x.last_verified_at})),
-         module_status_source:"sandy_module_status",master_modules:masterRegistry.error?[]:masterRegistry.data,modules:moduleRegistry.error?[]:(moduleRegistry.data||[]).map((m:any)=>({...m,operational_status:!m.last_tested_at||Date.now()-Date.parse(m.last_tested_at)>=86400000?"unverified":m.operational_status,stale:!m.last_tested_at||Date.now()-Date.parse(m.last_tested_at)>=86400000})),
-         note:"A configured or deployed feature is not necessarily operational or authorised for the current customer."
-       };
-     }else if(domain==="environment"){
-       result={ok:true,source:"server_clock_and_request_context",time:clock,timezone,
-         physical_location:"not_available",precision:"none",note:"A timezone is not proof of current physical location. Do not imply geolocation access."};
-     }else result={error:"unsupported_operational_domain"};
+     const domains:Record<string,string>={conversation_activity:"agent.runtime.operational.activity",communication_activity:"agent.runtime.operational.communication",connections:"agent.runtime.operational.connections",capabilities:"agent.runtime.operational.capabilities",environment:"agent.runtime.operational.environment"};
+     result=Object.hasOwn(domains,domain)?await runOperation(domains[domain],{},"tool:"+c.call_id):{error:"unsupported_operational_domain"};
      trace.push({tool:c.name,domain,success:result.ok===true});
     }
     if(c.name==="list_connected_services"&&customerId){
