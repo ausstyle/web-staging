@@ -26,6 +26,19 @@
         "contract_version": {
           "const": "1.0.0"
         },
+        "executed": {
+          "const": true
+        },
+        "request_state": {
+          "const": "succeeded"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reconciliation_required": {
+          "const": false
+        },
         "customer_id": {
           "type": "string",
           "format": "uuid"
@@ -100,6 +113,10 @@
       "required": [
         "ok",
         "contract_version",
+        "executed",
+        "request_state",
+        "request_id",
+        "reconciliation_required",
         "customer_id",
         "created",
         "reused",
@@ -115,7 +132,7 @@
       "additionalProperties": false
     },
     "description": "Enroll the verified Auth email in its existing canonical customer identity, or create one isolated customer if none exists. No automatic provisioning or implicit account merge.",
-    "contract_sha256": "481618d322de744eb153ea32babe8f39436317efd311b04c1f2d7d8bc8ce0676"
+    "contract_sha256": "5fcd8e3570d204d00e77aeb693a8a7509bbaaf48c9cb220bd1e6f71217f6937b"
   },
   "customer.onboarding.update": {
     "operation": "customer.onboarding.update",
@@ -156,6 +173,19 @@
         "contract_version": {
           "const": "1.0.0"
         },
+        "executed": {
+          "const": true
+        },
+        "request_state": {
+          "const": "succeeded"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reconciliation_required": {
+          "const": false
+        },
         "customer_id": {
           "type": "string",
           "format": "uuid"
@@ -230,6 +260,10 @@
       "required": [
         "ok",
         "contract_version",
+        "executed",
+        "request_state",
+        "request_id",
+        "reconciliation_required",
         "customer_id",
         "created",
         "reused",
@@ -245,7 +279,7 @@
       "additionalProperties": false
     },
     "description": "Progressively update the current customer profile with optimistic concurrency. Organisation name is profile metadata and grants no organisation permissions.",
-    "contract_sha256": "ddcb4f9eea21f9e9608b1fed954815f4d80d4f20af742bf62f38071824aaeb3f"
+    "contract_sha256": "8a77825717457c2cb48763bf7ad9c5ffb7620e3aa63e07ecc8fcc2c7a569178a"
   },
   "customer.identity.get": {
     "operation": "customer.identity.get",
@@ -268,6 +302,19 @@
         "contract_version": {
           "const": "1.0.0"
         },
+        "executed": {
+          "const": true
+        },
+        "request_state": {
+          "const": "succeeded"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reconciliation_required": {
+          "const": false
+        },
         "customer_id": {
           "type": "string",
           "format": "uuid"
@@ -342,6 +389,10 @@
       "required": [
         "ok",
         "contract_version",
+        "executed",
+        "request_state",
+        "request_id",
+        "reconciliation_required",
         "customer_id",
         "created",
         "reused",
@@ -357,6 +408,6 @@
       "additionalProperties": false
     },
     "description": "Read the current canonical customer and existing verified email, web/API and nonexpired WhatsApp channels. No other customer selector is accepted.",
-    "contract_sha256": "c7047e143c5343d1c0f3f4b4af0a045359f61a84d2808c9fc6b4cd348ebbf274"
+    "contract_sha256": "a4d714e9dbe7bf5e9d4a8c21bab50c38fa9944c3a3bea7c2a2ec3435e2e5fe25"
   }
 }

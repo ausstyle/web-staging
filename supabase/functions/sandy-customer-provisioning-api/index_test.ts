@@ -16,6 +16,10 @@ const goodUser = {
 const goodResult = {
   ok: true,
   contract_version: "1.0.0",
+  executed: true,
+  request_state: "succeeded",
+  request_id: rid,
+  reconciliation_required: false,
   customer_id: customer,
   created: true,
   reused: false,

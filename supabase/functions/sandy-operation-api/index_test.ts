@@ -1,3 +1,4 @@
+import { createHandler as createMcpHandler } from "../sandy-api-mcp/index.ts";
 import { engineeringPolicy } from "./engineering_identity.ts";
 import assert from "node:assert/strict";
 import { createOperationHandler, type OperationDependencies } from "./index.ts";
@@ -6547,4 +6548,57 @@ Deno.test("unverified users cannot discover customer onboarding even without exi
   const r = await h.request({ action: "list", channel: "mcp" });
   assert.equal(r.status, 403);
   assert.equal(h.calls.length, 0);
+});
+
+Deno.test("completed onboarding propagates its truthful execution claim through API and MCP", async () => {
+  const result = {
+    ok: true,
+    contract_version: "1.0.0",
+    executed: true,
+    request_state: "succeeded",
+    request_id: productRequestId,
+    reconciliation_required: false,
+    customer_id: extensionTenant,
+    created: true,
+    reused: false,
+    phase: "verified",
+    version: 1,
+    display_name: "Fixture",
+    organisation_name: null,
+    channels: [{
+      channel: "email",
+      subject: "fixture-user@example.invalid",
+      verified: true,
+    }],
+    permissions_source: "existing_verified_portal_and_channel_grants",
+    memory_customer_id: extensionTenant,
+    automatic_provisioning: false,
+  };
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    emailConfirmed: true,
+    rows: [extensionRow("customer.onboarding.ensure", true)],
+    backend: () => Response.json(result),
+  });
+  const mcp = createMcpHandler(async (_token, body) => {
+    const response = await h.request(body);
+    return { status: response.status, result: await response.json() };
+  });
+  const response = await mcp(
+    new Request("https://mcp.test.invalid", {
+      method: "POST",
+      headers: { authorization: "Bearer normal.test.session" },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: { name: "customer.onboarding.ensure", arguments: {} },
+      }),
+    }),
+  );
+  const value = await response.json();
+  assert.equal(value.result.isError, false);
+  assert.deepEqual(value.result.structuredContent, result);
+  assert.equal(h.calls.length, 1);
 });

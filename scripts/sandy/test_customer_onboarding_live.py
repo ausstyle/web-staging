@@ -17,11 +17,12 @@ from engineering_runtime import EngineeringRuntime, BASE
 from test_engineering_customer_boundary import REVIEWED_TRIGGERS
 
 ROOT = Path(__file__).resolve().parents[2]
+SOURCE_COMMIT = __import__('subprocess').check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()
 OPS = ['customer.onboarding.ensure','customer.onboarding.update','customer.identity.get']
 
 def run(output):
     runtime=EngineeringRuntime();keys=runtime._api_keys();service,anon=keys['service_role'],keys['anon']
-    report={'normal_auth_sessions':True,'service_role_substituted_for_user':False,'tests':[],'customers':[], 'cleanup':{},'complete':False}
+    report={'normal_auth_sessions':True,'service_role_substituted_for_user':False,'tests':[],'customers':[], 'cleanup':{},'complete':False,'calls':[]}
     users=[];customers=[];tokens=[]
     def save():
         output.parent.mkdir(parents=True,exist_ok=True);output.write_text(json.dumps(report,indent=2)+'\n')
@@ -34,9 +35,12 @@ def run(output):
             body={'jsonrpc':'2.0','id':rid,'method':'tools/call','params':{'name':op,'arguments':{'__sandy_execution':{'request_id':rid},'arguments':args}}};slug='sandy-api-mcp'
         else:body={'operation':op,'arguments':args,'request_id':rid,'channel':'api'};slug='sandy-customer-provisioning-api'
         status,value=runtime._http('POST',BASE+'/functions/v1/'+slug,token,body,anon)
-        if not mcp:return status,value
+        if not mcp:
+            report['calls'].append({'operation':op,'channel':'api','http_status':status,'executed':value.get('executed'),'request_id':rid,'error':value.get('error')});save()
+            return status,value
         result=value.get('result',{});env=json.loads(result.get('content',[{}])[0].get('text','{}'))
         payload=result.get('structuredContent',{})
+        report['calls'].append({'operation':op,'channel':'mcp','http_status':status,'api_status':env.get('status'),'is_error':result.get('isError'),'request_id':rid,'error':env.get('result',{}).get('error'),'executed':env.get('result',{}).get('executed')});save()
         return env.get('status',status),payload if result.get('isError') is False else env.get('result',{})
     try:
         rows=runtime._sql("SELECT n.nspname schema_name,c.relname table_name,t.tgname,t.tgenabled,pg_get_triggerdef(t.oid) definition,pg_get_functiondef(t.tgfoid) function_source FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal AND (n.nspname='auth' AND c.relname='users' OR n.nspname='public' AND c.relname IN('email_customers','email_customer_addresses','sandy_memory_settings','sandy_memory_portal_accounts')) ORDER BY n.nspname,c.relname,t.tgname",True)
@@ -62,7 +66,7 @@ def run(output):
         contracts=json.loads((ROOT/'supabase/functions/sandy-customer-provisioning-api/contracts.json').read_text())
         q='BEGIN;DO $verify$ DECLARE n integer; BEGIN '
         for operation in OPS:
-            evidence={'recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'evidence_level':'actual_production_normal_customer_handler_and_database','mcp_end_to_end_verified':False,'customer_isolation_test_pending':True,'source_commit':'46b678b8b314b2115de93a484daa771fba9a500e'}
+            evidence={'recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'evidence_level':'actual_production_normal_customer_handler_and_database','mcp_end_to_end_verified':False,'customer_isolation_test_pending':True,'source_commit':SOURCE_COMMIT}
             q+="UPDATE public.sandy_operation_registry SET api_exposed=true,ai_exposed=true,verified=true,implementation_state='deployed',last_verified_at=now(),last_test_result=coalesce(last_test_result,'{}'::jsonb)||jsonb_build_object('customer_onboarding_20261021',"+runtime._quote(json.dumps(evidence))+"::jsonb),updated_at=now() WHERE operation="+runtime._quote(operation)+" AND error_contract->>'contract_sha256'="+runtime._quote(contracts[operation]['contract_sha256'])+";GET DIAGNOSTICS n=ROW_COUNT;IF n<>1 THEN RAISE EXCEPTION 'onboarding contract drift';END IF;"
         runtime._sql(q+' END $verify$;COMMIT;')
         status,discovery=runtime._http('POST',BASE+'/functions/v1/sandy-api-mcp',tokens[1],{'jsonrpc':'2.0','id':'onboarding-preportal-discovery','method':'tools/list','params':{}},anon)
@@ -111,7 +115,7 @@ def run(output):
     if report['complete']:
         report['passed']=sum(t['passed'] for t in report['tests']);report['failed']=sum(not t['passed'] for t in report['tests']);save()
         digest=hashlib.sha256(output.read_bytes()).hexdigest()
-        evidence={'recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'evidence_level':'actual_normal_customer_MCP_to_Sandy_API_to_application_database','mcp_end_to_end_verified':True,'normal_password_sessions':2,'service_role_substituted_for_user':False,'controller_memberships':0,'tests_passed':report['passed'],'tests_failed':report['failed'],'source_commit':'46b678b8b314b2115de93a484daa771fba9a500e','evidence_sha256':digest,'fixtures_cleaned':True,'automatic_provider_resources_provisioned':0,'scope_limitation':'verified email/web/API identity and existing verified WhatsApp projection; no identity merge or new provider authorization'}
+        evidence={'recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'evidence_level':'actual_normal_customer_MCP_to_Sandy_API_to_application_database','mcp_end_to_end_verified':True,'normal_password_sessions':2,'service_role_substituted_for_user':False,'controller_memberships':0,'tests_passed':report['passed'],'tests_failed':report['failed'],'source_commit':SOURCE_COMMIT,'evidence_sha256':digest,'fixtures_cleaned':True,'automatic_provider_resources_provisioned':0,'scope_limitation':'verified email/web/API identity and existing verified WhatsApp projection; no identity merge or new provider authorization'}
         runtime._sql("UPDATE public.sandy_operation_registry SET last_test_result=last_test_result||jsonb_build_object('customer_onboarding_20261021',"+runtime._quote(json.dumps(evidence))+"::jsonb),last_verified_at=now(),updated_at=now() WHERE operation IN ("+','.join(runtime._quote(x) for x in OPS)+')')
         print(json.dumps({'complete':True,'passed':report['passed'],'failed':report['failed'],'cleanup':report['cleanup']}))
 
