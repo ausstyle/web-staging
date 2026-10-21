@@ -25,3 +25,11 @@ Deno.test("idempotency cannot reuse another actor, change, operation, target or 
  assert.equal(sameCanonicalRequest(prior,"owner","change","supabase",operation,target,{hash:"a"}),true);
  for(const changed of [{requested_by:"other"},{engineering_change_id:"other"},{provider:"github"},{operation:"other"},{target:"other"},{payload:{hash:"b"}}])assert.equal(sameCanonicalRequest({...prior,...changed},"owner","change","supabase",operation,target,{hash:"a"}),false);
 });
+
+Deno.test("sensitive provider logs retain their explicit owner approval while readiness is separate",async()=>{
+ const op="supabase.logs.query",target="zmqlyygzqoidkcwdysok:"+op;
+ const entry={...row,operation:op,handler:"sandy-provider-gap-api",is_mutation:false};
+ const p=await prepareCanonicalEngineeringRequest("supabase",op,target,payload,entry,["supabase:"+target]);
+ assert.equal(p.payload.sandy_api_execution.operation,op);
+ await assert.rejects(()=>prepareCanonicalEngineeringRequest("supabase",op,target,payload,{...entry,is_mutation:true},["supabase:"+target]));
+});

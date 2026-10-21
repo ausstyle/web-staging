@@ -4,12 +4,13 @@ import { argumentDigest, canonicalJson } from "../_shared/sandy_api_protocol.ts"
 import { createRegistrySchemaValidator } from "../sandy-operation-api/registry_schema_validator.ts";
 type Obj = Record<string, unknown>;
 const object = (x: unknown): x is Obj => !!x && typeof x === "object" && !Array.isArray(x);
-const definitions: Record<string, { provider: string; handler: string }> = {
-  "github.files.update": { provider: "github", handler: "sandy-provider-operation-api" },
-  "github.commit": { provider: "github", handler: "sandy-legacy-compatibility-api" },
-  "supabase.deploy_edge_function": { provider: "supabase", handler: "sandy-legacy-compatibility-api" },
-  "supabase.db.migrations.apply": { provider: "supabase", handler: "sandy-provider-operation-api" },
-  "supabase.functions.secrets.set": { provider: "supabase", handler: "sandy-provider-operation-api" },
+const definitions: Record<string, { provider: string; handler: string; mutation: boolean }> = {
+  "supabase.logs.query": { provider: "supabase", handler: "sandy-provider-gap-api", mutation: false },
+  "github.files.update": { provider: "github", handler: "sandy-provider-operation-api", mutation: true },
+  "github.commit": { provider: "github", handler: "sandy-legacy-compatibility-api", mutation: true },
+  "supabase.deploy_edge_function": { provider: "supabase", handler: "sandy-legacy-compatibility-api", mutation: true },
+  "supabase.db.migrations.apply": { provider: "supabase", handler: "sandy-provider-operation-api", mutation: true },
+  "supabase.functions.secrets.set": { provider: "supabase", handler: "sandy-provider-operation-api", mutation: true },
 };
 const validate = createRegistrySchemaValidator().isValid;
 export function isCanonicalEngineeringOperation(x: string) { return Object.hasOwn(definitions, x); }
@@ -18,7 +19,7 @@ export async function prepareCanonicalEngineeringRequest(
 ) {
   const definition = definitions[operation];
   if (!definition || provider !== definition.provider || !object(entry) || entry.operation !== operation ||
-    entry.handler !== definition.handler || entry.is_mutation !== true || !object(entry.error_contract) ||
+    entry.handler !== definition.handler || entry.is_mutation !== definition.mutation || !object(entry.error_contract) ||
     !/^[a-f0-9]{64}$/.test(String(entry.error_contract.contract_sha256))) throw Error("canonical_executor_contract_required");
   if (!object(payload) || !object(payload.arguments) || validate(entry.input_schema, payload.arguments) !== true) throw Error("invalid_canonical_operation_arguments");
   const args = payload.arguments;
