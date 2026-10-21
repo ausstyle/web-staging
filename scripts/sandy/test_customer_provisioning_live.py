@@ -84,7 +84,7 @@ class LiveProvisioning:
         return self.require(index,'customer.provisioning.plan',{'template_key':'customer.workspace'},mcp)['plan']
 
     def resource_readback(self,resource_id):
-        rows=self.r._sql('SELECT r.*,to_regclass(r.provider_resource_id) IS NOT NULL provider_exists,public.sandy_provisioning_workspace_verified(r.id) provider_acl_verified FROM public.sandy_customer_resources r WHERE r.id='+self.r._quote(resource_id),True)
+        rows=self.r._sql("SELECT r.*,c.oid IS NOT NULL provider_exists,(c.relrowsecurity AND c.relforcerowsecurity AND obj_description(c.oid,'pg_class')='sandy_customer_resource:'||r.id||':'||r.customer_id AND NOT has_table_privilege('anon',c.oid,'SELECT,INSERT,UPDATE,DELETE') AND NOT has_table_privilege('authenticated',c.oid,'SELECT,INSERT,UPDATE,DELETE')) provider_acl_verified FROM public.sandy_customer_resources r LEFT JOIN pg_class c ON c.oid=to_regclass(r.provider_resource_id) WHERE r.id="+self.r._quote(resource_id),True)
         self.check('independent_provider_resource_and_acl_readback',len(rows)==1 and rows[0]['customer_id'] in self.customers and rows[0]['provider_exists'] and rows[0]['provider_acl_verified'])
         self.report.setdefault('resource_readbacks',[]).append({k:rows[0][k] for k in ['id','customer_id','provider_resource_id','state','version','provider_exists','provider_acl_verified','actual_cost_microusd']});self.save()
         return rows[0]
