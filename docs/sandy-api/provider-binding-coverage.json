@@ -1,0 +1,813 @@
+{
+  "schema_version": "1.0.0",
+  "inventory_binding_methods": 64,
+  "new_bound_methods": 48,
+  "existing_package_method_variants": 16,
+  "provider_called": false,
+  "auth_session_tested": false,
+  "all_161_requirements_completed": false,
+  "boundary": "Typed bounded metadata/acceptance and private branch diff capture; provider outcomes/IAM/fixtures/configuration remain unverified",
+  "operations": [
+    {
+      "operation": "gcp.artifacts.repositories.check_prewarmed_artifact.bound",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.checkPrewarmedArtifact",
+      "requirement": 63,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.artifacts.repositories.prewarm_artifact.bound",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.prewarmArtifact",
+      "requirement": 63,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.artifacts.repositories.remove_prewarmed_artifact.bound",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.removePrewarmedArtifact",
+      "requirement": 63,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.backups.data_sources.abandon_backup.bound",
+      "provider_operation_id": "backupdr.projects.locations.backupVaults.dataSources.abandonBackup",
+      "requirement": 74,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.backups.data_sources.finalize_backup.bound",
+      "provider_operation_id": "backupdr.projects.locations.backupVaults.dataSources.finalizeBackup",
+      "requirement": 74,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.backups.data_sources.initiate_backup.bound",
+      "provider_operation_id": "backupdr.projects.locations.backupVaults.dataSources.initiateBackup",
+      "requirement": 74,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.backups.data_sources.set_internal_status.bound",
+      "provider_operation_id": "backupdr.projects.locations.backupVaults.dataSources.setInternalStatus",
+      "requirement": 74,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.add_association.bound",
+      "provider_operation_id": "compute.firewallPolicies.addAssociation",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.add_rule.bound",
+      "provider_operation_id": "compute.firewallPolicies.addRule",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.clone_rules.bound",
+      "provider_operation_id": "compute.firewallPolicies.cloneRules",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.create.bound",
+      "provider_operation_id": "compute.firewallPolicies.insert",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.delete.bound",
+      "provider_operation_id": "compute.firewallPolicies.delete",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.get.bound",
+      "provider_operation_id": "compute.firewallPolicies.get",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.get_association.bound",
+      "provider_operation_id": "compute.firewallPolicies.getAssociation",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.get_rule.bound",
+      "provider_operation_id": "compute.firewallPolicies.getRule",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.list.bound",
+      "provider_operation_id": "compute.firewallPolicies.list",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.list_associations.bound",
+      "provider_operation_id": "compute.firewallPolicies.listAssociations",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.move.bound",
+      "provider_operation_id": "compute.firewallPolicies.move",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.patch.bound",
+      "provider_operation_id": "compute.firewallPolicies.patch",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.patch_rule.bound",
+      "provider_operation_id": "compute.firewallPolicies.patchRule",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.remove_association.bound",
+      "provider_operation_id": "compute.firewallPolicies.removeAssociation",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.firewall_policies.remove_rule.bound",
+      "provider_operation_id": "compute.firewallPolicies.removeRule",
+      "requirement": 51,
+      "relationship_guard": "verified_firewall_parent",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress",
+        "verified_hierarchical_parent_binding"
+      ]
+    },
+    {
+      "operation": "gcp.logging.sinks.update.bound",
+      "provider_operation_id": "logging.projects.sinks.update",
+      "requirement": 67,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.pubsub.snapshots.list.bound",
+      "provider_operation_id": "pubsub.projects.snapshots.list",
+      "requirement": 70,
+      "relationship_guard": "fixed_project_resource",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.buckets.lock_retention_policy.bound",
+      "provider_operation_id": "storage.buckets.lockRetentionPolicy",
+      "requirement": 64,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.buckets.relocate.bound",
+      "provider_operation_id": "storage.buckets.relocate",
+      "requirement": 64,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.buckets.restore.bound",
+      "provider_operation_id": "storage.buckets.restore",
+      "requirement": 64,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.buckets.update.bound",
+      "provider_operation_id": "storage.buckets.update",
+      "requirement": 64,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.folders.delete_recursive.bound",
+      "provider_operation_id": "storage.folders.deleteRecursive",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.managed_folders.update.bound",
+      "provider_operation_id": "storage.managedFolders.update",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.bulk_restore.bound",
+      "provider_operation_id": "storage.objects.bulkRestore",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.compose.bound",
+      "provider_operation_id": "storage.objects.compose",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.copy.bound",
+      "provider_operation_id": "storage.objects.copy",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.iam_permissions.test.bound",
+      "provider_operation_id": "storage.objects.testIamPermissions",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.iam_policy.get.bound",
+      "provider_operation_id": "storage.objects.getIamPolicy",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.iam_policy.set.bound",
+      "provider_operation_id": "storage.objects.setIamPolicy",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.move.bound",
+      "provider_operation_id": "storage.objects.move",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.rewrite.bound",
+      "provider_operation_id": "storage.objects.rewrite",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.update.bound",
+      "provider_operation_id": "storage.objects.update",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "gcp.storage.objects.view_full_context.bound",
+      "provider_operation_id": "storage.objects.viewFullContext",
+      "requirement": 65,
+      "relationship_guard": "fresh_bucket_project",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.delete.bound",
+      "provider_operation_id": "v1-delete-a-branch",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.diff.bound",
+      "provider_operation_id": "v1-diff-a-branch",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.get_config.bound",
+      "provider_operation_id": "v1-get-a-branch-config",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.merge.bound",
+      "provider_operation_id": "v1-merge-a-branch",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.push.bound",
+      "provider_operation_id": "v1-push-a-branch",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.reset.bound",
+      "provider_operation_id": "v1-reset-a-branch",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.restore.bound",
+      "provider_operation_id": "v1-restore-a-branch",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    },
+    {
+      "operation": "supabase.branches.update_config.bound",
+      "provider_operation_id": "v1-update-a-branch-config",
+      "requirement": 80,
+      "relationship_guard": "fresh_branch_membership",
+      "implementation_missing": false,
+      "verified": false,
+      "api_exposed": false,
+      "external_dependencies": [
+        "authorized_resource_fixture",
+        "provider_IAM",
+        "Controller_session",
+        "runtime_egress"
+      ]
+    }
+  ],
+  "existing_package_variants": [
+    {
+      "provider_operation_id": "packages/list-packages-for-organization",
+      "canonical_operation": "github.packages.list"
+    },
+    {
+      "provider_operation_id": "packages/list-packages-for-user",
+      "canonical_operation": "github.packages.list"
+    },
+    {
+      "provider_operation_id": "packages/get-package-for-organization",
+      "canonical_operation": "github.packages.get"
+    },
+    {
+      "provider_operation_id": "packages/get-package-for-user",
+      "canonical_operation": "github.packages.get"
+    },
+    {
+      "provider_operation_id": "packages/get-all-package-versions-for-package-owned-by-org",
+      "canonical_operation": "github.packages.versions.list"
+    },
+    {
+      "provider_operation_id": "packages/get-all-package-versions-for-package-owned-by-user",
+      "canonical_operation": "github.packages.versions.list"
+    },
+    {
+      "provider_operation_id": "packages/get-package-version-for-organization",
+      "canonical_operation": "github.packages.versions.get"
+    },
+    {
+      "provider_operation_id": "packages/get-package-version-for-user",
+      "canonical_operation": "github.packages.versions.get"
+    },
+    {
+      "provider_operation_id": "packages/delete-package-for-org",
+      "canonical_operation": "github.packages.delete"
+    },
+    {
+      "provider_operation_id": "packages/delete-package-for-user",
+      "canonical_operation": "github.packages.delete"
+    },
+    {
+      "provider_operation_id": "packages/restore-package-for-org",
+      "canonical_operation": "github.packages.restore"
+    },
+    {
+      "provider_operation_id": "packages/restore-package-for-user",
+      "canonical_operation": "github.packages.restore"
+    },
+    {
+      "provider_operation_id": "packages/delete-package-version-for-org",
+      "canonical_operation": "github.packages.versions.delete"
+    },
+    {
+      "provider_operation_id": "packages/delete-package-version-for-user",
+      "canonical_operation": "github.packages.versions.delete"
+    },
+    {
+      "provider_operation_id": "packages/restore-package-version-for-org",
+      "canonical_operation": "github.packages.versions.restore"
+    },
+    {
+      "provider_operation_id": "packages/restore-package-version-for-user",
+      "canonical_operation": "github.packages.versions.restore"
+    }
+  ]
+}
