@@ -2,9 +2,28 @@
 
 This review inventories production source readbacks from Supabase project
 `zmqlyygzqoidkcwdysok` on 20 October 2026. Its inventory snapshot is
-`2026-10-20T18:36:33.784802+00:00`; later source releases and verification records
-must be read from the release ledger. It does not claim current deployment of
-the candidate transports or shared services described below.
+`2026-10-20T18:36:33.784802+00:00`. The source findings below retain that baseline;
+the 21 October release changes are recorded separately here and in
+[release validation](release-validation-20261021.json).
+
+## Confirmed 21 October release
+
+The published `02279e4` release initially deployed `sandy-operation-api` v8;
+the published `b139a75` follow-up now runs gateway v9 with 1,021 installed IDs.
+Both retain the source-attested API-only execution adapters in
+`sandy-api-mcp` v4 and `sandy-operations-mcp` v71. Both Edge MCP entrypoints now
+route execution only through Sandy API; the v71 release replaces the independent
+v70 execution described in the historical inventory below. Downloaded runtime
+source and contract modules were accounted for, with compiler-elided type-only
+imports identified separately. No authenticated production session test was
+established by source readback.
+
+The Engineering Node adapter preserves its five aliases and passes 13 source
+tests, but a replacement Cloud Run deployment is not attested. Consequently
+universal production MCP routing remains incomplete. The active agent v4 runtime
+is now v12 and uses the shared eight-operation service; router v55 and older
+fallbacks remain unchanged. The broader internal application and UI migration
+is still partial.
 
 The Management metadata listed 159 functions. Of 120 successful bundle reads,
 119 yielded entry source; one had no extractable entry source map. Another 39
@@ -29,7 +48,7 @@ cannot exclude a protocol implementation in an unavailable body or generated
 source. The externally deployed Engineering Cloud Run MCP is a third, separately
 deployed transport; repository source alone cannot attest its current image.
 
-The known `sandy-operations-mcp` v70 archive independently authenticated a fixed
+The historical `sandy-operations-mcp` v70 archive independently authenticated a fixed
 owner, executed provider/application operations and wrote deployment jobs. Its
 fixed backend calls included Engineering Control at lines 441/470/1421/1893/2051,
 deployment API at 569/1289/1441–1531/1761/1825, provision at 598–1271 and
@@ -39,13 +58,14 @@ underlying action families and preserved policy boundaries. Provision v52's two
 `video.execution.preflight` action branches are a provision-source duplication;
 that is not evidence of two equivalent legacy v70 tool implementations.
 
-The new legacy adapter source preserves all sixteen alias names and advertises
+The deployed v71 legacy adapter preserves all sixteen alias names and advertises
 precise compatibility gaps when the API does not expose a mapped operation.
 The new Node Engineering adapter preserves its five aliases. Both dynamically
 discover caller-specific Sandy API schemas/hash metadata and send every execution
 through the canonical gateway with `channel:"mcp"`; neither has a provider or
-legacy-backend fallback. Unknown/disabled operations fail closed. These are
-source implementation facts, not Cloud Run or owner-session test evidence.
+legacy-backend fallback. Unknown/disabled operations fail closed. Edge deployment
+and runtime source readback are confirmed; the Node changes remain source-only.
+Neither source nor deployment metadata supplies owner-session test evidence.
 
 The fixed Engineering diagnostic helper only requests `initialize` and
 `tools/list` with the actual owner's credential context. It cannot call tools,
@@ -77,7 +97,7 @@ Its concrete independent action paths were:
 | 525–533 | Feature-gated project evaluation-definition read | `agent.evaluations.list` |
 | 534–543 | Feature-gated paid planning with no action execution | `agent.execution_plan.draft` |
 
-The new `sandy-agent-runtime-v4` candidate calls the same shared application
+The deployed `sandy-agent-runtime-v4` v12 calls the same shared application
 service as the new `sandy-agent-operation-api`, preserving the original runtime
 identity as `trusted_runtime` bound to its persisted task/customer. The customer
 HTTP route derives an actual confirmed portal user and independently enforces
@@ -88,7 +108,7 @@ module is byte-identical to the original, retaining its atomic claim, no resend
 policy and independently verified success criteria. See the handler's
 [rollout/identity notes](../../supabase/functions/sandy-agent-operation-api/README.md).
 
-This candidate does not migrate the main v4 conversation-model call at 330,
+This release does not migrate the baseline v4 conversation-model call at 330,
 customer task/context/history DB operations, image-approval task creation, or
 fallback runtimes. The v2 version 13 fallback still directly calls Composio at
 279/457 and OpenAI Responses at 329/476/490/510. The v1-backup-r50 version 3
@@ -146,10 +166,10 @@ that every user flow already traverses Sandy API.
 
 ## Evidence still required
 
-Deployment must preserve each actual source version and authentication setting,
-record source hashes in the release ledger, and verify real API→MCP calls with
-an appropriately scoped session. Source fixtures and registry registration are
-not production verification. Missing owner/customer sessions defer their exact
+The deployed release preserved actual source versions and authentication
+settings and recorded runtime source hashes. Real API→MCP calls still need an
+appropriately scoped session and reachable endpoint. Source fixtures and
+registry registration are not production verification. Missing owner/customer sessions defer their exact
 authenticated tests, not independent implementation. Unverified sends and paid
 models stay disabled at the public API. Provider credentials are neither test
 user credentials nor substitutes for tenant identity.

@@ -1,176 +1,223 @@
 # Sandy API engineering status
 
-Status date: 20 October 2026. **The 161-requirement scope is not complete.**
-Development resumed after merged PR #135. Implementation, Management API
-deployments, database migrations and independent tests continued while only
-network-dependent and authenticated-user tests were deferred.
+Updated 21 October 2026. **0 of the original 161 requirements are certified
+complete.** The expanded API release is deployed and source-attested. Both Edge
+MCP servers now contain API-only execution adapters; universal production routing
+remains incomplete because the Cloud Run Node adapter is not yet deployed and
+internal application migration is partial. Normal authenticated production
+API/MCP tests remain deferred.
 
-## Canonical specification and reconciliation
+## Committed, published and deployed
 
-The owner's original [specification PDF](Sandy_Autonomous_Control_API_Specification.pdf)
-is committed alongside [the 161-item scope](api-scope-161.md). Its completeness
-rule requires provider-supported operations and actual deployed handlers.
+[Release validation](release-validation-20261021.json) records the confirmed
+commits, runtime source readbacks, regression results and registry evidence.
+[Session evidence](session-release-evidence.json) retains the live snapshot and
+all 1,021 source-attested deployed gateway IDs.
 
+The release and its validated follow-ups are committed and published on
+`engineering/sandy-api-project-reads-20261020` through
+`b139a759489d87a1479f19776579b86d81160f5b`. Commits after `530007a` are:
+
+| Commit | Change |
+| --- | --- |
+| `b3e1a42` | Durable orchestration, scoped lease dispatch and protocol/component tests |
+| `a948905` | 595 scoped provider handlers and guarded credential custody |
+| `f7eb112` | Tenant API handlers, scoped credentials and atomic customer mutations |
+| `e310a44` | Compact provider catalogue upload |
+| `043e7b4` | Shared agent, database, guest and guarded lifecycle services |
+| `d86df5d` | Governed 1,020-operation gateway and API-only MCP adapters |
+| `02279e4` | Verified gzip catalogue packaging |
+| `da5d587` | Managed credential consumers and exact private resolver cutover |
+| `b139a75` | Unified job REST routing and guarded database maintenance |
+
+Main remains `350ede13e373fb2108d57748b20e44d57302135d`; **no new merge is
+established**. The latest live metadata snapshot was captured at 02:19 UTC
+(04:19 CEST). Initial and follow-up validation boundaries remain separate.
+
+| Production function | Confirmed version | Result |
+| --- | --- | --- |
+| `sandy-operation-api` | **9** | ACTIVE; 1,021 mappings and unified durable/legacy job REST routes |
+| `sandy-api-mcp` | **4** | ACTIVE; canonical API-only MCP adapter |
+| `sandy-operations-mcp` | **71** | ACTIVE; replaces legacy direct execution with API routing |
+| `sandy-orchestration-api` | **2** | ACTIVE; durable dispatch and reviewed provider-read DAG support |
+| `sandy-provider-operation-api` | **2** | ACTIVE; provider v1 release plus managed credential-consumer follow-up |
+| `sandy-guest-operation-api` | **1** | ACTIVE; agent enrollment/configuration still required |
+| `sandy-agent-operation-api` | **1** | ACTIVE; shared customer/runtime services |
+| `sandy-database-operation-api` | **2** | ACTIVE; 79 database contracts including guarded maintenance |
+| `sandy-credential-lifecycle-api` | **2** | ACTIVE; custody v1 release plus consumer follow-up |
+| `sandy-credential-probe-api` | **1** | ACTIVE; guarded test-probe implementation |
+| `sandy-controller-api` | **35** | ACTIVE; fixes the missing UUID helper against the exact v34 source |
+| `sandy-agent-runtime-v4` | **12** | ACTIVE; shared eight-operation execution service |
+| `sandy-agent-runtime` | **55** | Existing release router unchanged |
+| `sandy-provider-read-api` | **4** | Existing read handler unchanged |
+
+Existing JWT verification settings were preserved, including the independent
+legacy authentication of the Controller/runtime functions. Downloaded runtime
+sources match the uploaded source or JSON module bytes. Compiler-elided type-only
+imports are identified separately; they are not missing runtime dependencies.
+
+The follow-up `da5d587` adds managed credential consumers, with confirmed
+provider and custody v2 deployments. `b139a75` adds the job REST resolver and
+database maintenance, deployed as API v9 and database v2. Migrations
+`20261021003200`, `20261021005100` and `20261021006100` were read back with exact
+source statements. The execution transport briefly disconnected; source/ledger
+readback reconciled the in-flight result before any retry. No live credential
+rotation, production schedule, native TLS maintenance, provider compensation or
+normal authenticated customer test is inferred from these deployments.
+
+## Requirements and operation status
+
+[The committed original PDF](Sandy_Autonomous_Control_API_Specification.pdf) and
+[161-item scope](api-scope-161.md) remain the acceptance sources.
 [scope-reconciliation.json](scope-reconciliation.json) retains every requirement.
-It links 3,793 provider-schema candidates and 118 runtime registry records: 3,911
-candidates across 122 requirements. Nine legacy registry identifiers still need
-an explicit scope mapping and are listed separately rather than discarded.
-Candidates are review evidence, not executable contracts. **No requirement is
-certified complete.** The source assessments are 59 partial, 86 without a local
-handler, 9 workflow-only, 2 partial delegation, 3 queue-only and 2 preflight-only.
-These are source assessments, not assertions of production absence.
 
-Pinned schema sources cover 21 Google services, GitHub and Supabase OpenAPI.
-Cloud Quotas Discovery is still proxy-blocked. Two official commit-pinned
-protobufs now restore reproducibly with verified hashes and byte counts. Their
-six RPCs and 18 HTTP bindings are parsed and mapped to requirement 16; all remain
-nonexecutable candidates. Discovery absence no longer means there is no quota
-contract source. Full provider-family implementation and IAM attestation remain.
+- The deployed v9 gateway has **1,021 installed IDs**, including closed mutations,
+  prerequisite-blocked handlers and explicitly unsupported transport contracts.
+  An installed mapping is not proof of successful execution.
+- The release contains **956 additional distinct typed contract records** beyond
+  the earlier 64 mappings: 595 provider, 79 database, 66 legacy application,
+  57 customer services, 38 workspace/Composio, 25 Agenda, 21 memory, 21 guest,
+  14 credential custody, 10 atomic customer mutations, 8 agent, 8 orchestration,
+  6 policy, 4 lifecycle, 3 customer keys and 1 MCP diagnostic. The remaining
+  mapping is the strict SQL-defined `deployment.jobs.request` contract.
+- These contracts touch **140 of 161 requirements**, each partially. Broad
+  wildcard members, cross-application adoption and functional acceptance gates
+  remain outstanding. **Completed requirements: 0/161.**
+- The live registry has **1,042 rows**. At the snapshot, 427 had API exposure and
+  412 had AI exposure metadata. These flags do not establish executability or
+  override authorization, verification or provider prerequisites.
+- Registry evidence was written and read back for **1,021 gateway operations**
+  (Management write/readback HTTP 201), preserving prior evidence and verification
+  fields. Deployment, component-test and local-provider evidence are labelled
+  separately.
+- Exactly **three historical `verified=true` flags** remain:
+  `video.status`, `video.install.preflight`, `video.execution.preflight`.
+  No new operation has been declared fully verified through the deployed
+  authenticated session path. Historical flags are not a fresh attestation.
 
-## Implemented and deployed
+The official-schema inventory still contains 3,793 review candidates separately
+from callable contracts. Cloud Quotas has six deployed typed handler contracts
+from pinned protobuf HTTP bindings; Discovery access and positive IAM/provider
+checks remain distinct dependencies.
 
-- `sandy-operation-api` **v7**, `sandy-api-mcp` **v3** and
-  `sandy-provider-read-api` **v4** are active. JWT verification settings were
-  retained. Downloaded deployment source maps match the exact committed source,
-  including both API helper modules.
-- The gateway serves canonical capabilities, describe, execute, job and event
-  reads, with caller-specific catalogue digests, JSON Schema validation, fixed
-  handlers and truthful failure envelopes. API and AI exposure flags are
-  independent; MCP discovery and execution enforce AI exposure.
-- Twenty-six project-scoped provider reads cover identity/health, branches,
-  restrictions, domain status, secret names, backups, migrations and bounded
-  PostgreSQL metadata. The latest twelve add views, materialized views, triggers,
-  constraints, types, extensions, roles, visible grants, default privileges,
-  policy identities, aggregate locks and cron metadata. Fixed SQL uses provider
-  `read_only:true`. Definitions, passwords, customer rows, query text, policy
-  expressions and cron commands are excluded. New bounded lists explicitly
-  report their limit and possible truncation; this is not full pagination.
-- Fifteen existing infrastructure reads and eight Agenda tasks/calendar/files
-  reads have canonical dispatch. Customer reads forward the actual user JWT and
-  retain independent tenant directory checks in both gateway and backend.
-- The three historically verified video status/preflight operations now route
-  through canonical API with exact fixed actions and owner authorization. Their
-  backend and historical verification flags were preserved. This release does
-  not claim a new live user-path attestation for those routes.
-- Five passive Memory Portal reads use confirmed Auth identity, an unrevoked
-  portal account and matching primary email. Agenda access and Controller
-  membership confer no memory access. Their typed contracts and fixed backend
-  action/body shapes are installed. `memory.ask` can create tasks; search,
-  life_search and biography invoke models or embeddings. Those four are omitted
-  until mutation, consent and cost contracts are implemented.
-- Three passive Engineering Control reads now have typed API handlers: change
-  get/list and job status. The real owner's JWT reaches the independent backend.
-  Legacy responses lacking `ok` become success only after complete shape and
-  change/job identifier checks. Null resources become explicit 404s.
-- Pending/approved job cancellation is an owner-only transactional RPC. It locks
-  against claim, is idempotent and refuses running jobs. Safe GCP read retry
-  admission preserves immutable approval snapshots, pins the approved target,
-  creates one child per parent, limits depth to three and refuses ambiguous
-  outcomes or legacy approvals without snapshots. Its `202 recorded` receipt
-  explicitly reports `executed:false`; the RPC does not dispatch the child.
-  Independent consumers are not established by this work. **Both mutation
-  contracts remain unexposed and unverified** pending authenticated attestation.
-- The existing GCP worker's log-completion defect is fixed: its completion RPC
-  now accepts `get_logs` alongside the existing VM reads. Source/ACL drift guards
-  preserve worker-only access, state gates and single-completion semantics.
-- Nine migrations were applied and their exact source statements read back from
-  `supabase_migrations.schema_migrations`. Before-source bundles were archived.
+## Routing and authorization
 
-There are **64 installed gateway mappings**, including disabled cancellation and
-retry. This is not 64 completed requirements. Existing legacy transports remain
-active: `sandy-operations-mcp` and the Node engineering MCP still have direct
-execution paths. **Universal API routing is not achieved.** See the exact
-[legacy routing audit](mcp-routing-audit.md) before changing those transports.
+The production Edge MCP servers v4/v71 use Sandy API for discovery, schemas and
+execution. The v71 adapter preserves its 16 legacy aliases and sends canonical
+execution with `channel:"mcp"`; it has no direct provider fallback. The Node
+Engineering MCP source preserves its five aliases and passes 13 tests, but its
+Cloud Run deployment has not been attested. Thus **universal Sandy MCP → Sandy
+API routing is not yet operational across every production transport**.
 
-## Actual validation and registry evidence
+The shared active v4 runtime and the public agent API now call the same extracted
+application service for the eight reviewed actions. The exact release router,
+feature flags and existing worker/QA authentication are preserved. Other v4
+conversation/model branches, older runtime fallbacks, UI clients and additional
+workers still need migration. The [routing audit](universal-routing-source-audit.md)
+records those source-based gaps.
 
-[project-read-release-evidence.json](project-read-release-evidence.json) records
-source commits/hashes, deployment versions, migration checksums and test layers.
+Normal user sessions, scoped API keys, portal grants, Agenda grants, Controller
+owners and trusted worker/VM identities remain distinct. Management credentials
+are never customer sessions. New customer mutation RPCs provide atomic receipts
+and tenant checks; unchanged legacy customer write endpoints retain their native
+semantics until migrated. Unverified public mutations and sensitive/model-cost
+operations remain closed.
 
-- **98 Deno tests passed**, including API/MCP composition, separate portal/Agenda/
-  owner grants, fixed backend actions, credential forwarding, scope checks,
-  strict contracts, provider projections and ambiguous mutation outcomes.
-  Auth/database/backend dependencies in these tests use fixtures.
-- **237 Python tests passed**, including reproducible pinned-schema restoration,
-  safe protobuf HTTP annotation parsing and requirement mappings.
-- The versioned provider handler ran locally against real Management API data:
-  **24 positive reads and one missing-branch negative test passed**, with actual
-  output schemas loaded from the live registry. The domain check returned 424
-  because the project lacks the paid Custom Domain add-on. Existing-branch get
-  remains untested because no branch existed. The materialized-view catalogue
-  was empty; no positive existing-object fixture is claimed.
-- Real database tests passed for cancellation, log completion and retry. They
-  covered actual service-role invocation, customer-role denial, state gates,
-  duplicate safety, preserved approval/failure evidence, policy-approved retry,
-  scope tampering, active target pins, terminal release and bounded retry chains.
-  Fixture jobs, targets and membership rows were rolled back. No fixture provider
-  or worker was invoked. Concurrent scheduling behavior was not exercised.
-- Registry evidence was updated and read back for **39 operations**, preserving
-  prior evidence. The 36 unverified rows remain `verified=false`; the previous
-  three video flags remain unchanged. No new operation was declared verified
-  from source, deployment metadata or fixture tests alone.
+## Actual validation
 
-The earlier health test found the optional documented `timeout_ms` parameter was
-rejected by the provider. Removing that unnecessary parameter restored the real
-health read. The latest read tests pass without it.
+The frozen committed release `02279e4` was validated, rather than an evolving
+working tree:
 
-## Confirmed external blockers
+- **351 TypeScript Deno tests passed**, across 31 files. The initial recursive
+  command also selected Node `.mjs` worker tests, producing nine sandbox-write
+  permission failures. The supported Node runner then passed **all 10 guest
+  worker tests**, without code changes. This runner correction is retained in
+  the evidence instead of presenting the first command as a clean pass.
+- **246 Python tests passed.**
+- **13 Node MCP adapter tests passed.** This validates source behavior, not the
+  currently deployed Cloud Run image.
+- Follow-up validation passed **98 composed API/MCP/job-route tests**. Credential
+  consumer validation passed **80 composed tests** plus a seven-test helper
+  suite that overlaps that group. Database-maintenance validation passed **30
+  service tests**, **78 ephemeral PostgreSQL/WASM component assertions** and
+  **six real Supabase database boundary checks**, all production fixtures rolled
+  back. These overlap the initial regression and are not summed into a larger
+  unique-test total. Local VACUUM was real; native TLS maintenance, real pg_cron
+  scheduling and wall-clock provider cancellation were not tested.
+- The refreshed local-provider sweep made **18 real Supabase Management API
+  calls**: **14 observations, two entitlement refusals and two other provider
+  refusals**. It used local handlers with synthetic policy callbacks. It does
+  not certify deployed gateway Auth, real approval admission or customer sessions.
+- Real PostgreSQL component suites passed in fully rolled-back transactions for
+  policy/audit, tenant mutation receipts, Agenda pins, durable queues/leases,
+  lifecycle proof binding, guest records, credential custody and provider-read
+  delegation. Synthetic identities/claims in database fixtures do not constitute
+  Auth sessions or authenticated HTTP tests. No fixture email/model/VM/provider
+  mutation was triggered.
+- The deployed endpoint probe on 21 October returned **blocked by proxy**, before
+  provider HTTP or Auth verification. Internal-handler and authenticated
+  API/MCP checks were deferred, not passed or silently skipped.
+- All **1,021 installed IDs matched the real registry against the exact deployed
+  v9 contract predicate**, with zero mismatches. That audit was recorded in the
+  central registry. It is a metadata/installed-contract check, not an Auth or
+  provider invocation.
 
-1. The saved network draft contains the project, GitHub API and Cloud Quotas
-   hosts, but this machine still receives proxy CONNECT 403 for them. These
-   requests do not reach the providers. The project Management API works and
-   authenticates project `zmqlyygzqoidkcwdysok` (Email AI, ACTIVE_HEALTHY).
-   Applying/publishing the saved policy to a runtime is still required for
-   deployed endpoint, Auth, GitHub API and Discovery checks. No additional token
-   is inferred to be missing from a proxy denial.
-2. No `SANDY_CONTROLLER_ACCESS_TOKEN` is present. The supported owner credential
-   is an unexpired session from normal Supabase login/refresh of an already
-   enabled Controller owner; configured lifetime is one hour. No owner was
-   impersonated, no owner membership was fabricated and no service key was used
-   as a positive customer session. Separate synthetic tenant test identities can
-   use normal password grants once the project host is reachable. See
-   [authentication and fixture requirements](auth-test-requirements.md).
-3. A positive custom-domain test requires the provider's paid add-on. No purchase
-   or entitlement change was made.
+The three historical video flags are the only fully verified registry entries.
+The new release has source/deployment and component evidence, plus 14 independently
+observed provider reads; its full authenticated end-to-end verification is partial.
 
-Native Git reads and branch pushes work. GitHub API-specific grants and broader
-GCP IAM are **unassessed**, not proven missing credentials. Provider-specific
-mutations need scoped disposable fixtures and appropriate grants. The existing
-production MCP transports were not replaced without their authenticated
-regression tests.
+## Separate dependencies and continuing work
 
-## Remaining engineering
+1. **Runtime egress:** required domains are published, but the execution machine
+   still receives proxy CONNECT 403 for the project host; GitHub API and Cloud
+   Quotas were also denied at the last destination checks. Management access
+   works. Re-saving identical settings is not the missing step.
+2. **Controller Auth:** no normal owner session token is available. Supported
+   login/refresh and synthetic tenant test requirements are documented in
+   [auth-test-requirements.md](auth-test-requirements.md). Only those specific
+   authenticated tests are deferred.
+3. **Custom Domain entitlement:** implemented handlers encounter the project's
+   missing paid add-on. No plan purchase or upgrade was made. Backup scheduling
+   has a separate observed entitlement refusal; an unclassified restore-point
+   refusal is not labelled as a proven entitlement issue.
+4. **Guest execution:** a dedicated Ed25519 signer is now configured: Management
+   secret creation returned HTTP 201, names-only readback returned HTTP 200, and
+   local sign/verify passed. No existing bindings were replaced or private material
+   saved or logged. Runtime key loading remains untested; approved enrollment,
+   an installed managed agent, runtime egress and a Controller session fixture
+   remain prerequisites. No VM enrollment, installation or operation was enabled.
+   SSH and WinRM transports remain unsupported. VM-reported completion is
+   distinct from independent provider readback.
+5. **Specific provider scopes and fixtures:** verified organization/folder/billing
+   bindings, exact mutation approvals, disposable targets and credential rotation
+   fixtures remain operation-specific prerequisites. Unassessed IAM is not
+   described as unavailable permission. Names-only Management readback confirmed
+   the native TLS database-maintenance URL and GCP scope bindings absent; those
+   configuration dependencies remain separate from implemented handlers.
 
-All 161 rows retain their missing capabilities. Major gaps include durable
-orchestration/outbox/leases and dispatch, general retry/backoff and verified
-compensation, tamper-evident audit, plan graphs, all remaining provider adapters
-and writes, wildcard lifecycle members, scoped policy/cost controls, guest
-execution, customer-domain integrations, API-key support in the new gateway,
-pagination/streaming and migration of every legacy caller. The four side-effecting
-memory operations need corrected contracts before canonical exposure. These are
-engineering gaps; adding a Controller token does not implement them. Bulk registry
-insertion and provider-schema candidates are not substitutes for handlers or
-acceptance tests.
+Job REST routing, guarded maintenance and credential consumers are now deployed.
+Independent work continues on Auth/Storage, remaining customer/provider families
+and broader shared-service adoption.
+Those changes are reported separately until committed release validation,
+guarded deployment, source readback and registry evidence are complete. Broad
+wildcard completion, all application routing, full pagination and verified
+compensation are not inferred from the 1,021 mappings.
 
 ## Reproduction
 
-Use the existing checkout. Activate Deno with
-`export PATH=/workspace/.cloud-setup/toolchain/node_modules/.bin:$PATH` and set
-`DENO_DIR=/workspace/.cloud-setup/deno-cache` for the writable cache.
+Use the existing checkout, installed Deno and writable cache. To reproduce a
+release count, run its committed source archive rather than later pending work.
 
 ```sh
+export PATH=/workspace/.cloud-setup/toolchain/node_modules/.bin:$PATH
+export DENO_DIR=/workspace/.cloud-setup/deno-cache
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/sandy -p 'test_*.py'
-deno test supabase/functions/sandy-operation-api/ supabase/functions/sandy-api-mcp/ supabase/functions/sandy-deployment-api/ supabase/functions/sandy-provider-read-api/
-deno run --allow-env=SANDY_SUPABASE_MANAGEMENT_TOKEN --allow-net=api.supabase.com --allow-write=/workspace/sandy-api-deliverables/provider-integration-results.json scripts/sandy/verify_project_reads.ts /workspace/sandy-api-deliverables/provider-integration-results.json
-PYTHONDONTWRITEBYTECODE=1 python3 scripts/sandy/verify_deployed_api.py --output /workspace/sandy-api-deliverables/deployed-api-checks.json
-python3 scripts/sandy/fetch_provider_contracts.py --output /workspace/sandy-api-deliverables/provider-schemas
-python3 scripts/sandy/provider_contract_inventory.py --schemas /workspace/sandy-api-deliverables/provider-schemas --registry-report /workspace/sandy-api-deliverables/production-inspection-final.json --output /workspace/sandy-api-deliverables/provider-contract-inventory.json
+node --test supabase/functions/sandy-guest-operation-api/worker_test.mjs
+node --test services/sandy-engineering-mcp/test/api-adapter.test.mjs
+deno run --allow-env scripts/sandy/export_api_contract_evidence.ts --include-gateway > /tmp/sandy-source-contracts.json
 ```
 
-Provider integration exits nonzero for the domain entitlement block; schema
-restore retains the explicitly unavailable Discovery source; deployed checks exit
-nonzero for actual network/auth/component failures. SQL suites are
-`scripts/sandy/test_cancel_pending_deployment_job.sql`,
-`scripts/sandy/test_cloud_read_completion.sql` and
-`scripts/sandy/test_retry_approved_read_job.sql`; use authorized Management
-access and retain assertion results. Never print credentials.
+Run Deno against `.ts` test files and the Node worker under Node. The reconciliation
+tool combines source exports with an actual live snapshot and explicit deployed
+ID attestation; it never marks a broad requirement complete from those inputs.
+Provider tests require authorized scoped credentials and must never print them.

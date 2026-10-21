@@ -1,0 +1,492 @@
+{
+  "recorded_at_utc": "2026-10-21T02:21:13.619991+00:00",
+  "release_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+  "release_published": true,
+  "published_branch": "b139a759489d87a1479f19776579b86d81160f5b",
+  "merged_main": "350ede13e373fb2108d57748b20e44d57302135d",
+  "new_merge_established": false,
+  "commits": [
+    {
+      "commit": "b3e1a42",
+      "subject": "Implement durable Sandy API orchestration with scoped lease dispatch"
+    },
+    {
+      "commit": "a948905",
+      "subject": "Add 595 scoped provider handlers and guarded credential custody"
+    },
+    {
+      "commit": "f7eb112",
+      "subject": "Add tenant API handlers, scoped credentials and atomic customer mutations"
+    },
+    {
+      "commit": "e310a44",
+      "subject": "Reduce generated provider catalogue upload size without changing contracts"
+    },
+    {
+      "commit": "043e7b4",
+      "subject": "Implement shared agent, database, guest and guarded lifecycle services"
+    },
+    {
+      "commit": "d86df5d",
+      "subject": "Route all Sandy MCP tools through the governed 1020-operation API"
+    },
+    {
+      "commit": "02279e4",
+      "subject": "Package provider contracts with verified gzip catalogue loader"
+    }
+  ],
+  "regressions": {
+    "deno_typescript": {
+      "passed": 351,
+      "failed": 0,
+      "files": 31
+    },
+    "guest_worker_node": {
+      "passed": 10,
+      "failed": 0
+    },
+    "python": {
+      "passed": 246,
+      "failed": 0
+    },
+    "node_mcp": {
+      "passed": 13,
+      "failed": 0
+    },
+    "runner_correction": "Initial recursive Deno invocation also picked up Node worker .mjs tests:9 sandbox write permission failures; all10 rerun successfully in supported Node runtime, no code changes.",
+    "scope": "frozen git-archived02279e4; normal deployed Controller/customer authentication not tested"
+  },
+  "real_provider": {
+    "tested_at": "2026-10-21T01:32:48.872Z",
+    "calls": 18,
+    "outcomes": {
+      "observed": 14,
+      "provider_entitlement_required": 2,
+      "provider_request_failed": 2
+    },
+    "boundary": "local handler with synthetic policy callbacks -> real Management API; not authenticated Controller/gateway/policy integration"
+  },
+  "deployed_authentication": {
+    "project": "zmqlyygzqoidkcwdysok",
+    "tested_at": "2026-10-21T02:03:14.542702+00:00",
+    "tests": [
+      {
+        "test": "project_endpoint_reachable_and_requires_authentication",
+        "outcome": "blocked",
+        "http_status": null,
+        "layer": "edge_authentication",
+        "blocker": "network_proxy_denied"
+      }
+    ],
+    "complete": false,
+    "deferred": [
+      "internal_handler_checks",
+      "authenticated_api_mcp_checks"
+    ]
+  },
+  "registry_evidence": {
+    "recorded_at_utc": "2026-10-21T02:07:19.221308+00:00",
+    "write_http": 201,
+    "readback_http": 201,
+    "gateway_version": 8,
+    "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+    "readback": [
+      {
+        "registry_rows": 1041,
+        "session_evidence_rows": 1020,
+        "verified_count": 3,
+        "verified_operations": [
+          "video.execution.preflight",
+          "video.install.preflight",
+          "video.status"
+        ],
+        "gateway_v8_evidence_rows": 1020
+      }
+    ],
+    "verified_fields_preserved": true
+  },
+  "source_readbacks": [
+    {
+      "slug": "sandy-agent-operation-api",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-agent-operation-api-expanded-source-readback.json",
+      "receipt_sha256": "3352963f45dfad34c023fb93b1b9b8d78a3e444f0d4c785fc9e8e0171c256341",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-agent-runtime-v4",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-agent-runtime-v4-expanded-source-readback.json",
+      "receipt_sha256": "ad7e86bd7b853646a84dc1e45aad0834eb30df5eb562829ff443c43bce5e6586",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-api-mcp",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-api-mcp-expanded-source-readback.json",
+      "receipt_sha256": "f8a22d17885696daa5706780ac4939dff29fd64376e18ab0fabd7349647a05a7",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-controller-api",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-controller-api-expanded-source-readback.json",
+      "receipt_sha256": "f878598a937154326be9cdb5e75cf2c2ce7eb3b307822588b069ccd97a351597",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-credential-lifecycle-api",
+      "source_commit": "da5d5871d4cc36169d51b5608e7d975084c7ef7f",
+      "receipt": "sandy-credential-lifecycle-api-expanded-source-readback.json",
+      "receipt_sha256": "da141f526f19d083de926c9148acad310119d472a556fe4403cd01eaac788f5b",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 5,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-credential-probe-api",
+      "source_commit": "f7eb112f76078d2d1477774944b5f0ca6185da58",
+      "receipt": "sandy-credential-probe-api-expanded-source-readback.json",
+      "receipt_sha256": "f1e864b94a9dd6c84afce0fcdcfbb76b09378b433c3cd833ac260a8de1c3727d",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-database-operation-api",
+      "source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+      "receipt": "sandy-database-operation-api-expanded-source-readback.json",
+      "receipt_sha256": "20f6f46a943415c171ebea570c717b633548b2e69f49141dc1a4d35c5880f2a9",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-guest-operation-api",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-guest-operation-api-expanded-source-readback.json",
+      "receipt_sha256": "6ebcb400c59f3beafd3a98e5821835fbfc47ec49280ef2ba43d404910cca6f3d",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-operation-api",
+      "source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+      "receipt": "sandy-operation-api-expanded-source-readback.json",
+      "receipt_sha256": "1a38e4d435ec96de1d98b3a25869b9c4b5a98d53d79398ff0c326f51a1c79535",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 2,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-operations-mcp",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-operations-mcp-expanded-source-readback.json",
+      "receipt_sha256": "4ab5ec944a07f8c7376e38ea91fecf3b0b9460f3705ce0f1b48e43860f600f66",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-orchestration-api",
+      "source_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "receipt": "sandy-orchestration-api-expanded-source-readback.json",
+      "receipt_sha256": "da5de7d81b05c621f83f1bd0f0f2ab29c6adb8cb194f25c28d05fee6c803b478",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    },
+    {
+      "slug": "sandy-provider-operation-api",
+      "source_commit": "da5d5871d4cc36169d51b5608e7d975084c7ef7f",
+      "receipt": "sandy-provider-operation-api-expanded-source-readback.json",
+      "receipt_sha256": "559a913706281564121a69a1b1890b392500b29977e3f65ab2cd16d81fa72466",
+      "runtime_sources_accounted_for": true,
+      "type_only_omissions": 0,
+      "unaccounted": []
+    }
+  ],
+  "completion": {
+    "requirements": 161,
+    "completed": 0,
+    "deployed_gateway_ids": 1021,
+    "deployed_additional_typed_contract_records": 956,
+    "historical_verified_operations": [
+      "video.execution.preflight",
+      "video.install.preflight",
+      "video.status"
+    ],
+    "new_fully_verified_deployed_operations": 0,
+    "registry_rows": 1042,
+    "partially_covered_requirements": 140
+  },
+  "universal_routing": {
+    "edge_mcp_adapters_api_only_source_attested": true,
+    "cloud_run_node_adapter_source_tested": true,
+    "cloud_run_node_adapter_deployed": false,
+    "internal_application_migration_complete": false,
+    "universal_operational_acceptance": false
+  },
+  "logs": {
+    "expanded-release-deno-20261021.log": {
+      "sha256": "26aac2183cabd3433d670874b9e308fd93cda1c8289f2ae87132708ba1eaea5b",
+      "bytes": 50318
+    },
+    "expanded-release-node-worker-20261021.log": {
+      "sha256": "806126207c96954909888369ee76af17d77b2f9c2a4bdfc5d9089235cab9e58a",
+      "bytes": 2337
+    },
+    "expanded-release-python-20261021.log": {
+      "sha256": "75e1521251dd41a26773a5b809638e02b21d2c32e47dd3a177b0902777888630",
+      "bytes": 2853
+    },
+    "node-mcp-release-20261021.log": {
+      "sha256": "0d002a3bd06585d819c19d3a66b3c6c27ffdc4a35d45706487fe03f2adf7c606",
+      "bytes": 3617
+    }
+  },
+  "credential_consumer_followup": {
+    "source_commit": "da5d587",
+    "deployments": [
+      {
+        "slug": "sandy-provider-operation-api",
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "source_commit": "da5d5871d4cc36169d51b5608e7d975084c7ef7f",
+        "deployment_http": 201,
+        "deployment_receipt": "sandy-provider-operation-api-expanded-deployment.json",
+        "runtime_source_receipt": "sandy-provider-operation-api-expanded-source-readback.json"
+      },
+      {
+        "slug": "sandy-credential-lifecycle-api",
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "source_commit": "da5d5871d4cc36169d51b5608e7d975084c7ef7f",
+        "deployment_http": 201,
+        "deployment_receipt": "sandy-credential-lifecycle-api-expanded-deployment.json",
+        "runtime_source_receipt": "sandy-credential-lifecycle-api-expanded-source-readback.json"
+      }
+    ],
+    "migration": {
+      "readback_http": 201,
+      "rows": [
+        {
+          "version": "20261021006100",
+          "name": "sandy_credential_consumer",
+          "exact_source_match": true
+        }
+      ]
+    },
+    "actual_provider_rotation_or_auth_attested": false
+  },
+  "current_deployed_release_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+  "release_commit_semantics": "release_commit pins initial full regression; current_deployed_release_commit includes separately validated follow-ups",
+  "latest_functions": [
+    {
+      "slug": "sandy-agent-runtime",
+      "version": 55,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-controller-api",
+      "version": 35,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-agent-runtime-v4",
+      "version": 12,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-operations-mcp",
+      "version": 71,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-operation-api",
+      "version": 9,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-api-mcp",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-provider-read-api",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-orchestration-api",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-credential-probe-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-provider-operation-api",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-guest-operation-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-agent-operation-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-database-operation-api",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-credential-lifecycle-api",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    }
+  ],
+  "latest_registry_evidence": {
+    "recorded_at_utc": "2026-10-21T02:18:38.869928+00:00",
+    "write_http": 201,
+    "readback_http": 201,
+    "gateway_version": 9,
+    "source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+    "readback": [
+      {
+        "registry_rows": 1042,
+        "session_evidence_rows": 1021,
+        "verified_count": 3,
+        "verified_operations": [
+          "video.execution.preflight",
+          "video.install.preflight",
+          "video.status"
+        ],
+        "gateway_v9_evidence_rows": 1021
+      }
+    ],
+    "verified_fields_preserved": true
+  },
+  "live_catalogue_audit": {
+    "source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+    "gateway_version": 9,
+    "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
+    "installed_count": 1021,
+    "registry_count": 1042,
+    "all_installed_contracts_match": true,
+    "result_sha256": "4bc24858a25e36a42f4280ac06660a7b9cffeeb2f86d9dc91928ffdda9e572c1",
+    "auth_session_tested": false,
+    "registry_write_http": 201
+  },
+  "followup_regressions": {
+    "nonadditive": true,
+    "job_rest_composed": {
+      "passed": 98,
+      "failed": 0,
+      "source_commit": "b139a75"
+    },
+    "credential_consumers": {
+      "source_commit": "da5d587",
+      "evidence": "credential-consumer-runtime-20261021.json",
+      "composed_deno": {
+        "passed": 80,
+        "failed": 0
+      },
+      "overlapping_helper": {
+        "passed": 7,
+        "failed": 0
+      },
+      "real_provider_rotation_or_auth_tested": false
+    },
+    "database_maintenance": {
+      "source_commit": "b139a75",
+      "service_tests": {
+        "passed": 30,
+        "failed": 0
+      },
+      "ephemeral_postgresql_assertions": {
+        "passed": 78,
+        "failed": 0
+      },
+      "real_supabase_boundary_checks": 6,
+      "actual_production_maintenance_or_schedule": false,
+      "evidence": "database-maintenance-release-review.json"
+    }
+  },
+  "followup_commits": [
+    {
+      "commit": "da5d587",
+      "subject": "Connect provider credential consumers to verified managed custody"
+    },
+    {
+      "commit": "b139a75",
+      "subject": "Resolve scoped job routes and implement guarded native database maintenance"
+    }
+  ],
+  "configuration_dependencies": {
+    "guest_signing": {
+      "recorded_at_utc": "2026-10-21T02:22:44.883933+00:00",
+      "write_http": 201,
+      "new_configuration_only": true,
+      "existing_bindings_replaced": false,
+      "key_id": "sandy-guest-20261021-a118c398fcc2",
+      "algorithm": "Ed25519",
+      "public_spki_sha256": "a118c398fcc28120f858b276dbfc865118f2e4aa486a572248dc9b1b2982eb0e",
+      "local_pair_sign_verify_passed": true,
+      "private_material_logged_or_saved_to_workspace": false,
+      "vm_enrolled": false,
+      "vm_installed": false,
+      "operations_enabled": false,
+      "runtime_load_tested": false,
+      "readback_http": 200,
+      "all_three_bindings_present": true
+    },
+    "remaining_guest_dependencies": [
+      "runtime key-load validation",
+      "approved enrollment",
+      "managed agent installation",
+      "runtime egress",
+      "normal Controller session fixture"
+    ],
+    "maintenance_binding_presence": {
+      "read_http": 200,
+      "native_tls_database_maintenance_url_present": false,
+      "gcp_scope_bindings_present": false,
+      "values_disclosed": false,
+      "evidence": "maintenance-binding-presence-20261021.json",
+      "guest_binding_absence_in_earlier_receipt_superseded_by": "guest-signing-configuration-20261021.json"
+    }
+  }
+}
