@@ -86,13 +86,26 @@ identity requires provider investigation. Adopted and rollback preimages are
 never cleanup candidates. Provider key IDs remain safe metadata, while private
 keys and tokens remain internal.
 
-Activation changes the encrypted custody pointer. Existing Sandy provider
-clients continue to use their established WIF or environment credential
-configuration; the module does not silently switch them to service-account key
-authentication. A consumer using the custody pointer requires its own explicit,
-fixed-target resolver integration. Hidden provider secret stores apply their new
-value when the provider accepts the update, so their consumer readback precedes
-custody activation.
+Activation changes the encrypted custody pointer. Fixed Sandy provider and
+credential administration clients use the private
+`_shared/sandy_credential_consumer.ts` resolver after consuming their execution
+grant. Migration `20261021006100` adds private bindings for Supabase Management,
+GitHub installation-token API access and the existing GCP service account. It
+does not create or enable any bindings. The distinct GitHub app JWT identity is
+unchanged and cannot be replaced by an installation token.
+
+An explicitly configured consumer must retain its verified immutable target
+configuration, activated version and digest-bound successful verification
+admission. Each invocation rechecks that pointer; a changed, disabled, removed
+or invalid active pointer fails closed. Only the resolver's explicit
+`existing_configuration` response allows established ENV/WIF configuration.
+Private Vault material reaches only the fixed provider's server code; operation
+responses and audit/access receipts contain metadata and digests. A custodied
+GCP key uses the same fixed, short-lived OAuth exchange as verification, without
+creating a customer session. Deploy the resolver migration before runtime code
+that depends on it. Hidden provider secret stores apply their new value when
+the provider accepts the update, so their consumer readback precedes custody
+activation.
 
 `scripts/sandy/build_credential_contracts.ts` deterministically regenerates the
 small gateway manifest and the migration's disabled registry contracts. It
@@ -100,9 +113,10 @@ performs no network or database calls. The gateway and runtime share the exact
 target scope implementation and contract hashes.
 
 Current verification is source and isolated-fixture validation: typed contracts,
-local cryptographic/provider fixtures, and a Management API transaction ending
-in `ROLLBACK` that checks ACLs, default denial and the installed Vault
-encryption signature with a disposable noncredential string. No real credential
+local cryptographic/provider fixtures, composed handler/consumer tests, and
+Management API transactions ending in `ROLLBACK` that check ACLs, default
+denial, contract/proof digests and the installed Vault encryption signature with
+a disposable noncredential string. No real credential
 rotation, workflow dispatch, owner-session integration or positive production
 activation is claimed. The separate dependencies are normal Controller
 authorization, an approved verified provider fixture/probe, actual provider IAM

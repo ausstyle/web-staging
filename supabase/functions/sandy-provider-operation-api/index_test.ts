@@ -1,5 +1,6 @@
 import { providerOperations as gatewayOperations } from "./gateway.ts";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
+import { createCredentialConsumer } from "../_shared/sandy_credential_consumer.ts";
 import {
   deepStrictEqual as assertEquals,
   throws as assertThrows,
@@ -170,12 +171,18 @@ Deno.test("owner and current registry authorization refuse without consumption",
   assertEquals(h.requests.length, 0);
 });
 Deno.test("replayed grant cannot repeat provider execution", async () => {
+  let identities = 0;
   const h = harness({
+    credentialForExecution: () => {
+      identities++;
+      return Promise.resolve("unused");
+    },
     consumeGrant: () =>
       Promise.resolve({ allowed: true, reused: true, admission_id: ADMISSION }),
   });
   assertEquals((await h.call()).status, 409);
   assertEquals(h.requests.length, 0);
+  assertEquals(identities, 0);
 });
 Deno.test("safe metadata projection strips provider credential fields and records digest receipt", async () => {
   const h = harness();
@@ -251,7 +258,135 @@ Deno.test("custom domain entitlement failure is independent of installed handler
   });
   assertEquals(result.status, 424);
   assertEquals((await result.json()).error, "provider_entitlement_required");
-  assertEquals(h.consumes(), 0);
+  assertEquals(h.consumes(), 1);
+  assertEquals(h.finishes[0].outcome, "failed");
+});
+Deno.test("composed provider execution consumes its grant before resolving and using the active custody token", async () => {
+  const token = "sbp_synthetic_active_consumer_token";
+  const targetId = "10000000-0000-4000-8000-000000000005";
+  const versionId = "10000000-0000-4000-8000-000000000006";
+  const resource = { secret_name: "SANDY_SUPABASE_MANAGEMENT_TOKEN" };
+  const config = await argumentDigest({
+    version: "1.0.0",
+    target_id: targetId,
+    provider: "supabase_edge_secret",
+    resource,
+  });
+  const material = Array.from(
+    new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)),
+    ),
+    (n) => n.toString(16).padStart(2, "0"),
+  ).join("");
+  const events: string[] = [];
+  const withCredential = createCredentialConsumer({
+    db: {
+      rpc(name, args) {
+        events.push("resolve");
+        assertEquals(name, "sandy_credential_resolve_consumer");
+        assertEquals(args.p_actor, ACTOR);
+        assertEquals(args.p_admission, ADMISSION);
+        return Promise.resolve({
+          error: null,
+          data: {
+            ok: true,
+            source: "vault_active",
+            consumer: "supabase_management",
+            admission_id: ADMISSION,
+            active_version_id: versionId,
+            value: token,
+            material_sha256: material,
+            provider_version_id: "fixture",
+            target: {
+              id: targetId,
+              provider: "supabase_edge_secret",
+              resource,
+              enabled: true,
+              verified: true,
+              active_version_id: versionId,
+              config_sha256: config,
+              scope_sha256: awaitScope,
+            },
+          },
+        });
+      },
+    },
+    legacy: {
+      supabase_management: () => {
+        throw Error("must not use old token");
+      },
+      github_api: () => "",
+      gcp_access_token: () => "",
+    },
+  });
+  const awaitScope = await argumentDigest({
+    sandy_project_ref: "zmqlyygzqoidkcwdysok",
+    gcp_project_id: "elaborate-haven-511518-a5",
+    github_repository: "ausstyle/web-staging",
+    credential_target_id: targetId,
+    credential_provider: "supabase_edge_secret",
+    target_config_sha256: config,
+  });
+  const h = harness({
+    consumeGrant: () => {
+      events.push("consume");
+      return Promise.resolve({ allowed: true, admission_id: ADMISSION });
+    },
+    credentialForExecution: (_op, execution) =>
+      withCredential(
+        "supabase_management",
+        execution,
+        (value) => Promise.resolve(value),
+      ),
+    fetch: ((_, init) => {
+      events.push("provider");
+      assertEquals(
+        (init?.headers as Record<string, string>).authorization,
+        `Bearer ${token}`,
+      );
+      return Promise.resolve(new Response(JSON.stringify(authFixture)));
+    }) as typeof fetch,
+  });
+  const result = await h.call();
+  assertEquals(result.status, 200);
+  assertEquals(events, ["consume", "resolve", "provider"]);
+  assertEquals((await result.text()).includes(token), false);
+  assertEquals(JSON.stringify(h.finishes).includes(token), false);
+});
+Deno.test("active custody refusal finishes a consumed grant without provider dispatch or environment fallback", async () => {
+  let legacy = 0;
+  const withCredential = createCredentialConsumer({
+    db: {
+      rpc: () =>
+        Promise.resolve({
+          data: null,
+          error: { message: "consumer_active_pointer_removed" },
+        }),
+    },
+    legacy: {
+      supabase_management: () => {
+        legacy++;
+        return "old_revoked_fixture";
+      },
+      github_api: () => "",
+      gcp_access_token: () => "",
+    },
+  });
+  const h = harness({
+    credentialForExecution: (_op, execution) =>
+      withCredential(
+        "supabase_management",
+        execution,
+        (token) => Promise.resolve(token),
+      ),
+  });
+  const result = await h.call();
+  assertEquals(result.status, 424);
+  assertEquals(legacy, 0);
+  assertEquals(h.consumes(), 1);
+  assertEquals(h.requests.length, 0);
+  assertEquals(h.finishes[0].outcome, "failed");
+  assertEquals((await result.json()).error, "consumer_active_pointer_removed");
 });
 Deno.test("domain inspection returns actual nested DNS proofs only", async () => {
   const h = harness({

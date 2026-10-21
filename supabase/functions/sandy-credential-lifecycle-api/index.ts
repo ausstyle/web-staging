@@ -13,6 +13,11 @@ import {
   type MachineAuth,
 } from "../_shared/sandy_machine_identity.ts";
 import {
+  ConsumerCredentialError,
+  type ConsumerExecution,
+  createCredentialConsumer,
+} from "../_shared/sandy_credential_consumer.ts";
+import {
   type CredentialContract,
   credentialContracts,
   credentialExecutionScope,
@@ -42,7 +47,10 @@ export interface CustodyStore {
 export type CredentialDependencies = {
   service: string;
   store: CustodyStore;
-  providers: ReturnType<typeof createCredentialProviders>;
+  providers?: ReturnType<typeof createCredentialProviders>;
+  providersForExecution?: (
+    execution: ConsumerExecution,
+  ) => ReturnType<typeof createCredentialProviders>;
   authorize: (
     context: ExecutionContext,
     contract: CredentialContract,
@@ -265,6 +273,16 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
     };
     let result: Record<string, any>;
     try {
+      const providers = deps.providersForExecution?.({
+        actorId: context.actor_id,
+        admissionId: admission,
+        operation: contract.operation,
+      }) ?? deps.providers;
+      if (!providers) {
+        throw new ConsumerCredentialError(
+          "consumer_execution_context_required",
+        );
+      }
       if (contract.operation === "supabase.vault.secrets.create_version") {
         result = safeResult(
           await rpc("sandy_credential_store_version", {
@@ -282,7 +300,7 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
       } else if (contract.operation === "system.credentials.provider.verify") {
         rotation = await loadRotation(args.rotation_id);
         const staged = await material("staged");
-        const observed = await deps.providers.verify(target, rotation, staged);
+        const observed = await providers.verify(target, rotation, staged);
         result = {
           rotation_id: rotation.id,
           target_id: target.id,
@@ -355,7 +373,7 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
               typeof binding.provider_version_id !== "string" ||
               binding.provider_version_id !== rotation.provider_version_id
             ) throw new Error("credential_unstaged_key_identity_unconfirmed");
-            await deps.providers.cleanupUnstagedKey(
+            await providers.cleanupUnstagedKey(
               target,
               binding.provider_version_id,
               binding.dispatch_allowed === true,
@@ -369,15 +387,15 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
             const source = await material("source");
             const observedVersion =
               target.provider === "gcp_service_account_key"
-                ? (await deps.providers.verify(target, rotation, source))
+                ? (await providers.verify(target, rotation, source))
                   .provider_version_id
                 : target.provider === "gcp_secret"
-                ? (await deps.providers.secretAccess(
+                ? (await providers.secretAccess(
                   target,
                   String(target.resource.name) + "/versions/latest",
                   source.material_sha256,
                 )).version
-                : await deps.providers.hiddenMetadata(target);
+                : await providers.hiddenMetadata(target);
             const stored = await rpc("sandy_credential_stage", {
               p_rotation: rotation.id,
               p_material: source.value,
@@ -407,7 +425,7 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
             p_rotation: rotation.id,
           });
           if (probe.started === true) {
-            await deps.providers.dispatchProbe(target, rotation);
+            await providers.dispatchProbe(target, rotation);
           }
         }
       } else if (
@@ -421,7 +439,7 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
           !rotation.verification_evidence ||
           typeof rotation.verification_canonical !== "string"
         ) throw new Error("credential_live_readback_required");
-        await deps.providers.verify(target, rotation, await material("staged"));
+        await providers.verify(target, rotation, await material("staged"));
         result = safeResult(
           await rpc("sandy_credential_activate", {
             p_rotation: rotation.id,
@@ -448,8 +466,8 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
         if (active.provider_version_id === prior.provider_version_id) {
           throw new Error("active_provider_credential_cannot_be_revoked");
         }
-        await deps.providers.verify(target, rotation, active as Material);
-        await deps.providers.revoke(target, prior as Material);
+        await providers.verify(target, rotation, active as Material);
+        await providers.revoke(target, prior as Material);
         result = {
           ...safeResult(
             await rpc("sandy_credential_record_revocation", {
@@ -493,7 +511,7 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
         rotation = await loadRotation(claim.rotation_id);
         let next: { value: string; provider_version_id: string };
         if (contract.operation === "gcp.secrets.access") {
-          const observed = await deps.providers.secretAccess(
+          const observed = await providers.secretAccess(
             target,
             String(target.resource.name) + "/versions/latest",
           );
@@ -505,8 +523,8 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
           const source = await material("source");
           const version = target.provider === "github_actions_secret" ||
               target.provider === "supabase_edge_secret"
-            ? await deps.providers.hiddenMetadata(target)
-            : (await deps.providers.verify(target, rotation, source))
+            ? await providers.hiddenMetadata(target)
+            : (await providers.verify(target, rotation, source))
               .provider_version_id;
           next = { value: source.value, provider_version_id: version };
         } else {
@@ -523,11 +541,11 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
             ? prior!
             : await material("source");
           next = !prior
-            ? await deps.providers.createFirstVersion(target, source)
+            ? await providers.createFirstVersion(target, source)
             : contract.operation === "system.credentials.provider.rollback" &&
                 target.provider === "gcp_service_account_key"
-            ? await deps.providers.restoreKey(target, source)
-            : await deps.providers.rotate(target, rotation, source, prior);
+            ? await providers.restoreKey(target, source)
+            : await providers.rotate(target, rotation, source, prior);
         }
         producedProviderVersion = next.provider_version_id;
         producedProviderMaterial =
@@ -543,7 +561,7 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
             p_rotation: rotation.id,
           });
           if (probe.started === true) {
-            await deps.providers.dispatchProbe(target, rotation);
+            await providers.dispatchProbe(target, rotation);
           }
         }
         result = {
@@ -592,7 +610,8 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
           reconciliation_required: true,
         });
       }
-      const code = error instanceof CredentialProviderError
+      const code = error instanceof CredentialProviderError ||
+          error instanceof ConsumerCredentialError
         ? error.code
         : error instanceof Error &&
             /^credential_[a-z_]+$|^active_[a-z_]+$|^verified_[a-z_]+$/.test(
@@ -602,9 +621,12 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
         : "credential_execution_failed";
       const unknown = contract.is_mutation &&
         (producedProviderMaterial ||
+          error instanceof ConsumerCredentialError &&
+            error.requestMayHaveExecuted ||
           error instanceof CredentialProviderError && error.unknown ||
           custodyMutationStarted &&
-            !(error instanceof CredentialProviderError));
+            !(error instanceof CredentialProviderError) &&
+            !(error instanceof ConsumerCredentialError));
       if (!unknown && rotation && contract.is_mutation) {
         try {
           await rpc("sandy_credential_record_failed", {
@@ -626,14 +648,21 @@ export function createCredentialLifecycleHandler(deps: CredentialDependencies) {
         result,
         error instanceof CredentialProviderError ? error.status : null,
       );
-      return reply(code === "credential_consumer_probe_pending" ? 409 : 502, {
-        ok: false,
-        error: code,
-        admission_id: admission,
-        executed: true,
-        reconciliation_required: unknown,
-        request_state: unknown ? "unknown" : "failed",
-      });
+      return reply(
+        error instanceof ConsumerCredentialError
+          ? error.status
+          : code === "credential_consumer_probe_pending"
+          ? 409
+          : 502,
+        {
+          ok: false,
+          error: code,
+          admission_id: admission,
+          executed: true,
+          reconciliation_required: unknown,
+          request_state: unknown ? "unknown" : "failed",
+        },
+      );
     }
   };
 }
@@ -649,16 +678,32 @@ if (import.meta.main) {
     }
     return data;
   };
-  const providers = createCredentialProviders({
-    service,
-    management: Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
-    github: Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN") ??
-      Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN") ?? "",
-    gcp: createMachineAccessToken(db.auth as unknown as MachineAuth),
-  });
+  const legacy = {
+    supabase_management: () =>
+      Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
+    github_api: () =>
+      Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN") ??
+        Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN") ?? "",
+    gcp_access_token: createMachineAccessToken(
+      db.auth as unknown as MachineAuth,
+    ),
+  };
+  const withCredential = createCredentialConsumer({ db, legacy });
   Deno.serve(createCredentialLifecycleHandler({
     service,
-    providers,
+    providersForExecution: (execution) =>
+      createCredentialProviders({
+        service,
+        management: () =>
+          withCredential("supabase_management", execution, (token) =>
+            Promise.resolve(token)),
+        github: () =>
+          withCredential("github_api", execution, (token) =>
+            Promise.resolve(token)),
+        gcp: () =>
+          withCredential("gcp_access_token", execution, (token) =>
+            Promise.resolve(token)),
+      }),
     store: {
       target: async (id) => {
         const { data, error } = await db.from("sandy_credential_targets")

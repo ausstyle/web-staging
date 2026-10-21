@@ -14,6 +14,11 @@ import {
   machineScope,
 } from "../_shared/sandy_machine_identity.ts";
 import {
+  ConsumerCredentialError,
+  type ConsumerExecution,
+  createCredentialConsumer,
+} from "../_shared/sandy_credential_consumer.ts";
+import {
   allowedConfiguredReference,
   type BindingKind,
   parseProviderBindings,
@@ -122,6 +127,10 @@ export interface ProviderDependencies extends ProviderConfig {
   github?: string;
   githubAppJwt?: string;
   getGcpAccessToken?: () => Promise<string>;
+  credentialForExecution?: (
+    operation: ProviderOperation,
+    execution: ConsumerExecution,
+  ) => Promise<string>;
   fetch?: typeof fetch;
   authorizeContext: (
     context: ExecutionContext,
@@ -585,63 +594,6 @@ export function createProviderOperationHandler(
         permission.error ?? "execution_policy_refused",
       );
     }
-    let token: string;
-    try {
-      token = op.provider === "supabase"
-        ? deps.management ?? ""
-        : op.provider === "github"
-        ? ((op as any).credential_kind === "github_app_jwt"
-          ? deps.githubAppJwt ?? ""
-          : deps.github ?? "")
-        : await deps.getGcpAccessToken?.() ?? "";
-    } catch (error) {
-      return refusal(
-        424,
-        error instanceof Error &&
-          /^machine_[a-z_]+(?:_\d{3})?$/.test(error.message)
-          ? error.message
-          : "provider_identity_unavailable",
-      );
-    }
-    if (!token) return refusal(424, "provider_credential_unavailable");
-    const headers: Record<string, string> = {
-      authorization: `Bearer ${token}`,
-      accept: op.provider === "github"
-        ? "application/vnd.github+json"
-        : "application/json",
-    };
-    if (op.provider === "github") {
-      headers["x-github-api-version"] = "2022-11-28";
-    }
-    // Check existing entitlement before grant consumption; never buy/upgrade add-ons.
-    if (op.operation.startsWith("supabase.domains.") && op.is_mutation) {
-      try {
-        const check = await fetcher(
-          `https://api.supabase.com/v1/projects/${catalogue.project_ref}/custom-hostname`,
-          {
-            method: "GET",
-            headers,
-            redirect: "error",
-            signal: AbortSignal.timeout(20000),
-          },
-        );
-        const text = await boundedText(check);
-        if (!check.ok) {
-          return refusal(
-            entitlementMissing(check.status, text) ? 424 : 502,
-            entitlementMissing(check.status, text)
-              ? "provider_entitlement_required"
-              : "provider_entitlement_unconfirmed",
-            {
-              provider_http_status: check.status,
-              provider_request_id: requestId(check),
-            },
-          );
-        }
-      } catch {
-        return refusal(502, "provider_entitlement_unconfirmed");
-      }
-    }
     const input_sha256 = await argumentDigest(args),
       scope_sha256 = await argumentDigest(scope);
     const providerBody: JsonObject = {
@@ -715,6 +667,111 @@ export function createProviderOperationHandler(
         return false;
       }
     };
+    let token: string;
+    try {
+      token = deps.credentialForExecution
+        ? await deps.credentialForExecution(op, {
+          actorId: context.actor_id,
+          admissionId: admission_id,
+          operation: op.operation,
+        })
+        : op.provider === "supabase"
+        ? deps.management ?? ""
+        : op.provider === "github"
+        ? ((op as any).credential_kind === "github_app_jwt"
+          ? deps.githubAppJwt ?? ""
+          : deps.github ?? "")
+        : await deps.getGcpAccessToken?.() ?? "";
+    } catch (error) {
+      const code = error instanceof ConsumerCredentialError
+        ? error.code
+        : error instanceof Error &&
+            /^machine_[a-z_]+(?:_\d{3})?$/.test(error.message)
+        ? error.message
+        : "provider_identity_unavailable";
+      const recorded = await finish("failed", null, null, { error: code });
+      return response(
+        error instanceof ConsumerCredentialError ? error.status : 424,
+        {
+          ok: false,
+          error: code,
+          executed: true,
+          admission_id,
+          request_state: "failed",
+          receipt_recorded: recorded,
+        },
+      );
+    }
+    if (!token) {
+      const recorded = await finish("failed", null, null, {
+        error: "provider_credential_unavailable",
+      });
+      return response(424, {
+        ok: false,
+        error: "provider_credential_unavailable",
+        executed: true,
+        admission_id,
+        request_state: "failed",
+        receipt_recorded: recorded,
+      });
+    }
+    const headers: Record<string, string> = {
+      authorization: `Bearer ${token}`,
+      accept: op.provider === "github"
+        ? "application/vnd.github+json"
+        : "application/json",
+    };
+    if (op.provider === "github") {
+      headers["x-github-api-version"] = "2022-11-28";
+    }
+    // Read entitlement with this consumed grant; never buy or upgrade add-ons.
+    if (op.operation.startsWith("supabase.domains.") && op.is_mutation) {
+      try {
+        const check = await fetcher(
+          `https://api.supabase.com/v1/projects/${catalogue.project_ref}/custom-hostname`,
+          {
+            method: "GET",
+            headers,
+            redirect: "error",
+            signal: AbortSignal.timeout(20000),
+          },
+        );
+        const text = await boundedText(check);
+        if (!check.ok) {
+          const error = entitlementMissing(check.status, text)
+            ? "provider_entitlement_required"
+            : "provider_entitlement_unconfirmed";
+          const recorded = await finish(
+            "failed",
+            check.status,
+            requestId(check),
+            { error },
+          );
+          return response(entitlementMissing(check.status, text) ? 424 : 502, {
+            ok: false,
+            error,
+            executed: true,
+            admission_id,
+            request_state: "failed",
+            provider_http_status: check.status,
+            provider_request_id: requestId(check),
+            receipt_recorded: recorded,
+          });
+        }
+      } catch {
+        const recorded = await finish("failed", null, null, {
+          error: "provider_entitlement_unconfirmed",
+        });
+        return response(502, {
+          ok: false,
+          error: "provider_entitlement_unconfirmed",
+          executed: true,
+          admission_id,
+          request_state: "failed",
+          receipt_recorded: recorded,
+        });
+      }
+    }
     if ((op as any).bucket_scope_check) {
       const bucket = object(args.path) ? args.path.bucket : undefined;
       try {
@@ -957,17 +1014,38 @@ if (import.meta.main) {
     }
     return data as PolicyResult;
   };
+  const legacy = {
+    supabase_management: () =>
+      Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
+    github_api: () =>
+      Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN") ??
+        Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN") ?? "",
+    gcp_access_token: createMachineAccessToken(
+      db.auth as unknown as MachineAuth,
+    ),
+  };
+  const withCredential = createCredentialConsumer({ db, legacy });
   Deno.serve(createProviderOperationHandler({
     service,
+    credentialForExecution: (op, execution) => {
+      // App JWT operations retain their distinct short-lived app identity. The
+      // managed GitHub consumer is the installation token, never an app JWT.
+      if (op.credential_kind === "github_app_jwt") {
+        return Promise.resolve(Deno.env.get("SANDY_GITHUB_APP_JWT") ?? "");
+      }
+      const consumer = op.provider === "supabase"
+        ? "supabase_management"
+        : op.provider === "github"
+        ? "github_api"
+        : "gcp_access_token";
+      return withCredential(
+        consumer,
+        execution,
+        (token) => Promise.resolve(token),
+      );
+    },
     verifiedBindings: parseProviderBindings(
       Deno.env.get("SANDY_GCP_SCOPE_BINDINGS_JSON"),
-    ),
-    management: Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
-    githubAppJwt: Deno.env.get("SANDY_GITHUB_APP_JWT") ?? "",
-    github: Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN") ??
-      Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN") ?? "",
-    getGcpAccessToken: createMachineAccessToken(
-      db.auth as unknown as MachineAuth,
     ),
     authorizeContext: async (context, op) => {
       const [owner, registry] = await Promise.all([

@@ -350,7 +350,11 @@ Deno.test("private service-account key is tested through fixed OAuth and project
           new TextEncoder().encode(header + "." + payload),
         );
         return new Response(
-          JSON.stringify({ access_token: "new-key-provider-fixture" }),
+          JSON.stringify({
+            access_token: "new-key-provider-fixture",
+            expires_in: 300,
+            token_type: "Bearer",
+          }),
           { status: 200 },
         );
       }

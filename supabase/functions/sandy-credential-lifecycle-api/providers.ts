@@ -1,6 +1,10 @@
 /** Fixed credential administration; no customer JWT, caller URL, host or token. */
 import sodiumImport from "npm:libsodium-wrappers-sumo@0.7.15";
 import { machineScope } from "../_shared/sandy_machine_identity.ts";
+import {
+  ConsumerCredentialError,
+  exchangeCustodiedServiceAccountKey,
+} from "../_shared/sandy_credential_consumer.ts";
 import { credentialHmac } from "../sandy-credential-probe-api/index.ts";
 export {
   CredentialProviderError,
@@ -48,6 +52,8 @@ function crc32c(bytes: Uint8Array): string {
 }
 export function createCredentialProviders(credentials: ProviderCredentials) {
   const fetcher = credentials.fetch ?? fetch;
+  const credential = (value: string | (() => Promise<string>)) =>
+    typeof value === "string" ? Promise.resolve(value) : value();
   async function request(
     url: string,
     method: string,
@@ -210,7 +216,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
           encodeURIComponent(secretName(target))
         }`,
         "GET",
-        credentials.github,
+        await credential(credentials.github),
       )).value;
       if (
         !object(value) || value.name !== secretName(target) ||
@@ -228,7 +234,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
     const value = (await request(
       `https://api.supabase.com/v1/projects/${PROJECT}/secrets`,
       "GET",
-      credentials.management,
+      await credential(credentials.management),
     )).value;
     if (!Array.isArray(value)) {
       throw new CredentialProviderError(
@@ -256,64 +262,30 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
       throw new CredentialProviderError("credential_key_identity_mismatch");
     }
     gcpKey(target, version);
-    const encode = (v: unknown) =>
-      base64(new TextEncoder().encode(JSON.stringify(v))).replace(/=/g, "")
-        .replace(/\+/g, "-").replace(/\//g, "_");
-    const now = Math.floor(Date.now() / 1000);
-    const header = encode({
-      alg: "RS256",
-      typ: "JWT",
-      kid: credential.private_key_id,
-    });
-    const claims = encode({
-      iss: credential.client_email,
-      scope: "https://www.googleapis.com/auth/cloud-platform",
-      aud: "https://oauth2.googleapis.com/token",
-      iat: now,
-      exp: now + 300,
-    });
-    let key: CryptoKey;
     try {
-      key = await crypto.subtle.importKey(
-        "pkcs8",
-        bytes64(
-          credential.private_key.replace(
-            /-----BEGIN PRIVATE KEY-----|-----END PRIVATE KEY-----|\s/g,
-            "",
-          ),
+      return {
+        token: await exchangeCustodiedServiceAccountKey(
+          target,
+          value,
+          version,
+          fetcher,
         ),
-        { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
-        false,
-        ["sign"],
-      );
-    } catch {
-      throw new CredentialProviderError("custodied_key_format_invalid");
+        version,
+      };
+    } catch (error) {
+      if (error instanceof ConsumerCredentialError) {
+        throw new CredentialProviderError(
+          error.providerHttpStatus === 401 || error.providerHttpStatus === 403
+            ? "credential_provider_authorization_refused"
+            : error.providerHttpStatus
+            ? "credential_provider_request_failed"
+            : "credential_key_exchange_unavailable",
+          false,
+          error.providerHttpStatus,
+        );
+      }
+      throw new CredentialProviderError("credential_key_exchange_unavailable");
     }
-    const unsigned = `${header}.${claims}`;
-    const signature = base64(
-      new Uint8Array(
-        await crypto.subtle.sign(
-          "RSASSA-PKCS1-v1_5",
-          key,
-          new TextEncoder().encode(unsigned),
-        ),
-      ),
-    ).replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
-    const token = (await request(
-      "https://oauth2.googleapis.com/token",
-      "POST",
-      "",
-      new URLSearchParams({
-        grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        assertion: `${unsigned}.${signature}`,
-      }),
-    )).value;
-    if (!object(token) || typeof token.access_token !== "string") {
-      throw new CredentialProviderError(
-        "credential_provider_contract_mismatch",
-      );
-    }
-    return { token: token.access_token, version };
   }
   async function verifyKey(
     target: Target,
@@ -346,7 +318,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
     await request(
       `https://api.github.com/repos/${REPOSITORY}/actions/workflows/${target.resource.workflow_id}/dispatches`,
       "POST",
-      credentials.github,
+      await credential(credentials.github),
       {
         ref: target.resource.workflow_ref,
         inputs: {
@@ -424,7 +396,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
       const runs = (await request(
         `https://api.github.com/repos/${REPOSITORY}/actions/workflows/${target.resource.workflow_id}/runs?event=workflow_dispatch&per_page=100`,
         "GET",
-        credentials.github,
+        await credential(credentials.github),
       )).value;
       const matches = object(runs) && Array.isArray(runs.workflow_runs)
         ? runs.workflow_runs.filter((run: any) =>
@@ -444,7 +416,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
       const jobs = (await request(
         `https://api.github.com/repos/${REPOSITORY}/actions/runs/${run.id}/jobs?per_page=100`,
         "GET",
-        credentials.github,
+        await credential(credentials.github),
       )).value;
       const valid = object(jobs) && Array.isArray(jobs.jobs) &&
         jobs.jobs.some((job: any) =>
@@ -626,7 +598,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
       await request(
         `https://api.supabase.com/v1/projects/${PROJECT}/secrets`,
         "POST",
-        credentials.management,
+        await credential(credentials.management),
         [{ name: secretName(target), value: source.value }],
         true,
       );
@@ -634,7 +606,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
       const key = (await request(
         `https://api.github.com/repos/${REPOSITORY}/actions/secrets/public-key`,
         "GET",
-        credentials.github,
+        await credential(credentials.github),
       )).value;
       if (
         !object(key) || typeof key.key !== "string" ||
@@ -667,7 +639,7 @@ export function createCredentialProviders(credentials: ProviderCredentials) {
           encodeURIComponent(secretName(target))
         }`,
         "PUT",
-        credentials.github,
+        await credential(credentials.github),
         { encrypted_value: encrypted, key_id: key.key_id },
         true,
       );

@@ -39,8 +39,8 @@ export type Material = {
 };
 export type ProviderCredentials = {
   service: string;
-  management: string;
-  github: string;
+  management: string | (() => Promise<string>);
+  github: string | (() => Promise<string>);
   gcp: () => Promise<string>;
   fetch?: typeof fetch;
 };

@@ -1,5 +1,6 @@
 import { deepStrictEqual as eq, rejects } from "node:assert/strict";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
+import { createCredentialConsumer } from "../_shared/sandy_credential_consumer.ts";
 import {
   createCredentialLifecycleHandler,
   type CredentialDependencies,
@@ -317,9 +318,125 @@ Deno.test("source rotation stages provider result but does not activate or revok
   eq(JSON.parse(raw).result.previous_credential_revoked, false);
   eq(h.receipts[0].outcome, "accepted");
 });
+Deno.test("composed custody provider uses the explicit legacy decision only after consuming its grant", async () => {
+  const events: string[] = [];
+  let h: Awaited<ReturnType<typeof harness>>;
+  const withCredential = createCredentialConsumer({
+    db: {
+      rpc(name, args) {
+        events.push("resolve");
+        eq(h.consumes(), 1);
+        eq(name, "sandy_credential_resolve_consumer");
+        eq(args.p_actor, ACTOR);
+        eq(args.p_admission, ADMISSION);
+        eq(args.p_operation, "system.credentials.provider.adopt");
+        return Promise.resolve({
+          error: null,
+          data: {
+            ok: true,
+            source: "existing_configuration",
+            active_version_id: null,
+          },
+        });
+      },
+    },
+    legacy: {
+      supabase_management: () => {
+        events.push("legacy");
+        return "legacy_fixture_token";
+      },
+      github_api: () => "",
+      gcp_access_token: () => "",
+    },
+  });
+  h = await harness({
+    providersForExecution: (execution) =>
+      createCredentialProviders({
+        service: "internal",
+        management: () =>
+          withCredential("supabase_management", execution, (token) =>
+            Promise.resolve(token)),
+        github: "",
+        gcp: () =>
+          Promise.resolve(""),
+        fetch: ((url, init) => {
+          events.push("provider");
+          eq(
+            String(url),
+            "https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/secrets",
+          );
+          eq(
+            (init?.headers as Record<string, string>).authorization,
+            "Bearer legacy_fixture_token",
+          );
+          return Promise.resolve(
+            new Response(
+              JSON.stringify([{
+                name: "SANDY_ROTATION_TEST_SECRET",
+                digest: "a".repeat(64),
+              }]),
+            ),
+          );
+        }) as typeof fetch,
+      }),
+  });
+  const result = await h.call("system.credentials.provider.adopt", {
+    acknowledge_provider_has_no_cas: true,
+  });
+  eq(result.status, 200);
+  eq(events, ["resolve", "legacy", "provider"]);
+  eq((await result.text()).includes("legacy_fixture_token"), false);
+  eq(h.receipts[0].outcome, "accepted");
+});
+Deno.test("custody consumer refusal cannot fall back or turn a known undispatched request into unknown", async () => {
+  let fallback = 0;
+  let http = 0;
+  const withCredential = createCredentialConsumer({
+    db: {
+      rpc: () =>
+        Promise.resolve({
+          data: null,
+          error: { message: "consumer_active_binding_refused" },
+        }),
+    },
+    legacy: {
+      supabase_management: () => {
+        fallback++;
+        return "revoked_fixture";
+      },
+      github_api: () => "",
+      gcp_access_token: () => "",
+    },
+  });
+  const h = await harness({
+    providersForExecution: (execution) =>
+      createCredentialProviders({
+        service: "internal",
+        management: () =>
+          withCredential("supabase_management", execution, (token) =>
+            Promise.resolve(token)),
+        github: "",
+        gcp: () =>
+          Promise.resolve(""),
+        fetch: (() => {
+          http++;
+          return Promise.resolve(new Response("[]"));
+        }) as typeof fetch,
+      }),
+  });
+  const result = await h.call("system.credentials.provider.adopt", {
+    acknowledge_provider_has_no_cas: true,
+  });
+  eq(result.status, 424);
+  eq(fallback, 0);
+  eq(http, 0);
+  eq(h.consumes(), 1);
+  eq(h.receipts[0].outcome, "failed");
+  eq((await result.json()).reconciliation_required, false);
+});
 Deno.test("lost provider response records unknown and never repeats creation", async () => {
   const h = await harness();
-  h.deps.providers.rotate = () =>
+  h.deps.providers!.rotate = () =>
     Promise.reject(
       new CredentialProviderError(
         "credential_provider_response_unavailable",
@@ -421,7 +538,7 @@ Deno.test("key adoption and rollback storage failures never disable an existing 
     h.rotation.state = "activated";
     h.bound.active_version_id = VERSION;
     let cleanups = 0;
-    h.deps.providers.cleanupUnstagedKey = () => {
+    h.deps.providers!.cleanupUnstagedKey = () => {
       cleanups++;
       return Promise.resolve();
     };
@@ -527,7 +644,7 @@ Deno.test("ambiguous GitHub probe dispatch is never repeated by reconciliation",
   });
   h.rotation.state = "unknown";
   let dispatches = 0;
-  h.deps.providers.dispatchProbe = () => {
+  h.deps.providers!.dispatchProbe = () => {
     dispatches++;
     return Promise.resolve();
   };
@@ -558,7 +675,7 @@ Deno.test("unstaged key cleanup requires independent SQL source binding before a
     "projects/elaborate-haven-511518-a5/serviceAccounts/sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com/keys/" +
     "a".repeat(40);
   let cleanups = 0;
-  h.deps.providers.cleanupUnstagedKey = () => {
+  h.deps.providers!.cleanupUnstagedKey = () => {
     cleanups++;
     return Promise.resolve();
   };
@@ -587,14 +704,14 @@ Deno.test("reconciliation of adopted key material re-observes it without creatin
   h.rotation.staged_version_id = null;
   h.rotation.source_operation = "system.credentials.provider.adopt";
   let observations = 0, cleanups = 0;
-  h.deps.providers.verify = () => {
+  h.deps.providers!.verify = () => {
     observations++;
     return Promise.resolve({
       provider_version_id: "provider-digest",
       probe_kind: "fixture-observation",
     });
   };
-  h.deps.providers.cleanupUnstagedKey = () => {
+  h.deps.providers!.cleanupUnstagedKey = () => {
     cleanups++;
     return Promise.resolve();
   };
@@ -616,7 +733,7 @@ Deno.test("unknown source key staging never automatically disables a possibly la
   });
   h.rotation.staged_version_id = null;
   let cleanups = 0;
-  h.deps.providers.cleanupUnstagedKey = () => {
+  h.deps.providers!.cleanupUnstagedKey = () => {
     cleanups++;
     return Promise.resolve();
   };
@@ -654,7 +771,7 @@ Deno.test("reconciliation preserves an existing cleanup claim as observation onl
       })
       : original(name, args);
   let dispatched: unknown;
-  h.deps.providers.cleanupUnstagedKey = (_target, _version, allowWrite) => {
+  h.deps.providers!.cleanupUnstagedKey = (_target, _version, allowWrite) => {
     dispatched = allowWrite;
     throw new CredentialProviderError(
       "credential_key_cleanup_status_unconfirmed",
