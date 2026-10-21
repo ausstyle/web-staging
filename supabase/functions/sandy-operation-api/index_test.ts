@@ -47,6 +47,7 @@ import redactionManifest from "../sandy-tenant-lifecycle-api/financial_redaction
   type: "json",
 };
 import { supplementContracts } from "../sandy-provider-supplement-api/contracts.ts";
+import { supplementExecutionScope } from "../sandy-provider-supplement-api/gateway.ts";
 import { createSupplementHandler } from "../sandy-provider-supplement-api/index.ts";
 import { sensitiveContracts } from "../sandy-provider-sensitive-api/contracts.ts";
 import { createSensitiveHandler } from "../sandy-provider-sensitive-api/index.ts";
@@ -3948,6 +3949,60 @@ Deno.test("supplement discovery and execution require the same verified server p
     424,
   );
   assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+});
+Deno.test("configured supplement and relationship bindings reach exact scoped admission through MCP without weakening approval", async () => {
+  const bindings = {
+    organization: {
+      id: "123456789",
+      verified: true as const,
+      project_id: "elaborate-haven-511518-a5" as const,
+    },
+    billing_account: {
+      id: "ABCDEF-123456-ABCDEF",
+      verified: true as const,
+      project_id: "elaborate-haven-511518-a5" as const,
+    },
+  };
+  const cases: [string, Row][] = [
+    ["gcp.projects.list_filtered", {}],
+    ["gcp.organizations.search_filtered", {}],
+    ["gcp.billing.accounts.list_filtered", {}],
+    ["gcp.firewall_policies.get.bound", { path: { firewallPolicy: "123" } }],
+  ];
+  for (const [operation, args] of cases) {
+    const h = harness({
+      actorId: extensionActor,
+      executionPolicy: true,
+      rows: [extensionRow(operation, true)],
+      providerConfig: { verifiedBindings: bindings },
+      async rpcHandler(name, admitted) {
+        assert.equal(name, "sandy_api_admit_execution");
+        const scope = operation.endsWith(".bound")
+          ? boundExecutionScope(operation, bindings)
+          : supplementExecutionScope(operation, bindings);
+        assert.equal(admitted.p_scope_sha256, await argumentDigest(scope));
+        assert.equal(admitted.p_actor_id, extensionActor);
+        return { ok: false, http_status: 403, error: "scoped_mutation_approval_required" };
+      },
+    });
+    const described = await (await h.request({ action: "describe", operation })).json();
+    assert.equal(described.operation.executable, true, operation);
+    const mcp = createMcpHandler(async (_token, body, _key, metadata) => {
+      const response = await h.request(body, "Bearer normal-user", metadata?.approvalId
+        ? { "x-sandy-approval-id": metadata.approvalId } : {});
+      return { status: response.status, result: await response.json() };
+    });
+    const response = await mcp(new Request("https://local.invalid/mcp", {
+      method: "POST", headers: { authorization: "Bearer normal-user" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: operation, method: "tools/call",
+        params: { name: operation, arguments: args } }),
+    }));
+    const output = await response.json();
+    assert.equal(output.result.isError, true);
+    assert.equal(JSON.parse(output.result.content[0].text).result.error, "scoped_mutation_approval_required");
+    assert.equal(h.rpcCalls.length, 1, operation);
+    assert.equal(h.calls.length, 0, operation);
+  }
 });
 Deno.test("private provider captures use one exact owner grant and never return captured bytes", async () => {
   const operation = "gcp.compute.instances.get_guest_attributes.capture";

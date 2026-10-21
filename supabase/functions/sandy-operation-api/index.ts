@@ -1328,7 +1328,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    const extensionReady = extensionAvailability(operation, entry);
+    const extensionReady = extensionAvailability(
+      operation,
+      entry,
+      dependencies.providerConfig?.verifiedBindings,
+    );
     if (extensionReady && !extensionReady.executable) {
       return reply(424, {
         ok: false,
