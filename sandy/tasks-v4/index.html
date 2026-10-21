@@ -309,6 +309,11 @@ html,body{max-width:100%;overflow-x:clip}
 #app .outlineDraft .draftConfirm{flex:none;background:#243c30;color:#fff;border:0;border-radius:8px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;min-height:34px}
 #app .outlineDraft .draftConfirm:hover{background:#365747}
 #app .outlineDraft .draftConfirm:focus-visible{outline:2px solid #668a6a;outline-offset:2px}
+
+.taskDeletePopover{position:fixed;z-index:10000;width:min(330px,calc(100vw - 16px));padding:14px;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 12px 36px #0003;color:#222;font-size:13px}
+.taskDeletePopover strong{display:block;font-size:14px;overflow-wrap:anywhere}.taskDeletePopover p{margin:6px 0 12px;color:#777}
+.taskDeleteActions{display:flex;flex-wrap:wrap;gap:7px}.taskDeleteActions button{border-radius:8px;border:1px solid #ddd;padding:8px 11px;font-size:12px;cursor:pointer;background:#fafafa;color:#333}
+.taskDeleteActions .taskDeleteDanger{background:#b42318;color:white;border-color:#b42318;font-weight:650}.taskDeleteActions button:hover{filter:brightness(.94)}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -1538,18 +1543,41 @@ $("taskForm").addEventListener("submit",async e=>{
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
 });
+// Contextual confirmation stays near the action instead of opening a browser modal.
+let taskDeletePoint={x:Math.round(innerWidth/2),y:Math.round(innerHeight/2)};
+document.addEventListener("pointerdown",e=>{if(e.isTrusted)taskDeletePoint={x:e.clientX,y:e.clientY}},true);
+function confirmTaskDelete(title,options){
+ return new Promise(resolve=>{
+  const old=document.getElementById("taskDeletePopover");if(old)old.remove();
+  const panel=document.createElement("div");panel.id="taskDeletePopover";panel.className="taskDeletePopover";panel.setAttribute("role","dialog");panel.setAttribute("aria-label","Confirm deletion");
+  const heading=document.createElement("strong");heading.textContent="Delete “"+title+"”?";panel.append(heading);
+  const warning=document.createElement("p");warning.textContent="This cannot be undone.";panel.append(warning);
+  const actions=document.createElement("div");actions.className="taskDeleteActions";panel.append(actions);
+  let finished=false;
+  const finish=value=>{if(finished)return;finished=true;document.removeEventListener("keydown",keyHandler,true);document.removeEventListener("pointerdown",outside,true);panel.remove();resolve(value)};
+  const keyHandler=e=>{if(e.key==="Escape"){e.preventDefault();finish(null)}};
+  const outside=e=>{if(!panel.contains(e.target))finish(null)};
+  const cancel=document.createElement("button");cancel.type="button";cancel.textContent="Cancel";cancel.className="taskDeleteCancel";cancel.addEventListener("click",()=>finish(null));actions.append(cancel);
+  for(const option of options){const button=document.createElement("button");button.type="button";button.className="taskDeleteDanger";button.textContent=option.label;button.addEventListener("click",()=>finish(option.value));actions.append(button)}
+  document.body.append(panel);
+  panel.style.left=Math.max(8,Math.min(innerWidth-panel.offsetWidth-8,taskDeletePoint.x+10))+"px";
+  panel.style.top=Math.max(8,Math.min(innerHeight-panel.offsetHeight-8,taskDeletePoint.y+10))+"px";
+  document.addEventListener("keydown",keyHandler,true);
+  setTimeout(()=>document.addEventListener("pointerdown",outside,true),0);
+  cancel.focus();
+ });
+}
 $("deleteTask").addEventListener("click",async()=>{
  const t=state.edit;if(!t||t.shared)return;
  const descendants=new Set([t.id]);let changed=true;
  while(changed){changed=false;for(const x of state.tasks){if(x.parent_task_id&&descendants.has(x.parent_task_id)&&!descendants.has(x.id)){descendants.add(x.id);changed=true}}}
  const childCount=descendants.size-1;
- if(!confirm("Permanently delete task “"+t.title+"”? This cannot be undone."))return;
- let childMode="promote_children";
- if(childCount>0){
-  const removeAll=confirm("This task has "+childCount+" nested subtask"+(childCount===1?"":"s")+".\n\nOK: Delete the parent AND all subtasks.\nCancel: Keep subtasks and move the immediate children up one level.");
-  childMode=removeAll?"delete_all":"promote_children";
-  if(!removeAll&&!confirm("Keep all subtasks and move them up one level, then delete only “"+t.title+"”?"))return;
- }
+ const options=childCount>0?[
+  {value:"delete_all",label:"Delete task and "+childCount+" subtask"+(childCount===1?"":"s"),danger:true},
+  {value:"promote_children",label:"Delete task, keep subtasks",danger:true}
+ ]:[{value:"promote_children",label:"Delete task",danger:true}];
+ const childMode=await confirmTaskDelete(t.title,options);
+ if(!childMode)return;
  const button=$("deleteTask");button.disabled=true;
  try{const result=await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});closeDialog();await load();toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted")}
  catch(e){toast(e.message,true)}finally{button.disabled=false}
