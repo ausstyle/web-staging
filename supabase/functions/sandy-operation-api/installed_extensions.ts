@@ -7,6 +7,10 @@ import {
   isAgendaOperation,
 } from "./agenda_operations.ts";
 import {
+  onboardingContractMatches,
+  onboardingOperations,
+} from "../sandy-customer-provisioning-api/gateway.ts";
+import {
   customerKeyContractMatches,
   customerKeyContracts,
   executeCustomerKeyOperation,
@@ -130,6 +134,7 @@ export type { TenantConsentDb } from "../sandy-supabase-service-api/tenant_conse
 
 type Obj = Record<string, unknown>;
 export type ExtensionKind =
+  | "onboarding"
   | "agenda"
   | "customer_key"
   | "memory"
@@ -187,6 +192,11 @@ const grouped = <
   }]);
 export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
   Object.freeze(Object.fromEntries([
+    ...grouped(
+      onboardingOperations,
+      "onboarding",
+      "sandy-customer-provisioning-api",
+    ),
     ...grouped(agendaContracts, "agenda", "sandy-agenda"),
     ...grouped(customerKeyContracts, "customer_key", "sandy-operations-api"),
     ...grouped(memoryOperationContracts, "memory", "sandy-memory-centre"),
@@ -327,7 +337,7 @@ export const extensionOwnerOnly = (operation: string) =>
     commerceOperations[operation].authorization === "owner");
 /** These handlers derive and consume their own admission from the actual JWT. */
 export const extensionOwnsUserAdmission = (operation: string) =>
-  ["product", "commerce", "composio_customer"].includes(
+  ["product", "commerce", "composio_customer", "onboarding"].includes(
     extensionKind(operation) ?? "",
   );
 export const extensionRequiresUserSession = (operation: string) =>
@@ -338,6 +348,8 @@ export function extensionHasAccess(
   emailConfirmed: boolean,
 ): boolean {
   switch (extensionKind(operation)) {
+    case "onboarding":
+      return emailConfirmed;
     case "agenda":
       return !!principal.portalCustomerId &&
         principal.portalCustomerId === principal.agendaCustomerId;
@@ -401,6 +413,9 @@ export function extensionContractMatches(
   }
   const c = extensionContracts[operation];
   if (!c) return false;
+  if (c.kind === "onboarding") {
+    return onboardingContractMatches(operation, entry);
+  }
   if (c.kind === "agent") return agentContractMatches(operation, entry);
   if (c.kind === "lifecycle") {
     return providerLifecycleContractMatches(operation, entry);

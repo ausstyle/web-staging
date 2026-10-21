@@ -160,14 +160,18 @@ function harness(options: Options = {}) {
             user: options.authError ? null : {
               id: options.actorId ?? "controller-test-user",
               role: options.authRole ?? "authenticated",
-              ...(options.authMetadata ? { app_metadata: options.authMetadata } : {}),
+              ...(options.authMetadata
+                ? { app_metadata: options.authMetadata }
+                : {}),
               is_anonymous: options.anonymous === true,
               ...(options.tenant !== undefined ||
-                  options.memoryTenant !== undefined
+                  options.memoryTenant !== undefined ||
+                  options.emailConfirmed === true
                 ? { email: "fixture-user@example.invalid" }
                 : {}),
-              ...(options.memoryTenant !== undefined &&
-                  options.emailConfirmed !== false
+              ...((options.memoryTenant !== undefined &&
+                  options.emailConfirmed !== false) ||
+                  options.emailConfirmed === true
                 ? { email_confirmed_at: "2026-10-20T00:00:00Z" }
                 : {}),
             },
@@ -212,7 +216,8 @@ function harness(options: Options = {}) {
         : [{
           role: options.role ?? "owner",
           enabled: true,
-          auth_user_id: options.authorityId ?? options.actorId ?? "controller-test-user",
+          auth_user_id: options.authorityId ?? options.actorId ??
+            "controller-test-user",
         }];
       const error = table === "sandy_memory_portal_accounts"
         ? options.memoryError
@@ -3108,6 +3113,13 @@ function extensionRow(operation: string, verified = false): Row {
         ? {
           requires_approval:
             systemMetadataOperations[operation].requires_approval,
+          requires_real_user_session: true,
+          api_key_delegable: false,
+        }
+        : {}),
+      ...(c.kind === "onboarding"
+        ? {
+          requires_approval: false,
           requires_real_user_session: true,
           api_key_delegable: false,
         }
@@ -6372,29 +6384,167 @@ Deno.test("Composio actual customer handler owns admission binding and finish wh
 });
 
 Deno.test("dedicated engineering identity never falls back to broad owner access when its policy is absent", async () => {
-  const machine="10000000-0000-4000-8000-000000000001",session="10000000-0000-4000-8000-000000000003";
-  const metadata={sandy_engineering_test:true,sandy_engineering_epoch:1};
-  const jwt="synthetic."+btoa(JSON.stringify({sub:machine,aud:"authenticated",role:"authenticated",session_id:session,exp:Date.now()/1000+3600,app_metadata:metadata}))+".signature";
-  const h=harness({actorId:machine,role:"owner",authMetadata:metadata,rpcHandler:()=>({ok:false,error:"engineering_identity_not_authorized"})});
-  const r=await h.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer "+jwt},body:JSON.stringify({action:"execute",operation:"github.files.update",arguments:{}})}));
-  assert.equal(r.status,403);assert.equal((await r.json()).error,"engineering_identity_not_authorized");assert.equal(h.calls.length,0);
+  const machine = "10000000-0000-4000-8000-000000000001",
+    session = "10000000-0000-4000-8000-000000000003";
+  const metadata = { sandy_engineering_test: true, sandy_engineering_epoch: 1 };
+  const jwt = "synthetic." +
+    btoa(
+      JSON.stringify({
+        sub: machine,
+        aud: "authenticated",
+        role: "authenticated",
+        session_id: session,
+        exp: Date.now() / 1000 + 3600,
+        app_metadata: metadata,
+      }),
+    ) + ".signature";
+  const h = harness({
+    actorId: machine,
+    role: "owner",
+    authMetadata: metadata,
+    rpcHandler: () => ({
+      ok: false,
+      error: "engineering_identity_not_authorized",
+    }),
+  });
+  const r = await h.handler(
+    new Request(
+      "https://example.supabase.co/functions/v1/sandy-operation-api",
+      {
+        method: "POST",
+        headers: { authorization: "Bearer " + jwt },
+        body: JSON.stringify({
+          action: "execute",
+          operation: "github.files.update",
+          arguments: {},
+        }),
+      },
+    ),
+  );
+  assert.equal(r.status, 403);
+  assert.equal((await r.json()).error, "engineering_identity_not_authorized");
+  assert.equal(h.calls.length, 0);
 });
 Deno.test("tagged workload still requires normal Auth verification before any scoped policy RPC", async () => {
-  const h=harness({authMetadata:{sandy_engineering_test:true,sandy_engineering_epoch:1},authError:true});
-  const r=await h.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer expired.identity.token"},body:JSON.stringify({action:"list"})}));
-  assert.equal(r.status,401);assert.equal(h.calls.length,0);assert.equal(h.rpcCalls.length,0);
+  const h = harness({
+    authMetadata: { sandy_engineering_test: true, sandy_engineering_epoch: 1 },
+    authError: true,
+  });
+  const r = await h.handler(
+    new Request(
+      "https://example.supabase.co/functions/v1/sandy-operation-api",
+      {
+        method: "POST",
+        headers: { authorization: "Bearer expired.identity.token" },
+        body: JSON.stringify({ action: "list" }),
+      },
+    ),
+  );
+  assert.equal(r.status, 401);
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.rpcCalls.length, 0);
 });
 
 Deno.test("scoped workload discovery includes approved write handlers without widening ordinary delegated access", async () => {
-  const machine="10000000-0000-4000-8000-000000000001",owner="10000000-0000-4000-8000-000000000002",session="10000000-0000-4000-8000-000000000003";
-  const metadata={sandy_engineering_test:true,sandy_engineering_epoch:1};
-  const jwt="synthetic."+btoa(JSON.stringify({sub:machine,aud:"authenticated",role:"authenticated",session_id:session,exp:Date.now()/1000+3600,app_metadata:metadata}))+".signature";
-  const digest=await argumentDigest(engineeringPolicy);
+  const machine = "10000000-0000-4000-8000-000000000001",
+    owner = "10000000-0000-4000-8000-000000000002",
+    session = "10000000-0000-4000-8000-000000000003";
+  const metadata = { sandy_engineering_test: true, sandy_engineering_epoch: 1 };
+  const jwt = "synthetic." +
+    btoa(
+      JSON.stringify({
+        sub: machine,
+        aud: "authenticated",
+        role: "authenticated",
+        session_id: session,
+        exp: Date.now() / 1000 + 3600,
+        app_metadata: metadata,
+      }),
+    ) + ".signature";
+  const digest = await argumentDigest(engineeringPolicy);
   // Resolve the real policy hash; the provider authorization is not mocked as a broad owner.
-  const scoped=harness({actorId:machine,authorityId:owner,authMetadata:metadata,rows:[extensionRow("github.commit",true),preflight],rpcHandler:()=>({ok:true,identity_user_id:machine,owner_authority_id:owner,session_id:session,credential_epoch:1,policy_sha256:digest,operations:engineeringPolicy.operations})});
-  const response=await scoped.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer "+jwt},body:JSON.stringify({action:"list",channel:"mcp"})}));
-  assert.equal(response.status,200,await response.clone().text());
-  const value=await response.json();
-  assert.deepEqual(value.operations.map((row:Row)=>row.operation).sort(),["github.commit"]);
-  assert.equal(scoped.calls.length,0);
+  const scoped = harness({
+    actorId: machine,
+    authorityId: owner,
+    authMetadata: metadata,
+    rows: [extensionRow("github.commit", true), preflight],
+    rpcHandler: () => ({
+      ok: true,
+      identity_user_id: machine,
+      owner_authority_id: owner,
+      session_id: session,
+      credential_epoch: 1,
+      policy_sha256: digest,
+      operations: engineeringPolicy.operations,
+    }),
+  });
+  const response = await scoped.handler(
+    new Request(
+      "https://example.supabase.co/functions/v1/sandy-operation-api",
+      {
+        method: "POST",
+        headers: { authorization: "Bearer " + jwt },
+        body: JSON.stringify({ action: "list", channel: "mcp" }),
+      },
+    ),
+  );
+  assert.equal(response.status, 200, await response.clone().text());
+  const value = await response.json();
+  assert.deepEqual(value.operations.map((row: Row) => row.operation).sort(), [
+    "github.commit",
+  ]);
+  assert.equal(scoped.calls.length, 0);
+});
+
+Deno.test("verified new customer discovers onboarding before a portal account exists", async () => {
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    emailConfirmed: true,
+    rows: [
+      extensionRow("customer.onboarding.ensure", true),
+      extensionRow("customer.identity.get", true),
+    ],
+  });
+  const r = await h.request({ action: "list", channel: "mcp" });
+  assert.equal(r.status, 200, await r.clone().text());
+  assert.deepEqual(
+    (await r.json()).operations.map((x: Row) => x.operation).sort(),
+    ["customer.identity.get", "customer.onboarding.ensure"],
+  );
+});
+Deno.test("onboarding keeps actual customer bearer and stable request id through gateway", async () => {
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    emailConfirmed: true,
+    rows: [extensionRow("customer.onboarding.ensure", true)],
+    backend: () =>
+      Response.json({
+        ok: false,
+        error: "onboarding_required",
+        executed: false,
+      }, { status: 409 }),
+  });
+  const r = await h.request({
+    action: "execute",
+    operation: "customer.onboarding.ensure",
+    arguments: {},
+    channel: "mcp",
+  });
+  assert.equal(r.status, 409, await r.clone().text());
+  assert.equal(h.calls.length, 1);
+  const call = h.calls[0];
+  assert.ok(call.url.endsWith("/functions/v1/sandy-customer-provisioning-api"));
+});
+Deno.test("unverified users cannot discover customer onboarding even without existing portal", async () => {
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    emailConfirmed: false,
+    rows: [extensionRow("customer.onboarding.ensure", true)],
+  });
+  const r = await h.request({ action: "list", channel: "mcp" });
+  assert.equal(r.status, 403);
+  assert.equal(h.calls.length, 0);
 });
