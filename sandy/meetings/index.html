@@ -6,7 +6,7 @@
 </style></head><body>
 <div class="layout"><aside class="side"><a href="../app/" class="brand">sandy.</a><a class="nav" href="../app/">Overview</a><a class="nav" href="../chat/">Chat</a><a class="nav" href="../agenda/">Tasks</a><a class="nav" href="../calendar/">Calendar</a><a class="nav current" href="./">Meetings</a></aside>
 <main class="main"><div class="eyebrow">SANDY VIDEO</div><div class="heading"><div><h1>Meetings</h1><div class="muted">Secure video calls, hosted by Sandy.</div></div><button id="create" class="btn primary">+ New meeting</button></div>
-<div id="status" class="status" role="status" aria-live="polite"></div>
+<div id="status" class="status" role="status" aria-live="polite"></div><section id="loginPanel" class="panel hide"><h2>Sign in to Sandy</h2><p class="muted">Use your existing Sandy account to create or join a meeting.</p><form id="signInForm"><input id="signInEmail" type="email" autocomplete="email" placeholder="Your Sandy email" required><button id="sendSignIn" class="btn primary" type="submit">Send sign-in link</button></form><p id="signInMessage" class="muted" role="status"></p></section>
 <section id="listing" class="panel"><div class="row"><strong>Your meetings</strong><button id="reload" class="btn">Refresh</button></div><div id="meetings"></div></section>
 <section id="call" class="hide"><div class="row"><h2 id="calltitle"></h2><button id="exit" class="btn">Leave meeting</button></div>
 <div id="tiles" class="tiles"></div><div class="controls"><button id="mic" class="btn">Mute microphone</button><button id="camera" class="btn">Turn camera off</button><button id="share" class="btn">Share screen</button><button id="invite" class="btn">Copy invitation link</button><button id="end" class="btn">End meeting</button></div>
@@ -16,7 +16,7 @@
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {Room,RoomEvent,Track} from "https://esm.sh/livekit-client@2.17.2";
-const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,storage:localStorage,autoRefreshToken:true}});
+const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true}});
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-video-api";
 const $=id=>document.getElementById(id);
 let room=null,meetingId=null,owner=false,inviteToken=null;
@@ -25,7 +25,7 @@ const guestMeeting=hash.get("meeting"),guestInvite=hash.get("invite");
 function notice(v){$("status").textContent=v;}
 async function api(action,data={},authenticated=true){
  let token=null;
- if(authenticated){const s=await db.auth.getSession();token=s.data.session?.access_token;if(!token)throw Error("Please sign in to your Sandy account first.");}
+ if(authenticated){const s=await db.auth.getSession();token=s.data.session?.access_token;if(!token){$("loginPanel").classList.remove("hide");throw Error("Sign in to your Sandy account to use Meetings.");}}
  const headers={"content-type":"application/json"};if(token)headers.authorization="Bearer "+token;
  const res=await fetch(endpoint,{method:"POST",headers,body:JSON.stringify({action,...data}),cache:"no-store"});
  const json=await res.json().catch(()=>({}));if(!res.ok)throw Error(json.error||"Video service unavailable");return json;
@@ -81,6 +81,8 @@ $("mic").onclick=async()=>{if(!room)return;const enabled=!room.localParticipant.
 $("camera").onclick=async()=>{if(!room)return;const enabled=!room.localParticipant.isCameraEnabled;await room.localParticipant.setCameraEnabled(enabled);$("camera").textContent=enabled?"Turn camera off":"Turn camera on"};
 $("share").onclick=async()=>{if(!room)return;await room.localParticipant.setScreenShareEnabled(!room.localParticipant.isScreenShareEnabled)};
 $("joinGuest").onclick=()=>join(guestMeeting,false,guestInvite,$("guestName").value).catch(e=>notice(e.message));
+$("signInForm").onsubmit=async e=>{e.preventDefault();const email=$("signInEmail").value.trim();const b=$("sendSignIn");b.disabled=true;try{const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(error)throw error;$("signInMessage").textContent="Check your email for a secure Sandy sign-in link.";}catch(err){$("signInMessage").textContent=err.message||"Unable to send sign-in link";}finally{b.disabled=false}};
+db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_IN"&&session?.access_token){$("loginPanel").classList.add("hide");notice("");if(!guestMeeting)reload().catch(e=>notice(e.message));}});
 if(guestMeeting&&guestInvite){$("listing").classList.add("hide");$("create").classList.add("hide");$("guest").classList.remove("hide");$("reload").classList.add("hide");}else reload().catch(e=>notice(e.message));
 window.addEventListener("beforeunload",()=>room?.disconnect());
 </script></body></html>
