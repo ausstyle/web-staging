@@ -1089,6 +1089,7 @@ function enableTaskDrag(row,t){
   if(state.sort!=="manual"){
    // Freeze the displayed order as the manual baseline, not the old database order.
    state.dragPositionBaseline=new Map(state.tasks.map(task=>[task.id,{parent_task_id:task.parent_task_id,position:task.position}]));
+   state.dragPreviousSort=state.sort;
    const groups=new Map();
    for(const task of state.tasks){
     if(task.shared||task.archived_at)continue;
@@ -1120,7 +1121,17 @@ function enableTaskDrag(row,t){
   const source=draggingTaskId,zone=row.classList.contains("dropInside")?"inside":row.classList.contains("dropBefore")?"before":"after";
   clear();draggingTaskId=null;moveOutlineTask(source,t.id,zone);
  });
- handle.addEventListener("dragend",()=>{draggingTaskId=null;document.querySelectorAll(".draggingTask,.dropBefore,.dropAfter,.dropInside").forEach(n=>n.classList.remove("draggingTask","dropBefore","dropAfter","dropInside"))});
+ handle.addEventListener("dragend",()=>{
+  draggingTaskId=null;
+  document.querySelectorAll(".draggingTask,.dropBefore,.dropAfter,.dropInside").forEach(n=>n.classList.remove("draggingTask","dropBefore","dropAfter","dropInside"));
+  // Cancelled drag must not silently change the stored sort mode or positions.
+  if(state.dragPositionBaseline){
+   for(const task of state.tasks){const prior=state.dragPositionBaseline.get(task.id);if(prior)Object.assign(task,prior)}
+   state.dragPositionBaseline=null;
+   if(state.dragPreviousSort){state.sort=state.dragPreviousSort;localStorage.setItem("sandy_task_sort",state.sort);$("taskSort").value=state.sort}
+  }
+  state.dragPreviousSort=null;
+ });
 }
 function renderTask(t,depth){
  const outer=el("div",depth?"childrow":"task");outer.id="task-"+t.id;
