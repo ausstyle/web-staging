@@ -12,7 +12,8 @@ export type ProviderCalls = {
   ) => Promise<{ value: Obj; sha256: string }>;
 };
 export class VmProviderFailure extends ProtocolRefusal {
-  constructor(code: string, public providerHttp: number, public providerReason: string | null, uncertain = false) { super(code, uncertain); }
+  constructor(code: string, public providerHttp: number, public providerReason: string | null, uncertain = false,
+    public deniedPermission: string | null = null) { super(code, uncertain); }
 }
 export function providerCalls(
   token: string,
@@ -22,7 +23,7 @@ export function providerCalls(
     request: async (url, method = "GET", body, additionallyAccepted = []) => {
       if (
         url.protocol !== "https:" ||
-        !["compute.googleapis.com", "oslogin.googleapis.com", "iap.googleapis.com"].includes(
+        !["compute.googleapis.com", "oslogin.googleapis.com", "iap.googleapis.com", "logging.googleapis.com"].includes(
           url.hostname,
         ) || url.username || url.password || url.port || url.hash
       ) throw new ProtocolRefusal("vm_provider_scope_mismatch");
@@ -76,9 +77,13 @@ export function providerCalls(
       }
       if (!response.ok && !additionallyAccepted.includes(response.status)) {
         let reason: string | null = null;
+        let deniedPermission: string | null = null;
         try {
           const raw = Buffer.concat(parts.map(part => Buffer.from(part))).toString("utf8");
-          const details = JSON.parse(raw)?.error?.details;
+          const error = JSON.parse(raw)?.error;
+          const details = error?.details;
+          deniedPermission = typeof error?.message === "string"
+            ? error.message.match(/\b(?:iap\.tunnelInstances|logging\.(?:logEntries|privateLogEntries)|compute\.instances)\.[A-Za-z]+\b/)?.[0] ?? null : null;
           const known = ["SERVICE_DISABLED", "IAM_PERMISSION_DENIED", "ACCESS_DENIED", "VPC_SERVICE_CONTROLS", "SECURITY_POLICY_VIOLATED"];
           if (Array.isArray(details)) reason = details.find(d => known.includes(d?.reason))?.reason ?? null;
         } catch { /* No raw provider text or credential-bearing response is returned. */ }
@@ -88,7 +93,7 @@ export function providerCalls(
             : [401, 403].includes(response.status)
             ? "vm_provider_iam_or_identity_refused"
             : "vm_provider_http_error",
-          response.status, reason, method !== "GET" && response.status >= 500,
+          response.status, reason, method !== "GET" && response.status >= 500, deniedPermission,
         );
       }
       const bytes = new Uint8Array(length);

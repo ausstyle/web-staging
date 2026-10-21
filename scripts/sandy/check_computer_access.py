@@ -12,7 +12,7 @@ import urllib.request
 from engineering_runtime import EngineeringRuntime, BASE, MANAGEMENT
 
 
-def run(output, permissions_only=True, version=62):
+def run(output, permissions_only=True, version=64, authority_diagnosis=False):
     runtime = EngineeringRuntime()
     status, metadata = runtime._http("GET", MANAGEMENT + "/functions/sandy-deploy-provision", runtime._management)
     if status != 200 or metadata.get("version") != version or metadata.get("status") != "ACTIVE":
@@ -34,7 +34,8 @@ def run(output, permissions_only=True, version=62):
     if len(rows) != 1:
         raise RuntimeError("approved_private_readiness_transport_unavailable")
     request = urllib.request.Request(BASE + "/functions/v1/sandy-deploy-provision",
-        data=json.dumps({"action": "computer_access_preflight", "permissions_only": permissions_only}).encode(),
+        data=json.dumps({"action": "computer_access_preflight", "permissions_only": permissions_only,
+                         "authority_diagnosis": authority_diagnosis}).encode(),
         method="POST", headers={"x-sandy-worker-token": rows[0]["decrypted_secret"], "content-type": "application/json"})
     try:
         response = runtime._opener.open(request, timeout=100)
@@ -53,6 +54,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--connect", action="store_true", help="One tunnel attempt per fixed target; default tests permissions only")
-    parser.add_argument("--backend-version", type=int, default=62)
+    parser.add_argument("--backend-version", type=int, default=64)
+    parser.add_argument("--authority-diagnosis", action="store_true", help="Read exact IAP policies, target permissions and Windows guest evidence without opening tunnels")
     args = parser.parse_args()
-    run(args.output, not args.connect, args.backend_version)
+    run(args.output, not args.connect, args.backend_version, args.authority_diagnosis)

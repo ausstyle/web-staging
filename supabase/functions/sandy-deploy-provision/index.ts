@@ -1,6 +1,7 @@
 import {createClient} from "npm:@supabase/supabase-js@2.57.0";
 import {prepareVideoNetwork} from "./video_network.ts";
 import {inspectComputerAccess} from "../sandy-vm-protocol-api/preflight.ts";
+import {diagnoseComputerAuthority} from "../sandy-vm-protocol-api/authority_diagnosis.ts";
 const P="elaborate-haven-511518-a5",Z="europe-west1-b",SA="sandy-computer@"+P+".iam.gserviceaccount.com",VM_SA="sandy-vm-runtime@"+P+".iam.gserviceaccount.com";
 const AUD="//iam.googleapis.com/projects/1030223524306/locations/global/workloadIdentityPools/sandy-supabase/providers/sandy-supabase-auth";
 const MACHINE="sandy-gcp-machine@sandy-ai.internal";
@@ -35,7 +36,7 @@ Deno.serve(async(req)=>{
   const impersonate=await fetch("https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/"+SA+":generateAccessToken",{method:"POST",headers:{"authorization":"Bearer "+st.access_token,"content-type":"application/json"},body:JSON.stringify({scope:["https://www.googleapis.com/auth/cloud-platform"],lifetime:"1800s"}),signal:AbortSignal.timeout(22000)});
   const i=await impersonate.json();if(!impersonate.ok||!i.accessToken)throw Error("impersonation_"+impersonate.status+":"+String(i.error?.message??"").slice(0,160));
   const auth={"authorization":"Bearer "+i.accessToken,"content-type":"application/json"};
-  if(action==="computer_access_preflight")return reply(await inspectComputerAccess(i.accessToken,fetch,undefined,input.permissions_only===true));
+  if(action==="computer_access_preflight")return reply(input.authority_diagnosis===true ? await diagnoseComputerAuthority(i.accessToken) : await inspectComputerAccess(i.accessToken,fetch,undefined,input.permissions_only===true));
   if(action==="video_network_prepare")return await prepareVideoNetwork({db,token:i.accessToken,fetch},input);
   if(action==="video_ssh_preflight"||action==="video_ssh_iam_grant"){
     const vmUrl="https://compute.googleapis.com/compute/v1/projects/"+P+"/zones/"+Z+"/instances/sandy-video";
