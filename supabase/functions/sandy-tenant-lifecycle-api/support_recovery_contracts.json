@@ -1,0 +1,1458 @@
+{
+  "scope": {
+    "provider": "supabase",
+    "project_ref": "zmqlyygzqoidkcwdysok",
+    "manifest": "support_case_recovery_v1",
+    "private_recovery_only": true,
+    "complete_tenant_coverage": false
+  },
+  "scope_sha256": "c691594174ef0f5b74c1c815568dab535a74a1b2f05f8a187bda3f41da1709b7",
+  "operations": [
+    {
+      "operation": "supabase.tenant.support.snapshot",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "case_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "exported"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_product_support_cases",
+              "sandy_product_support_comments"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "private_recovery_only": {
+            "const": true
+          },
+          "retained_control_copies": {
+            "const": true
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "case_id",
+          "private_recovery_only",
+          "retained_control_copies"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Private single-case recovery image and governed exact case/comment erasure/restore. Historical existing Auth attribution remains server-internal; notification policy and retained control copies are not restored/erased.",
+      "manifest": "support_case_recovery_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.support.snapshot"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "support_case_recovery_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "const": "exported"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "case_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "private_recovery_only": {
+                "const": true
+              },
+              "retained_control_copies": {
+                "const": true
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "case_id",
+              "private_recovery_only",
+              "retained_control_copies"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb",
+      "schema_sha256": "13ddd4182869ee7099717776840a259103f7ebfca73ec10b646d8c7afeca78a8",
+      "private_recovery_only": true,
+      "contract_sha256": "98192ebc0e64f8950c2530bcd1cedfa2fe6ecec12ee88196a30eaa11138c9ad7"
+    },
+    {
+      "operation": "supabase.tenant.support.erase",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_current_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm_manifest_erasure": {
+            "const": true
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "snapshot_id",
+          "expected_current_sha256",
+          "confirm_manifest_erasure",
+          "case_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "erased"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_product_support_cases",
+              "sandy_product_support_comments"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "after_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "readback_verified": {
+            "const": true
+          },
+          "scope": {
+            "const": "exact_snapshot_manifest_rows"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "private_recovery_only": {
+            "const": true
+          },
+          "retained_control_copies": {
+            "const": true
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "before_sha256",
+          "after_sha256",
+          "readback_verified",
+          "scope",
+          "case_id",
+          "private_recovery_only",
+          "retained_control_copies"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Private single-case recovery image and governed exact case/comment erasure/restore. Historical existing Auth attribution remains server-internal; notification policy and retained control copies are not restored/erased.",
+      "manifest": "support_case_recovery_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.support.erase"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "support_case_recovery_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "const": "erased"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "before_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "after_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "readback_verified": {
+                "const": true
+              },
+              "scope": {
+                "const": "exact_snapshot_manifest_rows"
+              },
+              "case_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "private_recovery_only": {
+                "const": true
+              },
+              "retained_control_copies": {
+                "const": true
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "before_sha256",
+              "after_sha256",
+              "readback_verified",
+              "scope",
+              "case_id",
+              "private_recovery_only",
+              "retained_control_copies"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb",
+      "schema_sha256": "13ddd4182869ee7099717776840a259103f7ebfca73ec10b646d8c7afeca78a8",
+      "private_recovery_only": true,
+      "contract_sha256": "6b3c279b2c3994c22e7fbe8042e5b0badf691404eb74f4d36b4524db0d6761b7"
+    },
+    {
+      "operation": "supabase.tenant.support.restore",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_current_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm_manifest_restore": {
+            "const": true
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "snapshot_id",
+          "expected_current_sha256",
+          "confirm_manifest_restore",
+          "case_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "restored"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_product_support_cases",
+              "sandy_product_support_comments"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "after_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "readback_verified": {
+            "const": true
+          },
+          "scope": {
+            "const": "empty_target_manifest_only"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "private_recovery_only": {
+            "const": true
+          },
+          "retained_control_copies": {
+            "const": true
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "before_sha256",
+          "after_sha256",
+          "readback_verified",
+          "scope",
+          "case_id",
+          "private_recovery_only",
+          "retained_control_copies"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Private single-case recovery image and governed exact case/comment erasure/restore. Historical existing Auth attribution remains server-internal; notification policy and retained control copies are not restored/erased.",
+      "manifest": "support_case_recovery_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.support.restore"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "support_case_recovery_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "const": "restored"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "before_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "after_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "readback_verified": {
+                "const": true
+              },
+              "scope": {
+                "const": "empty_target_manifest_only"
+              },
+              "case_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "private_recovery_only": {
+                "const": true
+              },
+              "retained_control_copies": {
+                "const": true
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "before_sha256",
+              "after_sha256",
+              "readback_verified",
+              "scope",
+              "case_id",
+              "private_recovery_only",
+              "retained_control_copies"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb",
+      "schema_sha256": "13ddd4182869ee7099717776840a259103f7ebfca73ec10b646d8c7afeca78a8",
+      "private_recovery_only": true,
+      "contract_sha256": "9598a0f1774b000b3283f5041e654a4c2dd8067132f1ec433cbdda389b840801"
+    },
+    {
+      "operation": "supabase.tenant.support.snapshots.get",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": false,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:read",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "snapshot_id",
+          "case_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "erased",
+              "restored",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_product_support_cases",
+              "sandy_product_support_comments"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "private_recovery_only": {
+            "const": true
+          },
+          "retained_control_copies": {
+            "const": true
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "case_id",
+          "private_recovery_only",
+          "retained_control_copies"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Private single-case recovery image and governed exact case/comment erasure/restore. Historical existing Auth attribution remains server-internal; notification policy and retained control copies are not restored/erased.",
+      "manifest": "support_case_recovery_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.support.snapshots.get"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "support_case_recovery_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "erased",
+                  "restored",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "case_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "private_recovery_only": {
+                "const": true
+              },
+              "retained_control_copies": {
+                "const": true
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "case_id",
+              "private_recovery_only",
+              "retained_control_copies"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb",
+      "schema_sha256": "13ddd4182869ee7099717776840a259103f7ebfca73ec10b646d8c7afeca78a8",
+      "private_recovery_only": true,
+      "contract_sha256": "fe1856b3bda588dd885bd4074e27750684e29da294ba71e068e2ebe3d973690d"
+    },
+    {
+      "operation": "supabase.tenant.support.snapshots.purge",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirm_artifact_purge": {
+            "const": true
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "snapshot_id",
+          "confirm_artifact_purge",
+          "case_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "support_case_recovery_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "const": "purged"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_product_support_cases",
+              "sandy_product_support_comments"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "readback_verified": {
+            "const": true
+          },
+          "case_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "private_recovery_only": {
+            "const": true
+          },
+          "retained_control_copies": {
+            "const": true
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "readback_verified",
+          "case_id",
+          "private_recovery_only",
+          "retained_control_copies"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Private single-case recovery image and governed exact case/comment erasure/restore. Historical existing Auth attribution remains server-internal; notification policy and retained control copies are not restored/erased.",
+      "manifest": "support_case_recovery_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.support.snapshots.purge"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "support_case_recovery_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "const": "purged"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "readback_verified": {
+                "const": true
+              },
+              "case_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "private_recovery_only": {
+                "const": true
+              },
+              "retained_control_copies": {
+                "const": true
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "readback_verified",
+              "case_id",
+              "private_recovery_only",
+              "retained_control_copies"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb",
+      "schema_sha256": "13ddd4182869ee7099717776840a259103f7ebfca73ec10b646d8c7afeca78a8",
+      "private_recovery_only": true,
+      "contract_sha256": "1a0cdfd4918086956063134164889fdf1df8561b9dd4fd4dcd41a1eecd43befb"
+    }
+  ]
+}

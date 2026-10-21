@@ -1,0 +1,30 @@
+BEGIN;
+DO $test$
+DECLARE tenant uuid:=gen_random_uuid();subject uuid:=gen_random_uuid();email text:='consent-capacity-fixture-'||subject::text||'@example.invalid';ops text[];r jsonb;refused boolean;old_revision integer;
+BEGIN
+ INSERT INTO auth.users(id,email,email_confirmed_at,created_at,updated_at,raw_app_meta_data,raw_user_meta_data) VALUES(subject,email,clock_timestamp(),clock_timestamp(),clock_timestamp(),'{}','{}');
+ INSERT INTO public.email_customers(id) VALUES(tenant);
+ INSERT INTO public.email_customer_addresses(customer_id,email_address,is_primary) VALUES(tenant,email,true);
+ INSERT INTO public.sandy_memory_portal_accounts(auth_user_id,customer_id) VALUES(subject,tenant);
+ SELECT array_agg(operation ORDER BY operation) INTO ops FROM public.sandy_operation_registry WHERE handler IN('sandy-supabase-service-api','sandy-tenant-lifecycle-api');
+ IF cardinality(ops)<>65 THEN RAISE EXCEPTION 'recovery_component_expected_exact65_scoped_operations';END IF;
+ UPDATE public.sandy_operation_registry SET api_exposed=true,verified=true WHERE operation IN('supabase.tenant.consent.get','supabase.tenant.consent.set');
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',subject,'role','authenticated')::text,true);
+ r:=public.sandy_supabase_tenant_consent_set(ops,ARRAY[]::text[],false,clock_timestamp()+interval '1 hour');
+ IF r->>'ok'<>'true' OR jsonb_array_length(r->'operations')<>65 OR r->>'allow_erasure'<>'false' OR r->>'revision'<>'1' THEN RAISE EXCEPTION 'consent65_setter_truncated_or_granted_erasure';END IF;
+ r:=public.sandy_supabase_tenant_consent_get();
+ IF jsonb_array_length(r->'operations')<>65 OR r->>'tenant_id'<>tenant::text THEN RAISE EXCEPTION 'consent65_getter_truncated_or_wrong_tenant';END IF;
+ old_revision:=(r->>'revision')::integer;
+ refused:=false;BEGIN PERFORM public.sandy_supabase_tenant_consent_set(ARRAY(SELECT 'unreviewed_'||i::text FROM generate_series(1,129)i),ARRAY[]::text[],false,clock_timestamp()+interval '1 hour');EXCEPTION WHEN OTHERS THEN IF SQLERRM<>'tenant_consent_invalid' THEN RAISE;END IF;refused:=true;END;
+ IF NOT refused THEN RAISE EXCEPTION 'consent129_capacity_allowed';END IF;
+ refused:=false;BEGIN PERFORM public.sandy_supabase_tenant_consent_set(ARRAY[[ops[1],ops[2]],[ops[3],ops[4]]],ARRAY[]::text[],false,clock_timestamp()+interval '1 hour');EXCEPTION WHEN OTHERS THEN IF SQLERRM<>'tenant_consent_invalid' THEN RAISE;END IF;refused:=true;END;
+ IF NOT refused THEN RAISE EXCEPTION 'multidimensional_operation_consent_allowed';END IF;
+ refused:=false;BEGIN PERFORM public.sandy_supabase_tenant_consent_set(ops,ARRAY[['a@example.invalid','b@example.invalid'],['c@example.invalid','d@example.invalid']],false,clock_timestamp()+interval '1 hour');EXCEPTION WHEN OTHERS THEN IF SQLERRM<>'tenant_consent_invalid' THEN RAISE;END IF;refused:=true;END;
+ IF NOT refused THEN RAISE EXCEPTION 'multidimensional_email_consent_allowed';END IF;
+ refused:=false;BEGIN PERFORM public.sandy_supabase_tenant_consent_set(ARRAY[repeat('x',201)],ARRAY[]::text[],false,clock_timestamp()+interval '1 hour');EXCEPTION WHEN OTHERS THEN IF SQLERRM<>'tenant_consent_invalid' THEN RAISE;END IF;refused:=true;END;
+ IF NOT refused OR (public.sandy_supabase_tenant_consent_get()->>'revision')::integer<>old_revision THEN RAISE EXCEPTION 'invalid_consent_mutated_policy';END IF;
+ PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+ IF public.sandy_supabase_tenant_consent_set(ops,ARRAY[]::text[],false,clock_timestamp()+interval '1 hour')->>'http_status'<>'403' THEN RAISE EXCEPTION 'consent_capacity_admin_identity_bypass';END IF;
+END $test$;
+SELECT jsonb_build_object('passed',true,'layer','administrative_database_component','fixtures','full_rollback','normal_user_operation_choices',65,'bounded_capacity',128,'real_auth_session_tested',false,'owner_membership_changed',false,'automatic_grants_created',false,'checks',jsonb_build_array('all65_explicit_choices_roundtrip','getter65_without_truncation','no_automatic_erasure_consent','capacity129_refused','multidimensional_operation_array_refused','multidimensional_email_array_refused','oversized_operation_refused','invalid_policy_updates_rollback','service_key_not_customer_session')) AS evidence;
+ROLLBACK;
