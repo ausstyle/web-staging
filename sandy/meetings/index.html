@@ -65,7 +65,7 @@ function attachTrack(track,identity){
 }
 async function join(id,isOwner,invite,display_name){
  const response=await api("join",{meeting_id:id,...(invite?{invite}:{}),display_name},isOwner);
- meetingId=id;owner=isOwner;inviteToken=invite||null;$("listing").classList.add("hide");$("guest").classList.add("hide");$("call").classList.remove("hide");$("create").classList.add("hide");$("calltitle").textContent=response.title;
+ meetingId=id;owner=isOwner;inviteToken=invite||null;$("end").classList.toggle("hide",!isOwner);$("invite").classList.toggle("hide",!isOwner);$("copyLink").classList.toggle("hide",!isOwner);$("listing").classList.add("hide");$("guest").classList.add("hide");$("call").classList.remove("hide");$("create").classList.add("hide");$("calltitle").textContent=response.title;
  room=new Room({adaptiveStream:true,dynacast:true});
  room.on(RoomEvent.TrackSubscribed,(track,publication,participant)=>attachTrack(track,participant.identity));
  room.on(RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
@@ -83,7 +83,7 @@ async function join(id,isOwner,invite,display_name){
  }catch(e){$("callStatus").textContent="Connection failed: "+e.message;await leave();throw e;}
 }
 async function leave(){
- if(room){await room.disconnect();room=null;}
+ if(room){await room.disconnect();room=null;} meetingId=null;owner=false;inviteToken=null;
  $("tiles").replaceChildren();$("messages").replaceChildren();$("roster").replaceChildren();$("call").classList.add("hide");$("create").classList.remove("hide");$("listing").classList.remove("hide");if(!guestMeeting)await reload();else $("guest").classList.remove("hide");
 }
 function modal({title,description="",label="Meeting name",initial="",confirm="Confirm",destructive=false,input=true}){
