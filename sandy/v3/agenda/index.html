@@ -294,6 +294,16 @@ html,body{max-width:100%;overflow-x:clip}
 .attentionCount{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:650;color:#666;background:#ececec;border-radius:100px;padding:4px 10px}
 .attentionChevron{font-size:13px;color:#777}
 .attention>.attentionrow{margin:0 14px}
+
+#app .outlineDraft .taskrow{display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:9px!important;padding:5px 8px!important;min-height:44px!important}
+#app .outlineDraft .draftDragSpacer{width:22px;min-width:22px;visibility:hidden;flex:none}
+#app .outlineDraft .branchToggle{width:22px;min-width:22px;flex:none;display:inline-grid;place-items:center;color:#aaa}
+#app .outlineDraft .draftCheckSpacer{display:inline-block;width:20px;min-width:20px;height:20px;border:2px solid #c8ceca;border-radius:6px;opacity:.65;flex:none}
+#app .outlineDraft .taskmain{flex:1 1 0!important;max-width:none!important;min-width:0!important}
+#app .outlineDraft .inlineTitle{display:block;width:100%!important;min-width:0;padding:6px 3px;font-size:14px;font-weight:600}
+#app .outlineDraft .draftConfirm{flex:none;background:#243c30;color:#fff;border:0;border-radius:8px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;min-height:34px}
+#app .outlineDraft .draftConfirm:hover{background:#365747}
+#app .outlineDraft .draftConfirm:focus-visible{outline:2px solid #668a6a;outline-offset:2px}
 </style><style>/* V3 isolated styling, preserving V1 functionality */:root{--sandy-v3-accent:#253d30}body{font-synthesis:none}button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #446d55;outline-offset:2px}</style><style>.v3notice{font:12px/1.5 system-ui,sans-serif;background:#eff3ec;color:#2e4736;padding:9px 16px;text-align:center;border-bottom:1px solid #dbe5d9}.v3notice a{color:inherit;text-decoration:underline}</style></head><body><div id="v3startup" style="margin:10px auto;padding:12px 16px;max-width:920px;background:#f3f5f0;color:#324337;border:1px solid #d9e1d7;border-radius:8px;font:14px system-ui">Loading Sandy Agenda… <a style="color:inherit" href="../../app/">Return to your existing workspace</a></div><script>window.addEventListener("error",function(e){var n=document.getElementById("v3startup");if(n){n.textContent="Sandy could not start. Please refresh or return to your existing workspace. Detail: "+(e.message||"Resource unavailable")}});window.addEventListener("unhandledrejection",function(e){var n=document.getElementById("v3startup");if(n)n.textContent="Sandy could not complete startup. Please use the existing workspace while this is resolved."});</script><div class="v3notice">Sandy V3 · Agenda retains the full V1 feature set. <a href="../">Back to V3 workspace</a></div>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../../app/">✳ sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Agenda &amp; tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -638,9 +648,11 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
  if(!box){toast("Parent task is not visible",true);return}
  if(!parent)box.querySelector(":scope > .empty")?.remove();
  const ghost=el("div",(parent?"childrow ":"task ")+"outlineDraft"),row=el("div","taskrow"),main=el("div","taskmain");
- const check=el("input","taskcheck");check.type="checkbox";check.disabled=true;check.setAttribute("aria-label","Unsaved task");
- const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder="New task…";field.setAttribute("aria-label","New task");
- main.append(field);row.append(el("span","branchToggle","·"),check,main);ghost.append(row);
+ const dragSpace=el("span","dragHandle draftDragSpacer","⠿");dragSpace.setAttribute("aria-hidden","true");
+ const check=el("span","taskcheck draftCheckSpacer");check.setAttribute("aria-hidden","true");
+ const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder=parent?"New subtask…":"New task…";field.setAttribute("aria-label",parent?"New subtask":"New task");
+ const confirm=el("button","draftConfirm","Add task");confirm.type="button";confirm.title="Save task (Enter)";
+ main.append(field);row.append(dragSpace,el("span","branchToggle","·"),check,main,confirm);ghost.append(row);
  const prev=after?document.getElementById("task-"+after):null;
  box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:box.querySelector(":scope > .addchild"));
  let closed=false;
@@ -650,6 +662,8 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
   const ok=await outlineCreate(field.value.trim(),parent,after,company);
   if(!ok){closed=false;field.disabled=false;field.focus()}
  }
+ confirm.addEventListener("mousedown",e=>e.preventDefault());
+ confirm.addEventListener("click",()=>save());
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
   if(e.key==="Enter"){e.preventDefault();save()}
