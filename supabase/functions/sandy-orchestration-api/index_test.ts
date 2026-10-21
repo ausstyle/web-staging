@@ -12,6 +12,12 @@ import {
   validatePlan,
 } from "./index.ts";
 import { orchestrationContracts } from "./contracts.ts";
+import providerCatalogue from "../sandy-provider-operation-api/contracts.json" with {
+  type: "json",
+};
+const reviewedProviderCatalogue = providerCatalogue as unknown as {
+  operations: ObjectValue[];
+};
 const actor = "10000000-0000-4000-8000-000000000001",
   job = "10000000-0000-4000-8000-000000000002",
   plan = "10000000-0000-4000-8000-000000000003";
@@ -574,4 +580,104 @@ Deno.test("duplicate claims and malformed completion acknowledgements cannot cre
     "receipt_persistence_unknown",
   );
   assert.equal(h.callsHttp.length, 1);
+});
+
+Deno.test("reviewed provider-read DAG steps use the actual Discovery schemas and reject invalid arguments", async () => {
+  const contracts = [
+    "supabase.project.config.auth.get",
+    "gcp.compute.instances.get",
+  ].map((operation) => {
+    const contract = reviewedProviderCatalogue.operations.find((candidate) =>
+      candidate.operation === operation
+    )!;
+    assert.equal(contract.is_mutation, false);
+    assert.equal(contract.requires_grant, false);
+    assert.equal(contract.requires_cost_approval, false);
+    assert.equal(contract.sensitive, false);
+    return {
+      ...contract,
+      operation,
+      handler: "sandy-provider-operation-api",
+      registry_revision: "d".repeat(64),
+    };
+  });
+  const report = await validatePlan(
+    {
+      steps: [{ key: "project", operation: contracts[0].operation }, {
+        key: "vm",
+        operation: contracts[1].operation,
+        arguments: { path: { instance: "sandy-fixture" } },
+        depends_on: ["project"],
+      }],
+    },
+    contracts,
+    "api",
+  );
+  assert.equal(report.valid, true);
+  assert.equal(report.steps.length, 2);
+  assert.equal(report.provider_dry_run_performed, false);
+  const invalid = await validatePlan(
+    {
+      steps: [{
+        key: "vm",
+        operation: contracts[1].operation,
+        arguments: {
+          path: { instance: "sandy-fixture", external_project: "unreviewed" },
+        },
+      }],
+    },
+    contracts,
+    "api",
+  );
+  assert.equal(invalid.valid, false);
+  assert.equal(invalid.blockers[0].code, "invalid_operation_arguments");
+});
+
+Deno.test("worker recognizes audited provider observations and binds their real admission without accepting asynchronous receipts", async () => {
+  for (const state of ["observed", "accepted"] as const) {
+    const calls: { name: string; args: ObjectValue }[] = [];
+    const db: RpcClient = {
+      rpc(name, args) {
+        calls.push({ name, args });
+        return Promise.resolve({
+          error: null,
+          data: name === "sandy_orch_claim"
+            ? {
+              ok: true,
+              claims: [{ job_id: job, lease_token: lease, worker_id: worker }],
+            }
+            : name === "sandy_orch_attempt_receipt"
+            ? { ok: true, started: true, dispatch_id: dispatch }
+            : {
+              ok: true,
+              job_id: job,
+              reused: false,
+              receipt_outcome: state === "observed" ? "succeeded" : "failed",
+              state: state === "observed" ? "succeeded" : "failed",
+            },
+        });
+      },
+    };
+    const result = await runWorker({
+      db,
+      base: "https://project.supabase.co",
+      service,
+      fetch: (async () =>
+        Response.json({
+          ok: true,
+          executed: true,
+          admission_id: plan,
+          provider_http_status: 200,
+          request_state: state,
+          result: { name: "sandy-fixture", status: "RUNNING" },
+        })) as typeof fetch,
+    }, { worker_id: worker });
+    assert.equal(result.ok, true);
+    assert.equal(
+      calls[2].args.p_outcome,
+      state === "observed" ? "succeeded" : "failed",
+    );
+    assert.equal(calls[2].args.p_execution_admission_id, plan);
+    if (state === "accepted") assert.equal(calls[2].args.p_result, null);
+  }
 });

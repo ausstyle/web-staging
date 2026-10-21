@@ -1,0 +1,40 @@
+{
+  "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+  "api": "compute:v1",
+  "revision": "20261007",
+  "methods": {
+    "get": {
+      "id": "compute.instances.get",
+      "path": "projects/{project}/zones/{zone}/instances/{instance}",
+      "instance_parameter": {
+        "description": "Name of the instance resource to return.",
+        "location": "path",
+        "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+        "required": true,
+        "type": "string"
+      }
+    },
+    "setMetadata": {
+      "id": "compute.instances.setMetadata",
+      "path": "projects/{project}/zones/{zone}/instances/{instance}/setMetadata",
+      "instance_parameter": {
+        "description": "Name of the instance scoping this request.",
+        "location": "path",
+        "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+        "required": true,
+        "type": "string"
+      }
+    },
+    "getSerialPortOutput": {
+      "id": "compute.instances.getSerialPortOutput",
+      "path": "projects/{project}/zones/{zone}/instances/{instance}/serialPort",
+      "instance_parameter": {
+        "description": "Name of the instance for this request.",
+        "location": "path",
+        "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?|[1-9][0-9]{0,19}",
+        "required": true,
+        "type": "string"
+      }
+    }
+  }
+}

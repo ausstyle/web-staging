@@ -43,17 +43,34 @@ const response = (status: number, body: unknown) =>
     },
   });
 const ajv = new Ajv({ strict: true, allErrors: false, validateFormats: true });
+// Match the reviewed provider adapter's Discovery/OpenAPI schema dialect. These
+// flags control schema linting; argument validation and unknown-keyword checks
+// remain enabled at admission and again in the canonical provider executor.
+const providerAjv = new Ajv({
+  strict: true,
+  strictTypes: false,
+  strictRequired: false,
+  allowUnionTypes: true,
+  allErrors: false,
+  validateFormats: true,
+});
 for (const [name, format] of Object.entries(fullFormats)) {
   ajv.addFormat(name, format);
+  providerAjv.addFormat(name, format);
 }
-function schemaValid(schema: unknown, input: unknown): boolean | null {
+function schemaValid(
+  schema: unknown,
+  input: unknown,
+  provider = false,
+): boolean | null {
   if (
     !object(schema) || schema.type !== "object" || schema.$async !== undefined
   ) return null;
   try {
-    const validator = ajv.compile(schema);
+    const compiler = provider ? providerAjv : ajv;
+    const validator = compiler.compile(schema);
     const valid = validator(input);
-    ajv.removeSchema(schema);
+    compiler.removeSchema(schema);
     return valid === true;
   } catch {
     return null;
@@ -174,7 +191,11 @@ export async function validatePlan(
     if (
       !entry || entry.is_mutation !== false || entry.api_exposed !== true ||
       (channel === "mcp" && entry.ai_exposed !== true) ||
-      !["sandy-provider-read-api", "sandy-infrastructure-read"].includes(
+      ![
+        "sandy-provider-read-api",
+        "sandy-infrastructure-read",
+        "sandy-provider-operation-api",
+      ].includes(
         String(entry.handler),
       ) ||
       ![
@@ -188,8 +209,11 @@ export async function validatePlan(
       continue;
     }
     const arguments_ = value.arguments ?? {};
-    const valid = schemaValid(entry.input_schema, arguments_);
-    if (valid !== true || schemaValid(entry.output_schema, {}) === null) {
+    const provider = entry.handler === "sandy-provider-operation-api";
+    const valid = schemaValid(entry.input_schema, arguments_, provider);
+    if (
+      valid !== true || schemaValid(entry.output_schema, {}, provider) === null
+    ) {
       blockers.push({
         step_key: stepKey,
         code: valid === false
@@ -605,8 +629,13 @@ export async function runWorker(
       let outcome = "unknown", errorCode = "read_transport_outcome_unknown";
       if (
         httpStatus !== null && httpStatus >= 200 && httpStatus < 300 &&
-        body?.ok === true && body.executed === true && object(body.result) &&
-        body.result.ok === true
+        body?.ok === true && body.executed === true &&
+        ((object(body.result) && body.result.ok === true) ||
+          (body.request_state === "observed" && uuid(body.admission_id) &&
+            Number.isInteger(body.provider_http_status) &&
+            Number(body.provider_http_status) >= 200 &&
+            Number(body.provider_http_status) < 300 &&
+            body.result !== null && typeof body.result === "object"))
       ) {
         outcome = "succeeded";
         errorCode = "";
