@@ -94,7 +94,7 @@ body{background:#fafbf8;color:#253a2c}
 .rootLine{display:flex;align-items:center;gap:12px;border:1px solid #dbe8da;border-top:0;background:#f8fbf7;padding:12px 18px;border-radius:0 0 14px 14px}.rootLine span{font-size:20px;color:#538066}.rootLine input{border:0;outline:0;background:transparent;flex:1;font-size:14px;min-width:0;color:#314938}.keyboardHint{font-size:11px;color:#9aaa9b;padding:12px 5px}.timeline{background:white;border:1px solid var(--line);border-radius:14px;overflow-x:auto}.timelineHead{padding:16px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px}.timelineHead span{color:#849487;font-size:11px}.timelineGrid{display:grid;grid-template-columns:minmax(170px,240px) repeat(12,minmax(55px,1fr));min-width:860px}.timelineWeeks{background:#f6f9f5;border-block:1px solid #e4ece3}.timelineLabel{text-align:left;padding:10px 12px;border:0;background:transparent;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;color:#38543e}.timelineRow{border-bottom:1px solid #eff3ed;min-height:41px}.timelineRow:hover{background:#fbfdfb}.week{font-size:10px;color:#89998c;padding:11px 5px;text-align:center;border-left:1px solid #ebf0ea}.track{position:relative;grid-row:1;height:40px;background:repeating-linear-gradient(90deg,transparent 0,transparent calc(8.333333% - 1px),#edf2ec calc(8.333333% - 1px),#edf2ec 8.333333%)}.ganttBar{position:absolute;top:12px;height:16px;min-width:8px;border-radius:6px;background:#559a72;cursor:pointer}.ganttDone{background:#b4c5b7}.unscheduled{font-size:10px;color:#b2bcb1;margin:12px;display:inline-block}
 .timelineTaskCell{display:flex;align-items:center;min-width:0;gap:2px;grid-column:1;grid-row:1}
 .timelineTaskCell .timelineLabel{min-width:0;flex:1;padding:10px 4px;text-overflow:ellipsis}
-.timelineBranchToggle{flex:0 0 19px;width:19px;height:25px;padding:0;border:0;background:transparent;color:#4f8060;font-size:14px;cursor:pointer}
+.timelineBranchToggle{flex:0 0 22px;width:22px;height:26px;padding:0;border:0;background:transparent;color:#286541;font-size:17px;font-weight:750;cursor:pointer;border-radius:5px;transition:background .12s,color .12s}
 .timelineBranchToggle:disabled{opacity:0;cursor:default}
 .timelineBranchToggle:not(:disabled):hover{background:#e8f1e8;border-radius:4px}
 .timelineUnscheduledMarker{position:absolute;top:11px;width:18px;height:18px;border:2px dashed #69a180;border-radius:50%;background:white;color:#56916f;display:grid;place-items:center;font-size:12px;line-height:1;padding:0;cursor:grab;z-index:2;touch-action:none}
@@ -672,6 +672,9 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .timelineRow.timelineHandlesActive .ganttBar .sandyGanttStart,
 .timelineRow.timelineHandlesActive .ganttBar .sandyGanttResize,
 .timelineRow.timelineHandlesActive .ganttBar .timelineLinkHandle{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+</style><style>
+.ganttBar.timelineOverdue{background:#c58b3e!important}
+.ganttBar.timelineOverdue:hover{background:#b57a2c!important}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -2178,13 +2181,14 @@ function timelineDrawDependencies(){
  const nodes=new Map(rows.map(r=>[r.dataset.timelineId,r]));
  for(const dep of state.dependencies){
   const a=nodes.get(dep.depends_on_id),b=nodes.get(dep.task_id);
-  const x=a?.querySelector(".ganttBar"),y=b?.querySelector(".ganttBar");
+  const x=a?.querySelector(".ganttBar, .timelineUnscheduledMarker"),y=b?.querySelector(".ganttBar, .timelineUnscheduledMarker");
   if(!x||!y)continue;
   const ar=x.getBoundingClientRect(),br=y.getBoundingClientRect();
   const predecessor=state.tasks.find(t=>t.id===dep.depends_on_id);
   const successor=state.tasks.find(t=>t.id===dep.task_id);
-  const finish=Date.parse(predecessor?.due_at||predecessor?.start_at||"");
-  const start=Date.parse(successor?.start_at||successor?.due_at||"");
+  const projected=localStorage.getItem("sandy_timeline_mode")!=="planned"?timelineProjection(state.tasks,state.dependencies):null;
+  const finish=projected?.get(dep.depends_on_id)?.to??Date.parse(predecessor?.due_at||predecessor?.start_at||"");
+  const start=projected?.get(dep.task_id)?.from??Date.parse(successor?.start_at||successor?.due_at||"");
   const rangeStart=Number(box.dataset.timelineStart),rangeMs=Number(box.dataset.timelineRange);
   const trackA=a.querySelector(".track")?.getBoundingClientRect();
   const trackB=b.querySelector(".track")?.getBoundingClientRect();
@@ -2198,6 +2202,7 @@ function timelineDrawDependencies(){
   path.setAttribute("d",aligned?"M"+sx+","+sy+" V"+ey:"M"+sx+","+sy+" H"+bend+" V"+ey+" H"+(ex-5));
   path.setAttribute("fill","none");path.setAttribute("stroke","#698b78");
   path.setAttribute("stroke-width","1.7");path.setAttribute("opacity",".85");
+  if(!Number.isFinite(finish)||!Number.isFinite(start)){path.setAttribute("stroke-dasharray","5 4");path.setAttribute("opacity",".7")}
   // Retain visible dependency lines while making each connector directly editable.
   const hit=document.createElementNS("http://www.w3.org/2000/svg","path");
   hit.setAttribute("d",path.getAttribute("d"));hit.setAttribute("fill","none");
@@ -2299,10 +2304,35 @@ function timelineConnectFrom(source,e,handle){
  const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
  document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",stop,true);document.addEventListener("pointercancel",cancel,true);
 }
+function timelineProjection(tasks,dependencies,now=Date.now()){
+ const rows=new Map(tasks.map(t=>[t.id,t])),dates=new Map(),visiting=new Set();
+ const projectedNow=Math.ceil(now/900000)*900000;
+ function compute(id){
+  if(dates.has(id))return dates.get(id);
+  if(visiting.has(id))return null;
+  visiting.add(id);
+  const t=rows.get(id);if(!t){visiting.delete(id);return null}
+  const a=Date.parse(t.start_at||t.due_at||""),b=Date.parse(t.due_at||t.start_at||"");
+  if(!Number.isFinite(a)||!Number.isFinite(b)){visiting.delete(id);return null}
+  const originalDuration=Math.max(0,b-a),unfinished=!["completed","cancelled"].includes(t.status);
+  let from=a,to=b,overdue=unfinished&&b<now;
+  if(overdue){from=projectedNow;to=from+originalDuration}
+  if(unfinished){
+   for(const d of dependencies.filter(d=>d.task_id===id)){
+    const p=compute(d.depends_on_id);
+    if(p&&from<p.to){from=p.to;to=from+originalDuration}
+   }
+  }
+  const result={from,to,overdue,shifted:from!==a,originalFrom:a,originalTo:b};
+  dates.set(id,result);visiting.delete(id);return result;
+ }
+ for(const id of rows.keys())compute(id);
+ return dates;
+}
 function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
- const monday=new Date(today);if(Number(localStorage.getItem("sandy_timeline_zoom"))!==1)monday.setDate(today.getDate()-((today.getDay()+6)%7));
+ const monday=new Date(today); // Rolling timeline windows begin today, not on Monday of the current week.
  const zoomValue=Number(localStorage.getItem("sandy_timeline_zoom"));
  const zoomOptions=[1,7,14,28,84,168];
  const days=zoomOptions.includes(zoomValue)?zoomValue:84,hourMode=days===1,dayMode=days<=14,slots=hourMode?24:dayMode?days:days/7,range=days*86400000,snapMs=900000,snapSteps=range/snapMs;
@@ -2312,7 +2342,15 @@ function renderTimeline(){
  const title=el("div","timelineHead");
  title.append(el("strong","",hourMode?"Daily project plan":dayMode?days+"-day project plan":(days/7)+"-week project plan"));
  title.append(el("span","","Drag to set dates · drag left/right edges to resize"));
+ const projectionMode=localStorage.getItem("sandy_timeline_mode")||"prospective";
+ const projectionDates=timelineProjection(state.tasks,state.dependencies);
  const zoom=el("div","timelineZoom");
+ for(const [value,label] of [["prospective","Prospective"],["planned","Planned"]]){
+  const control=el("button","timelineZoomButton"+(projectionMode===value?" selected":""),label);
+  control.type="button";control.setAttribute("aria-pressed",String(projectionMode===value));
+  control.onclick=()=>{localStorage.setItem("sandy_timeline_mode",value);renderTimeline()};
+  zoom.append(control);
+ }
  for(const [n,name] of [[1,"Day"],[7,"7 days"],[14,"14 days"],[28,"Month"],[84,"Quarter"],[168,"6 months"]]){
   const control=el("button","timelineZoomButton"+(n===days?" selected":""),name);
   control.type="button";control.setAttribute("aria-pressed",String(n===days));
@@ -2330,7 +2368,8 @@ function renderTimeline(){
   header.append(el("div","week",hourMode?String(i).padStart(2,"0")+":00":d.toLocaleDateString(undefined,dayMode?{weekday:"short",day:"numeric",month:"short"}:{month:"short",day:"numeric"})));
  }
  box.append(header);
- const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
+ const dates=t=>{const p=projectionMode==="prospective"?projectionDates.get(t.id):null;return {from:new Date(p?.from??(t.start_at||t.due_at)),to:new Date(p?.to??(t.due_at||t.start_at))}};
+
  function row(t,depth){
   const children=childOf(t.id);
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
@@ -2388,9 +2427,10 @@ function renderTimeline(){
    const start=Math.max(0,(from-monday.getTime())/range)*100,end=Math.min(100,((to-monday.getTime())/range)*100);
    if(end>=0&&start<=100){
     const milestone=!t.start_at&&!!t.due_at;
-    const bar=el("div","ganttBar"+(milestone?" timelineMilestone":"")+(t.status==="completed"?" ganttDone":""));
+    const projection=projectionMode==="prospective"?projectionDates.get(t.id):null;
+    const bar=el("div","ganttBar"+(milestone?" timelineMilestone":"")+(t.status==="completed"?" ganttDone":"")+(projection?.overdue?" timelineOverdue":""));
     bar.style.left=Math.max(0,start)+"%";bar.style.width=milestone?"12px":Math.max(1.2,end-Math.max(0,start))+"%";
-    bar.title=t.title+" · "+dateLabel(a.from)+" → "+dateLabel(a.to);
+    bar.title=t.title+(projection?.overdue?" · Overdue / projected":"")+" · "+dateLabel(a.from)+" → "+dateLabel(a.to)+(projection?.shifted?" (original dates retained)":"");
     bar.style.touchAction="pan-y";bar.style.cursor="grab";
     const connector=el("span","timelineLinkHandle","");
     connector.title="Drag to another task to create a finish-to-start dependency";
@@ -2438,6 +2478,7 @@ function renderTimeline(){
     };
     bar.addEventListener("pointerdown",e=>{
       if(t.shared||e.button!==0)return;
+      if(projection?.shifted){toast("Switch to Planned to edit stored dates; this is a calculated projection.");return}
       gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:milestone?"move":e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
       bar.classList.add("timelineDragging");line.classList.add("timelineHandlesActive");
       document.body.append(dragNote);
@@ -2712,11 +2753,33 @@ async function load(){
   try{await timelineRepairDependencies()}finally{timelineAutoRepairRunning=false}
  }
 }
+function confirmTaskSubtreeInline(task,control){
+ return new Promise(resolve=>{
+  document.querySelector(".taskSubtreeConfirm")?.remove();
+  const pop=el("div","timelineInlineConfirm taskSubtreeConfirm");
+  pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Complete task and subtasks");
+  pop.append(el("div","timelineInlineConfirmTitle","Complete all subtasks?"));
+  pop.append(el("div","timelineInlineConfirmDetail","Completing “"+task.title+"” will also complete its unfinished subtasks."));
+  const actions=el("div","timelineInlineConfirmActions");
+  const cancel=el("button","","Cancel"),confirm=el("button","confirm","Complete all");
+  cancel.type=confirm.type="button";actions.append(cancel,confirm);pop.append(actions);document.body.append(pop);
+  const rect=control.getBoundingClientRect(),bounds=pop.getBoundingClientRect();
+  pop.style.left=Math.max(8,Math.min(innerWidth-bounds.width-8,rect.right+10))+"px";
+  pop.style.top=Math.max(8,Math.min(innerHeight-bounds.height-8,rect.top-6))+"px";
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();resolve(value)};
+  const outside=e=>{if(!pop.contains(e.target))done(false)};
+  const key=e=>{if(e.key==="Escape"){e.preventDefault();done(false)}};
+  cancel.onclick=()=>done(false);confirm.onclick=()=>done(true);
+  document.addEventListener("pointerdown",outside,true);document.addEventListener("keydown",key,true);
+  confirm.focus({preventScroll:true});
+ });
+}
 async function markTask(t,done,control){
  control.disabled=true;
  try{
   if(done&&countDesc(t).total>countDesc(t).done){if(t.shared){toast("Complete the shared subtasks first.",true);control.checked=false;return}
-    if(!confirm("This task has unfinished subtasks. Mark the whole task and every remaining subtask complete?")){control.checked=false;return}
+    if(!await confirmTaskSubtreeInline(t,control)){control.checked=false;return}
     await api("complete-tree",{id:t.id,confirm_all:true})
   }else{
     await api(t.shared?"shared-update":"update",{id:t.id,status:done?"completed":"todo"})
