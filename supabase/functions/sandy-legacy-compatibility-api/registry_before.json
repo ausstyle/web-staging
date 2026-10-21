@@ -1,0 +1,141 @@
+[
+  {
+    "operation": "github.commit",
+    "handler": "sandy-engineering-control",
+    "permission_scope": "engineering:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  },
+  {
+    "operation": "github.merge",
+    "handler": "sandy-engineering-control",
+    "permission_scope": "engineering:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  },
+  {
+    "operation": "github.read",
+    "handler": "sandy-operations-mcp",
+    "permission_scope": "engineering:read",
+    "is_mutation": false,
+    "input_schema": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  },
+  {
+    "operation": "github.update_file",
+    "handler": "sandy-engineering-control",
+    "permission_scope": "engineering:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  },
+  {
+    "operation": "supabase.apply_migration",
+    "handler": "unassigned",
+    "permission_scope": "database:deploy",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "project_id",
+        "migration_ref"
+      ],
+      "properties": {
+        "project_id": {
+          "type": "string"
+        },
+        "migration_ref": {
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        }
+      }
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": false,
+    "ai_exposed": false,
+    "verified": false
+  },
+  {
+    "operation": "github.push_files",
+    "handler": "sandy-engineering-control",
+    "permission_scope": "engineering:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object"
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  },
+  {
+    "operation": "supabase.deploy_edge_function",
+    "handler": "sandy-deployment-api",
+    "permission_scope": "infrastructure:deploy",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "project_id",
+        "name",
+        "artifact_ref"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "artifact_ref": {
+          "type": "string"
+        },
+        "idempotency_key": {
+          "type": "string"
+        }
+      }
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": false,
+    "ai_exposed": false,
+    "verified": false
+  }
+]

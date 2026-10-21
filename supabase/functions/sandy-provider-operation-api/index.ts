@@ -524,9 +524,15 @@ function entitlementMissing(status: number, text: string): boolean {
     /(entitlement_required|custom[ _-]?(?:domain|hostname).*(?:not enabled|add.?on|subscription)|(?:add.?on|subscription).*custom[ _-]?domain)/i
       .test(text);
 }
+/** A static catalogue may expose reviewed compatibility contracts through the same
+ * execution engine. It is supplied by trusted code, never from request JSON. */
 export function createProviderOperationHandler(
   deps: ProviderDependencies,
+  fixedCatalogue?: Readonly<Record<string, ProviderOperation>>,
 ): (req: Request) => Promise<Response> {
+  if (fixedCatalogue && !Object.isFrozen(fixedCatalogue)) {
+    throw Error("immutable_provider_catalogue_required");
+  }
   const fetcher = deps.fetch ?? fetch;
   return async (req: Request) => {
     if (req.method !== "POST") return refusal(405, "method_not_allowed");
@@ -560,15 +566,20 @@ export function createProviderOperationHandler(
     let op: ProviderOperation | undefined;
     try {
       op = typeof body.operation === "string"
-        ? providerOperations[body.operation] ??
-          await loadExpandedProviderOperation(body.operation) as
-            | ProviderOperation
-            | undefined
+        ? fixedCatalogue
+          ? fixedCatalogue[body.operation]
+          : providerOperations[body.operation] ??
+            await loadExpandedProviderOperation(body.operation) as
+              | ProviderOperation
+              | undefined
         : undefined;
     } catch {
       return refusal(503, "provider_catalogue_integrity_failed");
     }
     if (!op) return refusal(404, "operation_not_implemented");
+    if (op.operation !== body.operation) {
+      return refusal(503, "provider_catalogue_integrity_failed");
+    }
     const args = body.arguments ?? {};
     if (
       !object(args) || !validator(op.operation + ":in", op.input_schema)(args)
@@ -590,7 +601,7 @@ export function createProviderOperationHandler(
     let url: URL;
     let scope: JsonObject;
     try {
-      scope = providerOperations[op.operation]
+      scope = !fixedCatalogue && providerOperations[op.operation]
         ? providerExecutionScope(op.operation, deps)
         : descriptorExecutionScope(op, deps);
       url = bindProviderRequest(op, args, deps);
@@ -917,7 +928,33 @@ export function createProviderOperationHandler(
           raw,
         )
       ) throw new Error("provider_response_contract_mismatch");
-      if (op.kind === "domain") result = domainProjection(raw);
+      if (op.kind === "github_merge" && object(raw) && raw.merged === false) {
+        const recorded = await finish("failed", status, provider_request_id, {
+          error: "github_merge_refused",
+          provider_attempted: true,
+        });
+        return response(recorded ? 409 : 503, {
+          ok: false,
+          operation: op.operation,
+          error: recorded
+            ? "github_merge_refused"
+            : "execution_receipt_state_unknown",
+          executed: recorded ? false : null,
+          reconciliation_required: !recorded,
+          admission_id,
+          provider_http_status: status,
+          provider_request_id,
+          provider_attempted: true,
+          request_state: "failed",
+          receipt_recorded: recorded,
+        });
+      }
+      if (op.kind === "github_merge") {
+        if (!object(raw) || raw.merged !== true) {
+          throw new Error("provider_response_contract_mismatch");
+        }
+        result = acceptedProjection(raw);
+      } else if (op.kind === "domain") result = domainProjection(raw);
       else if (op.kind === "file_content") {
         if (
           !object(raw) || raw.type !== "file" || raw.encoding !== "base64" ||

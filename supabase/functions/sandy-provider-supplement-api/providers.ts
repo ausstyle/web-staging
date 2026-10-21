@@ -1,3 +1,4 @@
+import { executeGithubBatch } from "../_shared/sandy_github_batch.ts";
 import { canonicalJson } from "../_shared/sandy_api_protocol.ts";
 import { requireBinding } from "../sandy-provider-operation-api/configured_scopes.ts";
 import {
@@ -223,7 +224,7 @@ function safeFilePath(value: unknown): string {
   ) fail("invalid_source_file_path", 400);
   return path;
 }
-async function deploy(args: Obj, calls: Calls): Promise<Obj> {
+export async function validateFunctionDeploymentMaterial(args: Obj) {
   const files = args.files as Obj[];
   if (!Array.isArray(files) || files.length < 1 || files.length > 32) {
     fail("source_files_required", 400);
@@ -251,6 +252,11 @@ async function deploy(args: Obj, calls: Calls): Promise<Obj> {
   }
   // Transport cannot disable the project JWT verification boundary.
   if (args.verify_jwt !== true) fail("function_jwt_verification_required", 403);
+  return { prepared, entrypoint, importMap };
+}
+async function deploy(args: Obj, calls: Calls): Promise<Obj> {
+  const { prepared, entrypoint, importMap } =
+    await validateFunctionDeploymentMaterial(args);
   const metadata = {
     entrypoint_path: entrypoint,
     verify_jwt: true,
@@ -336,6 +342,9 @@ export async function execute(
       "billing_list",
     ].includes(op.kind)
   ) return await filtered(op, args, calls, deps, context, admission);
+  if (op.kind === "github_push_files") {
+    return await executeGithubBatch(args, calls, admission);
+  }
   if (op.kind === "function_deploy") return await deploy(args, calls);
   if (op.kind === "function_body" || op.kind === "effective_security") {
     const target = op.kind === "function_body"

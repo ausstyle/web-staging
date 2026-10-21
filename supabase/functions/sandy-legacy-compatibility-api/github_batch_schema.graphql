@@ -1,0 +1,103 @@
+input CreateCommitOnBranchInput {
+  """
+  The Ref to be updated.  Must be a branch.
+  """
+  branch: CommittableBranch!
+
+  """
+  A unique identifier for the client performing the mutation.
+  """
+  clientMutationId: String
+
+  """
+  The git commit oid expected at the head of the branch prior to the commit
+  """
+  expectedHeadOid: GitObjectID!
+
+  """
+  A description of changes to files in this commit.
+  """
+  fileChanges: FileChanges
+
+  """
+  The commit message the be included with the commit.
+  """
+  message: CommitMessage!
+}
+
+input CommitMessage {
+  """
+  The body of the message.
+  """
+  body: String
+
+  """
+  The headline of the message.
+  """
+  headline: String!
+}
+
+input CommittableBranch {
+  """
+  The unqualified name of the branch to append the commit to.
+  """
+  branchName: String
+
+  """
+  The Node ID of the Ref to be updated.
+  """
+  id: ID
+
+  """
+  The nameWithOwner of the repository to commit to.
+  """
+  repositoryNameWithOwner: String
+}
+
+input FileChanges {
+  """
+  File to add or change.
+  """
+  additions: [FileAddition!] = []
+
+  """
+  Files to delete.
+  """
+  deletions: [FileDeletion!] = []
+}
+
+input FileAddition {
+  """
+  The base64 encoded contents of the file
+  """
+  contents: Base64String!
+
+  """
+  The path in the repository where the file will be located
+  """
+  path: String!
+}
+
+input FileDeletion {
+  """
+  The path to delete
+  """
+  path: String!
+}
+
+type CreateCommitOnBranchPayload {
+  """
+  A unique identifier for the client performing the mutation.
+  """
+  clientMutationId: String
+
+  """
+  The new commit.
+  """
+  commit: Commit
+
+  """
+  The ref which has been updated to point to the new commit.
+  """
+  ref: Ref
+}

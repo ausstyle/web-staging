@@ -1,0 +1,10 @@
+{
+  "source_url": "https://raw.githubusercontent.com/octokit/graphql-schema/master/schema.graphql",
+  "source_sha256": "3c62d0526d133cee53221c89de9b455ade24db78b9e7ad56d642c4c15bce2654",
+  "source_bytes": 1223842,
+  "vendored_excerpt_sha256": "3109a6c73adaff3302858bbea6860622c089c1bc1ee9d8d0917fd1015489df50",
+  "retrieved_utc": "2026-10-21T05:07:00.052029+00:00",
+  "field": "Mutation.createCommitOnBranch(input:CreateCommitOnBranchInput!):CreateCommitOnBranchPayload",
+  "native_precondition": "CreateCommitOnBranchInput.expectedHeadOid:GitObjectID!",
+  "github_api_hostname_preflight": "Proxy tunnel403 before credential use; no live GraphQL mutation performed"
+}

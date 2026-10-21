@@ -27,6 +27,7 @@ import {
   validate,
 } from "./runtime.ts";
 import { supplementExecutionScope } from "./scope.ts";
+import { descriptorExecutionScope } from "./scope_from_descriptor.ts";
 export { supplementContracts } from "./contracts.ts";
 export { supplementExecutionScope } from "./scope.ts";
 export type { Dependencies } from "./runtime.ts";
@@ -55,7 +56,11 @@ export function normalizeReceipt(r: Finish, data: unknown): Policy {
 }
 export function createSupplementHandler(
   deps: Dependencies,
+  fixedCatalogue?: Readonly<Record<string, Contract>>,
 ): (request: Request) => Promise<Response> {
+  if (fixedCatalogue && !Object.isFrozen(fixedCatalogue)) {
+    throw Error("immutable_supplement_catalogue_required");
+  }
   return async (request) => {
     if (request.method !== "POST") return refusal(405, "method_not_allowed");
     if (
@@ -86,9 +91,12 @@ export function createSupplementHandler(
       )
     ) return refusal(400, "invalid_request");
     const op = typeof body.operation === "string"
-      ? supplementContracts[body.operation]
+      ? (fixedCatalogue ?? supplementContracts)[body.operation]
       : undefined;
     if (!op) return refusal(404, "operation_not_implemented");
+    if (op.operation !== body.operation) {
+      return refusal(503, "provider_catalogue_integrity_failed");
+    }
     const args = body.arguments ?? {};
     if (!object(args) || !validate(op.input_schema, args)) {
       return refusal(400, "invalid_operation_arguments");
@@ -106,7 +114,9 @@ export function createSupplementHandler(
     const context = body as Obj & Context;
     let scope: Obj;
     try {
-      scope = supplementExecutionScope(op.operation, deps.bindings);
+      scope = fixedCatalogue
+        ? descriptorExecutionScope(op, deps.bindings)
+        : supplementExecutionScope(op.operation, deps.bindings);
     } catch (e) {
       return refusal(
         424,
