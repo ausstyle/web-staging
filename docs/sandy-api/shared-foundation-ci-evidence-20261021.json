@@ -34,13 +34,15 @@
     "supabase/functions/sandy-deployment-api/index_test.ts": "1fb3ea450ce925283639f2ae1e87395b38530de3b2db86be552324ce1628cdc5"
   },
   "github_ci_status": {
-    "head": "c42a92b311af9db6e3c33485eb19705a7a0f88d7",
+    "head": "ab2dd6f4f8345ec3ee45554c052474a94531b6e6",
     "api_contract_tests": "SUCCESS",
-    "api_run": 39638236395,
-    "offline_tests": "FAILURE",
-    "offline_run": 39638236353,
-    "remaining_defects_identified": "Offline workflow lacks jsonschema installation; three test modules depend on a Codex-only absolute schema cache. Both corrected; new remote checks pending.",
-    "signed_log_artifact_download": "HTTP 403 Forbidden; job metadata and annotations readable. Local clean-checkout reproduction used."
+    "api_run": 39641923809,
+    "offline_tests": "SUCCESS",
+    "offline_run": 39641923875,
+    "engineering_mcp_checks": "SUCCESS",
+    "engineering_mcp_deploy_verify": "SUCCESS",
+    "production_deployment_job": "SKIPPED",
+    "merged": false
   },
   "portable_offline_regression": {
     "tests": 277,

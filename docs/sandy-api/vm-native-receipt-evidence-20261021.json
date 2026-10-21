@@ -1,0 +1,119 @@
+{
+  "timestamp_utc": "2026-10-21T17:16:57.736116+00:00",
+  "source_candidate_only": true,
+  "deployed": false,
+  "registry_changed": false,
+  "families": [
+    35,
+    36,
+    37,
+    38
+  ],
+  "baseline": {
+    "http_status": 400,
+    "failing_regression": "unknown_with_native_result_refused"
+  },
+  "corrected_sql": {
+    "timestamp_utc": "2026-10-21T17:15:38.752969+00:00",
+    "http_status": 201,
+    "full_rollback": true,
+    "actual_auth_session": false,
+    "actual_provider_calls": 0,
+    "catalogue_activated": false,
+    "query_sha256": "2f417eac23b3a7f70c53d9d7f1b59d56f38adb754594190ca583be557b1ef6d5",
+    "source_sha256": {
+      "supabase/migrations/20261021008900_sandy_vm_protocol_boundary.sql": "4a9d99e0cab1a419a8dd4b4a9ed47c3e2a9bf0afe06ce08867699c5829c361cf",
+      "supabase/migrations/20261021008910_sandy_vm_protocol_contracts.sql": "bbee9aab8fbf72c70df5d0b8d65d60e7c4e3a7f760b81fa4b344596e5715d13b",
+      "supabase/functions/sandy-vm-protocol-api/custody_test.sql": "e5211e2a47371f356c4c4b6be4705e0f8c3c6278e87ab1b78d3782085b94977d"
+    },
+    "result": [
+      {
+        "evidence": {
+          "checks": 53,
+          "labels": [
+            "admission_contexts_private_acl",
+            "all_nine_closed",
+            "all_unrelated_registry_rows_unchanged",
+            "altered_input_refused",
+            "approval_metadata_drift_refused",
+            "attempt_replay_refused_before_transport",
+            "attempts_private_acl",
+            "binding_get_exact",
+            "bindings_private_acl",
+            "command_digest_only_result",
+            "command_encrypted_native_vault",
+            "command_exact_ttl",
+            "command_get_metadata_only",
+            "commands_private_acl",
+            "contracts_private_acl",
+            "cross_vm_command_refused",
+            "delegated_identity_refused",
+            "enrollment_owner_context",
+            "enrollment_replay_refused",
+            "enrollment_without_identity_probe_refused",
+            "expected_command_sha_refused",
+            "first_attempt_claimed",
+            "foreign_actor_refused",
+            "gcp_consumer_post108_configuration_only",
+            "inline_ssh_exact_command",
+            "inline_winrm_fixed_binding",
+            "known_nonzero_command_failed",
+            "metadata_finish_tamper_refused",
+            "metadata_receipts_private_acl",
+            "native_mutation_finished_without_fake_http",
+            "native_output_finish_tamper_refused",
+            "output_native_vault_exact_ttl",
+            "output_no_public_bytes",
+            "output_replay_refused",
+            "output_wrong_digest_refused",
+            "outputs_private_acl",
+            "private_admission_arguments_encrypted",
+            "registered_command_exact_private_resolve",
+            "resolver_rpc_private",
+            "revoked_binding_absent",
+            "revoked_command_refused",
+            "revoked_command_vault_deleted",
+            "scope_substitution_refused",
+            "six_new_rows_only",
+            "succeeded_owner_pinned_binding_available",
+            "unconfirmed_owner_refused",
+            "unfinished_enrollment_not_usable",
+            "unknown_cannot_claim_success",
+            "unknown_preserves_running_job",
+            "unknown_with_native_result_refused",
+            "unknown_without_result_requires_reconciliation",
+            "vault_command_digest_tamper_refused",
+            "wrong_consumer_refused"
+          ],
+          "passed": true,
+          "full_rollback": true,
+          "provider_called": false,
+          "actual_auth_session": false,
+          "dummy_vault_material_only": true
+        }
+      }
+    ],
+    "independent_cleanup": [
+      {
+        "candidate_tables_absent": true,
+        "fixture_users": 0
+      }
+    ]
+  },
+  "local_protocol_regression": {
+    "passed": 29,
+    "failed": 0,
+    "actual_loopback_ssh_and_tls": true,
+    "actual_Google_VM": false,
+    "normal_auth_MCP": false,
+    "log_sha256": "b53cd842b905ef929d1167f54698631786476d128402f05b309fb83e6ec6aa28"
+  },
+  "shared_receipt": "Exact admission ID, terminal outcome and replay acknowledgement required across native provider adapters; contradictory/lost acknowledgements fail closed.",
+  "remaining": [
+    "Supported private/IAP tunnel for VM without a public address",
+    "Owner-approved trusted host identity and bounded authorization profile",
+    "Renewable technical OS Login/WinRM credentials with actual provider cleanup checks",
+    "Authorized output delivery from encrypted custody",
+    "Real harmless VM command and independent output verification through MCP"
+  ]
+}

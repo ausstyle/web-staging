@@ -25,6 +25,10 @@ Dependency-ordered planning ranges below are provisional engineering effort, not
 
 Confirmed independent dependencies: the existing Google service account receives **403** for `compute.subnetworks.setPrivateIpGoogleAccess` on the fixed default subnet; OS Config inventory receives **403** for `osconfig.inventories.get`. Neither establishes that every private/IAP transport is unavailable. Broader owner-only tests require a legitimately approved scoped delegation, rather than reusing an expired personal Controller token or widening the existing six-operation grant. Custom Domain entitlement remains separate and no plan purchase is authorized. No arbitrary URL executor or unrestricted provider tool is introduced.
 
+The portable reviewed-schema foundation passed **277 offline Python tests** with management/GitHub/Controller credentials removed. Individual integrity/policy/Draft7 checks cover all **1,738 generated contracts**, using 25 exact public pinned schema/protobuf fixtures. On pushed commit `ab2dd6f`, all four applicable GitHub checks passed; the production deployment job was skipped. These tests do not add registry verification flags.
+
+The existing native VM candidate has been adopted as source with one shared receipt normalizer and an explicit unknown-outcome guard. A real PostgreSQL rollback test reproduced the previous false-completion path, then **53/53** assertions passed after repair. **27** loopback SSH/TLS WinRM tests and **2** shared receipt tests passed; the compiler invariants passed. Candidate migrations and protocol tools remain unapplied/unexposed; no remote VM execution is claimed. [Native receipt evidence](vm-native-receipt-evidence-20261021.json) records the baseline failure, correction and independently absent fixtures.
+
 ## Published source and production
 
 GitHub write authorization works. The engineering branch source delivery is working; exact current commit and PR checks are recorded in the release evidence below. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
