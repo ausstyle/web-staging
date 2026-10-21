@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "basis": "Original 161 families plus the user's clarifications: use shared adapters, retain operation-specific authorization, and provide reusable VM execution rather than software-specific MCP installation tools.",
+  "standalone_mcp_tools_not_required": {
+    "video.install": "Software installation belongs to the authorized reusable engineering executor.",
+    "video.restart": "Use authorized generic VM service management.",
+    "video.logs": "Use authorized generic VM execution/result retrieval.",
+    "video.verify_call": "A particular video application is not the completion criterion for the API engineering program."
+  },
+  "explicit_family_required_operations": {
+    "26": ["gcp.compute.instances.list", "gcp.compute.instances.get", "gcp.compute.instances.create", "gcp.compute.instances.delete"],
+    "27": ["gcp.compute.instances.start", "gcp.compute.instances.stop", "gcp.compute.instances.reset", "gcp.compute.instances.suspend", "gcp.compute.instances.resume"],
+    "28": ["gcp.compute.instances.set_machine_type", "gcp.compute.instances.set_labels", "gcp.compute.instances.set_tags", "gcp.compute.instances.set_metadata"],
+    "29": ["gcp.compute.instances.attach_disk", "gcp.compute.instances.detach_disk"],
+    "30": ["gcp.disks.create", "gcp.disks.resize", "gcp.disks.delete"],
+    "36": ["gcp.vm.ssh.exec"],
+    "37": ["gcp.vm.winrm.exec"],
+    "38": ["gcp.vm.files.upload", "gcp.vm.files.download"],
+    "75": ["supabase.orgs.list"],
+    "85": ["supabase.logs.query"],
+    "110": ["supabase.logs.query"]
+  },
+  "supporting_diagnostic_families": {
+    "video.status": [26],
+    "video.execution.preflight": [35],
+    "video.install.preflight": [35],
+    "video.network.preflight": [48],
+    "video.ssh.preflight": [36],
+    "video.osconfig.access": [35],
+    "video.osconfig.agent_status": [35],
+    "video.osconfig.permissions": [35],
+    "video.osconfig.policy_preflight": [35]
+  },
+  "provider_action_groups": [
+    {"action": "github_contents_write", "operations": ["github.files.create", "github.files.update", "github.files.upsert", "github.update_file"], "note": "Shared transport, with distinct create/update preconditions and permissions retained."},
+    {"action": "github_contents_read", "operations": ["github.files.content.get", "github.files.metadata.get", "github.read"], "note": "Content custody and metadata projections remain distinct contracts."},
+    {"action": "github_git_commit_create", "operations": ["github.commit", "github.git.commits.create"], "note": "Commit-object creation does not itself advance a branch."},
+    {"action": "supabase_function_deploy", "operations": ["supabase.deploy_edge_function", "supabase.functions.deploy.multipart"], "note": "Reuse the reviewed multipart deployment implementation and source custody."},
+    {"action": "supabase_migration_execution", "operations": ["supabase.apply_migration", "supabase.db.migrations.apply", "supabase.db.migrations.transactional_apply"], "note": "Share SQL/ledger infrastructure while preserving transaction and recovery semantics."},
+    {"action": "supabase_log_query", "operations": ["supabase.logs.query", "supabase.project.logs.query"], "note": "Share bounded query infrastructure; a fixture log test does not verify every source or grant."}
+  ],
+  "scope_review_note": "Operations automatically associated with an explicit family but absent from its required list are supporting/optional candidates for that family, not additional required development units. Wildcard constituent review remains mandatory; this file does not declare unreviewed operations globally out of scope.",
+  "family_acceptance": {}
+}
