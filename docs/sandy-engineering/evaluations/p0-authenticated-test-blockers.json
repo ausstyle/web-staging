@@ -2,24 +2,33 @@
   "policy": "Continue implementation with existing valid credentials; do not request the skipped optional pilot secret or substitute another principal.",
   "tests": [
     {
-      "test": "owner-authorized candidate release and production guard acceptance",
-      "status": "blocked",
-      "blocker": "configured personal Controller access token previously returned HTTP 401; the engineering identity has no owner approval/deployment permission",
+      "test": "owner-authorized pinned source release",
+      "status": "passed",
+      "blocker": null,
       "required_principal": "authenticated Controller owner under existing approval/deployment governance",
       "last_observed_controller_http": 401,
-      "evidence": "../renewable-controller-evidence.json",
+      "evidence": "p0-web-canary-production-evidence.json",
       "token_retried": false,
       "credential_substituted": false,
-      "candidate_deployed": false
+      "candidate_deployed": true,
+      "historical_blocker": "Personal Controller token previously returned HTTP 401; a real Controller owner approval was initially missing.",
+      "resolution": "Authenticated owner approval was recorded for the pinned commit and manifest. Existing renewable Controller metadata and configured Management deployment credentials completed the governed release.",
+      "owner_approval_verified": true,
+      "deployed_versions": {
+        "sandy-agent-runtime-v4": 24,
+        "sandy-workspace": 41
+      },
+      "current_release_blocked_by_expired_controller_token": false
     },
     {
       "test": "normal customer browser/web ingress acceptance",
       "status": "not_run",
-      "blocker": "optional pilot session configuration was explicitly skipped",
+      "blocker": "No normal signed-in pilot web execution has been supplied; the optional token was explicitly skipped. Existing authorized test APIs use channel=test and cannot certify workspace/web ingress.",
       "required_principal": "normal consenting customer session",
       "blocked_by_controller_token": false,
       "secret_requested": false,
-      "credential_substituted": false
+      "credential_substituted": false,
+      "normal_web_messages_requested_without_secret": true
     },
     {
       "test": "own change metadata read",
@@ -37,11 +46,23 @@
       "customer_authentication_tested": false
     },
     {
-      "test": "fixed registered pilot API baseline",
-      "status": "prior_valid_evidence_reused",
-      "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39676846622",
-      "candidate_tested": false,
-      "browser_signin_tested": false
+      "test": "post-deployment fixed pilot API checks",
+      "status": "functional_checks_passed_quality_unverified",
+      "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39683647772",
+      "candidate_tested": true,
+      "browser_signin_tested": false,
+      "runtime_assessment_launch": "https://github.com/ausstyle/web-staging/actions/runs/39683774486",
+      "api_requests_http_200": 12,
+      "completed_tasks": 12,
+      "independent_quality_passed": false
+    },
+    {
+      "test": "independent quality judgments",
+      "status": "blocked",
+      "blocker": "All 12 existing full-cycle judge executions returned Independent judge failed; the upstream cause is unverified. Core customer runtime calls succeeded.",
+      "blocked_by_controller_token": false,
+      "new_secret_requested": false,
+      "quality_pass_claimed": false
     }
   ],
   "full_60_case_customer_quality_gate_passed": false,

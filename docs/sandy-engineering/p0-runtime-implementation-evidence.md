@@ -1,7 +1,34 @@
-# P0 runtime implementation — first bounded slice
+# P0 runtime implementation — bounded web canary deployed
 
-Scopes: SANDY-ENG-0001, 0003, 0004 and 0006. Implementation is in progress;
-production customer-quality and cross-channel acceptance remain unverified.
+Scopes: SANDY-ENG-0001, 0003, 0004 and 0006. The owner-approved source
+`addfc2ac5b933567c003466a8668a7b864330797` is deployed as **V4 24 / workspace 41**.
+All 28 packaged module entries match the approved manifest. One consenting web/Gmail pilot
+is enrolled. Real post-release provider reads and runtime functional tests passed;
+production customer-quality and four-channel acceptance remain unverified.
+See [production evidence](evaluations/p0-web-canary-production-evidence.json) and
+[release/rollback record](evaluations/p0-web-canary-release.md).
+
+The existing OIDC Google lab passed Gmail, Drive and Calendar reads plus both
+runtime probes in run 39683647772. Full-cycle run 39683774486 produced 12 HTTP 200
+responses and 12 completed tasks with zero mutating tool results. Nine turns used
+the V4 model broker, confirmed by 15 successful conversation-audit rounds.
+All independent quality judgments failed and remain `needs_review`. `complete`
+means the assessment executed; it is not acceptance. These APIs use `channel=test`,
+so authenticated workspace/web ingress and automatic web memory remain untested.
+
+Adding the pilot setting refreshed Supabase deployment revisions. Engineering
+runtime 8 preserves the newer v7 source; Controller 46, email generator 101,
+WhatsApp 157 and voice context 14 likewise retain their captured source.
+No additional channel was enrolled. The existing Gmail confirmation and workspace
+memory-ingestion code are preserved. No source rollback was exercised.
+
+Commit `69c661a` additionally prepares a V4 identity-label correction and shares
+the web/runtime completion contract with the existing email shadow adapter.
+Fifteen focused tests and both entrypoint type checks passed. These follow-ups
+are **not deployed** and do not migrate the authoritative email delivery path.
+
+The investigation/preparation snapshots below are retained as historical evidence;
+their original function revisions are not current deployment claims.
 
 ## Inspected serving paths
 
@@ -53,7 +80,8 @@ Rollout is restricted to explicitly configured customer UUIDs in the server-only
 the WhatsApp adapter. Empty, wildcard, malformed or oversized configuration
 enrolls nobody. The captured compatibility loop uses the same model/API boundary
 outside that cohort. No new service, provider executor, memory database or mission
-queue was introduced. These runtime/adapter changes are **not deployed**.
+queue was introduced. The V4/workspace portion is now deployed as recorded above;
+the WhatsApp adapter follow-up remains **not deployed**.
 
 This is a bounded reliability correction, not a full independent Truth Engine,
 adaptive-model-policy replacement, memory-correction implementation or durable
@@ -144,17 +172,34 @@ existing workers instead of adding competing queues or provider plumbing.
 
 Email and voice migration, source-backed memory/World Model improvement, model
 routing evaluation, persistent recovery and proactive triggers remain work under
-the same scopes. Deploy the bounded web canary only after the pilot baseline and
-release checks, then migrate further channels incrementally with actual receipts.
+the same scopes. The bounded web canary has passed source release and functional
+checks. Further channel deployments still need measured quality and their own
+actual authorization, provider, memory, tool, Mission and continuity evidence.
 
 ## Authentication test disposition
 
 The owner skipped optional pilot-session configuration. Continue implementation and
 available tests without re-requesting it. The [test blocker ledger](evaluations/p0-authenticated-test-blockers.json)
-records the previous Controller HTTP 401 and the resulting owner-release gate.
-The token was not retried and no alternate principal was substituted. The existing
-renewable engineering identity still reads its own proposed change successfully;
-it intentionally cannot approve itself or dispatch a deployment. Customer browser
-acceptance is separately unrun because the optional session was skipped. Neither
-condition is a passing acceptance result. Existing valid lab baseline receipts are
-reused without rerunning unchanged production behavior.
+records the previous Controller HTTP 401 and its resolution. The expired token
+was not retried. A real Controller owner approved the immutable source/manifest;
+the renewable identity read that approval and recorded release artifacts/tests.
+The existing Management credential performed the specifically approved source
+uploads; no customer/owner session was minted and no grant was broadened.
+The expired personal token no longer blocks this canary release. Customer browser
+acceptance remains unrun: the optional session was skipped and no substitute
+principal is used. The independent judge failure is a separate unresolved test
+infrastructure issue, not evidence of an expired Controller credential.
+
+## Remaining channel acceptance
+
+| Channel | Current verified boundary | Required real acceptance still missing |
+| --- | --- | --- |
+| Web | V4 24 / workspace 41 source verified; fixed-pilot API checks complete | Signed-in web turns/history, web memory consent/provenance, failure/uncertain outcome cases and full baseline/candidate quality cohort |
+| Email | Generator 101 source preserved; shadow 12 remains the prior implementation | Deploy/review the shared shadow outcome adapter; verify inbound sender authority, quoted content, attachments, shared model/tool policy, draft confirmation, deduplication and delivery receipts |
+| WhatsApp | Webhook 157 source preserved; existing verified alternative account remains separate | Release the prepared scoped follow-up adapter after web gates; actual verified inbound/replay/follow-up tests and permitted Mission/memory handoffs |
+| Voice | Account context 14 / call function 33 observed; context source preserved | Consented active private voice session, actual media/tool loop, interruption/recovery and voice-to-web continuation |
+
+The offered WhatsApp account belongs to a different customer from the web/Gmail
+pilot. Do not combine them to claim same-customer continuity. All four channels
+must pass the common Executive Orchestrator, memory, model-routing, tool and
+Mission contracts before SANDY-ENG-0001 can be marked complete.
