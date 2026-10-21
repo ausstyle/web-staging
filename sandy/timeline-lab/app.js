@@ -211,7 +211,7 @@ function openDetail(id){
  const asUTC=x=>new Date(x).toISOString();
  $("#taskStart").value=localTime(t.start);$("#taskEnd").value=localTime(t.end);$("#taskConstraint").value=t.constraint?localTime(t.constraint):"";
  $("#completeDetail").onclick=()=>{commit(a=>completion(a,id));openDetail(id)};
- $("#deleteTask").onclick=()=>showConfirm("Delete this test task?",t.name+" and its dependencies will be removed from the demo.",()=>{commit(a=>{const next=clone(a);next.tasks=next.tasks.filter(x=>x.id!==id);next.dependencies=next.dependencies.filter(x=>x.from!==id&&x.to!==id);next.tasks.filter(x=>x.parent===id).forEach(x=>x.parent=t.parent);record(next,"Deleted · "+t.name);return next});closeDetail()})};
+ $("#deleteTask").onclick=()=>showConfirm("Delete this test task?",t.name+" and its dependencies will be removed from the demo.",()=>{commit(a=>{const next=clone(a);next.tasks=next.tasks.filter(x=>x.id!==id);next.dependencies=next.dependencies.filter(x=>x.from!==id&&x.to!==id);next.tasks.filter(x=>x.parent===id).forEach(x=>x.parent=t.parent);record(next,"Deleted · "+t.name);return next});closeDetail()});
  $("#addChild").onclick=()=>{const name=prompt("Subtask name");if(name?.trim())commit(a=>addTask(a,name.trim(),id))};
  $("#saveDetail").onclick=()=>{
   const name=$("#taskName").value.trim(),start=$("#taskStart").value,end=$("#taskEnd").value,status=$("#taskStatus").value;
