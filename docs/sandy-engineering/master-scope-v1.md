@@ -896,3 +896,65 @@ approved architecture-decision register.
 
 
                                                                         Proposed baseline | 19 Oct 2026       •   17
+
+
+---
+
+# 22. Amendment A — Always-On Agent Capability Parity and Sandy Differentiation
+
+**Amendment version:** 1.1 (21 October 2026). **Status:** Product-owner requested target-state addition. **Precedence:** Supplements sections 1–21; where interpretation differs, preserve their privacy, safety, non-disruption and evidence requirements. This is an aspirational engineering specification, **not** a claim about currently implemented Sandy capabilities or undisclosed internal implementation of OpenAI Dots.
+
+## 22.1 Product objective and competition
+
+Sandy shall deliver the functional experience of an always-on autonomous AI agent, comparable where technically and contractually feasible to publicly described OpenAI Dots product capabilities, while differentiating through structured personal and multi-company management, commitments, verified work and customer control. Do **not** attempt to replicate proprietary OpenAI internals, claim vendor parity without reproducible testing or equate operation counts with usable capability.
+
+## 22.2 Mandatory target capabilities
+
+**AC-01 — Unified runtime and advanced reasoning (P0).** One accountable Executive Orchestrator across chat, email, WhatsApp, voice and future channels; classify intent, consequence and complexity; retrieve authorized context; select current compatible model/reasoning profile; execute, reflect on real tool results and verify final claims. Use measured routing and bounded escalation; no competing agent runtimes or fabricated abilities.
+
+**AC-02 — Persistent, resumable autonomous Missions (P0).** A mission is durable beyond a chat session, with goal, objective acceptance, dependencies, constraints, actor, consent, scope, budget, exact state, evidence, checkpoints, leases, replay-safe idempotency and retry/compensation policy. Workers continue at appropriate intervals, wait for external responses, resume after crashes, stop at revocation and independently verify completion. No fake background processing.
+
+**AC-03 — Isolated cloud computer and browser execution (P1).** Provide an authorized per-customer isolated computer/browser environment that can navigate supported sites, operate desktop/browser applications without APIs, execute restricted code, manage files and retain resumable work artifacts. Credential handling, network egress, session lifetimes, recordings/audit, customer boundary and escalation rules must be enforced by infrastructure, not by prompts. Optional local computer access requires explicit install and consent. No unrestricted host execution.
+
+**AC-04 — Proactive research and follow-through (P1).** With opt-in and scoped connected-account access, monitor meaningful commitments, inbox changes, calendar conflicts, deadlines and mission dependencies; suppress duplicates and irrelevant notifications. Proactive background *research* is read-only unless a separate standing delegated policy authorizes a specific side effect; outgoing messages, purchases, deletion and irreversible actions use applicable approval gates. Provide snooze, disable, urgency and frequency settings.
+
+**AC-05 — Evidence-linked World Model and memory (P0/P1).** Unify people, companies, projects, decisions, conversations, obligations, assets and source-backed memories with temporal validity, correction, privacy partition and consent. Restore relevant context across authorized channels. Support an inspectable 'My World' and explain provenance, uncertainty and conflicts. Do not store everything indiscriminately or use a personal conversation as third-party training data.
+
+**AC-06 — Universal connected applications and computer fallback (P1).** Reuse valid customer OAuth connections, scoped Composio/provider connectors and the Sandy API operation registry, with health, last use, provider permissions and revocation. The Sandy runtime invokes Sandy API directly; external MCP clients invoke Sandy MCP which forwards to Sandy API. Offer computer use when no API exists and the task is permissible; do not pretend all external app operations are supported.
+
+**AC-07 — Omnichannel conversation continuity (P1).** A customer can initiate a mission in web chat, continue via email, WhatsApp or voice and review in the portal using a linked identity, same mission/commitment state and consistent permissions. Preserve transcripts only under relevant consent; verify provider IDs and avoid unsafe identity assumptions.
+
+**AC-08 — Customer-controlled Autopilot (P1).** Clear autonomy modes (observe, draft, reversible delegated, standing bounded execution) with per-tenant/user/company/account budgets, resource allowlists, custom rules, expiry, logs, approval and immediate revocation. Riskier financial, security and infrastructure operations remain separately governed. The user can ask why, what was done, what is blocked and what is next.
+
+**AC-09 — Sandy Daily, Companies, My World and integrated operational workspace (P2).** Provide a high-value morning/periodic briefing with relevant, cited developments and pending decisions; company-scoped executive workspaces with contacts, commitments, correspondence and projects; correctable World Model; and Agenda, Calendar, Timeline and Missions as views of shared durable records. These experiences are differentiators, not extra disconnected databases.
+
+**AC-10 — Proof of Completion and reliable outcomes (P0).** Every consequential action needs an independently checked provider receipt or observed state, correlation ID, uncertainty state, appropriate retries/reconciliation and user-visible evidence. Prevent duplicate sends, fabricated files, false acknowledgments and silent abandonment.
+
+**AC-11 — Continuous quality improvement (P1).** Examiner shall run reproducible real/synthetic evaluations of reasoning, context, tool selection, follow-through, computer tasks and cross-channel state. Evolution may propose and implement tested changes only through Engineering Control with change history, staging, canary, rollback and approval according to policy.
+
+**AC-12 — Commercial and operational readiness (P2/P3).** Support onboarding, tenant isolation, entitlement and usage controls, privacy/retention, API and agent availability monitoring, tracing, cost transparency, opt-in features and customer support. Measure spend for models, cloud computers, connected apps and workers by tenant and mission.
+
+## 22.3 Dots feature parity protocol
+
+The comparison baseline must contain **only publicly documented, accessible and supported product behavior at the time of testing**. Separate (a) confirmed public capabilities, (b) hypotheses about internal architecture and (c) Sandy's independent product choices. Where Dots access is unavailable, use published user-visible functionality as a requirement benchmark and mark competitive E2E as untested, not passed.
+
+Implement a versioned matrix with: feature ID, public capability/source/date, Sandy Master Scope mapping, Sandy API operation(s), deployed handler/version, connected-account prerequisites, policy/risk, reproducible test case, actual provider/computer receipt, customer UX check, performance/cost, status and owner. Update the baseline when external product behavior changes; do not invent proprietary internals.
+
+## 22.4 Acceptance tests and quantitative release gates
+
+1. **Reasoning:** ≥95% adequate answers on the curated pilot cohort, ≥98% routine tool selection and ≥95% supported citations; no unsubstantiated action-complete claim in controlled critical workflows (align with §17.3; recalibrate from measured baselines).
+2. **Mission durability:** At least 20 multi-step missions exercised across restarts, provider timeouts, approval waits, job lease expiry and retry, with no duplicate consequential side effects and no lost mission state.
+3. **Computer use:** At least 10 representative, authorized browser/desktop workflows executed in isolated customer environments, with reproducible state readback, audit and no cross-tenant leakage.
+4. **Proactivity:** At least 10 realistic triggers tested for relevance, deduplication, permission enforcement, opt-out and sustained follow-through; research-only operation must not perform external writes.
+5. **Continuity:** At least 10 identity-consented cross-channel handoffs covering live mission state, memory corrections, timezone and source-linked retrieval; no cross-tenant or cross-company disclosure.
+6. **Autonomy:** Positive and negative tests of per-action/custom rules, budgets, approvals, expiration and immediate revocation; all critical permission/tenant/idempotency gates pass.
+7. **Truth:** Every critical outcome has provider-observed evidence or an explicit unknown/blocked state; no hidden or silent failures in controlled scenarios.
+8. **Availability:** Production test evidence, release provenance, rollback exercise, monitoring and cost report are required before declaring a capability generally available.
+
+## 22.5 Engineering dependency sequence
+
+**P0:** First stabilize Sandy chat/agent reasoning, identity, evidence-grounded context and truthful execution; then durable Missions and recovery. **P1:** Add opt-in proactive service, isolated computer workers, integrated API tools, customer autonomy and cross-channel continuity. **P2:** Build Sandy Daily, Companies and My World experiences on the shared operational graph. **P3:** Optimize customer onboarding, commercial controls, scalability and unit economics. Parallel work must use separate branches, shared contracts and one coordinated production release process.
+
+## 22.6 Architectural invariants
+
+The Sandy API remains the internal execution contract; Sandy MCP is only the external adapter. The Master Scope governs safety and tenant permissions. Never claim completion from a source commit, registered operation, green mocked test or HTTP 200 alone. New customer features require their own numbered subtask scope, documented acceptance evidence and rollback strategy.
