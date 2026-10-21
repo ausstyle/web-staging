@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import sys
 import unittest
+import tempfile
+from provider_schema_fixtures import restore_fixtures
 import jsonschema
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'scripts/sandy'))
@@ -14,7 +16,9 @@ module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 class Bound(unittest.TestCase):
     def test_48_deterministic_distinct_provider_methods(self):
         current=json.loads((ROOT/'supabase/functions/sandy-provider-bound-api/provider_contracts.json').read_text())
-        self.assertEqual(current,module.build(Path('/workspace/sandy-api-deliverables/provider-schemas')))
+        with tempfile.TemporaryDirectory() as directory:
+            restore_fixtures(directory)
+            self.assertEqual(current,module.build(Path(directory)))
         self.assertEqual(len(current),48)
         self.assertEqual(len({x['operation'] for x in current}),48)
         self.assertEqual(len({x['provider_operation_id'] for x in current}),48)

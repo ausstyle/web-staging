@@ -3,6 +3,8 @@ import hashlib
 import json
 from pathlib import Path
 import unittest
+import tempfile
+from provider_schema_fixtures import restore_fixtures
 import importlib.util
 import jsonschema
 
@@ -15,7 +17,9 @@ spec.loader.exec_module(compiler)
 class SensitiveProtocols(unittest.TestCase):
     def test_rebuild_is_exactly_pinned_and_deterministic(self):
         actual=json.loads((ROOT/'supabase/functions/sandy-provider-sensitive-api/provider_contracts.json').read_text())
-        rebuilt=compiler.compile_protocols(Path('/workspace/sandy-api-deliverables/provider-schemas'))
+        with tempfile.TemporaryDirectory() as directory:
+            restore_fixtures(directory)
+            rebuilt=compiler.compile_protocols(Path(directory))
         self.assertEqual(actual,rebuilt)
         self.assertEqual(len(actual),18)
         self.assertEqual(len({x['provider_operation_id'] for x in actual}),18)

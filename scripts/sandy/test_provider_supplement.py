@@ -3,9 +3,10 @@ import hashlib
 import json
 from pathlib import Path
 import unittest
+import tempfile
+from provider_schema_fixtures import restore_fixtures
 
 ROOT = Path(__file__).resolve().parents[2]
-CACHE = Path('/workspace/sandy-api-deliverables/provider-schemas')
 
 
 def walk(resources):
@@ -16,6 +17,9 @@ def walk(resources):
 
 class Supplement(unittest.TestCase):
     def setUp(self):
+        self.cache = tempfile.TemporaryDirectory()
+        self.addCleanup(self.cache.cleanup)
+        restore_fixtures(self.cache.name)
         self.ops = json.loads((ROOT / 'supabase/functions/sandy-provider-supplement-api/contracts.json').read_text())
 
     def test_28_distinct_pinned_methods_and_sources(self):
@@ -26,7 +30,7 @@ class Supplement(unittest.TestCase):
         for op in self.ops:
             source = sources[op['source']]
             self.assertEqual(source['sha256'], op['source_sha256'])
-            raw = (CACHE / (source['provider'] + '.json')).read_bytes()
+            raw = (Path(self.cache.name) / (source['provider'] + '.json')).read_bytes()
             self.assertEqual(hashlib.sha256(raw).hexdigest(), source['sha256'])
             doc = json.loads(raw)
             methods = list(walk(doc['resources'])) if op['provider'] == 'gcp' else [

@@ -1,10 +1,33 @@
 # Sandy API implementation status
 
-Updated 21 October 2026 after real customer provisioning acceptance and repaired VM diagnostic acceptance. The original 161 requirement families and the customer-onboarding extension remain incomplete. Registry rows and exposure flags are not completion evidence.
+Updated 21 October 2026. This is the API/MCP foundation slice of SANDY-ENG-0005; the original 161 requirement families and customer-onboarding extension remain incomplete. Registry rows, deployed handler metadata and exposure flags are not execution evidence.
+
+The complete [161-family matrix](requirement-coverage-161.md) and its [operation/evidence JSON](requirement-coverage-161.json) now distinguish mandatory operation candidates, optional expansion, source contracts, active-handler metadata, exposure flags, actual MCP receipts and outstanding constituent review. Current evidence supports **11 partially verified families and 33 distinct successful MCP operations**. **0/161 whole families have all required constituent acceptance established**; this is an acceptance gap, not a claim that no implementation exists.
+
+The existing versioned provider engine serves **1,738 reviewed generated contracts** (Google Cloud 1,324; GitHub 336; Supabase 78). The 64 registry handler labels consolidate to 43 review groups, including internal workflow labels; neither number is a new task count or completed-adapter count. Shared authentication, authorization, validation, grants, idempotency, receipts and private custody remain in the existing API boundary. Per-operation schemas, permissions and risk controls are retained.
+
+Actual positive MCP evidence currently covers six shared handler groups: provider operation, provider gap, legacy compatibility, engineering control, customer provisioning and fixed-VM read-only diagnostics. Customer identity/workspace lifecycle and the bounded engineering release fixture are deployed and exercised. General provider lifecycle coverage and private VM SSH/WinRM are incomplete. Evidence is reused at its recorded release; no unchanged live test was rerun merely to increase a count.
+
+The [reviewed disposition](scope-operation-disposition.json) consolidates shared provider actions without declaring different permissions, schemas or targets interchangeable. Expanded maintenance simulations and similar extras are not separate approved-scope obligations. `video.install`, `video.restart`, `video.logs` and `video.verify_call` are not required standalone MCP tools. Existing canonical `supabase.logs.query` satisfies the engineering log capability; an alias-only registry entry is unnecessary. Wildcard families still require semantic review before other operations can be excluded.
+
+Dependency-ordered planning ranges below are provisional engineering effort, not elapsed-time promises or operation-count multiplication. Existing code/evidence is reused; permission and entitlement waiting time is excluded. They require refinement as constituent review finds usable production implementations.
+
+| Component | Remaining functional milestone | Indicative effort |
+|---|---|---|
+| Shared contracts and release gates | Portable individual contract verification, green PR checks, approved scoped acceptance profiles and source-preserving release | 2–4 engineering days |
+| Provider adapters | Review mandatory wildcard constituents; close resource bindings, typed projections, provider-specific lifecycle and risk verification | 8–15 days |
+| VM access | Supported private/IAP transport, trusted host enrollment, OS Login credential lifecycle, SSH/WinRM output delivery and actual harmless command | 5–10 days |
+| Durable execution and source | Adopt reviewed worker/repository candidates, lease/revocation/cancellation/reconciliation and lost-ack recovery through the same API | 5–10 days |
+| Engineering lifecycle | General deployment verification and compensation beyond the already verified fixed Git/SQL/Edge fixtures | 4–8 days |
+| Customer provisioning | Organisation/verified link transfer, Google Drive/GCP adapters, OAuth onboarding and asynchronous reconciliation | 5–10 days |
+| Application families | Reconcile existing domain handlers and implement remaining required commerce, tenancy, memory and security capabilities | 10–20 days |
+| Acceptance and operations | Representative provider tests, independent high-risk readbacks, denied requests, rollback/canary and family certificates | 6–12 days, overlapping implementation |
+
+Confirmed independent dependencies: the existing Google service account receives **403** for `compute.subnetworks.setPrivateIpGoogleAccess` on the fixed default subnet; OS Config inventory receives **403** for `osconfig.inventories.get`. Neither establishes that every private/IAP transport is unavailable. Broader owner-only tests require a legitimately approved scoped delegation, rather than reusing an expired personal Controller token or widening the existing six-operation grant. Custom Domain entitlement remains separate and no plan purchase is authorized. No arbitrary URL executor or unrestricted provider tool is introduced.
 
 ## Published source and production
 
-GitHub write authorization works. The engineering branch has been pushed through `9ac56c4`. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
+GitHub write authorization works. The engineering branch source delivery is working; exact current commit and PR checks are recorded in the release evidence below. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
 
 The current gateway is **31 ACTIVE**, from source `c480e3b`. The customer provisioning handler is **3 ACTIVE**, from `e46fe92`. Both preserve `verify_jwt=true`; every uploaded source was accounted for in production readback. Five gateway modules use reproducible type erasure/whitespace compaction with original Git source and artifact digests preserved. The initial larger gateway upload returned HTTP 413, leaving gateway 28 and its source unchanged; the compact candidate then deployed with HTTP 201.
 
@@ -84,7 +107,7 @@ Applied and ledger-read back against exact committed sources:
 
 Latest production registry: **2,585 registered**, **447 API exposure flags**, **430 AI exposure flags**, **37 verified flags**. This session has genuine MCP end-to-end evidence for **33 distinct operations**: eleven engineering/provider/control operations, three onboarding operations, twelve workspace/lifecycle operations and seven read-only VM diagnostics. The dedicated engineering identity discovers fifteen while its separately revocable, 24-hour VM diagnostic scope is active; its base fixture scope remains six. These figures do not certify global executable/discoverable coverage or complete wildcard families. **Zero complete original requirement families are newly certified**; every incomplete constituent remains outstanding.
 
-Google Cloud VM/disk provisioning, authenticated remote guest administration, Google Drive folder/permission/file provisioning, integration authorization/initialization, verified new channel linking, organisation membership and the broader asynchronous provisioning worker remain unfinished. Existing provider/identity services are being inspected for reuse. Remote administration of `sandy-video`, LiveKit installation and an actual two-participant conference remain unverified; no overall completion is claimed.
+Google Cloud VM/disk provisioning, authenticated remote guest administration, Google Drive folder/permission/file provisioning, integration authorization/initialization, verified new channel linking, organisation membership and the broader asynchronous provisioning worker remain unfinished. Existing provider/identity services are being inspected for reuse. Reusable remote administration of `sandy-video` remains unverified. The current task explicitly excludes video-conferencing deployment; software-specific installation/restart/log/test tools are not additional required MCP operations.
 
 Runtime Google egress, Controller/owner authorization outside the dedicated fixture delegation, and Custom Domain provider entitlement remain separate dependencies. No provider plan purchase or upgrade is authorized. Repository source delivery, SSH/WinRM, remaining durable execution/lifecycle work, and full 161-family reconciliation continue independently. Uncommitted future adapters are excluded from production claims.
 
