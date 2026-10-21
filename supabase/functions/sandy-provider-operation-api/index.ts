@@ -6,6 +6,7 @@ import rawCatalogue from "./catalogue.ts";
 import { loadExpandedProviderOperation } from "./expansion.ts";
 import { descriptorExecutionScope } from "./scope_from_descriptor.ts";
 import { createBoundedValidatorCache } from "./validator_cache.ts";
+import { classifyGithubMergeResult } from "../_shared/sandy_github_merge.ts";
 import {
   argumentDigest,
   JsonRequestError,
@@ -580,6 +581,9 @@ export function createProviderOperationHandler(
     if (op.operation !== body.operation) {
       return refusal(503, "provider_catalogue_integrity_failed");
     }
+    const githubMerge = op.provider === "github" &&
+      (op.operation === "github.pull_requests.merge" ||
+        op.kind === "github_merge");
     const args = body.arguments ?? {};
     if (
       !object(args) || !validator(op.operation + ":in", op.input_schema)(args)
@@ -872,7 +876,8 @@ export function createProviderOperationHandler(
       return response(502, {
         ok: false,
         error: "provider_response_unavailable",
-        executed: true,
+        executed: githubMerge ? null : true,
+        ...(githubMerge ? { reconciliation_required: true } : {}),
         admission_id,
         request_state: "unknown",
       });
@@ -905,7 +910,10 @@ export function createProviderOperationHandler(
           ok: false,
           error,
           operation: op.operation,
-          executed: true,
+          executed: githubMerge && state === "unknown" ? null : true,
+          ...(githubMerge && state === "unknown"
+            ? { reconciliation_required: true }
+            : {}),
           admission_id,
           provider_http_status: status,
           provider_request_id,
@@ -928,7 +936,8 @@ export function createProviderOperationHandler(
           raw,
         )
       ) throw new Error("provider_response_contract_mismatch");
-      if (op.kind === "github_merge" && object(raw) && raw.merged === false) {
+      const mergeResult = githubMerge ? classifyGithubMergeResult(raw) : null;
+      if (mergeResult === "refused") {
         const recorded = await finish("failed", status, provider_request_id, {
           error: "github_merge_refused",
           provider_attempted: true,
@@ -949,8 +958,8 @@ export function createProviderOperationHandler(
           receipt_recorded: recorded,
         });
       }
-      if (op.kind === "github_merge") {
-        if (!object(raw) || raw.merged !== true) {
+      if (githubMerge) {
+        if (mergeResult !== "merged") {
           throw new Error("provider_response_contract_mismatch");
         }
         result = acceptedProjection(raw);
@@ -1003,7 +1012,8 @@ export function createProviderOperationHandler(
         ok: false,
         error: "provider_response_contract_mismatch",
         operation: op.operation,
-        executed: true,
+        executed: githubMerge ? null : true,
+        ...(githubMerge ? { reconciliation_required: true } : {}),
         admission_id,
         provider_http_status: status,
         provider_request_id,
@@ -1021,7 +1031,8 @@ export function createProviderOperationHandler(
       return response(503, {
         ok: false,
         error: "execution_receipt_state_unknown",
-        executed: true,
+        executed: githubMerge ? null : true,
+        ...(githubMerge ? { reconciliation_required: true } : {}),
         operation: op.operation,
         admission_id,
         provider_http_status: status,
