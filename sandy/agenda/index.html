@@ -622,7 +622,11 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .timelineRow .ganttBar.timelineDragging .sandyGanttStart,
 .timelineRow .ganttBar.timelineDragging .sandyGanttResize,
 .timelineRow .ganttBar.timelineDragging .timelineLinkHandle{opacity:1!important;visibility:visible;pointer-events:auto}
-@media(hover:none){.timelineRow .ganttBar .sandyGanttStart,.timelineRow .ganttBar .sandyGanttResize,.timelineRow .ganttBar .timelineLinkHandle{opacity:.65!important;visibility:visible;pointer-events:auto}}
+/* A touch-capable desktop can report hover:none; never globally reveal every handle.
+   Touch interaction reveals controls on the selected row only. */
+.timelineRow.timelineTouchActive .ganttBar .sandyGanttStart,
+.timelineRow.timelineTouchActive .ganttBar .sandyGanttResize,
+.timelineRow.timelineTouchActive .ganttBar .timelineLinkHandle{opacity:1!important;visibility:visible;pointer-events:auto}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -2191,6 +2195,11 @@ function renderTimeline(){
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");applyGrid(line);
   line.dataset.timelineId=t.id;
+  line.addEventListener("pointerdown",e=>{
+    if(e.pointerType!=="touch")return;
+    box.querySelectorAll(".timelineTouchActive").forEach(n=>{if(n!==line)n.classList.remove("timelineTouchActive")});
+    line.classList.add("timelineTouchActive");
+  });
   const cell=el("div","timelineTaskCell");
   cell.style.paddingLeft=(10+Math.min(depth,12)*18)+"px";
   const toggle=el("button","timelineBranchToggle",children.length?(collapsed(t)?"▸":"▾"):"");
