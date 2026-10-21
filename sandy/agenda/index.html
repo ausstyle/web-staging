@@ -2302,7 +2302,7 @@ function timelineConnectFrom(source,e,handle){
 function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
- const monday=new Date(today);if(Number(localStorage.getItem("sandy_timeline_zoom"))!==1)monday.setDate(today.getDate()-((today.getDay()+6)%7));
+ const monday=new Date(today); // Rolling timeline windows begin today, not on Monday of the current week.
  const zoomValue=Number(localStorage.getItem("sandy_timeline_zoom"));
  const zoomOptions=[1,7,14,28,84,168];
  const days=zoomOptions.includes(zoomValue)?zoomValue:84,hourMode=days===1,dayMode=days<=14,slots=hourMode?24:dayMode?days:days/7,range=days*86400000,snapMs=900000,snapSteps=range/snapMs;
