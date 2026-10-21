@@ -8,6 +8,12 @@ import { policyOperationContracts } from "./policy_operations.ts";
 import { orchestrationContracts } from "../sandy-orchestration-api/contracts.ts";
 import { extensionContracts } from "./installed_extensions.ts";
 import { providerOperations } from "../sandy-provider-operation-api/gateway.ts";
+import {
+  expandedProviderExecutionScope,
+  providerExpansionOperations,
+} from "../sandy-provider-operation-api/expansion_gateway.ts";
+import { loadExpandedProviderOperation } from "../sandy-provider-operation-api/expansion.ts";
+import { createProviderOperationHandler } from "../sandy-provider-operation-api/index.ts";
 import { installedOperationIds } from "./index.ts";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
 import { gapContracts } from "../sandy-provider-gap-api/contracts.ts";
@@ -75,6 +81,7 @@ type Options = {
   resolveCredential?: OperationDependencies["resolveCredential"];
   authenticatedDb?: OperationDependencies["authenticatedDb"];
   packageRestoreBindings?: OperationDependencies["packageRestoreBindings"];
+  providerConfig?: OperationDependencies["providerConfig"];
 };
 function harness(options: Options = {}) {
   const calls: { url: string; init?: RequestInit }[] = [];
@@ -200,6 +207,7 @@ function harness(options: Options = {}) {
     executionPolicy: options.executionPolicy,
     authenticatedDb: options.authenticatedDb,
     packageRestoreBindings: options.packageRestoreBindings,
+    providerConfig: options.providerConfig,
     fetch: ((input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       calls.push({ url, init });
@@ -3649,4 +3657,401 @@ Deno.test("lifecycle polling reenters the real gateway and consumes the provider
   assert.equal(admissions, 2);
   assert.equal(h.calls.length, 1);
   assert.deepEqual(h.identityTokens, ["test-user-jwt", "test-user-jwt"]);
+});
+
+async function expansionRow(operation: string, verified = false): Promise<Row> {
+  const contract = await loadExpandedProviderOperation(operation);
+  assert.ok(contract, operation);
+  return {
+    ...contract,
+    handler: "sandy-provider-operation-api",
+    api_exposed: true,
+    ai_exposed: true,
+    verified,
+    error_contract: { contract_sha256: contract.contract_sha256 },
+  };
+}
+Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
+  assert.equal(Object.keys(providerOperations).length, 595);
+  assert.equal(Object.keys(providerExpansionOperations).length, 1143);
+  assert.equal(installedOperationIds.length, 2247);
+  const installed = new Set(installedOperationIds);
+  for (const operation of Object.keys(providerExpansionOperations)) {
+    assert.ok(installed.has(operation), operation);
+    assert.equal(Object.hasOwn(providerOperations, operation), false);
+  }
+  const rows = Object.values(providerExpansionOperations).map((descriptor) => ({
+    ...descriptor,
+    handler: "sandy-provider-operation-api",
+    api_exposed: true,
+    ai_exposed: true,
+    verified: false,
+    input_schema: { type: "object" },
+    output_schema: { type: "object" },
+    error_contract: { contract_sha256: descriptor.contract_sha256 },
+  }));
+  const h = harness({ actorId: extensionActor, rows, executionPolicy: true });
+  const listed = await (await h.request({ action: "list" })).json();
+  assert.equal(listed.operations.length, 1143);
+  for (const row of listed.operations) {
+    assert.equal(row.executable, false);
+    assert.equal(
+      row.unavailable_reason,
+      "operation_requires_live_verification",
+    );
+    assert.equal(row.handler, "sandy-provider-operation-api");
+  }
+  const closed = harness({
+    rows: rows.map((row) => ({ ...row, api_exposed: false })),
+  });
+  assert.deepEqual(
+    (await (await closed.request({ action: "list" })).json()).operations,
+    [],
+  );
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.rpcCalls.length, 0);
+});
+Deno.test("expanded provider reads and mutations require real owner sessions, current exposure and verification before admission", async () => {
+  for (
+    const [operation, args] of [
+      ["gcp.instance_group_managers.get", {
+        path: { instanceGroupManager: "fixture" },
+      }],
+      ["gcp.instance_group_managers.create", { body: { name: "fixture" } }],
+    ] as const
+  ) {
+    const row = await expansionRow(operation);
+    for (
+      const [options, expected] of [
+        [{ rows: [row] }, 424],
+        [{ rows: [{ ...row, verified: true }], role: "admin" }, 403],
+        [{ rows: [{ ...row, api_exposed: false }] }, 404],
+      ] as const
+    ) {
+      const h = harness({
+        ...options,
+        actorId: extensionActor,
+        executionPolicy: true,
+      });
+      const response = await h.request({
+        action: "execute",
+        operation,
+        arguments: args,
+      });
+      assert.equal(response.status, expected);
+      assert.equal(h.calls.length, 0);
+      assert.equal(h.rpcCalls.length, 0);
+    }
+    const key = harness({
+      actorId: extensionActor,
+      rows: [{ ...row, verified: true }],
+      executionPolicy: true,
+      resolveCredential: async () => ({
+        kind: "api_key",
+        principalId: extensionActor,
+        allowedOperations: [operation],
+      }),
+    });
+    const denied = await key.request({
+      action: "execute",
+      operation,
+      arguments: args,
+    });
+    assert.equal(denied.status, 403);
+    assert.equal(
+      (await denied.json()).error,
+      "operation_requires_user_session",
+    );
+    assert.equal(key.calls.length, 0);
+    assert.equal(key.rpcCalls.length, 0);
+    const lease = harness({
+      actorId: extensionActor,
+      rows: [{ ...row, verified: true }],
+      executionPolicy: true,
+      resolveCredential: async () => ({
+        kind: "job_lease",
+        principalId: extensionActor,
+        allowedOperations: [operation],
+        boundExecution: {
+          operation,
+          arguments: args,
+          inputDigest: await argumentDigest(args),
+          channel: "api",
+        },
+      }),
+    });
+    const leased = await lease.handler(
+      new Request("https://local.invalid/v1/internal/execute", {
+        method: "POST",
+        headers: { authorization: "Bearer internal-service" },
+        body: "{}",
+      }),
+    );
+    assert.equal(leased.status, 403);
+    assert.equal(
+      (await leased.json()).error,
+      "operation_requires_user_session",
+    );
+    assert.equal(lease.calls.length, 0);
+    assert.equal(lease.rpcCalls.length, 0);
+    const drift = harness({
+      actorId: extensionActor,
+      rows: [{
+        ...row,
+        verified: true,
+        error_contract: { contract_sha256: "0".repeat(64) },
+      }],
+      executionPolicy: true,
+    });
+    assert.equal(
+      (await drift.request({ action: "execute", operation, arguments: args }))
+        .status,
+      503,
+    );
+    assert.equal(drift.calls.length, 0);
+    assert.equal(drift.rpcCalls.length, 0);
+  }
+});
+Deno.test("expanded provider scopes bind server-verified authority and reject missing or foreign configuration before admission", async () => {
+  const operation = "gcp.billing.accounts.iam_policy.get",
+    row = await expansionRow(operation, true);
+  const args = { path: { resource: "billingAccounts/ABCDEF-123456-ABCDEF" } };
+  for (const providerConfig of [undefined, { gcpProjectId: "foreign" }]) {
+    const h = harness({
+      rows: [row],
+      actorId: extensionActor,
+      executionPolicy: true,
+      providerConfig,
+    });
+    const description =
+      await (await h.request({ action: "describe", operation })).json();
+    assert.equal(description.operation.executable, false);
+    const response = await h.request({
+      action: "execute",
+      operation,
+      arguments: args,
+    });
+    assert.equal(response.status, 424);
+    assert.equal(h.calls.length, 0);
+    assert.equal(h.rpcCalls.length, 0);
+  }
+  const config = {
+    verifiedBindings: {
+      billing_account: {
+        id: "ABCDEF-123456-ABCDEF",
+        verified: true as const,
+        project_id: "elaborate-haven-511518-a5" as const,
+      },
+    },
+  };
+  const h = harness({
+    rows: [row],
+    actorId: extensionActor,
+    executionPolicy: true,
+    providerConfig: config,
+    async rpcHandler(name, admitted) {
+      assert.equal(name, "sandy_api_admit_execution");
+      assert.equal(
+        admitted.p_scope_sha256,
+        await argumentDigest(expandedProviderExecutionScope(operation, config)),
+      );
+      return {
+        ok: false,
+        http_status: 403,
+        error: "scoped_mutation_approval_required",
+      };
+    },
+  });
+  assert.equal(
+    (await h.request({ action: "execute", operation, arguments: args })).status,
+    403,
+  );
+  assert.equal(h.rpcCalls.length, 1);
+  assert.equal(h.calls.length, 0);
+});
+Deno.test("expanded providers compose their actual executor with exact central proof and one backend-owned grant and receipt", async () => {
+  const requestId = "60000000-0000-4000-8000-000000000001",
+    admission = "60000000-0000-4000-8000-000000000002",
+    grant = "60000000-0000-4000-8000-000000000003",
+    approval = "60000000-0000-4000-8000-000000000004";
+  const cases: [string, Row, Row, string][] = [
+    [
+      "gcp.instance_group_managers.get",
+      { path: { instanceGroupManager: "fixture" } },
+      { name: "fixture" },
+      "compute.googleapis.com",
+    ],
+    [
+      "github.repos.get_branch_protection",
+      { path: { branch: "fixture" } },
+      {},
+      "api.github.com",
+    ],
+    ["supabase.v1_get_database_disk", {}, {
+      attributes: { iops: 3000, size_gb: 8, type: "gp3" },
+    }, "api.supabase.com"],
+    ["gcp.instance_group_managers.create", { body: { name: "fixture" } }, {
+      name: "fixture",
+      id: "123",
+    }, "compute.googleapis.com"],
+  ];
+  for (const [operation, args, providerBody, host] of cases) {
+    const row = await expansionRow(operation, true);
+    const inputSha = await argumentDigest(args),
+      scopeSha = await argumentDigest(
+        expandedProviderExecutionScope(operation),
+      );
+    let consumed = 0, finished = 0, providerCalls = 0;
+    const executor = createProviderOperationHandler({
+      service: "test-service-credential",
+      management: "synthetic-management",
+      github: "synthetic-github",
+      getGcpAccessToken: () => Promise.resolve("synthetic-gcp"),
+      authorizeContext: async (context, descriptor) => {
+        assert.equal(context.actor_id, extensionActor);
+        assert.equal(context.tenant_id, null);
+        assert.equal(context.credential_id, null);
+        assert.equal(descriptor.operation, operation);
+        return { allowed: true };
+      },
+      consumeGrant: async (context) => {
+        consumed++;
+        assert.equal(context.grant_id, grant);
+        assert.equal(context.admission_id, admission);
+        assert.equal(context.request_id, requestId);
+        assert.equal(context.input_sha256, inputSha);
+        assert.equal(context.scope_sha256, scopeSha);
+        assert.equal(context.contract_sha256, row.contract_sha256);
+        return { allowed: true, admission_id: admission };
+      },
+      finishExecution: async (receipt) => {
+        finished++;
+        assert.equal(receipt.admission_id, admission);
+        return { allowed: true };
+      },
+      fetch: ((url: string | URL | Request) => {
+        providerCalls++;
+        assert.equal(new URL(String(url)).hostname, host);
+        return Promise.resolve(Response.json(providerBody));
+      }) as typeof fetch,
+    });
+    const h = harness({
+      actorId: extensionActor,
+      rows: [row],
+      executionPolicy: true,
+      async rpcHandler(name, admitted) {
+        assert.equal(name, "sandy_api_admit_execution");
+        assert.equal(admitted.p_actor_id, extensionActor);
+        assert.equal(admitted.p_tenant_id, null);
+        assert.equal(admitted.p_input_sha256, inputSha);
+        assert.equal(admitted.p_scope_sha256, scopeSha);
+        assert.equal(admitted.p_contract_sha256, row.contract_sha256);
+        assert.equal(admitted.p_approval_id, approval);
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: admission,
+          grant_id: grant,
+          state: "admitted",
+          executed: false,
+          expires_at: new Date(Date.now() + 60000).toISOString(),
+        };
+      },
+      backend(url, init) {
+        assert.equal(
+          url,
+          "https://example.supabase.co/functions/v1/sandy-provider-operation-api",
+        );
+        return executor(new Request(url, init));
+      },
+    });
+    const response = await h.handler(
+      new Request("https://local.invalid", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer test-user-jwt",
+          "x-sandy-request-id": requestId,
+          "x-sandy-approval-id": approval,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ action: "execute", operation, arguments: args }),
+      }),
+    );
+    const result = await response.json();
+    assert.equal(
+      response.status,
+      200,
+      operation + ":" + JSON.stringify(result),
+    );
+    assert.equal(result.ok, true);
+    assert.equal(
+      result.result.request_state,
+      row.is_mutation ? "accepted" : "observed",
+    );
+    if (row.is_mutation) {
+      assert.equal(result.result.result.effect_confirmed, false);
+    }
+    assert.equal(result.verified, undefined);
+    assert.equal(JSON.stringify(result).includes("synthetic-"), false);
+    assert.deepEqual([h.rpcCalls.length, consumed, finished, providerCalls], [
+      1,
+      1,
+      1,
+      1,
+    ]);
+  }
+});
+Deno.test("canonical MCP sends expanded operation execution to Sandy API and preserves its closed verification outcome", async () => {
+  const operation = "gcp.instance_group_managers.get",
+    row = await expansionRow(operation),
+    requests: Request[] = [];
+  const h = harness({
+    rows: [row],
+    actorId: extensionActor,
+    executionPolicy: true,
+  });
+  const mcp = createHandler(
+    createApi(
+      "https://example.supabase.co",
+      "test-anon-key",
+      (async (input, init) => {
+        const request = new Request(input, init);
+        requests.push(request.clone());
+        return h.handler(request);
+      }) as typeof fetch,
+    ),
+  );
+  const response = await mcp(
+    new Request("https://local.invalid/mcp", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer test-user-jwt",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: {
+          name: operation,
+          arguments: { path: { instanceGroupManager: "fixture" } },
+        },
+      }),
+    }),
+  );
+  const result = await response.json();
+  assert.equal(result.result.isError, true);
+  assert.equal(requests.length, 1);
+  assert.equal((await requests[0].json()).channel, "mcp");
+  assert.equal(
+    new Headers(requests[0].headers).get("authorization"),
+    "Bearer test-user-jwt",
+  );
+  assert.equal(
+    JSON.parse(result.result.content[0].text).result.error,
+    "operation_requires_live_verification",
+  );
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.rpcCalls.length, 0);
 });

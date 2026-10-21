@@ -37,9 +37,13 @@ import {
 } from "./customer_services.ts";
 import {
   type ProviderConfig,
-  providerExecutionScope,
-  providerOperations,
+  providerExecutionScope as baselineProviderExecutionScope,
+  providerOperations as baselineProviderOperations,
 } from "../sandy-provider-operation-api/gateway.ts";
+import {
+  expandedProviderExecutionScope,
+  providerExpansionOperations,
+} from "../sandy-provider-operation-api/expansion_gateway.ts";
 import { parseProviderBindings } from "../sandy-provider-operation-api/configured_scopes.ts";
 import {
   customerMutationContracts,
@@ -96,6 +100,15 @@ import {
   JsonRequestError,
   requestJson,
 } from "../_shared/sandy_api_protocol.ts";
+const providerOperations = Object.freeze({
+  ...baselineProviderOperations,
+  ...providerExpansionOperations,
+});
+function providerExecutionScope(operation: string, config?: ProviderConfig) {
+  return providerExpansionOperations[operation]
+    ? expandedProviderExecutionScope(operation, config)
+    : baselineProviderExecutionScope(operation, config);
+}
 export type DelegatedIdentity = {
   kind: "api_key" | "job_lease";
   principalId: string;
@@ -469,7 +482,8 @@ function discoverableContract(entry: Record<string, unknown>): boolean {
   return true;
 }
 function requiresUserSession(operation: string): boolean {
-  return extensionRequiresUserSession(operation) ||
+  return !!providerExpansionOperations[operation] ||
+    extensionRequiresUserSession(operation) ||
     isCustomerMutationOperation(operation) ||
     isCustomerServiceOperation(operation) || requiresPolicyUserJWT(operation) ||
     operation === MCP_DISCOVERY_OPERATION || isCustomerOperation(operation) ||
@@ -1167,7 +1181,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (entry.is_mutation === true && entry.verified !== true) {
+    if (
+      (entry.is_mutation === true ||
+        providerOperations[operation]?.requires_grant === true) &&
+      entry.verified !== true
+    ) {
       return reply(424, {
         error: "operation_requires_live_verification",
         executed: false,
