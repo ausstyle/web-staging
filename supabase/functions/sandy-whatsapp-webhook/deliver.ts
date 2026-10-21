@@ -1,3 +1,5 @@
+import {pairedChannelHistory} from "../_shared/sandy-executive/history.ts";
+import {executiveCanaryEnabled} from "../_shared/sandy-executive/rollout.ts";
 import {scheduledPreview} from "./schedule-preview.ts";
 async function sandySemanticEvidence(db:any,key:string,customerId:string,query:string,limit=6){
  const q=String(query||"").trim().slice(0,440);
@@ -75,6 +77,7 @@ export async function deliver(db:any,message:any){
   if(identityError)throw new Error("identity:"+identityError.code);
   const verified=identity?.verification_status==="verified"&&Boolean(identity.customer_id)&&Boolean(identity.verified_at)&&Date.now()-Date.parse(identity.verified_at)<90*86400000;
   const scopes=new Set(verified?(identity.allowed_scopes||[]):[]);
+  const executiveCanary=verified&&executiveCanaryEnabled(identity.customer_id,Deno.env.get("SANDY_EXECUTIVE_CANARY_CUSTOMERS"));
 
   // Learn durable personal facts through the shared profile memory before composing the reply.
   if(verified&&scopes.has("memory_read")&&message.message_type==="text"){
@@ -449,7 +452,7 @@ export async function deliver(db:any,message:any){
    if(/^confirm send\s+/i.test(text)&&!scopes.has("email_send"))answer="WhatsApp email sending requires separate permission. Nothing has been sent. You can confirm the saved draft in Sandy Chat.";
    if(!answer)try{
     const rid="wa_"+String(id).replace(/[^a-zA-Z0-9_-]/g,"").slice(-90);
-    const gateway=await fetch(required("SUPABASE_URL")+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{"authorization":"Bearer "+required("SUPABASE_SERVICE_ROLE_KEY"),"content-type":"application/json"},body:JSON.stringify({channel:"whatsapp",request_id:rid,customer_id:identity.customer_id,request:/(^(try again|retry|go ahead|yes please)[.!\s]*$|(?:last|latest|recent)\s+(?:five|5)\s+subjects?|my (?:5|five) last emails|why (?:not|only) (?:5|five|three|3) emails?)/i.test(text.trim())?"Search my connected Gmail inbox and list my five most recent emails, including sender and subject.":text}),signal:AbortSignal.timeout(85000)});
+    const gateway=await fetch(required("SUPABASE_URL")+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{"authorization":"Bearer "+required("SUPABASE_SERVICE_ROLE_KEY"),"content-type":"application/json"},body:JSON.stringify({channel:"whatsapp",request_id:rid,customer_id:identity.customer_id,request:executiveCanary?text:/(^(try again|retry|go ahead|yes please)[.!\s]*$|(?:last|latest|recent)\s+(?:five|5)\s+subjects?|my (?:5|five) last emails|why (?:not|only) (?:5|five|three|3) emails?)/i.test(text.trim())?"Search my connected Gmail inbox and list my five most recent emails, including sender and subject.":text,...(executiveCanary?{history:pairedChannelHistory(context)}:{})}),signal:AbortSignal.timeout(85000)});
     const body=await gateway.json().catch(()=>({}));
     if(gateway.ok&&body.ok&&typeof body.response==="string"&&body.response.trim())answer=body.response.slice(0,3500);
     else {console.error("whatsapp_gmail_runtime_failed",gateway.status,String(body.error||"unknown").slice(0,80));answer="I could not check your connected Gmail right now. Nothing was sent. Please retry."; }
@@ -463,7 +466,7 @@ export async function deliver(db:any,message:any){
   if(centralConversationEligible){
     const rid="wa_"+String(id).replace(/[^a-zA-Z0-9_-]/g,"").slice(-90);
     try{
-      const central=await fetch(required("SUPABASE_URL")+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{"authorization":"Bearer "+required("SUPABASE_SERVICE_ROLE_KEY"),"content-type":"application/json"},body:JSON.stringify({channel:"whatsapp",request_id:rid,customer_id:identity.customer_id,request:text}),signal:AbortSignal.timeout(82000)});
+      const central=await fetch(required("SUPABASE_URL")+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{"authorization":"Bearer "+required("SUPABASE_SERVICE_ROLE_KEY"),"content-type":"application/json"},body:JSON.stringify({channel:"whatsapp",request_id:rid,customer_id:identity.customer_id,request:text,...(executiveCanary?{history:pairedChannelHistory(context)}:{})}),signal:AbortSignal.timeout(82000)});
       const payload=await central.json().catch(()=>({}));
       if(central.ok&&payload.ok&&typeof payload.response==="string"&&payload.response.trim()){
         answer=payload.response.slice(0,3500);

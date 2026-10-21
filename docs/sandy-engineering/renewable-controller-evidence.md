@@ -36,12 +36,40 @@ printed or committed. A retained credential file requires the environment's
 normal save/publish process to become available in fresh tasks; current-instance
 installation alone does not prove fresh-task restoration.
 
-Local verification: 33 runtime/session/control tests passed. Nine PostgreSQL
+Local verification: 34 runtime/session/control tests passed. Nine PostgreSQL
 assertions passed in a rolled-back production transaction, covering valid active
 sessions, forbidden deployment, foreign sessions, stale epochs, revoked/expired
 grants, public-role denial and grant constraint checks. These do not establish
 the production release or live registration; release evidence is recorded after
 actual execution.
+
+## Observed release
+
+Engineering runtime **6** and Controller **45** are ACTIVE. All six uploaded
+source modules in each function match their pinned release commits. Controller
+44 was an intermediate release; 45 distinguishes an expired/retired session
+from a revoked grant, enabling one safe pre-dispatch renewal without replaying
+scope denials.
+
+A real scoped registration returned HTTP 201, creating change
+`7edbee5b-4185-4f6b-b7b1-b41899d4dfc8` as PROPOSED under the workload identity.
+After controlled expiry of that canary's registered session proof, another
+normal Auth session was issued and the same registration returned HTTP 200 with
+`reused=true`. This preserved the change's idempotency and required no personal
+Controller token. The live test did not wait a complete natural JWT lifetime;
+the existing clock-based expiry tests cover that policy separately.
+
+Live revocation returned 403; the test restored only its exact revocation marker.
+Deployment dispatch and foreign repository scope returned 403. A change owned by
+another requester returned 404. The workload has zero global Controller
+memberships and retains credential epoch/bootstrap generation 2. No credential
+rotation disrupted the parallel API task.
+
+Machine-readable source references and observations are in
+[renewable-controller-evidence.json](renewable-controller-evidence.json).
+Environment startup instructions were saved additively; the current bootstrap
+file/helper still require an environment snapshot publication before fresh-task
+restoration can be claimed. The broad unified runtime remains incomplete.
 
 Rollback: revoke/disable the control grant immediately, restore the captured
 Controller v43 and engineering runtime v5 source bundles, preserving audit and
