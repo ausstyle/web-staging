@@ -1,0 +1,50 @@
+{
+  "inspected_deployed_sources": {
+    "sandy-system-introspection": {
+      "slug": "sandy-system-introspection",
+      "version": 6,
+      "status": "ACTIVE",
+      "verify_jwt": false,
+      "source_sha256": "5a4797e859e13d6be66037bb0ea9a3f99639440d1c414760a61603ab937c83e4"
+    },
+    "sandy-operation-catalog": {
+      "slug": "sandy-operation-catalog",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "source_sha256": "4611d03748d8a1d7c20a3c9fe4e7e5ab85b39a5004eb101454c038f58230fa3a"
+    }
+  },
+  "original_unmapped_rows": 8,
+  "implemented_canonical_read_operations": [
+    "system.catalog",
+    "system.capabilities",
+    "system.runtime",
+    "system.connections",
+    "system.coverage",
+    "system.operation_catalog",
+    "system.operation_status"
+  ],
+  "new_mutations": 0,
+  "missing_executor": {
+    "operation": "cloud.vm.exec",
+    "handler": "unassigned",
+    "state": "executor_missing",
+    "aliased_to_guest_transport": false
+  },
+  "new_table_custody": {
+    "table": "sandy_system_metadata_contracts",
+    "ownership": "global_control_catalogue",
+    "customer_data": false,
+    "credentials": false,
+    "direct_role_grants": false,
+    "workers_or_triggers": false,
+    "generic_erasure_restore": "preserve"
+  },
+  "source_rpc": "supabase/migrations/20261021010700_sandy_system_metadata_boundary.sql",
+  "canonical_handler": "supabase/functions/sandy-system-metadata-api/index.ts",
+  "legacy_sources_edited": false,
+  "gateway_integration_owned_by": "parent_release_task",
+  "fully_verified_new_operations": 0,
+  "new_original_wildcard_requirements_declared_complete": 0
+}
