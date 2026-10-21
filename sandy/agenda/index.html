@@ -1978,22 +1978,14 @@ function timelineDependentSchedule(rootId,newStart,newEnd){
  return updates;
 }
 async function timelineSaveSchedule(t,start,end){
- let updates;
- try{updates=timelineDependentSchedule(t.id,start,end)}
- catch(e){toast("Schedule not changed: "+e.message,true);return false}
- const snapshots=new Map();
- for(const [id,change] of updates){
-  const task=state.tasks.find(x=>x.id===id);
-  if(task){snapshots.set(id,{start_at:task.start_at,due_at:task.due_at});Object.assign(task,change)}
- }
- renderTimeline();
  try{
-  for(const [id,change] of updates)await api("update",{id,...change});
-  toast(updates.size>1?"Schedule saved; "+(updates.size-1)+" dependent task(s) updated":"Task schedule saved");
+  await api("move-schedule",{id:t.id,start_at:new Date(start).toISOString(),due_at:new Date(end).toISOString()});
+  await load();
+  toast("Task and dependent schedules saved");
   return true;
  }catch(e){
-  toast("Linked scheduling was not fully saved: "+e.message+". Refresh to verify dates.",true);
-  await load().catch(()=>{for(const [id,old] of snapshots){const task=state.tasks.find(x=>x.id===id);if(task)Object.assign(task,old)}renderTimeline()});
+  toast("Schedule not changed: "+e.message,true);
+  await load().catch(()=>renderTimeline());
   return false;
  }
 }
@@ -2321,7 +2313,7 @@ function renderTimeline(){
     };
     bar.addEventListener("pointerdown",e=>{
       if(t.shared||e.button!==0)return;
-      gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
+      gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:milestone?"move":e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
       bar.classList.add("timelineDragging");line.classList.add("timelineHandlesActive");
       document.body.append(dragNote);
       dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(from).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(to).toLocaleString():new Date(from).toLocaleString()+" → "+new Date(to).toLocaleString();
