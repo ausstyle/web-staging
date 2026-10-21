@@ -188,6 +188,31 @@
         "independent Sent Mail To/Subject/label readback",
         "no uncertain resend"
       ]
+    },
+    {
+      "slug": "sandy-auto-improve",
+      "archived_numeric_version": 11,
+      "inspected_live_version": 12,
+      "inspected_status": "ACTIVE",
+      "source_sha256": "7b66252c752cfd9fb4e74c6e44f325ec83aea29a3eecaaf04250b4d120080c74",
+      "source_lines": 64,
+      "observed_matches": {
+        "openai_responses": [
+          36
+        ]
+      },
+      "identity": "Existing dedicated automation secret; service credential is only DB transport. Private proof binds actual source/reference/problem and reserved job, with no customer/Auth/owner identity.",
+      "remaining": "Source candidate extracts all diagnosis work into agent.reliability.diagnosis.propose@1.0.0. Commit, migration, deployment and source readback pending; actual model run not performed.",
+      "candidate_contract": "agent.reliability.diagnosis.propose@1.0.0",
+      "candidate_deployed": false,
+      "boundaries_to_preserve": [
+        "dedicated existing automation key",
+        "actual stored job/source/problem",
+        "fixed gpt-5.2 high-reasoning 65-second Responses transport",
+        "proposal-only output and separate approval",
+        "actual QA issue foreign key and unverified handoff",
+        "no unknown paid redispatch"
+      ]
     }
   ],
   "UI": [
@@ -278,6 +303,8 @@
     "actual_provider_execution_tested": false,
     "mutation": true,
     "consumes_model_resources": true,
-    "legacy_auto_improve_worker_not_yet_extracted": true
+    "legacy_auto_improve_worker_not_yet_extracted": true,
+    "source_commit": "771e9bb",
+    "status": "committed_pending_parent_deployment_readback"
   }
 }
