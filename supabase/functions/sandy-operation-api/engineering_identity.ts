@@ -338,7 +338,7 @@ export async function engineeringRequest(
       headers: response.headers,
     });
   }
-  if (operation !== "supabase.logs.query" || !response.ok) return response;
+  if (body.action !== "execute" || operation !== "supabase.logs.query" || !response.ok) return response;
   // Authorization projection: this workload may see only the two pinned fixture
   // console markers. Provider execution stays in the canonical log handler.
   const output: unknown = await response.json().catch(() => null);

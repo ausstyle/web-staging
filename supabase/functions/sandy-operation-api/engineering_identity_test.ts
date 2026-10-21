@@ -319,6 +319,14 @@ Deno.test("machine log result is restricted to exact pinned console markers", as
   assert.equal(validator(v.result).valid, true, "the customer-filtered result must still satisfy the published MCP output schema");
   assert.equal(JSON.stringify(v).includes("other customer secret"), false);
 });
+Deno.test("log contract description is metadata, not a provider result to redact", async () => {
+  const description = { ok: true, operation: { operation: "supabase.logs.query", input_schema: { type: "object" }, output_schema: { type: "object" } } };
+  const h = await harness({ delegate: async () => Response.json(description) });
+  const r = await h.call(req({ action: "describe", operation: "supabase.logs.query" }));
+  assert.equal(r.status, 200);
+  assert.deepEqual(await r.json(), description);
+  assert.deepEqual(h.state.rpc.map(x => x.name), ["sandy_engineering_resolve_identity"]);
+});
 Deno.test("discovery delegates only the bounded catalogue and never prepares a provider write", async () => {
   const h = await harness();
   assert.equal(
