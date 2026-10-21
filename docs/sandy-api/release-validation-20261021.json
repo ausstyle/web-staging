@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-21T02:21:13.619991+00:00",
+  "recorded_at_utc": "2026-10-21T03:17:13.509712+00:00",
   "release_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
   "release_published": true,
   "published_branch": "b139a759489d87a1479f19776579b86d81160f5b",
@@ -216,18 +216,14 @@
     }
   ],
   "completion": {
-    "requirements": 161,
-    "completed": 0,
-    "deployed_gateway_ids": 1021,
-    "deployed_additional_typed_contract_records": 956,
-    "historical_verified_operations": [
-      "video.execution.preflight",
-      "video.install.preflight",
-      "video.status"
-    ],
-    "new_fully_verified_deployed_operations": 0,
-    "registry_rows": 1042,
-    "partially_covered_requirements": 140
+    "original_scope": 161,
+    "certified_complete": 0,
+    "typed_source_requirements_partial": 154,
+    "typed_source_or_prior_gateway_requirements_partial": 155,
+    "typed_source_records": 2182,
+    "installed_gateway_ids": 1104,
+    "historical_registry_verified_count": 3,
+    "fresh_authenticated_end_to_end_verified_count": 0
   },
   "universal_routing": {
     "edge_mcp_adapters_api_only_source_attested": true,
@@ -290,125 +286,281 @@
     },
     "actual_provider_rotation_or_auth_attested": false
   },
-  "current_deployed_release_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+  "current_deployed_release_commit": "7ce33be6aeb16a7b415da3ef822545d6c062a908",
   "release_commit_semantics": "release_commit pins initial full regression; current_deployed_release_commit includes separately validated follow-ups",
   "latest_functions": [
     {
       "slug": "sandy-agent-runtime",
-      "version": 55,
+      "version": 56,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     {
       "slug": "sandy-controller-api",
-      "version": 35,
+      "version": 36,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-agent-runtime-v2",
+      "version": 16,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-agent-runtime-v1-backup-r50",
+      "version": 6,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     {
       "slug": "sandy-agent-runtime-v4",
-      "version": 12,
+      "version": 13,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     {
       "slug": "sandy-operations-mcp",
-      "version": 71,
+      "version": 72,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-operation-api",
-      "version": 9,
+      "version": 12,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-api-mcp",
-      "version": 4,
+      "version": 5,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-provider-read-api",
-      "version": 4,
+      "version": 6,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-orchestration-api",
-      "version": 2,
+      "version": 3,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-credential-probe-api",
-      "version": 1,
+      "version": 2,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-provider-operation-api",
-      "version": 2,
+      "version": 4,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-guest-operation-api",
-      "version": 1,
+      "version": 3,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-agent-operation-api",
-      "version": 1,
+      "version": 2,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-database-operation-api",
-      "version": 2,
+      "version": 3,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-credential-lifecycle-api",
-      "version": 2,
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-supabase-service-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-provider-gap-api",
+      "version": 1,
       "status": "ACTIVE",
       "verify_jwt": true
     }
   ],
   "latest_registry_evidence": {
-    "recorded_at_utc": "2026-10-21T02:18:38.869928+00:00",
     "write_http": 201,
     "readback_http": 201,
-    "gateway_version": 9,
-    "source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
     "readback": [
       {
-        "registry_rows": 1042,
-        "session_evidence_rows": 1021,
-        "verified_count": 3,
-        "verified_operations": [
-          "video.execution.preflight",
-          "video.install.preflight",
-          "video.status"
-        ],
-        "gateway_v9_evidence_rows": 1021
+        "registry_rows": 2269,
+        "evidence_rows": 1104,
+        "verified_rows": 3
       }
     ],
-    "verified_fields_preserved": true
+    "exposure_and_verification_fields_preserved": true,
+    "new_gateway_operations": 83,
+    "gateway_version": 12,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:14:18.762494+00:00",
+      "gateway_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "gateway_version": 12,
+      "gateway_mapped": true,
+      "installed_operation_count": 1104,
+      "new_operation_count": 83,
+      "backend_versions": {
+        "sandy-supabase-service-api": 1,
+        "sandy-provider-gap-api": 1,
+        "sandy-provider-operation-api": 4
+      },
+      "gateway_source_readback_sha256": "20029c163a05184cc3bb5ce8d62a08afd256f5cbdf5593276ed5b93bf4457a73",
+      "all_1104_live_registry_contracts_match": true,
+      "live_metadata_audit_sha256": "f5f802482ce9ea78180a2ae9196ac385a0c1f2df701f0485916bb704a90699ee",
+      "regression": {
+        "composed_passed": 155,
+        "typecheck": true,
+        "source_only": true,
+        "overlapping_suites_not_summed": true
+      },
+      "local_memory": {
+        "actual_catalogue": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 200636,
+          "log": "gateway-bounded-live-catalogue-memory-96.txt",
+          "benchmark": "gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 95.8,
+          "gc_observed_peak_heap_total_mib": 133.6,
+          "gateway_measurements": {
+            "installed_operations": 1104,
+            "catalogue_operations": 1104,
+            "schemas_validated": 2208,
+            "input_refusals": 1922,
+            "forced_output_schema_refusals": 286,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 116289536,
+              "heapTotal": 64503808,
+              "heapUsed": 30371048,
+              "external": 1519097
+            },
+            "final": {
+              "rss": 203534336,
+              "heapTotal": 137580544,
+              "heapUsed": 63790760,
+              "external": 1424689
+            },
+            "sampled_peak_heap_bytes": 99899688,
+            "sampled_peak_rss_bytes": 205987840
+          },
+          "conservative_peak_rss_bytes": 205987840
+        },
+        "actual_catalogue_schema_validity": {
+          "schemas_checked": 2208,
+          "unavailable_schemas": [],
+          "cache_stats": {
+            "entries": 12,
+            "schema_bytes": 12588,
+            "max_entries": 12,
+            "max_schema_bytes": 262144
+          }
+        },
+        "actual_catalogue_read_only_fetch": {
+          "http_status": 201,
+          "registry_rows": 1104,
+          "source_installed_ids": 1104,
+          "read_only": true
+        },
+        "actual_catalogue_sha256": "49dfd4f1e7e0cfbf74dc1f225c119ffe3a84d765ab06a857448f505c99753381",
+        "installed_ids_sha256": "73259a0722cc1a953780ba36c132c0cb0c7ca8f66ece0802ee0e5f128b7998c7",
+        "benchmark_sha256": "5e0288d6f503c48b69f32f8861d573c1823ed083955f871d9e325c8bde39c0a3",
+        "synthetic_unique_schema_stress_attempts": [
+          {
+            "old_space_limit_mib": 128,
+            "optimize": false,
+            "inlineRefs": false,
+            "cache_max_entries": 12,
+            "cache_max_schema_bytes": 262144,
+            "exit_code": -5,
+            "peak_rss_kib": 246048,
+            "log": "gateway-bounded-noopt-source-memory-128.txt",
+            "fixture": "source-only actual gateway,2056 unique51-field schemas,zero provider/RPC calls"
+          },
+          {
+            "old_space_limit_mib": 128,
+            "optimize": "default",
+            "inlineRefs": false,
+            "cache_max_entries": 12,
+            "cache_max_schema_bytes": 262144,
+            "key_and_snapshot_charge_multiplier": 4,
+            "exit_code": -5,
+            "peak_rss_kib": 247824,
+            "log": "gateway-bounded-default-source-memory-128.txt",
+            "fixture": "source-only actual gateway,2056 unique51-field schemas,zero provider/RPC calls"
+          }
+        ],
+        "synthetic_full_fixture_256_result": {
+          "passed": true,
+          "changing_revisions": 2048,
+          "retained_after_gc_bytes": 156598232,
+          "retained_limit_bytes": 209715200,
+          "provider_calls": 0,
+          "rpc_calls": 0,
+          "log": "gateway-bounded-validator-256.txt"
+        },
+        "conclusion": "Actual1104-operation/2208-schema catalogue passes96MiB old-space with196.4MiB conservative peakRSS and allschemas available. Artificial2056 unique51-field schemas fail128MiB for default and disabled optimization. This is a local source-only validation boundary, not an Edge production concurrency or full provider-load guarantee."
+      },
+      "owner_service_postgres_rollback_checks": 24,
+      "provider_gap_postgres_rollback_checks": 17,
+      "approval_hardening_postgres_rollback_checks": 6,
+      "deployed_authentication": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T03:13:17.839346+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "normal_controller_session_available": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_requirements_complete": 0
+    }
   },
   "live_catalogue_audit": {
-    "source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
-    "gateway_version": 9,
+    "source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+    "gateway_version": 12,
     "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
-    "installed_count": 1021,
-    "registry_count": 1042,
-    "all_installed_contracts_match": true,
-    "result_sha256": "4bc24858a25e36a42f4280ac06660a7b9cffeeb2f86d9dc91928ffdda9e572c1",
-    "auth_session_tested": false,
-    "registry_write_http": 201
+    "installed_count": 1104,
+    "registry_count": 2269,
+    "mismatches": [],
+    "all_installed_contracts_match": true
   },
   "followup_regressions": {
     "nonadditive": true,
@@ -487,6 +639,1518 @@
       "values_disclosed": false,
       "evidence": "maintenance-binding-presence-20261021.json",
       "guest_binding_absence_in_earlier_receipt_superseded_by": "guest-signing-configuration-20261021.json"
+    }
+  },
+  "identity_release": {
+    "commit": "7ce33be6aeb16a7b415da3ef822545d6c062a908",
+    "registry_evidence": {
+      "write_http": 201,
+      "readback_http": 201,
+      "source_commit": "7ce33be6aeb16a7b415da3ef822545d6c062a908",
+      "gateway_version": 11,
+      "readback": [
+        {
+          "registry_rows": 1042,
+          "evidence_rows": 1021,
+          "verified_count": 3
+        }
+      ],
+      "verification_fields_preserved": true
+    },
+    "gateway_component_manifest": {
+      "phase": "api10_gateway_customer_key_and_consumed_read_context_frozen",
+      "files": {
+        "supabase/functions/sandy-operation-api/index.ts": "586cfd5887676c0e971f7dd262c1570010e04b374289c85460a484dfa15600fc",
+        "supabase/functions/sandy-operation-api/index_test.ts": "2c99c24971e2a30866d815517f5ba4daceb1d8bfcf245c4f498e862dbd81478c",
+        "supabase/functions/sandy-operation-api/customer_key_principal.ts": "e9f94f813bf543d11e42873e88dd0f09a8885b301c40ec13a136fd61555577af",
+        "supabase/functions/sandy-operation-api/customer_key_principal_test.ts": "38ff522acc05c8c22c81cabe0a47613a7cb8adf2d6287fd3e820145d788452d3",
+        "supabase/migrations/20261021007100_sandy_customer_key_principal.sql": "efe3f3427748bc37ec32253b82e1d294f5673bd55f6cce032eb8b03fbd63d602",
+        "scripts/sandy/test_customer_key_principal.sql": "5f3c8c53d9adfeb19018f5556b22a76c84885aa4c230ccdd11543e5eecb3d41e"
+      },
+      "installed_operation_count": 1021,
+      "new_operation_ids": 0,
+      "deno_composed_tests_passed": 111,
+      "customer_key_module_tests": 8,
+      "gateway_tests": 64,
+      "database_component_checks": 30,
+      "owner_regression_checks": 29,
+      "both_full_rollback_http_status": 201,
+      "peer_review": "auth_storage_scope independent identity/security review: no blocking findings",
+      "applied": false,
+      "deployed": false,
+      "auth_session_tested": false,
+      "actual_customer_key_tested": false,
+      "customer_resources_read": false,
+      "provider_called": false,
+      "proof_protocol": "consumed-admission-v1",
+      "deployment_order": [
+        "apply reviewed07100",
+        "apply reviewed06200 according to DB reviewer dependency ordering",
+        "deploy API10 before provider-read5",
+        "deploy provider-read5 and Guest2 only from their frozen reviewed sources"
+      ],
+      "limitations": [
+        "Existing original161 requirements not certified by source/component tests",
+        "Actual Controller/customer Auth session and project runtime egress remain separate dependencies",
+        "No unverified key mutations, customer-session substitution or automatic redispatch enabled"
+      ],
+      "evidence": [
+        "customer-key-principal-rollback-evidence.json",
+        "customer-key-principal-rollback-response.json",
+        "customer-key-owner-regression-rollback-evidence.json",
+        "customer-key-owner-regression-rollback-response.json",
+        "customer-key-composed-deno.txt"
+      ]
+    },
+    "provider_read_guest_component_manifest": {
+      "recorded_at": "2026-10-21T02:28:29.384224+00:00",
+      "status": "source_frozen_release_candidate",
+      "scope": "original provider metadata consumer and managed guest Compute credential cutover",
+      "files_sha256": {
+        "supabase/functions/sandy-provider-read-api/index.ts": "79775ec5bd3abfba7abb8111941924d331e6e3c5636d25c17d9e92110eff6611",
+        "supabase/functions/sandy-provider-read-api/index_test.ts": "9b86794842a70fa9abd9064a84feb7fb40435c035fa1e1e4be957e69243c3464",
+        "supabase/functions/sandy-provider-read-api/governed_read.ts": "57c5e10cb6e4940d4245e6c40893d66226ecfab64d53ef3b33ec46d65a3968e9",
+        "supabase/functions/sandy-provider-read-api/governed_read_test.ts": "005b97491583ac5c3dfa18f3f8626dfb4fa16b8ecf7ec9340006b52ab9107339",
+        "supabase/functions/sandy-provider-read-api/test_governed_read.sql": "7bd42fbc9f6bc1ccef820d332cc4ac44f077de1ae54a620d176a31cbf955cb54",
+        "supabase/functions/sandy-provider-read-api/README.md": "32e4123a34cc1400a4afce661afa5c73ef6f9bc9c80d766ca2d4c1c83424a15a",
+        "supabase/functions/sandy-guest-operation-api/index.ts": "2afba567db7c6bf62b96c2d114989d874cfb06b611c9b089747cedc82f7d87ec",
+        "supabase/functions/sandy-guest-operation-api/index_test.ts": "5efcd8f8bf469a6172e6ec82c40a815d24c35b232daecba660728b923924980d",
+        "supabase/functions/sandy-guest-operation-api/README.md": "042b12785d42b1650683c2f01234f4e5de33553900019a9eb94c91208952c94f",
+        "supabase/migrations/20261021006200_sandy_provider_read_consumer.sql": "89a8d5bdc23678a81af25b731192469946ea0df8eb0de5e232ecbda91400e1e5",
+        "scripts/sandy/verify_deployed_api.py": "41e4ae9c64a8025dd707d96258152eee2a23de0425c443c4e160eebfd49089e8",
+        "scripts/sandy/test_verify_deployed_api.py": "470ef323448a714d7363abb0ef688f286793e4238085dd340f7313146b3bcdb1"
+      },
+      "changes": {
+        "provider_read": "Production-only consumed-admission-v1 boundary; exact actual argument SHA, actor/request/grant/credential/current owner/current registry revision/fixed generic project scope; immutable private single-dispatch claim before consumer lookup; gateway alone consumes/finishes shared grant",
+        "provider_http_status": "Trusted response header contains actual observed upstream status; absent before dispatch; no public schema or route change",
+        "guest": "Compute credentials resolved after actual one-use admission; current managed consumer, no active-pointer fallback; unchanged worker VM metadata identity and Ed25519 signing protocol",
+        "deployed_verifier": "Reachability before Management key lookup; negative service-without-admission test; positives only through actual Controller Sandy API; no fabricated admission/administrative user-session substitution"
+      },
+      "test_results": {
+        "deno": {
+          "provider_read_core": 12,
+          "provider_read_governed": 7,
+          "guest": 19,
+          "total_passed": 38,
+          "failed": 0,
+          "command": "deno test supabase/functions/sandy-provider-read-api supabase/functions/sandy-guest-operation-api/index_test.ts",
+          "runtime_permissions": "none",
+          "nature": "injected transport/unit/regression; not deployed Auth/provider execution"
+        },
+        "strict_types": {
+          "provider_read_entry": "passed",
+          "guest_entry": "passed"
+        },
+        "python": {
+          "passed": 7,
+          "failed": 0,
+          "command": "python -m unittest discover -s scripts/sandy -p test_verify_deployed_api.py -v",
+          "nature": "injected verifier regression only"
+        },
+        "real_supabase_postgresql": {
+          "project_ref": "zmqlyygzqoidkcwdysok",
+          "http_status": 201,
+          "checks": 24,
+          "all_changes_rolled_back": true,
+          "evidence": "provider-read-consumer-rollback-evidence.json",
+          "synthetic_private_records": true,
+          "auth_session_created_or_exercised": false,
+          "provider_business_called": false,
+          "credentials_returned": false,
+          "checks_include": [
+            "private function/table ACL+RLS",
+            "pre-argument-claim resolver refusal",
+            "actual canonical argument binding including branch name",
+            "actor/request/grant/credential/tenant/scope/operation mismatch refusal",
+            "unconsumed/expired/owner-revoked/current-registry refusal",
+            "exact private claim and duplicate-dispatch refusal",
+            "legacy selection only through current proven context",
+            "immutable claim and digest audit",
+            "resolver rechecks registry/scope/finished admission"
+          ]
+        },
+        "resolver_source_integrity": "06100 generic resolver body retained byte-exact except provider-read allowlist and exact private argument/scope proof gate"
+      },
+      "deployment_order": [
+        "Apply06200 afterexisting06100",
+        "DeployAPI10 that forwards new context; compatibleexistingproviderread4",
+        "Deployproviderread5 requiringcontext; normalpublicreadschemasunchanged",
+        "Deployguest2 consumerhook afterexisting06100"
+      ],
+      "separate_dependencies": {
+        "controller_session": "Real enabled Controller session required for positive deployed API/MCP/providerread tests; no administrative substitution",
+        "runtime_egress": "Normal authorized Supabase/Google/JWKS/OAuth destinations; no relay or bypass implemented",
+        "guest_runtime": "Signer configuration resolved independently by root; VM enrollment/install/actual guest execution remains disabled and unverified pending approved fixture",
+        "provider_entitlement": "Custom Domain entitlement remains independent of implemented reader; no plan purchase"
+      },
+      "local_factory_boundary": "createProviderReadHandler remains available only for isolated local direct-provider checks/tests; production Deno.serve uses only governed factory",
+      "no_commits_by_this_agent": true,
+      "no_deployments_by_this_agent": true,
+      "no_permanent_database_writes_by_this_agent": true,
+      "registry_verified_flags_changed": false
+    },
+    "deployed_authentication": {
+      "project": "zmqlyygzqoidkcwdysok",
+      "tested_at": "2026-10-21T02:34:58.821770+00:00",
+      "tests": [
+        {
+          "test": "project_endpoint_reachable_and_requires_authentication",
+          "outcome": "blocked",
+          "http_status": null,
+          "layer": "edge_authentication",
+          "blocker": "network_proxy_denied"
+        }
+      ],
+      "complete": false,
+      "deferred": [
+        "internal_handler_checks",
+        "authenticated_api_mcp_checks"
+      ]
+    },
+    "secret_refresh_versions": {
+      "read_http": 200,
+      "functions": [
+        {
+          "slug": "sandy-agent-runtime",
+          "version": 56,
+          "status": "ACTIVE",
+          "verify_jwt": false,
+          "updated_at": 1792367068683
+        },
+        {
+          "slug": "sandy-controller-api",
+          "version": 36,
+          "status": "ACTIVE",
+          "verify_jwt": false,
+          "updated_at": 1792548291486
+        },
+        {
+          "slug": "sandy-agent-runtime-v4",
+          "version": 13,
+          "status": "ACTIVE",
+          "verify_jwt": false,
+          "updated_at": 1792548302008
+        },
+        {
+          "slug": "sandy-operations-mcp",
+          "version": 72,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548121968
+        },
+        {
+          "slug": "sandy-operation-api",
+          "version": 10,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548956927
+        },
+        {
+          "slug": "sandy-api-mcp",
+          "version": 5,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548109760
+        },
+        {
+          "slug": "sandy-provider-read-api",
+          "version": 5,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792518128493
+        },
+        {
+          "slug": "sandy-orchestration-api",
+          "version": 3,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548086293
+        },
+        {
+          "slug": "sandy-credential-probe-api",
+          "version": 2,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792546940646
+        },
+        {
+          "slug": "sandy-provider-operation-api",
+          "version": 3,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548738000
+        },
+        {
+          "slug": "sandy-guest-operation-api",
+          "version": 2,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792547636723
+        },
+        {
+          "slug": "sandy-agent-operation-api",
+          "version": 2,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548043448
+        },
+        {
+          "slug": "sandy-database-operation-api",
+          "version": 3,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548895049
+        },
+        {
+          "slug": "sandy-credential-lifecycle-api",
+          "version": 3,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792548756587
+        }
+      ]
+    },
+    "secret_refresh_router_reader_readback": [
+      {
+        "slug": "sandy-agent-runtime",
+        "body_http": 200,
+        "before_body_exists": true,
+        "entire_body_unchanged": true,
+        "body_sha256": "06ac1a178b711e8aec79338462bb9ff3100601c926a3df18746ce84333bd5974"
+      },
+      {
+        "slug": "sandy-provider-read-api",
+        "body_http": 200,
+        "before_body_exists": false,
+        "entire_body_unchanged": false,
+        "body_sha256": "89b0ae312749e500734e84831ce098e37ce5a0f7f2da579f7f81bd2122e90d3c",
+        "exact_original_source_match": true,
+        "expected_source_commit": "b139a759489d87a1479f19776579b86d81160f5b",
+        "expected_source_sha256": "f6b3215d185d61bc795e08e81b7a7276d3b8754994c6b11930e59c513f56fd24"
+      }
+    ]
+  },
+  "current_gateway_release_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+  "api12_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2269,
+        "evidence_rows": 1104,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "new_gateway_operations": 83,
+    "gateway_version": 12,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:14:18.762494+00:00",
+      "gateway_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "gateway_version": 12,
+      "gateway_mapped": true,
+      "installed_operation_count": 1104,
+      "new_operation_count": 83,
+      "backend_versions": {
+        "sandy-supabase-service-api": 1,
+        "sandy-provider-gap-api": 1,
+        "sandy-provider-operation-api": 4
+      },
+      "gateway_source_readback_sha256": "20029c163a05184cc3bb5ce8d62a08afd256f5cbdf5593276ed5b93bf4457a73",
+      "all_1104_live_registry_contracts_match": true,
+      "live_metadata_audit_sha256": "f5f802482ce9ea78180a2ae9196ac385a0c1f2df701f0485916bb704a90699ee",
+      "regression": {
+        "composed_passed": 155,
+        "typecheck": true,
+        "source_only": true,
+        "overlapping_suites_not_summed": true
+      },
+      "local_memory": {
+        "actual_catalogue": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 200636,
+          "log": "gateway-bounded-live-catalogue-memory-96.txt",
+          "benchmark": "gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 95.8,
+          "gc_observed_peak_heap_total_mib": 133.6,
+          "gateway_measurements": {
+            "installed_operations": 1104,
+            "catalogue_operations": 1104,
+            "schemas_validated": 2208,
+            "input_refusals": 1922,
+            "forced_output_schema_refusals": 286,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 116289536,
+              "heapTotal": 64503808,
+              "heapUsed": 30371048,
+              "external": 1519097
+            },
+            "final": {
+              "rss": 203534336,
+              "heapTotal": 137580544,
+              "heapUsed": 63790760,
+              "external": 1424689
+            },
+            "sampled_peak_heap_bytes": 99899688,
+            "sampled_peak_rss_bytes": 205987840
+          },
+          "conservative_peak_rss_bytes": 205987840
+        },
+        "actual_catalogue_schema_validity": {
+          "schemas_checked": 2208,
+          "unavailable_schemas": [],
+          "cache_stats": {
+            "entries": 12,
+            "schema_bytes": 12588,
+            "max_entries": 12,
+            "max_schema_bytes": 262144
+          }
+        },
+        "actual_catalogue_read_only_fetch": {
+          "http_status": 201,
+          "registry_rows": 1104,
+          "source_installed_ids": 1104,
+          "read_only": true
+        },
+        "actual_catalogue_sha256": "49dfd4f1e7e0cfbf74dc1f225c119ffe3a84d765ab06a857448f505c99753381",
+        "installed_ids_sha256": "73259a0722cc1a953780ba36c132c0cb0c7ca8f66ece0802ee0e5f128b7998c7",
+        "benchmark_sha256": "5e0288d6f503c48b69f32f8861d573c1823ed083955f871d9e325c8bde39c0a3",
+        "synthetic_unique_schema_stress_attempts": [
+          {
+            "old_space_limit_mib": 128,
+            "optimize": false,
+            "inlineRefs": false,
+            "cache_max_entries": 12,
+            "cache_max_schema_bytes": 262144,
+            "exit_code": -5,
+            "peak_rss_kib": 246048,
+            "log": "gateway-bounded-noopt-source-memory-128.txt",
+            "fixture": "source-only actual gateway,2056 unique51-field schemas,zero provider/RPC calls"
+          },
+          {
+            "old_space_limit_mib": 128,
+            "optimize": "default",
+            "inlineRefs": false,
+            "cache_max_entries": 12,
+            "cache_max_schema_bytes": 262144,
+            "key_and_snapshot_charge_multiplier": 4,
+            "exit_code": -5,
+            "peak_rss_kib": 247824,
+            "log": "gateway-bounded-default-source-memory-128.txt",
+            "fixture": "source-only actual gateway,2056 unique51-field schemas,zero provider/RPC calls"
+          }
+        ],
+        "synthetic_full_fixture_256_result": {
+          "passed": true,
+          "changing_revisions": 2048,
+          "retained_after_gc_bytes": 156598232,
+          "retained_limit_bytes": 209715200,
+          "provider_calls": 0,
+          "rpc_calls": 0,
+          "log": "gateway-bounded-validator-256.txt"
+        },
+        "conclusion": "Actual1104-operation/2208-schema catalogue passes96MiB old-space with196.4MiB conservative peakRSS and allschemas available. Artificial2056 unique51-field schemas fail128MiB for default and disabled optimization. This is a local source-only validation boundary, not an Edge production concurrency or full provider-load guarantee."
+      },
+      "owner_service_postgres_rollback_checks": 24,
+      "provider_gap_postgres_rollback_checks": 17,
+      "approval_hardening_postgres_rollback_checks": 6,
+      "deployed_authentication": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T03:13:17.839346+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "normal_controller_session_available": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_requirements_complete": 0
+    }
+  },
+  "backend_service_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+    "readback": [
+      {
+        "registry_rows": 1125,
+        "backend_evidence_rows": 83,
+        "verified_count": 3
+      }
+    ],
+    "public_gateway_mapping_claimed": false
+  },
+  "provider_constituent_release": {
+    "commit": "a1dd1d4",
+    "backend_version": 4,
+    "frozen_source": {
+      "frozen": true,
+      "stage": "reviewed_source_ready_not_committed_or_deployed",
+      "baseline_provider_operation_ids": 595,
+      "additive_provider_operation_ids": 1143,
+      "combined_provider_operation_ids": 1738,
+      "all_added_contracts_closed_unverified": true,
+      "new_verified_operations": 0,
+      "full_161_complete": false,
+      "source_counts": {
+        "gcp": 883,
+        "github": 230,
+        "supabase": 30,
+        "mutations": 629,
+        "approval_bearing_reads": 514
+      },
+      "inventory_constituent_methods": 1860,
+      "inventory_status_counts": {
+        "adapter_implementation_required": 3,
+        "additional_resource_binding_required": 64,
+        "billing_authorization_required": 5,
+        "dedicated_credential_boundary": 7,
+        "implemented_existing_595": 574,
+        "implemented_existing_dedicated_handler": 9,
+        "implemented_expansion_source_ready": 1143,
+        "scope_filter_adapter_required": 5,
+        "separate_gap_adapter_review": 12,
+        "specialized_media_adapter_required": 20,
+        "specialized_sensitive_adapter_required": 18
+      },
+      "tests": {
+        "python": {
+          "passed": 14,
+          "failed": 0
+        },
+        "composed_deno": {
+          "passed": 86,
+          "failed": 0
+        },
+        "offline_draft7_metaschema": {
+          "passed": true,
+          "layer": "offline_draft7_metaschema",
+          "schemas_validated": 5158,
+          "operations": 1738,
+          "elapsed_seconds": 3.065,
+          "network_called": false
+        },
+        "rollback_registry": {
+          "layer": "administrative_registry_component",
+          "passed": true,
+          "new_operations": 1143,
+          "provider_called": false,
+          "auth_session_tested": false,
+          "all_changes_rolled_back": true,
+          "all_additions_closed_unverified": true,
+          "original_595_full_rows_unchanged": true
+        },
+        "runtime_stress": {
+          "passed": true,
+          "layer": "local_synthetic_provider",
+          "real_provider_called": false,
+          "auth_session_tested": false,
+          "contracts_validated": 1143,
+          "handler_cases": 10,
+          "provider_fixture_calls": 10,
+          "finish_receipts": 10,
+          "peak_rss_bytes": 194560000,
+          "peak_heap_used_bytes": 85595112,
+          "final_memory": {
+            "rss": 134483968,
+            "heapTotal": 67579904,
+            "heapUsed": 61750680,
+            "external": 1461127
+          },
+          "decoded_cache": {
+            "cached_shards": 2,
+            "cached_plaintext_bytes": 1077183,
+            "pending_shards": 0,
+            "loading_shards": 0,
+            "max_cached_plaintext_bytes": 2097152,
+            "max_loading_shards": 2
+          },
+          "validator_cache": {
+            "entries": 12,
+            "schema_bytes": 60776,
+            "max_entries": 12,
+            "max_schema_bytes": 262144
+          }
+        }
+      },
+      "rollback_transport": {
+        "migration": "provider-expansion-08200-rollback.sql",
+        "test": "provider_scope_expansion_registry_test.sql",
+        "http_status": 201,
+        "all_changes_rolled_back": true,
+        "transport": "sha256_verified_pgcrypto_compressed_literal",
+        "source_body_sha256": "a8aad5a541998f3f3c37ac3ef47b5348cc815d79e6cb48ec4ec91ef0f948c830",
+        "migration_sha256": "96645c301c5a34e541ca3cd335a74741a0a8af4cf9517cbd8f660de127daeea9",
+        "source_bytes": 5075717,
+        "request_bytes": 391291
+      },
+      "migration_source_sha256": "43e3661a24b33302db21d4b85a441ebe235b61efc01e71bc296661802350b5d1",
+      "runtime_graph": {
+        "local_source_files": 49,
+        "literal_local_shards": 35,
+        "local_source_bytes": 1875339,
+        "imports_expansion_plaintext_json": false
+      },
+      "memory_boundary": "Passing fresh-process localhost HTTP sweep uses max-old-space-size=64, no explicit GC; all1143 schemas plus10 synthetic requests/projections. This is not a production Edge attestation. Prior shared-engine and tighter test-driver attempts failed and are retained separately.",
+      "gateway_integration": {
+        "shipped_595_export_unchanged": true,
+        "new_module": "supabase/functions/sandy-provider-operation-api/expansion_gateway.ts",
+        "exports": [
+          "providerExpansionOperations",
+          "expandedProviderExecutionScope"
+        ],
+        "merge_not_yet_deployed": true
+      },
+      "unchanged_files": {
+        "supabase/functions/sandy-provider-operation-api/contracts.json": "ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef",
+        "supabase/functions/sandy-provider-operation-api/catalogue.ts": "03dcdb26866baf024c85db46da3febe2dd6de6e561fb2f2ffd3c6452a2167603",
+        "supabase/functions/sandy-provider-operation-api/gateway_manifest.json": "a16cc84f123c1cc8605c5efa631feb54d45adb78ff276fae49b6bf9390096553",
+        "supabase/functions/sandy-provider-operation-api/gateway.ts": "8478d41d4e0feedb7fbb8f9a46bc9e5fce815a914d443cb5493b7fa4b90e1483"
+      },
+      "files": {
+        "scripts/sandy/build_provider_operations.py": "160f17cb5a00ff05a7e70bb0dbda7d07c75d05fd9a9360962489d06cb6d5ef4a",
+        "scripts/sandy/provider_scope_expansion.py": "692d7e89dac97ad6dab3834a0891087cfb8b25df67bcd55b8519f344f2756cff",
+        "scripts/sandy/provider_scope_expansion_benchmark.ts": "9b0e3acd7c05f54df9a167c6a6814ad259d2c16b2efb5cf99b78887dc3a96361",
+        "scripts/sandy/provider_scope_expansion_registry_test.sql": "8220f1932e2d60cc6b9ba0b2eb564a5754f47828178772e24810f159c7f19681",
+        "scripts/sandy/test_provider_scope_expansion.py": "a91a1d5f1dd5c3153fdce0397e6abe34f62e55e223a89d2ecb725b053dfbdaa9",
+        "docs/sandy-api/provider-wildcard-coverage.json": "60eb37e6434b21067477e7870b921f0ac02628b48d6840857f47b58520cf972a",
+        "supabase/migrations/20261021008200_sandy_provider_constituent_expansion.sql": "43e3661a24b33302db21d4b85a441ebe235b61efc01e71bc296661802350b5d1",
+        "supabase/functions/sandy-provider-operation-api/index.ts": "6818a13a5502dd86fd1b41981e1ef136a761490654ada40ca61bf27b57f8d8c8",
+        "supabase/functions/sandy-provider-operation-api/configured_scopes.ts": "881f592b66b11f7b0edb9ba332fb3a8521a25a2d8fc1b5e02acbf6c95bc1c672",
+        "supabase/functions/sandy-provider-operation-api/README.md": "632f379f37f3034db54c0f40bcb40416a778c8c2604ac6c7473a87d7e3611b7c",
+        "supabase/functions/sandy-provider-operation-api/expansion.ts": "45a9496bb9755da0a213b74d42623d394dceff4d07d03d5edb40432f0b6de740",
+        "supabase/functions/sandy-provider-operation-api/expansion_contracts.json": "aa5e39fd600890c4efd931ba87967b1195e9fba1849bdb045c37b75c13cff85f",
+        "supabase/functions/sandy-provider-operation-api/expansion_gateway.ts": "0b69c0a53dd8335aa95b8f299dd602099db3213f01070e236cd62fe684c9f86a",
+        "supabase/functions/sandy-provider-operation-api/expansion_gateway_manifest.json": "8536d686590184ea443039ca86a7584aef192a3aa7aa4b225bbfa90309cc4445",
+        "supabase/functions/sandy-provider-operation-api/expansion_shard_manifest.json": "81d44fe04ddee37e07848381094424351dbb98a8f201b4bc9c9310f9a9c10cd5",
+        "supabase/functions/sandy-provider-operation-api/expansion_test.ts": "c11d8aa23bf603874cd280a4c1272f9fef91a09dfee44cdba868e30a512ee57b",
+        "supabase/functions/sandy-provider-operation-api/lazy_catalogue.ts": "7c2983f928a97f4f37469f97f75df1c1f5ad52080099dc1320920b5be0ae2538",
+        "supabase/functions/sandy-provider-operation-api/lazy_catalogue_test.ts": "440b5ef84093a1c21e4f1eed4d3427bbe2547fab6da68fee40b159a005c07f4c",
+        "supabase/functions/sandy-provider-operation-api/scope_from_descriptor.ts": "826373709ec8b8f63a91be6185b1a5f560ab69794476ad89b67888676cbeeb4a",
+        "supabase/functions/sandy-provider-operation-api/validator_cache.ts": "c977a9929d10bb5faa01c0e8390c8821d10cbe73a4fcb121344946930a86f25c",
+        "supabase/functions/sandy-provider-operation-api/validator_cache_test.ts": "427b35c34bbef03c2fcd466f770a38316b234bae4939ff5e0d24bf3a84a511ed",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-artifactregistry-00.ts": "1b586498b49224a68545583d774f50112b04be407637cc48d3cd8cf099aaffe0",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-backupdr-00.ts": "ed62e17500d55a99fc5144c774db6dd9bb4dd7f9e7749f2dc5bd570a90936839",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-cloudbilling-00.ts": "d416d0ec1a621d02d93d64e78ca2db1b518c60e62dc833320eb760112eb92f26",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-cloudkms-00.ts": "322b653b671f78b8eef9432ef826214243d24326039a39b68f49c10d177dd6d1",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-cloudresourcemanager-00.ts": "d25fba8584f6803ca426bd4944007142011e770a66a75b43288e9db5f72256e6",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-cloudtasks-00.ts": "c321b467aa0b706f84d89172edddb5346aa50b0fda9f6f4fc56b0997db744fd7",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-00.ts": "d45bf8d9f3903fd52ab07fecd7ea1ed4f4e635cbf0c3b1007b69f2c470767aad",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-01.ts": "3cfbc27cfcfc289adc13f7941a91440195bd30d10144dbd81482ae4c6795c885",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-02.ts": "0bb8b63c40ee061d8d1b43c58c2bd3be7d30b03e1636a26d72b8f444d28047e7",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-03.ts": "02f58b4cf266eeaf54b338e4e373bbae99d9cd6d093723285726824eb5145f38",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-04.ts": "b47717d5a691ef243eee2a2a511e225a77419bb50e7d1ae17b7c4a0fc7eb22dd",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-05.ts": "c3170e4a46f6968c54bf733d6d2f2e3e4cd92e7ab6b7c1aeeffbe12bbd57ffb2",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-06.ts": "22ab6e1ffa85be64fc7552b850fef42b9f2cbc4bcbc59100d84a057f0f4941ba",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-07.ts": "81ff61b8aabdcd8cd3ace8f3dded94b0847fd87d65645270e60ef32adbf12df8",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-08.ts": "a9bb7b0dccf24712cf28f677039e1b6c10ca19732fcc15868cd1ebe349a30eac",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-09.ts": "546cf37dda139a7abee6d399736ff3039ccd0ba62bb425698edeb2eda48026c1",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-10.ts": "001c472e2cb8407224f206e20dfa24ae67361c5f108925c6f6b189297bb01035",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-11.ts": "02ddefc7457fc86d1d0391229b0bf7e0ffae7fc85ced457644f5d8add8baf4e6",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-compute-12.ts": "5d8f9ffa69b81d1d5e23e69bcaf98cd242ac2bc3bee9cb9c78ef75dd21c6598b",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-container-00.ts": "c415686b6404a209255fda067319e5cfe9656d67de24cad0ecd6d5fc00e44995",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-dns-00.ts": "56e1c0e83a179db27c1f4094d6b1f5c8f7b906d617fcf6a5519ce3acb13d2276",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-iam-00.ts": "8084557fd1ef55c3d34fc1d7453170648f759e7937d7a5c063b40fda9b62dddf",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-logging-00.ts": "a438281c53dff96c382405218ef1e5c82e12f88a7b775216c6ce6d10407a883c",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-monitoring-00.ts": "32a4faf60172dd328bc61083dd691a0b22b9f1d939cd88201f090a72a861d563",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-pubsub-00.ts": "4ce6f9d3d6ee6ce370cb1c087bb69c741416a5285b837653e1f67ba5c63a8df1",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-run-00.ts": "2d63a923391d69ffb56698007dcd3e6d7e1c7287791648bb69fc766491541ae0",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-secretmanager-00.ts": "fc78bb967faa37b90f8b6809e381c7e8f942b51b5211922162cffa1d5f22964f",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-securitycenter-00.ts": "d7f5948c8273f9b47fa7f7c801810105aebefcfe1af7744354c706d5f83f0ba8",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/gcp-serviceusage-00.ts": "89ebbfa5345730e099b4e1ea50dc1c48a906c414b3318a8b8c1307f7a9bd7cee",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/github-00.ts": "de9846d8deb886ff3c1e6e87be5be0584801de6244011a623d0dbd330a58cd31",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/github-01.ts": "433785262f77ffd09594fe4da8159112de10e0b116bec2d5cdc99bac9b12e7e4",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/github-02.ts": "69c374ad7f2f067cd8cf49f0010ff715bf8cbdd883571866f9d42e06bb339964",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/github-03.ts": "5e43da3104554dde004dd719b8745fcda13d76734c23988f3b53a0f9ea094e34",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/github-04.ts": "2de403cd298e69c16da4d086f3dd845c296df919c9fe9881b8cd1ca60ee1b9e1",
+        "supabase/functions/sandy-provider-operation-api/expansion_shards/supabase-00.ts": "4fe4f333d4a9f22de916eb9251f3846dc1370ca08c5f22f7317e6fac3562c712"
+      }
+    },
+    "registry": {
+      "write_http": 201,
+      "readback_http": 201,
+      "readback": [
+        {
+          "registry_rows": 2268,
+          "evidence_rows": 1143,
+          "verified_rows": 3
+        }
+      ],
+      "verification_fields_preserved": true
+    }
+  },
+  "fallback_conversation_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "operation": "agent.runtime.conversation.respond",
+        "implementation_state": "internal_backend_deployed_unverified",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "evidence_recorded": true
+      }
+    ],
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:15:02.209418+00:00",
+      "source_commit": "65f331b",
+      "backend_deployed": true,
+      "public_gateway_mapped": false,
+      "runtime_sources": {
+        "sandy-agent-runtime-v2": {
+          "version": 16,
+          "source_readback_sha256": "416d415388cc7ef8a18282a453d27e694969c0b9e597537239263fd5a32826cc"
+        },
+        "sandy-agent-runtime-v1-backup-r50": {
+          "version": 6,
+          "source_readback_sha256": "cedf6be59390a132cbb75dd18ea43f85023b5ea9ad82fbc5623f701dc5d3ed7e"
+        }
+      },
+      "regression": {
+        "deno_passed": 46,
+        "profile_tests": 6,
+        "existing_service_API_tests": 19,
+        "full_adapter_capability_tests": 21,
+        "Deno_candidate_typecheck": "pass",
+        "real_provider_calls": 0,
+        "preserved_source_sections": 16,
+        "exact_archived_dependencies": 2,
+        "Management_PostgreSQL_component_HTTP": 201,
+        "Management_PostgreSQL_component_checks": 19,
+        "all_database_changes_rolled_back": true
+      },
+      "applied_migration": {
+        "version": "20261021010000",
+        "exact_source_sha256": "332598884d029e5d2ae7e8783b98007417640c6eec3f5555c02b84adb9af09c6",
+        "ledger_readback_http": 201
+      },
+      "real_model_calls": 0,
+      "real_deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "scope": "Internal task-bound inference only; no customer principal manufacture, no tool execution, original automation auth retained; unknown paid rounds cannot be redispatched."
+    }
+  },
+  "latest_management_project_access": {
+    "tested_at_utc": "2026-10-21T03:07:39.065177+00:00",
+    "http_status": 200,
+    "project": {
+      "id": "zmqlyygzqoidkcwdysok",
+      "name": "Email AI",
+      "status": "ACTIVE_HEALTHY",
+      "region": "eu-west-1"
+    },
+    "credential_exposed": false,
+    "read_only": true
+  },
+  "latest_source_readbacks": {
+    "sandy-operation-api": {
+      "slug": "sandy-operation-api",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-operation-api/index.ts",
+          "expected_sha256": "e927a049c89a919fee25047d174c194cd2044c0f73fc9733da0a584cbe24db4c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/registry_schema_validator.ts",
+          "expected_sha256": "650b512c69590fac1e7cc9c369bee4a65988ffc5cfaa64ed054a97d349f6cb18",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "expected_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/retry_read_job.ts",
+          "expected_sha256": "327aa3602aa064a6a991bde0c4602acdf1ce539592dd6224cc3c3d4b5e476bc5",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/gateway_credentials.ts",
+          "expected_sha256": "32349fb05054b2f58ea81b87d315abb4adf04bb2760fbeb8be13153bd09adde4",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/access_policy.ts",
+          "expected_sha256": "ba772ab7fe98b64651733be00f24dca5c514fcc754ca943c3582ad688e97cb29",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/governed_execution.ts",
+          "expected_sha256": "71d528b115109b6af38308be4cd2183ad5ab5255c103277c2b3933b8ce3a8397",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/api_job_routes.ts",
+          "expected_sha256": "c472782b1e872f8eb54066eb48671260dd0066a7f6bea432da2334900d6dee08",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/customer_key_principal.ts",
+          "expected_sha256": "e9f94f813bf543d11e42873e88dd0f09a8885b301c40ec13a136fd61555577af",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/policy_operations.ts",
+          "expected_sha256": "15c03bfcc7f2081f51b31ba11eb0025511d9f12ba4065abbbb9258c9c25c29fb",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/mcp_diagnostics.ts",
+          "expected_sha256": "a2405bb92484c1702e52e41b0316453f728dc11a17f7f8288ca81094d0c5b21b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/customer_services.ts",
+          "expected_sha256": "2b1f4877decfc4a56b55dfb9aa8edb16187c0e24a4628fb89c45f0cdef3a05c1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/customer_service_contracts.ts",
+          "expected_sha256": "5bd5c3ed609f5ef00414566924868b65fc8f0004c476ed8bd2c8cdc727477bc7",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/gateway.ts",
+          "expected_sha256": "8478d41d4e0feedb7fbb8f9a46bc9e5fce815a914d443cb5493b7fa4b90e1483",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/gateway_manifest.json",
+          "expected_sha256": "a16cc84f123c1cc8605c5efa631feb54d45adb78ff276fae49b6bf9390096553",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "_shared/sandy_machine_identity.ts",
+          "expected_sha256": "3ddd14f8bbba19131ffbf7d18c8e3e192500ac254e20186b030e55514bc2894e",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/configured_scopes.ts",
+          "expected_sha256": "881f592b66b11f7b0edb9ba332fb3a8521a25a2d8fc1b5e02acbf6c95bc1c672",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/customer_mutations.ts",
+          "expected_sha256": "96e816b344e5f93509b744784110dacb279efccd26e7e4133c176aa41c55be54",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/installed_extensions.ts",
+          "expected_sha256": "5ca06a746d6f3fa93036c6e3e3eecbf1c6853fe0225da0ecd715b14e267bba3d",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/agenda_operations.ts",
+          "expected_sha256": "9547d9d60a07156b3d818b90bd69db7d5751d53cd36fecb5de15a9630a54e45d",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/agenda_contracts.ts",
+          "expected_sha256": "68e56ad345553412b3657f29ad27f6f0bf4fb514137970f048a80bd2ede47a47",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/customer_keys.ts",
+          "expected_sha256": "89ec7c6b5b3d9d3fc3283fc75c7a30d7cb5c72aa8212d7eb63236c5f1291ca1e",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/memory_operations.ts",
+          "expected_sha256": "7867b0e3f6ac3b4b6d9c0009f38d93e9121ad71c8765927d3886faff00c74545",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/memory_contracts.ts",
+          "expected_sha256": "4f5da532c159d6045b47da34418128e0b49548b1f009c562e0ee9f22919c2979",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/contracts.ts",
+          "expected_sha256": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-guest-operation-api/index.ts",
+          "expected_sha256": "2afba567db7c6bf62b96c2d114989d874cfb06b611c9b089747cedc82f7d87ec",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-guest-operation-api/contracts.json",
+          "expected_sha256": "15b9cfa3632a3ddf61da6575f03d2e77bf011d060b78b4675c0a7a18173a426f",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "_shared/sandy_credential_consumer.ts",
+          "expected_sha256": "a50574ee460d03cfa8ba1f8847c587c5b1b4a0ce43462a4557f4fa6854cd8e4f",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/scope.ts",
+          "expected_sha256": "04c44bdbd4a43e6c4f39144a5c6742ec9b2cd9cc32a78d725ab6e34e068dc45d",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/types.ts",
+          "expected_sha256": "8a4fba52a850eec53e9e1b5aec22b17e879d19a745f9291567652e4500cd5cae",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-guest-operation-api/installer.ts",
+          "expected_sha256": "31123cdea1c8bd513f2ec795a7361f1b6e717d1533a6a08738e8db8b4af5a148",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-guest-operation-api/worker_bundle.ts",
+          "expected_sha256": "e516c5dd2de73f6c4db29581b289c2d2102c235ba78356939ab7f7c3d65a70a1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-database-operation-api/gateway.ts",
+          "expected_sha256": "f0d3991582df666417c5add761812c7270d7bb4e2b62aff59baf351e082ad776",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-database-operation-api/contracts.ts",
+          "expected_sha256": "3fa9aa6bb26ac99bc8a27c3d52c2b0dcfb8fc1a2546c6ca8c668fb50cb490cf4",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-database-operation-api/maintenance_contracts.ts",
+          "expected_sha256": "0a1cbf54389e412268d67c45cf85278d352f2d5df7baa91c278642cd7d9a074c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/gateway.ts",
+          "expected_sha256": "a45bfef1814cf7478523c3d692792f93d1c9d755adece4ce23eb249508bbf5d1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/gateway_manifest.json",
+          "expected_sha256": "b98896f1c993880b5114857f8ce22d08d3311720d0f7e2f21547e799960371fd",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/contracts.ts",
+          "expected_sha256": "955e9dd0374baa358e358919746225c10f91bea01e7698d2425022fcbbeaf794",
+          "exact_original_source_match": false,
+          "type_only_dependency_omitted": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/provider_sources.json",
+          "expected_sha256": "4315de9feb2633c1d717d75b8107f0a891696ca99127de51449c3651e71bc4dc",
+          "exact_original_source_match": false,
+          "type_only_dependency_omitted": true
+        },
+        {
+          "path": "sandy-operation-api/provider_lifecycle.ts",
+          "expected_sha256": "f0b63482f071f194c2891ac46a9463f96405d3fc8ef3e38db19c7a16b33335ad",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-supabase-service-api/gateway.ts",
+          "expected_sha256": "1ac35d39ecbf88e105220ba36bddb1260fa8229229fb2f3240add4b53f71d58c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-supabase-service-api/contracts.ts",
+          "expected_sha256": "e7a05d2ce1a8c260cc3b2359ec72035d91591c476368c0367a245b2e54cda11b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-supabase-service-api/contracts.json",
+          "expected_sha256": "2eef1b13a8617b7b19ecb119ad11ca3ba25f29f96f9cc2f5681e297ddfd2e733",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "sandy-supabase-service-api/tenant_consent.ts",
+          "expected_sha256": "fd993f4b4e54ba0911f06c729115ceff035278094f302467993c1972b25bf278",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/gateway.ts",
+          "expected_sha256": "3be14da7bcac4e082e2a4c105c58e5ad3ea6b7e887ae8fcf8edabbdbcb46b24c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/gateway_manifest.json",
+          "expected_sha256": "789f30e1685b299a9e73113ac691c0641cd627c19814a8c70cce09b38ef1b8de",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/scope.ts",
+          "expected_sha256": "63b05fca39a0449b9caeeaf9f5f20cee2569bcf1ffd73d3e7ba8e70c9ea2d508",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/customer_operations.ts",
+          "expected_sha256": "c4871bac7e56258da070deeefd462e93ba9da162daa73898013671daa170b592",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/legacy_operations.ts",
+          "expected_sha256": "c8c261246232957a539b33c85040b914619589639ebe30e360da1e282d75db92",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-orchestration-api/index.ts",
+          "expected_sha256": "fcfcf09aa2f5cd2b76e95efdc1dd70213170dcceda9db395e21ef0c81e10de54",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-orchestration-api/contracts.ts",
+          "expected_sha256": "25ac7d21c761e2217b5ea88ba6381acd6b6e48e849b94bb88c1a3882f6d46729",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-operation-api/engineering_read.ts",
+          "expected_sha256": "1452111e8a19b8bb467f3e8bb4ba8fa7a109fb04f3fb72f1b4494b2f64b6bd3e",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": false,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-operation-api-v12-deno-info.json",
+      "current_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "uploaded_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "current_runtime_metadata": {
+        "version": 12,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-provider-operation-api": {
+      "slug": "sandy-provider-operation-api",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-provider-operation-api/index.ts",
+          "expected_sha256": "6818a13a5502dd86fd1b41981e1ef136a761490654ada40ca61bf27b57f8d8c8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/catalogue.ts",
+          "expected_sha256": "03dcdb26866baf024c85db46da3febe2dd6de6e561fb2f2ffd3c6452a2167603",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion.ts",
+          "expected_sha256": "45a9496bb9755da0a213b74d42623d394dceff4d07d03d5edb40432f0b6de740",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/lazy_catalogue.ts",
+          "expected_sha256": "7c2983f928a97f4f37469f97f75df1c1f5ad52080099dc1320920b5be0ae2538",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-artifactregistry-00.ts",
+          "expected_sha256": "1b586498b49224a68545583d774f50112b04be407637cc48d3cd8cf099aaffe0",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-backupdr-00.ts",
+          "expected_sha256": "ed62e17500d55a99fc5144c774db6dd9bb4dd7f9e7749f2dc5bd570a90936839",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-cloudbilling-00.ts",
+          "expected_sha256": "d416d0ec1a621d02d93d64e78ca2db1b518c60e62dc833320eb760112eb92f26",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-cloudkms-00.ts",
+          "expected_sha256": "322b653b671f78b8eef9432ef826214243d24326039a39b68f49c10d177dd6d1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-cloudresourcemanager-00.ts",
+          "expected_sha256": "d25fba8584f6803ca426bd4944007142011e770a66a75b43288e9db5f72256e6",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-cloudtasks-00.ts",
+          "expected_sha256": "c321b467aa0b706f84d89172edddb5346aa50b0fda9f6f4fc56b0997db744fd7",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-00.ts",
+          "expected_sha256": "d45bf8d9f3903fd52ab07fecd7ea1ed4f4e635cbf0c3b1007b69f2c470767aad",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-01.ts",
+          "expected_sha256": "3cfbc27cfcfc289adc13f7941a91440195bd30d10144dbd81482ae4c6795c885",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-02.ts",
+          "expected_sha256": "0bb8b63c40ee061d8d1b43c58c2bd3be7d30b03e1636a26d72b8f444d28047e7",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-03.ts",
+          "expected_sha256": "02f58b4cf266eeaf54b338e4e373bbae99d9cd6d093723285726824eb5145f38",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-04.ts",
+          "expected_sha256": "b47717d5a691ef243eee2a2a511e225a77419bb50e7d1ae17b7c4a0fc7eb22dd",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-05.ts",
+          "expected_sha256": "c3170e4a46f6968c54bf733d6d2f2e3e4cd92e7ab6b7c1aeeffbe12bbd57ffb2",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-06.ts",
+          "expected_sha256": "22ab6e1ffa85be64fc7552b850fef42b9f2cbc4bcbc59100d84a057f0f4941ba",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-07.ts",
+          "expected_sha256": "81ff61b8aabdcd8cd3ace8f3dded94b0847fd87d65645270e60ef32adbf12df8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-08.ts",
+          "expected_sha256": "a9bb7b0dccf24712cf28f677039e1b6c10ca19732fcc15868cd1ebe349a30eac",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-09.ts",
+          "expected_sha256": "546cf37dda139a7abee6d399736ff3039ccd0ba62bb425698edeb2eda48026c1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-10.ts",
+          "expected_sha256": "001c472e2cb8407224f206e20dfa24ae67361c5f108925c6f6b189297bb01035",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-11.ts",
+          "expected_sha256": "02ddefc7457fc86d1d0391229b0bf7e0ffae7fc85ced457644f5d8add8baf4e6",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-compute-12.ts",
+          "expected_sha256": "5d8f9ffa69b81d1d5e23e69bcaf98cd242ac2bc3bee9cb9c78ef75dd21c6598b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-container-00.ts",
+          "expected_sha256": "c415686b6404a209255fda067319e5cfe9656d67de24cad0ecd6d5fc00e44995",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-dns-00.ts",
+          "expected_sha256": "56e1c0e83a179db27c1f4094d6b1f5c8f7b906d617fcf6a5519ce3acb13d2276",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-iam-00.ts",
+          "expected_sha256": "8084557fd1ef55c3d34fc1d7453170648f759e7937d7a5c063b40fda9b62dddf",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-logging-00.ts",
+          "expected_sha256": "a438281c53dff96c382405218ef1e5c82e12f88a7b775216c6ce6d10407a883c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-monitoring-00.ts",
+          "expected_sha256": "32a4faf60172dd328bc61083dd691a0b22b9f1d939cd88201f090a72a861d563",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-pubsub-00.ts",
+          "expected_sha256": "4ce6f9d3d6ee6ce370cb1c087bb69c741416a5285b837653e1f67ba5c63a8df1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-run-00.ts",
+          "expected_sha256": "2d63a923391d69ffb56698007dcd3e6d7e1c7287791648bb69fc766491541ae0",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-secretmanager-00.ts",
+          "expected_sha256": "fc78bb967faa37b90f8b6809e381c7e8f942b51b5211922162cffa1d5f22964f",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-securitycenter-00.ts",
+          "expected_sha256": "d7f5948c8273f9b47fa7f7c801810105aebefcfe1af7744354c706d5f83f0ba8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/gcp-serviceusage-00.ts",
+          "expected_sha256": "89ebbfa5345730e099b4e1ea50dc1c48a906c414b3318a8b8c1307f7a9bd7cee",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/github-00.ts",
+          "expected_sha256": "de9846d8deb886ff3c1e6e87be5be0584801de6244011a623d0dbd330a58cd31",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/github-01.ts",
+          "expected_sha256": "433785262f77ffd09594fe4da8159112de10e0b116bec2d5cdc99bac9b12e7e4",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/github-02.ts",
+          "expected_sha256": "69c374ad7f2f067cd8cf49f0010ff715bf8cbdd883571866f9d42e06bb339964",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/github-03.ts",
+          "expected_sha256": "5e43da3104554dde004dd719b8745fcda13d76734c23988f3b53a0f9ea094e34",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/github-04.ts",
+          "expected_sha256": "2de403cd298e69c16da4d086f3dd845c296df919c9fe9881b8cd1ca60ee1b9e1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_shards/supabase-00.ts",
+          "expected_sha256": "4fe4f333d4a9f22de916eb9251f3846dc1370ca08c5f22f7317e6fac3562c712",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/scope_from_descriptor.ts",
+          "expected_sha256": "826373709ec8b8f63a91be6185b1a5f560ab69794476ad89b67888676cbeeb4a",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_machine_identity.ts",
+          "expected_sha256": "3ddd14f8bbba19131ffbf7d18c8e3e192500ac254e20186b030e55514bc2894e",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/configured_scopes.ts",
+          "expected_sha256": "881f592b66b11f7b0edb9ba332fb3a8521a25a2d8fc1b5e02acbf6c95bc1c672",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/gateway.ts",
+          "expected_sha256": "8478d41d4e0feedb7fbb8f9a46bc9e5fce815a914d443cb5493b7fa4b90e1483",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/gateway_manifest.json",
+          "expected_sha256": "a16cc84f123c1cc8605c5efa631feb54d45adb78ff276fae49b6bf9390096553",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/validator_cache.ts",
+          "expected_sha256": "c977a9929d10bb5faa01c0e8390c8821d10cbe73a4fcb121344946930a86f25c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "expected_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_credential_consumer.ts",
+          "expected_sha256": "a50574ee460d03cfa8ba1f8847c587c5b1b4a0ce43462a4557f4fa6854cd8e4f",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/scope.ts",
+          "expected_sha256": "04c44bdbd4a43e6c4f39144a5c6742ec9b2cd9cc32a78d725ab6e34e068dc45d",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/types.ts",
+          "expected_sha256": "8a4fba52a850eec53e9e1b5aec22b17e879d19a745f9291567652e4500cd5cae",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-provider-operation-api-v4-deno-info.json",
+      "current_source_commit": "a1dd1d4abbbc0aae884424418d235ef08b935733",
+      "uploaded_source_commit": "a1dd1d4abbbc0aae884424418d235ef08b935733",
+      "current_runtime_metadata": {
+        "version": 4,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-supabase-service-api": {
+      "slug": "sandy-supabase-service-api",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-supabase-service-api/index.ts",
+          "expected_sha256": "adae3d71db6219ceddccdc30e6a5d360ef2459f3e71941b785d00a2a1cad1818",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "expected_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-supabase-service-api/contracts.ts",
+          "expected_sha256": "e7a05d2ce1a8c260cc3b2359ec72035d91591c476368c0367a245b2e54cda11b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-supabase-service-api/contracts.json",
+          "expected_sha256": "2eef1b13a8617b7b19ecb119ad11ca3ba25f29f96f9cc2f5681e297ddfd2e733",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-supabase-service-api-v1-deno-info.json",
+      "current_source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+      "uploaded_source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+      "current_runtime_metadata": {
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-provider-gap-api": {
+      "slug": "sandy-provider-gap-api",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-provider-gap-api/index.ts",
+          "expected_sha256": "343e283a13473f80a54181dc66dd45492a08f0bd36d08424d1dd309fc98c286c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_credential_consumer.ts",
+          "expected_sha256": "a50574ee460d03cfa8ba1f8847c587c5b1b4a0ce43462a4557f4fa6854cd8e4f",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/scope.ts",
+          "expected_sha256": "04c44bdbd4a43e6c4f39144a5c6742ec9b2cd9cc32a78d725ab6e34e068dc45d",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "expected_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_machine_identity.ts",
+          "expected_sha256": "3ddd14f8bbba19131ffbf7d18c8e3e192500ac254e20186b030e55514bc2894e",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-credential-lifecycle-api/types.ts",
+          "expected_sha256": "8a4fba52a850eec53e9e1b5aec22b17e879d19a745f9291567652e4500cd5cae",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/contracts.ts",
+          "expected_sha256": "42ff5d3af78554cd63876c012c3d8fe83df32f7f410b59b611d22caa75eee0a1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/runtime.ts",
+          "expected_sha256": "e12c5c8fe0ad25ab51777a43123fd264bc0ecab5aa634090ce261d610446eef5",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/scope.ts",
+          "expected_sha256": "63b05fca39a0449b9caeeaf9f5f20cee2569bcf1ffd73d3e7ba8e70c9ea2d508",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/providers.ts",
+          "expected_sha256": "9b0e4aa49c053d79cac4745b396a3cbc5dc5c0cd855972af48a397e6d7d37ed1",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-gap-api/graphql.ts",
+          "expected_sha256": "616da26266f22013d6f621137ae98c3f48590835226c7d31e69b7e6ba4cb9098",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-provider-gap-api-v1-deno-info.json",
+      "current_source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+      "uploaded_source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+      "current_runtime_metadata": {
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-agent-runtime-v2": {
+      "slug": "sandy-agent-runtime-v2",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-agent-runtime-v2/index.ts",
+          "expected_sha256": "f82cf263a54c57bf77cb3ed31fa6e2268dcb021e535f8148994d47ba4c374b12",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/connected-gmail.ts",
+          "expected_sha256": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/identity.ts",
+          "expected_sha256": "9213e6417a0f204c16b753a89f68e7fefb2182dc7f5cf0bec6a43ecafe8d7def",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation.ts",
+          "expected_sha256": "6a7d0af020c93c37491234fe4ae893c59873e6e6be053794f6c47b9760e88deb",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_contract.ts",
+          "expected_sha256": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_responses_transport.ts",
+          "expected_sha256": "fa511472a2d1e4dbdb579b47ac39ac6cacbee2410f013217ed5478948c874f9b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/service.ts",
+          "expected_sha256": "77583481b6565041075c34d88d5626e6ed6c847a9b9ffa2badf626c6e4fcfc0b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/contracts.ts",
+          "expected_sha256": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_profiles.ts",
+          "expected_sha256": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-agent-runtime-v2/version-awareness.js",
+          "expected_sha256": "f7c344fb99f2760e2bac13b09f173549f240ba917912cc0f9f4cb6320c6834a2",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-agent-runtime-v2-v16-deno-info.json",
+      "current_source_commit": "f38fb443f8cf9dd62ccdc5df268e9c5705398a00",
+      "uploaded_source_commit": "65f331be138cf5cb07ee7aa584c9dd625cabb620",
+      "current_runtime_metadata": {
+        "version": 16,
+        "status": "ACTIVE",
+        "verify_jwt": false
+      }
+    },
+    "sandy-agent-runtime-v1-backup-r50": {
+      "slug": "sandy-agent-runtime-v1-backup-r50",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-agent-runtime-v1-backup-r50/index.ts",
+          "expected_sha256": "1bceeeb50b2b3b33b798f9c9b20f628a9bd4738ae9c86a93b8fde115601ebc25",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/connected-gmail.ts",
+          "expected_sha256": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/identity.ts",
+          "expected_sha256": "9213e6417a0f204c16b753a89f68e7fefb2182dc7f5cf0bec6a43ecafe8d7def",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation.ts",
+          "expected_sha256": "6a7d0af020c93c37491234fe4ae893c59873e6e6be053794f6c47b9760e88deb",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_contract.ts",
+          "expected_sha256": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_responses_transport.ts",
+          "expected_sha256": "fa511472a2d1e4dbdb579b47ac39ac6cacbee2410f013217ed5478948c874f9b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/service.ts",
+          "expected_sha256": "77583481b6565041075c34d88d5626e6ed6c847a9b9ffa2badf626c6e4fcfc0b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/contracts.ts",
+          "expected_sha256": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_profiles.ts",
+          "expected_sha256": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-agent-runtime-v1-backup-r50-v6-deno-info.json",
+      "current_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "uploaded_source_commit": "65f331be138cf5cb07ee7aa584c9dd625cabb620",
+      "current_runtime_metadata": {
+        "version": 6,
+        "status": "ACTIVE",
+        "verify_jwt": false
+      }
     }
   }
 }

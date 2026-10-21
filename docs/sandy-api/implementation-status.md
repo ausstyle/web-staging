@@ -12,11 +12,11 @@ API/MCP tests remain deferred.
 [Release validation](release-validation-20261021.json) records the confirmed
 commits, runtime source readbacks, regression results and registry evidence.
 [Session evidence](session-release-evidence.json) retains the live snapshot and
-all 1,021 source-attested deployed gateway IDs.
+all 1,104 source-attested deployed gateway IDs.
 
 The release and its validated follow-ups are committed and published on
 `engineering/sandy-api-project-reads-20261020` through
-`b139a759489d87a1479f19776579b86d81160f5b`. Commits after `530007a` are:
+`feada3e22c8439f3b1289ad0d483750a53a5b837`. Commits after `530007a` are:
 
 | Commit | Change |
 | --- | --- |
@@ -29,27 +29,40 @@ The release and its validated follow-ups are committed and published on
 | `02279e4` | Verified gzip catalogue packaging |
 | `da5d587` | Managed credential consumers and exact private resolver cutover |
 | `b139a75` | Unified job REST routing and guarded database maintenance |
+| `6063a41` | Production rollout and verification evidence |
+| `7ce33be` | Explicit customer-key principal and consumed provider-read/guest credential proofs |
+| `1b25fc7` | Managed Supabase services and scoped provider-gap handlers |
+| `6e0354f` | Shared governed fallback runtime actions |
+| `a1dd1d4` | 1,143 additional provider constituent handlers and bounded lazy catalogues |
+| `270fcf5` | New service and gap contract evidence export |
+| `65f331b` | Task-bound fallback conversation inference and durable round receipts |
+| `f38fb44` | Immutable approval proof for sensitive Supabase services |
+| `feada3e` | 1,104-operation gateway with bounded schema validation |
 
 Main remains `350ede13e373fb2108d57748b20e44d57302135d`; **no new merge is
-established**. The latest live metadata snapshot was captured at 02:19 UTC
-(04:19 CEST). Initial and follow-up validation boundaries remain separate.
+established**. The latest live metadata snapshot was captured at 03:13 UTC
+(05:13 CEST). Initial and follow-up validation boundaries remain separate.
 
 | Production function | Confirmed version | Result |
 | --- | --- | --- |
-| `sandy-operation-api` | **9** | ACTIVE; 1,021 mappings and unified durable/legacy job REST routes |
-| `sandy-api-mcp` | **4** | ACTIVE; canonical API-only MCP adapter |
-| `sandy-operations-mcp` | **71** | ACTIVE; replaces legacy direct execution with API routing |
-| `sandy-orchestration-api` | **2** | ACTIVE; durable dispatch and reviewed provider-read DAG support |
-| `sandy-provider-operation-api` | **2** | ACTIVE; provider v1 release plus managed credential-consumer follow-up |
-| `sandy-guest-operation-api` | **1** | ACTIVE; agent enrollment/configuration still required |
-| `sandy-agent-operation-api` | **1** | ACTIVE; shared customer/runtime services |
-| `sandy-database-operation-api` | **2** | ACTIVE; 79 database contracts including guarded maintenance |
-| `sandy-credential-lifecycle-api` | **2** | ACTIVE; custody v1 release plus consumer follow-up |
-| `sandy-credential-probe-api` | **1** | ACTIVE; guarded test-probe implementation |
-| `sandy-controller-api` | **35** | ACTIVE; fixes the missing UUID helper against the exact v34 source |
-| `sandy-agent-runtime-v4` | **12** | ACTIVE; shared eight-operation execution service |
-| `sandy-agent-runtime` | **55** | Existing release router unchanged |
-| `sandy-provider-read-api` | **4** | Existing read handler unchanged |
+| `sandy-operation-api` | **12** | ACTIVE; 1,104 mappings and unified durable/legacy job REST routes |
+| `sandy-api-mcp` | **5** | ACTIVE; canonical API-only MCP adapter |
+| `sandy-operations-mcp` | **72** | ACTIVE; replaces legacy direct execution with API routing |
+| `sandy-orchestration-api` | **3** | ACTIVE; durable dispatch and reviewed provider-read DAG support |
+| `sandy-provider-operation-api` | **4** | ACTIVE; 595 original and 1,143 additional provider handlers; additions closed |
+| `sandy-guest-operation-api` | **3** | ACTIVE; signer configured; approved agent enrollment and installation still required |
+| `sandy-agent-operation-api` | **2** | ACTIVE; shared customer/runtime services |
+| `sandy-database-operation-api` | **3** | ACTIVE; 79 database contracts including guarded maintenance |
+| `sandy-credential-lifecycle-api` | **3** | ACTIVE; custody v1 release plus consumer follow-up |
+| `sandy-credential-probe-api` | **2** | ACTIVE; guarded test-probe implementation |
+| `sandy-controller-api` | **36** | ACTIVE; fixes the missing UUID helper against the exact v34 source |
+| `sandy-agent-runtime-v4` | **13** | ACTIVE; shared eight-operation execution service |
+| `sandy-agent-runtime` | **56** | Existing release router unchanged |
+| `sandy-provider-read-api` | **6** | ACTIVE; consumed, argument-bound admission required |
+| `sandy-supabase-service-api` | **1** | ACTIVE; 46 managed Auth/Storage/Realtime/Vault/compliance operations, closed |
+| `sandy-provider-gap-api` | **1** | ACTIVE; 35 fixed project/repository gap adapters |
+| `sandy-agent-runtime-v2` | **16** | ACTIVE; shared actions and private task-bound conversation inference |
+| `sandy-agent-runtime-v1-backup-r50` | **6** | ACTIVE; shared actions and private task-bound conversation inference |
 
 Existing JWT verification settings were preserved, including the independent
 legacy authentication of the Controller/runtime functions. Downloaded runtime
@@ -65,35 +78,78 @@ readback reconciled the in-flight result before any retry. No live credential
 rotation, production schedule, native TLS maintenance, provider compensation or
 normal authenticated customer test is inferred from these deployments.
 
+The guest signing-secret configuration refreshed every existing function version
+by one without changing source. Readback reconciled all fourteen relevant
+functions before further uploads. The reviewed identity release then deployed as
+API **v11**, provider-read **v6** and guest **v3** from `7ce33be`; the phase label
+“API10” in component manifests names the candidate rather than its final platform
+version. All new runtime source files were read back successfully. The original
+router source remains byte-identical. Migrations `06200` and `07100` matched their
+applied source statements. The key principal keeps its Auth user absent and only
+allows eight scoped passive reads. Provider credentials require a consumed,
+argument-bound admission; guest credential lookup follows consumption.
+
+This follow-up passed 111 composed gateway/MCP tests, 38 reader/guest tests and
+seven verifier regressions, plus 30 key, 29 unchanged-owner and 24 read-proof real
+PostgreSQL rollback checks. Suites overlap and are not summed. The deployed test
+again stopped at proxy reachability; no positive Controller or customer-key
+request was asserted. Identity-release evidence was written/read back for all
+1,021 mapped operations with the historical verification fields preserved.
+
+The next reviewed gateway is now **v12**, from `feada3e`, with **1,104**
+installed mappings. Its 83 new IDs cover 46 managed Supabase service operations,
+two real-user tenant-consent operations and 35 provider-gap adapters. Both new
+backend functions are ACTIVE v1. All 1,104 registry contracts match the exact
+deployed gateway predicate. Registry evidence write/readback returned HTTP 201;
+verification and exposure fields were preserved. Validation passed **155 composed
+tests**, strict typecheck and all 2,208 live input/output schema checks. The local
+full-catalogue memory sweep passed at 96 MiB old-space with 196.4 MiB peak RSS.
+Oversized synthetic unique-schema churn still fails at 128 MiB; this is an explicit
+limit, not a production load guarantee.
+
+Provider **v4** from `a1dd1d4` adds **1,143** separately reviewed handlers to the
+original 595. All 49 runtime files match source; migration `08200` matched its
+ledger. Validation passed 86 composed Deno tests, 14 Python tests, 5,158 offline
+schema checks and a fully rolled-back database check preserving every original
+595 row. The new handlers are closed/unverified and **not yet gateway-mapped** in
+v12. Their central evidence is labelled backend deployed / gateway pending.
+
+Fallback runtime **v2 v16** and **backup v6**, from `65f331b`, share both the eight
+application actions and task-bound conversation inference. Forty-six regressions
+and 19 real PostgreSQL rollback assertions passed; all runtime source files were
+read back. Migration `10000` creates private one-claim-per-round receipts. Nullable
+customer identity never becomes a tenant or Auth principal; no paid model request
+was made by validation. The conversation operation remains internal and closed.
+Migration `07010` separately hardens immutable owner-approval proofs, with six
+real PostgreSQL rollback checks and exact applied-source readback.
+
 ## Requirements and operation status
 
 [The committed original PDF](Sandy_Autonomous_Control_API_Specification.pdf) and
 [161-item scope](api-scope-161.md) remain the acceptance sources.
 [scope-reconciliation.json](scope-reconciliation.json) retains every requirement.
 
-- The deployed v9 gateway has **1,021 installed IDs**, including closed mutations,
+- The deployed v12 gateway has **1,104 installed IDs**, including closed mutations,
   prerequisite-blocked handlers and explicitly unsupported transport contracts.
   An installed mapping is not proof of successful execution.
-- The release contains **956 additional distinct typed contract records** beyond
-  the earlier 64 mappings: 595 provider, 79 database, 66 legacy application,
-  57 customer services, 38 workspace/Composio, 25 Agenda, 21 memory, 21 guest,
-  14 credential custody, 10 atomic customer mutations, 8 agent, 8 orchestration,
-  6 policy, 4 lifecycle, 3 customer keys and 1 MCP diagnostic. The remaining
-  mapping is the strict SQL-defined `deployment.jobs.request` contract.
-- These contracts touch **140 of 161 requirements**, each partially. Broad
-  wildcard members, cross-application adoption and functional acceptance gates
-  remain outstanding. **Completed requirements: 0/161.**
-- The live registry has **1,042 rows**. At the snapshot, 427 had API exposure and
-  412 had AI exposure metadata. These flags do not establish executability or
-  override authorization, verification or provider prerequisites.
-- Registry evidence was written and read back for **1,021 gateway operations**
-  (Management write/readback HTTP 201), preserving prior evidence and verification
-  fields. Deployment, component-test and local-provider evidence are labelled
-  separately.
-- Exactly **three historical `verified=true` flags** remain:
-  `video.status`, `video.install.preflight`, `video.execution.preflight`.
-  No new operation has been declared fully verified through the deployed
-  authenticated session path. Historical flags are not a fresh attestation.
+- **1,039 distinct typed records** support the newer installed mappings, beyond
+  the earlier 64 mappings and the SQL-defined `deployment.jobs.request` mapping.
+  A further **1,143 typed provider contracts** have deployed backend handlers and
+  pending gateway registration: **2,182** typed source records in this snapshot.
+  The internal conversation operation is tracked separately.
+- Typed source records touch **154 of 161 requirements**; including prior gateway
+  contracts, **155 of 161** have some mapped source. All remain partial under the
+  original acceptance gates. **Certified complete: 0/161.**
+- The live registry has **2,269 rows**, with 437 API and 422 AI exposure flags.
+  These flags do not establish executability or override authorization,
+  verification or provider prerequisites.
+- Current v12 evidence covers **1,104 gateway operations**. Separate backend
+  evidence covers the 1,143 pending provider additions. Deployment, component and
+  local-provider evidence are labelled independently.
+- Exactly **three historical `verified=true` flags** remain: `video.status`,
+  `video.install.preflight`, `video.execution.preflight`. No new operation has a
+  successful deployed authenticated-session test. Historical flags are not a
+  fresh end-to-end attestation.
 
 The official-schema inventory still contains 3,793 review candidates separately
 from callable contracts. Cloud Quotas has six deployed typed handler contracts
@@ -102,8 +158,8 @@ checks remain distinct dependencies.
 
 ## Routing and authorization
 
-The production Edge MCP servers v4/v71 use Sandy API for discovery, schemas and
-execution. The v71 adapter preserves its 16 legacy aliases and sends canonical
+The production Edge MCP servers v5/v72 use Sandy API for discovery, schemas and
+execution. The v72 adapter preserves its 16 legacy aliases and sends canonical
 execution with `channel:"mcp"`; it has no direct provider fallback. The Node
 Engineering MCP source preserves its five aliases and passes 13 tests, but its
 Cloud Run deployment has not been attested. Thus **universal Sandy MCP → Sandy
@@ -111,9 +167,8 @@ API routing is not yet operational across every production transport**.
 
 The shared active v4 runtime and the public agent API now call the same extracted
 application service for the eight reviewed actions. The exact release router,
-feature flags and existing worker/QA authentication are preserved. Other v4
-conversation/model branches, older runtime fallbacks, UI clients and additional
-workers still need migration. The [routing audit](universal-routing-source-audit.md)
+feature flags and existing worker/QA authentication are preserved. The fallback conversation paths are also shared. The active v4 conversation
+path, other runtime branches, UI clients and additional workers still need migration. The [routing audit](universal-routing-source-audit.md)
 records those source-based gaps.
 
 Normal user sessions, scoped API keys, portal grants, Agenda grants, Controller
@@ -162,7 +217,7 @@ working tree:
   central registry. It is a metadata/installed-contract check, not an Auth or
   provider invocation.
 
-The three historical video flags are the only fully verified registry entries.
+The three historical video flags remain the only registry entries marked verified.
 The new release has source/deployment and component evidence, plus 14 independently
 observed provider reads; its full authenticated end-to-end verification is partial.
 
@@ -196,12 +251,13 @@ observed provider reads; its full authenticated end-to-end verification is parti
    configuration dependencies remain separate from implemented handlers.
 
 Job REST routing, guarded maintenance and credential consumers are now deployed.
-Independent work continues on Auth/Storage, remaining customer/provider families
-and broader shared-service adoption.
+Managed Auth/Storage and provider-gap backends are deployed and gateway-mapped.
+Independent work continues on full tenant lifecycle, product services, remaining
+provider constituents and broader shared-service adoption.
 Those changes are reported separately until committed release validation,
 guarded deployment, source readback and registry evidence are complete. Broad
 wildcard completion, all application routing, full pagination and verified
-compensation are not inferred from the 1,021 mappings.
+compensation are not inferred from the 1,104 mappings.
 
 ## Reproduction
 
