@@ -648,11 +648,14 @@ export function createProviderOperationHandler(
     }
     const input_sha256 = await argumentDigest(args),
       scope_sha256 = await argumentDigest(scope);
-    const providerBody: JsonObject = {
-      ...(object(args.body) ? args.body : {}),
-    };
+    // Bulk provider endpoints use JSON arrays. Preserve the validated body shape
+    // instead of silently replacing non-object values with an empty object.
+    const providerBody: unknown = args.body === undefined
+      ? {}
+      : structuredClone(args.body);
     try {
       for (const [key, value] of Object.entries((op as any).fixed_body ?? {})) {
+        if (!object(providerBody)) throw Error("provider_fixed_body_shape_conflict");
         providerBody[key] = typeof value === "string"
           ? substituteBinding(value, deps.verifiedBindings)
           : value;

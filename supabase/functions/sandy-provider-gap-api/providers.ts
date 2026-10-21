@@ -120,17 +120,19 @@ export async function executeSupabase(
       if (row.source !== source) {
         fail("provider_log_source_scope_mismatch", 502);
       }
-      const timestamp = typeof row.timestamp === "number"
-        ? new Date(row.timestamp > 1e14 ? row.timestamp / 1000 : row.timestamp)
-          .toISOString()
-        : text(row.timestamp, 100);
-      const t = Date.parse(timestamp);
+      // The Management logs endpoint returns UTC ISO strings without a zone.
+      // Return normalized RFC3339 timestamps required by the public contract.
+      const rawTimestamp = typeof row.timestamp === "string" ? text(row.timestamp, 100) : null;
+      const t = typeof row.timestamp === "number"
+        ? row.timestamp > 1e14 ? row.timestamp / 1000 : row.timestamp
+        : Date.parse(rawTimestamp && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?$/.test(rawTimestamp)
+          ? rawTimestamp + "Z" : rawTimestamp ?? "");
       if (!Number.isFinite(t) || t < start - 60000 || t > end + 60000) {
         fail("provider_log_time_scope_mismatch", 502);
       }
       return {
         id: nullableText(row.id),
-        timestamp,
+        timestamp: new Date(t).toISOString(),
         source,
         message: redact(text(row.event_message, 1048576), 2048),
       };

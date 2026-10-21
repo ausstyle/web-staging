@@ -887,3 +887,13 @@ Deno.test("redaction covers quoted JSON credentials and nondelegable metadata st
   assert.equal(h.grants.length, 0);
   assert.equal(h.seen.length, 0);
 });
+Deno.test("real Management UTC log timestamps without zone normalize to the public RFC3339 contract", async () => {
+  for (const timestamp of ["2026-10-20T23:59:30.123456", "2026-10-20T23:59:30.123Z", 1792540770123456]) {
+    const h = harness({}, () => json({ result: [{ id: "fixture-log", timestamp, source: "edge_logs", event_message: "sandy-fixture" }] }));
+    const r = await h.handler(requestFor("supabase.logs.query", argsFor("logs")));
+    assert.equal(r.status, 200);
+    const v = await r.json();
+    assert.equal(v.result.entries[0].timestamp, "2026-10-20T23:59:30.123Z");
+    assert.equal(h.finishes[0].outcome, "succeeded");
+  }
+});

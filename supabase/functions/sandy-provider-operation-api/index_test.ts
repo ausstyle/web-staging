@@ -683,3 +683,21 @@ Deno.test("compact gateway fingerprints match the executable full schemas", asyn
     );
   }
 });
+
+Deno.test("bulk secrets preserve the exact approved JSON array and accept the real empty201 response", async () => {
+  const body = [{ name: "SANDY_ENGINEERING_FIXTURE", value: "fixture-value-not-a-credential" }];
+  const before = await argumentDigest({ body });
+  let observed: unknown;
+  const h = harness({ fetch: ((_url, init) => {
+    observed = JSON.parse(String(init?.body));
+    return Promise.resolve(new Response(null, { status: 201 }));
+  }) as typeof fetch });
+  const response = await h.call("supabase.functions.secrets.set", { body });
+  assertEquals(response.status, 200);
+  assertEquals(observed, body);
+  assertEquals(await argumentDigest({ body }), before);
+  assertEquals(h.consumes(), 1);
+  assertEquals(h.finishes[0].outcome, "accepted");
+  const result = await response.text();
+  assertEquals(result.includes("fixture-value-not-a-credential"), false);
+});
