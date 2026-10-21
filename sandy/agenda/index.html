@@ -632,6 +632,14 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .timelineTaskCell .timelineCompleteTask:checked{background:#397d58;border-color:#397d58}
 .timelineTaskCell .timelineCompleteTask:checked:after{content:"✓";position:absolute;left:2px;top:-4px;color:#fff;font-size:14px;font-weight:bold}
 .timelineTaskCell .timelineCompleteTask:focus-visible{outline:2px solid #3a8c58;outline-offset:2px}
+</style><style>
+/* Explicit active-row state, including keyboard and pointer drag. */
+.timelineRow:not(.timelineHandlesActive):not(.timelineTouchActive) .ganttBar:not(.timelineDragging) .sandyGanttStart,
+.timelineRow:not(.timelineHandlesActive):not(.timelineTouchActive) .ganttBar:not(.timelineDragging) .sandyGanttResize,
+.timelineRow:not(.timelineHandlesActive):not(.timelineTouchActive) .ganttBar:not(.timelineDragging) .timelineLinkHandle{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+.timelineRow.timelineHandlesActive .ganttBar .sandyGanttStart,
+.timelineRow.timelineHandlesActive .ganttBar .sandyGanttResize,
+.timelineRow.timelineHandlesActive .ganttBar .timelineLinkHandle{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -2200,6 +2208,11 @@ function renderTimeline(){
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");applyGrid(line);
   line.dataset.timelineId=t.id;
+  // Explicit row-hover state avoids browser-dependent :hover behaviour under the SVG connector layer.
+  line.addEventListener("pointerenter",e=>{if(e.pointerType!=="touch")line.classList.add("timelineHandlesActive")});
+  line.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"&&!line.querySelector(".timelineDragging"))line.classList.remove("timelineHandlesActive")});
+  line.addEventListener("focusin",()=>line.classList.add("timelineHandlesActive"));
+  line.addEventListener("focusout",()=>{if(!line.contains(document.activeElement)&&!line.querySelector(".timelineDragging"))line.classList.remove("timelineHandlesActive")});
   line.addEventListener("pointerdown",e=>{
     if(e.pointerType!=="touch")return;
     box.querySelectorAll(".timelineTouchActive").forEach(n=>{if(n!==line)n.classList.remove("timelineTouchActive")});
@@ -2260,8 +2273,8 @@ function renderTimeline(){
     const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
     const dragNote=el("div","timelineDragNote","");
-    dragNote.style.cssText="display:block!important;position:fixed!important;bottom:auto!important;left:0;top:0;transform:translateX(-50%);z-index:2147483000!important;background:#253c2d;color:#fff;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 5px 17px #0003";
-    const hideDragNote=()=>{dragNote.remove();bar.classList.remove("timelineDragging")};
+    dragNote.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;bottom:auto!important;left:0;top:0;transform:translateX(-50%);z-index:2147483000!important;background:#253c2d;color:#fff;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 5px 17px #0003";
+    const hideDragNote=()=>{dragNote.remove();bar.classList.remove("timelineDragging");line.classList.remove("timelineHandlesActive")};
     const placeDragNote=(x,y)=>{
       const half=Math.min(180,Math.max(90,dragNote.getBoundingClientRect().width/2));
       dragNote.style.left=Math.max(half+8,Math.min(innerWidth-half-8,x))+"px";
@@ -2298,8 +2311,10 @@ function renderTimeline(){
     bar.addEventListener("pointerdown",e=>{
       if(t.shared||e.button!==0)return;
       gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
-      bar.classList.add("timelineDragging");
+      bar.classList.add("timelineDragging");line.classList.add("timelineHandlesActive");
       document.body.append(dragNote);
+      dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(from).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(to).toLocaleString():new Date(from).toLocaleString()+" → "+new Date(to).toLocaleString();
+      placeDragNote(e.clientX,e.clientY);
       dragPosition(e);
       document.addEventListener("pointermove",moveDrag,true);
       document.addEventListener("pointerup",finishDrag,true);
