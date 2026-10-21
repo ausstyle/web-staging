@@ -19,7 +19,7 @@ export function providerCalls(
     request: async (url, method = "GET", body, additionallyAccepted = []) => {
       if (
         url.protocol !== "https:" ||
-        !["compute.googleapis.com", "oslogin.googleapis.com"].includes(
+        !["compute.googleapis.com", "oslogin.googleapis.com", "iap.googleapis.com"].includes(
           url.hostname,
         ) || url.username || url.password || url.port || url.hash
       ) throw new ProtocolRefusal("vm_provider_scope_mismatch");

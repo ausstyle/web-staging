@@ -35,7 +35,7 @@ Deno.serve(async(req)=>{
   const impersonate=await fetch("https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/"+SA+":generateAccessToken",{method:"POST",headers:{"authorization":"Bearer "+st.access_token,"content-type":"application/json"},body:JSON.stringify({scope:["https://www.googleapis.com/auth/cloud-platform"],lifetime:"1800s"}),signal:AbortSignal.timeout(22000)});
   const i=await impersonate.json();if(!impersonate.ok||!i.accessToken)throw Error("impersonation_"+impersonate.status+":"+String(i.error?.message??"").slice(0,160));
   const auth={"authorization":"Bearer "+i.accessToken,"content-type":"application/json"};
-  if(action==="computer_access_preflight")return reply(await inspectComputerAccess(i.accessToken));
+  if(action==="computer_access_preflight")return reply(await inspectComputerAccess(i.accessToken,fetch,undefined,input.permissions_only===true));
   if(action==="video_network_prepare")return await prepareVideoNetwork({db,token:i.accessToken,fetch},input);
   if(action==="video_ssh_preflight"||action==="video_ssh_iam_grant"){
     const vmUrl="https://compute.googleapis.com/compute/v1/projects/"+P+"/zones/"+Z+"/instances/sandy-video";
