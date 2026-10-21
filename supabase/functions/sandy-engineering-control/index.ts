@@ -1,3 +1,4 @@
+import { isCanonicalEngineeringOperation, prepareCanonicalEngineeringRequest, sameCanonicalRequest } from "./canonical_request.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const url=Deno.env.get("SUPABASE_URL")!,key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -26,7 +27,7 @@ Deno.serve(async req=>{
    if(changes.error||rollbackRequests.error||pendingJobs.error)return respond({error:"engineering_preflight_database_unavailable"},503);
    return respond({ok:true,engineering_control_version:10,change_registration_required:true,write_requires_engineering_change:true,
      github_smoke_executor_implemented:true,github_credential_present:Boolean(Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")),
-     supabase_write_executor_implemented:false,rollback_request_implemented:true,rollback_executor_implemented:false,
+     supabase_write_executor_implemented:false,supabase_deployment_dispatch_implemented:true,supabase_deployment_dispatch_scope:"three allowlisted functions, approved job, protected GitHub workflow; unverified until deployment receipt",rollback_request_implemented:true,rollback_executor_implemented:false,
      registered_change_count:changes.count,rollback_request_count:rollbackRequests.count,pending_engineering_jobs:pendingJobs.count});
   }
   if(action==="register"){
@@ -123,14 +124,36 @@ Deno.serve(async req=>{
    if(!["approved","implementing"].includes(change.status))return respond({error:"Approve change before requesting implementation"},409);
    const provider=string(b.provider,30),operation=string(b.operation,80),target=string(b.target,500),idempotency=string(b.idempotency_key,160);
    if(!["github","supabase"].includes(provider)||!operation||!target||!idempotency)return respond({error:"provider (github/supabase), operation, target and idempotency_key required"},400);
+   if(isCanonicalEngineeringOperation(operation)){
+    if(change.status!=="approved")return respond({error:"Approved change required for exact approval preparation"},409);
+    if(admin.role!=="owner")return respond({error:"Owner approval preparation required"},403);
+    const record=await db.from("sandy_operation_registry").select("operation,handler,is_mutation,input_schema,error_contract").eq("operation",operation).maybeSingle();
+    if(record.error)return respond({error:"executor_registry_unavailable"},503);
+    let prepared;
+    try{prepared=await prepareCanonicalEngineeringRequest(provider,operation,target,b.payload,record.data,change.scope)}
+    catch(e){return respond({error:e instanceof Error?e.message:"invalid_canonical_request"},400)}
+    const payload={...prepared.payload,engineering_change_id:id,expected_behavior:change.expected_behavior};
+    const prior=await db.from("sandy_deployment_jobs").select("*").eq("idempotency_key",idempotency).maybeSingle();
+    if(prior.error)return respond({error:"implementation_request_lookup_unavailable"},503);
+    if(prior.data){if(!sameCanonicalRequest(prior.data,user.id,id,provider,operation,target,payload))return respond({error:"Idempotency key conflicts with approved execution material"},409);return respond({job:prior.data,reused:true,execution:"not_started"})}
+    const saved=await db.from("sandy_deployment_jobs").insert({requested_by:user.id,provider,operation,target,payload,idempotency_key:idempotency,status:"pending_approval",engineering_change_id:id}).select("*").single();
+    if(saved.error)return respond({error:"implementation_request_save_failed"},503);
+    const audit=await db.from("sandy_engineering_change_events").insert({change_id:id,event_type:"implementation_requested",actor:user.id,detail:{job_id:saved.data.id,provider,operation,target,canonical:true,execution:"not_started"}});
+    if(audit.error)return respond({error:"Implementation request saved but audit unavailable",job_id:saved.data.id},503);
+    return respond({job:saved.data,execution:"not_started",requires_approval:true,approval_mode:"pending"},201);
+   }
    if(provider==="github"&&["update_file","push_files"].includes(operation)){
      const approvedTargets=arrays(change.scope).filter((x:unknown)=>typeof x==="string"&&x.startsWith("github:")).map((x:string)=>x.slice(7));
      const exact=approvedTargets.includes(target);
      if(!exact)return respond({error:"GitHub target must match an explicitly approved engineering scope",requested_target:target,allowed_targets:approvedTargets,format:"owner/repo:path"},403);
    }
-   // Fail closed before approval: only implemented, scoped executors may enter the deployment queue.
-   const executable=provider==="github"&&operation==="create_file"&&target.startsWith("ausstyle/web-staging:engineering-smoke/")&&target.endsWith(".txt")&&!target.includes("..");
-   if(!executable)return respond({error:"executor_not_registered",provider,operation,target,execution_available:false,remediation:"Implement and verify a scoped executor before requesting deployment approval"},422);
+   // Executor availability is read from the canonical registry, not a hard-coded target allowlist.
+   // A registered name alone is insufficient: execution must be verified and explicitly exposed.
+   const registryName=provider==="supabase"&&operation==="deploy_function"?"supabase.deploy_edge_function":provider==="supabase"&&operation==="deploy_calendar_sync"?"supabase.deploy_calendar_sync":provider==="github"?"github."+operation:"";
+   const {data:executorRecord,error:executorError}=registryName?await db.from("sandy_operation_registry").select("operation,handler,verified,api_exposed,implementation_state").eq("operation",registryName).maybeSingle():{data:null,error:null};
+   if(executorError)return respond({error:"executor_registry_unavailable"},503);
+   const executable=Boolean(executorRecord?.verified&&executorRecord?.api_exposed&&executorRecord?.handler&&executorRecord.handler!=="unassigned"&&executorRecord.implementation_state!=="executor_missing");
+   if(!executable)return respond({error:"executor_not_registered_or_verified",provider,operation,target,execution_available:false,remediation:"Deploy and verify a scoped executor, then update the canonical registry"},422);
    const proposal=typeof b.payload==="object"&&b.payload&&!Array.isArray(b.payload)?b.payload:{};
    // This records a guarded deployment request; execution is deliberately external and requires approval.
    const {data:existing}=await db.from("sandy_deployment_jobs").select("*").eq("idempotency_key",idempotency).maybeSingle();
@@ -180,8 +203,75 @@ Deno.serve(async req=>{
     await db.from("sandy_engineering_change_events").insert({change_id:id,actor:user.id,event_type:"job_approved",detail:{job_id:job.id}});
     return respond({job:data,execution:"not_started"});
    }
-   if(job.status!=="approved")return respond({error:"Job must first be explicitly approved"},409);
    if(admin.role!=="owner")return respond({error:"Owner execution required"},403);
+   if(job.status==="pending_approval"&&change.status==="approved"&&job.provider==="supabase"&&job.operation==="deploy_calendar_sync"&&job.target==="zmqlyygzqoidkcwdysok"&&Array.isArray(change.scope)&&change.scope.includes("sandy-calendar-api")){
+    const approval=await db.from("sandy_deployment_jobs").update({status:"approved",approved_by:user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","pending_approval").select("id").maybeSingle();
+    if(approval.error||!approval.data)return respond({error:"automatic_approval_conflict"},409);
+    await db.from("sandy_engineering_change_events").insert({change_id:id,actor:user.id,event_type:"owner_scoped_auto_approval",detail:{job_id:job.id,operation:job.operation,target:job.target}});
+    job.status="approved";
+   }
+   if(job.status==="pending_approval"&&change.status==="approved"&&admin.role==="owner"&&["github","supabase"].includes(job.provider)){
+    const scoped=job.provider==="supabase"?(change.scope||[]).includes(job.target):(change.scope||[]).includes("github:"+job.target);
+    const allowed=job.provider==="supabase"?["deploy_function","deploy_calendar_sync"].includes(job.operation):["update_file","push_files","create_file"].includes(job.operation);
+    if(scoped&&allowed){
+     const auto=await db.from("sandy_deployment_jobs").update({status:"approved",approved_by:user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","pending_approval").select("id").maybeSingle();
+     if(auto.error||!auto.data)return respond({error:"delegated_approval_conflict"},409);
+     await db.from("sandy_engineering_change_events").insert({change_id:id,actor:user.id,event_type:"owner_development_auto_approval",detail:{job_id:job.id,provider:job.provider,operation:job.operation}});
+     job.status="approved";
+    }
+   }
+   if(job.status!=="approved")return respond({error:"Job is not approved or eligible for scoped owner auto-approval",status:job.status},409);
+   if(job.provider==="supabase"&&job.operation==="deploy_function"){
+    const fn=String(job.payload?.function_name||"");
+    if(job.target!=="zmqlyygzqoidkcwdysok"||!["email-ai-refresh-profile","sandy-memory-centre","sandy-task-api"].includes(fn))return respond({error:"Supabase function not in versioned deployment allowlist"},403);
+    if(!Array.isArray(change.scope)||!change.scope.includes(job.target))return respond({error:"Approved engineering scope excludes Supabase project"},403);
+    if(!Array.isArray(change.acceptance_criteria)||!change.acceptance_criteria.length)return respond({error:"Acceptance criteria required"},409);
+    const before=String(job.payload?.before_ref||"");
+    const rollback=String(job.payload?.rollback_plan||"");
+    if(before.length<7||rollback.length<25)return respond({error:"Source reference and concrete rollback plan required"},409);
+    const {data:tests,error:testError}=await db.from("sandy_engineering_tests").select("outcome,evidence").eq("change_id",id);
+    if(testError||!tests?.some((t:any)=>t.outcome==="passed"&&t.evidence&&Object.keys(t.evidence).length))return respond({error:"Passing engineering test evidence required"},409);
+    const githubToken=Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||"";
+    if(!githubToken)return respond({error:"GitHub dispatch credential missing; job remains approved"},503);
+    const headers={"Authorization":"Bearer "+githubToken,"Accept":"application/vnd.github+json","X-GitHub-Api-Version":"2022-11-28","Content-Type":"application/json"};
+    const sourceCheck=await fetch("https://api.github.com/repos/ausstyle/web-staging/contents/supabase/functions/"+fn+"/index.ts?ref=main",{headers,signal:AbortSignal.timeout(12000)});
+    if(!sourceCheck.ok)return respond({error:"Version-controlled function source missing",http_status:sourceCheck.status},424);
+    const claim=await db.from("sandy_deployment_jobs").update({status:"running",started_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","approved").select("id").maybeSingle();
+    if(claim.error||!claim.data)return respond({error:"Deployment job already claimed"},409);
+    const dispatched=await fetch("https://api.github.com/repos/ausstyle/web-staging/actions/workflows/sandy-qa-controlled-deploy.yml/dispatches",{method:"POST",headers,body:JSON.stringify({ref:"main",inputs:{function_name:fn,dry_run:"false"}}),signal:AbortSignal.timeout(16000)}).catch(()=>null);
+    if(!dispatched?.ok){
+      await db.from("sandy_deployment_jobs").update({status:"failed",error:"supabase_workflow_dispatch_failed",finished_at:new Date().toISOString()}).eq("id",job.id).eq("status","running");
+      return respond({error:"Supabase deployment dispatch failed",http_status:dispatched?.status||null},502);
+    }
+    await db.from("sandy_deployment_jobs").update({result:{workflow:"sandy-qa-controlled-deploy.yml",function_name:fn,dispatch_accepted:true,verified:false,source_ref:before},updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","running");
+    await db.from("sandy_engineering_change_events").insert({change_id:id,actor:user.id,event_type:"supabase_workflow_dispatched",detail:{job_id:job.id,function_name:fn,verification_required:true}});
+    return respond({ok:true,execution:"dispatched_unverified",job_id:job.id,workflow:"sandy-qa-controlled-deploy.yml",verification_required:true},202);
+   }
+   if(job.provider==="supabase"&&job.operation==="deploy_calendar_sync"){
+    const project="zmqlyygzqoidkcwdysok";
+    if(job.target!==project)return respond({error:"supabase_target_not_allowed"},403);
+    const token=Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN")||"";
+    if(!token)return respond({error:"supabase_management_credential_missing",required:"SANDY_SUPABASE_MANAGEMENT_TOKEN",job_id:job.id},503);
+    const fn=String(job.payload?.function_name||"sandy-calendar-api");
+    if(fn!=="sandy-calendar-api")return respond({error:"function_not_allowlisted"},403);
+    const source=await fetch("https://api.github.com/repos/ausstyle/web-staging/contents/supabase/functions/"+fn+"/index.ts?ref=main",{headers:{"Accept":"application/vnd.github+json","User-Agent":"sandy-engineering-control"},signal:AbortSignal.timeout(12000)}).catch(()=>null);
+    if(!source?.ok)return respond({error:"versioned_source_missing",http_status:source?.status||null},424);
+    const file=await source.json().catch(()=>({}));
+    if(file.encoding!=="base64"||typeof file.content!=="string"||typeof file.sha!=="string")return respond({error:"invalid_source_receipt"},424);
+    const content=atob(file.content.replace(/\\s/g,""));
+    if(!content.includes("Deno.serve")||content.length>250000)return respond({error:"source_validation_failed"},422);
+    const claimed=await db.from("sandy_deployment_jobs").update({status:"running",started_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","approved").select("id").maybeSingle();
+    if(claimed.error||!claimed.data)return respond({error:"job_already_claimed"},409);
+    const endpoint="https://api.supabase.com/v1/projects/"+project+"/functions/deploy?slug="+encodeURIComponent(fn);
+    const deployment=await fetch(endpoint,{method:"POST",headers:{"Authorization":"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify({slug:fn,name:fn,entrypoint_path:"index.ts",verify_jwt:false,files:[{name:"index.ts",content}]}),signal:AbortSignal.timeout(30000)}).catch(()=>null);
+    const detail=deployment?await deployment.json().catch(()=>({})):null;
+    if(!deployment?.ok){
+      await db.from("sandy_deployment_jobs").update({status:"approved",started_at:null,error:"supabase_management_deploy_failed:"+String(deployment?.status||"network"),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","running");
+      return respond({error:"supabase_management_deploy_failed",http_status:deployment?.status||null,provider_message:String(detail?.message||detail?.error||"").slice(0,300),job_id:job.id,retryable:true},502);
+    }
+    await db.from("sandy_deployment_jobs").update({result:{provider:"supabase_management_api",function_name:fn,source_sha:file.sha,deploy_accepted:true,verified:false,provider_receipt:detail?.version||detail?.id||null},updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","running");
+    return respond({execution:"deployed_unverified",job_id:job.id,function_name:fn,verification_required:true},202);
+   }
    if(job.provider!=="github"||job.operation!=="create_file")return respond({error:"No authorised executor for this operation"},422);
    const target=String(job.target||"");
    const match=target.match(/^ausstyle\/web-staging:(engineering-smoke\/[a-zA-Z0-9_-]+\.txt)$/);
