@@ -1,4 +1,5 @@
 /** Tenant-consented server-internal administration. Service credentials never become a customer session. */
+import { approvedOwnerContract } from "../_shared/sandy_approval_contract.ts";
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import {
@@ -816,10 +817,11 @@ export function runtimeHandler(req: Request) {
         };
       }
       const row = registry.data;
-      return owner.data && row?.handler === serviceHandler &&
-          row.api_exposed === true && row.verified === true &&
-          row.is_mutation === op.is_mutation &&
-          row.error_contract?.contract_sha256 === op.contract_sha256
+      return owner.data && approvedOwnerContract(row, {
+          handler: serviceHandler,
+          is_mutation: op.is_mutation,
+          contract_sha256: op.contract_sha256,
+        })
         ? { allowed: true }
         : {
           allowed: false,

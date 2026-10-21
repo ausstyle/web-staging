@@ -2,24 +2,15 @@
 -- claims and admission records are transaction fixtures, not Auth sessions,
 -- approved production changes, or provider attestations. Always rolls back.
 BEGIN;
-CREATE FUNCTION pg_temp.service_admission(p_operation text,p_arguments jsonb) RETURNS uuid LANGUAGE plpgsql AS $$
-DECLARE actor uuid;admission uuid:=gen_random_uuid();canonical text:=p_arguments::text;entry public.sandy_operation_registry;result jsonb;
-BEGIN
- SELECT auth_user_id INTO actor FROM public.sandy_controller_admins WHERE role='owner' AND enabled ORDER BY created_at LIMIT 1;
- IF actor IS NULL THEN RAISE EXCEPTION 'component_existing_owner_metadata_required';END IF;
- SELECT * INTO entry FROM public.sandy_operation_registry WHERE operation=p_operation;
- INSERT INTO public.sandy_api_execution_admissions(id,actor_id,operation,request_id,is_mutation,input_sha256,contract_sha256,scope_sha256,registry_revision_sha256,declared_cost_units,state,expires_at)
- VALUES(admission,actor,p_operation,gen_random_uuid(),entry.is_mutation,encode(extensions.digest(canonical,'sha256'),'hex'),entry.error_contract->>'contract_sha256','04573c462b9fa724cc78afc55ca40999b05855765084fc1c1e449fd8e06f2a14',public.sandy_api_registry_revision(p_operation),0,'consumed',clock_timestamp()+interval '60 seconds');
- RETURN admission;
-END $$;
+-- SHARED_OWNER_COMPONENT_FIXTURE
+CREATE FUNCTION pg_temp.service_admission(p_operation text,p_arguments jsonb) RETURNS uuid LANGUAGE sql AS $$
+ SELECT pg_temp.sandy_owner_component_admission(p_operation,p_arguments,'04573c462b9fa724cc78afc55ca40999b05855765084fc1c1e449fd8e06f2a14')
+$$;
 CREATE FUNCTION pg_temp.service_call(p_operation text,p_arguments jsonb) RETURNS jsonb LANGUAGE plpgsql AS $$
-DECLARE actor uuid;admission uuid:=gen_random_uuid();canonical text:=p_arguments::text;entry public.sandy_operation_registry;result jsonb;
+DECLARE actor uuid;admission uuid;canonical text:=p_arguments::text;result jsonb;
 BEGIN
  SELECT auth_user_id INTO actor FROM public.sandy_controller_admins WHERE role='owner' AND enabled ORDER BY created_at LIMIT 1;
- IF actor IS NULL THEN RAISE EXCEPTION 'component_existing_owner_metadata_required';END IF;
- SELECT * INTO entry FROM public.sandy_operation_registry WHERE operation=p_operation;
- INSERT INTO public.sandy_api_execution_admissions(id,actor_id,operation,request_id,is_mutation,input_sha256,contract_sha256,scope_sha256,registry_revision_sha256,declared_cost_units,state,expires_at)
- VALUES(admission,actor,p_operation,gen_random_uuid(),entry.is_mutation,encode(extensions.digest(canonical,'sha256'),'hex'),entry.error_contract->>'contract_sha256','04573c462b9fa724cc78afc55ca40999b05855765084fc1c1e449fd8e06f2a14',public.sandy_api_registry_revision(p_operation),0,'consumed',clock_timestamp()+interval '60 seconds');
+ admission:=pg_temp.service_admission(p_operation,p_arguments);
  PERFORM public.sandy_supabase_service_authorize(actor,admission,canonical);
  SELECT public.sandy_supabase_service_execute(actor,admission,canonical) INTO result;
  IF result->>'ok'<>'true' THEN RAISE EXCEPTION 'component_service_call_failed';END IF;
@@ -147,8 +138,7 @@ EXCEPTION WHEN OTHERS THEN IF SQLERRM<>'managed_channel_missing_or_policies_pres
  INSERT INTO public.sandy_supabase_managed_users(tenant_id,user_id,source) VALUES(tenant,actor,'service_created') ON CONFLICT DO NOTHING;
  UPDATE public.sandy_supabase_tenant_consents SET expires_at=clock_timestamp()+interval '1 hour' WHERE tenant_id=tenant;
  SELECT * INTO entry FROM public.sandy_operation_registry WHERE operation='supabase.auth.users.disable';admission:=gen_random_uuid();canonical:=jsonb_build_object('tenant_id',tenant,'user_id',actor,'duration_hours',1)::text;
- INSERT INTO public.sandy_api_execution_admissions(id,actor_id,operation,request_id,is_mutation,input_sha256,contract_sha256,scope_sha256,registry_revision_sha256,declared_cost_units,state,expires_at)
- VALUES(admission,actor,entry.operation,gen_random_uuid(),true,encode(extensions.digest(canonical,'sha256'),'hex'),entry.error_contract->>'contract_sha256','04573c462b9fa724cc78afc55ca40999b05855765084fc1c1e449fd8e06f2a14',public.sandy_api_registry_revision(entry.operation),0,'consumed',clock_timestamp()+interval '60 seconds');
+ admission:=pg_temp.service_admission(entry.operation,canonical::jsonb);
  refused:=false;BEGIN PERFORM public.sandy_supabase_service_authorize(actor,admission,canonical);EXCEPTION WHEN OTHERS THEN IF SQLERRM<>'protected_system_identity_refused' THEN RAISE;END IF;refused:=true;END;
  IF NOT refused THEN RAISE EXCEPTION 'controller_identity_not_protected';END IF;
  PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
