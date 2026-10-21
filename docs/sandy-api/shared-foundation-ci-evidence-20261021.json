@@ -34,11 +34,12 @@
     "supabase/functions/sandy-deployment-api/index_test.ts": "1fb3ea450ce925283639f2ae1e87395b38530de3b2db86be552324ce1628cdc5"
   },
   "github_ci_status": {
-    "head": "ab2dd6f4f8345ec3ee45554c052474a94531b6e6",
+    "head": "c679725b3b55d5fe3cbcdc7ed8f732c0e6118401",
     "api_contract_tests": "SUCCESS",
-    "api_run": 39641923809,
+    "api_run": 39642559853,
+    "vm_protocol_contract_tests": "SUCCESS",
     "offline_tests": "SUCCESS",
-    "offline_run": 39641923875,
+    "offline_run": 39642559819,
     "engineering_mcp_checks": "SUCCESS",
     "engineering_mcp_deploy_verify": "SUCCESS",
     "production_deployment_job": "SKIPPED",

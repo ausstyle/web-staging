@@ -1,0 +1,61 @@
+{
+  "observed_at_utc": "2026-10-21T17:18:24.125132+00:00",
+  "authenticated_management_project_read": {
+    "http_status": 200,
+    "project_id": "zmqlyygzqoidkcwdysok",
+    "status": "ACTIVE_HEALTHY"
+  },
+  "registry": {
+    "registered": 2585,
+    "api_flags": 447,
+    "ai_flags": 430,
+    "verified_flags": 37
+  },
+  "functions": [
+    {
+      "slug": "sandy-whatsapp-webhook",
+      "name": "sandy-whatsapp-webhook",
+      "version": 156,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-deploy-provision",
+      "name": "sandy-deploy-provision",
+      "version": 60,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-operation-api",
+      "name": "sandy-operation-api",
+      "version": 31,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-api-mcp",
+      "name": "sandy-api-mcp",
+      "version": 14,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-engineering-runtime",
+      "name": "sandy-engineering-runtime",
+      "version": 4,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-customer-provisioning-api",
+      "name": "sandy-customer-provisioning-api",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    }
+  ],
+  "mutations_performed": false,
+  "new_MCP_tests_claimed": false,
+  "source_head": "c679725b3b55d5fe3cbcdc7ed8f732c0e6118401"
+}
