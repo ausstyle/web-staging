@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#fff"><title>Meetings — Sandy</title>
+<style>
+:root{font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111}*{box-sizing:border-box}body{margin:0;background:white}a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:#fafafa;border-right:1px solid #eee;padding:26px 14px}.brand{font-size:27px;font-weight:800;letter-spacing:-1.7px;margin:0 14px 35px}.nav{display:block;padding:12px 14px;border-radius:10px;font-size:13px;color:#555;font-weight:600;margin:3px 0}.nav:hover,.nav.current{background:#eaeaea;color:#111}.main{padding:50px min(6vw,80px);max-width:1240px;width:100%;margin:auto}.eyebrow{font-size:11px;color:#777;letter-spacing:.14em;font-weight:750}.heading{display:flex;justify-content:space-between;align-items:end;gap:16px}.heading h1{font-size:clamp(34px,4vw,56px);letter-spacing:-.065em;margin:5px 0}.muted{color:#666}.btn{border:1px solid #ddd;background:white;padding:11px 17px;border-radius:10px;font-weight:650}.btn.primary{background:#111;color:white;border-color:#111}.btn:disabled{opacity:.55}.panel{border:1px solid #e5e5e5;border-radius:18px;padding:22px;margin-top:24px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.item{padding:17px 0;border-top:1px solid #eee}.item:first-child{border-top:0}input{border:1px solid #ddd;padding:11px;border-radius:10px;min-width:220px}.status{min-height:22px;color:#555;margin-top:12px}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:20px 0}.tile{background:#171717;border-radius:15px;min-height:230px;overflow:hidden;position:relative}.tile video{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}.tile label{position:absolute;bottom:10px;left:12px;background:#111a;color:white;border-radius:8px;padding:4px 9px;font-size:12px}.controls{display:flex;gap:10px;flex-wrap:wrap}.hide{display:none!important}@media(max-width:750px){.layout{display:block}.side{padding:12px;display:flex;gap:8px;overflow:auto}.brand{margin:0 8px}.nav{white-space:nowrap}.main{padding:25px 18px}} 
+</style></head><body>
+<div class="layout"><aside class="side"><a href="../app/" class="brand">sandy.</a><a class="nav" href="../app/">Overview</a><a class="nav" href="../chat/">Chat</a><a class="nav" href="../agenda/">Tasks</a><a class="nav" href="../calendar/">Calendar</a><a class="nav current" href="./">Meetings</a></aside>
+<main class="main"><div class="eyebrow">SANDY VIDEO</div><div class="heading"><div><h1>Meetings</h1><div class="muted">Secure video calls, hosted by Sandy.</div></div><button id="create" class="btn primary">+ New meeting</button></div>
+<div id="status" class="status" role="status" aria-live="polite"></div>
+<section id="listing" class="panel"><div class="row"><strong>Your meetings</strong><button id="reload" class="btn">Refresh</button></div><div id="meetings"></div></section>
+<section id="call" class="hide"><div class="row"><h2 id="calltitle"></h2><button id="exit" class="btn">Leave meeting</button></div>
+<div id="tiles" class="tiles"></div><div class="controls"><button id="mic" class="btn">Mute microphone</button><button id="camera" class="btn">Turn camera off</button><button id="share" class="btn">Share screen</button><button id="invite" class="btn">Copy invitation link</button><button id="end" class="btn">End meeting</button></div>
+<div id="callStatus" class="status" role="status"></div></section>
+<section id="guest" class="panel hide"><h2>Join a Sandy meeting</h2><p class="muted">Enter a name to appear to the other participants.</p><input id="guestName" maxlength="60" placeholder="Your name"><button class="btn primary" id="joinGuest">Join meeting</button></section>
+</main></div>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+import {Room,RoomEvent,Track} from "https://esm.sh/livekit-client@2.17.2";
+const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,storage:localStorage,autoRefreshToken:true}});
+const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-video-api";
+const $=id=>document.getElementById(id);
+let room=null,meetingId=null,owner=false,inviteToken=null;
+const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+const guestMeeting=hash.get("meeting"),guestInvite=hash.get("invite");
+function notice(v){$("status").textContent=v;}
+async function api(action,data={},authenticated=true){
+ let token=null;
+ if(authenticated){const s=await db.auth.getSession();token=s.data.session?.access_token;if(!token)throw Error("Please sign in to your Sandy account first.");}
+ const headers={"content-type":"application/json"};if(token)headers.authorization="Bearer "+token;
+ const res=await fetch(endpoint,{method:"POST",headers,body:JSON.stringify({action,...data}),cache:"no-store"});
+ const json=await res.json().catch(()=>({}));if(!res.ok)throw Error(json.error||"Video service unavailable");return json;
+}
+function actionButton(text,fn){const b=document.createElement("button");b.className="btn";b.textContent=text;b.onclick=async()=>{b.disabled=true;try{await fn();}catch(e){notice(e.message)}finally{b.disabled=false}};return b;}
+async function reload(){
+ const res=await api("list");$("meetings").replaceChildren();
+ if(!res.meetings.length){const p=document.createElement("p");p.className="muted";p.textContent="No meetings yet. Create one to get started.";$("meetings").append(p);}
+ for(const m of res.meetings){const d=document.createElement("div");d.className="row item";const info=document.createElement("div");const strong=document.createElement("strong");strong.textContent=m.title;const text=document.createElement("div");text.className="muted";text.textContent=m.state+" · "+new Date(m.created_at).toLocaleString();info.append(strong,text);d.append(info);if(m.state==="scheduled"){d.append(actionButton("Join",()=>join(m.id,true)));d.append(actionButton("Invite",()=>createInvite(m.id)));d.append(actionButton("End",async()=>{await api("end",{meeting_id:m.id});await reload()}));}$("meetings").append(d)}
+}
+async function createInvite(id){
+ const data=await api("invite",{meeting_id:id});
+ const url=location.origin+location.pathname+"#meeting="+encodeURIComponent(id)+"&invite="+encodeURIComponent(data.invite);
+ await navigator.clipboard.writeText(url);
+ notice("Invitation copied. Anyone with this link can join until it expires in 7 days.");
+}
+function attachParticipant(participant){
+ for(const publication of participant.trackPublications.values()){if(publication.track)attachTrack(publication.track,participant.identity);}
+}
+function attachTrack(track,identity){
+ if(track.kind!==Track.Kind.Video && track.kind!==Track.Kind.Audio)return;
+ if(track.kind===Track.Kind.Audio){if(!track.isLocal){const audio=track.attach();audio.autoplay=true;$("tiles").append(audio)}return;}
+ const id="track-"+identity+"-"+track.sid;
+ if(document.getElementById(id))return;
+ const box=document.createElement("div");box.className="tile";box.id=id;const video=track.attach();video.autoplay=true;video.playsInline=true;const name=document.createElement("label");name.textContent=identity.startsWith("host-")?"Host":"Participant";box.append(video,name);$("tiles").append(box);
+}
+async function join(id,isOwner,invite,display_name){
+ const response=await api("join",{meeting_id:id,...(invite?{invite}:{}),display_name},isOwner);
+ meetingId=id;owner=isOwner;inviteToken=invite||null;$("listing").classList.add("hide");$("guest").classList.add("hide");$("call").classList.remove("hide");$("create").classList.add("hide");$("calltitle").textContent=response.title;
+ room=new Room({adaptiveStream:true,dynacast:true});
+ room.on(RoomEvent.TrackSubscribed,(track,publication,participant)=>attachTrack(track,participant.identity));
+ room.on(RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
+ room.on(RoomEvent.ParticipantConnected,p=>attachParticipant(p));
+ room.on(RoomEvent.Disconnected,()=>{$("callStatus").textContent="Disconnected from meeting"});
+ try{
+ await room.connect(response.server_url,response.token);
+ await room.localParticipant.enableCameraAndMicrophone();
+ room.remoteParticipants.forEach(attachParticipant);
+ room.localParticipant.trackPublications.forEach(pub=>{if(pub.track)attachTrack(pub.track,room.localParticipant.identity)});
+ $("callStatus").textContent="Connected to Sandy Video";
+ }catch(e){$("callStatus").textContent="Connection failed: "+e.message;await leave();throw e;}
+}
+async function leave(){
+ if(room){await room.disconnect();room=null;}
+ $("tiles").replaceChildren();$("call").classList.add("hide");$("create").classList.remove("hide");$("listing").classList.remove("hide");if(!guestMeeting)await reload();else $("guest").classList.remove("hide");
+}
+$("create").onclick=async()=>{const title=prompt("Meeting name","Sandy video meeting");if(title===null)return;try{const m=await api("create",{title});await reload();await join(m.meeting.id,true)}catch(e){notice(e.message)}};
+$("reload").onclick=()=>reload().catch(e=>notice(e.message));
+$("exit").onclick=()=>leave().catch(e=>notice(e.message));
+$("end").onclick=async()=>{if(!owner)return;await api("end",{meeting_id:meetingId});await leave();notice("Meeting ended")};
+$("invite").onclick=()=>createInvite(meetingId).catch(e=>notice(e.message));
+$("mic").onclick=async()=>{if(!room)return;const enabled=!room.localParticipant.isMicrophoneEnabled;await room.localParticipant.setMicrophoneEnabled(enabled);$("mic").textContent=enabled?"Mute microphone":"Unmute microphone"};
+$("camera").onclick=async()=>{if(!room)return;const enabled=!room.localParticipant.isCameraEnabled;await room.localParticipant.setCameraEnabled(enabled);$("camera").textContent=enabled?"Turn camera off":"Turn camera on"};
+$("share").onclick=async()=>{if(!room)return;await room.localParticipant.setScreenShareEnabled(!room.localParticipant.isScreenShareEnabled)};
+$("joinGuest").onclick=()=>join(guestMeeting,false,guestInvite,$("guestName").value).catch(e=>notice(e.message));
+if(guestMeeting&&guestInvite){$("listing").classList.add("hide");$("create").classList.add("hide");$("guest").classList.remove("hide");$("reload").classList.add("hide");}else reload().catch(e=>notice(e.message));
+window.addEventListener("beforeunload",()=>room?.disconnect());
+</script></body></html>
