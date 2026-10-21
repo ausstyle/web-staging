@@ -30,3 +30,16 @@ P0: Chat/agent runtime reasoning reliability and accurate tool execution. P1: MC
 ## Supabase catalogue
 
 Use `public.sandy_engineering_scope_catalogue` to discover document locations, versions, hierarchy and delivery status. Application clients must access it through authenticated Sandy API with tenant and engineering permissions; no anonymous direct table exposure.
+
+## Automatic GitHub → Supabase synchronization
+
+The source for every specification is a GitHub file. The machine-readable document index is [scopes.json](scopes.json). Whenever `main` changes a scope, the [Sandy scope sync workflow](../../.github/workflows/sandy-scope-sync.yml) runs and authenticates with a **short-lived GitHub Actions OIDC token** to the deployed `sandy-engineering-scope-sync` Supabase Edge Function. It also runs daily and can be manually dispatched to repair missed push events. No permanent GitHub-to-Supabase API key is required.
+
+The sync function verifies the exact GitHub repository, branch and workflow, reads `scopes.json` and each referenced Markdown file at the immutable commit SHA, computes a SHA-256 content hash and upserts metadata in `public.sandy_engineering_scope_catalogue`. It records success/failure in `public.sandy_engineering_scope_sync_runs`. Existing verification evidence is preserved.
+
+**To change a document:** edit the Markdown in GitHub, update `scopes.json` when adding/removing/renaming a scope or changing its title, priority, hierarchy or status, merge to `main`, and check the sync workflow plus the database `last_synced_at` and `source_commit_sha`. Merely changing a Markdown document triggers a sync and new content hash even if its manifest metadata is unchanged.
+
+**Authoritative source:** GitHub is authoritative for document text and source metadata; Supabase stores discovery data, linked records and verified operational evidence. There is no two-way document editing or automatic Supabase → GitHub document write. Manual updates to synchronized catalogue fields may be overwritten by the next GitHub sync. A missing file causes the sync to fail visibly; it never silently marks a document as synchronized. Omission from the manifest does not erase historical records.
+
+**Runtime access:** `sandy-engineering-scope-api` provides authenticated list/detail discovery to Controller operators and trusted Sandy services; clients must not query this administrative table anonymously. An authenticated end-to-end user-session test is still required before claiming availability via every Sandy channel.
+
