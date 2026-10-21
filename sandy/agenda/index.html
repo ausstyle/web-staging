@@ -1548,21 +1548,49 @@ async function moveOutlineTask(dragId,targetId,zone){
  if(index<0)return;
  const reordered=peers.slice();reordered.splice(index,0,drag);
  const originalParent=drag.parent_task_id||null;
+ const previous=new Map(state.tasks.map(t=>[t.id,{parent_task_id:t.parent_task_id,position:t.position}]));
+ // Update the entire affected sibling set locally before any network request.
+ drag.parent_task_id=parentId;
+ reordered.forEach((t,i)=>{t.position=(i+1)*1000});
+ state.expanded.delete(parentId);
+ localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));
+ render();
+ const changes=state.tasks.filter(t=>{const p=previous.get(t.id);return p&&((p.parent_task_id||null)!==(t.parent_task_id||null)||p.position!==t.position)});
  try{
-  await api("update",{id:drag.id,parent_task_id:parentId,position:(index+1)*1000});
-  for(let i=0;i<reordered.length;i++){
-   const t=reordered[i],position=(i+1)*1000;
-   if(t.id!==drag.id&&t.position!==position)await api("update",{id:t.id,position});
+  // Persist without reloading/re-sorting the visible page.
+  for(const t of changes){
+   await api("update",{id:t.id,parent_task_id:t.parent_task_id||null,position:t.position});
   }
-  await load();toast(parentId!==originalParent?"Task hierarchy updated":"Task order saved");
- }catch(e){await load().catch(()=>{});toast("Unable to move task: "+e.message,true)}
+ }catch(e){
+  // Restore the last persisted hierarchy on failure; never report a false save.
+  for(const t of state.tasks){const p=previous.get(t.id);if(p)Object.assign(t,p)}
+  render();toast("Unable to move task: "+e.message,true);
+ }
 }
+
 function enableTaskDrag(row,t){
  if(t.shared)return;
  const handle=el("span","dragHandle","⠿");handle.title="Drag to reorder or nest task";handle.setAttribute("aria-label","Drag "+t.title);
  handle.draggable=true;handle.tabIndex=0;row.append(handle);
  handle.addEventListener("dragstart",e=>{
-  if(state.sort!=="manual"){state.sort="manual";localStorage.setItem("sandy_task_sort","manual");$("taskSort").value="manual"}
+  if(state.sort!=="manual"){
+   // Freeze the displayed order as the manual baseline, not the old database order.
+   const previousSort=state.sort;
+   const groups=new Map();
+   for(const task of state.tasks){
+    if(task.shared||task.archived_at)continue;
+    const key=task.parent_task_id||"__root";
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(task);
+   }
+   for(const group of groups.values()){
+    group.sort(compareTaskOrder);
+    group.forEach((task,i)=>{task.position=(i+1)*1000});
+   }
+   state.sort="manual";localStorage.setItem("sandy_task_sort","manual");$("taskSort").value="manual";
+   // The drop operation persists the changed task; retain the baseline for unchanged rows.
+   state.dragSortBaseline=previousSort;
+  }
   draggingTaskId=t.id;e.stopPropagation();e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",t.id);
   row.classList.add("draggingTask");
  });
