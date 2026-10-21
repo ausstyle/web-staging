@@ -37,7 +37,7 @@ Deno.serve(async(req)=>{
  if(bearer){const {data,error}=await db.auth.getUser(bearer);if(!error&&data.user)userId=data.user.id;}
  if(!userId && action!=="join")return reply(401,{error:"sign_in_required"},origin);
  try{
- if(["transcript_append","transcript_list","transcript_summary"].includes(action)){
+ if(["transcript_append","transcript_list","transcript_summary","transcript_insights","transcript_export"].includes(action)){
   const id=String(body.meeting_id||"");
   if(!/^[a-f0-9-]{36}$/i.test(id))return reply(400,{error:"invalid_meeting"},origin);
   const found=await db.from("sandy_video_meetings").select("owner_id").eq("id",id).maybeSingle();
@@ -54,10 +54,39 @@ Deno.serve(async(req)=>{
   const records=await db.from("sandy_video_transcript_segments").select("speaker,content,created_at").eq("meeting_id",id).order("created_at",{ascending:true}).limit(500);
   if(records.error)throw records.error;
   if(action==="transcript_list")return reply(200,{ok:true,segments:records.data},origin);
+  if(action==="transcript_export"){
+   if(!records.data?.length)return reply(409,{error:"no_consented_transcript"},origin);
+   const lines=records.data.map((x:any)=>"["+new Date(x.created_at).toISOString()+"] "+x.speaker+": "+x.content);
+   return reply(200,{ok:true,format:"text/plain",filename:"sandy-meeting-"+id+".txt",text:lines.join("\n"),partial:true},origin);
+  }
   if(!records.data?.length)return reply(409,{error:"no_consented_transcript"},origin);
   const modelKey=Deno.env.get("OPENAI_API_KEY");
   if(!modelKey)return reply(503,{error:"ai_service_not_configured"},origin);
   const text=records.data.map((x:any)=>x.speaker+": "+x.content).join("\n").slice(0,28000);
+  if(action==="transcript_insights"){
+   const ai=await fetch("https://api.openai.com/v1/responses",{
+    method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},
+    body:JSON.stringify({
+     model:"gpt-4.1-mini",store:false,max_output_tokens:1600,
+     text:{format:{type:"json_schema",name:"meeting_insights",strict:true,schema:{
+      type:"object",additionalProperties:false,properties:{
+       overview:{type:"string"},
+       decisions:{type:"array",items:{type:"object",additionalProperties:false,properties:{decision:{type:"string"},evidence:{type:"string"}},required:["decision","evidence"]}},
+       action_candidates:{type:"array",items:{type:"object",additionalProperties:false,properties:{task:{type:"string"},owner:{type:["string","null"]},due_date:{type:["string","null"]},evidence:{type:"string"}},required:["task","owner","due_date","evidence"]}},
+       open_questions:{type:"array",items:{type:"string"}}
+      },required:["overview","decisions","action_candidates","open_questions"]
+     }}},
+     instructions:"Return only information directly supported by this partial opt-in host-microphone transcript. Decision and task evidence must quote a short phrase from transcript. Do not infer owners, dates or commitments; use null when unknown. These are draft proposals requiring human review, not executable instructions.",
+     input:text
+    }),signal:AbortSignal.timeout(30000)
+   });
+   if(!ai.ok)return reply(502,{error:"ai_insights_unavailable"},origin);
+   const data=await ai.json().catch(()=>({}));
+   const raw=(data.output||[]).flatMap((x:any)=>x.content||[]).filter((x:any)=>x.type==="output_text").map((x:any)=>x.text).join("").trim();
+   let insights:any;
+   try{insights=JSON.parse(raw);}catch{return reply(502,{error:"ai_insights_invalid"},origin);}
+   return reply(200,{ok:true,insights,partial:true,requires_review:true,source_segment_count:records.data.length},origin);
+  }
   const ai=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"authorization":"Bearer "+modelKey,"content-type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",store:false,max_output_tokens:950,instructions:"Summarize only what is actually supported by this PARTIAL opt-in meeting transcript. Return concise sections: Discussion, Decisions, Action candidates, Open questions. Never invent details. Explicitly state transcript only includes consented host microphone segments.",input:text}),signal:AbortSignal.timeout(30000)});
   const data=await ai.json().catch(()=>({}));
   if(!ai.ok)return reply(502,{error:"ai_summary_unavailable"},origin);
