@@ -1,6 +1,6 @@
 # Sandy AI Master Software Scope — reference
 
-**Source:** `Sandy_AI_Master_Software_Scope_v1(1).docx`; v1.0, 19 October 2026, 17 pages, owner-provided, proposed design baseline. **This is a reference/index, not a verbatim reproduction of the 17-page source.** The full original must be committed separately and linked here for auditability.
+**Source:** `Sandy_AI_Master_Software_Scope_v1(1).docx`; v1.0, 19 October 2026, 17 pages, owner-provided, proposed design baseline. **This is a section index, not a verbatim reproduction of the 17-page source.** The [full searchable text](master-scope-v1.md) is available, extracted from the original DOCX.
 
 ## Governing sections
 
@@ -30,4 +30,4 @@
 
 Runtime quality and truthful completion are first-class deliverables, not adjuncts to the API operation count. Section 10's possible MCP pathway is superseded by the subsequently approved mandatory architecture: MCP must route operation execution via Sandy API and its centrally governed contracts.
 
-**TODO / archival gate:** Check in the original supplied DOCX or an approved content-faithful rendering under this directory, with version and SHA-256, before declaring Master Scope publication complete.
+**Archival note:** The searchable text extraction is checked into GitHub. The original DOCX binary has not been committed; it remains the authoritative format for any layout-sensitive interpretation.
