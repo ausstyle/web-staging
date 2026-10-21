@@ -255,3 +255,4 @@ export async function persistSandyImage(db:any,owner:string,bytes:Uint8Array,mim
  if(ins){await db.storage.from("sandy-whatsapp-media").remove([path]);throw Error("media_asset_insert_"+ins.code)}
  return asset.id;
 }
+

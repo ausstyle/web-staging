@@ -46,5 +46,14 @@ Deno.serve(async req=>{
  }
  const incoming=records.filter(x=>x.direction==="inbound");
  if(incoming.length)await Promise.all(incoming.map(async x=>{const {data:stored,error}=await db.from("sandy_whatsapp_messages").select("*").eq("meta_message_id",x.meta_message_id).maybeSingle();if(!error&&stored){const sharedReply=await handleSharedImageReply(db,stored);if(!sharedReply){const routed=await handleCollab(db,stored);if(!routed)await deliver(db,stored)}}}));
+ if(incoming.length)try{
+  const work=async()=>{for(const m of incoming.slice(0,8)){
+   const {data:owner}=await db.from("sandy_whatsapp_identities").select("customer_id,verification_status,allowed_scopes").eq("wa_id",m.sender_wa_id).maybeSingle();
+   if(owner?.verification_status!=="verified"||!owner.allowed_scopes?.includes("memory_read"))continue;
+   const response=await fetch(url+"/functions/v1/sandy-temporal-ingest",{method:"POST",headers:{"Authorization":"Bearer "+service,"Content-Type":"application/json"},body:JSON.stringify({source_channel:"whatsapp",source_ref:m.meta_message_id,customer_id:owner.customer_id,limit:3}),signal:AbortSignal.timeout(25000)});
+   if(!response.ok)console.error("whatsapp_temporal_ingest_http",response.status);
+  }};
+  EdgeRuntime.waitUntil(work().catch(e=>console.error("whatsapp_temporal_ingest",String(e).slice(0,180))));
+ }catch(e){console.error("whatsapp_temporal_enqueue_failed",String(e).slice(0,150));}
  return reply("ok");
 });
