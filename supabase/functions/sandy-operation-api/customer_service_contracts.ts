@@ -299,6 +299,7 @@ export const customerServiceContracts: Record<string, Record<string, unknown>> =
         "Fixed sandy-social-graph-api action unlink; actual user session and portal authorization, independently scoped application service. Contract v1.0.0; provider acceptance/recorded evidence is not verified outcome.",
     },
     "calendar.client.timezone.get": {
+      "rpc": "sandy_api_calendar_timezone_get",
       "handler": "sandy-calendar-api",
       "action": "timezone_get",
       "body_mode": "payload",

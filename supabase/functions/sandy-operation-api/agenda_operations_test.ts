@@ -81,8 +81,8 @@ Deno.test("all25 Agenda contracts fix methods, actions and actual-session RPC se
       `Bearer ${user}`,
     );
     if (c.rpc) {
-      eq(url.pathname, "/rest/v1/rpc/sandy_api_agenda_save_pins");
-      eq(JSON.parse(String(request.init.body)), { p_task_ids: [] });
+      eq(url.pathname, "/rest/v1/rpc/" + c.rpc);
+      eq(JSON.parse(String(request.init.body)), operation === "agenda.pins.save" ? { p_task_ids: [] } : {});
     } else {
       eq(url.pathname, "/functions/v1/sandy-agenda");
       eq(url.searchParams.get("action"), c.action);

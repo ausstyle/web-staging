@@ -74,14 +74,16 @@ Deno.test("all57 installed application contracts select fixed services, selector
       example(c.input_schema),
     );
     assert(request, operation);
-    eq(request.url, `${deps.base}/functions/v1/${c.handler}`);
+    eq(request.url, c.rpc ? `${deps.base}/rest/v1/rpc/${c.rpc}` : `${deps.base}/functions/v1/${c.handler}`);
     eq(request.init.redirect, "error");
     eq(
       new Headers(request.init.headers).get("authorization"),
       `Bearer ${user}`,
     );
     const sent = JSON.parse(String(request.init.body));
-    if (c.body_mode === "payload") {
+    if (c.rpc) {
+      eq(sent, {});
+    } else if (c.body_mode === "payload") {
       eq(sent.action, c.action);
       assert(Object.hasOwn(sent, "payload"));
     } else eq(sent[c.body_mode === "op" ? "op" : "action"], c.action);
