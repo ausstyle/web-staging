@@ -677,17 +677,28 @@ function inlineEditor(t,focus){
    parent=p.parent_task_id||null;after=p.id;
   }
   saving=true;field.disabled=true;
+  const moving=mode==="indent"||mode==="outdent";
+  const previous={title:t.title,parent_task_id:t.parent_task_id,position:t.position};
   try{
+   // Calculate placement from the original outline before making the optimistic change.
+   const positionPromise=moving?outlinePosition(parent,after,t.id):null;
+   if(moving){
+    t.title=title;
+    t.parent_task_id=parent;
+    // Immediate visual indentation/outdentation; save and reconciliation follow asynchronously.
+    state.expanded.delete(parent);
+    render();
+   }
    const patch={id:t.id};
-   if(title!==t.title)patch.title=title;
-   if(mode==="indent"||mode==="outdent"){patch.parent_task_id=parent;patch.position=await outlinePosition(parent,after,t.id)}
+   if(title!==previous.title)patch.title=title;
+   if(moving){patch.parent_task_id=parent;patch.position=await positionPromise;t.position=patch.position}
    if(Object.keys(patch).length>1){await api(t.shared?"shared-update":"update",patch);await load()}
    if(mode==="enter"){if(t.shared)await createSharedRow(t.parent_task_id||t.id);else outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal")}
-   else if(mode==="indent"||mode==="outdent"){
-    const label=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
-    const updated=state.tasks.find(x=>x.id===t.id);if(label&&updated)label.replaceWith(inlineEditor(updated,true));
-   }else if(Object.keys(patch).length===1)field.replaceWith(outlineTitle(t));
-  }catch(e){toast(e.message,true);saving=false;field.disabled=false;field.focus()}
+   else if(!moving&&Object.keys(patch).length===1)field.replaceWith(outlineTitle(t));
+  }catch(e){
+   if(moving){Object.assign(t,previous);render();toast("Could not save task hierarchy: "+e.message,true)}
+   else{toast(e.message,true);saving=false;field.disabled=false;field.focus()}
+  }
  }
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
