@@ -1,0 +1,10 @@
+{
+  "operation": "supabase.logs.query",
+  "registry_evidence_readback_matches": true,
+  "verified_flag_unchanged": true,
+  "registry_rows": 2585,
+  "api_flags": 447,
+  "ai_flags": 430,
+  "verified_flags": 37,
+  "stored_evidence_sha256": "13205517252d1428f59d55e6f23194e324d9e6fbb90ccbd7f0ce960a27b2333d"
+}

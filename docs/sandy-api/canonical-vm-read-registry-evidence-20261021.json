@@ -1,0 +1,14 @@
+{
+  "row": {
+    "operation": "gcp.compute.instances.get",
+    "verified": true,
+    "last_verified_at": "2026-10-21 20:00:21.967948+00"
+  },
+  "evidence_readback_matches": true,
+  "stored_evidence_sha256": "543ba090a65fe18f2abda780aa42aff823bd60a9998b0a932c03e2bfedd1f545",
+  "registry_rows": 2585,
+  "API_flags": 447,
+  "AI_flags": 430,
+  "verified_flags": 38,
+  "new_registry_rows": 0
+}

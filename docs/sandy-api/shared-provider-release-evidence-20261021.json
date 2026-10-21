@@ -1,0 +1,74 @@
+{
+  "gateway": {
+    "slug": "sandy-operation-api",
+    "source_commit": "373989ee7841173b55107392fcfd72ad3eae923e",
+    "metadata": {
+      "version": 33,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    "sources_accounted_for": 121,
+    "all_sources_accounted_for": true
+  },
+  "runtime": {
+    "slug": "sandy-engineering-runtime",
+    "source_commit": "97bd82578ec0816d72343d4b1d443793313ea861",
+    "metadata": {
+      "version": 7,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sources_accounted_for": 7,
+    "all_sources_accounted_for": true
+  },
+  "provider_engine": {
+    "slug": "sandy-provider-operation-api",
+    "source_commit": "0334a878406663b8a683b519bc79c9c4d5e2abb6",
+    "metadata": {
+      "version": 12,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    "sources_accounted_for": 50,
+    "all_sources_accounted_for": true
+  },
+  "regression": {
+    "source_tests_passed": 384,
+    "compact_API_MCP_artifact_tests_passed": 320,
+    "real_PostgreSQL_boundary_checks_passed": 26,
+    "real_PostgreSQL_recovery_drill_passed": true,
+    "SQL_tests_rolled_back": true,
+    "SQL_tests_are_not_provider_or_normal_Auth_acceptance": true,
+    "offline_Python_tests_passed": 283,
+    "reproducible_canonical_MCP_CLI_provider_read_passed": true,
+    "shared_session_and_runtime_tests_passed": 27,
+    "Node_MCP_transport_tests_passed": 23,
+    "Node_clean_locked_install_tests_passed": 23,
+    "native_protocol_loopback_tests_passed": 38,
+    "native_protocol_compiler_tests_passed": 3,
+    "latest_remote_VM_CI_failure_under_investigation": false,
+    "earlier_remote_VM_CI_failure_root_cause_confirmed": false,
+    "latest_remote_VM_CI_passed": true,
+    "latest_remote_all_four_applicable_checks_passed_source": "4e0a0c5"
+  },
+  "source_commits": [
+    "18035e8854708bd04909bcc716b3be49ff34bae9",
+    "373989e",
+    "81bb9c7dd8fa3e7df1d05c4718af314a6c00dbde",
+    "a0078d526a0db94fb92857825b3b06040e084f0b",
+    "c1ab04e6091661557d46d13d86cc53ad3111b21c",
+    "97bd82578ec0816d72343d4b1d443793313ea861"
+  ],
+  "catalogue_expanded": false,
+  "MCP": {
+    "slug": "sandy-api-mcp",
+    "source_commit": "a0078d526a0db94fb92857825b3b06040e084f0b",
+    "metadata": {
+      "version": 15,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    "sources_accounted_for": 2,
+    "all_sources_accounted_for": true
+  }
+}

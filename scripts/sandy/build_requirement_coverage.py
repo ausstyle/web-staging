@@ -65,6 +65,27 @@ def execution_evidence(docs=DOCS):
             positive[call["operation"]].append({"file": filename, "level": "authenticated_MCP_readonly_Google_observation"})
     if report.get("scope_revocation_denied_api_status") == 403:
         denied["video.status"].append({"file": filename, "level": "revoked_optional_workload_scope_denied"})
+    filename = "canonical-vm-read-MCP-evidence-20261021.json"
+    path = docs / filename
+    if path.exists():
+        report = load(path)
+        if (report.get("passed") is True and report.get("http_status") == 200
+                and report.get("MCP_is_error") is False and report.get("API_status") == 200
+                and report.get("executed") is True and report.get("provider_http_status") == 200
+                and report.get("provider_instance_id") == "6831598645020395570"
+                and report.get("provider_instance_name") == "sandy-video"):
+            positive["gcp.compute.instances.get"].append({"file": filename,
+                "level": "normal_Auth_owner_delegated_MCP_canonical_Google_provider_read",
+                "admission_id": report["admission_id"]})
+    filename = "canonical-vm-read-denial-evidence-20261021.json"
+    path = docs / filename
+    if path.exists():
+        report = load(path)
+        if report.get("passed") is True and any(test.get("MCP_is_error") is True
+                and test.get("API_status") == 403 and test.get("executed") is False
+                for test in report.get("tests", [])):
+            denied["gcp.compute.instances.get"].append({"file": filename,
+                "level": "normal_Auth_MCP_wrong_target_and_revoked_delegation_denied"})
     return dict(positive), dict(denied)
 
 
@@ -105,11 +126,49 @@ def reconcile(requirements, registry, functions, disposition, positive, denied):
                     and bool(certified.get("evidence_files")) and bool(required) and bool(actual)
                     and required <= rows.keys()
                     and all(row.get("api_exposed") is True and row.get("ai_exposed") is True for row in required_rows))
+        review = disposition.get("implementation_review", {}).get(str(ident), {})
+        # Only an explicit constituent review can classify code as complete.
+        # A deployed function, registry flags or a generated schema cannot do so.
+        source_candidates = set(requirement.get("source_gateway_operation_ids", []))
+        implemented = (review.get("reviewed_explicit_constituents") is True
+                       and review.get("code_status") == "implemented_for_reviewed_authorized_targets"
+                       and bool(required) and required <= rows.keys()
+                       and required <= source_candidates)
+        external = [dependency for dependency in disposition.get("external_dependencies", [])
+                    if ident in dependency["families"]]
+        software_required = not complete and not implemented
         matrix.append({
             "requirement_id": ident, "requirement": requirement["requirement"],
             "fully_accepted": complete,
+            "implementation_assessment": "implemented_awaiting_real_family_acceptance" if implemented and not complete
+                else "fully_operational" if complete else "implementation_or_constituent_reconciliation_required",
+            "implementation_review": review or None,
+            "software_or_constituent_reconciliation_required": software_required,
+            "external_dependency_ids": [dependency["id"] for dependency in external],
+            "external_dependency_details": external,
+            "production_handler_versions": {name: {key: live[name].get(key) for key in ("version", "status", "verify_jwt")}
+                                            for name in sorted({row["handler"] for row in required_rows}) if name in live},
+            "MCP_exposure_assessment": "all_required_flags_enabled_but_execution_still_requires_authorization_and_acceptance"
+                if required_rows and len(required_rows) == len(required) and all(row.get("api_exposed") is True and row.get("ai_exposed") is True for row in required_rows)
+                else "one_or_more_required_operations_not_API_and_MCP_exposed",
             "state": "verified_complete" if complete else "partial_MCP_evidence" if actual else "not_yet_accepted",
             "required_operation_ids": sorted(required),
+            "operation_delivery_states": [{
+                "operation": name,
+                "registered": name in rows,
+                "source_contract_candidate_present": name in source_candidates,
+                "code_assessment": "real_execution_at_recorded_release" if name in positive
+                    else "explicit_constituent_code_review" if implemented else "current_code_review_incomplete",
+                "API_exposed_flag": rows.get(name, {}).get("api_exposed") is True,
+                "MCP_exposed_flag": rows.get(name, {}).get("ai_exposed") is True,
+                "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+                "authorized_MCP_execution_verified_for_recorded_scope": name in positive,
+                "authorized_execution_evidence": positive.get(name, []),
+                "denied_execution_evidence": denied.get(name, []),
+                "existing_target_only_not_universal_authority": True,
+            } for name in sorted(required)],
+            "constituent_mapping_status": "reviewed_explicit_operations" if str(ident) in overrides
+                else "unreviewed_candidates_not_independent_development_tasks",
             "supporting_or_optional_candidates": sorted(candidates - required),
             "source_contract_candidates": sorted(set(requirement.get("source_gateway_operation_ids", [])) & required),
             "missing_registry_operation_ids": sorted(required - rows.keys()),
@@ -120,7 +179,10 @@ def reconcile(requirements, registry, functions, disposition, positive, denied):
             "actual_MCP_success_operation_ids": actual,
             "actual_MCP_denial_operation_ids": sorted(required & set(denied)),
             "supporting_MCP_success_operation_ids": sorted((candidates - required) & set(positive)),
-            "remaining_capability": requirement.get("remaining_capability", "Constituent-level production acceptance remains required."),
+            "remaining_capability": disposition.get("current_remaining_capability", {}).get(str(ident),
+                requirement.get("remaining_capability", "Constituent-level production acceptance remains required.")),
+            "remaining_capability_basis": "current_review" if str(ident) in disposition.get("current_remaining_capability", {})
+                else "historical_source_reconciliation_pending_current_constituent_review",
             "wildcard_constituent_review": "required" if "*" in requirement["requirement"] else "explicit_scope",
         })
     return matrix
@@ -166,17 +228,25 @@ def build(registry, functions, owner_evidence, readback_dir, output, provenance=
                             "shared_adapter_tests_verify_every_provider_effect": False, "historical_tests_are_reused_at_their_recorded_versions": True,
                             "operation_counts_are_development_task_counts": False, "unknowns_are_not_external_blockers": True},
               "summary": {"original_families": 161, "fully_accepted_families": sum(row["fully_accepted"] for row in matrix),
+                          "implemented_families_awaiting_real_verification": sum(row["implementation_assessment"] == "implemented_awaiting_real_family_acceptance" for row in matrix),
+                          "families_with_external_dependencies": sum(bool(row["external_dependency_ids"]) for row in matrix),
+                          "families_with_external_permission_dependencies": sum(any(item["type"] == "external_permission" for item in row["external_dependency_details"]) for row in matrix),
+                          "families_requiring_software_or_constituent_reconciliation": sum(row["software_or_constituent_reconciliation_required"] for row in matrix),
                           "families_with_partial_required_operation_MCP_evidence": sum(bool(row["actual_MCP_success_operation_ids"]) for row in matrix),
                           "documented_distinct_MCP_success_operations": len(set(positive) & existing),
                           "documented_distinct_MCP_denial_operations": len(set(denied) & existing),
                           "registry_rows": len(registry), "api_flags": sum(row["api_exposed"] is True for row in registry),
                           "ai_flags": sum(row["ai_exposed"] is True for row in registry), "verified_flags": sum(row["verified"] is True for row in registry),
+                          "missing_required_registry_operation_ids": sorted({name for row in matrix for name in row["missing_registry_operation_ids"]}),
                           "handler_labels": len({row["handler"] for row in registry}), "shared_adapter_groups": len(adapters),
                           "schema_generated_operations_on_one_provider_adapter": len(generated),
                           "generated_provider_mix": dict(Counter(row["provider"] for row in generated))},
               "requirements": matrix, "shared_adapters": adapters,
               "provider_action_groups": [{**row, "registered_members": [name for name in row["operations"] if name in existing]} for row in disposition["provider_action_groups"]],
               "standalone_mcp_tools_not_required": disposition["standalone_mcp_tools_not_required"],
+              "known_required_operation_gaps": disposition.get("known_required_operation_gaps", {}),
+              "computer_scope_obligations": disposition.get("computer_scope_obligations"),
+              "family_external_dependencies": disposition.get("external_dependencies", []),
               "confirmed_external_dependencies": [
                   {"families": [48], "route": "Private Google Access prerequisite on the existing default subnet", "principal": "sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com", "missing_permission": "compute.subnetworks.setPrivateIpGoogleAccess", "actual_error": "Google HTTP 403", "evidence_file": "vm-network-preparation-evidence-20261021.json", "blocks_all_VM_transports": False},
                   {"families": [35], "route": "OS Config inventory inspection", "missing_permission": "osconfig.inventories.get", "actual_error": "Google HTTP 403 PERMISSION_DENIED", "evidence_file": "sandy-video-diagnostic-evidence-20261021.json", "blocks_all_VM_transports": False},
@@ -186,10 +256,16 @@ def build(registry, functions, owner_evidence, readback_dir, output, provenance=
     output.write_text(json.dumps(report, indent=2) + "\n")
     lines = ["# Sandy 161-family production coverage", "", "Generated from production metadata and recorded execution evidence. Flags and active functions do not prove execution. Shared-adapter coverage is reused; expanded rows are not separate implementation projects.", "",
              f"**{report['summary']['fully_accepted_families']}/161 families fully accepted**; **{report['summary']['families_with_partial_required_operation_MCP_evidence']} families have partial required-operation MCP evidence**. **{len(positive)} distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.", "",
-             "| Family | Requirement | Required/candidate operations | API/AI flags | Actual required MCP success | State |", "|---:|---|---:|---:|---:|---|"]
+             f"**{report['summary']['implemented_families_awaiting_real_verification']} explicit families have reviewed code awaiting real family acceptance**; **{report['summary']['families_requiring_software_or_constituent_reconciliation']} need software, integration or constituent reconciliation**. **{report['summary']['families_with_external_dependencies']} have documented external dependencies**, including **{report['summary']['families_with_external_permission_dependencies']} with permission denials**. External dependencies overlap the implementation counts; they do not certify completion or explain every missing function.", "",
+             "The code review is limited to the existing authorized provider targets. It does not certify additional projects, tenants, organizations or newly purchased services. A missing review is classified as work remaining, not proof that every constituent lacks code. Wildcard families stay incomplete until their required business constituents are reconciled and accepted.", "",
+             "Only explicit reviewed mappings are definitive required sets. Unreviewed wildcard/provider expansion remains a candidate set; its size is not a count of required development tasks. The JSON marks this distinction per family.", "",
+             "| Family | Requirement | Reviewed required / candidates | API/AI flags | Actual required/candidate MCP success | Implementation assessment | External dependencies |", "|---:|---|---:|---:|---:|---|---|"]
     for row in matrix:
-        lines.append(f"| {row['requirement_id']} | {row['requirement'].replace('|', '/')} | {len(row['required_operation_ids'])} | {row['api_exposure_flags']}/{row['ai_exposure_flags']} | {len(row['actual_MCP_success_operation_ids'])} | {row['state']} |")
+        lines.append(f"| {row['requirement_id']} | {row['requirement'].replace('|', '/')} | {len(row['required_operation_ids'])} | {row['api_exposure_flags']}/{row['ai_exposure_flags']} | {len(row['actual_MCP_success_operation_ids'])} | {row['implementation_assessment']} | {', '.join(row['external_dependency_ids']) or 'none established'} |")
     lines += ["", "Explicit-family optional candidates and the four legacy software/video-specific names are not new required implementation tasks. Wildcard expansion still needs semantic review; no unreviewed operation is declared globally out of scope.", "", "Operation-level schemas, permissions, risk classification, receipts and grants remain authoritative in the existing registry and typed source contracts. The JSON companion retains per-operation metadata, evidence references, missing IDs, shared adapter grouping and every family's remaining capability."]
+    if report["known_required_operation_gaps"]:
+        lines += ["", "Known missing contracts within the original scope (reported without adding registry rows):", ""]
+        lines += [f"- `{name}`: {reason}" for name, reason in report["known_required_operation_gaps"].items()]
     output.with_suffix(".md").write_text("\n".join(lines) + "\n")
     print(json.dumps(report["summary"]))
 
