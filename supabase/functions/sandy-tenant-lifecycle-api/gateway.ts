@@ -19,14 +19,22 @@ import {
   supportRecoveryExecutionScope,
   supportRecoveryOperations,
 } from "./support_recovery_contracts.ts";
+import {
+  financialExportExecutionScope,
+  financialExportOperations,
+} from "./financial_contracts.ts";
 export const tenantLifecycleOperations = Object.freeze({
   ...manifestOperations,
   [protectedInventoryOperationName]: protectedInventoryOperation,
   ...scalarManifestOperations,
   ...contentExportOperations,
   ...supportRecoveryOperations,
+  ...financialExportOperations,
 });
 export function tenantLifecycleExecutionScope(operation: string) {
+  if (Object.hasOwn(financialExportOperations, operation)) {
+    return financialExportExecutionScope(operation);
+  }
   if (Object.hasOwn(supportRecoveryOperations, operation)) {
     return supportRecoveryExecutionScope(operation);
   }

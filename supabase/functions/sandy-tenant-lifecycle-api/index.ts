@@ -26,6 +26,10 @@ import {
   contentExportRpcName,
 } from "./content_contracts.ts";
 import { supportRecoveryOperations } from "./support_recovery_contracts.ts";
+import {
+  financialExportOperations,
+  financialExportRpcName,
+} from "./financial_contracts.ts";
 export type Operation = {
   operation: string;
   is_mutation: boolean;
@@ -220,6 +224,8 @@ function resultMatchesRequest(
     "supabase.tenant.manifests.exports.purge": "purged",
     "supabase.tenant.content.export": "exported",
     "supabase.tenant.content.exports.purge": "purged",
+    "supabase.tenant.financial.export": "exported",
+    "supabase.tenant.financial.exports.purge": "purged",
     "supabase.tenant.support.snapshot": "exported",
     "supabase.tenant.support.erase": "erased",
     "supabase.tenant.support.restore": "restored",
@@ -352,7 +358,9 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
           rpc: (name, params) => deps.rpc(name, params),
         }, parameters)
         : await deps.rpc(
-          Object.hasOwn(contentExportOperations, operation.operation)
+          Object.hasOwn(financialExportOperations, operation.operation)
+            ? financialExportRpcName
+            : Object.hasOwn(contentExportOperations, operation.operation)
             ? contentExportRpcName
             : "sandy_tenant_lifecycle_execute",
           parameters,
