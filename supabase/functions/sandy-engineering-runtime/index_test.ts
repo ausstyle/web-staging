@@ -294,3 +294,22 @@ Deno.test("recognized fixed VM diagnostics still use the normal workload JWT and
   assert.equal(denied.state.sessions, 0);
   assert.equal(denied.state.mcp, 0);
 });
+
+Deno.test("preserved production control path uses only the normal workload session and its fixed action allowlist", async () => {
+  let calls = 0;
+  const h = await fixture({ control: async (token, body) => {
+    calls++; assert.equal(token, TOKEN); assert.equal(body.action, "list");
+    return { status: 200, body: { ok: true } };
+  }});
+  const r = await h.handler(request({ ...message, method: "engineering/control", params: { action: "list" } }));
+  assert.equal(r.status, 200); assert.equal(calls, 1); assert.equal(h.state.mcp, 0);
+  for (const params of [{ action: "delete" }, { action: "register" }, { action: "register", idempotency_key: "" }]) {
+    assert.equal((await h.handler(request({ ...message, method: "engineering/control", params }))).status, 403);
+  }
+  assert.equal(calls, 1);
+});
+Deno.test("absent control transport remains closed before session issuance", async () => {
+  const h = await fixture();
+  assert.equal((await h.handler(request({ ...message, method: "engineering/control", params: { action: "list" } }))).status, 403);
+  assert.equal(h.state.sessions, 0); assert.equal(h.state.mcp, 0);
+});
