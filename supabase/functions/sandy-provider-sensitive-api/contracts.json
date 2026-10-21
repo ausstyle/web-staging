@@ -1,0 +1,4605 @@
+[
+  {
+    "operation": "gcp.backup.data_sources.fetch_access_token.capture",
+    "provider": "gcp",
+    "service": "backupdr",
+    "kind": "fetchAccessToken",
+    "requirement": 74,
+    "provider_operation_id": "backupdr.projects.locations.backupVaults.dataSources.fetchAccessToken",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/backupdr/v1/backupdr-api.json",
+    "source_sha256": "1e11c8d80357d3044a0001a2504269311c5ae59d57b729ee8a2a0168a04e93fc",
+    "method": "POST",
+    "host": "https://backupdr.googleapis.com",
+    "path": "/v1/{+name}:fetchAccessToken",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/backupVaults/[A-Za-z0-9_-]{1,200}/dataSources/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/FetchAccessTokenRequest",
+          "$defs": {
+            "FetchAccessTokenRequest": {
+              "type": "object",
+              "properties": {
+                "generationId": {
+                  "type": "integer"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "generationId"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "FetchAccessTokenRequest": {
+          "type": "object",
+          "properties": {
+            "generationId": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "generationId"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/FetchAccessTokenRequest",
+      "$defs": {
+        "FetchAccessTokenRequest": {
+          "type": "object",
+          "properties": {
+            "generationId": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "generationId"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/FetchAccessTokenResponse",
+      "$defs": {
+        "FetchAccessTokenResponse": {
+          "type": "object",
+          "properties": {
+            "expireTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            },
+            "readLocation": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "token": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "writeLocation": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.backup.data_sources.fetch_access_token.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "918d055e00ce1f9c14e97998f9bf5443ed55a57eacafe330bcc62be554bb47f0"
+  },
+  {
+    "operation": "gcp.compute.instances.get_guest_attributes.capture",
+    "provider": "gcp",
+    "service": "compute",
+    "kind": "getGuestAttributes",
+    "requirement": 26,
+    "provider_operation_id": "compute.instances.getGuestAttributes",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/compute/v1/compute-api.json",
+    "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+    "method": "GET",
+    "host": "https://compute.googleapis.com",
+    "path": "/compute/v1/projects/elaborate-haven-511518-a5/zones/europe-west1-b/instances/{instance}/getGuestAttributes",
+    "resource_parameter": "instance",
+    "is_mutation": false,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+        },
+        "query": {
+          "type": "object",
+          "properties": {
+            "queryPath": {
+              "type": "string",
+              "maxLength": 1000
+            },
+            "variableKey": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "resource"
+      ],
+      "additionalProperties": false
+    },
+    "provider_request_schema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/GuestAttributes",
+      "$defs": {
+        "GuestAttributes": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "queryPath": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "queryValue": {
+              "$ref": "#/$defs/GuestAttributesValue"
+            },
+            "selfLink": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "variableKey": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "variableValue": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        },
+        "GuestAttributesValue": {
+          "type": "object",
+          "properties": {
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/GuestAttributesEntry"
+              },
+              "maxItems": 1000
+            }
+          },
+          "additionalProperties": true
+        },
+        "GuestAttributesEntry": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "namespace": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "value": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.compute.instances.get_guest_attributes.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "7421261590ee3990a2d69773e2f0ec15e20fdb0bf8fefd2baead45c2e3193f75"
+  },
+  {
+    "operation": "gcp.compute.instances.get_screenshot.capture",
+    "provider": "gcp",
+    "service": "compute",
+    "kind": "getScreenshot",
+    "requirement": 26,
+    "provider_operation_id": "compute.instances.getScreenshot",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/compute/v1/compute-api.json",
+    "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+    "method": "GET",
+    "host": "https://compute.googleapis.com",
+    "path": "/compute/v1/projects/elaborate-haven-511518-a5/zones/europe-west1-b/instances/{instance}/screenshot",
+    "resource_parameter": "instance",
+    "is_mutation": false,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+        }
+      },
+      "required": [
+        "resource"
+      ],
+      "additionalProperties": false
+    },
+    "provider_request_schema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/Screenshot",
+      "$defs": {
+        "Screenshot": {
+          "type": "object",
+          "properties": {
+            "contents": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "kind": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.compute.instances.get_screenshot.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "0802a431307703f91d4af19a1ac834beab30797934279075a35f6f8ca82fc0f6"
+  },
+  {
+    "operation": "gcp.compute.instances.get_shielded_instance_identity.capture",
+    "provider": "gcp",
+    "service": "compute",
+    "kind": "getShieldedInstanceIdentity",
+    "requirement": 26,
+    "provider_operation_id": "compute.instances.getShieldedInstanceIdentity",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/compute/v1/compute-api.json",
+    "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+    "method": "GET",
+    "host": "https://compute.googleapis.com",
+    "path": "/compute/v1/projects/elaborate-haven-511518-a5/zones/europe-west1-b/instances/{instance}/getShieldedInstanceIdentity",
+    "resource_parameter": "instance",
+    "is_mutation": false,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+        }
+      },
+      "required": [
+        "resource"
+      ],
+      "additionalProperties": false
+    },
+    "provider_request_schema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/ShieldedInstanceIdentity",
+      "$defs": {
+        "ShieldedInstanceIdentity": {
+          "type": "object",
+          "properties": {
+            "eccP256EncryptionKey": {
+              "$ref": "#/$defs/ShieldedInstanceIdentityEntry"
+            },
+            "eccP256SigningKey": {
+              "$ref": "#/$defs/ShieldedInstanceIdentityEntry"
+            },
+            "encryptionKey": {
+              "$ref": "#/$defs/ShieldedInstanceIdentityEntry"
+            },
+            "kind": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "signingKey": {
+              "$ref": "#/$defs/ShieldedInstanceIdentityEntry"
+            }
+          },
+          "additionalProperties": true
+        },
+        "ShieldedInstanceIdentityEntry": {
+          "type": "object",
+          "properties": {
+            "ekCert": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "ekPub": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.compute.instances.get_shielded_instance_identity.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "7b32967ad9c49f60c803c6ebeea1a6312566e28334f36a38f90bda1f885d0fa4"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "asymmetricDecrypt",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.asymmetricDecrypt",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:asymmetricDecrypt",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/AsymmetricDecryptRequest",
+          "$defs": {
+            "AsymmetricDecryptRequest": {
+              "type": "object",
+              "properties": {
+                "ciphertext": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "ciphertext"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "AsymmetricDecryptRequest": {
+          "type": "object",
+          "properties": {
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/AsymmetricDecryptRequest",
+      "$defs": {
+        "AsymmetricDecryptRequest": {
+          "type": "object",
+          "properties": {
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/AsymmetricDecryptResponse",
+      "$defs": {
+        "AsymmetricDecryptResponse": {
+          "type": "object",
+          "properties": {
+            "plaintext": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintextCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "verifiedCiphertextCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "ciphertextCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "plaintextCrc32c",
+      "verifiedCiphertextCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedCiphertextCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "15b62a287a9c031e96c65e23478a944bc9a9f583384ac909d6a0f6e857c192b4"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "asymmetricSign",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.asymmetricSign",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:asymmetricSign",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/AsymmetricSignRequest",
+          "$defs": {
+            "AsymmetricSignRequest": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "digest": {
+                  "$ref": "#/$defs/Digest"
+                }
+              },
+              "additionalProperties": false
+            },
+            "Digest": {
+              "type": "object",
+              "properties": {
+                "externalMu": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "sha384": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "sha512": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "AsymmetricSignRequest": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "digest": {
+              "$ref": "#/$defs/Digest"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Digest": {
+          "type": "object",
+          "properties": {
+            "externalMu": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sha256": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sha384": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sha512": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/AsymmetricSignRequest",
+      "$defs": {
+        "AsymmetricSignRequest": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "digest": {
+              "$ref": "#/$defs/Digest"
+            }
+          },
+          "additionalProperties": false
+        },
+        "Digest": {
+          "type": "object",
+          "properties": {
+            "externalMu": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sha256": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sha384": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sha512": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/AsymmetricSignResponse",
+      "$defs": {
+        "AsymmetricSignResponse": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "signature": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "signatureCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "verifiedDataCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedDigestCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "dataCrc32c",
+      "digestCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "signatureCrc32c",
+      "verifiedDataCrc32c",
+      "verifiedDigestCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedDataCrc32c",
+      "verifiedDigestCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.asymmetric_sign.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "f396e90c14e9e299b706ad13d8955eb08c742e3f66c702bd5df6d2a16cffc262"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.decapsulate.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "decapsulate",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.decapsulate",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:decapsulate",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/DecapsulateRequest",
+          "$defs": {
+            "DecapsulateRequest": {
+              "type": "object",
+              "properties": {
+                "ciphertext": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "ciphertext"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "DecapsulateRequest": {
+          "type": "object",
+          "properties": {
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/DecapsulateRequest",
+      "$defs": {
+        "DecapsulateRequest": {
+          "type": "object",
+          "properties": {
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/DecapsulateResponse",
+      "$defs": {
+        "DecapsulateResponse": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "sharedSecret": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "sharedSecretCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "verifiedCiphertextCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "ciphertextCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "sharedSecretCrc32c",
+      "verifiedCiphertextCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedCiphertextCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.decapsulate.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "c4f4153ed701cf6ed6fe0458e4eb8b0bb3514ece329bd41e3b2b4bc8d47fc426"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "exportTrustedKeyWrappedCryptoKeyVersion",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.exportTrustedKeyWrappedCryptoKeyVersion",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "GET",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:exportTrustedKeyWrappedCryptoKeyVersion",
+    "resource_parameter": "name",
+    "is_mutation": false,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "query": {
+          "type": "object",
+          "properties": {
+            "wrappingKey": {
+              "type": "string",
+              "maxLength": 1000
+            }
+          },
+          "required": [
+            "wrappingKey"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "resource",
+        "query"
+      ],
+      "additionalProperties": false
+    },
+    "provider_request_schema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/ExportTrustedKeyWrappedCryptoKeyVersionResponse",
+      "$defs": {
+        "ExportTrustedKeyWrappedCryptoKeyVersionResponse": {
+          "type": "object",
+          "properties": {
+            "wrappedKey": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "wrappedKeyCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [
+      "wrappedKeyCrc32c"
+    ],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "94a54f6f6bab5af08304b3a05705bffa0600b889b4ad8617d7eb1fbb14f513d5"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.get_public_key.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "getPublicKey",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.getPublicKey",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "GET",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}/publicKey",
+    "resource_parameter": "name",
+    "is_mutation": false,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "query": {
+          "type": "object",
+          "properties": {
+            "publicKeyFormat": {
+              "type": "string",
+              "enum": [
+                "PUBLIC_KEY_FORMAT_UNSPECIFIED",
+                "PEM",
+                "DER",
+                "NIST_PQC",
+                "XWING_RAW_BYTES"
+              ],
+              "maxLength": 1000
+            }
+          },
+          "required": [],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "resource"
+      ],
+      "additionalProperties": false
+    },
+    "provider_request_schema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/PublicKey",
+      "$defs": {
+        "PublicKey": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED",
+                "GOOGLE_SYMMETRIC_ENCRYPTION",
+                "AES_128_GCM",
+                "AES_256_GCM",
+                "AES_128_CBC",
+                "AES_256_CBC",
+                "AES_128_CTR",
+                "AES_256_CTR",
+                "RSA_SIGN_PSS_2048_SHA256",
+                "RSA_SIGN_PSS_3072_SHA256",
+                "RSA_SIGN_PSS_4096_SHA256",
+                "RSA_SIGN_PSS_4096_SHA512",
+                "RSA_SIGN_PKCS1_2048_SHA256",
+                "RSA_SIGN_PKCS1_3072_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA512",
+                "RSA_SIGN_RAW_PKCS1_2048",
+                "RSA_SIGN_RAW_PKCS1_3072",
+                "RSA_SIGN_RAW_PKCS1_4096",
+                "RSA_DECRYPT_OAEP_2048_SHA256",
+                "RSA_DECRYPT_OAEP_3072_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA512",
+                "RSA_DECRYPT_OAEP_2048_SHA1",
+                "RSA_DECRYPT_OAEP_3072_SHA1",
+                "RSA_DECRYPT_OAEP_4096_SHA1",
+                "EC_SIGN_P256_SHA256",
+                "EC_SIGN_P384_SHA384",
+                "EC_SIGN_SECP256K1_SHA256",
+                "EC_SIGN_ED25519",
+                "HMAC_SHA256",
+                "HMAC_SHA1",
+                "HMAC_SHA384",
+                "HMAC_SHA512",
+                "HMAC_SHA224",
+                "EXTERNAL_SYMMETRIC_ENCRYPTION",
+                "ML_KEM_768",
+                "ML_KEM_1024",
+                "KEM_XWING",
+                "PQ_SIGN_ML_DSA_44",
+                "PQ_SIGN_ML_DSA_65",
+                "PQ_SIGN_ML_DSA_87",
+                "PQ_SIGN_SLH_DSA_SHA2_128S",
+                "PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256",
+                "PQ_SIGN_ML_DSA_44_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_65_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_87_EXTERNAL_MU",
+                "KEM_ECDH_P256",
+                "KEM_ECDH_P384",
+                "AES_256_KWP"
+              ],
+              "maxLength": 10000
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "pem": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "pemCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "publicKey": {
+              "$ref": "#/$defs/ChecksummedData"
+            },
+            "publicKeyFormat": {
+              "type": "string",
+              "enum": [
+                "PUBLIC_KEY_FORMAT_UNSPECIFIED",
+                "PEM",
+                "DER",
+                "NIST_PQC",
+                "XWING_RAW_BYTES"
+              ],
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        },
+        "ChecksummedData": {
+          "type": "object",
+          "properties": {
+            "crc32cChecksum": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "data": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [
+      "pemCrc32c"
+    ],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.get_public_key.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "316d37d9f0732fe5d5b81b6fab73b7cccecc3aab69d32eca4d693cd8328943fd"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "importTrustedKeyWrappedCryptoKeyVersion",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.importTrustedKeyWrappedCryptoKeyVersion",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+parent}/cryptoKeyVersions:importTrustedKeyWrappedCryptoKeyVersion",
+    "resource_parameter": "parent",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/ImportTrustedKeyWrappedCryptoKeyVersionRequest",
+          "$defs": {
+            "ImportTrustedKeyWrappedCryptoKeyVersionRequest": {
+              "type": "object",
+              "properties": {
+                "algorithm": {
+                  "type": "string",
+                  "enum": [
+                    "CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED",
+                    "GOOGLE_SYMMETRIC_ENCRYPTION",
+                    "AES_128_GCM",
+                    "AES_256_GCM",
+                    "AES_128_CBC",
+                    "AES_256_CBC",
+                    "AES_128_CTR",
+                    "AES_256_CTR",
+                    "RSA_SIGN_PSS_2048_SHA256",
+                    "RSA_SIGN_PSS_3072_SHA256",
+                    "RSA_SIGN_PSS_4096_SHA256",
+                    "RSA_SIGN_PSS_4096_SHA512",
+                    "RSA_SIGN_PKCS1_2048_SHA256",
+                    "RSA_SIGN_PKCS1_3072_SHA256",
+                    "RSA_SIGN_PKCS1_4096_SHA256",
+                    "RSA_SIGN_PKCS1_4096_SHA512",
+                    "RSA_SIGN_RAW_PKCS1_2048",
+                    "RSA_SIGN_RAW_PKCS1_3072",
+                    "RSA_SIGN_RAW_PKCS1_4096",
+                    "RSA_DECRYPT_OAEP_2048_SHA256",
+                    "RSA_DECRYPT_OAEP_3072_SHA256",
+                    "RSA_DECRYPT_OAEP_4096_SHA256",
+                    "RSA_DECRYPT_OAEP_4096_SHA512",
+                    "RSA_DECRYPT_OAEP_2048_SHA1",
+                    "RSA_DECRYPT_OAEP_3072_SHA1",
+                    "RSA_DECRYPT_OAEP_4096_SHA1",
+                    "EC_SIGN_P256_SHA256",
+                    "EC_SIGN_P384_SHA384",
+                    "EC_SIGN_SECP256K1_SHA256",
+                    "EC_SIGN_ED25519",
+                    "HMAC_SHA256",
+                    "HMAC_SHA1",
+                    "HMAC_SHA384",
+                    "HMAC_SHA512",
+                    "HMAC_SHA224",
+                    "EXTERNAL_SYMMETRIC_ENCRYPTION",
+                    "ML_KEM_768",
+                    "ML_KEM_1024",
+                    "KEM_XWING",
+                    "PQ_SIGN_ML_DSA_44",
+                    "PQ_SIGN_ML_DSA_65",
+                    "PQ_SIGN_ML_DSA_87",
+                    "PQ_SIGN_SLH_DSA_SHA2_128S",
+                    "PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256",
+                    "PQ_SIGN_ML_DSA_44_EXTERNAL_MU",
+                    "PQ_SIGN_ML_DSA_65_EXTERNAL_MU",
+                    "PQ_SIGN_ML_DSA_87_EXTERNAL_MU",
+                    "KEM_ECDH_P256",
+                    "KEM_ECDH_P384",
+                    "AES_256_KWP"
+                  ],
+                  "maxLength": 10000
+                },
+                "cryptoKeyVersion": {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                "importingKey": {
+                  "type": "string",
+                  "maxLength": 10000
+                },
+                "wrappedKey": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "algorithm",
+                "importingKey",
+                "wrappedKey"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "ImportTrustedKeyWrappedCryptoKeyVersionRequest": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED",
+                "GOOGLE_SYMMETRIC_ENCRYPTION",
+                "AES_128_GCM",
+                "AES_256_GCM",
+                "AES_128_CBC",
+                "AES_256_CBC",
+                "AES_128_CTR",
+                "AES_256_CTR",
+                "RSA_SIGN_PSS_2048_SHA256",
+                "RSA_SIGN_PSS_3072_SHA256",
+                "RSA_SIGN_PSS_4096_SHA256",
+                "RSA_SIGN_PSS_4096_SHA512",
+                "RSA_SIGN_PKCS1_2048_SHA256",
+                "RSA_SIGN_PKCS1_3072_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA512",
+                "RSA_SIGN_RAW_PKCS1_2048",
+                "RSA_SIGN_RAW_PKCS1_3072",
+                "RSA_SIGN_RAW_PKCS1_4096",
+                "RSA_DECRYPT_OAEP_2048_SHA256",
+                "RSA_DECRYPT_OAEP_3072_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA512",
+                "RSA_DECRYPT_OAEP_2048_SHA1",
+                "RSA_DECRYPT_OAEP_3072_SHA1",
+                "RSA_DECRYPT_OAEP_4096_SHA1",
+                "EC_SIGN_P256_SHA256",
+                "EC_SIGN_P384_SHA384",
+                "EC_SIGN_SECP256K1_SHA256",
+                "EC_SIGN_ED25519",
+                "HMAC_SHA256",
+                "HMAC_SHA1",
+                "HMAC_SHA384",
+                "HMAC_SHA512",
+                "HMAC_SHA224",
+                "EXTERNAL_SYMMETRIC_ENCRYPTION",
+                "ML_KEM_768",
+                "ML_KEM_1024",
+                "KEM_XWING",
+                "PQ_SIGN_ML_DSA_44",
+                "PQ_SIGN_ML_DSA_65",
+                "PQ_SIGN_ML_DSA_87",
+                "PQ_SIGN_SLH_DSA_SHA2_128S",
+                "PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256",
+                "PQ_SIGN_ML_DSA_44_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_65_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_87_EXTERNAL_MU",
+                "KEM_ECDH_P256",
+                "KEM_ECDH_P384",
+                "AES_256_KWP"
+              ],
+              "maxLength": 10000
+            },
+            "cryptoKeyVersion": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "importingKey": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "wrappedKey": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "algorithm",
+            "importingKey",
+            "wrappedKey"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/ImportTrustedKeyWrappedCryptoKeyVersionRequest",
+      "$defs": {
+        "ImportTrustedKeyWrappedCryptoKeyVersionRequest": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED",
+                "GOOGLE_SYMMETRIC_ENCRYPTION",
+                "AES_128_GCM",
+                "AES_256_GCM",
+                "AES_128_CBC",
+                "AES_256_CBC",
+                "AES_128_CTR",
+                "AES_256_CTR",
+                "RSA_SIGN_PSS_2048_SHA256",
+                "RSA_SIGN_PSS_3072_SHA256",
+                "RSA_SIGN_PSS_4096_SHA256",
+                "RSA_SIGN_PSS_4096_SHA512",
+                "RSA_SIGN_PKCS1_2048_SHA256",
+                "RSA_SIGN_PKCS1_3072_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA512",
+                "RSA_SIGN_RAW_PKCS1_2048",
+                "RSA_SIGN_RAW_PKCS1_3072",
+                "RSA_SIGN_RAW_PKCS1_4096",
+                "RSA_DECRYPT_OAEP_2048_SHA256",
+                "RSA_DECRYPT_OAEP_3072_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA512",
+                "RSA_DECRYPT_OAEP_2048_SHA1",
+                "RSA_DECRYPT_OAEP_3072_SHA1",
+                "RSA_DECRYPT_OAEP_4096_SHA1",
+                "EC_SIGN_P256_SHA256",
+                "EC_SIGN_P384_SHA384",
+                "EC_SIGN_SECP256K1_SHA256",
+                "EC_SIGN_ED25519",
+                "HMAC_SHA256",
+                "HMAC_SHA1",
+                "HMAC_SHA384",
+                "HMAC_SHA512",
+                "HMAC_SHA224",
+                "EXTERNAL_SYMMETRIC_ENCRYPTION",
+                "ML_KEM_768",
+                "ML_KEM_1024",
+                "KEM_XWING",
+                "PQ_SIGN_ML_DSA_44",
+                "PQ_SIGN_ML_DSA_65",
+                "PQ_SIGN_ML_DSA_87",
+                "PQ_SIGN_SLH_DSA_SHA2_128S",
+                "PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256",
+                "PQ_SIGN_ML_DSA_44_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_65_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_87_EXTERNAL_MU",
+                "KEM_ECDH_P256",
+                "KEM_ECDH_P384",
+                "AES_256_KWP"
+              ],
+              "maxLength": 10000
+            },
+            "cryptoKeyVersion": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "importingKey": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "wrappedKey": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "algorithm",
+            "importingKey",
+            "wrappedKey"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/CryptoKeyVersion",
+      "$defs": {
+        "CryptoKeyVersion": {
+          "type": "object",
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": [
+                "CRYPTO_KEY_VERSION_ALGORITHM_UNSPECIFIED",
+                "GOOGLE_SYMMETRIC_ENCRYPTION",
+                "AES_128_GCM",
+                "AES_256_GCM",
+                "AES_128_CBC",
+                "AES_256_CBC",
+                "AES_128_CTR",
+                "AES_256_CTR",
+                "RSA_SIGN_PSS_2048_SHA256",
+                "RSA_SIGN_PSS_3072_SHA256",
+                "RSA_SIGN_PSS_4096_SHA256",
+                "RSA_SIGN_PSS_4096_SHA512",
+                "RSA_SIGN_PKCS1_2048_SHA256",
+                "RSA_SIGN_PKCS1_3072_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA256",
+                "RSA_SIGN_PKCS1_4096_SHA512",
+                "RSA_SIGN_RAW_PKCS1_2048",
+                "RSA_SIGN_RAW_PKCS1_3072",
+                "RSA_SIGN_RAW_PKCS1_4096",
+                "RSA_DECRYPT_OAEP_2048_SHA256",
+                "RSA_DECRYPT_OAEP_3072_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA256",
+                "RSA_DECRYPT_OAEP_4096_SHA512",
+                "RSA_DECRYPT_OAEP_2048_SHA1",
+                "RSA_DECRYPT_OAEP_3072_SHA1",
+                "RSA_DECRYPT_OAEP_4096_SHA1",
+                "EC_SIGN_P256_SHA256",
+                "EC_SIGN_P384_SHA384",
+                "EC_SIGN_SECP256K1_SHA256",
+                "EC_SIGN_ED25519",
+                "HMAC_SHA256",
+                "HMAC_SHA1",
+                "HMAC_SHA384",
+                "HMAC_SHA512",
+                "HMAC_SHA224",
+                "EXTERNAL_SYMMETRIC_ENCRYPTION",
+                "ML_KEM_768",
+                "ML_KEM_1024",
+                "KEM_XWING",
+                "PQ_SIGN_ML_DSA_44",
+                "PQ_SIGN_ML_DSA_65",
+                "PQ_SIGN_ML_DSA_87",
+                "PQ_SIGN_SLH_DSA_SHA2_128S",
+                "PQ_SIGN_HASH_SLH_DSA_SHA2_128S_SHA256",
+                "PQ_SIGN_ML_DSA_44_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_65_EXTERNAL_MU",
+                "PQ_SIGN_ML_DSA_87_EXTERNAL_MU",
+                "KEM_ECDH_P256",
+                "KEM_ECDH_P384",
+                "AES_256_KWP"
+              ],
+              "maxLength": 10000
+            },
+            "attestation": {
+              "$ref": "#/$defs/KeyOperationAttestation"
+            },
+            "createTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            },
+            "destroyEventTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            },
+            "destroyTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            },
+            "externalDestructionFailureReason": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "externalProtectionLevelOptions": {
+              "$ref": "#/$defs/ExternalProtectionLevelOptions"
+            },
+            "generateTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            },
+            "generationFailureReason": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "hsmTrusted": {
+              "type": "boolean"
+            },
+            "importFailureReason": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "importJob": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "importTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "reimportEligible": {
+              "type": "boolean"
+            },
+            "state": {
+              "type": "string",
+              "enum": [
+                "CRYPTO_KEY_VERSION_STATE_UNSPECIFIED",
+                "PENDING_GENERATION",
+                "ENABLED",
+                "DISABLED",
+                "DESTROYED",
+                "DESTROY_SCHEDULED",
+                "PENDING_IMPORT",
+                "IMPORT_FAILED",
+                "GENERATION_FAILED",
+                "PENDING_EXTERNAL_DESTRUCTION",
+                "EXTERNAL_DESTRUCTION_FAILED"
+              ],
+              "maxLength": 10000
+            },
+            "trustedWrappingEnabled": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        },
+        "KeyOperationAttestation": {
+          "type": "object",
+          "properties": {
+            "certChains": {
+              "$ref": "#/$defs/CertificateChains"
+            },
+            "content": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "ATTESTATION_FORMAT_UNSPECIFIED",
+                "CAVIUM_V1_COMPRESSED",
+                "CAVIUM_V2_COMPRESSED",
+                "CAVIUM_V209"
+              ],
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        },
+        "CertificateChains": {
+          "type": "object",
+          "properties": {
+            "caviumCerts": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "maxItems": 1000
+            },
+            "googleCardCerts": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "maxItems": 1000
+            },
+            "googlePartitionCerts": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "maxItems": 1000
+            }
+          },
+          "additionalProperties": true
+        },
+        "ExternalProtectionLevelOptions": {
+          "type": "object",
+          "properties": {
+            "ekmConnectionBackendOverride": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "ekmConnectionKeyPath": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "externalKeyUri": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "c9426a3ee51a2c1a46a78c4251953cee48633fed7d427803105797b547b5be36"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.mac_sign.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "macSign",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.macSign",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:macSign",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/MacSignRequest",
+          "$defs": {
+            "MacSignRequest": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "data"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "MacSignRequest": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "data"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/MacSignRequest",
+      "$defs": {
+        "MacSignRequest": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "data"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/MacSignResponse",
+      "$defs": {
+        "MacSignResponse": {
+          "type": "object",
+          "properties": {
+            "mac": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "macCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "verifiedDataCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "dataCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "macCrc32c",
+      "verifiedDataCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedDataCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.mac_sign.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "e49504f92373d7bcf9d39595adf89f114e86871996754c00d27139c82ce9594e"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.mac_verify.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "macVerify",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.macVerify",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:macVerify",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/MacVerifyRequest",
+          "$defs": {
+            "MacVerifyRequest": {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "mac": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "data",
+                "mac"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "MacVerifyRequest": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "mac": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "data",
+            "mac"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/MacVerifyRequest",
+      "$defs": {
+        "MacVerifyRequest": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "mac": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "data",
+            "mac"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/MacVerifyResponse",
+      "$defs": {
+        "MacVerifyResponse": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "success": {
+              "type": "boolean"
+            },
+            "verifiedDataCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedMacCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedSuccessIntegrity": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "dataCrc32c",
+      "macCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "verifiedDataCrc32c",
+      "verifiedMacCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedDataCrc32c",
+      "verifiedMacCrc32c",
+      "verifiedSuccessIntegrity"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.mac_verify.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "631cfc000b03e55916c7517c2eba6b3179461f3bd3db2a909b293748475a6a6f"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.raw_decrypt.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "rawDecrypt",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.rawDecrypt",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:rawDecrypt",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/RawDecryptRequest",
+          "$defs": {
+            "RawDecryptRequest": {
+              "type": "object",
+              "properties": {
+                "additionalAuthenticatedData": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "ciphertext": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "initializationVector": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "tagLength": {
+                  "type": "integer"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "ciphertext",
+                "initializationVector"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "RawDecryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "initializationVector": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "tagLength": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext",
+            "initializationVector"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/RawDecryptRequest",
+      "$defs": {
+        "RawDecryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "initializationVector": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "tagLength": {
+              "type": "integer"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext",
+            "initializationVector"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/RawDecryptResponse",
+      "$defs": {
+        "RawDecryptResponse": {
+          "type": "object",
+          "properties": {
+            "plaintext": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintextCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "verifiedAdditionalAuthenticatedDataCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedCiphertextCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedInitializationVectorCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "additionalAuthenticatedDataCrc32c",
+      "ciphertextCrc32c",
+      "initializationVectorCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "plaintextCrc32c",
+      "verifiedAdditionalAuthenticatedDataCrc32c",
+      "verifiedCiphertextCrc32c",
+      "verifiedInitializationVectorCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedAdditionalAuthenticatedDataCrc32c",
+      "verifiedCiphertextCrc32c",
+      "verifiedInitializationVectorCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.raw_decrypt.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "4335e6d10c4511e7699aac99b9242b009bcefb114277d066d4c8f501671a73e5"
+  },
+  {
+    "operation": "gcp.kms.crypto_key_versions.raw_encrypt.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "rawEncrypt",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.rawEncrypt",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:rawEncrypt",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}/cryptoKeyVersions/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/RawEncryptRequest",
+          "$defs": {
+            "RawEncryptRequest": {
+              "type": "object",
+              "properties": {
+                "additionalAuthenticatedData": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "initializationVector": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "plaintext": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "plaintext"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "RawEncryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "initializationVector": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "plaintext"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/RawEncryptRequest",
+      "$defs": {
+        "RawEncryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "initializationVector": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "plaintext"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/RawEncryptResponse",
+      "$defs": {
+        "RawEncryptResponse": {
+          "type": "object",
+          "properties": {
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "ciphertextCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "initializationVector": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "initializationVectorCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "tagLength": {
+              "type": "integer"
+            },
+            "verifiedAdditionalAuthenticatedDataCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedInitializationVectorCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedPlaintextCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "additionalAuthenticatedDataCrc32c",
+      "initializationVectorCrc32c",
+      "plaintextCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "ciphertextCrc32c",
+      "initializationVectorCrc32c",
+      "verifiedAdditionalAuthenticatedDataCrc32c",
+      "verifiedInitializationVectorCrc32c",
+      "verifiedPlaintextCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedAdditionalAuthenticatedDataCrc32c",
+      "verifiedInitializationVectorCrc32c",
+      "verifiedPlaintextCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_key_versions.raw_encrypt.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "7e9fadaa2f97e9aa6df6134295d43ccb47679d0ce6ae179c1475c99eb4733c27"
+  },
+  {
+    "operation": "gcp.kms.crypto_keys.decrypt.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "decrypt",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.decrypt",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:decrypt",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}(?:/cryptoKeyVersions/[0-9]{1,20})?$"
+        },
+        "body": {
+          "$ref": "#/$defs/DecryptRequest",
+          "$defs": {
+            "DecryptRequest": {
+              "type": "object",
+              "properties": {
+                "additionalAuthenticatedData": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "ciphertext": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "ciphertext"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "DecryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/DecryptRequest",
+      "$defs": {
+        "DecryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "ciphertext"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/DecryptResponse",
+      "$defs": {
+        "DecryptResponse": {
+          "type": "object",
+          "properties": {
+            "plaintext": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintextCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "usedPrimary": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "additionalAuthenticatedDataCrc32c",
+      "ciphertextCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "plaintextCrc32c"
+    ],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_keys.decrypt.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "6c126f6ed27e3292524405250c55e3aca9d6a58fb3fe7ee79e056733d7f19c73"
+  },
+  {
+    "operation": "gcp.kms.crypto_keys.encrypt.capture",
+    "provider": "gcp",
+    "service": "cloudkms",
+    "kind": "encrypt",
+    "requirement": 73,
+    "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.encrypt",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "method": "POST",
+    "host": "https://cloudkms.googleapis.com",
+    "path": "/v1/{+name}:encrypt",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/keyRings/[A-Za-z0-9_-]{1,200}/cryptoKeys/[A-Za-z0-9_-]{1,200}(?:/cryptoKeyVersions/[0-9]{1,20})?$"
+        },
+        "body": {
+          "$ref": "#/$defs/EncryptRequest",
+          "$defs": {
+            "EncryptRequest": {
+              "type": "object",
+              "properties": {
+                "additionalAuthenticatedData": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "plaintext": {
+                  "type": "string",
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                }
+              },
+              "additionalProperties": false,
+              "required": [
+                "plaintext"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "EncryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "plaintext"
+          ]
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/EncryptRequest",
+      "$defs": {
+        "EncryptRequest": {
+          "type": "object",
+          "properties": {
+            "additionalAuthenticatedData": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "plaintext": {
+              "type": "string",
+              "maxLength": 87384,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            }
+          },
+          "additionalProperties": false,
+          "required": [
+            "plaintext"
+          ]
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/EncryptResponse",
+      "$defs": {
+        "EncryptResponse": {
+          "type": "object",
+          "properties": {
+            "ciphertext": {
+              "type": "string",
+              "maxLength": 1398104,
+              "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+            },
+            "ciphertextCrc32c": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "name": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "protectionLevel": {
+              "type": "string",
+              "enum": [
+                "PROTECTION_LEVEL_UNSPECIFIED",
+                "SOFTWARE",
+                "HSM",
+                "EXTERNAL",
+                "EXTERNAL_VPC",
+                "HSM_SINGLE_TENANT"
+              ],
+              "maxLength": 10000
+            },
+            "verifiedAdditionalAuthenticatedDataCrc32c": {
+              "type": "boolean"
+            },
+            "verifiedPlaintextCrc32c": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [
+      "additionalAuthenticatedDataCrc32c",
+      "plaintextCrc32c"
+    ],
+    "provider_response_crc_fields": [
+      "ciphertextCrc32c",
+      "verifiedAdditionalAuthenticatedDataCrc32c",
+      "verifiedPlaintextCrc32c"
+    ],
+    "provider_response_verified_fields": [
+      "verifiedAdditionalAuthenticatedDataCrc32c",
+      "verifiedPlaintextCrc32c"
+    ],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kms.crypto_keys.encrypt.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "4c90df25cc68d7893071b48a1099499c086bf1a862dd3d45010ddec51b4e0204"
+  },
+  {
+    "operation": "gcp.kubernetes.clusters.get_jwks.capture",
+    "provider": "gcp",
+    "service": "container",
+    "kind": "getJwks",
+    "requirement": 62,
+    "provider_operation_id": "container.projects.locations.clusters.getJwks",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/container/v1/container-api.json",
+    "source_sha256": "a14f9220095bc4eafafa86c17e1436eb4e1393320e6da0e0002795b4f74f96c0",
+    "method": "GET",
+    "host": "https://container.googleapis.com",
+    "path": "/v1/{+parent}/jwks",
+    "resource_parameter": "parent",
+    "is_mutation": false,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/locations/europe-west1/clusters/[A-Za-z0-9_-]{1,200}$"
+        }
+      },
+      "required": [
+        "resource"
+      ],
+      "additionalProperties": false
+    },
+    "provider_request_schema": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/GetJSONWebKeysResponse",
+      "$defs": {
+        "GetJSONWebKeysResponse": {
+          "type": "object",
+          "properties": {
+            "cacheHeader": {
+              "$ref": "#/$defs/HttpCacheControlResponseHeader"
+            },
+            "keys": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Jwk"
+              },
+              "maxItems": 1000
+            }
+          },
+          "additionalProperties": true
+        },
+        "HttpCacheControlResponseHeader": {
+          "type": "object",
+          "properties": {
+            "age": {
+              "type": "string",
+              "maxLength": 10000,
+              "pattern": "^-?[0-9]{1,20}$"
+            },
+            "directive": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "expires": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        },
+        "Jwk": {
+          "type": "object",
+          "properties": {
+            "alg": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "crv": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "e": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "kid": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "kty": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "n": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "use": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "x": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "y": {
+              "type": "string",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.kubernetes.clusters.get_jwks.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "eb74e16d92589d865e6e53367c8ad55f0f4b05315f386148f7fde0368fa30ad4"
+  },
+  {
+    "operation": "gcp.monitoring.notification_channels.get_verification_code.capture",
+    "provider": "gcp",
+    "service": "monitoring",
+    "kind": "getVerificationCode",
+    "requirement": 68,
+    "provider_operation_id": "monitoring.projects.notificationChannels.getVerificationCode",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/monitoring/v3/monitoring-api.json",
+    "source_sha256": "fd24b71316e15d0aed479a873bdc229d03fea212f2a97736c6bb09208766183d",
+    "method": "POST",
+    "host": "https://monitoring.googleapis.com",
+    "path": "/v3/{+name}:getVerificationCode",
+    "resource_parameter": "name",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000,
+          "pattern": "^projects/elaborate-haven-511518-a5/notificationChannels/[A-Za-z0-9_-]{1,200}$"
+        },
+        "body": {
+          "$ref": "#/$defs/GetNotificationChannelVerificationCodeRequest",
+          "$defs": {
+            "GetNotificationChannelVerificationCodeRequest": {
+              "type": "object",
+              "properties": {
+                "expireTime": {
+                  "type": "string",
+                  "format": "date-time",
+                  "maxLength": 10000
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        }
+      },
+      "required": [
+        "resource",
+        "body"
+      ],
+      "additionalProperties": false,
+      "$defs": {
+        "GetNotificationChannelVerificationCodeRequest": {
+          "type": "object",
+          "properties": {
+            "expireTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "provider_request_schema": {
+      "$ref": "#/$defs/GetNotificationChannelVerificationCodeRequest",
+      "$defs": {
+        "GetNotificationChannelVerificationCodeRequest": {
+          "type": "object",
+          "properties": {
+            "expireTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "provider_response_schema": {
+      "$ref": "#/$defs/GetNotificationChannelVerificationCodeResponse",
+      "$defs": {
+        "GetNotificationChannelVerificationCodeResponse": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "maxLength": 10000
+            },
+            "expireTime": {
+              "type": "string",
+              "format": "date-time",
+              "maxLength": 10000
+            }
+          },
+          "additionalProperties": true
+        }
+      }
+    },
+    "provider_request_crc_fields": [],
+    "provider_response_crc_fields": [],
+    "provider_response_verified_fields": [],
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "gcp.monitoring.notification_channels.get_verification_code.capture"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "gcp"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 200
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "custody_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "byte_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1048576
+            },
+            "media_type": {
+              "const": "application/json"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "content_returned": {
+              "const": false
+            },
+            "transfer_state": {
+              "const": "captured_private"
+            }
+          },
+          "required": [
+            "custody_id",
+            "sha256",
+            "byte_length",
+            "media_type",
+            "expires_at",
+            "content_returned",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "4de848e8a26d3c4016891b6dce47839cfcc8162984bc9bb47ad7c4baeb8e3362"
+  }
+]
