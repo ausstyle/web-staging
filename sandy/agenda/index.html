@@ -443,6 +443,17 @@ html,body{max-width:100%;overflow-x:clip}
 .attentionCount{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:650;color:#666;background:#ececec;border-radius:100px;padding:4px 10px}
 .attentionChevron{font-size:13px;color:#777}
 .attention>.attentionrow{margin:0 14px}
+
+/* Draft rows use identical outline columns and an explicit save action. */
+#app .outlineDraft .taskrow{display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:9px!important;padding:5px 8px!important;min-height:44px!important}
+#app .outlineDraft .draftDragSpacer{width:22px;min-width:22px;visibility:hidden;flex:none}
+#app .outlineDraft .branchToggle{width:22px;min-width:22px;flex:none;display:inline-grid;place-items:center;color:#aaa}
+#app .outlineDraft .draftCheckSpacer{display:inline-block;width:20px;min-width:20px;height:20px;border:2px solid #c8ceca;border-radius:6px;opacity:.65;flex:none}
+#app .outlineDraft .taskmain{flex:1 1 0!important;max-width:none!important;min-width:0!important}
+#app .outlineDraft .inlineTitle{display:block;width:100%!important;min-width:0;padding:6px 3px;font-size:14px;font-weight:600}
+#app .outlineDraft .draftConfirm{flex:none;background:#243c30;color:#fff;border:0;border-radius:8px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;min-height:34px}
+#app .outlineDraft .draftConfirm:hover{background:#365747}
+#app .outlineDraft .draftConfirm:focus-visible{outline:2px solid #668a6a;outline-offset:2px}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -1188,9 +1199,12 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
  if(!box){toast("Could not open the parent task for editing. Please refresh.",true);return}
  if(!parent)box.querySelector(":scope > .empty")?.remove();
  const ghost=el("div",(parent?"childrow ":"task ")+"outlineDraft"),row=el("div","taskrow"),main=el("div","taskmain");
- const check=el("input","taskcheck");check.type="checkbox";check.disabled=true;check.setAttribute("aria-label","Unsaved task");
- const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder="New task…";field.setAttribute("aria-label","New task");
- main.append(field);row.append(el("span","branchToggle","·"),check,main);ghost.append(row);
+ // Use the same drag-handle, disclosure and checkbox columns as existing task rows.
+ const dragSpace=el("span","dragHandle draftDragSpacer","⠿");dragSpace.setAttribute("aria-hidden","true");
+ const check=el("span","taskcheck draftCheckSpacer");check.setAttribute("aria-hidden","true");
+ const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder=parent?"New subtask…":"New task…";field.setAttribute("aria-label",parent?"New subtask":"New task");
+ const confirm=el("button","draftConfirm","Add task");confirm.type="button";confirm.title="Save task (Enter)";
+ main.append(field);row.append(dragSpace,el("span","branchToggle","·"),check,main,confirm);ghost.append(row);
  const prev=after?document.getElementById("task-"+after):null;
  box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:box.querySelector(":scope > .addchild"));
  let closed=false;
@@ -1200,6 +1214,8 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
   const ok=await outlineCreate(field.value.trim(),parent,after,company);
   if(!ok){closed=false;field.disabled=false;field.focus()}
  }
+ confirm.addEventListener("mousedown",e=>e.preventDefault());
+ confirm.addEventListener("click",()=>save());
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
   if(e.key==="Enter"){e.preventDefault();save()}
