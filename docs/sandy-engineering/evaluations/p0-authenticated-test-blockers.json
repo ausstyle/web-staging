@@ -15,20 +15,22 @@
       "resolution": "Authenticated owner approval was recorded for the pinned commit and manifest. Existing renewable Controller metadata and configured Management deployment credentials completed the governed release.",
       "owner_approval_verified": true,
       "deployed_versions": {
-        "sandy-agent-runtime-v4": 24,
-        "sandy-workspace": 41
+        "sandy-agent-runtime-v4": 29,
+        "sandy-workspace": 46
       },
       "current_release_blocked_by_expired_controller_token": false
     },
     {
       "test": "normal customer browser/web ingress acceptance",
-      "status": "not_run",
-      "blocker": "No normal signed-in pilot web execution has been supplied; the optional token was explicitly skipped. Existing authorized test APIs use channel=test and cannot certify workspace/web ingress.",
-      "required_principal": "normal consenting customer session",
+      "status": "executed_failed_quality",
+      "blocker": "Authentication and same-conversation ingress passed. The actual follow-up returned zero overdue tasks instead of one; repair is registered and awaits exact scoped owner approval.",
+      "required_principal": "Existing normal signed-in pilot session used successfully",
       "blocked_by_controller_token": false,
       "secret_requested": false,
       "credential_substituted": false,
-      "normal_web_messages_requested_without_secret": true
+      "normal_web_messages_requested_without_secret": true,
+      "normal_web_messages_received": true,
+      "evidence": "p0-web-customer-acceptance.json"
     },
     {
       "test": "own change metadata read",
@@ -58,18 +60,44 @@
     },
     {
       "test": "independent quality judgments",
-      "status": "blocked",
-      "blocker": "The optional integration-token binding is absent. The full-cycle judge sends a provider key to the gateway, whose deployed contract requires the service credential or integration token. The existing core runtime succeeds through service authentication.",
+      "status": "executed_quality_not_accepted",
+      "blocker": "Full-cycle caller authentication is resolved. Twelve actual scored judgments: 1 pass, 9 fail, 2 needs_review. Judge receives no tool/source receipts, and the frozen 60-case quality cohort remains unscored.",
       "blocked_by_controller_token": false,
       "new_secret_requested": false,
       "quality_pass_claimed": false,
       "cause_class": "incorrect caller authentication for the existing gateway",
       "prepared_fix_commit": "5eb1f2c84086db4a067b484cd3de7c5ce6cec182",
       "focused_tests_passed": 18,
-      "deployment_status": "awaiting separate scoped owner release authorization for sandy-examiner-full-cycle; not covered by the pinned web canary approval",
+      "deployment_status": "deployed sandy-examiner-full-cycle v19 under approved change 0bef5a45-bdb8-4279-867b-49507c852317",
+      "new_secret_required": false,
+      "authentication_resolved": true,
+      "evidence": "p0-examiner-gateway-production-evidence.json",
+      "successful_scored_judgments": 12
+    },
+    {
+      "test": "historical thread-review caller authentication",
+      "status": "blocked",
+      "blocker": "Separate unchanged sandy-examiner-thread-review still uses legacy provider-key gateway authentication; the full-cycle-only approval does not authorize this function.",
+      "blocked_by_controller_token": false,
       "new_secret_required": false
+    },
+    {
+      "test": "actual pilot web memory persistence",
+      "status": "not_verified",
+      "blocker": "Both existing ingestion jobs were skipped under the current memory policy; consent/settings were preserved.",
+      "blocked_by_controller_token": false,
+      "evidence": "p0-web-customer-acceptance.json"
+    },
+    {
+      "test": "renewable legitimate change registration after original token expiry",
+      "status": "passed",
+      "http_status": 201,
+      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+      "principal": "existing scoped renewable engineering workload",
+      "customer_or_owner_impersonation": false
     }
   ],
   "full_60_case_customer_quality_gate_passed": false,
-  "same_customer_cross_channel_acceptance_passed": false
+  "same_customer_cross_channel_acceptance_passed": false,
+  "current_expired_controller_token_blockers": []
 }

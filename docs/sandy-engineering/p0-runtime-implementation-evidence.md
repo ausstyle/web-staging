@@ -1,34 +1,55 @@
-# P0 runtime implementation — bounded web canary deployed
+# P0 runtime implementation — deployed, actual web acceptance failed
 
-Scopes: SANDY-ENG-0001, 0003, 0004 and 0006. The owner-approved source
-`addfc2ac5b933567c003466a8668a7b864330797` is deployed as **V4 24 / workspace 41**.
-All 28 packaged module entries match the approved manifest. One consenting web/Gmail pilot
-is enrolled. Real post-release provider reads and runtime functional tests passed;
-production customer-quality and four-channel acceptance remain unverified.
-See [production evidence](evaluations/p0-web-canary-production-evidence.json) and
-[release/rollback record](evaluations/p0-web-canary-release.md).
+Scopes: SANDY-ENG-0001, 0003, 0004 and 0006. As of the 21 October 2026
+23:28 UTC readback, the approved `addfc2ac5b933567c003466a8668a7b864330797`
+web source is **V4 29 / workspace 46**. All 26 + 2 local modules still match
+its approved manifest. Later published revision refreshes changed revision numbers
+without changing the captured source. The single consenting pilot is unchanged.
 
-The existing OIDC Google lab passed Gmail, Drive and Calendar reads plus both
-runtime probes in run 39683647772. Full-cycle run 39683774486 produced 12 HTTP 200
-responses and 12 completed tasks with zero mutating tool results. Nine turns used
-the V4 model broker, confirmed by 15 successful conversation-audit rounds.
-All independent quality judgments failed and remain `needs_review`. `complete`
-means the assessment executed; it is not acceptance. These APIs use `channel=test`,
-so authenticated workspace/web ingress and automatic web memory remain untested.
+Owner-approved change `0bef5a45-bdb8-4279-867b-49507c852317` deployed the exact
+`5eb1f2c84086db4a067b484cd3de7c5ce6cec182` Examiner caller fix as **full-cycle 19**.
+Its actual prior revision was 18, byte-identical to reviewed v13; the release
+reconciled that metadata drift, held a component lease, captured rollback source
+and verified all three candidate modules. No other source or secret was deployed.
+[Actual release evidence](evaluations/p0-examiner-gateway-production-evidence.json)
+records the pinned approval, versions, source preservation and live results.
 
-Adding the pilot setting refreshed Supabase deployment revisions. Engineering
-runtime 8 preserves the newer v7 source; Controller 46, email generator 101,
-WhatsApp 157 and voice context 14 likewise retain their captured source.
-No additional channel was enrolled. The existing Gmail confirmation and workspace
-memory-ingestion code are preserved. No source rollback was exercised.
+Real [Examiner run 39693113668](https://github.com/ausstyle/web-staging/actions/runs/39693113668)
+completed all 12 pilot API requests: 12 HTTP 200, 12 completed tasks, 12 scored
+judgments, zero gateway authentication denials and zero mutating tools. Results
+were **1 pass, 9 fail, 2 needs_review**. Its unchanged question/answer-only judge
+has no tool/source receipts; unsupported-evidence findings cannot independently
+disprove otherwise verified records. The frozen 60-case quality gate is unpassed.
+The separate historical thread-review caller still has its legacy auth defect.
 
-Commit `69c661a` additionally prepares a V4 identity-label correction and shares
-the web/runtime completion contract with the existing email shadow adapter.
-Fifteen focused tests and both entrypoint type checks passed. These follow-ups
-are **not deployed** and do not migrate the authoritative email delivery path.
+The owner submitted two actual signed-in web turns in one conversation. Both
+used V4 and successfully called the real task tool; four broker rounds succeeded.
+The first task summary was correct. The follow-up incorrectly reported zero
+overdue tasks when the unchanged record establishes one. [Web acceptance](evaluations/p0-web-customer-acceptance.json)
+is therefore **failed**, despite successful authenticated ingress. Both existing
+memory-ingestion jobs were skipped: learning is disabled and memory consent is
+not recorded. No consent setting was changed and memory persistence is unverified.
 
-The investigation/preparation snapshots below are retained as historical evidence;
-their original function revisions are not current deployment claims.
+Commit `3734254e872fcb2f0b5270aac43f8540b40726a2` prepares server-computed task
+deadline evidence for the existing pilot, including partial/unknown coverage,
+and includes the earlier V4 identity-label correction. Eight new regression
+tests and the offline entrypoint type check pass. Change
+`07894248-0808-4ae0-a271-2fb850ec054d` was legitimately registered through the
+renewable workload with HTTP 201 after the old token's expiry. It remains
+**proposed, not approved or deployed**. The [exact owner approval request](evaluations/p0-web-deadlines-owner-approval.json)
+and [27-module manifest](evaluations/p0-web-deadlines-source-manifest.json) are reviewable.
+
+Engineering runtime 13 and Controller 51 preserve their captured source; email
+generator 106, email shadow 17, WhatsApp 162, voice context 19 and gateway 16
+also retain byte-identical source. Voice-call revision 38 is metadata only,
+not certification of the actual media host. Gmail confirmation, customer data,
+workspace memory ingestion and the pilot boundary are preserved. Rollback source
+is captured; production source restoration has not been exercised.
+
+The email shadow outcome correction prepared in `69c661a` remains undeployed.
+No email/WhatsApp/voice migration or four-channel acceptance is certified.
+SANDY-ENG-0001 remains incomplete. Earlier investigation snapshots below retain
+their original versions and test outcomes as historical evidence.
 
 ## Inspected serving paths
 
@@ -178,35 +199,33 @@ actual authorization, provider, memory, tool, Mission and continuity evidence.
 
 ## Authentication test disposition
 
-The owner skipped optional pilot-session configuration. Continue implementation and
-available tests without re-requesting it. The [test blocker ledger](evaluations/p0-authenticated-test-blockers.json)
-records the previous Controller HTTP 401 and its resolution. The expired token
-was not retried. A real Controller owner approved the immutable source/manifest;
-the renewable identity read that approval and recorded release artifacts/tests.
-The existing Management credential performed the specifically approved source
-uploads; no customer/owner session was minted and no grant was broadened.
-The expired personal token no longer blocks this canary release. Customer browser
-acceptance remains unrun: the optional session was skipped and no substitute
-principal is used. The independent judge failure is separate from the expired Controller credential.
-The optional integration-token binding is absent, and the full-cycle caller sends
-a provider key to a gateway that requires a service credential or integration token.
-The fix reuses the gateway's existing service-auth path, without another secret,
-model/prompt change or authorization expansion. Commit `5eb1f2c` has 18 focused
-passing tests and an offline entrypoint type check. It remains undeployed pending
-a separately scoped owner approval; the existing web approval pins different source
-and components. See the [exact owner request](evaluations/p0-examiner-gateway-owner-request.json)
-and [three-module source manifest](evaluations/p0-examiner-gateway-source-manifest.json).
-The historical thread reviewer has the same legacy caller issue and is not changed
-by this fixed-pilot caller patch.
+The optional pilot secret remains skipped. The old personal Controller token was
+not retried, no unrelated credential was substituted, and no owner/customer session
+was minted. The existing renewable engineering identity successfully registered
+the concrete deadline repair (HTTP 201) and recorded its local test plus the real
+failed web acceptance. Current Controller expiry blockers are empty.
+
+The actual current Controller owner event independently authorized the pinned
+Examiner source and manifest; the existing configured Management credential
+performed that approved deployment under its component lease. Twelve actual
+scored judgments verify that full-cycle gateway authentication now works without
+another secret or changed policy. The historical thread reviewer is a separate,
+unchanged function with the same old caller defect and requires its own scoped
+correction. See the [current blocker ledger](evaluations/p0-authenticated-test-blockers.json).
+
+The new web deadline source is outside both prior immutable approvals. Its
+registered change is proposed and requires an authenticated owner approval for
+its exact commit and manifest before release. That approval boundary is separate
+from token expiry; no replacement secret is requested.
 
 ## Remaining channel acceptance
 
 | Channel | Current verified boundary | Required real acceptance still missing |
 | --- | --- | --- |
-| Web | V4 24 / workspace 41 source verified; fixed-pilot API checks complete | Signed-in web turns/history, web memory consent/provenance, failure/uncertain outcome cases and full baseline/candidate quality cohort |
-| Email | Generator 101 source preserved; shadow 12 remains the prior implementation | Deploy/review the shared shadow outcome adapter; verify inbound sender authority, quoted content, attachments, shared model/tool policy, draft confirmation, deduplication and delivery receipts |
-| WhatsApp | Webhook 157 source preserved; existing verified alternative account remains separate | Release the prepared scoped follow-up adapter after web gates; actual verified inbound/replay/follow-up tests and permitted Mission/memory handoffs |
-| Voice | Account context 14 / call function 33 observed; context source preserved | Consented active private voice session, actual media/tool loop, interruption/recovery and voice-to-web continuation |
+| Web | V4 29 / workspace 46 source verified; two actual signed-in turns and task tools executed | Release and retest overdue-count correction; consented web memory/provenance, failure/uncertain outcome cases and full baseline/candidate quality cohort |
+| Email | Generator 106 source preserved; shadow 17 remains the prior implementation | Deploy/review the shared shadow outcome adapter; verify inbound sender authority, quoted content, attachments, shared model/tool policy, draft confirmation, deduplication and delivery receipts |
+| WhatsApp | Webhook 162 source preserved; existing verified alternative account remains separate | Release the prepared scoped follow-up adapter after web gates; actual verified inbound/replay/follow-up tests and permitted Mission/memory handoffs |
+| Voice | Account context 19 / call function 38 observed; context source preserved | Consented active private voice session, actual media/tool loop, interruption/recovery and voice-to-web continuation |
 
 The offered WhatsApp account belongs to a different customer from the web/Gmail
 pilot. Do not combine them to claim same-customer continuity. All four channels

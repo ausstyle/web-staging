@@ -1,3 +1,25 @@
+# Current verification amendment — 21 October 2026, 23:28 UTC
+
+The approved web source below remains unchanged at current **V4 29 / workspace 46**;
+all 28 packaged modules match. The original cutover revisions were 24/41.
+The exact pinned Examiner authentication correction is separately deployed as
+**sandy-examiner-full-cycle 19**, under owner-approved change
+`0bef5a45-bdb8-4279-867b-49507c852317`. Its prior revision 18 had exactly the
+reviewed v13 source; the version guard was reconciled while preserving the
+approved manifest. Prior source/metadata were captured, all three new modules
+matched readback and the lease was released. No production restoration was exercised.
+
+Real Examiner execution produced 12 scored judgments: **1 pass, 9 fail, 2 review**.
+Actual signed-in web ingress and two task reads succeeded, but the overdue
+follow-up returned zero instead of one. The customer acceptance gate failed.
+The existing web ingestion hook ran and skipped both jobs under unchanged memory
+settings. No memory-persistence acceptance is claimed. The concrete deadline
+repair is proposed as change `07894248-0808-4ae0-a271-2fb850ec054d`, not deployed.
+
+See [Examiner deployment/rollback evidence](p0-examiner-gateway-production-evidence.json)
+and [actual web acceptance](p0-web-customer-acceptance.json). The original release
+record below preserves its original revisions and earlier test results.
+
 # P0 web canary — approved source deployed, acceptance incomplete
 
 Engineering change: `8ed79487-8eeb-41a6-9e7c-6bc24cee568b` (owner approved).

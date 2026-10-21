@@ -1,0 +1,6 @@
+{
+  "action": "status",
+  "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+  "status": "approved",
+  "reason": "Release 3734254e872fcb2f0b5270aac43f8540b40726a2; manifest 1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017. Existing enrolled web pilot only; server-computed task deadline evidence and V4 identity label correction. Preserve current pilot boundary, Gmail confirmation, customer data and workspace memory ingestion. Require exact prior source/version preflight, component lease, module readback, rollback capture and actual pilot acceptance; no other function deployment."
+}

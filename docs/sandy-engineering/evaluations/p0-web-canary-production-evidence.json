@@ -1,7 +1,7 @@
 {
   "scope": "SANDY-ENG-0001",
   "scope_complete": false,
-  "captured_at_utc": "2026-10-21T22:14:50.728837+00:00",
+  "captured_at_utc": "2026-10-21T23:28:01.182595+00:00",
   "change_id": "8ed79487-8eeb-41a6-9e7c-6bc24cee568b",
   "controller_owner_approval_verified": true,
   "approval_source": "actual current Controller owner status_changed event bound to the source commit and manifest; independently checked through existing renewable Controller metadata and Management read",
@@ -15,101 +15,222 @@
     "other_customers_enrolled": false
   },
   "deployed_versions": {
-    "email-ai-generate-draft": 101,
-    "sandy-whatsapp-webhook": 157,
-    "sandy-voice-call": 33,
-    "sandy-voice-account-context": 14,
-    "sandy-email-runtime-canary": 12,
-    "sandy-workspace": 41,
-    "sandy-agent-runtime-v4": 24,
-    "sandy-engineering-control": 46,
-    "sandy-engineering-runtime": 8
+    "email-ai-generate-draft": 106,
+    "sandy-whatsapp-webhook": 162,
+    "sandy-voice-call": 38,
+    "sandy-voice-account-context": 19,
+    "sandy-email-runtime-canary": 17,
+    "sandy-workspace": 46,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-examiner-thread-review": 23,
+    "sandy-agent-runtime-v4": 29,
+    "sandy-openai-gateway-v4": 16,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 13
   },
   "source_readback": {
     "sandy-agent-runtime-v4": {
-      "version": 24,
-      "all_local_modules_match": true,
-      "local_module_count": 26,
-      "bundle_sha256": "bce5209688d6977bcd45cfae96c4ea1cdb6acd95671af343461407cc7a571c93",
-      "entrypoint_sha256": "02e2af6c729690fbc470a73a945a674c5a00c3528efb6bd328c190e019d0de05",
-      "prior_version": 22,
-      "prior_bundle_sha256": "79671f7485e40232f79d8e6be2722c88dffe260be9ef5c0dc6a99a3f0dc2d43e"
+      "version": 29,
+      "approved_modules_match": true,
+      "module_count": 26,
+      "bundle_sha256": "bce5209688d6977bcd45cfae96c4ea1cdb6acd95671af343461407cc7a571c93"
     },
     "sandy-workspace": {
-      "version": 41,
-      "all_local_modules_match": true,
-      "local_module_count": 2,
-      "bundle_sha256": "cc58531ab14b5e9d4ed964b91af9ad7dcc3a088d5469f1d0c3921f26dd4930d9",
-      "entrypoint_sha256": "c7edb4c1d563a0daff0b9445eefd6fd719595db1896259132c9485eb64b7a2dc",
-      "prior_version": 39,
-      "prior_bundle_sha256": "861b31a42499d97e93981442bc4399c06aad83b1134e659f37a6ba50711de15c"
+      "version": 46,
+      "approved_modules_match": true,
+      "module_count": 2,
+      "bundle_sha256": "cc58531ab14b5e9d4ed964b91af9ad7dcc3a088d5469f1d0c3921f26dd4930d9"
     }
   },
   "production_observations": {
-    "lab": {
-      "run_key": "github:39683647772",
-      "drive_read_ok": true,
-      "gmail_read_ok": true,
-      "overall_status": "passed",
-      "runtime_checks": [
+    "examiner": {
+      "workflow_url": "https://github.com/ausstyle/web-staging/actions/runs/39693113668",
+      "run": {
+        "failed": 9,
+        "passed": 1,
+        "status": "complete",
+        "reviews": 2,
+        "run_key": "production:4678cfe3-9f5e-49c6-b787-37e9e64d6fa1",
+        "attempted": 12,
+        "completed_at": "2026-10-21T23:27:56.01+00:00"
+      },
+      "functional_totals": {
+        "http_200": 12,
+        "auth_errors": 0,
+        "tasks_completed": 12,
+        "scored_judgments": 12
+      },
+      "model_audit": {
+        "models": [
+          "gpt-4.1-mini",
+          "gpt-5.4-mini"
+        ],
+        "model_turns": 10,
+        "source_runtimes": [
+          "sandy-agent-runtime-v4"
+        ],
+        "successful_rounds": 18
+      },
+      "mutating_tools": 0,
+      "judgments": [
         {
-          "test": "connections",
-          "verdict": "pass",
-          "http_status": 200,
-          "required_tool": "v2_connection_preflight",
-          "task_completed": true,
-          "tool_confirmed": true,
-          "no_mutating_tools": true,
-          "provider_count_matches": null,
-          "provider_subjects_match": null,
-          "provider_count_comparable": false,
-          "provider_subjects_comparable": false
+          "case_key": "current_time",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
         },
         {
-          "test": "gmail",
+          "case_key": "connected_apps",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "gmail_capabilities",
+          "verdict": "needs_review",
+          "score": 3,
+          "http_status": 200
+        },
+        {
+          "case_key": "drive_capabilities",
+          "verdict": "needs_review",
+          "score": 3,
+          "http_status": 200
+        },
+        {
+          "case_key": "calendar_capabilities",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "task_overview",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "memory_recall",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "service_awareness",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "privacy_authority",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "failure_handling",
           "verdict": "pass",
-          "http_status": 200,
-          "required_tool": "gmail_verified_recent",
-          "task_completed": true,
-          "tool_confirmed": true,
-          "no_mutating_tools": true,
-          "provider_count_matches": true,
-          "provider_subjects_match": true,
-          "provider_count_comparable": true,
-          "provider_subjects_comparable": true
+          "score": 4,
+          "http_status": 200
+        },
+        {
+          "case_key": "email_search",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
+        },
+        {
+          "case_key": "tool_evidence",
+          "verdict": "fail",
+          "score": 2,
+          "http_status": 200
         }
       ],
-      "calendar_read_ok": true,
-      "provider_verified": true
-    },
-    "assessment": {
-      "failed": 0,
-      "passed": 0,
-      "status": "complete",
-      "reviews": 12,
-      "run_key": "production:90f25448-11ca-4aa3-939a-f0ad0f74b6fa",
-      "attempted": 12,
-      "completed_at": "2026-10-21T22:08:21.023+00:00"
-    },
-    "leases_held": 0,
-    "model_audit": {
-      "models": [
-        "gpt-4.1-mini",
-        "gpt-5.4-mini"
+      "gateway_audit_window": [
+        {
+          "count": 12,
+          "model": "gpt-6-astra",
+          "decision": "allowed",
+          "execution_status": null,
+          "verified_success": false
+        }
       ],
-      "source_runtimes": [
-        "sandy-agent-runtime-v4"
-      ],
-      "successful_rounds": 15,
-      "distinct_model_turns": 9
+      "gateway_audit_limit": "Audit rows record allowed admission but execution_status is null and verified_success false. Twelve actual scored worker results independently establish judgment execution; these audit flags do not establish provider verification.",
+      "judge_input_limit": "The unchanged judge receives question and answer only, without task/tool/source receipts. Its unsupported-evidence findings do not independently disprove otherwise verified records. Frozen-cohort quality acceptance is not established.",
+      "thread_review_limit": "Historical thread-review caller remains unchanged and retains its separate legacy gateway-authentication defect. One historical web thread review is not new four-channel acceptance.",
+      "quality_acceptance_passed": false
     },
-    "mutating_tools": 0,
-    "functional_totals": {
-      "cases": 12,
-      "http_200": 12,
-      "judge_failed": 12,
-      "tasks_completed": 12,
-      "judge_needs_review": 12
+    "customer_web": {
+      "scope": "SANDY-ENG-0001",
+      "scope_complete": false,
+      "source_commit": "addfc2ac5b933567c003466a8668a7b864330797",
+      "deployed_versions": {
+        "sandy-agent-runtime-v4": 29,
+        "sandy-workspace": 46
+      },
+      "actual_customer_session": "normal signed-in consenting web pilot; submitted by owner, verified from stored turns and bound task/model receipts",
+      "turns": 2,
+      "same_conversation_verified": true,
+      "authenticated_web_ingress_verified": true,
+      "completed_stored_web_turns": 2,
+      "successful_list_tasks_calls": 2,
+      "authoritative_source_runtime": "sandy-agent-runtime-v4",
+      "successful_broker_rounds": 4,
+      "provider_model": "gpt-4.1-mini",
+      "mutating_tools": 0,
+      "first_turn_task_summary_correct": true,
+      "followup": {
+        "expected_overdue_count": 1,
+        "reported_overdue_count": 0,
+        "acceptance_passed": false,
+        "verification": "Recorded due_at precedes both actual web-turn timestamps; task updated_at precedes the test and task data was unchanged. Actual task records and transcript are retained privately."
+      },
+      "temporal_memory": {
+        "ingestion_jobs": [
+          {
+            "state": "skipped",
+            "attempts": 1,
+            "has_error": false
+          },
+          {
+            "state": "skipped",
+            "attempts": 1,
+            "has_error": false
+          }
+        ],
+        "pilot_settings": [
+          {
+            "enabled": true,
+            "learning_enabled": false,
+            "consent_recorded": false
+          }
+        ],
+        "persistence_acceptance_passed": false,
+        "consent_changed": false
+      },
+      "credentials": {
+        "new_customer_token": false,
+        "optional_secret_requested": false,
+        "engineering_identity_impersonated_customer": false
+      },
+      "web_customer_acceptance_passed": false,
+      "prepared_repair": {
+        "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+        "status": "proposed",
+        "source_commit": "3734254e872fcb2f0b5270aac43f8540b40726a2",
+        "manifest_sha256": "1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017",
+        "deadline_tests_passed": 8,
+        "entrypoint_typecheck_passed_with_offline_sdk_fallback": true,
+        "deployed": false,
+        "owner_request": "p0-web-deadlines-owner-request.json",
+        "owner_approval_request": "p0-web-deadlines-owner-approval.json"
+      },
+      "remaining_cross_channel_requirements": {
+        "email": "Authoritative delivery still has an independent loop; deploy and verify shared outcome shadow correction, then governed migration through normal email ingest/reply/confirmation with actual receipts. No unsolicited send.",
+        "whatsapp": "Existing channel preserved. Prepared history/continuation adapter is undeployed. Alternative consented account belongs to a separate tenant and is not enrolled by this web-only approval; do not merge identities. Verify authorized inbound/outbound and same-owner memory/receipt isolation after its own governed release.",
+        "voice": "Context source preserved; actual media host/runtime reasoning, consented voice session, transcript-to-tool/receipt and Mission continuity remain unverified. No production media acceptance pass.",
+        "all_channels": "One owner across all four channels with verified identity links, consented memory retrieval/correction, shared model/tool/outcome/Mission contracts and frozen 60-case quality/critical-invariant gates."
+      }
     }
   },
   "post_deploy_google_lab": "https://github.com/ausstyle/web-staging/actions/runs/39683647772",
@@ -119,8 +240,8 @@
   "web_temporal_context_live_acceptance_passed": false,
   "full_60_case_quality_gate_passed": false,
   "same_customer_cross_channel_acceptance_passed": false,
-  "quality_verdict": "unverified: all 12 independent judge executions failed; HTTP/task success is not answer adequacy",
-  "runtime_identity_label_defect": "V4 v24 inherits a hard-coded V2 task label; authoritative conversation audit confirms V4. A correction is prepared separately and is not deployed. No routing controls were changed.",
+  "quality_verdict": "Not accepted: independent caller authentication repaired, 1/12 pass, 9/12 fail, 2/12 needs_review; question/answer-only judge evidence is incomplete. Actual web follow-up incorrectly reports zero overdue tasks.",
+  "runtime_identity_label_defect": "The current deployed V4 source retains inherited V2 task labels. Authoritative conversation audit confirms V4; correction is prepared in the separately proposed deadline release, not deployed.",
   "rollback": {
     "prior_source_captured": true,
     "private_snapshots": "web-release-owner-approved-addfc2a/{slug}.before.body and .before-metadata.json",
@@ -195,5 +316,88 @@
     "new_owner_request": "p0-examiner-gateway-owner-request.json",
     "thread_review_has_same_legacy_issue": true,
     "thread_review_auth_or_scope_not_changed": true
-  }
+  },
+  "initial_captured_at_utc": "2026-10-21T22:14:50.728837+00:00",
+  "initial_deployed_versions": {
+    "email-ai-generate-draft": 101,
+    "sandy-whatsapp-webhook": 157,
+    "sandy-voice-call": 33,
+    "sandy-voice-account-context": 14,
+    "sandy-email-runtime-canary": 12,
+    "sandy-workspace": 41,
+    "sandy-agent-runtime-v4": 24,
+    "sandy-engineering-control": 46,
+    "sandy-engineering-runtime": 8
+  },
+  "initial_production_observations": {
+    "lab": {
+      "run_key": "github:39683647772",
+      "drive_read_ok": true,
+      "gmail_read_ok": true,
+      "overall_status": "passed",
+      "runtime_checks": [
+        {
+          "test": "connections",
+          "verdict": "pass",
+          "http_status": 200,
+          "required_tool": "v2_connection_preflight",
+          "task_completed": true,
+          "tool_confirmed": true,
+          "no_mutating_tools": true,
+          "provider_count_matches": null,
+          "provider_subjects_match": null,
+          "provider_count_comparable": false,
+          "provider_subjects_comparable": false
+        },
+        {
+          "test": "gmail",
+          "verdict": "pass",
+          "http_status": 200,
+          "required_tool": "gmail_verified_recent",
+          "task_completed": true,
+          "tool_confirmed": true,
+          "no_mutating_tools": true,
+          "provider_count_matches": true,
+          "provider_subjects_match": true,
+          "provider_count_comparable": true,
+          "provider_subjects_comparable": true
+        }
+      ],
+      "calendar_read_ok": true,
+      "provider_verified": true
+    },
+    "assessment": {
+      "failed": 0,
+      "passed": 0,
+      "status": "complete",
+      "reviews": 12,
+      "run_key": "production:90f25448-11ca-4aa3-939a-f0ad0f74b6fa",
+      "attempted": 12,
+      "completed_at": "2026-10-21T22:08:21.023+00:00"
+    },
+    "leases_held": 0,
+    "model_audit": {
+      "models": [
+        "gpt-4.1-mini",
+        "gpt-5.4-mini"
+      ],
+      "source_runtimes": [
+        "sandy-agent-runtime-v4"
+      ],
+      "successful_rounds": 15,
+      "distinct_model_turns": 9
+    },
+    "mutating_tools": 0,
+    "functional_totals": {
+      "cases": 12,
+      "http_200": 12,
+      "judge_failed": 12,
+      "tasks_completed": 12,
+      "judge_needs_review": 12
+    }
+  },
+  "authenticated_web_ingress_verified": true,
+  "web_customer_acceptance_passed": false,
+  "current_examiner_evidence": "p0-examiner-gateway-production-evidence.json",
+  "current_web_evidence": "p0-web-customer-acceptance.json"
 }
