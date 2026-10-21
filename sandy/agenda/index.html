@@ -432,6 +432,17 @@ html,body{max-width:100%;overflow-x:clip}
 .activityReviewFoot{margin-top:7px}
 @media(max-width:680px){.activityReview{padding:8px;margin:8px 0}.activityReviewHead{gap:5px}.activityReviewHead span{display:none}.activityReviewHead input{max-width:128px;font-size:11px}.activityTopActions{gap:4px}.activityTopActions .btn{min-height:35px!important;padding:7px 9px!important}#activityQuickInput{font-size:16px}#activityQuickSave{padding:6px 8px}.activityRow{min-height:32px}}
 .activityInsights{font-size:11px;color:#708077;margin:6px 0 2px}.activityRow .activityClock{max-width:160px}.activityReview #activityQuickForm{min-height:33px;padding-block:2px}.activityReview #activityQuickSave{font-size:11px;padding:5px 9px}@media(max-width:680px){.activityInsights{font-size:10px}.activityRow .activityClock{max-width:100px}}
+
+/* Compact, expandable attention summary */
+.attention{padding:0!important;overflow:hidden;margin:12px 0!important}
+.attentionToggle{width:100%;min-height:49px;display:flex;align-items:center;gap:10px;padding:9px 14px;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;margin:0}
+.attentionToggle:hover{background:#f2f2f2}
+.attentionToggle:focus-visible{outline:2px solid #777;outline-offset:-3px}
+.attentionToggle .attentionicon{width:27px;height:27px;border-radius:8px;flex:none}
+.attentionLabel{font-size:14px;font-weight:700}
+.attentionCount{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:650;color:#666;background:#ececec;border-radius:100px;padding:4px 10px}
+.attentionChevron{font-size:13px;color:#777}
+.attention>.attentionrow{margin:0 14px}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -2500,14 +2511,18 @@ function renderAssigneeFilter(){
  select.value=[...select.options].some(o=>o.value===current)?current:"all";
 }
 $("assigneeFilter").addEventListener("change",e=>{state.assigneeFilter=e.target.value;render()});
+let attentionExpanded=false;
 function renderAttention(){
  const area=$("attention");area.replaceChildren();
  const seen=new Set();const items=[];
  for(const n of state.attention){if(!seen.has(n.task_id)){const t=state.tasks.find(x=>x.id===n.task_id);if(t){items.push({t,reason:n.reason});seen.add(n.task_id)}}}
  if(!items.length){area.classList.add("hidden");return}
  area.classList.remove("hidden");
- const head=el("div","attentionhead");head.append(el("div","attentionicon","!"));
- const words=el("div","");words.append(el("h2","","Worth your attention"));words.append(el("div","suggestsmall",items.length+" matter"+(items.length===1?"":"s")+" may need a next step"));head.append(words);area.append(head);
+ const head=el("button","attentionhead attentionToggle");head.type="button";head.setAttribute("aria-expanded",String(attentionExpanded));head.append(el("span","attentionChevron",attentionExpanded?"▾":"▸"));head.append(el("span","attentionicon","!"));
+ const words=el("span","attentionLabel","Worth your attention");head.append(words);
+ head.append(el("span","attentionCount",items.length+" outstanding"));
+ head.addEventListener("click",()=>{attentionExpanded=!attentionExpanded;renderAttention()});area.append(head);
+ if(!attentionExpanded)return;
  for(const item of items.slice(0,5)){
    const row=el("div","attentionrow");const text=el("div","");
    text.append(el("strong","",item.t.title));
