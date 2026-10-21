@@ -20,6 +20,9 @@ import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-
 import { databaseOperations } from "../../supabase/functions/sandy-database-operation-api/gateway.ts";
 import { providerOperations } from "../../supabase/functions/sandy-provider-operation-api/gateway.ts";
 import { credentialOperations } from "../../supabase/functions/sandy-credential-lifecycle-api/gateway.ts";
+import { serviceOperations } from "../../supabase/functions/sandy-supabase-service-api/gateway.ts";
+import { tenantConsentOperations } from "../../supabase/functions/sandy-supabase-service-api/tenant_consent.ts";
+import { gapGatewayOperations } from "../../supabase/functions/sandy-provider-gap-api/gateway.ts";
 import guestManifest from "../../supabase/functions/sandy-guest-operation-api/contracts.json" with {
   type: "json",
 };
@@ -148,6 +151,26 @@ add(
   Object.fromEntries(guestManifest.operations.map((c) => [c.operation, c])),
   "sandy-guest-operation-api",
   "sandy-guest-operation-api/index.ts",
+);
+add(
+  "supabase_services",
+  "sandy-supabase-service-api/contracts.ts",
+  serviceOperations,
+  "sandy-supabase-service-api",
+  "sandy-supabase-service-api/index.ts",
+);
+add(
+  "tenant_service_consent",
+  "sandy-supabase-service-api/tenant_consent.ts",
+  tenantConsentOperations,
+  "sandy-operation-api",
+);
+add(
+  "provider_gaps",
+  "sandy-provider-gap-api/gateway_manifest.json",
+  gapGatewayOperations,
+  "sandy-provider-gap-api",
+  "sandy-provider-gap-api/index.ts",
 );
 const rows: Row[] = [];
 for (const group of groups) {
