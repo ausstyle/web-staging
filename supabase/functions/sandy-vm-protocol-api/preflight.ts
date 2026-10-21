@@ -22,7 +22,9 @@ export async function inspectComputerAccess(token: string, request: typeof fetch
       } catch { result.target_permission_observation_unavailable = true; }
       try {
         const permission = "iap.tunnelInstances.accessViaIAP";
-        const response = await calls.request(new URL(`https://iap.googleapis.com/v1/projects/${NUMBER}/iap_tunnel/zones/${ZONE}/instances/${VMS[name].instance_id}:testIamPermissions`), "POST", { permissions: [permission] });
+        const zone = await calls.request(new URL(`https://compute.googleapis.com/compute/v1/projects/${PROJECT}/zones/${ZONE}`));
+        if (zone.value.name !== ZONE || !/^[0-9]{1,20}$/.test(String(zone.value.id))) throw Error("fixed_zone_identity_required");
+        const response = await calls.request(new URL(`https://iap.googleapis.com/v1/projects/${NUMBER}/iap_tunnel/zones/${zone.value.id}/instances/${VMS[name].instance_id}:testIamPermissions`), "POST", { permissions: [permission] });
         result.iap_permission = { permission, granted: Array.isArray(response.value.permissions) && response.value.permissions.includes(permission) };
       } catch (error) {
         result.iap_permission_observation_unavailable = true;
