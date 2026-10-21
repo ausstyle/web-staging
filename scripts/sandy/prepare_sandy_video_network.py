@@ -31,9 +31,18 @@ def component(runtime, candidate):
             "test_sha256": hashlib.sha256(TEST.read_bytes()).hexdigest(), "candidate_ddl_rolled_back": candidate}
 
 
-def run(output, candidate=False, apply=False, backend_version=60):
+def run(output, candidate=False, apply=False, backend_version=60, component_evidence=None):
     runtime = EngineeringRuntime()
-    report = {"component": component(runtime, candidate), "provider_write_invoked_through_mcp": False,
+    if component_evidence is not None:
+        evidence = json.loads(component_evidence.read_text())["component"]
+        assert not candidate and evidence["candidate_ddl_rolled_back"] is False
+        assert evidence["migration_sha256"] == hashlib.sha256(MIGRATION.read_bytes()).hexdigest()
+        assert evidence["test_sha256"] == hashlib.sha256(TEST.read_bytes()).hexdigest()
+        assert evidence["result"] == [{"passed": 24, "failed": 0, "rolled_back": True, "provider_calls": False}]
+        checked = {**evidence, "reused_evidence_sha256": hashlib.sha256(component_evidence.read_bytes()).hexdigest()}
+    else:
+        checked = component(runtime, candidate)
+    report = {"component": checked, "provider_write_invoked_through_mcp": False,
               "actor_kind": "management_administration_using_private_Sandy_backend",
               "source_change_id": CHANGE, "remote_execution_verified": False, "conference_verified": False}
 
@@ -143,5 +152,6 @@ if __name__ == "__main__":
     parser.add_argument("--apply", action="store_true")
     parser.add_argument("--backend-version", type=int, default=60)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--component-evidence", type=Path, help="Reuse already passed production SQL checks only when both source digests match")
     args = parser.parse_args()
-    run(args.output, args.candidate, args.apply, args.backend_version)
+    run(args.output, args.candidate, args.apply, args.backend_version, args.component_evidence)

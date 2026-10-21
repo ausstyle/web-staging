@@ -4,7 +4,7 @@ Updated 21 October 2026 after real customer provisioning acceptance and repaired
 
 ## Published source and production
 
-GitHub write authorization works. The engineering branch has been pushed through `41e030c`. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
+GitHub write authorization works. The engineering branch has been pushed through `9ac56c4`. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
 
 The current gateway is **31 ACTIVE**, from source `c480e3b`. The customer provisioning handler is **3 ACTIVE**, from `e46fe92`. Both preserve `verify_jwt=true`; every uploaded source was accounted for in production readback. Five gateway modules use reproducible type erasure/whitespace compaction with original Git source and artifact digests preserved. The initial larger gateway upload returned HTTP 413, leaving gateway 28 and its source unchanged; the compact candidate then deployed with HTTP 201.
 
@@ -62,9 +62,11 @@ Source regressions passed **192/192**; the exact compact artifacts passed **211/
 
 ## Fixed VM diagnostic verification
 
-The existing provisioning backend is **59 ACTIVE**, from `c480e3b`; its original production source was preserved before changes. Gateway 31 fixes service authentication headers and safe propagation of upstream errors. The backend repairs OS Config policy discovery to the official v1 zonal endpoint and inspects Private Google Access without changing networks. Exact deployed source readback passed for both. Source regressions passed **213/213** and exact compact artifacts **232/232**.
+The existing provisioning backend is **60 ACTIVE**, from `d61bdd3`; its original production source was preserved before changes. Gateway 31 fixes service authentication headers and safe propagation of upstream errors. The backend repairs OS Config policy discovery to the official v1 zonal endpoint and inspects Private Google Access without changing networks. Exact deployed source readback passed for both. Source regressions passed **213/213** and exact compact artifacts **232/232**.
 
 [Actual diagnostic evidence](sandy-video-diagnostic-evidence-20261021.json) verifies seven of nine existing diagnostic operations through fresh workload Auth → MCP → Sandy API → Google. Optional scope revocation removes the tools and denies execution with HTTP 403. The fixed VM is running with OS Login and blocked project SSH keys; it has no external IP, Cloud NAT or Private Google Access. Google denied inventory reads with `osconfig.inventories.get` and denied project IAM-policy reads. The latter does not establish that IAP/OS Login execution permissions are absent. OS Config policy listing now succeeds. These checks do not demonstrate remote shell execution, LiveKit installation or conferencing.
+
+The bounded network prerequisite is implemented in backend **60**, with **20 handler tests**, **24 database authorization/audit checks**, full backend type checking and exact production source readback. The genuine existing owner-approved network scope admits only enabling Private Google Access on the fixed VM's current subnet. [Actual provider attempt](vm-network-preparation-evidence-20261021.json) reached Google using the existing audited Vault worker transport, then returned **HTTP 403**: `Required 'compute.subnetworks.setPrivateIpGoogleAccess' permission for 'projects/elaborate-haven-511518-a5/regions/europe-west1/subnetworks/default'`. Google did not accept the change. No IAM, public IP, NAT, firewall or paid resource changed. The missing permission belongs to the existing `sandy-computer` service account. No automatic retry is performed. This remains a separate external dependency, not a completed VM-execution family. Per the clarified scope, further work targets reusable VM discovery/access/execution rather than specialised video or software-installation MCP tools.
 
 ## Database changes
 
@@ -72,6 +74,7 @@ Applied and ledger-read back against exact committed sources:
 
 - `20261021120000`, `20261021121000`: dedicated Auth workload policy, sessions, revocable Vault bootstrap delivery, scoped execution authorization and audit.
 - `20261021130000`, `20261021130010`, `20261021131000`: canonical onboarding, provisional contacts, receipts/audit and typed API/MCP contracts; truthful execution metadata correction.
+- `20261021162000`: current-owner-approved fixed-VM network admission and typed administrative provider-observation audit; no new catalogue operation.
 - `20261021161000`: atomic existing WhatsApp linking, bounded attempts, current ownership checks, service-only channel audit and explicit refusal of identity transfers.
 - `20261021160000`: trusted email/WhatsApp observation triggers and service-only current-record matching, preserving existing ingestion/authentication and requiring no new catalogue operations.
 - `20261021150000`: separately revocable, fixed-target read-only VM delegation, credential-epoch binding and audit; no shell, IAM, network or installation writes.
