@@ -45,6 +45,41 @@ async function json(response: Response): Promise<unknown> {
   catch { throw new Failure("candidate_response_invalid_json"); }
 }
 
+export async function verifyRestCatalogue(token: string, anon: string) {
+  const get = async (suffix: string) => {
+    const response = await request(`${base}/functions/v1/sandy-operation-api/v1/capabilities${suffix}`, {
+      redirect: "error", headers: { authorization: `Bearer ${token}`, apikey: anon },
+    });
+    return { status: response.status, body: await json(response) as Obj };
+  };
+  const names = new Set<string>(), cursors = new Set<string>();
+  let cursor: string | undefined, version: string | undefined, pages = 0;
+  for (; pages < 100; pages++) {
+    const page = await get(`?limit=5${cursor ? "&cursor=" + encodeURIComponent(cursor) : ""}`);
+    requireThat(page.status === 200 && page.body.ok === true && Array.isArray(page.body.operations) &&
+      page.body.operations.length <= 5 && typeof page.body.catalogue_version === "string", "API_REST_catalogue_page_invalid");
+    if (version) requireThat(version === page.body.catalogue_version, "API_REST_catalogue_changed");
+    version = page.body.catalogue_version;
+    for (const operation of page.body.operations) {
+      requireThat(typeof operation.operation === "string" && !names.has(operation.operation), "API_REST_catalogue_duplicate");
+      names.add(operation.operation);
+    }
+    cursor = page.body.next_cursor;
+    if (!cursor) { pages++; break; }
+    requireThat(typeof cursor === "string" && !cursors.has(cursor), "API_REST_cursor_did_not_advance");
+    cursors.add(cursor);
+  }
+  requireThat(!cursor && names.has("supabase.logs.query"), "API_REST_discovery_incomplete");
+  const described = await get("/supabase.logs.query");
+  requireThat(described.status === 200 && described.body.ok === true && described.body.operation?.operation === "supabase.logs.query" &&
+    object(described.body.operation.input_schema) && object(described.body.operation.output_schema), "API_REST_description_invalid");
+  const malformed = await get("?limit=1&limit=2");
+  const denied = await get("/engineering.job.approve");
+  requireThat(malformed.status === 400 && denied.status === 403, "API_REST_validation_or_authorization_failed");
+  return { API_REST_discovery_pages: pages, API_REST_operations_observed: names.size,
+    API_REST_description_verified: true, duplicate_page_parameter_status: 400, out_of_scope_description_status: 403 };
+}
+
 export async function verify(target: string, token: string, anon: string) {
   const rpc = async (method: string, params: Obj, requestId = crypto.randomUUID()) => {
     const response = await request(target, { method: "POST", redirect: "error",
@@ -71,9 +106,12 @@ export async function verify(target: string, token: string, anon: string) {
     seen.add(next); cursor = next;
   }
   requireThat(!cursor, "candidate_discovery_page_limit");
-  const tool = tools.get("gcp.compute.instances.get"); requireThat(tool, "candidate_current_VM_scope_unavailable");
-  const args = { path: { instance: "sandy-video" } }, validator = new AjvJsonSchemaValidator();
-  requireThat(validator.getValidator(tool.inputSchema)(args).valid, "candidate_VM_input_schema_mismatch");
+  // Acceptance uses the existing read-only engineering fixture. It must not
+  // depend on optional VM access or revisit the working LiveKit installation.
+  const tool = tools.get("supabase.logs.query"); requireThat(tool, "candidate_log_fixture_scope_unavailable");
+  const now = Date.now(), args = { source: "function_logs", start: new Date(now - 60000).toISOString(), end: new Date(now).toISOString(), limit: 5 };
+  const validator = new AjvJsonSchemaValidator();
+  requireThat(validator.getValidator(tool.inputSchema)(args).valid, "candidate_log_input_schema_mismatch");
   const envelope = (body: unknown) => {
     requireThat(object(body) && object(body.result), "candidate_invalid_tool_response");
     if (object(body.result._meta?.sandy_api)) return body.result._meta.sandy_api;
@@ -83,15 +121,18 @@ export async function verify(target: string, token: string, anon: string) {
   const result = (positive.body as Obj).result, payload = result.structuredContent;
   requireThat(positive.status === 200 && result.isError === false && api.status === 200 && api.result?.executed === true &&
     typeof api.result.admission_id === "string" && /^[a-f0-9]{8}-[a-f0-9-]{27}$/.test(api.result.admission_id) &&
-    payload?.provider_http_status === 200 && payload.result?.id === "6831598645020395570" && payload.result?.name === "sandy-video" &&
+    payload?.provider_http_status === 200 && Array.isArray(payload.result?.entries) &&
+    payload.result.entries.every((entry: Obj) => typeof entry.message === "string" && policy.function_console_markers.includes(entry.message.trim())) &&
     validator.getValidator(tool.outputSchema)(payload).valid, "candidate_provider_execution_not_verified");
-  const denied = await rpc("tools/call", { name: tool.name, arguments: { path: { instance: "sandy-windows" } } }), denial = envelope(denied.body);
+  const denied = await rpc("tools/call", { name: tool.name, arguments: { ...args, source: "auth_logs" } }), denial = envelope(denied.body);
   requireThat(denied.status === 200 && (denied.body as Obj).result.isError === true && denial.status === 403 &&
-    denial.result?.executed === false && !denial.result?.admission_id, "candidate_wrong_target_not_denied");
+    denial.result?.executed === false && !denial.result?.admission_id, "candidate_wrong_log_source_not_denied");
   return { server_info: initialized.body.result.serverInfo, tools_discovered: tools.size,
-    canonical_VM_read_verified: true, actual_instance_id: payload.result.id, actual_instance_name: payload.result.name,
-    actual_instance_status: payload.result.status, provider_http_status: 200, admission_id: api.result.admission_id,
-    wrong_VM_API_status: 403, wrong_VM_denied_before_admission: true, remote_command_executed: false };
+    operation: tool.name, provider_log_query_verified: true, provider_http_status: 200,
+    admission_id: api.result.admission_id, matching_fixture_markers: payload.result.entries.length,
+    log_event_delivery_verified: payload.result.entries.length > 0,
+    wrong_log_source_API_status: 403, wrong_source_denied_before_admission: true,
+    VM_diagnostics_performed: false, remote_command_executed: false };
 }
 
 if (import.meta.main) {
@@ -126,6 +167,7 @@ if (import.meta.main) {
     sessions = createEngineeringSessionClient(base, service, request); issued = await sessions.get(workload); privateValues.push(issued.token);
     report.normal_Auth_user_verified = true; report.controller_memberships = 0;
     report.token_expiry_utc = new Date(issued.expiresAt).toISOString(); report.session_id = issued.sessionId;
+    Object.assign(report, await verifyRestCatalogue(issued.token, anon));
     Object.assign(report, await verify(target, issued.token, anon)); report.passed = true;
   } catch (error) {
     report.error = error instanceof Failure ? error.code : error instanceof Error && /^engineering_(auth|workload|credential)_[a-z_]+$/.test(error.message)

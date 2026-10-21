@@ -701,7 +701,15 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       // Classification follows actual authentication below; the URL never
       // chooses durable/legacy scope or supplies an execution identity.
     } else if (request.method === "GET") {
-      if (path === "/v1/capabilities") routedBody = { action: "list" };
+      if (path === "/v1/capabilities") {
+        const limit = url.searchParams.get("limit") ?? "100";
+        if (!/^[1-9][0-9]{0,2}$/.test(limit) || Number(limit) > 100 ||
+          [...url.searchParams.keys()].some((key) => !["limit", "cursor"].includes(key) || url.searchParams.getAll(key).length !== 1)) {
+          return reply(400, { error: "invalid_catalogue_page", executed: false });
+        }
+        routedBody = { action: "list", channel: "api", limit: Number(limit),
+          ...(url.searchParams.has("cursor") ? { cursor: url.searchParams.get("cursor") } : {}) };
+      }
       else if (describePath) {
         routedBody = { action: "describe", operation: describePath[1] };
       } else if (executionReceiptPath) {
@@ -929,7 +937,14 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                     },
               })(forwarded),
           },
-          request,
+          // The verified workload uses the same normalized route contract as
+          // ordinary users. Its delegation layer accepts canonical JSON only;
+          // a GET must not lose its already validated pagination or operation.
+          routedBody && request.method === "GET"
+            ? new Request(`${base}/functions/v1/sandy-operation-api`, {
+              method: "POST", headers: request.headers, body: JSON.stringify(routedBody),
+            })
+            : request,
           data.user as unknown as Record<string, unknown>,
           bearer,
         );

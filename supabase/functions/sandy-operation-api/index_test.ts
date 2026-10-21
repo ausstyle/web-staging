@@ -889,6 +889,24 @@ Deno.test("canonical capabilities routes use existing authorization and version 
   assert.equal(h.calls.length, 0);
 });
 
+Deno.test("REST capabilities preserve bounded pagination and reject stale, duplicate or caller-authority query parameters", async () => {
+  const h = harness({ rows: [preflight, release] });
+  const get = (query: string) => h.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api/v1/capabilities" + query,
+    { headers: { authorization: "Bearer test-user-jwt" } }));
+  const first = await (await get("?limit=1")).json();
+  assert.equal(first.operations.length, 1);
+  assert.equal(typeof first.next_cursor, "string");
+  const second = await (await get("?limit=1&cursor=" + first.next_cursor)).json();
+  assert.equal(second.operations.length, 1);
+  assert.notEqual(second.operations[0].operation, first.operations[0].operation);
+  assert.equal(second.next_cursor, undefined);
+  for (const query of ["?limit=0", "?limit=101", "?limit=1.5", "?limit=1&limit=2", "?cursor=bad", "?actor_id=foreign", "?channel=mcp"]) {
+    assert.equal((await get(query)).status, 400, query);
+  }
+  assert.equal((await get("?limit=1&cursor=sc1." + "0".repeat(64) + ".1")).status, 409);
+  assert.equal(h.calls.length, 0);
+});
+
 Deno.test("canonical execute route binds operation to URL and rejects conflicting envelopes", async () => {
   const h = harness();
   const request = (body: unknown) =>
@@ -6553,6 +6571,11 @@ Deno.test("scoped workload discovery includes approved write handlers without wi
     "github.commit",
   ]);
   assert.equal(scoped.calls.length, 0);
+  const rest = await scoped.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api/v1/capabilities?limit=1", {
+    headers: { authorization: "Bearer " + jwt },
+  }));
+  assert.equal(rest.status, 200, await rest.clone().text());
+  assert.deepEqual((await rest.json()).operations.map((row: Row) => row.operation), ["github.commit"]);
 });
 
 Deno.test("verified new customer discovers onboarding before a portal account exists", async () => {

@@ -7,6 +7,8 @@ import {
   engineeringRequest,
   engineeringVmReadPolicy,
 } from "./engineering_identity.ts";
+import { AjvJsonSchemaValidator } from "npm:@modelcontextprotocol/sdk@1.32.1/validation/ajv";
+import { gapContracts } from "../sandy-provider-gap-api/contracts.ts";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
 const MACHINE = "10000000-0000-4000-8000-000000000001",
   OWNER = "10000000-0000-4000-8000-000000000002",
@@ -281,13 +283,17 @@ Deno.test("machine log result is restricted to exact pinned console markers", as
         ok: true,
         result: {
           ok: true,
-          truncated: true,
+          operation: "supabase.logs.query", contract_version: "1.0.0", provider: "supabase",
+          request_state: "observed", executed: true, admission_id: APPROVAL,
+          provider_http_status: 200, provider_request_id: null, possibly_truncated: true,
           result: {
+            project_ref: engineeringPolicy.project_ref, query_dialect: "clickhouse_sql", redaction_policy: "known_patterns_v1",
             entries: [{
+              id: null, source: "function_logs",
               message: engineeringPolicy.function_console_markers[0] + "\n",
               timestamp: "2026-10-21T00:00:00Z",
             }, {
-              message: "other customer secret",
+              id: null, source: "function_logs", message: "other customer secret",
               timestamp: "2026-10-21T00:00:00Z",
             }],
             next_query_before: "private-project-activity",
@@ -307,7 +313,10 @@ Deno.test("machine log result is restricted to exact pinned console markers", as
     v = await r.json();
   assert.equal(v.result.result.entries.length, 1);
   assert.equal(v.result.result.next_query_before, null);
-  assert.equal(v.result.truncated, false);
+  assert.equal(v.result.possibly_truncated, true);
+  assert.equal(Object.hasOwn(v.result, "truncated"), false);
+  const validator = new AjvJsonSchemaValidator().getValidator(gapContracts["supabase.logs.query"].output_schema);
+  assert.equal(validator(v.result).valid, true, "the customer-filtered result must still satisfy the published MCP output schema");
   assert.equal(JSON.stringify(v).includes("other customer secret"), false);
 });
 Deno.test("discovery delegates only the bounded catalogue and never prepares a provider write", async () => {

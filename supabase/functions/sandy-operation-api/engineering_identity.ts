@@ -353,7 +353,8 @@ export async function engineeringRequest(
     policy.function_console_markers.includes(value.message.trim())
   );
   result.next_query_before = null;
-  output.result.truncated = false;
+  // Preserve the handler's possibly_truncated flag: filtering private rows
+  // cannot prove that the provider returned the complete log window.
   return Response.json(output, {
     status: response.status,
     headers: response.headers,
