@@ -671,14 +671,47 @@ async function handler(req:Request):Promise<Response>{
  if(action==="dependency"&&req.method==="POST"){
   if(!isUUID(p.task_id)||!isUUID(p.depends_on_id)||p.task_id===p.depends_on_id)return failure("Invalid dependency");
   const ids=[p.task_id,p.depends_on_id];
-  const {data:items,error:lookupError}=await db.from("sandy_tasks").select("id").eq("customer_id",cid).in("id",ids).is("archived_at",null);
+  const {data:items,error:lookupError}=await db.from("sandy_tasks").select("id,start_at,due_at").eq("customer_id",cid).in("id",ids).is("archived_at",null);
   if(lookupError||items?.length!==2)return failure("Task not found",404);
   if(p.remove===true){
    const {error}=await db.from("sandy_task_dependencies").delete().eq("customer_id",cid).eq("task_id",p.task_id).eq("depends_on_id",p.depends_on_id);
    if(error)return failure(error.message);
   }else{
+   // Reject links whose endpoints cannot be scheduled, and shift an overlapping
+   // successor before committing the dependency. Existing unrelated dates remain unchanged.
+   const predecessor=items.find((t:any)=>t.id===p.depends_on_id);
+   const successor=items.find((t:any)=>t.id===p.task_id);
+   const finish=Date.parse(predecessor?.due_at||predecessor?.start_at||"");
+   const begin=Date.parse(successor?.start_at||successor?.due_at||"");
+   const oldEnd=Date.parse(successor?.due_at||successor?.start_at||"");
+   if(!Number.isFinite(finish)||!Number.isFinite(begin)||!Number.isFinite(oldEnd))
+    return failure("Both tasks must have valid schedule dates before linking",400);
+   // A predecessor can never appear downstream of its own successor.
+   const {data:existing,error:depReadError}=await db.from("sandy_task_dependencies").select("task_id,depends_on_id").eq("customer_id",cid);
+   if(depReadError)return failure(depReadError.message);
+   const queue=[p.depends_on_id],visited=new Set<string>();
+   while(queue.length){
+    const next=queue.shift()!;
+    if(next===p.task_id)return failure("Circular dependencies are not allowed",400);
+    if(visited.has(next))continue;
+    visited.add(next);
+    for(const d of existing||[])if(d.task_id===next)queue.push(d.depends_on_id);
+   }
+   let shifted=false;
+   if(begin<finish){
+    const {error:scheduleError}=await db.from("sandy_tasks").update({
+     start_at:new Date(finish).toISOString(),
+     due_at:new Date(finish+Math.max(0,oldEnd-begin)).toISOString(),
+     updated_by:"customer:"+s.email
+    }).eq("customer_id",cid).eq("id",p.task_id);
+    if(scheduleError)return failure("Unable to align dependent task: "+scheduleError.message);
+    shifted=true;
+   }
    const {error}=await db.from("sandy_task_dependencies").upsert({customer_id:cid,task_id:p.task_id,depends_on_id:p.depends_on_id},{onConflict:"task_id,depends_on_id",ignoreDuplicates:true});
-   if(error)return failure(error.message);
+   if(error){
+    if(shifted)await db.from("sandy_tasks").update({start_at:successor?.start_at||null,due_at:successor?.due_at||null}).eq("customer_id",cid).eq("id",p.task_id);
+    return failure(error.message);
+   }
   }
   return json(200,{ok:true});
  }
