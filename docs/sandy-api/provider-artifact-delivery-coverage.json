@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "operation": "provider.artifacts.read_private",
+  "contract_sha256": "e573fd716c831ca9e8e825a54caa0db6a4ff2e93397b9d270cd7e21198364d38",
+  "source_operations": [
+    "github.actions.jobs.logs.capture",
+    "github.actions.jobs.steps.logs.capture",
+    "github.actions.runs.attempts.logs.capture",
+    "github.actions.runs.logs.capture",
+    "github.actions.artifacts.download.capture",
+    "gcp.artifacts.files.download.capture"
+  ],
+  "source_classes": 6,
+  "max_bytes": 1048576,
+  "implementation": "one_use_owner_approved_bounded_byte_delivery_source_ready",
+  "api_exposed": false,
+  "verified": false,
+  "provider_called": false,
+  "auth_session_tested": false,
+  "real_approval_tested": false,
+  "private_capture_timestamp_defect_fixed_in_source": true,
+  "excluded_classes": [
+    "all08500_sensitive_captures",
+    "credential_custody",
+    "identity_material",
+    "tokens",
+    "cursors",
+    "signed_redirect_locations",
+    "function_source"
+  ],
+  "recognizable_credentials_refused": true,
+  "arbitrary_archive_contents_proven_secret_free": false,
+  "remaining_limits": [
+    "Larger payloads need a separate governed streaming protocol",
+    "Function-source delivery requires a separate reviewed-source boundary",
+    "Real Controller session/approval, source provider fixture and Edge execution remain unverified"
+  ],
+  "all_161_requirements_completed": false
+}
