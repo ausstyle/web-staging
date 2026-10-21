@@ -151,12 +151,12 @@ class EngineeringRuntime:
         state = self.state()
         if not state["enabled"] or state["revoked_at"] or state["rotation_state"] != "ready":
             raise RuntimeErrorCode("engineering_identity_not_authorized")
-        rows = self._sql("SELECT d.decrypted_secret FROM vault.decrypted_secrets d "
-            "JOIN public.sandy_engineering_test_identities p ON p.bootstrap_secret_id=d.id "
-            "WHERE p.user_id=" + self._quote(state["user_id"]) + " AND p.enabled AND p.revoked_at IS NULL", True)
-        if len(rows) != 1 or not isinstance(rows[0]["decrypted_secret"], str):
+        service = self._api_keys()["service_role"]
+        status, value = self._http("POST", BASE + "/rest/v1/rpc/sandy_engineering_runtime_bootstrap", service,
+            {"p_user_id": state["user_id"]}, service)
+        if status != 200 or not isinstance(value, dict) or value.get("ok") is not True or not isinstance(value.get("credential"), str):
             raise RuntimeErrorCode("runtime_bootstrap_unavailable")
-        return rows[0]["decrypted_secret"]
+        return value["credential"]
 
     def invoke(self, message):
         if not isinstance(message, dict):

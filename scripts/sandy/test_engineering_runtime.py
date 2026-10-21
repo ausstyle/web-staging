@@ -62,5 +62,16 @@ class RuntimeCredentialTests(unittest.TestCase):
         self.assertFalse(status["personal_controller_session_used"])
         self.assertEqual(status["controller_memberships"], 0)
 
+    def test_bootstrap_delivery_uses_only_audited_private_rpc(self):
+        runtime = EngineeringRuntime("synthetic-management")
+        runtime.state = lambda: {"user_id": "synthetic-user", "enabled": True, "revoked_at": None, "rotation_state": "ready"}
+        runtime._api_keys = lambda: {"service_role": "synthetic-administration"}
+        runtime._sql = lambda *args, **kwargs: self.fail("No unrestricted Vault view read")
+        observed = []
+        runtime._http = lambda *args: (observed.append(args) or (200, {"ok": True, "credential": "synthetic-private-bootstrap"}))
+        self.assertEqual(runtime._bootstrap_key(), "synthetic-private-bootstrap")
+        self.assertEqual(observed[0][1], BASE + "/rest/v1/rpc/sandy_engineering_runtime_bootstrap")
+        self.assertEqual(observed[0][2], "synthetic-administration")
+
 if __name__ == "__main__":
     unittest.main()
