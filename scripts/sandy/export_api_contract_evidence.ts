@@ -35,6 +35,7 @@ import { tenantConsentOperations } from "../../supabase/functions/sandy-supabase
 import { gapGatewayOperations } from "../../supabase/functions/sandy-provider-gap-api/gateway.ts";
 import { supplementOperations } from "../../supabase/functions/sandy-provider-supplement-api/gateway.ts";
 import { sensitiveContracts } from "../../supabase/functions/sandy-provider-sensitive-api/contracts.ts";
+import { boundOperations } from "../../supabase/functions/sandy-provider-bound-api/gateway.ts";
 import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts";
 import { workerDiagnosisContract, workerDiagnosisOperation } from "../../supabase/functions/_shared/sandy-agent-operations/worker_diagnosis_contract.ts";
 import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
@@ -296,6 +297,13 @@ add(
   sensitiveContracts,
   "sandy-provider-sensitive-api",
   "sandy-provider-sensitive-api/index.ts",
+);
+add(
+  "provider_resource_relationships",
+  "sandy-provider-bound-api/gateway_manifest.json",
+  boundOperations,
+  "sandy-provider-bound-api",
+  "sandy-provider-bound-api/index.ts",
 );
 add(
   "internal_runtime_connection_preflight",
