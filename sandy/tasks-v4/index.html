@@ -829,6 +829,30 @@ function inlineEditor(t,focus){
    if(!p){toast("Already at the top level",true);return}
    parent=p.parent_task_id||null;after=p.id;
   }
+  // Title-only edits close immediately: never block the outline on network or reload.
+  if(mode!=="indent"&&mode!=="outdent"){
+   saving=true;
+   const previousTitle=t.title;
+   t.title=title;
+   field.replaceWith(outlineTitle(t));
+   if(mode==="enter"){
+    if(t.shared)void createSharedRow(t.parent_task_id||t.id).catch(e=>toast(e.message,true));
+    else outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal");
+   }
+   if(title!==previousTitle){
+    void api(t.shared?"shared-update":"update",{id:t.id,title}).catch(e=>{
+     // Do not overwrite a newer edit made while this request was pending.
+     if(t.title===title){
+      t.title=previousTitle;
+      const row=document.getElementById("task-"+t.id);
+      const label=row?.querySelector(":scope > .taskrow .tasktitle");
+      if(label)label.replaceWith(outlineTitle(t));
+     }
+     toast("Task title could not be saved: "+e.message,true);
+    });
+   }
+   return;
+  }
   saving=true;field.disabled=true;
   const moving=mode==="indent"||mode==="outdent";
   const previous={title:t.title,parent_task_id:t.parent_task_id,position:t.position};
