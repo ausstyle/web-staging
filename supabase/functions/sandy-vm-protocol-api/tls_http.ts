@@ -3,6 +3,7 @@ import tls from "node:tls";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { isIP } from "node:net";
 import { ProtocolRefusal } from "./errors.ts";
+import type { Duplex } from "node:stream";
 export type WinrmEndpoint = {
   address: string;
   port: number;
@@ -11,6 +12,7 @@ export type WinrmEndpoint = {
   certificateSha256: string;
   username: string;
   password: string;
+  openStream?: () => Promise<Duplex>;
 };
 export type SoapHttpReply = { status: number; body: Uint8Array };
 const MAX_BODY = 524288, MAX_HEADERS = 32768;
@@ -111,8 +113,10 @@ function validateIdentity(endpoint: WinrmIdentity) {
     !endpoint.certificatePem.startsWith("-----BEGIN CERTIFICATE-----")
   ) throw new ProtocolRefusal("verified_winrm_tls_binding_required");
 }
-function pinnedSocket(endpoint: WinrmIdentity) {
+async function pinnedSocket(endpoint: WinrmIdentity) {
+  const stream = await endpoint.openStream?.();
   return tls.connect({
+    ...(stream ? { socket: stream } : {}),
     host: endpoint.address,
     port: endpoint.port,
     servername: endpoint.serverName,
@@ -137,8 +141,8 @@ export async function verifyWinrmEndpointIdentity(
   endpoint: WinrmIdentity,
 ): Promise<void> {
   validateIdentity(endpoint);
+  const socket = await pinnedSocket(endpoint);
   await new Promise<void>((resolve, reject) => {
-    const socket = pinnedSocket(endpoint);
     let done = false;
     const finish = (error?: ProtocolRefusal) => {
       if (done) return;
@@ -185,10 +189,10 @@ export async function soapHttps(
     new TextEncoder().encode(body).length > 65536 ||
     !Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 30000
   ) throw new ProtocolRefusal("bounded_winrm_request_required");
+  const socket = await pinnedSocket(endpoint);
   return await new Promise((resolve, reject) => {
     const pieces: Buffer[] = [];
     let size = 0, done = false, written = false;
-    const socket = pinnedSocket(endpoint);
     const finish = (error?: ProtocolRefusal, value?: SoapHttpReply) => {
       if (done) return;
       done = true;

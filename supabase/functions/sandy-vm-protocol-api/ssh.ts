@@ -4,6 +4,7 @@ import ssh2 from "npm:ssh2@1.17.0";
 import { createHash, timingSafeEqual } from "node:crypto";
 import { isIP } from "node:net";
 import type { ClientChannel } from "npm:@types/ssh2@1.15.5";
+import type { Duplex } from "node:stream";
 
 import { ProtocolRefusal } from "./errors.ts";
 export { ProtocolRefusal } from "./errors.ts";
@@ -13,6 +14,7 @@ export type SshEndpoint = {
   username: string;
   privateKey: string;
   hostKeySha256: string;
+  stream?: Duplex;
 };
 export type SshResult = {
   exit_code: number;
@@ -187,6 +189,7 @@ export async function sshExecute(
     });
     try {
       client.connect({
+        ...(endpoint.stream ? { sock: endpoint.stream } : {}),
         host: endpoint.address,
         port: endpoint.port,
         username: endpoint.username,
@@ -230,6 +233,7 @@ export async function verifySshEndpointIdentity(
   address: string,
   port: number,
   pin: string,
+  stream?: Duplex,
 ): Promise<void> {
   if (
     isIP(address) !== 4 || !Number.isSafeInteger(port) || port < 1 ||
@@ -258,6 +262,7 @@ export async function verifySshEndpointIdentity(
     });
     try {
       client.connect({
+        ...(stream ? { sock: stream } : {}),
         host: address,
         port,
         username: "sandy_identity_probe",

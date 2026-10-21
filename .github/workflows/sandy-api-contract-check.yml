@@ -77,6 +77,7 @@ jobs:
           --import-map=scripts/sandy/testing/edge_types_import_map.json
           --allow-read=/tmp --allow-write=/tmp
           --allow-run=openssl --allow-net=127.0.0.1
+          --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE
           supabase/functions/sandy-vm-protocol-api/
       - name: Check closed contract compiler invariants
         run: python3 supabase/functions/sandy-vm-protocol-api/compiler_test.py

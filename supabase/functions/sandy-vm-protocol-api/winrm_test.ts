@@ -1,4 +1,18 @@
 import assert from "node:assert/strict";
+import { connect } from "node:net";
+import { once } from "node:events";
+
+Deno.test("WinRM: pinned TLS over supplied private streams preserves WSMan lifecycle and exact result", async () => {
+  const f = await fixture(); let opened = 0;
+  try {
+    const result = await winrmExecute({ ...f.endpoint, address: "10.132.0.3", port: 5986,
+      openStream: async () => { opened++; const socket = connect({ host: "127.0.0.1", port: f.endpoint.port }); await once(socket, "connect"); return socket; },
+    }, "whoami");
+    assert.equal(result.exit_code, 7);
+    assert.equal(new TextDecoder().decode(result.stdout), "synthetic stdout");
+    assert.deepEqual(f.commands, ["whoami"]); assert.equal(opened, 5);
+  } finally { await f.close(); }
+});
 import { X509Certificate } from "node:crypto";
 import { winrmExecute } from "./winrm.ts";
 import { ProtocolRefusal } from "./ssh.ts";

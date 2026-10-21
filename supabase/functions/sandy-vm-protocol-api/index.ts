@@ -41,6 +41,7 @@ import {
 } from "./executor.ts";
 import { verifySshEndpointIdentity } from "./ssh.ts";
 import { verifyWinrmEndpointIdentity } from "./tls_http.ts";
+import { openIapTunnel } from "./iap.ts";
 export type Context = {
   actor_id: string;
   tenant_id: null;
@@ -242,14 +243,17 @@ export function createProtocolHandler(deps: ProtocolHandlerDependencies) {
           binding.ssh?.mode === "oslogin",
         );
         if (binding.ssh) {
-          await (deps.verifySshIdentity ?? verifySshEndpointIdentity)(
+          const stream = proof.transport === "iap" ? await (deps.iapTunnel ?? openIapTunnel)(vm, 22, token) : undefined;
+          try { await (deps.verifySshIdentity ?? verifySshEndpointIdentity)(
             proof.address,
             22,
             binding.ssh.host_key_sha256,
-          );
+            stream,
+          ); } finally { stream?.destroy(); }
         }
         if (binding.winrm) {
           await (deps.verifyWinrmIdentity ?? verifyWinrmEndpointIdentity)({
+            ...(proof.transport === "iap" ? { openStream: () => (deps.iapTunnel ?? openIapTunnel)(vm, 5986, token) } : {}),
             address: proof.address,
             port: 5986,
             serverName: binding.winrm.server_name,

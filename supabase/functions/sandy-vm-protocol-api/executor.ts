@@ -19,6 +19,7 @@ import { withEphemeralOsLogin } from "./oslogin.ts";
 import { type SshEndpoint, sshExecute, type SshResult } from "./ssh.ts";
 import { winrmExecute, type WinrmResult } from "./winrm.ts";
 import type { WinrmEndpoint } from "./tls_http.ts";
+import { openIapTunnel } from "./iap.ts";
 export type ProtocolExecution = {
   actorId: string;
   admissionId: string;
@@ -50,6 +51,7 @@ export type ProtocolDependencies = {
   fetch?: typeof fetch;
   sshExecute?: typeof sshExecute;
   winrmExecute?: typeof winrmExecute;
+  iapTunnel?: typeof openIapTunnel;
 };
 /** The caller already consumed the ORIGINAL exact owner grant. SQL verifies that fact again. */
 export async function executeRegisteredProtocol(
@@ -111,13 +113,19 @@ export async function executeRegisteredProtocol(
     canonicalJson(current.binding) !== canonicalJson(resolved.binding)
   ) throw new ProtocolRefusal("vm_protocol_binding_changed_during_execution");
   let result: SshResult | WinrmResult, cleanup: true | null = null;
+  const executeSsh = async (endpoint: SshEndpoint) => {
+    const stream = proof.transport === "iap"
+      ? await (deps.iapTunnel ?? openIapTunnel)(context.vmName, 22, token) : undefined;
+    try { return await (deps.sshExecute ?? sshExecute)({ ...endpoint, ...(stream ? { stream } : {}) }, command); }
+    finally { stream?.destroy(); }
+  };
   if (protocol === "ssh") {
     if (binding.ssh!.mode === "oslogin") {
       result = await withEphemeralOsLogin(
         calls,
         proof.address,
         binding.ssh!.host_key_sha256,
-        (endpoint) => (deps.sshExecute ?? sshExecute)(endpoint, command),
+        executeSsh,
       );
       cleanup = true;
     } else {
@@ -138,7 +146,7 @@ export async function executeRegisteredProtocol(
         privateKey: auth.privateKey,
         hostKeySha256: binding.ssh!.host_key_sha256,
       };
-      result = await (deps.sshExecute ?? sshExecute)(endpoint, command);
+      result = await executeSsh(endpoint);
     }
   } else {
     const auth = privateAuthentication(
@@ -152,6 +160,7 @@ export async function executeRegisteredProtocol(
       );
     }
     const endpoint: WinrmEndpoint = {
+      ...(proof.transport === "iap" ? { openStream: () => (deps.iapTunnel ?? openIapTunnel)(context.vmName, 5986, token) } : {}),
       address: proof.address,
       port: 5986,
       serverName: binding.winrm!.server_name,

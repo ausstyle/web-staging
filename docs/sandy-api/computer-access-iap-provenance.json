@@ -1,0 +1,15 @@
+{
+  "official_sdk_version": "590.0.0",
+  "manifest_url": "https://dl.google.com/dl/cloudsdk/channels/rapid/components-2.json",
+  "archive_url": "https://dl.google.com/dl/cloudsdk/channels/rapid/components/google-cloud-sdk-core-20261016073856.tar.gz",
+  "archive_sha256": "af6a8794c64ab00cda8a223e3613fc2d97f2d6e7dac7f9d1c8e5e55df4c901b4",
+  "archive_size_bytes": 30074864,
+  "reviewed_files": {
+    "iap_tunnel_websocket_utils.py": "6c14fe2d286ec73213e0f85d86b180fd6abfb55f4b80b6023182e8ff3c79c96c",
+    "iap_tunnel_websocket.py": "cad06c325149af79c1f36e05c5ef8ae3bf17ea2bbd898dcc387d330f2012d500",
+    "iap_tunnel_websocket_helper.py": "668757ee639fb22f130c42e26fcff89af2919a93beb94c540584777a17b16a55"
+  },
+  "reviewed_protocol": "v4 relay.tunnel.cloudproxy.app; fixed VM project/zone/instance/nic0/port, big endian CONNECT/DATA/ACK frames",
+  "implementation": "Bounded TypeScript stream adapter; no reconnect or command replay. SSH/WinRM authentication and identity verification are retained.",
+  "provider_execution_verified": false
+}

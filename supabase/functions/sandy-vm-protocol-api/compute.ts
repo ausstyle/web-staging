@@ -178,6 +178,17 @@ export async function verifyVm(
       .test(ip) &&
     Number(ip.split(".")[0]) < 224
   );
+  if (addresses.length === 0) {
+    const nics = vm.networkInterfaces;
+    const nic = Array.isArray(nics) && nics.length === 1 ? nics[0] : undefined;
+    if (!obj(nic) || nic.name !== "nic0" || typeof nic.networkIP !== "string" ||
+      isIP(nic.networkIP) !== 4 ||
+      !/^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(nic.networkIP)) {
+      throw new ProtocolRefusal("fixed_vm_private_interface_required");
+    }
+    return { address: nic.networkIP, instance_id: fixed.instance_id,
+      proof_sha256: reply.sha256, transport: "iap" as const };
+  }
   if (safe.length !== 1) {
     throw new ProtocolRefusal("fixed_vm_public_endpoint_required");
   }
@@ -185,5 +196,6 @@ export async function verifyVm(
     address: safe[0],
     instance_id: fixed.instance_id,
     proof_sha256: reply.sha256,
+    transport: "direct" as const,
   };
 }

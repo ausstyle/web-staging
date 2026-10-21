@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 // @ts-types="npm:@types/ssh2@1.15.5"
 import ssh2 from "npm:ssh2@1.17.0";
 import { createHash, timingSafeEqual } from "node:crypto";
+import { connect } from "node:net";
+import { once } from "node:events";
 import { createProtocolHandler } from "./index.ts";
 import {
   bytesDigest,
@@ -15,6 +17,17 @@ import {
   verifySshEndpointIdentity,
 } from "./ssh.ts";
 type Mode = "success" | "disconnect" | "overflow" | "hang" | "maximum";
+Deno.test("SSH: supplied private tunnel stream retains host verification, real output and disconnect", async () => {
+  const f = await fixture();
+  const stream = connect({ host: "127.0.0.1", port: f.endpoint.port });
+  await once(stream, "connect");
+  try {
+    const result = await sshExecute({ ...f.endpoint, address: "10.132.0.2", port: 22, stream }, "whoami");
+    assert.equal(result.exit_code, 7);
+    assert.equal(new TextDecoder().decode(result.stdout), "synthetic stdout");
+    assert.deepEqual(f.commands, ["whoami"]);
+  } finally { stream.destroy(); await f.close(); }
+});
 async function fixture(mode: Mode = "success") {
   const host = ephemeralSshKey(),
     user = ephemeralSshKey(),
