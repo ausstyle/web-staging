@@ -608,7 +608,7 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .timelineInlineConfirmActions button{border:1px solid #d7e3d8;background:#fff;color:#3c624a;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:650}
 .timelineInlineConfirmActions button.confirm{background:#356f55;color:#fff;border-color:#356f55}
 .timelineInlineConfirmActions button:hover{filter:brightness(.96)}
-</style></head><body>
+</style><style>.timelineInlineConfirmActions button.removeDependencyConfirm{background:#a84942;border-color:#a84942;color:white}</style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
 <header><button type="button" id="agendaMobileNav" aria-label="Open navigation" onclick="document.body.classList.add('agendaNavOpen')">☰</button><div class="logo"><div class="mark">✳</div>sandy.</div><div class="headright"><a class="topnav-link" href="../app/">← Workspace</a><span id="who"></span><button id="logout" class="btn small">Sign out</button></div></header>
@@ -1967,8 +1967,35 @@ async function timelineSaveSchedule(t,start,end){
 }
 let dependencyContextMenu=null;
 function closeDependencyContextMenu(){if(dependencyContextMenu){dependencyContextMenu.remove();dependencyContextMenu=null}}
+function timelineConfirmDependencyRemoval(description,x,y){
+ return new Promise(resolve=>{
+  const pop=document.createElement("div");pop.className="timelineInlineConfirm";
+  pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Remove dependency");
+  const title=document.createElement("div");title.className="timelineInlineConfirmTitle";title.textContent="Remove dependency?";
+  const detail=document.createElement("div");detail.className="timelineInlineConfirmDetail";
+  detail.textContent=description+" · Task dates stay unchanged.";
+  const actions=document.createElement("div");actions.className="timelineInlineConfirmActions";
+  const cancel=document.createElement("button");cancel.type="button";cancel.textContent="Cancel";
+  const remove=document.createElement("button");remove.type="button";remove.textContent="Remove";remove.className="removeDependencyConfirm";
+  actions.append(cancel,remove);pop.append(title,detail,actions);document.body.append(pop);
+  const bounds=pop.getBoundingClientRect();
+  pop.style.left=Math.max(8,Math.min(innerWidth-bounds.width-8,x))+"px";
+  pop.style.top=Math.max(8,Math.min(innerHeight-bounds.height-8,y))+"px";
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();resolve(value)};
+  const outside=e=>{if(!pop.contains(e.target))done(false)};
+  const key=e=>{if(e.key==="Escape"){e.preventDefault();done(false)}};
+  cancel.onclick=()=>done(false);remove.onclick=()=>done(true);
+  document.addEventListener("pointerdown",outside,true);
+  document.addEventListener("keydown",key,true);
+  remove.focus({preventScroll:true});
+ });
+}
 async function removeTimelineDependency(dep,description){
- if(!confirm("Remove dependency “"+description+"”? Task dates will not be changed."))return;
+ const anchor=dependencyContextMenu?.getBoundingClientRect();
+ const x=anchor?anchor.left+12:Math.round(innerWidth/2),y=anchor?anchor.top+12:Math.round(innerHeight/2);
+ closeDependencyContextMenu();
+ if(!await timelineConfirmDependencyRemoval(description,x,y))return;
  try{
   await api("dependency",{task_id:dep.task_id,depends_on_id:dep.depends_on_id,remove:true});
   state.dependencies=state.dependencies.filter(d=>!(d.task_id===dep.task_id&&d.depends_on_id===dep.depends_on_id));
