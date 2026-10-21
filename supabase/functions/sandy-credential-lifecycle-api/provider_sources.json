@@ -1,0 +1,18 @@
+{
+  "gcp-iam": {
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/iam/v1/iam-api.json",
+    "sha256": "0f06a82cd252b2c0fd3b37a13978c7f8c7881afc8d7b028c95cbe8a2839934e6"
+  },
+  "gcp-secretmanager": {
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/secretmanager/v1/secretmanager-api.json",
+    "sha256": "66df35b9a5820cddd16f227b0a49da4e8ef858655aca9b66696d4868e6ac358d"
+  },
+  "github": {
+    "source": "https://raw.githubusercontent.com/github/rest-api-description/755ee33b4a81d51f6f07a902cce26cbec3b822f2/descriptions/api.github.com/api.github.com.json",
+    "sha256": "3177ad6a86ca04c57a9bef3fc24e28a339efb8eb040c6f950af3d3ed2fee7fa3"
+  },
+  "supabase": {
+    "source": "https://raw.githubusercontent.com/supabase/supabase/f5b00a5237155603efc708b08ece7d8c6aacf763/apps/docs/spec/api_v1_openapi.json",
+    "sha256": "a322345cd8bcaab5f22dc615600b3ae1e1a1f37c9534b7a9839971a66cde9434"
+  }
+}
