@@ -2241,12 +2241,53 @@ function renderTimeline(){
     const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
     const dragNote=el("div","timelineDragNote","");
-    const placeDragNote=(clientX,clientY)=>{dragNote.style.left=Math.max(110,Math.min(innerWidth-110,clientX))+"px";dragNote.style.top=Math.max(8,clientY-44)+"px"};
-    const hideDragNote=()=>{dragNote.style.display="none";dragNote.remove();bar.classList.remove("timelineDragging")};
-    bar.addEventListener("pointerdown",e=>{if(t.shared||e.button!==0)return;gesture={x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};bar.setPointerCapture(e.pointerId);bar.classList.add("timelineDragging");document.body.append(dragNote);dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(from).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(to).toLocaleString():new Date(from).toLocaleString()+" → "+new Date(to).toLocaleString();dragNote.style.display="block";placeDragNote(e.clientX,e.clientY);e.stopPropagation()});
-    bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*snapSteps);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*snapMs:gesture.from;const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*snapMs:gesture.to;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=new Date(nextFrom).toLocaleString()+" → "+new Date(nextTo).toLocaleString();dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(nextFrom).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(nextTo).toLocaleString():bar.title;const edge=bar.getBoundingClientRect();placeDragNote(gesture.mode==="start"?edge.left:gesture.mode==="resize"?edge.right:e.clientX,edge.top);timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range)});
-    bar.addEventListener("pointerup",async e=>{if(!gesture)return;const g=gesture;gesture=null;hideDragNote();if(!g.moved){state.edit=t;state.parent=null;openDialog();return}const delta=Math.round((e.clientX-g.x)/g.width*snapSteps);const nextFrom=g.mode==="move"||g.mode==="start"?g.from+delta*snapMs:g.from,nextTo=g.mode==="move"||g.mode==="resize"?g.to+delta*snapMs:g.to;if(nextTo<nextFrom){renderTimeline();return}await timelineSaveSchedule(t,nextFrom,nextTo)});
-    bar.addEventListener("pointercancel",()=>{gesture=null;hideDragNote();renderTimeline()});bar.addEventListener("lostpointercapture",()=>{if(gesture){gesture=null;hideDragNote()}});track.append(bar)
+    dragNote.style.cssText="display:block!important;position:fixed!important;bottom:auto!important;left:0;top:0;transform:translateX(-50%);z-index:2147483000!important;background:#253c2d;color:#fff;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 5px 17px #0003";
+    const hideDragNote=()=>{dragNote.remove();bar.classList.remove("timelineDragging")};
+    const placeDragNote=(x,y)=>{
+      const half=Math.min(180,Math.max(90,dragNote.getBoundingClientRect().width/2));
+      dragNote.style.left=Math.max(half+8,Math.min(innerWidth-half-8,x))+"px";
+      dragNote.style.top=Math.max(8,y-44)+"px";
+    };
+    const dragPosition=(e,apply=true)=>{
+      if(!gesture)return null;
+      const delta=Math.round((e.clientX-gesture.x)/gesture.width*snapSteps);
+      if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;
+      const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*snapMs:gesture.from;
+      const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*snapMs:gesture.to;
+      if(nextTo<nextFrom)return null;
+      if(apply){
+        bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";
+        bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";
+        bar.title=new Date(nextFrom).toLocaleString()+" → "+new Date(nextTo).toLocaleString();
+        dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(nextFrom).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(nextTo).toLocaleString():bar.title;
+        const edge=bar.getBoundingClientRect();
+        placeDragNote(gesture.mode==="start"?edge.left:gesture.mode==="resize"?edge.right:e.clientX,edge.top);
+        timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range);
+      }
+      return {nextFrom,nextTo};
+    };
+    const cleanup=()=>{document.removeEventListener("pointermove",moveDrag,true);document.removeEventListener("pointerup",finishDrag,true);document.removeEventListener("pointercancel",cancelDrag,true);hideDragNote()};
+    const moveDrag=e=>{if(gesture&&e.pointerId===gesture.pointerId)dragPosition(e)};
+    const cancelDrag=e=>{if(!gesture||e.pointerId!==gesture.pointerId)return;gesture=null;cleanup();renderTimeline()};
+    const finishDrag=async e=>{
+      if(!gesture||e.pointerId!==gesture.pointerId)return;
+      const g=gesture,result=dragPosition(e,false);gesture=null;cleanup();
+      if(!g.moved){state.edit=t;state.parent=null;openDialog();return}
+      if(!result){renderTimeline();return}
+      await timelineSaveSchedule(t,result.nextFrom,result.nextTo);
+    };
+    bar.addEventListener("pointerdown",e=>{
+      if(t.shared||e.button!==0)return;
+      gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
+      bar.classList.add("timelineDragging");
+      document.body.append(dragNote);
+      dragPosition(e);
+      document.addEventListener("pointermove",moveDrag,true);
+      document.addEventListener("pointerup",finishDrag,true);
+      document.addEventListener("pointercancel",cancelDrag,true);
+      e.preventDefault();e.stopPropagation();
+    });
+    track.append(bar)
    }
   }
   if(!hasDate){
