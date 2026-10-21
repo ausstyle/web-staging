@@ -6,12 +6,18 @@ on:
       - 'services/sandy-engineering-mcp/**'
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
       - 'scripts/sandy/sync_mcp_transport.py'
+      - 'scripts/sandy/verify_mcp_candidate*'
+      - 'supabase/functions/_shared/sandy_engineering_session*'
+      - 'supabase/functions/sandy-engineering-runtime/**'
       - '.github/workflows/sandy-engineering-mcp-deploy.yml'
   pull_request:
     paths:
       - 'services/sandy-engineering-mcp/**'
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
       - 'scripts/sandy/sync_mcp_transport.py'
+      - 'scripts/sandy/verify_mcp_candidate*'
+      - 'supabase/functions/_shared/sandy_engineering_session*'
+      - 'supabase/functions/sandy-engineering-runtime/**'
       - '.github/workflows/sandy-engineering-mcp-deploy.yml'
   workflow_dispatch:
     inputs:
@@ -96,7 +102,7 @@ jobs:
               raise RuntimeError('exact_previous_traffic_required')
           out = root / 'sandy-mcp-release'
           (out / 'before.json').write_text(json.dumps({'service': 'sandy-engineering-mcp',
-              'project': os.environ['PROJECT'], 'region': 'europe-west1', 'traffic': traffic,
+              'project': os.environ['PROJECT'], 'region': 'europe-west1', 'traffic': traffic, 'url': status.get('url'),
               'latestReadyRevisionName': status.get('latestReadyRevisionName'),
               'source_commit_candidate': os.environ['GITHUB_SHA'], 'environment_values_recorded': False}, indent=2))
           (out / 'rollback-command.txt').write_text('gcloud run services update-traffic sandy-engineering-mcp '
@@ -126,6 +132,17 @@ jobs:
               raise RuntimeError('production_traffic_changed_requires_recorded_rollback')
           PY
           echo "Candidate deployed without changing production traffic or invoker IAM. Authenticated MCP/provider acceptance is required before promotion."
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Verify candidate through normal Auth, MCP and the real provider
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: >-
+          deno run --allow-env --allow-net --allow-read --allow-write
+          scripts/sandy/verify_mcp_candidate.ts
+          --release-dir "$RUNNER_TEMP/sandy-mcp-release"
+          --output "$RUNNER_TEMP/sandy-mcp-release/authenticated-acceptance.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

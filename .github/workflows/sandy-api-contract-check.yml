@@ -12,6 +12,9 @@ on:
       - 'supabase/functions/_shared/sandy-agent-operations/**'
       - 'supabase/functions/_shared/sandy_finish_receipt*'
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'supabase/functions/_shared/sandy_engineering_session*'
+      - 'supabase/functions/sandy-engineering-runtime/**'
+      - 'scripts/sandy/verify_mcp_candidate*'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
@@ -28,6 +31,9 @@ on:
       - 'supabase/functions/_shared/sandy-agent-operations/**'
       - 'supabase/functions/_shared/sandy_finish_receipt*'
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'supabase/functions/_shared/sandy_engineering_session*'
+      - 'supabase/functions/sandy-engineering-runtime/**'
+      - 'scripts/sandy/verify_mcp_candidate*'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
@@ -56,6 +62,10 @@ jobs:
           supabase/functions/sandy-auto-improve/
           supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_profiles_test.ts
           supabase/functions/_shared/sandy_finish_receipt_test.ts
+          supabase/functions/_shared/sandy_engineering_session_test.ts
+          supabase/functions/_shared/sandy_engineering_session_client_test.ts
+          supabase/functions/sandy-engineering-runtime/
+          scripts/sandy/verify_mcp_candidate_test.ts
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
