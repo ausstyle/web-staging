@@ -11431,7 +11431,17 @@
         "agenda.tasks.update",
         "customer.profile.get"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "customer_onboarding_extension_evidence": {
+        "operations": [
+          "customer.onboarding.ensure",
+          "customer.onboarding.update",
+          "customer.identity.get"
+        ],
+        "evidence": "customer-onboarding-evidence-20261021.json",
+        "scope_complete": false,
+        "limitations": "Verified email/web/API canonical identity; projection of existing verified WhatsApp links. No new channel-link verification or identity merge; provisioning and organisation entitlements remain separate work."
+      }
     },
     {
       "requirement_id": 144,
@@ -11576,7 +11586,17 @@
         "system.credentials.issue",
         "system.credentials.revoke"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "customer_onboarding_extension_evidence": {
+        "operations": [
+          "customer.onboarding.ensure",
+          "customer.onboarding.update",
+          "customer.identity.get"
+        ],
+        "evidence": "customer-onboarding-evidence-20261021.json",
+        "scope_complete": false,
+        "limitations": "Verified email/web/API canonical identity; projection of existing verified WhatsApp links. No new channel-link verification or identity merge; provisioning and organisation entitlements remain separate work."
+      }
     },
     {
       "requirement_id": 145,
@@ -12070,7 +12090,17 @@
         "whatsapp.topics.get",
         "whatsapp.topics.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "customer_onboarding_extension_evidence": {
+        "operations": [
+          "customer.onboarding.ensure",
+          "customer.onboarding.update",
+          "customer.identity.get"
+        ],
+        "evidence": "customer-onboarding-evidence-20261021.json",
+        "scope_complete": false,
+        "limitations": "Verified email/web/API canonical identity; projection of existing verified WhatsApp links. No new channel-link verification or identity merge; provisioning and organisation entitlements remain separate work."
+      }
     },
     {
       "requirement_id": 150,
@@ -13755,7 +13785,17 @@
         "support.comments.create",
         "support.comments.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "customer_onboarding_extension_evidence": {
+        "operations": [
+          "customer.onboarding.ensure",
+          "customer.onboarding.update",
+          "customer.identity.get"
+        ],
+        "evidence": "customer-onboarding-evidence-20261021.json",
+        "scope_complete": false,
+        "limitations": "Verified email/web/API canonical identity; projection of existing verified WhatsApp links. No new channel-link verification or identity merge; provisioning and organisation entitlements remain separate work."
+      }
     },
     {
       "requirement_id": 160,
@@ -16936,5 +16976,22 @@
     "workspace.topics.thread": "explicit_contract_requirement_metadata"
   },
   "requirements_with_typed_source_or_deployed_gateway_contracts": 161,
-  "pinned_source_commit": "e2d49fdfab6147783e4bbfde373d6550db906763"
+  "pinned_source_commit": "e2d49fdfab6147783e4bbfde373d6550db906763",
+  "production_extension_evidence_20261021": {
+    "source_commit": "dd824bfa3a2eb3a513c072fdaf68553cda24d4ae",
+    "registered_operations": 2573,
+    "api_exposed_flags": 435,
+    "ai_exposed_flags": 418,
+    "verified_flags": 21,
+    "new_customer_operations": [
+      "customer.onboarding.ensure",
+      "customer.onboarding.update",
+      "customer.identity.get"
+    ],
+    "engineering_provider_operations_verified": 6,
+    "distinct_engineering_and_onboarding_mcp_operations_verified": 14,
+    "completed_requirements": 0,
+    "wildcard_completion": "incomplete until every constituent works",
+    "note": "Historical source/candidate inventory above is preserved; counts here are actual latest production registry flags, not executable or global MCP counts."
+  }
 }
