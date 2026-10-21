@@ -48,7 +48,7 @@ Post-release **28/28 real customer MCP calls passed**. Independent SQL found **2
 
 A deeper fixture cleanup check found six derived temporal facts across this session's three customer-read runs. Exact synthetic markers, retained fixture IDs or the original run window, INSERT provenance and absent customer/task records established ownership. Only those synthetic facts/links were removed; execution/audit history was retained. The harness now removes and independently checks these records. [Cleanup evidence](customer-service-temporal-cleanup-20261022.json). All normal test users/sessions and ten business-fixture categories independently read back as empty.
 
-The matrix reconciler also rejects a claimed family certificate when any reviewed required operation lacks execution evidence. This closes a reporting gap without increasing family completion figures. Full-family completion remains **0/161**.
+The matrix reconciler also rejects a claimed family certificate when any reviewed required operation lacks execution evidence. A live metadata refresh also retains previously reconciled source-family candidates instead of silently dropping them when the database omits source-derived links. These changes close reporting gaps without increasing family completion figures. Full-family completion remains **0/161**.
 
 ## Remaining work and external dependencies
 

@@ -76,7 +76,7 @@
     "engineering_test_component_checks": 3,
     "current_full_source_checks": 408,
     "real_SQL_checks_rolled_back_customer_admissions": 27,
-    "current_coverage_and_customer_parser_checks": 13
+    "current_coverage_and_customer_parser_checks": 14
   },
   "no_VM_LiveKit_or_media_changes": true,
   "customer_read_receipts": {

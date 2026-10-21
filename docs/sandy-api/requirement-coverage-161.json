@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-21T23:36:24.512377+00:00",
+  "generated_at_utc": "2026-10-21T23:40:19.834426+00:00",
   "snapshot_provenance": {
     "registry": {
       "sha256": "ed654cedd43b0d45330e00a636eb70eb9e78a392adddcb5059b30ba8bf746aa8",
@@ -10,7 +10,7 @@
       "captured_at_utc": "2026-10-21T23:35:44.165487+00:00"
     }
   },
-  "source_head": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+  "source_head": "1d69b5ac75c6d4843301061bf13cfa2e21441f8c",
   "original_pdf_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
   "semantics": {
@@ -19,7 +19,8 @@
     "shared_adapter_tests_verify_every_provider_effect": false,
     "historical_tests_are_reused_at_their_recorded_versions": true,
     "operation_counts_are_development_task_counts": false,
-    "unknowns_are_not_external_blockers": true
+    "unknowns_are_not_external_blockers": true,
+    "prior_source_family_candidates_retained_without_execution_inference": true
   },
   "summary": {
     "original_families": 161,
@@ -28952,6 +28953,11 @@
         "supabase.tenant.financial.exports.download",
         "supabase.tenant.financial.exports.get",
         "supabase.tenant.financial.exports.purge",
+        "supabase.tenant.financial.redaction.apply",
+        "supabase.tenant.financial.redaction.policies.create",
+        "supabase.tenant.financial.redaction.policies.get",
+        "supabase.tenant.financial.redaction.policies.revoke",
+        "supabase.tenant.financial.redaction.preview",
         "supabase.tenant.manifests.erase",
         "supabase.tenant.manifests.export",
         "supabase.tenant.manifests.exports.get",
@@ -29188,6 +29194,71 @@
           "existing_target_only_not_universal_authority": true
         },
         {
+          "operation": "supabase.tenant.financial.redaction.apply",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.policies.create",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.policies.get",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.policies.revoke",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.preview",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
           "operation": "supabase.tenant.manifests.erase",
           "registered": true,
           "source_contract_candidate_present": true,
@@ -29382,7 +29453,7 @@
         "sandy-operation-api",
         "sandy-tenant-lifecycle-api"
       ],
-      "active_handler_metadata_count": 29,
+      "active_handler_metadata_count": 34,
       "api_exposure_flags": 0,
       "ai_exposure_flags": 0,
       "actual_MCP_success_operation_ids": [],
@@ -29411,6 +29482,11 @@
           "version": 13,
           "status": "ACTIVE",
           "verify_jwt": true
+        },
+        "sandy-tenant-lifecycle-api": {
+          "version": 16,
+          "status": "ACTIVE",
+          "verify_jwt": true
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
@@ -29420,7 +29496,12 @@
         "supabase.compliance.hold.create",
         "supabase.compliance.retention.extend",
         "supabase.tenant.consent.get",
-        "supabase.tenant.consent.set"
+        "supabase.tenant.consent.set",
+        "supabase.tenant.financial.redaction.apply",
+        "supabase.tenant.financial.redaction.policies.create",
+        "supabase.tenant.financial.redaction.policies.get",
+        "supabase.tenant.financial.redaction.policies.revoke",
+        "supabase.tenant.financial.redaction.preview"
       ],
       "operation_delivery_states": [
         {
@@ -29487,6 +29568,71 @@
           "authorized_execution_evidence": [],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.apply",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.policies.create",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.policies.get",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.policies.revoke",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "supabase.tenant.financial.redaction.preview",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
         }
       ],
       "constituent_mapping_status": "unreviewed_candidates_not_independent_development_tasks",
@@ -29501,9 +29647,10 @@
       "missing_registry_operation_ids": [],
       "handler_labels": [
         "sandy-operation-api",
-        "sandy-supabase-service-api"
+        "sandy-supabase-service-api",
+        "sandy-tenant-lifecycle-api"
       ],
-      "active_handler_metadata_count": 5,
+      "active_handler_metadata_count": 10,
       "api_exposure_flags": 0,
       "ai_exposure_flags": 0,
       "actual_MCP_success_operation_ids": [],
@@ -35141,10 +35288,20 @@
           "status": "ACTIVE",
           "verify_jwt": false
         },
+        "sandy-customer-provisioning-api": {
+          "version": 9,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
         "sandy-operation-api": {
           "version": 43,
           "status": "ACTIVE",
           "verify_jwt": true
+        },
+        "sandy-operations-api": {
+          "version": 18,
+          "status": "ACTIVE",
+          "verify_jwt": false
         },
         "sandy-product-service-api": {
           "version": 13,
@@ -35180,7 +35337,22 @@
         "agenda.tasks.history",
         "agenda.tasks.interpret",
         "agenda.tasks.update",
-        "customer.profile.get"
+        "customer.keys.create",
+        "customer.keys.list",
+        "customer.keys.revoke",
+        "customer.profile.get",
+        "customer.provisioning.execute",
+        "customer.provisioning.features.list",
+        "customer.provisioning.jobs.get",
+        "customer.provisioning.plan",
+        "customer.provisioning.templates.list",
+        "customer.resources.decommission",
+        "customer.resources.list",
+        "customer.resources.reconcile",
+        "customer.resources.recover",
+        "customer.workspace.records.delete",
+        "customer.workspace.records.get",
+        "customer.workspace.records.upsert"
       ],
       "operation_delivery_states": [
         {
@@ -35531,6 +35703,45 @@
           "existing_target_only_not_universal_authority": true
         },
         {
+          "operation": "customer.keys.create",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.keys.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.keys.revoke",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
           "operation": "customer.profile.get",
           "registered": true,
           "source_contract_candidate_present": true,
@@ -35540,6 +35751,222 @@
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
           "authorized_MCP_execution_verified_for_recorded_scope": false,
           "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.execute",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.features.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.jobs.get",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.plan",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.templates.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.decommission",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.reconcile",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.recover",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.workspace.records.delete",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.workspace.records.get",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.workspace.records.upsert",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         }
@@ -35577,15 +36004,29 @@
       "missing_registry_operation_ids": [],
       "handler_labels": [
         "sandy-agenda",
+        "sandy-customer-provisioning-api",
         "sandy-operation-api",
+        "sandy-operations-api",
         "sandy-product-service-api"
       ],
-      "active_handler_metadata_count": 26,
-      "api_exposure_flags": 3,
-      "ai_exposure_flags": 3,
+      "active_handler_metadata_count": 41,
+      "api_exposure_flags": 16,
+      "ai_exposure_flags": 16,
       "actual_MCP_success_operation_ids": [
         "agenda.overview",
-        "agenda.pins.list"
+        "agenda.pins.list",
+        "customer.provisioning.execute",
+        "customer.provisioning.features.list",
+        "customer.provisioning.jobs.get",
+        "customer.provisioning.plan",
+        "customer.provisioning.templates.list",
+        "customer.resources.decommission",
+        "customer.resources.list",
+        "customer.resources.reconcile",
+        "customer.resources.recover",
+        "customer.workspace.records.delete",
+        "customer.workspace.records.get",
+        "customer.workspace.records.upsert"
       ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],
@@ -40883,6 +41324,7 @@
         "agent.missions.questions.review",
         "agent.missions.work_product.prepare",
         "agent.reliability.diagnosis.propose",
+        "agent.reliability.interaction.review",
         "agent.runtime.connections.preflight",
         "agent.runtime.operational.capabilities",
         "controller.activity",
@@ -41027,6 +41469,19 @@
         },
         {
           "operation": "agent.reliability.diagnosis.propose",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "agent.reliability.interaction.review",
           "registered": true,
           "source_contract_candidate_present": false,
           "code_assessment": "current_code_review_incomplete",
@@ -42330,6 +42785,7 @@
         "internal:agent.missions.questions.review@1.0.0",
         "internal:agent.missions.work_product.prepare@1.0.0",
         "internal:agent.reliability.diagnosis.propose@1.0.0",
+        "internal:agent.reliability.interaction.review@1.0.0",
         "internal:agent.runtime.connections.preflight@1.0.0",
         "internal:agent.runtime.operational.capabilities@1.0.0",
         "sandy-agent-operation-api",
@@ -44370,8 +44826,10 @@
         "customer.profile.get",
         "customer.profile.update",
         "customer.provisioning.execute",
+        "customer.provisioning.features.list",
         "customer.provisioning.jobs.get",
         "customer.provisioning.plan",
+        "customer.provisioning.templates.list",
         "customer.resources.decommission",
         "customer.resources.list",
         "customer.resources.reconcile",
@@ -44637,6 +45095,24 @@
           "existing_target_only_not_universal_authority": true
         },
         {
+          "operation": "customer.provisioning.features.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
           "operation": "customer.provisioning.jobs.get",
           "registered": true,
           "source_contract_candidate_present": false,
@@ -44656,6 +45132,24 @@
         },
         {
           "operation": "customer.provisioning.plan",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.templates.list",
           "registered": true,
           "source_contract_candidate_present": false,
           "code_assessment": "real_execution_at_recorded_release",
@@ -44946,16 +45440,18 @@
         "sandy-operations-api",
         "sandy-product-service-api"
       ],
-      "active_handler_metadata_count": 35,
-      "api_exposure_flags": 14,
-      "ai_exposure_flags": 14,
+      "active_handler_metadata_count": 37,
+      "api_exposure_flags": 16,
+      "ai_exposure_flags": 16,
       "actual_MCP_success_operation_ids": [
         "customer.identity.get",
         "customer.onboarding.ensure",
         "customer.onboarding.update",
         "customer.provisioning.execute",
+        "customer.provisioning.features.list",
         "customer.provisioning.jobs.get",
         "customer.provisioning.plan",
+        "customer.provisioning.templates.list",
         "customer.resources.decommission",
         "customer.resources.list",
         "customer.resources.reconcile",
@@ -45013,6 +45509,7 @@
         "agent.missions.questions.review",
         "agent.missions.work_product.prepare",
         "agent.reliability.diagnosis.propose",
+        "agent.reliability.interaction.review",
         "agent.runtime.connections.preflight",
         "agent.runtime.conversation.respond",
         "agent.runtime.images.request_approval",
@@ -45128,6 +45625,19 @@
         },
         {
           "operation": "agent.reliability.diagnosis.propose",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "current_code_review_incomplete",
+          "API_exposed_flag": false,
+          "MCP_exposed_flag": false,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": false,
+          "authorized_execution_evidence": [],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "agent.reliability.interaction.review",
           "registered": true,
           "source_contract_candidate_present": false,
           "code_assessment": "current_code_review_incomplete",
@@ -45611,6 +46121,7 @@
         "internal:agent.missions.questions.review@1.0.0",
         "internal:agent.missions.work_product.prepare@1.0.0",
         "internal:agent.reliability.diagnosis.propose@1.0.0",
+        "internal:agent.reliability.interaction.review@1.0.0",
         "internal:agent.runtime.connections.preflight@1.0.0",
         "internal:agent.runtime.conversation.respond@1.0.0",
         "internal:agent.runtime.images.request_approval@1.0.0",
@@ -45678,8 +46189,18 @@
         "commerce.prices.create",
         "commerce.prices.get",
         "commerce.prices.list",
+        "customer.provisioning.execute",
         "customer.provisioning.features.list",
+        "customer.provisioning.jobs.get",
+        "customer.provisioning.plan",
         "customer.provisioning.templates.list",
+        "customer.resources.decommission",
+        "customer.resources.list",
+        "customer.resources.reconcile",
+        "customer.resources.recover",
+        "customer.workspace.records.delete",
+        "customer.workspace.records.get",
+        "customer.workspace.records.upsert",
         "notifications.preferences.get",
         "notifications.preferences.update",
         "notifications.templates.create",
@@ -45944,6 +46465,24 @@
           "existing_target_only_not_universal_authority": true
         },
         {
+          "operation": "customer.provisioning.execute",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
           "operation": "customer.provisioning.features.list",
           "registered": true,
           "source_contract_candidate_present": false,
@@ -45962,7 +46501,169 @@
           "existing_target_only_not_universal_authority": true
         },
         {
+          "operation": "customer.provisioning.jobs.get",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.provisioning.plan",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
           "operation": "customer.provisioning.templates.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.decommission",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.list",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.reconcile",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.resources.recover",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.workspace.records.delete",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.workspace.records.get",
+          "registered": true,
+          "source_contract_candidate_present": false,
+          "code_assessment": "real_execution_at_recorded_release",
+          "API_exposed_flag": true,
+          "MCP_exposed_flag": true,
+          "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-provisioning-evidence-20261021.json",
+              "level": "normal_customer_MCP_application_database_execution"
+            }
+          ],
+          "denied_execution_evidence": [],
+          "existing_target_only_not_universal_authority": true
+        },
+        {
+          "operation": "customer.workspace.records.upsert",
           "registered": true,
           "source_contract_candidate_present": false,
           "code_assessment": "real_execution_at_recorded_release",
@@ -46205,12 +46906,22 @@
         "sandy-customer-provisioning-api",
         "sandy-product-service-api"
       ],
-      "active_handler_metadata_count": 32,
-      "api_exposure_flags": 2,
-      "ai_exposure_flags": 2,
+      "active_handler_metadata_count": 42,
+      "api_exposure_flags": 12,
+      "ai_exposure_flags": 12,
       "actual_MCP_success_operation_ids": [
+        "customer.provisioning.execute",
         "customer.provisioning.features.list",
-        "customer.provisioning.templates.list"
+        "customer.provisioning.jobs.get",
+        "customer.provisioning.plan",
+        "customer.provisioning.templates.list",
+        "customer.resources.decommission",
+        "customer.resources.list",
+        "customer.resources.reconcile",
+        "customer.resources.recover",
+        "customer.workspace.records.delete",
+        "customer.workspace.records.get",
+        "customer.workspace.records.upsert"
       ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],

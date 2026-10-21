@@ -44,6 +44,15 @@ class RequirementCoverageTests(unittest.TestCase):
                            {"fixture.read": ["actual.json"]}, {})
         self.assertFalse(result[0]["fully_accepted"])
 
+    def test_live_metadata_omission_does_not_silently_remove_a_previously_mapped_constituent(self):
+        families = requirements()
+        families[0]["historical_candidate_operation_ids"] = ["fixture.read", "fixture.write"]
+        rows = [operation("fixture.read"), {**operation("fixture.write"), "api_exposed": False}]
+        result = reconcile(families, rows, [], {}, {"fixture.read": ["actual.json"]}, {})
+        self.assertEqual(result[0]["required_operation_ids"], ["fixture.read", "fixture.write"])
+        self.assertFalse(result[0]["fully_accepted"])
+        self.assertTrue(result[0]["software_or_constituent_reconciliation_required"])
+
     def test_expanded_provider_candidates_do_not_create_unrequested_development_units(self):
         families = requirements()
         families[25]["registered_operation_ids"] = ["gcp.compute.instances.get", "gcp.compute.instances.simulate_maintenance_event"]

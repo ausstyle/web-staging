@@ -159,7 +159,8 @@ def reconcile(requirements, registry, functions, disposition, positive, denied):
     matrix = []
     for requirement in requirements:
         ident = requirement["requirement_id"]
-        candidates = set(requirement.get("registered_operation_ids", [])) | linked[ident]
+        candidates = (set(requirement.get("registered_operation_ids", [])) | linked[ident]
+                      | set(requirement.get("historical_candidate_operation_ids", [])))
         required = set(overrides.get(str(ident), candidates)) - set(excluded) - set(diagnostics)
         required_rows = [rows[name] for name in sorted(required) if name in rows]
         actual = sorted(required & set(positive))
@@ -236,6 +237,20 @@ def reconcile(requirements, registry, functions, disposition, positive, denied):
 def build(registry, functions, owner_evidence, readback_dir, output, provenance=None):
     baseline = load(DOCS / "scope-reconciliation.json")
     disposition = load(DOCS / "scope-operation-disposition.json")
+    # Live database evidence can omit source-derived family links. Do not erase
+    # the prior reconciled candidate set when refreshing live flags/versions.
+    # Explicit reviewed dispositions still decide required/optional operations;
+    # retained candidates confer neither implementation nor execution evidence.
+    if output.exists():
+        previous = load(output)
+        prior = previous.get("requirements", [])
+        if (previous.get("scope_markdown_sha256") == digest(DOCS / "api-scope-161.md")
+                and sorted(row["requirement_id"] for row in prior) == list(range(1, 162))):
+            by_id = {row["requirement_id"]: row for row in prior}
+            for requirement in baseline["requirements"]:
+                row = by_id[requirement["requirement_id"]]
+                requirement["historical_candidate_operation_ids"] = sorted(
+                    set(row.get("required_operation_ids", [])) | set(row.get("supporting_or_optional_candidates", [])))
     # Preserve historical positive/negative evidence; no successful tests rerun.
     owner_target = DOCS / "engineering-owner-mcp-evidence-20261021.json"
     if owner_evidence is not None:
@@ -283,7 +298,8 @@ def build(registry, functions, owner_evidence, readback_dir, output, provenance=
               "scope_markdown_sha256": digest(DOCS / "api-scope-161.md"),
               "semantics": {"flags_are_execution_evidence": False, "active_function_metadata_proves_operation_implementation": False,
                             "shared_adapter_tests_verify_every_provider_effect": False, "historical_tests_are_reused_at_their_recorded_versions": True,
-                            "operation_counts_are_development_task_counts": False, "unknowns_are_not_external_blockers": True},
+                            "operation_counts_are_development_task_counts": False, "unknowns_are_not_external_blockers": True,
+                            "prior_source_family_candidates_retained_without_execution_inference": True},
               "summary": {"original_families": 161, "fully_accepted_families": sum(row["fully_accepted"] for row in matrix),
                           "implemented_families_awaiting_real_verification": sum(row["implementation_assessment"] == "implemented_awaiting_real_family_acceptance" for row in matrix),
                           "families_with_external_dependencies": sum(bool(row["external_dependency_ids"]) for row in matrix),
