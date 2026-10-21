@@ -143,6 +143,16 @@ class EngineeringRuntime:
         self._rpc("sandy_engineering_rotate_identity", state["user_id"], True)
         return self.public_status()
 
+    def authorize_vm_reads(self, source_change):
+        source_change = str(uuid.UUID(source_change))
+        self._rpc("sandy_engineering_authorize_vm_reads", self.state()["user_id"], source_change)
+        return {"purpose": "sandy_video_read", "source_change_id": source_change,
+                "provider_writes_authorized": False, **self.public_status()}
+
+    def revoke_vm_reads(self):
+        self._rpc("sandy_engineering_administrative_revoke_vm_reads", self.state()["user_id"])
+        return {"purpose": "sandy_video_read", "optional_scope_revoked": True, **self.public_status()}
+
     def revoke(self):
         self._rpc("sandy_engineering_administrative_revoke", self.state()["user_id"])
         return self.public_status()
@@ -179,7 +189,9 @@ if __name__ == "__main__":
     sub = parser.add_subparsers(dest="action", required=True)
     p = sub.add_parser("provision")
     p.add_argument("--source-change", required=True, help="Existing authenticated owner-approved engineering fixture change UUID")
-    for action in ("status", "rotate", "revoke"):
+    p = sub.add_parser("authorize-vm-reads")
+    p.add_argument("--source-change", required=True, help="Existing authenticated owner-approved sandy-video change UUID; diagnostics only")
+    for action in ("status", "rotate", "revoke", "revoke-vm-reads"):
         sub.add_parser(action)
     p = sub.add_parser("run")
     p.add_argument("--message-file", type=Path, required=True)
@@ -190,7 +202,10 @@ if __name__ == "__main__":
             status, result = runtime.invoke(json.loads(args.message_file.read_text()))
             print(json.dumps({"http_status": status, "result": result}))
             raise SystemExit(0 if 200 <= status < 300 else 1)
-        result = runtime.provision(args.source_change) if args.action == "provision" else runtime.public_status() if args.action == "status" else getattr(runtime, args.action)()
+        if args.action == "authorize-vm-reads":
+            print(json.dumps(runtime.authorize_vm_reads(args.source_change)))
+            raise SystemExit(0)
+        result = runtime.provision(args.source_change) if args.action == "provision" else runtime.public_status() if args.action == "status" else getattr(runtime, args.action.replace("-", "_"))()
         print(json.dumps(result))
     except (RuntimeErrorCode, ValueError, KeyError) as error:
         print(json.dumps({"ok": False, "error_code": str(error) if isinstance(error, RuntimeErrorCode) else "runtime_configuration_invalid"}))

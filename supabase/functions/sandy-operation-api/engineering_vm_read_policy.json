@@ -1,0 +1,18 @@
+{
+  "version": "owner-approved-sandy-video-read-v1",
+  "project_id": "elaborate-haven-511518-a5",
+  "zone": "europe-west1-b",
+  "instance_name": "sandy-video",
+  "instance_id": "6831598645020395570",
+  "operations": [
+    "video.status",
+    "video.execution.preflight",
+    "video.install.preflight",
+    "video.network.preflight",
+    "video.ssh.preflight",
+    "video.osconfig.access",
+    "video.osconfig.agent_status",
+    "video.osconfig.permissions",
+    "video.osconfig.policy_preflight"
+  ]
+}
