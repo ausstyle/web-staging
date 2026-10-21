@@ -146,6 +146,7 @@
  <aside class="sidebar"><a class="logo" href="./">sandy<span>.</span></a>
  <div class="navheading">WORKSPACE</div>
  <button class="nav active" data-view="home"><span class="sym">◫</span> Overview</button>
+ <button class="nav" id="quickSignOut" type="button"><span class="sym">↗</span> Sign out</button>
  <button class="nav" data-view="history"><span class="sym">☰</span> All conversations</button><a class="nav" href="../chat/"><span class="sym">✳</span> Chat with Sandy</a>
  <a class="nav" href="../agenda/"><span class="sym">☑</span> Agenda & tasks</a>
  <a class="nav" href="../calendar/"><span class="sym">▦</span> Calendar</a>\n <a class="nav" href="../meetings/"><span class="sym">▣</span> Meetings</a>
@@ -460,7 +461,7 @@ $("mobileMenu").addEventListener("click",()=>{const open=!$("workspace").classLi
 $("mobileShade").addEventListener("click",closeMobileMenu);
 $("workspace").querySelectorAll(".sidebar [data-view],.sidebar [data-channel]").forEach(n=>n.addEventListener("click",closeMobileMenu));
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMobileMenu()});
-const signOutWorkspace=async()=>{const {error}=await sb.auth.signOut();if(error){alert("Unable to sign out. Please try again.");return;}showLogin("Signed out.");};$("signOut").addEventListener("click",signOutWorkspace);$("headerSignOut").addEventListener("click",signOutWorkspace);
+const signOutWorkspace=async()=>{const {error}=await sb.auth.signOut();if(error){alert("Unable to sign out. Please try again.");return;}showLogin("Signed out.");};$("signOut").addEventListener("click",signOutWorkspace);$("headerSignOut").addEventListener("click",signOutWorkspace);$("quickSignOut").addEventListener("click",signOutWorkspace);
 $("addPasskey").addEventListener("click",async()=>{const b=$("addPasskey");b.disabled=true;try{await registerSandyPasskey()}catch(e){alert(e.message||"Passkey setup could not finish.")}finally{b.disabled=false}});
 $("showExistingPasskey").addEventListener("click",()=>{setLoginPasskeyState(true);authStatus("Use this only if you have already created a passkey. Otherwise request an email link first.")});
 $("refresh").addEventListener("click",async()=>{try{profile=await call("overview");changeView(view,filter==="all"?undefined:filter)}catch(e){alert(e.message)}});
