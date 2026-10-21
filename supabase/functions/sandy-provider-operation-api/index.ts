@@ -2,7 +2,7 @@
 import { Ajv, type ValidateFunction } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
-import rawCatalogue from "./contracts.json" with { type: "json" };
+import rawCatalogue from "./catalogue.ts";
 import {
   argumentDigest,
   JsonRequestError,
