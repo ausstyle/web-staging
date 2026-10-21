@@ -18,5 +18,10 @@ test("Four dependency types accepted",()=>{for(const type of ["FS","SS","FF","SF
 test("Critical path resolves to valid task IDs",()=>{const s=seed(),cp=criticalPath(s);check(cp.ids.length>0);check(cp.ids.every(id=>byId(s,id)))});
 test("Topological scheduling includes every task",()=>{const s=seed();check(topo(s).length===s.tasks.length)});
 test("No silent twenty-four-hour lag is inserted",()=>{const s=seed();check(requiredStart(s,"C").at===ms(byId(s,"B").end))});
+test("Multiple predecessors use latest finish",()=>{const s=seed();const n=link(s,"L","D","FS",0),d=byId(n,"D");const constraints=n.dependencies.filter(x=>x.to==="D").map(x=>ms(byId(n,x.from).end));check(ms(d.start)===Math.max(...constraints))});
+test("Explicit 90-minute dependency lag is respected",()=>{const s=seed(),n=link(s,"L","K","FS",90);check(ms(byId(n,"K").start)===ms(byId(n,"L").end)+90*60000)});
+test("Linking cannot silently mutate original on cycle failure",()=>{const s=seed(),before=JSON.stringify(s);try{link(s,"F","B")}catch{}check(JSON.stringify(s)===before)});
+test("Impossible fixed finish constraints reject without partial mutation",()=>{const s=seed();byId(s,"C").constraint=new Date(ms(byId(s,"C").end)-DAY).toISOString();const before=JSON.stringify(s);let rejected=false;try{move(s,"B",ms(byId(s,"B").start)+DAY,ms(byId(s,"B").end)+DAY)}catch{rejected=true}check(rejected);check(JSON.stringify(s)===before)});
+test("Zero-duration successor remains a milestone after cascade",()=>{const s=seed(),t=byId(s,"D"),n=completion(s,"D",ms(t.end)+HOUR);check(duration(byId(n,"E"))===0);check(ms(byId(n,"E").start)===ms(byId(n,"D").end))});
 const headline=document.createElement("h2");headline.textContent=passed+" passed · "+failed+" failed";out.prepend(headline);
 </script></body></html>
