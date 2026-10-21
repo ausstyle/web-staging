@@ -59,14 +59,36 @@ This is a bounded reliability correction, not a full independent Truth Engine,
 adaptive-model-policy replacement, memory-correction implementation or durable
 Mission migration. Existing operation receipts remain the authority for effects.
 
+The next guarded-loop correction maps all existing SC-04 truth states explicitly.
+Failed, partial and admission-only receipts cannot be overwritten by fluent model
+text. Unsettled results fence subsequent mutations in the batch or later rounds;
+authorized readback remains possible. An unknown outcome stops immediately without
+redispatch. Pending Gmail drafts retain their actual body and explicit confirmation
+reference, including when a deadline prevents further model work; no send is implied.
+Responses arriving after the execution deadline cannot publish a final
+answer. Sixteen of seventeen focused deterministic regressions failed before this
+fix; all now pass, with eight additional positive/contract/draft-flow checks.
+
+The enrolled **web** canary now reuses `sandy_memory_settings` and
+`sandy_temporal_current` to build whole JSON evidence records. It preserves subject,
+fact and source IDs; excludes foreign/sensitive/expired/rejected/unscoped evidence;
+retains uncertainty and temporal bounds; and reports partial or unavailable coverage
+explicitly. Memory consent is checked before the read and again before returning.
+The existing SQL projection remains the correction authority. No new memory writer,
+index or store was added; other channels and archive/history tool policies retain
+their existing contracts. Global correction/deletion propagation is not certified.
+
 ## Verification and evaluation
 
-67 deterministic executive/history/outcome/rollout tests passed. Twelve existing API
+104 deterministic executive/history/outcome/receipt/context/rollout tests passed. Twelve existing API
 runtime/profile/preflight regressions passed. V4, workspace and WhatsApp entrypoints passed
 TypeScript checks using the repository's offline imports. The separately
 deployed renewable Controller prerequisite has its own
 [live evidence](renewable-controller-evidence.json), 34 local tests and nine
-rollback-only PostgreSQL assertions.
+rollback-only PostgreSQL assertions. The new temporal integration test passed ten
+assertions against the actual RPC in a rolled-back synthetic transaction, and an
+independent query confirmed zero retained fixture facts. This tests the database
+contract, not customer authentication. See [current slice evidence](evaluations/p0-receipts-context-evidence.json).
 
 The [frozen 60-case cohort](evaluations/p0-cohort-v1.json) covers retrieval,
 follow-ups, capabilities, memory correction, multi-step effects, failures and ten
@@ -124,3 +146,15 @@ Email and voice migration, source-backed memory/World Model improvement, model
 routing evaluation, persistent recovery and proactive triggers remain work under
 the same scopes. Deploy the bounded web canary only after the pilot baseline and
 release checks, then migrate further channels incrementally with actual receipts.
+
+## Authentication test disposition
+
+The owner skipped optional pilot-session configuration. Continue implementation and
+available tests without re-requesting it. The [test blocker ledger](evaluations/p0-authenticated-test-blockers.json)
+records the previous Controller HTTP 401 and the resulting owner-release gate.
+The token was not retried and no alternate principal was substituted. The existing
+renewable engineering identity still reads its own proposed change successfully;
+it intentionally cannot approve itself or dispatch a deployment. Customer browser
+acceptance is separately unrun because the optional session was skipped. Neither
+condition is a passing acceptance result. Existing valid lab baseline receipts are
+reused without rerunning unchanged production behavior.

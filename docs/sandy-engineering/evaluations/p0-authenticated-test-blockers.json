@@ -1,0 +1,49 @@
+{
+  "policy": "Continue implementation with existing valid credentials; do not request the skipped optional pilot secret or substitute another principal.",
+  "tests": [
+    {
+      "test": "owner-authorized candidate release and production guard acceptance",
+      "status": "blocked",
+      "blocker": "configured personal Controller access token previously returned HTTP 401; the engineering identity has no owner approval/deployment permission",
+      "required_principal": "authenticated Controller owner under existing approval/deployment governance",
+      "last_observed_controller_http": 401,
+      "evidence": "../renewable-controller-evidence.json",
+      "token_retried": false,
+      "credential_substituted": false,
+      "candidate_deployed": false
+    },
+    {
+      "test": "normal customer browser/web ingress acceptance",
+      "status": "not_run",
+      "blocker": "optional pilot session configuration was explicitly skipped",
+      "required_principal": "normal consenting customer session",
+      "blocked_by_controller_token": false,
+      "secret_requested": false,
+      "credential_substituted": false
+    },
+    {
+      "test": "own change metadata read",
+      "status": "passed",
+      "http_status": 200,
+      "principal": "existing scoped renewable engineering workload",
+      "customer_or_owner_impersonation": false
+    },
+    {
+      "test": "existing temporal database contracts",
+      "status": "passed",
+      "test_class": "database_contract_rollback",
+      "assertions": 10,
+      "credential": "configured Management credential",
+      "customer_authentication_tested": false
+    },
+    {
+      "test": "fixed registered pilot API baseline",
+      "status": "prior_valid_evidence_reused",
+      "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39676846622",
+      "candidate_tested": false,
+      "browser_signin_tested": false
+    }
+  ],
+  "full_60_case_customer_quality_gate_passed": false,
+  "same_customer_cross_channel_acceptance_passed": false
+}

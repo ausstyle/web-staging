@@ -22,14 +22,17 @@ pilot. An empty or invalid list enrolls nobody. No WhatsApp deployment or other
 customer enrollment is included. Keep all runtime/service/customer authorization,
 provider execution, operation audit, draft confirmation and send deduplication.
 Preserve workspace 39's complete temporal-ingestion hook and the compatible
-broader API transport timeout allowlist. No schema migration is needed.
+broader API transport timeout allowlist. The guarded web context also checks existing
+memory consent, retains whole subject/source records and reports unavailable/partial
+coverage. SC-04 receipt classification fences later writes after unsettled results.
+No schema migration or authorization expansion is needed.
 
 ## Before and after checks
 
 The live baseline Google lab run 39676846622 independently verified Google reads
 and both existing runtime probes. They use deterministic runtime shortcuts;
 they do not measure the new model loop. The frozen 60-case cohort remains unrun.
-67 local executive/history/outcome/rollout tests and all three runtime/adapter
+104 local executive/history/outcome/receipt/context/rollout tests and all three runtime/adapter
 entrypoint type checks pass. The separate general API QA run has partial
 receipts and a failed workflow; do not turn its counters into acceptance.
 
@@ -57,3 +60,10 @@ original workspace 39 and V4 22 source snapshots if needed, retaining the origin
 workspace memory-ingestion block. Read back restored source and run the existing
 read-only lab again. Restore a prior allowlist only after resolving the defect.
 Keep historical failed evidence and report any unknown external outcomes.
+
+The optional pilot session was skipped by the owner. Do not request it again or
+substitute project keys, engineering sessions or a different customer to mark a
+browser/customer test passed. Retain authenticated release/acceptance blockers in
+[p0-authenticated-test-blockers.json](p0-authenticated-test-blockers.json) and continue
+independent work. Pinned source evidence for the current candidate supersedes the
+older `ffc68c6` preparation record without altering historical test results.

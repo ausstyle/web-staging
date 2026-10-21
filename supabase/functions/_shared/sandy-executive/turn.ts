@@ -1,4 +1,6 @@
 import { Ajv } from "npm:ajv@8.17.1";
+import { classifyToolReceipt } from "./receipt.ts";
+import { pendingGmailDraft, pendingGmailReply } from "./pending_reply.ts";
 
 type ObjectValue = Record<string, any>;
 export type ModelResponse = ObjectValue & { id: string; output: ObjectValue[] };
@@ -89,6 +91,8 @@ export async function runExecutiveTurn(
   let effectRevision = 0;
   let failedTool = false;
   let pendingTool = false;
+  let partialTool = false;
+  const pendingDrafts: NonNullable<ReturnType<typeof pendingGmailDraft>>[] = [];
   let rounds = 0, toolCalls = 0;
   const finish = (
     state: TurnState,
@@ -97,7 +101,10 @@ export async function runExecutiveTurn(
   ): TurnResult => ({
     state,
     reason,
-    text: text ?? (state === "unknown_outcome" ? uncertain : partial),
+    text: text ??
+      (state === "unknown_outcome"
+        ? uncertain
+        : pendingGmailReply(pendingDrafts) ?? partial),
     rounds,
     toolCalls,
   });
@@ -110,6 +117,7 @@ export async function runExecutiveTurn(
     } catch {
       return finish("unknown_outcome", "model_outcome_unverified");
     }
+    if (now() >= deps.deadline) return finish("partial", "execution_deadline");
     // Failed/incomplete Responses can contain both plausible text and calls.
     // Neither is a verified final answer; never dispatch from those envelopes.
     if (
@@ -135,7 +143,15 @@ export async function runExecutiveTurn(
         return finish(
           "partial",
           "operation_not_finished",
-          "The operation is still pending. I have not verified completion. Its existing recorded status should be checked before another attempt.",
+          pendingGmailReply(pendingDrafts) ??
+            "The operation is still pending. I have not verified completion. Its existing recorded status should be checked before another attempt.",
+        );
+      }
+      if (partialTool) {
+        return finish(
+          "partial",
+          "tool_returned_partial",
+          "Only part of this request is verified. Review the recorded results for what remains; I have not verified full completion or scheduled a follow-up.",
         );
       }
       if (failedTool) {
@@ -188,7 +204,12 @@ export async function runExecutiveTurn(
         const readOnly = readOnlyTools.has(call.name);
         const input = call.name + ":" + canonical(args) +
           (readOnly ? ":revision:" + effectRevision : "");
-        if (seenInputs.has(input)) {
+        if (!readOnly && (failedTool || pendingTool || partialTool)) {
+          result = {
+            error: "unresolved_tool_precondition",
+            executed: false,
+          };
+        } else if (seenInputs.has(input)) {
           result = {
             error: "repeated_tool_call_not_executed",
             executed: false,
@@ -212,38 +233,29 @@ export async function runExecutiveTurn(
           if (!object(result)) {
             return finish("unknown_outcome", "invalid_tool_result");
           }
-          if (
-            result.reconciliation_required === true ||
-            ["unknown", "UNKNOWN_OUTCOME", "uncertain"].includes(result.state)
-          ) {
+          const disposition = classifyToolReceipt(result);
+          if (disposition === "unknown") {
             return finish(
               "unknown_outcome",
               "tool_outcome_requires_reconciliation",
             );
           }
-          if (
-            !readOnly && !result.error && result.ok !== false &&
-            result.success !== false
-          ) effectRevision++;
+          failedTool ||= disposition === "failed";
+          pendingTool ||= disposition === "pending";
+          partialTool ||= disposition === "partial";
+          if (disposition === "pending") {
+            const draft = pendingGmailDraft(call.name, result);
+            if (draft) pendingDrafts.push(draft);
+          }
+          // Even a pending or failed mutation can change observable queue or
+          // domain state. Permit a fresh authorized readback after its attempt.
+          if (!readOnly) effectRevision++;
         }
       }
       let output: string;
       if (result.error || result.ok === false || result.success === false) {
         failedTool = true;
       }
-      if (
-        [
-          "queued",
-          "QUEUED",
-          "running",
-          "RUNNING",
-          "WAITING_APPROVAL",
-          "WAITING_EXTERNAL",
-          "accepted",
-          "pending",
-        ].includes(result.state) ||
-        result.approval_pending === true
-      ) pendingTool = true;
       try {
         output = JSON.stringify(result);
       } catch {
