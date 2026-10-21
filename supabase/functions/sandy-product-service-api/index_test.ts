@@ -103,6 +103,27 @@ Deno.test("service,anon,opaque keys and unconfirmed sessions never enter product
   deps.authenticate = async () => ({ id: actor, emailConfirmed: false });
   a.equal((await createProductHandler(deps)(request())).status, 401);
 });
+Deno.test("default Auth separates invalid sessions from throttling and outages before admission", async () => {
+  for (const status of [0, 400, 401, 403, 422, 429, 500, 503, 504]) {
+    const deps = common();
+    delete deps.authenticate;
+    let calls = 0;
+    deps.rpc = async () => {
+      calls++;
+      return {};
+    };
+    deps.fetch = async () =>
+      status === 0
+        ? Response.error()
+        : Response.json({ error: "private_auth_diagnostics" }, { status });
+    const response = await createProductHandler(deps)(request());
+    a.equal(response.status, [400, 401, 403, 422].includes(status) ? 401 : 503);
+    const body = await response.json();
+    a.equal(body.executed, response.status === 401 ? undefined : false);
+    a.equal(calls, 0);
+    a.ok(!JSON.stringify(body).includes("private_auth_diagnostics"));
+  }
+});
 Deno.test("tenant overrides, extra metadata, bad arguments and unstable mutation IDs fail before RPC", async () => {
   const deps = common();
   let calls = 0;
@@ -286,6 +307,7 @@ Deno.test("actual auth endpoint and user PostgREST RPC use anon project key with
         id: actor,
         email_confirmed_at: "2026-10-21T00:00:00Z",
         is_anonymous: false,
+        role: "authenticated",
       });
     }
     if (url.endsWith("/sandy_product_admit")) {

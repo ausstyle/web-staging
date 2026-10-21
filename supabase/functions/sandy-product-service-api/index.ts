@@ -40,20 +40,26 @@ const reply = (status: number, body: unknown) =>
   });
 export function createProductHandler(
   deps: ProductDependencies,
+  operations: typeof productOperations = productOperations,
+  providerExecutor: typeof executeProductProvider = executeProductProvider,
+  selectedValidator?: {
+    isValid(schema: unknown, value: unknown): boolean | null;
+    providerSchemas?: Readonly<Record<string, unknown>>;
+  },
 ): (request: Request) => Promise<Response> {
-  const ajv = new Ajv({
+  const ajv = selectedValidator ? null : new Ajv({
     allErrors: false,
     strict: false,
     formats: fullFormats,
   });
   const inputs = new Map(
-    Object.values(productOperations).map(
-      (op) => [op.operation, ajv.compile(op.input_schema)],
+    (selectedValidator ? [] : Object.values(operations)).map(
+      (op) => [op.operation, ajv!.compile(op.input_schema)],
     ),
   );
   const outputs = new Map(
-    Object.values(productOperations).map(
-      (op) => [op.operation, ajv.compile(op.output_schema)],
+    (selectedValidator ? [] : Object.values(operations)).map(
+      (op) => [op.operation, ajv!.compile(op.output_schema)],
     ),
   );
   async function remoteJson(
@@ -85,6 +91,9 @@ export function createProductHandler(
       ),
       600000,
     ).catch(() => null);
+    if (url.endsWith("/auth/v1/user") && [400, 401, 403, 422].includes(r.status)) {
+      throw new JsonRequestError(401, "actual_customer_session_required");
+    }
     if (!r.ok || !obj(data)) {
       throw new JsonRequestError(503, "product_backend_unavailable");
     }
@@ -95,10 +104,15 @@ export function createProductHandler(
       remoteJson(deps.base + "/rest/v1/rpc/" + name, bearer, args, service));
   const authenticate = deps.authenticate || (async (bearer: string) => {
     const user = await remoteJson(deps.base + "/auth/v1/user", bearer).catch(
-      () => null,
+      (error) => {
+        if (error instanceof JsonRequestError && error.status === 401) {
+          return null;
+        }
+        throw error;
+      },
     );
     return user && uuid(user.id) && user.email_confirmed_at &&
-        user.is_anonymous !== true
+        user.is_anonymous !== true && user.role === "authenticated"
       ? { id: user.id, emailConfirmed: true }
       : null;
   });
@@ -142,7 +156,7 @@ export function createProductHandler(
         return reply(400, { ok: false, error: "invalid_product_request" });
       }
       operation = body.operation;
-      const op = productOperations[operation];
+      const op = operations[operation];
       if (!op) {
         return reply(404, {
           ok: false,
@@ -150,7 +164,11 @@ export function createProductHandler(
         });
       }
       const args = body.arguments;
-      if (!inputs.get(operation)!(args)) {
+      if (
+        !(selectedValidator
+          ? selectedValidator.isValid(op.input_schema, args) === true
+          : inputs.get(operation)!(args))
+      ) {
         return reply(400, { ok: false, error: "invalid_product_arguments" });
       }
       const channel = body.channel ?? "api";
@@ -186,11 +204,19 @@ export function createProductHandler(
           operation,
           contract_version: op.contract_version,
         };
-        if (!outputs.get(operation)!(output)) {
+        if (
+          !(selectedValidator
+            ? selectedValidator.isValid(op.output_schema, output) === true
+            : outputs.get(operation)!(output))
+        ) {
           return reply(502, {
             ok: false,
             error: "product_response_contract_mismatch",
-            executed: false,
+            executed: result.executed ?? null,
+            request_id: result.request_id ?? requestId,
+            admission_id: result.admission_id ?? null,
+            stored_payload_schema_valid: false,
+            reconciliation_required: true,
           });
         }
         return reply(200, output);
@@ -241,7 +267,11 @@ export function createProductHandler(
             "unknown",
           ].includes(String(admission.state)),
         };
-        if (!outputs.get(operation)!(output)) {
+        if (
+          !(selectedValidator
+            ? selectedValidator.isValid(op.output_schema, output) === true
+            : outputs.get(operation)!(output))
+        ) {
           return reply(502, {
             ok: false,
             error: "product_response_contract_mismatch",
@@ -291,11 +321,43 @@ export function createProductHandler(
           });
         }
         dispatched = true;
-        const provider = await executeProductProvider(op, args, bound.context, {
+        let provider = await providerExecutor(op, args, bound.context, {
           tenant: bound.tenant_id as string | null,
           actor: user.id,
           requestId,
         }, deps);
+        const providerSchema = selectedValidator?.providerSchemas?.[operation];
+        if (
+          !provider.error && providerSchema &&
+          selectedValidator!.isValid(providerSchema, provider.result) !== true
+        ) {
+          const outcome = op.is_mutation ? "unknown" : "failed";
+          const executed = op.is_mutation ? null : provider.executed ?? true;
+          provider = {
+            ...provider,
+            outcome,
+            executed,
+            error: "provider_response_contract_mismatch",
+            responseStatus: 502,
+            result: {
+              ...emptyResult(),
+              provider_id: typeof provider.result.provider_id === "string" &&
+                  provider.result.provider_id.length > 0 &&
+                  provider.result.provider_id.length <= 8192
+                ? provider.result.provider_id
+                : null,
+              provider_http_status: provider.httpStatus,
+              item: {
+                state: outcome,
+                error: "provider_response_contract_mismatch",
+              },
+            },
+            privateContext: {
+              ...provider.privateContext,
+              execution_attempted: executed,
+            },
+          };
+        }
         result = await rpc(
           "sandy_product_finish_provider",
           {
@@ -341,13 +403,23 @@ export function createProductHandler(
         operation,
         contract_version: op.contract_version,
       };
-      if (!outputs.get(operation)!(output)) {
+      if (
+        !(selectedValidator
+          ? selectedValidator.isValid(op.output_schema, output) === true
+          : outputs.get(operation)!(output))
+      ) {
         return reply(502, {
           ok: false,
           error: "product_response_contract_mismatch",
           request_id: requestId,
-          executed: op.is_mutation ? null : false,
-          reconciliation_required: op.is_mutation,
+          executed: selectedValidator
+            ? dispatched ? null : false
+            : op.is_mutation
+            ? null
+            : false,
+          reconciliation_required: selectedValidator
+            ? dispatched
+            : op.is_mutation,
         });
       }
       return reply(200, output);
