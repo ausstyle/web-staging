@@ -1,0 +1,52 @@
+name: Sandy engineering scope sync
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/sandy-engineering/**'
+      - 'docs/sandy-api/**'
+      - '.github/workflows/sandy-scope-sync.yml'
+  workflow_dispatch:
+  schedule:
+    - cron: '19 4 * * *'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: sandy-engineering-scope-sync
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Synchronize immutable GitHub specifications to Sandy catalogue
+        env:
+          SANDY_SCOPE_SYNC_URL: https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-engineering-scope-sync
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          identity_url=os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"]
+          join="&" if "?" in identity_url else "?"
+          request=urllib.request.Request(
+              identity_url+join+"audience=sandy-scope-sync",
+              headers={"Authorization":"Bearer "+os.environ["ACTIONS_ID_TOKEN_REQUEST_TOKEN"]}
+          )
+          with urllib.request.urlopen(request, timeout=25) as res:
+              token=json.load(res)["value"]
+          request=urllib.request.Request(
+              os.environ["SANDY_SCOPE_SYNC_URL"],
+              data=b"{}",
+              headers={"Authorization":"Bearer "+token,"Content-Type":"application/json"},
+              method="POST"
+          )
+          with urllib.request.urlopen(request, timeout=120) as res:
+              result=json.load(res)
+          if not result.get("ok") or result.get("synced_count",0)<3:
+              raise SystemExit("Sandy scope synchronization did not complete")
+          print("Synced",result["synced_count"],"scopes at",result["source_commit_sha"])
+          PY

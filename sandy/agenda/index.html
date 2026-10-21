@@ -432,6 +432,38 @@ html,body{max-width:100%;overflow-x:clip}
 .activityReviewFoot{margin-top:7px}
 @media(max-width:680px){.activityReview{padding:8px;margin:8px 0}.activityReviewHead{gap:5px}.activityReviewHead span{display:none}.activityReviewHead input{max-width:128px;font-size:11px}.activityTopActions{gap:4px}.activityTopActions .btn{min-height:35px!important;padding:7px 9px!important}#activityQuickInput{font-size:16px}#activityQuickSave{padding:6px 8px}.activityRow{min-height:32px}}
 .activityInsights{font-size:11px;color:#708077;margin:6px 0 2px}.activityRow .activityClock{max-width:160px}.activityReview #activityQuickForm{min-height:33px;padding-block:2px}.activityReview #activityQuickSave{font-size:11px;padding:5px 9px}@media(max-width:680px){.activityInsights{font-size:10px}.activityRow .activityClock{max-width:100px}}
+
+/* Compact, expandable attention summary */
+.attention{padding:0!important;overflow:hidden;margin:12px 0!important}
+.attentionToggle{width:100%;min-height:49px;display:flex;align-items:center;gap:10px;padding:9px 14px;background:transparent;border:0;color:inherit;text-align:left;cursor:pointer;margin:0}
+.attentionToggle:hover{background:#f2f2f2}
+.attentionToggle:focus-visible{outline:2px solid #777;outline-offset:-3px}
+.attentionToggle .attentionicon{width:27px;height:27px;border-radius:8px;flex:none}
+.attentionLabel{font-size:14px;font-weight:700}
+.attentionCount{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:650;color:#666;background:#ececec;border-radius:100px;padding:4px 10px}
+.attentionChevron{font-size:13px;color:#777}
+.attention>.attentionrow{margin:0 14px}
+
+/* Draft rows use identical outline columns and an explicit save action. */
+#app .outlineDraft .taskrow{display:flex!important;align-items:center!important;flex-wrap:nowrap!important;gap:9px!important;padding:5px 8px!important;min-height:44px!important}
+#app .outlineDraft .draftDragSpacer{width:22px;min-width:22px;visibility:hidden;flex:none}
+#app .outlineDraft .branchToggle{width:22px;min-width:22px;flex:none;display:inline-grid;place-items:center;color:#aaa}
+#app .outlineDraft .draftCheckSpacer{display:inline-block;width:20px;min-width:20px;height:20px;border:2px solid #c8ceca;border-radius:6px;opacity:.65;flex:none}
+#app .outlineDraft .taskmain{flex:1 1 0!important;max-width:none!important;min-width:0!important}
+#app .outlineDraft .inlineTitle{display:block;width:100%!important;min-width:0;padding:6px 3px;font-size:14px;font-weight:600}
+#app .outlineDraft .draftConfirm{flex:none;background:#243c30;color:#fff;border:0;border-radius:8px;padding:8px 13px;font-size:12px;font-weight:700;cursor:pointer;min-height:34px}
+#app .outlineDraft .draftConfirm:hover{background:#365747}
+#app .outlineDraft .draftConfirm:focus-visible{outline:2px solid #668a6a;outline-offset:2px}
+
+.taskDeletePopover{position:fixed;z-index:10000;width:min(330px,calc(100vw - 16px));padding:14px;background:#fff;border:1px solid #ddd;border-radius:12px;box-shadow:0 12px 36px #0003;color:#222;font-size:13px}
+.taskDeletePopover strong{display:block;font-size:14px;overflow-wrap:anywhere}.taskDeletePopover p{margin:6px 0 12px;color:#777}
+.taskDeleteActions{display:flex;flex-wrap:wrap;gap:7px}.taskDeleteActions button{border-radius:8px;border:1px solid #ddd;padding:8px 11px;font-size:12px;cursor:pointer;background:#fafafa;color:#333}
+.taskDeleteActions .taskDeleteDanger{background:#b42318;color:white;border-color:#b42318;font-weight:650}.taskDeleteActions button:hover{filter:brightness(.94)}
+
+/* Centred task-delete confirmation, with a calm dark-green action. */
+.taskDeletePopover{position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;z-index:10000!important}
+.taskDeleteActions .taskDeleteDanger{background:#243c30!important;border-color:#243c30!important;color:#fff!important}
+.taskDeleteActions .taskDeleteDanger:hover{background:#365747!important}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -593,6 +625,53 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .sandyTaskHoverPreview .hoverDescription{color:#555;white-space:normal;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.sandyTaskHoverPreview{max-height:none;overflow:visible;width:min(350px,calc(100vw - 24px))}.sandyTaskHoverPreview .hoverFooter{margin-top:9px;font-size:11px;color:#777}.sandyTaskHoverPreview .hoverOpenDetails{display:inline-block;border:0;background:transparent;padding:5px 0 1px;color:#356f55;font:600 12px/1.3 inherit;cursor:pointer;text-align:left}.sandyTaskHoverPreview .hoverOpenDetails:hover{text-decoration:underline}.sandyTaskHoverPreview .hoverOpenDetails:focus-visible{outline:2px solid #356f55;outline-offset:3px}
 @media(hover:none),(pointer:coarse){.sandyTaskHoverPreview{display:none!important}}
 @media(prefers-reduced-motion:reduce){.sandyTaskHoverPreview{transition:none}}
+</style><style>
+.sandyDependencyMenu{position:fixed;z-index:10030;min-width:220px;max-width:min(330px,calc(100vw - 16px));padding:7px;background:#fff;border:1px solid #dce5dc;border-radius:11px;box-shadow:0 10px 35px #0002;color:#253a2c}
+.sandyDependencyMenuTitle{font-size:12px;font-weight:650;padding:8px 10px;color:#617465;overflow-wrap:anywhere}
+.sandyDependencyMenu button{display:block;width:100%;border:0;border-radius:7px;background:transparent;color:inherit;text-align:left;padding:9px 10px;font-size:13px;cursor:pointer}
+.sandyDependencyMenu button:hover,.sandyDependencyMenu button:focus-visible{background:#edf3ec}
+.sandyDependencyMenu button.danger{color:#ad4742}
+.timelineDependencySelected{stroke:#17794e!important;stroke-width:3!important;opacity:1!important}
+</style><style>
+.timelineInlineConfirm{position:fixed;z-index:10050;width:max-content;max-width:min(320px,calc(100vw - 16px));padding:12px 13px;background:#fff;border:1px solid #cfdecf;border-radius:12px;box-shadow:0 8px 26px #233a2c25;color:#293b30}
+.timelineInlineConfirmTitle{font-size:13px;font-weight:700;line-height:1.35}
+.timelineInlineConfirmDetail{font-size:12px;line-height:1.45;color:#5b7462;margin:5px 0 11px;overflow-wrap:anywhere;max-width:280px}
+.timelineInlineConfirmActions{display:flex;justify-content:flex-end;gap:6px}
+.timelineInlineConfirmActions button{border:1px solid #d7e3d8;background:#fff;color:#3c624a;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:650}
+.timelineInlineConfirmActions button.confirm{background:#356f55;color:#fff;border-color:#356f55}
+.timelineInlineConfirmActions button:hover{filter:brightness(.96)}
+</style><style>.timelineInlineConfirmActions button.removeDependencyConfirm{background:#a84942;border-color:#a84942;color:white}</style><style>.timelineDragNote{display:none;position:absolute;bottom:calc(100% + 12px);left:50%;transform:translateX(-50%);white-space:nowrap;background:#253c2d;color:white;font-size:12px;font-weight:600;padding:6px 9px;border-radius:7px;box-shadow:0 5px 17px #0003;z-index:40;pointer-events:none}.ganttBar:has(.timelineDragNote[style*="block"]){overflow:visible}</style><style>.timelineTaskCell{position:relative}.timelineTaskGrip{margin-left:auto;padding:2px 7px;color:#7c9a84;cursor:grab;font-size:16px;opacity:.4;user-select:none}.timelineTaskCell:hover .timelineTaskGrip,.timelineTaskGrip:focus-visible{opacity:1}.timelineDropBefore{box-shadow:inset 0 3px #4c9265}.timelineDropAfter{box-shadow:inset 0 -3px #4c9265}.timelineDropInside{background:#e4f3e8!important;outline:2px solid #4c9265;outline-offset:-2px}.timelineTaskGrip:active{cursor:grabbing}</style><style>.timelineDragNote{position:fixed!important;bottom:auto!important;transform:translateX(-50%)!important;z-index:10080!important;pointer-events:none!important;max-width:min(340px,calc(100vw - 20px));overflow:hidden;text-overflow:ellipsis}</style><style>
+/* Hide manipulation controls until the task row or bar is hovered/focused. */
+.timelineRow .ganttBar .sandyGanttStart,
+.timelineRow .ganttBar .sandyGanttResize,
+.timelineRow .ganttBar .timelineLinkHandle{opacity:0!important;visibility:hidden;pointer-events:none;transition:opacity .14s ease,visibility .14s ease}
+.timelineRow:hover .ganttBar .sandyGanttStart,
+.timelineRow:hover .ganttBar .sandyGanttResize,
+.timelineRow:hover .ganttBar .timelineLinkHandle,
+.timelineRow:focus-within .ganttBar .sandyGanttStart,
+.timelineRow:focus-within .ganttBar .sandyGanttResize,
+.timelineRow:focus-within .ganttBar .timelineLinkHandle,
+.timelineRow .ganttBar.timelineDragging .sandyGanttStart,
+.timelineRow .ganttBar.timelineDragging .sandyGanttResize,
+.timelineRow .ganttBar.timelineDragging .timelineLinkHandle{opacity:1!important;visibility:visible;pointer-events:auto}
+/* A touch-capable desktop can report hover:none; never globally reveal every handle.
+   Touch interaction reveals controls on the selected row only. */
+.timelineRow.timelineTouchActive .ganttBar .sandyGanttStart,
+.timelineRow.timelineTouchActive .ganttBar .sandyGanttResize,
+.timelineRow.timelineTouchActive .ganttBar .timelineLinkHandle{opacity:1!important;visibility:visible;pointer-events:auto}
+</style><style>
+.timelineTaskCell .timelineCompleteTask{appearance:none;width:16px;height:16px;min-width:16px;border:1.5px solid #9aafa0;border-radius:50%;background:#fff;cursor:pointer;margin:0 5px 0 2px;position:relative}
+.timelineTaskCell .timelineCompleteTask:checked{background:#397d58;border-color:#397d58}
+.timelineTaskCell .timelineCompleteTask:checked:after{content:"✓";position:absolute;left:2px;top:-4px;color:#fff;font-size:14px;font-weight:bold}
+.timelineTaskCell .timelineCompleteTask:focus-visible{outline:2px solid #3a8c58;outline-offset:2px}
+</style><style>
+/* Explicit active-row state, including keyboard and pointer drag. */
+.timelineRow:not(.timelineHandlesActive):not(.timelineTouchActive) .ganttBar:not(.timelineDragging) .sandyGanttStart,
+.timelineRow:not(.timelineHandlesActive):not(.timelineTouchActive) .ganttBar:not(.timelineDragging) .sandyGanttResize,
+.timelineRow:not(.timelineHandlesActive):not(.timelineTouchActive) .ganttBar:not(.timelineDragging) .timelineLinkHandle{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+.timelineRow.timelineHandlesActive .ganttBar .sandyGanttStart,
+.timelineRow.timelineHandlesActive .ganttBar .sandyGanttResize,
+.timelineRow.timelineHandlesActive .ganttBar .timelineLinkHandle{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -1130,9 +1209,12 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
  if(!box){toast("Could not open the parent task for editing. Please refresh.",true);return}
  if(!parent)box.querySelector(":scope > .empty")?.remove();
  const ghost=el("div",(parent?"childrow ":"task ")+"outlineDraft"),row=el("div","taskrow"),main=el("div","taskmain");
- const check=el("input","taskcheck");check.type="checkbox";check.disabled=true;check.setAttribute("aria-label","Unsaved task");
- const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder="New task…";field.setAttribute("aria-label","New task");
- main.append(field);row.append(el("span","branchToggle","·"),check,main);ghost.append(row);
+ // Use the same drag-handle, disclosure and checkbox columns as existing task rows.
+ const dragSpace=el("span","dragHandle draftDragSpacer","⠿");dragSpace.setAttribute("aria-hidden","true");
+ const check=el("span","taskcheck draftCheckSpacer");check.setAttribute("aria-hidden","true");
+ const field=el("input","inlineTitle");field.maxLength=240;field.value=initial;field.placeholder=parent?"New subtask…":"New task…";field.setAttribute("aria-label",parent?"New subtask":"New task");
+ const confirm=el("button","draftConfirm","Add task");confirm.type="button";confirm.title="Save task (Enter)";
+ main.append(field);row.append(dragSpace,el("span","branchToggle","·"),check,main,confirm);ghost.append(row);
  const prev=after?document.getElementById("task-"+after):null;
  box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:box.querySelector(":scope > .addchild"));
  let closed=false;
@@ -1142,6 +1224,8 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
   const ok=await outlineCreate(field.value.trim(),parent,after,company);
   if(!ok){closed=false;field.disabled=false;field.focus()}
  }
+ confirm.addEventListener("mousedown",e=>e.preventDefault());
+ confirm.addEventListener("click",()=>save());
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
   if(e.key==="Enter"){e.preventDefault();save()}
@@ -1180,18 +1264,64 @@ function inlineEditor(t,focus){
    if(!p){toast("Already at the top level",true);return}
    parent=p.parent_task_id||null;after=p.id;
   }
+  // Title-only edits close immediately: never block the outline on network or reload.
+  if(mode!=="indent"&&mode!=="outdent"){
+   saving=true;
+   const previousTitle=t.title;
+   t.title=title;
+   field.replaceWith(outlineTitle(t));
+   if(mode==="enter"){
+    if(t.shared)void createSharedRow(t.parent_task_id||t.id).catch(e=>toast(e.message,true));
+    else outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal");
+   }
+   if(title!==previousTitle){
+    void api(t.shared?"shared-update":"update",{id:t.id,title}).catch(e=>{
+     // Do not overwrite a newer edit made while this request was pending.
+     if(t.title===title){
+      t.title=previousTitle;
+      const row=document.getElementById("task-"+t.id);
+      const label=row?.querySelector(":scope > .taskrow .tasktitle");
+      if(label)label.replaceWith(outlineTitle(t));
+     }
+     toast("Task title could not be saved: "+e.message,true);
+    });
+   }
+   return;
+  }
   saving=true;field.disabled=true;
+  const moving=mode==="indent"||mode==="outdent";
+  const previous={title:t.title,parent_task_id:t.parent_task_id,position:t.position};
   try{
+   // Calculate placement from the original outline before making the optimistic change.
+   const positionPromise=moving?outlinePosition(parent,after,t.id):null;
+   if(moving){
+    t.title=title;
+    t.parent_task_id=parent;
+    // Immediate visual indentation/outdentation; save and reconciliation follow asynchronously.
+    state.expanded.delete(parent);
+    render();
+    // Keep the moved task in edit mode, with its title selected.
+    const movedTitle=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
+    if(movedTitle)movedTitle.replaceWith(inlineEditor(t,true));
+   }
    const patch={id:t.id};
-   if(title!==t.title)patch.title=title;
-   if(mode==="indent"||mode==="outdent"){patch.parent_task_id=parent;patch.position=await outlinePosition(parent,after,t.id)}
-   if(Object.keys(patch).length>1){await api(t.shared?"shared-update":"update",patch);await load()}
+   if(title!==previous.title)patch.title=title;
+   if(moving){patch.parent_task_id=parent;patch.position=await positionPromise;t.position=patch.position}
+   if(Object.keys(patch).length>1){
+    await api(t.shared?"shared-update":"update",patch);
+    await load();
+    if(moving){
+     const updated=state.tasks.find(x=>x.id===t.id);
+     const label=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
+     if(updated&&label)label.replaceWith(inlineEditor(updated,true));
+    }
+   }
    if(mode==="enter"){if(t.shared)await createSharedRow(t.parent_task_id||t.id);else outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal")}
-   else if(mode==="indent"||mode==="outdent"){
-    const label=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
-    const updated=state.tasks.find(x=>x.id===t.id);if(label&&updated)label.replaceWith(inlineEditor(updated,true));
-   }else if(Object.keys(patch).length===1)field.replaceWith(outlineTitle(t));
-  }catch(e){toast(e.message,true);saving=false;field.disabled=false;field.focus()}
+   else if(!moving&&Object.keys(patch).length===1)field.replaceWith(outlineTitle(t));
+  }catch(e){
+   if(moving){Object.assign(t,previous);render();toast("Could not save task hierarchy: "+e.message,true)}
+   else{toast(e.message,true);saving=false;field.disabled=false;field.focus()}
+  }
  }
  field.addEventListener("keydown",e=>{
   if(e.isComposing)return;
@@ -1432,6 +1562,7 @@ function shareTaskControl(t){
  wrap.append(toggle,panel);return wrap;
 }
 let draggingTaskId=null;
+let taskOrderSavePending=0;
 async function moveOutlineTask(dragId,targetId,zone){
  const drag=state.tasks.find(t=>t.id===dragId),target=state.tasks.find(t=>t.id===targetId);
  if(!drag||!target||drag.shared||target.shared||drag.id===target.id)return;
@@ -1444,21 +1575,52 @@ async function moveOutlineTask(dragId,targetId,zone){
  if(index<0)return;
  const reordered=peers.slice();reordered.splice(index,0,drag);
  const originalParent=drag.parent_task_id||null;
+ const previous=state.dragPositionBaseline||new Map(state.tasks.map(t=>[t.id,{parent_task_id:t.parent_task_id,position:t.position}]));
+ state.dragPositionBaseline=null;
+ // Update the entire affected sibling set locally before any network request.
+ drag.parent_task_id=parentId;
+ reordered.forEach((t,i)=>{t.position=(i+1)*1000});
+ state.expanded.delete(parentId);
+ localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));
+ taskOrderSavePending++;
+ render();
+ const changes=state.tasks.filter(t=>{const p=previous.get(t.id);return p&&((p.parent_task_id||null)!==(t.parent_task_id||null)||p.position!==t.position)});
  try{
-  await api("update",{id:drag.id,parent_task_id:parentId,position:(index+1)*1000});
-  for(let i=0;i<reordered.length;i++){
-   const t=reordered[i],position=(i+1)*1000;
-   if(t.id!==drag.id&&t.position!==position)await api("update",{id:t.id,position});
+  // Persist without reloading/re-sorting the visible page.
+  for(const t of changes){
+   await api("update",{id:t.id,parent_task_id:t.parent_task_id||null,position:t.position});
   }
-  await load();toast(parentId!==originalParent?"Task hierarchy updated":"Task order saved");
- }catch(e){await load().catch(()=>{});toast("Unable to move task: "+e.message,true)}
+ }catch(e){
+  // Restore the last persisted hierarchy on failure; never report a false save.
+  for(const t of state.tasks){const p=previous.get(t.id);if(p)Object.assign(t,p)}
+  render();toast("Unable to move task: "+e.message,true);
+ }finally{
+  taskOrderSavePending=Math.max(0,taskOrderSavePending-1);
+ }
 }
+
 function enableTaskDrag(row,t){
  if(t.shared)return;
  const handle=el("span","dragHandle","⠿");handle.title="Drag to reorder or nest task";handle.setAttribute("aria-label","Drag "+t.title);
  handle.draggable=true;handle.tabIndex=0;row.append(handle);
  handle.addEventListener("dragstart",e=>{
-  if(state.sort!=="manual"){state.sort="manual";localStorage.setItem("sandy_task_sort","manual");$("taskSort").value="manual"}
+  if(state.sort!=="manual"){
+   // Freeze the displayed order as the manual baseline, not the old database order.
+   state.dragPositionBaseline=new Map(state.tasks.map(task=>[task.id,{parent_task_id:task.parent_task_id,position:task.position}]));
+   state.dragPreviousSort=state.sort;
+   const groups=new Map();
+   for(const task of state.tasks){
+    if(task.shared||task.archived_at)continue;
+    const key=task.parent_task_id||"__root";
+    if(!groups.has(key))groups.set(key,[]);
+    groups.get(key).push(task);
+   }
+   for(const group of groups.values()){
+    group.sort(compareTaskOrder);
+    group.forEach((task,i)=>{task.position=(i+1)*1000});
+   }
+   state.sort="manual";localStorage.setItem("sandy_task_sort","manual");$("taskSort").value="manual";
+   }
   draggingTaskId=t.id;e.stopPropagation();e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",t.id);
   row.classList.add("draggingTask");
  });
@@ -1477,7 +1639,17 @@ function enableTaskDrag(row,t){
   const source=draggingTaskId,zone=row.classList.contains("dropInside")?"inside":row.classList.contains("dropBefore")?"before":"after";
   clear();draggingTaskId=null;moveOutlineTask(source,t.id,zone);
  });
- handle.addEventListener("dragend",()=>{draggingTaskId=null;document.querySelectorAll(".draggingTask,.dropBefore,.dropAfter,.dropInside").forEach(n=>n.classList.remove("draggingTask","dropBefore","dropAfter","dropInside"))});
+ handle.addEventListener("dragend",()=>{
+  draggingTaskId=null;
+  document.querySelectorAll(".draggingTask,.dropBefore,.dropAfter,.dropInside").forEach(n=>n.classList.remove("draggingTask","dropBefore","dropAfter","dropInside"));
+  // Cancelled drag must not silently change the stored sort mode or positions.
+  if(state.dragPositionBaseline){
+   for(const task of state.tasks){const prior=state.dragPositionBaseline.get(task.id);if(prior)Object.assign(task,prior)}
+   state.dragPositionBaseline=null;
+   if(state.dragPreviousSort){state.sort=state.dragPreviousSort;localStorage.setItem("sandy_task_sort",state.sort);$("taskSort").value=state.sort}
+  }
+  state.dragPreviousSort=null;
+ });
 }
 
 let pinnedTaskIds=[],pinnedLoaded=false;
@@ -1510,7 +1682,7 @@ function openTaskContextMenu(t,x,y){
  action("Edit task",()=>{state.edit=t;state.parent=null;openDialog()});
  action("Set due date",()=>{state.edit=t;state.parent=null;openDialog();$("taskDue").focus()});
  action("Change priority",()=>{state.edit=t;state.parent=null;openDialog();$("taskPriority").focus()});
- action("Add subtask",()=>state.view==="timeline"?timelineNewRow(t.id,null,t.company_id||"personal"):outlineDraft(t.id,null,t.company_id||"personal"));
+ action("Add subtask",()=>state.view==="timeline"?timelineNewRow(t.id,null,t.company_id||"personal"):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
  if(!t.shared){
   const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];
   if(previous&&!["completed","cancelled"].includes(previous.status))action("↳ Make subtask of previous",()=>moveOutlineTask(t.id,previous.id,"inside"));
@@ -1600,7 +1772,7 @@ function renderTask(t,depth){
   const notesButton=btn("✎","iconbtn",()=>{const panel=outer.querySelector(".inlineTaskNotes");if(!panel)return;panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){panel.loadHistory();panel.querySelector("textarea").focus()}});
  notesButton.title="Add or edit notes / comments";notesButton.setAttribute("aria-label","Notes for "+t.title);right.append(notesButton);
  if(!t.shared){right.append(quickTaskControls(t));right.append(shareTaskControl(t));right.append(delegationControl(t))}
- const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
+ const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,null,t.company_id||"personal"));
   add.title="Add a subtask";right.append(add);
  if(!t.shared&&!t.metadata?.sandy_mission_step){
   const mission=btn("🚀","iconbtn",async()=>{
@@ -1865,46 +2037,133 @@ async function timelineDropDependency(task,event){
  catch(err){toast("Dependency not saved: "+err.message,true)}
  return true;
 }
-function timelineDependentSchedule(rootId,newStart,newEnd){
- const updates=new Map([[rootId,{start_at:new Date(newStart).toISOString(),due_at:new Date(newEnd).toISOString()}]]);
- const visited=new Set([rootId]),queue=[rootId];
+async function timelineRepairDependencies(){
+ const deps=state.dependencies.filter(d=>state.tasks.some(t=>t.id===d.task_id)&&state.tasks.some(t=>t.id===d.depends_on_id));
+ let changed=0;
+ // Topological processing ensures a predecessor is repaired before its successors.
+ const tasks=new Map(state.tasks.map(t=>[t.id,t])),indegree=new Map(),outgoing=new Map();
+ for(const id of tasks.keys()){indegree.set(id,0);outgoing.set(id,[])}
+ for(const d of deps){indegree.set(d.task_id,(indegree.get(d.task_id)||0)+1);outgoing.get(d.depends_on_id).push(d.task_id)}
+ const queue=[...indegree].filter(([,n])=>n===0).map(([id])=>id),updates=[];
  while(queue.length){
-  const from=queue.shift(),parentDates=updates.get(from);
-  const predecessor=state.tasks.find(t=>t.id===from);
-  const oldEnd=new Date(predecessor?.due_at||predecessor?.start_at);
-  const newEndTime=new Date(parentDates.due_at).getTime();
-  if(!Number.isFinite(oldEnd.getTime()))continue;
-  const shift=newEndTime-oldEnd.getTime();
-  for(const d of state.dependencies.filter(d=>d.depends_on_id===from)){
-   if(visited.has(d.task_id))continue;
-   const child=state.tasks.find(t=>t.id===d.task_id);
-   if(!child||child.shared||(!child.start_at&&!child.due_at))continue;
-   visited.add(child.id);queue.push(child.id);
-   const start=new Date(child.start_at||child.due_at).getTime();
-   const end=new Date(child.due_at||child.start_at).getTime();
-   // A dependency is finish-to-start: preserve duration and any existing scheduling gap.
-   updates.set(child.id,{start_at:new Date(start+shift).toISOString(),due_at:new Date(end+shift).toISOString()});
+  const id=queue.shift(),task=tasks.get(id);
+  if(task&&!task.shared){
+   const parents=deps.filter(d=>d.task_id===id).map(d=>tasks.get(d.depends_on_id));
+   const required=Math.max(0,...parents.map(p=>Date.parse(p?.due_at||p?.start_at||"")).filter(Number.isFinite));
+   const start=Date.parse(task.start_at||task.due_at||""),end=Date.parse(task.due_at||task.start_at||"");
+   if(required&&Number.isFinite(start)&&Number.isFinite(end)&&start<required){
+    const next={start_at:new Date(required).toISOString(),due_at:new Date(required+Math.max(0,end-start)).toISOString()};
+    updates.push({task,next});Object.assign(task,next);changed++;
+   }
+  }
+  for(const next of outgoing.get(id)||[]){indegree.set(next,indegree.get(next)-1);if(indegree.get(next)===0)queue.push(next)}
+ }
+ if([...indegree.values()].some(n=>n>0)){toast("Cannot repair: circular dependencies detected",true);await load();return}
+ if(!changed){toast("Dependencies already follow finish-to-start scheduling");return}
+ try{for(const {task,next} of updates)await api("update",{id:task.id,...next});toast("Corrected "+changed+" dependent task schedule(s)");await load()}
+ catch(e){toast("Schedule repair incomplete: "+e.message,true);await load().catch(()=>{})}
+}
+function timelineDependentSchedule(rootId,newStart,newEnd){
+ const root=state.tasks.find(t=>t.id===rootId);
+ if(!root)throw Error("Task not found");
+ const updates=new Map([[rootId,{start_at:new Date(newStart).toISOString(),due_at:new Date(newEnd).toISOString()}]]);
+ const visiting=new Set(),done=new Set();
+ function enforce(id){
+  if(done.has(id))return;
+  if(visiting.has(id))throw Error("Circular dependencies are not allowed");
+  visiting.add(id);
+  const task=state.tasks.find(t=>t.id===id);
+  const existing=updates.get(id);
+  let start=Date.parse(existing?.start_at||task?.start_at||task?.due_at||"");
+  let end=Date.parse(existing?.due_at||task?.due_at||task?.start_at||"");
+  if(!Number.isFinite(start)||!Number.isFinite(end)){visiting.delete(id);done.add(id);return}
+  for(const dep of state.dependencies.filter(d=>d.task_id===id)){
+   if(dep.depends_on_id===id)throw Error("A task cannot depend on itself");
+   enforce(dep.depends_on_id);
+   const parent=state.tasks.find(t=>t.id===dep.depends_on_id);
+   const finish=Date.parse(updates.get(dep.depends_on_id)?.due_at||parent?.due_at||parent?.start_at||"");
+   if(Number.isFinite(finish)&&start<finish){
+    const duration=Math.max(0,end-start);start=finish;end=start+duration;
+   }
+  }
+  if(!task.shared&&(existing||start!==Date.parse(task.start_at||task.due_at||""))){
+   updates.set(id,{start_at:new Date(start).toISOString(),due_at:new Date(end).toISOString()});
+  }
+  visiting.delete(id);done.add(id);
+ }
+ // Evaluate every descendant in dependency order; multiple predecessors use the latest finish.
+ const affected=new Set([rootId]),queue=[rootId];
+ while(queue.length){
+  const id=queue.shift();
+  for(const d of state.dependencies.filter(d=>d.depends_on_id===id)){
+   if(!affected.has(d.task_id)){affected.add(d.task_id);queue.push(d.task_id)}
   }
  }
+ for(const id of affected)enforce(id);
  return updates;
 }
 async function timelineSaveSchedule(t,start,end){
- const updates=timelineDependentSchedule(t.id,start,end);
- const snapshots=new Map();
- for(const [id,change] of updates){
-  const task=state.tasks.find(x=>x.id===id);
-  if(task){snapshots.set(id,{start_at:task.start_at,due_at:task.due_at});Object.assign(task,change)}
- }
- renderTimeline();
  try{
-  for(const [id,change] of updates)await api("update",{id,...change});
-  toast(updates.size>1?"Schedule saved; "+(updates.size-1)+" dependent task(s) moved":"Task schedule saved");
+  await api("move-schedule",{id:t.id,start_at:new Date(start).toISOString(),due_at:new Date(end).toISOString()});
+  await load();
+  toast("Task and dependent schedules saved");
+  return true;
  }catch(e){
-  // A partial API failure must not be reported as a successful linked update.
-  toast("Linked scheduling was not fully saved: "+e.message+". Refresh to verify dates.",true);
-  await load().catch(()=>{for(const [id,old] of snapshots){const task=state.tasks.find(x=>x.id===id);if(task)Object.assign(task,old)}renderTimeline()});
+  toast("Schedule not changed: "+e.message,true);
+  await load().catch(()=>renderTimeline());
+  return false;
  }
 }
+let dependencyContextMenu=null;
+function closeDependencyContextMenu(){if(dependencyContextMenu){dependencyContextMenu.remove();dependencyContextMenu=null}}
+function timelineConfirmDependencyRemoval(description,x,y){
+ return new Promise(resolve=>{
+  const pop=document.createElement("div");pop.className="timelineInlineConfirm";
+  pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Remove dependency");
+  const title=document.createElement("div");title.className="timelineInlineConfirmTitle";title.textContent="Remove dependency?";
+  const detail=document.createElement("div");detail.className="timelineInlineConfirmDetail";
+  detail.textContent=description+" · Task dates stay unchanged.";
+  const actions=document.createElement("div");actions.className="timelineInlineConfirmActions";
+  const cancel=document.createElement("button");cancel.type="button";cancel.textContent="Cancel";
+  const remove=document.createElement("button");remove.type="button";remove.textContent="Remove";remove.className="removeDependencyConfirm";
+  actions.append(cancel,remove);pop.append(title,detail,actions);document.body.append(pop);
+  const bounds=pop.getBoundingClientRect();
+  pop.style.left=Math.max(8,Math.min(innerWidth-bounds.width-8,x))+"px";
+  pop.style.top=Math.max(8,Math.min(innerHeight-bounds.height-8,y))+"px";
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();resolve(value)};
+  const outside=e=>{if(!pop.contains(e.target))done(false)};
+  const key=e=>{if(e.key==="Escape"){e.preventDefault();done(false)}};
+  cancel.onclick=()=>done(false);remove.onclick=()=>done(true);
+  document.addEventListener("pointerdown",outside,true);
+  document.addEventListener("keydown",key,true);
+  remove.focus({preventScroll:true});
+ });
+}
+async function removeTimelineDependency(dep,description){
+ const anchor=dependencyContextMenu?.getBoundingClientRect();
+ const x=anchor?anchor.left+12:Math.round(innerWidth/2),y=anchor?anchor.top+12:Math.round(innerHeight/2);
+ closeDependencyContextMenu();
+ if(!await timelineConfirmDependencyRemoval(description,x,y))return;
+ try{
+  await api("dependency",{task_id:dep.task_id,depends_on_id:dep.depends_on_id,remove:true});
+  state.dependencies=state.dependencies.filter(d=>!(d.task_id===dep.task_id&&d.depends_on_id===dep.depends_on_id));
+  closeDependencyContextMenu();renderTimeline();toast("Dependency removed");
+ }catch(e){toast("Unable to remove dependency: "+e.message,true);await load().catch(()=>{})}
+}
+function openDependencyContextMenu(dep,x,y,description){
+ closeDependencyContextMenu();closeTaskContextMenu();
+ const menu=document.createElement("div");menu.className="sandyDependencyMenu";menu.setAttribute("role","menu");
+ const heading=document.createElement("div");heading.className="sandyDependencyMenuTitle";heading.textContent=description;menu.append(heading);
+ const edit=document.createElement("button");edit.type="button";edit.textContent="Edit successor task";edit.onclick=()=>{closeDependencyContextMenu();const t=state.tasks.find(t=>t.id===dep.task_id);if(t){state.edit=t;state.parent=null;openDialog()}};
+ const remove=document.createElement("button");remove.type="button";remove.textContent="Remove dependency";remove.className="danger";remove.onclick=()=>removeTimelineDependency(dep,description);
+ menu.append(edit,remove);document.body.append(menu);dependencyContextMenu=menu;
+ menu.style.left=Math.max(8,Math.min(innerWidth-menu.offsetWidth-8,x))+"px";
+ menu.style.top=Math.max(8,Math.min(innerHeight-menu.offsetHeight-8,y))+"px";
+ remove.focus();
+}
+document.addEventListener("pointerdown",e=>{if(dependencyContextMenu&&!dependencyContextMenu.contains(e.target))closeDependencyContextMenu()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDependencyContextMenu()});
 function timelineDrawDependencies(){
  const box=$("timeline");
  box.querySelector(".timelineDependencyLayer")?.remove();
@@ -1922,14 +2181,39 @@ function timelineDrawDependencies(){
   const x=a?.querySelector(".ganttBar"),y=b?.querySelector(".ganttBar");
   if(!x||!y)continue;
   const ar=x.getBoundingClientRect(),br=y.getBoundingClientRect();
-  const sx=ar.right-rect.left+box.scrollLeft,sy=ar.top+ar.height/2-rect.top+box.scrollTop;
-  const ex=br.left-rect.left+box.scrollLeft,ey=br.top+br.height/2-rect.top+box.scrollTop;
-  const bend=Math.max(sx+12,Math.min((sx+ex)/2,sx+28));
+  const predecessor=state.tasks.find(t=>t.id===dep.depends_on_id);
+  const successor=state.tasks.find(t=>t.id===dep.task_id);
+  const finish=Date.parse(predecessor?.due_at||predecessor?.start_at||"");
+  const start=Date.parse(successor?.start_at||successor?.due_at||"");
+  const rangeStart=Number(box.dataset.timelineStart),rangeMs=Number(box.dataset.timelineRange);
+  const trackA=a.querySelector(".track")?.getBoundingClientRect();
+  const trackB=b.querySelector(".track")?.getBoundingClientRect();
+  const exactX=(ms,track)=>track.left-rect.left+box.scrollLeft+(ms-rangeStart)/rangeMs*track.width;
+  const sx=Number.isFinite(finish)&&trackA&&rangeMs?exactX(finish,trackA):ar.right-rect.left+box.scrollLeft;
+  const ex=Number.isFinite(start)&&trackB&&rangeMs?exactX(start,trackB):br.left-rect.left+box.scrollLeft;
+  const sy=ar.top+ar.height/2-rect.top+box.scrollTop,ey=br.top+br.height/2-rect.top+box.scrollTop;
+  const aligned=Math.abs(sx-ex)<1;
+  const bend=aligned?sx:Math.max(sx+12,Math.min((sx+ex)/2,sx+28));
   const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("d","M"+sx+","+sy+" H"+bend+" V"+ey+" H"+(ex-5));
+  path.setAttribute("d",aligned?"M"+sx+","+sy+" V"+ey:"M"+sx+","+sy+" H"+bend+" V"+ey+" H"+(ex-5));
   path.setAttribute("fill","none");path.setAttribute("stroke","#698b78");
   path.setAttribute("stroke-width","1.7");path.setAttribute("opacity",".85");
-  layer.append(path);
+  // Retain visible dependency lines while making each connector directly editable.
+  const hit=document.createElementNS("http://www.w3.org/2000/svg","path");
+  hit.setAttribute("d",path.getAttribute("d"));hit.setAttribute("fill","none");
+  hit.setAttribute("stroke","transparent");hit.setAttribute("stroke-width","16");
+  hit.style.cssText="pointer-events:stroke;cursor:context-menu";
+  hit.setAttribute("role","button");hit.setAttribute("tabindex","0");
+  const source=state.tasks.find(t=>t.id===dep.depends_on_id),target=state.tasks.find(t=>t.id===dep.task_id);
+  const description=(source?.title||"Predecessor")+" → "+(target?.title||"Successor");
+  hit.setAttribute("aria-label","Edit dependency: "+description);
+  const select=()=>{layer.querySelectorAll(".timelineDependencySelected").forEach(p=>p.classList.remove("timelineDependencySelected"));path.classList.add("timelineDependencySelected");arrow.classList.add("timelineDependencySelected");};
+  const open=e=>{e.preventDefault();e.stopPropagation();select();openDependencyContextMenu(dep,e.clientX||Math.min(innerWidth-250,rect.left+ex),e.clientY||Math.min(innerHeight-130,rect.top+ey),description);};
+  hit.addEventListener("click",e=>{e.stopPropagation();select();});
+  hit.addEventListener("contextmenu",open);
+  hit.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){open(e)}else if(e.key==="Delete"||e.key==="Backspace"){e.preventDefault();removeTimelineDependency(dep,description)}});
+  path.style.pointerEvents="none";
+  layer.append(path);layer.append(hit);
   const arrow=document.createElementNS("http://www.w3.org/2000/svg","path");
   arrow.setAttribute("d","M"+(ex-9)+","+(ey-4)+" L"+(ex-3)+","+ey+" L"+(ex-9)+","+(ey+4));
   arrow.setAttribute("fill","none");arrow.setAttribute("stroke","#507b60");arrow.setAttribute("stroke-width","1.7");
@@ -1956,6 +2240,33 @@ function timelinePreviewSuccessors(rootId,delta,monday,range){
   }
  }
 }
+let timelineLinkConfirmation=null;
+function timelineConfirmLink(source,target,x,y){
+ if(timelineLinkConfirmation){timelineLinkConfirmation.cancel()}
+ return new Promise(resolve=>{
+  const pop=document.createElement("div");pop.className="timelineInlineConfirm";pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Confirm dependency");
+  const title=document.createElement("div");title.className="timelineInlineConfirmTitle";title.textContent="Link these tasks?";
+  const detail=document.createElement("div");detail.className="timelineInlineConfirmDetail";
+  detail.textContent=target.title+" starts after "+source.title;
+  const controls=document.createElement("div");controls.className="timelineInlineConfirmActions";
+  const no=document.createElement("button");no.type="button";no.textContent="Cancel";
+  const yes=document.createElement("button");yes.type="button";yes.className="confirm";yes.textContent="Link tasks";
+  controls.append(no,yes);pop.append(title,detail,controls);document.body.append(pop);
+  const bounds=pop.getBoundingClientRect();
+  pop.style.left=Math.max(8,Math.min(window.innerWidth-bounds.width-8,x+12))+"px";
+  pop.style.top=Math.max(8,Math.min(window.innerHeight-bounds.height-8,y+12))+"px";
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();if(timelineLinkConfirmation?.pop===pop)timelineLinkConfirmation=null;resolve(value)};
+  const outside=e=>{if(!pop.contains(e.target))done(false)};
+  const key=e=>{if(e.key==="Escape"){e.preventDefault();done(false)}};
+  timelineLinkConfirmation={pop,cancel:()=>done(false)};
+  no.onclick=()=>done(false);yes.onclick=()=>done(true);
+  // Defer outside handling so the pointerup that initiated the confirmation cannot dismiss it.
+  document.addEventListener("pointerdown",outside,true);
+  document.addEventListener("keydown",key,true);
+  yes.focus({preventScroll:true});
+ });
+}
 function timelineConnectFrom(source,e,handle){
  const box=$("timeline");let active=false;
  const rect=box.getBoundingClientRect(),line=document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -1973,19 +2284,17 @@ function timelineConnectFrom(source,e,handle){
   const target=document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".timelineRow[data-timeline-id]");
   const task=target&&state.tasks.find(t=>t.id===target.dataset.timelineId);
   if(!task||task.id===source.id||task.shared)return;
-  if(!confirm("Make “"+task.title+"” start after “"+source.title+"” finishes?"))return;
+  if(!await timelineConfirmLink(source,task,ev.clientX,ev.clientY))return;
   try{
+   // The API owns both insertion and successor alignment. Never issue a second,
+   // stale timelineSaveSchedule request or roll back an already committed link.
    await api("dependency",{task_id:task.id,depends_on_id:source.id});
-   if(!state.dependencies.some(d=>d.task_id===task.id&&d.depends_on_id===source.id))state.dependencies.push({task_id:task.id,depends_on_id:source.id});
-   // Align the successor with its predecessor unless it has a deliberate later start.
-   const finish=Date.parse(source.due_at||source.start_at||"");
-   const begin=Date.parse(task.start_at||task.due_at||"");
-   if(Number.isFinite(finish)&&Number.isFinite(begin)&&begin<finish){
-    const duration=Math.max(0,Date.parse(task.due_at||task.start_at)-begin);
-    await timelineSaveSchedule(task,finish,finish+duration);
-   }else renderTimeline();
-   toast("Finish-to-start dependency linked");
-  }catch(err){toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})}
+   await load();
+   toast("Dependency linked and schedule updated");
+  }catch(err){
+   toast("Could not create dependency: "+err.message,true);
+   await load().catch(()=>{});
+  }
  };
  const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
  document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",stop,true);document.addEventListener("pointercancel",cancel,true);
@@ -1996,7 +2305,8 @@ function renderTimeline(){
  const monday=new Date(today);if(Number(localStorage.getItem("sandy_timeline_zoom"))!==1)monday.setDate(today.getDate()-((today.getDay()+6)%7));
  const zoomValue=Number(localStorage.getItem("sandy_timeline_zoom"));
  const zoomOptions=[1,7,14,28,84,168];
- const days=zoomOptions.includes(zoomValue)?zoomValue:84,hourMode=days===1,dayMode=days<=14,slots=hourMode?24:dayMode?days:days/7,range=days*86400000,snapMs=hourMode?900000:86400000,snapSteps=range/snapMs;
+ const days=zoomOptions.includes(zoomValue)?zoomValue:84,hourMode=days===1,dayMode=days<=14,slots=hourMode?24:dayMode?days:days/7,range=days*86400000,snapMs=900000,snapSteps=range/snapMs;
+ box.dataset.timelineStart=String(monday.getTime());box.dataset.timelineRange=String(range);
  const cols="minmax(170px,240px) repeat("+slots+",minmax("+(hourMode?64:dayMode?75:55)+"px,1fr))";
  const applyGrid=element=>{element.style.gridTemplateColumns=cols;element.style.minWidth=(240+slots*(hourMode?64:dayMode?75:55))+"px"};
  const title=el("div","timelineHead");
@@ -2009,6 +2319,9 @@ function renderTimeline(){
   control.addEventListener("click",()=>{localStorage.setItem("sandy_timeline_zoom",String(n));renderTimeline()});
   zoom.append(control);
  }
+ const repair=el("button","timelineZoomButton","Fix dependencies");
+ repair.type="button";repair.title="Align previously saved dependent tasks after their predecessors finish";repair.onclick=timelineRepairDependencies;
+ zoom.append(repair);
  title.append(zoom);box.append(title);
  const header=el("div","timelineGrid timelineWeeks");applyGrid(header);
  header.append(el("div","timelineLabel","Project / task"));
@@ -2023,6 +2336,16 @@ function renderTimeline(){
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
   const line=el("div","timelineGrid timelineRow");applyGrid(line);
   line.dataset.timelineId=t.id;
+  // Explicit row-hover state avoids browser-dependent :hover behaviour under the SVG connector layer.
+  line.addEventListener("pointerenter",e=>{if(e.pointerType!=="touch")line.classList.add("timelineHandlesActive")});
+  line.addEventListener("pointerleave",e=>{if(e.pointerType!=="touch"&&!line.querySelector(".timelineDragging"))line.classList.remove("timelineHandlesActive")});
+  line.addEventListener("focusin",()=>line.classList.add("timelineHandlesActive"));
+  line.addEventListener("focusout",()=>{if(!line.contains(document.activeElement)&&!line.querySelector(".timelineDragging"))line.classList.remove("timelineHandlesActive")});
+  line.addEventListener("pointerdown",e=>{
+    if(e.pointerType!=="touch")return;
+    box.querySelectorAll(".timelineTouchActive").forEach(n=>{if(n!==line)n.classList.remove("timelineTouchActive")});
+    line.classList.add("timelineTouchActive");
+  });
   const cell=el("div","timelineTaskCell");
   cell.style.paddingLeft=(10+Math.min(depth,12)*18)+"px";
   const toggle=el("button","timelineBranchToggle",children.length?(collapsed(t)?"▸":"▾"):"");
@@ -2037,7 +2360,28 @@ function renderTimeline(){
   label.addEventListener("contextmenu",e=>{e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
   label.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();timelineEditTitle(t,label)}});
   line.addEventListener("contextmenu",e=>{if(e.target.closest(".ganttBar"))return;e.preventDefault();openTaskContextMenu(t,e.clientX,e.clientY)});
-  cell.append(label);line.append(cell);
+  const complete=el("input","timelineCompleteTask");
+  complete.type="checkbox";complete.checked=t.status==="completed";
+  complete.title=complete.checked?"Reopen task":"Mark complete now and reschedule dependent tasks";
+  complete.setAttribute("aria-label",(complete.checked?"Reopen ":"Complete ")+t.title);
+  complete.addEventListener("change",()=>markTask(t,complete.checked,complete));
+  cell.append(complete,label);
+  if(!t.shared){
+   const grip=el("span","timelineTaskGrip","⠿");
+   grip.draggable=true;grip.tabIndex=0;grip.title="Drag to reorder; drop on the centre to make a subtask";
+   grip.setAttribute("aria-label","Drag "+t.title+" to reorder or nest");
+   grip.addEventListener("dragstart",e=>{
+    if(state.sort!=="manual"){state.sort="manual";localStorage.setItem("sandy_task_sort","manual");$("taskSort").value="manual"}
+    draggingTaskId=t.id;e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",t.id);e.stopPropagation();
+   });
+   grip.addEventListener("dragend",()=>{draggingTaskId=null;document.querySelectorAll(".timelineDropBefore,.timelineDropAfter,.timelineDropInside").forEach(n=>n.classList.remove("timelineDropBefore","timelineDropAfter","timelineDropInside"))});
+   cell.append(grip);
+  }
+  const dropZone=e=>{const r=cell.getBoundingClientRect(),y=(e.clientY-r.top)/r.height;return y<.26?"before":y>.74?"after":"inside"};
+  cell.addEventListener("dragover",e=>{if(!draggingTaskId||draggingTaskId===t.id||t.shared)return;e.preventDefault();e.dataTransfer.dropEffect="move";cell.classList.remove("timelineDropBefore","timelineDropAfter","timelineDropInside");cell.classList.add("timelineDrop"+(dropZone(e)==="inside"?"Inside":dropZone(e)==="before"?"Before":"After"))});
+  cell.addEventListener("dragleave",e=>{if(!cell.contains(e.relatedTarget))cell.classList.remove("timelineDropBefore","timelineDropAfter","timelineDropInside")});
+  cell.addEventListener("drop",async e=>{if(!draggingTaskId||draggingTaskId===t.id||t.shared)return;e.preventDefault();e.stopPropagation();const id=draggingTaskId,zone=dropZone(e);draggingTaskId=null;cell.classList.remove("timelineDropBefore","timelineDropAfter","timelineDropInside");await moveOutlineTask(id,t.id,zone)});
+  line.append(cell);
   const track=el("div","track");track.style.gridColumn="2 / span "+slots;track.style.backgroundSize=(100/slots)+"% 100%";track.classList.toggle("timelineAlternatingDays",days>=7&&days<=14);track.classList.toggle("timelineHourly",hourMode);
   if(hasDate){
    const from=Math.min(a.from.getTime(),a.to.getTime()),to=Math.max(a.from.getTime(),a.to.getTime());
@@ -2056,10 +2400,56 @@ function renderTimeline(){
     const startHandle=el("span","sandyGanttStart","");startHandle.title="Drag to adjust start date";if(!milestone)bar.append(startHandle);
     const resize=el("span","sandyGanttResize",milestone?"":"⋮");resize.title="Drag to adjust end date";resize.style.cssText="position:absolute;right:0;top:0;height:100%;width:15px;display:grid;place-items:center;cursor:ew-resize;background:#ffffff33;border-radius:4px";if(!milestone)bar.append(resize);
     let gesture=null;
-    bar.addEventListener("pointerdown",e=>{if(t.shared||e.button!==0)return;gesture={x:e.clientX,from,to,mode:e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};bar.setPointerCapture(e.pointerId);e.stopPropagation()});
-    bar.addEventListener("pointermove",e=>{if(!gesture)return;const delta=Math.round((e.clientX-gesture.x)/gesture.width*snapSteps);if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*snapMs:gesture.from;const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*snapMs:gesture.to;if(nextTo<nextFrom)return;bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";bar.title=new Date(nextFrom).toLocaleString()+" → "+new Date(nextTo).toLocaleString();timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range)});
-    bar.addEventListener("pointerup",async e=>{if(!gesture)return;const g=gesture;gesture=null;if(!g.moved){state.edit=t;state.parent=null;openDialog();return}const delta=Math.round((e.clientX-g.x)/g.width*snapSteps);const nextFrom=g.mode==="move"||g.mode==="start"?g.from+delta*snapMs:g.from,nextTo=g.mode==="move"||g.mode==="resize"?g.to+delta*snapMs:g.to;if(nextTo<nextFrom){renderTimeline();return}await timelineSaveSchedule(t,nextFrom,nextTo)});
-    bar.addEventListener("pointercancel",()=>{gesture=null;renderTimeline()});track.append(bar)
+    const dragNote=el("div","timelineDragNote","");
+    dragNote.style.cssText="display:block!important;visibility:visible!important;opacity:1!important;position:fixed!important;bottom:auto!important;left:0;top:0;transform:translateX(-50%);z-index:2147483000!important;background:#253c2d;color:#fff;padding:7px 10px;border-radius:8px;font-size:12px;font-weight:600;white-space:nowrap;pointer-events:none;box-shadow:0 5px 17px #0003";
+    const hideDragNote=()=>{dragNote.remove();bar.classList.remove("timelineDragging");line.classList.remove("timelineHandlesActive")};
+    const placeDragNote=(x,y)=>{
+      const half=Math.min(180,Math.max(90,dragNote.getBoundingClientRect().width/2));
+      dragNote.style.left=Math.max(half+8,Math.min(innerWidth-half-8,x))+"px";
+      dragNote.style.top=Math.max(8,y-44)+"px";
+    };
+    const dragPosition=(e,apply=true)=>{
+      if(!gesture)return null;
+      const delta=Math.round((e.clientX-gesture.x)/gesture.width*snapSteps);
+      if(Math.abs(e.clientX-gesture.x)>5)gesture.moved=true;
+      const nextFrom=gesture.mode==="move"||gesture.mode==="start"?gesture.from+delta*snapMs:gesture.from;
+      const nextTo=gesture.mode==="move"||gesture.mode==="resize"?gesture.to+delta*snapMs:gesture.to;
+      if(nextTo<nextFrom)return null;
+      if(apply){
+        bar.style.left=Math.max(0,(nextFrom-monday.getTime())/range*100)+"%";
+        bar.style.width=Math.max(1.2,(nextTo-Math.max(nextFrom,monday.getTime()))/range*100)+"%";
+        bar.title=new Date(nextFrom).toLocaleString()+" → "+new Date(nextTo).toLocaleString();
+        dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(nextFrom).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(nextTo).toLocaleString():bar.title;
+        const edge=bar.getBoundingClientRect();
+        placeDragNote(gesture.mode==="start"?edge.left:gesture.mode==="resize"?edge.right:e.clientX,edge.top);
+        timelinePreviewSuccessors(t.id,nextTo-gesture.to,monday,range);
+      }
+      return {nextFrom,nextTo};
+    };
+    const cleanup=()=>{document.removeEventListener("pointermove",moveDrag,true);document.removeEventListener("pointerup",finishDrag,true);document.removeEventListener("pointercancel",cancelDrag,true);hideDragNote()};
+    const moveDrag=e=>{if(gesture&&e.pointerId===gesture.pointerId)dragPosition(e)};
+    const cancelDrag=e=>{if(!gesture||e.pointerId!==gesture.pointerId)return;gesture=null;cleanup();renderTimeline()};
+    const finishDrag=async e=>{
+      if(!gesture||e.pointerId!==gesture.pointerId)return;
+      const g=gesture,result=dragPosition(e,false);gesture=null;cleanup();
+      if(!g.moved){state.edit=t;state.parent=null;openDialog();return}
+      if(!result){renderTimeline();return}
+      await timelineSaveSchedule(t,result.nextFrom,result.nextTo);
+    };
+    bar.addEventListener("pointerdown",e=>{
+      if(t.shared||e.button!==0)return;
+      gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:milestone?"move":e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
+      bar.classList.add("timelineDragging");line.classList.add("timelineHandlesActive");
+      document.body.append(dragNote);
+      dragNote.textContent=gesture.mode==="start"?"Start · "+new Date(from).toLocaleString():gesture.mode==="resize"?"Finish · "+new Date(to).toLocaleString():new Date(from).toLocaleString()+" → "+new Date(to).toLocaleString();
+      placeDragNote(e.clientX,e.clientY);
+      dragPosition(e);
+      document.addEventListener("pointermove",moveDrag,true);
+      document.addEventListener("pointerup",finishDrag,true);
+      document.addEventListener("pointercancel",cancelDrag,true);
+      e.preventDefault();e.stopPropagation();
+    });
+    track.append(bar)
    }
   }
   if(!hasDate){
@@ -2189,14 +2579,18 @@ function renderAssigneeFilter(){
  select.value=[...select.options].some(o=>o.value===current)?current:"all";
 }
 $("assigneeFilter").addEventListener("change",e=>{state.assigneeFilter=e.target.value;render()});
+let attentionExpanded=false;
 function renderAttention(){
  const area=$("attention");area.replaceChildren();
  const seen=new Set();const items=[];
  for(const n of state.attention){if(!seen.has(n.task_id)){const t=state.tasks.find(x=>x.id===n.task_id);if(t){items.push({t,reason:n.reason});seen.add(n.task_id)}}}
  if(!items.length){area.classList.add("hidden");return}
  area.classList.remove("hidden");
- const head=el("div","attentionhead");head.append(el("div","attentionicon","!"));
- const words=el("div","");words.append(el("h2","","Worth your attention"));words.append(el("div","suggestsmall",items.length+" matter"+(items.length===1?"":"s")+" may need a next step"));head.append(words);area.append(head);
+ const head=el("button","attentionhead attentionToggle");head.type="button";head.setAttribute("aria-expanded",String(attentionExpanded));head.append(el("span","attentionChevron",attentionExpanded?"▾":"▸"));head.append(el("span","attentionicon","!"));
+ const words=el("span","attentionLabel","Worth your attention");head.append(words);
+ head.append(el("span","attentionCount",items.length+" outstanding"));
+ head.addEventListener("click",()=>{attentionExpanded=!attentionExpanded;renderAttention()});area.append(head);
+ if(!attentionExpanded)return;
  for(const item of items.slice(0,5)){
    const row=el("div","attentionrow");const text=el("div","");
    text.append(el("strong","",item.t.title));
@@ -2224,6 +2618,7 @@ function liveSignature(data){
  return JSON.stringify([(data.tasks||[]).map(t=>[t.id,t.parent_task_id,t.company_id,t.category_id,t.status,t.title,t.details,t.updated_at,t.version,t.position,t.archived_at,t.due_at,t.priority]),(data.categories||[]).map(c=>[c.id,c.company_id,c.parent_category_id,c.name]),(data.delegations||[]).map(d=>[d.id,d.status,d.scope]),(data.receivedDelegations||[]).map(d=>[d.id,d.status,d.scope])]);
 }
 function editingAgenda(){
+ if(taskOrderSavePending)return true;
  if(state.outlineBusy||document.querySelector(".outlineDraft,.inlineTitle:not(.outlineDraft .inlineTitle)"))return true;
  if($("dialogOverlay")?.classList.contains("show"))return true;
  const active=document.activeElement;
@@ -2296,9 +2691,26 @@ $("sendTaskRequest").addEventListener("submit",async e=>{
  e.preventDefault();const form=e.currentTarget,button=form.querySelector("button");button.disabled=true;
  try{await api("request-task",{title:$("requestTaskTitle").value.trim(),recipient_email:$("requestTaskRecipient").value.trim()});$("requestTaskTitle").value="";toast("Request sent — awaiting recipient approval");await loadTaskRequests();await loadOutgoingRequests()}catch(err){toast(err.message,true)}finally{button.disabled=false}
 });
+let timelineAutoRepairRunning=false;
+function timelineHasInvalidDependencies(){
+ const tasks=new Map(state.tasks.map(t=>[t.id,t]));
+ return state.dependencies.some(dep=>{
+  const predecessor=tasks.get(dep.depends_on_id),successor=tasks.get(dep.task_id);
+  if(!predecessor||!successor||successor.shared)return false;
+  const finish=Date.parse(predecessor.due_at||predecessor.start_at||"");
+  const begin=Date.parse(successor.start_at||successor.due_at||"");
+  return Number.isFinite(finish)&&Number.isFinite(begin)&&begin<finish;
+ });
+}
 async function load(){
  const data=await api("list");
+ if(taskOrderSavePending)return;
  applyAgendaData(data);taskFiles.refreshCounts(state.tasks);refreshMissionStatus();startAgendaSync();loadTaskRequests();loadOutgoingRequests();
+ // Repair older dependency dates on opening the timeline. The guard prevents reload recursion.
+ if(state.view==="timeline"&&!timelineAutoRepairRunning&&timelineHasInvalidDependencies()){
+  timelineAutoRepairRunning=true;
+  try{await timelineRepairDependencies()}finally{timelineAutoRepairRunning=false}
+ }
 }
 async function markTask(t,done,control){
  control.disabled=true;
@@ -2348,21 +2760,61 @@ $("taskForm").addEventListener("submit",async e=>{
   closeDialog();await load();toast("Task saved")
  }catch(e){toast(e.message,true)}finally{save.disabled=false}
 });
+// Contextual confirmation stays near the action instead of opening a browser modal.
+let taskDeletePoint={x:Math.round(innerWidth/2),y:Math.round(innerHeight/2)};
+document.addEventListener("pointerdown",e=>{if(e.isTrusted)taskDeletePoint={x:e.clientX,y:e.clientY}},true);
+function confirmTaskDelete(title,options){
+ return new Promise(resolve=>{
+  const old=document.getElementById("taskDeletePopover");if(old)old.remove();
+  const panel=document.createElement("div");panel.id="taskDeletePopover";panel.className="taskDeletePopover";panel.setAttribute("role","dialog");panel.setAttribute("aria-label","Confirm deletion");
+  const heading=document.createElement("strong");heading.textContent="Delete “"+title+"”?";panel.append(heading);
+  const warning=document.createElement("p");warning.textContent="This cannot be undone.";panel.append(warning);
+  const actions=document.createElement("div");actions.className="taskDeleteActions";panel.append(actions);
+  let finished=false;
+  const finish=value=>{if(finished)return;finished=true;document.removeEventListener("keydown",keyHandler,true);document.removeEventListener("pointerdown",outside,true);panel.remove();resolve(value)};
+  const keyHandler=e=>{if(e.key==="Escape"){e.preventDefault();finish(null)}};
+  const outside=e=>{if(!panel.contains(e.target))finish(null)};
+  const cancel=document.createElement("button");cancel.type="button";cancel.textContent="Cancel";cancel.className="taskDeleteCancel";cancel.addEventListener("click",()=>finish(null));actions.append(cancel);
+  for(const option of options){const button=document.createElement("button");button.type="button";button.className="taskDeleteDanger";button.textContent=option.label;button.addEventListener("click",()=>finish(option.value));actions.append(button)}
+  document.body.append(panel);
+  // The confirmation is centred and does not follow the pointer.
+  panel.style.left="50%";panel.style.top="50%";
+  document.addEventListener("keydown",keyHandler,true);
+  setTimeout(()=>document.addEventListener("pointerdown",outside,true),0);
+  cancel.focus();
+ });
+}
 $("deleteTask").addEventListener("click",async()=>{
  const t=state.edit;if(!t||t.shared)return;
  const descendants=new Set([t.id]);let changed=true;
  while(changed){changed=false;for(const x of state.tasks){if(x.parent_task_id&&descendants.has(x.parent_task_id)&&!descendants.has(x.id)){descendants.add(x.id);changed=true}}}
  const childCount=descendants.size-1;
- if(!confirm("Permanently delete task “"+t.title+"”? This cannot be undone."))return;
- let childMode="promote_children";
- if(childCount>0){
-  const removeAll=confirm("This task has "+childCount+" nested subtask"+(childCount===1?"":"s")+".\n\nOK: Delete the parent AND all subtasks.\nCancel: Keep subtasks and move the immediate children up one level.");
-  childMode=removeAll?"delete_all":"promote_children";
-  if(!removeAll&&!confirm("Keep all subtasks and move them up one level, then delete only “"+t.title+"”?"))return;
- }
+ const options=childCount>0?[
+  {value:"delete_all",label:"Delete task and "+childCount+" subtask"+(childCount===1?"":"s"),danger:true},
+  {value:"promote_children",label:"Delete task, keep subtasks",danger:true}
+ ]:[{value:"promote_children",label:"Delete task",danger:true}];
+ const childMode=await confirmTaskDelete(t.title,options);
+ if(!childMode)return;
  const button=$("deleteTask");button.disabled=true;
- try{const result=await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});closeDialog();await load();toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted")}
- catch(e){toast(e.message,true)}finally{button.disabled=false}
+ // Optimistically remove deleted tasks immediately; restore if the server refuses.
+ const previousTasks=state.tasks.slice();
+ const previousParents=new Map(previousTasks.map(x=>[x.id,x.parent_task_id]));
+ const previousExpanded=new Set(state.expanded);
+ const parentId=t.parent_task_id||null;
+ if(childMode==="delete_all")state.tasks=state.tasks.filter(x=>!descendants.has(x.id));
+ else{
+  state.tasks=state.tasks.filter(x=>x.id!==t.id);
+  for(const x of state.tasks)if(x.parent_task_id===t.id)x.parent_task_id=parentId;
+ }
+ closeDialog();render();
+ try{
+  await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});
+  toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted");
+ }catch(e){
+  previousTasks.forEach(x=>{x.parent_task_id=previousParents.get(x.id)});
+  state.tasks=previousTasks;state.expanded=previousExpanded;render();
+  toast("Task deletion failed: "+e.message,true);
+ }finally{button.disabled=false}
 });
 $("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!confirm("Archive this task and all of its subtasks? You will no longer see them in your active agenda."))return;try{await api("archive-tree",{id:state.edit.id,confirm_all:true});closeDialog();await load();toast("Task archived")}catch(e){toast(e.message,true)}});
 $("cancelDialog").addEventListener("click",closeDialog);
