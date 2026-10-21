@@ -11,7 +11,7 @@ from pathlib import Path
 import secrets
 import subprocess
 import uuid
-from engineering_runtime import EngineeringRuntime,BASE
+from engineering_runtime import EngineeringRuntime,BASE,MANAGEMENT
 from test_engineering_customer_boundary import REVIEWED_TRIGGERS
 
 ROOT=Path(__file__).resolve().parents[2]
@@ -22,7 +22,7 @@ OPS=[c['operation'] for c in MANIFEST['operations']]
 class LiveProvisioning:
     def __init__(self,output):
         self.output=output;self.r=EngineeringRuntime();self.keys=self.r._api_keys();self.users=[];self.tokens=[];self.customers=[];self.resources=[];self.configuration=None;self.hook="sandy_provisioning_fixture_"+uuid.uuid4().hex
-        self.report={'source_test_commit':SOURCE,'deployed_source_commit':'e46fe92f91e24cd7763d4a9a542f27f96c1e30a2','normal_password_sessions':True,'service_role_substituted_for_user':False,'tests':[],'calls':[],'resources':[],'cleanup':{},'complete':False}
+        self.report={'source_test_commit':SOURCE,'deployed_source_commit':'e46fe92f91e24cd7763d4a9a542f27f96c1e30a2','gateway_source_commit':'a4b3aa09ca3bb52f41436daeb0f2b7abe6447aa9','normal_password_sessions':True,'service_role_substituted_for_user':False,'tests':[],'calls':[],'resources':[],'cleanup':{},'complete':False}
 
     def fixture_sql(self,sql):
         return self.r._sql(sql.replace("sandy_test_provisioning_completion_failure",self.hook))
@@ -55,6 +55,9 @@ class LiveProvisioning:
         return result.get('result',result)
 
     def setup(self):
+        for slug,version in [('sandy-operation-api',29),('sandy-customer-provisioning-api',3)]:
+            status,metadata=self.r._http('GET',MANAGEMENT+'/functions/'+slug,self.r._management)
+            self.check('reviewed_deployment_active.'+slug,status==200 and metadata.get('status')=='ACTIVE' and metadata.get('version')==version and metadata.get('verify_jwt') is True)
         rows=self.r._sql("SELECT n.nspname schema_name,c.relname table_name,t.tgname,t.tgenabled,pg_get_triggerdef(t.oid) definition,pg_get_functiondef(t.tgfoid) function_source FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE NOT t.tgisinternal AND (n.nspname='auth' AND c.relname='users' OR n.nspname='public' AND c.relname IN('email_customers','email_customer_addresses','sandy_memory_settings','sandy_memory_portal_accounts')) ORDER BY n.nspname,c.relname,t.tgname",True)
         fields=['schema_name','table_name','tgname','tgenabled','definition','function_source'];digest=hashlib.sha256(json.dumps(sorted(tuple(x[k] for k in fields) for x in rows),separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
         self.check('existing_customer_triggers_reviewed',digest==REVIEWED_TRIGGERS)
@@ -183,7 +186,7 @@ class LiveProvisioning:
         if not self.report['complete']:return
         for operation in OPS:
             calls=[c for c in self.report['calls'] if c['operation']==operation and c['channel']=='mcp' and c.get('is_error') is False and c.get('api_status')==200];assert calls,operation
-            evidence={'recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'evidence_level':'actual_normal_customer_MCP_to_Sandy_API_to_Supabase_database_provider','mcp_end_to_end_verified':True,'source_commit':self.report['deployed_source_commit'],'normal_password_sessions':2,'service_role_substituted_for_user':False,'provider_family_complete':False,'adapter_verified':'supabase.workspace','tests_passed':self.report['passed'],'tests_failed':self.report['failed'],'successful_calls':calls,'fixtures_cleaned':True,'actual_workspace_tables_provisioned':len(self.resources),'source_evidence_sha256':hashlib.sha256(self.output.read_bytes()).hexdigest(),'actual_cost_known':False,'no_new_project_or_plan_purchase':True}
+            evidence={'recorded_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),'evidence_level':'actual_normal_customer_MCP_to_Sandy_API_to_Supabase_database_provider','mcp_end_to_end_verified':True,'source_commit':self.report['deployed_source_commit'],'gateway_source_commit':self.report['gateway_source_commit'],'normal_password_sessions':2,'service_role_substituted_for_user':False,'provider_family_complete':False,'adapter_verified':'supabase.workspace','tests_passed':self.report['passed'],'tests_failed':self.report['failed'],'successful_calls':calls,'fixtures_cleaned':True,'actual_workspace_tables_provisioned':len(self.resources),'source_evidence_sha256':hashlib.sha256(self.output.read_bytes()).hexdigest(),'actual_cost_known':False,'no_new_project_or_plan_purchase':True}
             self.r._sql("UPDATE public.sandy_operation_registry SET last_test_result=last_test_result||jsonb_build_object('customer_provisioning_20261021',"+self.r._quote(json.dumps(evidence))+"::jsonb),last_verified_at=now(),updated_at=now() WHERE operation="+self.r._quote(operation))
 
 if __name__=='__main__':
