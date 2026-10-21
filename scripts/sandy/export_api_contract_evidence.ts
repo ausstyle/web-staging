@@ -32,6 +32,8 @@ import { serviceOperations } from "../../supabase/functions/sandy-supabase-servi
 import { tenantConsentOperations } from "../../supabase/functions/sandy-supabase-service-api/tenant_consent.ts";
 import { gapGatewayOperations } from "../../supabase/functions/sandy-provider-gap-api/gateway.ts";
 import { supplementOperations } from "../../supabase/functions/sandy-provider-supplement-api/gateway.ts";
+import { sensitiveContracts } from "../../supabase/functions/sandy-provider-sensitive-api/contracts.ts";
+import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts";
 import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
 import { tenantExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/download.ts";
 import { tenantLifecycleConsentOverride } from "../../supabase/functions/sandy-tenant-lifecycle-api/consent_extension.ts";
@@ -257,6 +259,20 @@ add(
   "_shared/sandy-agent-operations/runtime_operational.ts",
 );
 const rows: Row[] = [];
+add(
+  "provider_sensitive",
+  "sandy-provider-sensitive-api/contracts.json",
+  sensitiveContracts,
+  "sandy-provider-sensitive-api",
+  "sandy-provider-sensitive-api/index.ts",
+);
+add(
+  "internal_runtime_connection_preflight",
+  "_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts",
+  { [runtimeConnectionPreflightOperationName]: runtimeConnectionPreflightContract },
+  "internal:agent.runtime.connections.preflight@1.0.0",
+  "_shared/sandy-agent-operations/runtime_connection_preflight.ts",
+);
 for (const group of groups) {
   for (const [operation, value] of Object.entries(group.contracts)) {
     const contract = value as Row;
