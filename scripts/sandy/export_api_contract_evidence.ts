@@ -18,6 +18,7 @@ import {
 import { orchestrationContracts } from "../../supabase/functions/sandy-orchestration-api/contracts.ts";
 import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
 import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts";
+import { internalRuntimeOperationalContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational_contracts.ts";
 import {
   runtimeConversationContract,
   runtimeConversationOperation,
@@ -30,6 +31,10 @@ import { credentialOperations } from "../../supabase/functions/sandy-credential-
 import { serviceOperations } from "../../supabase/functions/sandy-supabase-service-api/gateway.ts";
 import { tenantConsentOperations } from "../../supabase/functions/sandy-supabase-service-api/tenant_consent.ts";
 import { gapGatewayOperations } from "../../supabase/functions/sandy-provider-gap-api/gateway.ts";
+import { supplementOperations } from "../../supabase/functions/sandy-provider-supplement-api/gateway.ts";
+import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
+import { tenantExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/download.ts";
+import { tenantLifecycleConsentOverride } from "../../supabase/functions/sandy-tenant-lifecycle-api/consent_extension.ts";
 import guestManifest from "../../supabase/functions/sandy-guest-operation-api/contracts.json" with {
   type: "json",
 };
@@ -169,7 +174,10 @@ add(
 add(
   "tenant_service_consent",
   "sandy-supabase-service-api/tenant_consent.ts",
-  tenantConsentOperations,
+  {
+    ...tenantConsentOperations,
+    [tenantLifecycleConsentOverride.operation]: tenantLifecycleConsentOverride,
+  },
   "sandy-operation-api",
 );
 add(
@@ -213,6 +221,40 @@ add(
   { [runtimeConversationOperation]: runtimeConversationContract },
   "internal:agent.runtime.conversation.respond@1.0.0",
   "_shared/sandy-agent-operations/runtime_conversation.ts",
+);
+add(
+  "tenant_lifecycle",
+  "sandy-tenant-lifecycle-api/gateway.ts",
+  tenantLifecycleOperations,
+  "sandy-tenant-lifecycle-api",
+  "sandy-tenant-lifecycle-api/index.ts",
+);
+add(
+  "tenant_export_download",
+  "sandy-tenant-lifecycle-api/download.ts",
+  { [tenantExportDownloadOperation.operation]: tenantExportDownloadOperation },
+  "sandy-operation-api",
+);
+add(
+  "provider_supplement",
+  "sandy-provider-supplement-api/gateway_manifest.json",
+  supplementOperations,
+  "sandy-provider-supplement-api",
+  "sandy-provider-supplement-api/index.ts",
+);
+add(
+  "internal_runtime_operational",
+  "_shared/sandy-agent-operations/runtime_operational_contracts.ts",
+  Object.fromEntries(
+    Object.entries(internalRuntimeOperationalContracts).map((
+      [operation, contract],
+    ) => [
+      operation,
+      { ...contract, handler: `internal:${operation}@1.0.0` },
+    ]),
+  ),
+  "",
+  "_shared/sandy-agent-operations/runtime_operational.ts",
 );
 const rows: Row[] = [];
 for (const group of groups) {
