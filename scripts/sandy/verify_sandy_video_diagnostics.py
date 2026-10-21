@@ -15,7 +15,7 @@ ROOT=Path(__file__).resolve().parents[2]
 POLICY=json.loads((ROOT/'supabase/functions/sandy-operation-api/engineering_vm_read_policy.json').read_text())
 BASE=json.loads((ROOT/'supabase/functions/sandy-operation-api/engineering_identity_policy.json').read_text())
 SOURCE_CHANGE='232d8d7e-ac98-4669-9907-93302303a7c1'
-SAFE_FIELDS={'ok','exists','name','zone','status','vm','vm_status','instance_id','machine_type','external_ip_present','external_ip_attached','oslogin_enabled','block_project_ssh_keys','granted_roles','missing_roles','granted','missing','osconfig_enabled','osconfig_http','inventory_available','http_status','google_http','error_status','error_message','error','installation_authorized','installation_executed','livekit_verified','ssh_connectivity_verified','remote_execution_available','reason','cloud_nat_http','cloud_nat_routers','metadata_keys','firewall_http','assignments','guest_reporting'}
+SAFE_FIELDS={'ok','exists','name','zone','status','vm','vm_status','instance_id','machine_type','external_ip_present','external_ip_attached','oslogin_enabled','block_project_ssh_keys','granted_roles','missing_roles','granted','missing','osconfig_enabled','osconfig_http','inventory_available','http_status','google_http','error_status','error_message','error','installation_authorized','installation_executed','livekit_verified','ssh_connectivity_verified','remote_execution_available','reason','cloud_nat_http','cloud_nat_routers','subnetwork_http','private_google_access_enabled','regional_addresses_http','routers_http','nat_routers','firewalls_http','metadata_keys','firewall_http','assignments','guest_reporting'}
 def clean(value):
     if isinstance(value,str):
         value=re.sub(r'eyJ[A-Za-z0-9._-]{15,}','[REDACTED]',value)
@@ -54,6 +54,8 @@ def run(output,gateway_version=30,retry_from=None):
                 call['provider_observation']={k:clean(v) for k,v in payload.items() if k in SAFE_FIELDS}
                 if isinstance(payload.get('upstream_error'),dict):call['provider_observation']['upstream_error']={k:clean(v) for k,v in payload['upstream_error'].items() if k in {'error','error_status','error_message','message','google_http','http_status','google_error_status','google_error_message','osconfig_http'}}
             call['positive_execution_verified']=status==200 and result.get('isError') is False and envelope.get('status')==200 and isinstance(payload,dict) and payload.get('ok') is True
+            if operation=='video.network.preflight' and call['positive_execution_verified']:
+                call['positive_execution_verified']=all(isinstance(payload.get(k),int) and 200<=payload[k]<300 for k in ['regional_addresses_http','routers_http','firewalls_http','subnetwork_http'])
             if operation=='video.status' and call['positive_execution_verified']:
                 call['target_identity_matches']=payload.get('name')==POLICY['instance_name'] and payload.get('instance_id')==POLICY['instance_id']
                 if not call['target_identity_matches']:call['positive_execution_verified']=False

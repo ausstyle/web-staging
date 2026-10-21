@@ -430,13 +430,22 @@ Deno.serve(async(req)=>{
     if(!vmResponse.ok)return reply({ok:false,stage:"vm",google_http:vmResponse.status},502);
     const vm=await vmResponse.json();
     const region="europe-west1";
+    const subnetPrefix="https://www.googleapis.com/compute/v1/projects/"+P+"/regions/"+region+"/subnetworks/";
+    const subnetRef=String(vm.networkInterfaces?.[0]?.subnetwork||"");
+    const subnetName=subnetRef.startsWith(subnetPrefix)?subnetRef.slice(subnetPrefix.length):"";
+    let subnetHttp:number|null=null,privateGoogleAccess:boolean|null=null;
+    if(/^[a-z][a-z0-9-]{0,62}$/.test(subnetName)){
+      const subnet=await fetch("https://compute.googleapis.com/compute/v1/projects/"+P+"/regions/"+region+"/subnetworks/"+encodeURIComponent(subnetName),{headers,signal:AbortSignal.timeout(16000)});
+      const data=await subnet.json().catch(()=>({}));subnetHttp=subnet.status;
+      if(subnet.ok&&typeof data.privateIpGoogleAccess==="boolean")privateGoogleAccess=data.privateIpGoogleAccess;
+    }
     const [addresses,routers,firewalls]=await Promise.all([
       fetch("https://compute.googleapis.com/compute/v1/projects/"+P+"/regions/"+region+"/addresses",{headers,signal:AbortSignal.timeout(16000)}),
       fetch("https://compute.googleapis.com/compute/v1/projects/"+P+"/regions/"+region+"/routers",{headers,signal:AbortSignal.timeout(16000)}),
       fetch("https://compute.googleapis.com/compute/v1/projects/"+P+"/global/firewalls",{headers,signal:AbortSignal.timeout(16000)})
     ]);
     const [a,r,f]=await Promise.all([addresses.json().catch(()=>({})),routers.json().catch(()=>({})),firewalls.json().catch(()=>({}))]);
-    return reply({ok:true,vm:"sandy-video",vm_status:vm.status,external_ip:vm.networkInterfaces?.[0]?.accessConfigs?.[0]?.natIP||null,network_tags:vm.tags?.items||[],regional_addresses_http:addresses.status,reserved_addresses:(a.items||[]).filter((v:any)=>v.name.startsWith("sandy-video")).map((v:any)=>({name:v.name,address:v.address,status:v.status})),routers_http:routers.status,nat_routers:(r.items||[]).filter((v:any)=>(v.nats||[]).length).map((v:any)=>v.name),firewalls_http:firewalls.status,video_firewall_rules:(f.items||[]).filter((v:any)=>v.name.startsWith("sandy-video")).map((v:any)=>({name:v.name,direction:v.direction,disabled:v.disabled,allowed:v.allowed,targetTags:v.targetTags})),changes_applied:false});
+    return reply({ok:true,vm:"sandy-video",vm_status:vm.status,subnetwork_http:subnetHttp,private_google_access_enabled:privateGoogleAccess,external_ip_present:(vm.networkInterfaces||[]).some((n:any)=>Boolean(n.accessConfigs?.[0]?.natIP)),external_ip:vm.networkInterfaces?.[0]?.accessConfigs?.[0]?.natIP||null,network_tags:vm.tags?.items||[],regional_addresses_http:addresses.status,reserved_addresses:(a.items||[]).filter((v:any)=>v.name.startsWith("sandy-video")).map((v:any)=>({name:v.name,address:v.address,status:v.status})),routers_http:routers.status,nat_routers:(r.items||[]).filter((v:any)=>(v.nats||[]).length).map((v:any)=>v.name),firewalls_http:firewalls.status,video_firewall_rules:(f.items||[]).filter((v:any)=>v.name.startsWith("sandy-video")).map((v:any)=>({name:v.name,direction:v.direction,disabled:v.disabled,allowed:v.allowed,targetTags:v.targetTags})),changes_applied:false});
   }
   if(action==="cloud_run_status"){
     const endpoint="https://run.googleapis.com/v2/projects/"+P+"/locations/europe-west1/services/sandy-engineering-mcp";
