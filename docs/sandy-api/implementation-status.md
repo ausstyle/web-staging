@@ -4,7 +4,7 @@ Updated 21 October 2026 after real customer provisioning acceptance and repaired
 
 ## Published source and production
 
-GitHub write authorization works. The engineering branch has been pushed through `9f2f9af`. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
+GitHub write authorization works. The engineering branch has been pushed through `41e030c`. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
 
 The current gateway is **31 ACTIVE**, from source `c480e3b`. The customer provisioning handler is **3 ACTIVE**, from `e46fe92`. Both preserve `verify_jwt=true`; every uploaded source was accounted for in production readback. Five gateway modules use reproducible type erasure/whitespace compaction with original Git source and artifact digests preserved. The initial larger gateway upload returned HTTP 413, leaving gateway 28 and its source unchanged; the compact candidate then deployed with HTTP 201.
 
@@ -41,6 +41,8 @@ They reuse canonical `email_customers`, unique normalized email addresses, porta
 
 Trusted email (`incoming`) and WhatsApp (`inbound`) storage now feed the existing deduplicated provisional-contact service. A service-only resolver checks current verified email records and fresh WhatsApp links on every lookup; revoked/expired links stop matching. Matches are routing hints and grant no authorization, create no customers and perform no identity merging. Customer writes are excluded from trusted ingress. Voice caller ID remains provisional. [Production database checks](customer-ingress-evidence-20261021.json) passed **27/27**, existing onboarding checks **31/31**, and all fixtures were independently absent after rollback. These are actual database integration checks; signed external email/WhatsApp delivery was not exercised and no message was sent.
 
+The existing WhatsApp email-code linker now completes atomically in webhook **156 ACTIVE**, from `41e030c`, with all five deployed sources verified. Actual production version 155 source was preserved in `259c914`, including functionality absent from the checkout. Proof consumption, binding and audit commit together. Wrong attempts are serialized and bounded, current email ownership is rechecked, cross-customer reassignment is refused, and existing narrower scopes are preserved. [Acceptance evidence](customer-channel-link-evidence-20261021.json): **33 real database checks**, **9 handler tests**, concurrent REST completion with one success/one rejected replay and one audit, and **3 actual webhook authentication/method denials** passed. Fixtures were removed and read back absent. External Meta delivery and actual emailed OTPs remain unverified; no message was sent. This change creates no new catalogue operations or verification flags.
+
 ## Actual resource provisioning and lifecycle
 
 Twelve additional operations are deployed and verified through MCP:
@@ -70,6 +72,7 @@ Applied and ledger-read back against exact committed sources:
 
 - `20261021120000`, `20261021121000`: dedicated Auth workload policy, sessions, revocable Vault bootstrap delivery, scoped execution authorization and audit.
 - `20261021130000`, `20261021130010`, `20261021131000`: canonical onboarding, provisional contacts, receipts/audit and typed API/MCP contracts; truthful execution metadata correction.
+- `20261021161000`: atomic existing WhatsApp linking, bounded attempts, current ownership checks, service-only channel audit and explicit refusal of identity transfers.
 - `20261021160000`: trusted email/WhatsApp observation triggers and service-only current-record matching, preserving existing ingestion/authentication and requiring no new catalogue operations.
 - `20261021150000`: separately revocable, fixed-target read-only VM delegation, credential-epoch binding and audit; no shell, IAM, network or installation writes.
 - `20261021140000`, `20261021140010`: provisioning features/templates, customer policies, immutable plans, owned resource registry, persisted jobs/receipts/audit, transactional workspace adapter and typed contracts.

@@ -1,0 +1,103 @@
+{
+  "migration_sha256": "56be850f8dce09bd710577f14e7f47f3355e23b5cf2745349a17c9b84b858d79",
+  "test_sha256": "e4625061261912a49f29e98839ea4b33031ecf5eda4f473cc3f1b98841221588",
+  "candidate_ddl_rolled_back": false,
+  "rollback_result": [
+    {
+      "passed": 33,
+      "failed": 0,
+      "rolled_back": true,
+      "external_provider_verified": false
+    }
+  ],
+  "external_provider_verified": false,
+  "customer_session_substitution": false,
+  "normal_customer_mcp_test": false,
+  "messages_sent": 0,
+  "rollback_cleanup": [
+    {
+      "customers": 0
+    }
+  ],
+  "anonymous_rpc_denied_http": 401,
+  "concurrent_trusted_ingress_results": [
+    {
+      "http_status": 200,
+      "ok": true,
+      "state": "verified",
+      "identity_merged": false
+    },
+    {
+      "http_status": 200,
+      "ok": false,
+      "error": "link_challenge_unavailable"
+    }
+  ],
+  "independent_concurrency_readback": [
+    {
+      "consumed": true,
+      "bound": true,
+      "successful_audits": 1
+    }
+  ],
+  "concurrency_verified": true,
+  "fixture_cleanup": [
+    {
+      "customers": 0,
+      "challenges": 0,
+      "identities": 0,
+      "audits": 0
+    }
+  ],
+  "complete": true,
+  "deployed_webhook_version": 156,
+  "source_commit": "41e030cd147172ed6d0ce23e34e501f54fe7c6f0",
+  "deployed_sources_accounted_for": true,
+  "preserved_before_version": 155,
+  "preserved_before_source_commit": "259c914",
+  "migration": {
+    "migration": "20261021161000_sandy_atomic_whatsapp_link.sql",
+    "source_sha256": "56be850f8dce09bd710577f14e7f47f3355e23b5cf2745349a17c9b84b858d79",
+    "apply_http": 201,
+    "version": "20261021161000",
+    "readback_http": 201,
+    "readback": [
+      {
+        "version": "20261021161000",
+        "name": "sandy_atomic_whatsapp_link",
+        "exact_source_match": true
+      }
+    ]
+  },
+  "handler_tests": {
+    "passed": 9,
+    "failed": 0
+  },
+  "live_webhook_auth_denials": [
+    {
+      "method": "POST",
+      "http_status": 403,
+      "expected_response": true,
+      "passed": true
+    },
+    {
+      "method": "GET",
+      "http_status": 403,
+      "expected_response": true,
+      "passed": true
+    },
+    {
+      "method": "PUT",
+      "http_status": 405,
+      "expected_response": true,
+      "passed": true
+    }
+  ],
+  "type_check": "Whole webhook passed with the local EdgeRuntime type declaration; JSR manifest unavailable from Codex. Real npm dependencies retained. Production upload/readback succeeded with original JSR import.",
+  "limitations": [
+    "No external Meta delivery or actual emailed OTP was tested. No messages were sent.",
+    "Cross-customer reassignment is refused, including previously revoked links; an explicit authorized transfer flow remains future work.",
+    "Challenge creation/resend rate limiting is the existing implementation; only completion was made atomic."
+  ],
+  "new_catalogue_operations": 0
+}
