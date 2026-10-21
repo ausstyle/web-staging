@@ -2064,11 +2064,21 @@ function timelineDrawDependencies(){
   const x=a?.querySelector(".ganttBar"),y=b?.querySelector(".ganttBar");
   if(!x||!y)continue;
   const ar=x.getBoundingClientRect(),br=y.getBoundingClientRect();
-  const sx=ar.right-rect.left+box.scrollLeft,sy=ar.top+ar.height/2-rect.top+box.scrollTop;
-  const ex=br.left-rect.left+box.scrollLeft,ey=br.top+br.height/2-rect.top+box.scrollTop;
-  const bend=Math.max(sx+12,Math.min((sx+ex)/2,sx+28));
+  const predecessor=state.tasks.find(t=>t.id===dep.depends_on_id);
+  const successor=state.tasks.find(t=>t.id===dep.task_id);
+  const finish=Date.parse(predecessor?.due_at||predecessor?.start_at||"");
+  const start=Date.parse(successor?.start_at||successor?.due_at||"");
+  const rangeStart=Number(box.dataset.timelineStart),rangeMs=Number(box.dataset.timelineRange);
+  const trackA=a.querySelector(".track")?.getBoundingClientRect();
+  const trackB=b.querySelector(".track")?.getBoundingClientRect();
+  const exactX=(ms,track)=>track.left-rect.left+box.scrollLeft+(ms-rangeStart)/rangeMs*track.width;
+  const sx=Number.isFinite(finish)&&trackA&&rangeMs?exactX(finish,trackA):ar.right-rect.left+box.scrollLeft;
+  const ex=Number.isFinite(start)&&trackB&&rangeMs?exactX(start,trackB):br.left-rect.left+box.scrollLeft;
+  const sy=ar.top+ar.height/2-rect.top+box.scrollTop,ey=br.top+br.height/2-rect.top+box.scrollTop;
+  const aligned=Math.abs(sx-ex)<1;
+  const bend=aligned?sx:Math.max(sx+12,Math.min((sx+ex)/2,sx+28));
   const path=document.createElementNS("http://www.w3.org/2000/svg","path");
-  path.setAttribute("d","M"+sx+","+sy+" H"+bend+" V"+ey+" H"+(ex-5));
+  path.setAttribute("d",aligned?"M"+sx+","+sy+" V"+ey:"M"+sx+","+sy+" H"+bend+" V"+ey+" H"+(ex-5));
   path.setAttribute("fill","none");path.setAttribute("stroke","#698b78");
   path.setAttribute("stroke-width","1.7");path.setAttribute("opacity",".85");
   // Retain visible dependency lines while making each connector directly editable.
@@ -2179,6 +2189,7 @@ function renderTimeline(){
  const zoomValue=Number(localStorage.getItem("sandy_timeline_zoom"));
  const zoomOptions=[1,7,14,28,84,168];
  const days=zoomOptions.includes(zoomValue)?zoomValue:84,hourMode=days===1,dayMode=days<=14,slots=hourMode?24:dayMode?days:days/7,range=days*86400000,snapMs=900000,snapSteps=range/snapMs;
+ box.dataset.timelineStart=String(monday.getTime());box.dataset.timelineRange=String(range);
  const cols="minmax(170px,240px) repeat("+slots+",minmax("+(hourMode?64:dayMode?75:55)+"px,1fr))";
  const applyGrid=element=>{element.style.gridTemplateColumns=cols;element.style.minWidth=(240+slots*(hourMode?64:dayMode?75:55))+"px"};
  const title=el("div","timelineHead");
