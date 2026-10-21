@@ -97,25 +97,11 @@ class TestV2APIQA(unittest.TestCase):
                       'recent!.every((x:any)=>x.verdict==="pass")','corroborated?"passed":"retest_pending"'):
             self.assertIn(value,self.edge)
 
-    def test_stalled_run_reconciliation_and_engineering_handoff(self):
-        self.assertIn('v2_api_qa_stalled_runner',self.edge)
-        self.assertIn('qa_case_persistence_failed',self.edge)
-        improve=(ROOT/'supabase/functions/sandy-auto-improve/index.ts').read_text()
-        for value in ('sandy_qa_engineering_handoffs','approval_required:true','proposal_only:true'):
-            self.assertIn(value,improve)
-
     def test_only_deterministic_qa_outcomes_train_model_router(self):
         for value in ('sandy_v2_model_decisions','["web_history","task_count"].includes(testcase.key)',
                       'actual_success:verdict==="pass"','source:"sandy_v2_synthetic_api_qa"',
                       '.eq("selected_model",taskModel)','v2_api_qa_model_feedback'):
             self.assertIn(value,self.edge)
-
-    def test_failed_diagnosis_is_retryable_not_silently_deduplicated(self):
-        improve=(ROOT/'supabase/functions/sandy-auto-improve/index.ts').read_text()
-        for value in ('prior.status==="failed"','3600000',
-                      '.eq("status","failed").select("id").maybeSingle()','diagnosis_retry_claim_failed'):
-            self.assertIn(value,improve)
-        self.assertIn('v2_api_qa_autodiagnosis_unavailable',self.edge)
 
     def test_workflow_short_lived_oidc_and_schedule(self):
         schedules=re.findall(r"^\s*-\s*cron:\s*['\"]([^'\"]+)['\"]\s*$",self.flow,re.M)

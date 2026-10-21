@@ -1,0 +1,37 @@
+{
+  "baseline_python": {
+    "tests": 275,
+    "failures": 7,
+    "errors": 1
+  },
+  "baseline_deno": {
+    "passed": 345,
+    "failed": 2
+  },
+  "corrected_python": {
+    "passed": 267,
+    "failed": 0
+  },
+  "corrected_deno": {
+    "passed": 369,
+    "failed": 0
+  },
+  "external_provider_calls": 0,
+  "production_runtime_changed": false,
+  "source_isolation": "Tracked commit 79c047b in a detached worktree, with only the exact corrected test/workflow files overlaid; unrelated shared-workspace edits excluded.",
+  "changes": [
+    "Live financial-lock integration CLI now runs only when explicitly invoked, not during unittest discovery.",
+    "Existing executable planner/diagnosis/profile checks replace seven obsolete inline-source assertions, including the unsafe retry-after-lost-paid-request expectation.",
+    "Deployment fixture supplies the required authenticated role and distinguishes handler readiness from released-software functional verification.",
+    "Deno receives read access only to three pinned reference files; local EdgeRuntime declarations avoid dependency on a JSR type-only manifest. Real npm SDK imports remain."
+  ],
+  "corrected_file_sha256": {
+    ".github/workflows/sandy-api-contract-check.yml": "528a8b14ec8e857a9087d88305e076824f9369f033aeba2af60c225a80aee4ae",
+    "scripts/sandy/test_tenant_financial_redaction_lock.py": "841b6e28debaa9e552ec91d46b434d055b10113daba2978f5b06e34d25aff01d",
+    "scripts/sandy/test_v2_autonomous_api_qa.py": "c06faaf0caf2af8a9522a87ac5d7bfb457c97cbc13157177d886e0a431790e76",
+    "scripts/sandy/test_v2_examiner_design.py": "cebd1c010f96fe9a1aeed6e778217f6703811798ece6347be2b11e86601102f6",
+    "scripts/sandy/testing/edge_types_import_map.json": "a983f2429655c5fd171cfe67ba1c02363bf4d6f73cf962c25ccab16971086b51",
+    "supabase/functions/sandy-deployment-api/index_test.ts": "1fb3ea450ce925283639f2ae1e87395b38530de3b2db86be552324ce1628cdc5"
+  },
+  "github_ci_status": "Not yet claimed; new commit checks must pass."
+}
