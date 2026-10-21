@@ -672,6 +672,9 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .timelineRow.timelineHandlesActive .ganttBar .sandyGanttStart,
 .timelineRow.timelineHandlesActive .ganttBar .sandyGanttResize,
 .timelineRow.timelineHandlesActive .ganttBar .timelineLinkHandle{opacity:1!important;visibility:visible!important;pointer-events:auto!important}
+</style><style>
+.ganttBar.timelineOverdue{background:#c58b3e!important}
+.ganttBar.timelineOverdue:hover{background:#b57a2c!important}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -2183,8 +2186,9 @@ function timelineDrawDependencies(){
   const ar=x.getBoundingClientRect(),br=y.getBoundingClientRect();
   const predecessor=state.tasks.find(t=>t.id===dep.depends_on_id);
   const successor=state.tasks.find(t=>t.id===dep.task_id);
-  const finish=Date.parse(predecessor?.due_at||predecessor?.start_at||"");
-  const start=Date.parse(successor?.start_at||successor?.due_at||"");
+  const projected=localStorage.getItem("sandy_timeline_mode")!=="planned"?timelineProjection(state.tasks,state.dependencies):null;
+  const finish=projected?.get(dep.depends_on_id)?.to??Date.parse(predecessor?.due_at||predecessor?.start_at||"");
+  const start=projected?.get(dep.task_id)?.from??Date.parse(successor?.start_at||successor?.due_at||"");
   const rangeStart=Number(box.dataset.timelineStart),rangeMs=Number(box.dataset.timelineRange);
   const trackA=a.querySelector(".track")?.getBoundingClientRect();
   const trackB=b.querySelector(".track")?.getBoundingClientRect();
@@ -2300,6 +2304,31 @@ function timelineConnectFrom(source,e,handle){
  const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
  document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",stop,true);document.addEventListener("pointercancel",cancel,true);
 }
+function timelineProjection(tasks,dependencies,now=Date.now()){
+ const rows=new Map(tasks.map(t=>[t.id,t])),dates=new Map(),visiting=new Set();
+ const projectedNow=Math.ceil(now/900000)*900000;
+ function compute(id){
+  if(dates.has(id))return dates.get(id);
+  if(visiting.has(id))return null;
+  visiting.add(id);
+  const t=rows.get(id);if(!t){visiting.delete(id);return null}
+  const a=Date.parse(t.start_at||t.due_at||""),b=Date.parse(t.due_at||t.start_at||"");
+  if(!Number.isFinite(a)||!Number.isFinite(b)){visiting.delete(id);return null}
+  const originalDuration=Math.max(0,b-a),unfinished=!["completed","cancelled"].includes(t.status);
+  let from=a,to=b,overdue=unfinished&&b<now;
+  if(overdue){from=projectedNow;to=from+originalDuration}
+  if(unfinished){
+   for(const d of dependencies.filter(d=>d.task_id===id)){
+    const p=compute(d.depends_on_id);
+    if(p&&from<p.to){from=p.to;to=from+originalDuration}
+   }
+  }
+  const result={from,to,overdue,shifted:from!==a,originalFrom:a,originalTo:b};
+  dates.set(id,result);visiting.delete(id);return result;
+ }
+ for(const id of rows.keys())compute(id);
+ return dates;
+}
 function renderTimeline(){
  const box=$("timeline");box.replaceChildren();
  const today=new Date();today.setHours(0,0,0,0);
@@ -2313,7 +2342,15 @@ function renderTimeline(){
  const title=el("div","timelineHead");
  title.append(el("strong","",hourMode?"Daily project plan":dayMode?days+"-day project plan":(days/7)+"-week project plan"));
  title.append(el("span","","Drag to set dates · drag left/right edges to resize"));
+ const projectionMode=localStorage.getItem("sandy_timeline_mode")||"prospective";
+ const projectionDates=timelineProjection(state.tasks,state.dependencies);
  const zoom=el("div","timelineZoom");
+ for(const [value,label] of [["prospective","Prospective"],["planned","Planned"]]){
+  const control=el("button","timelineZoomButton"+(projectionMode===value?" selected":""),label);
+  control.type="button";control.setAttribute("aria-pressed",String(projectionMode===value));
+  control.onclick=()=>{localStorage.setItem("sandy_timeline_mode",value);renderTimeline()};
+  zoom.append(control);
+ }
  for(const [n,name] of [[1,"Day"],[7,"7 days"],[14,"14 days"],[28,"Month"],[84,"Quarter"],[168,"6 months"]]){
   const control=el("button","timelineZoomButton"+(n===days?" selected":""),name);
   control.type="button";control.setAttribute("aria-pressed",String(n===days));
@@ -2331,7 +2368,8 @@ function renderTimeline(){
   header.append(el("div","week",hourMode?String(i).padStart(2,"0")+":00":d.toLocaleDateString(undefined,dayMode?{weekday:"short",day:"numeric",month:"short"}:{month:"short",day:"numeric"})));
  }
  box.append(header);
- const dates=t=>({from:new Date(t.start_at||t.due_at),to:new Date(t.due_at||t.start_at)});
+ const dates=t=>{const p=projectionMode==="prospective"?projectionDates.get(t.id):null;return {from:new Date(p?.from??(t.start_at||t.due_at)),to:new Date(p?.to??(t.due_at||t.start_at))}};
+
  function row(t,depth){
   const children=childOf(t.id);
   const a=dates(t),hasDate=Boolean(t.start_at||t.due_at)&&Number.isFinite(a.from.getTime())&&Number.isFinite(a.to.getTime());
@@ -2389,9 +2427,10 @@ function renderTimeline(){
    const start=Math.max(0,(from-monday.getTime())/range)*100,end=Math.min(100,((to-monday.getTime())/range)*100);
    if(end>=0&&start<=100){
     const milestone=!t.start_at&&!!t.due_at;
-    const bar=el("div","ganttBar"+(milestone?" timelineMilestone":"")+(t.status==="completed"?" ganttDone":""));
+    const projection=projectionMode==="prospective"?projectionDates.get(t.id):null;
+    const bar=el("div","ganttBar"+(milestone?" timelineMilestone":"")+(t.status==="completed"?" ganttDone":"")+(projection?.overdue?" timelineOverdue":""));
     bar.style.left=Math.max(0,start)+"%";bar.style.width=milestone?"12px":Math.max(1.2,end-Math.max(0,start))+"%";
-    bar.title=t.title+" · "+dateLabel(a.from)+" → "+dateLabel(a.to);
+    bar.title=t.title+(projection?.overdue?" · Overdue / projected":"")+" · "+dateLabel(a.from)+" → "+dateLabel(a.to)+(projection?.shifted?" (original dates retained)":"");
     bar.style.touchAction="pan-y";bar.style.cursor="grab";
     const connector=el("span","timelineLinkHandle","");
     connector.title="Drag to another task to create a finish-to-start dependency";
@@ -2439,6 +2478,7 @@ function renderTimeline(){
     };
     bar.addEventListener("pointerdown",e=>{
       if(t.shared||e.button!==0)return;
+      if(projection?.shifted){toast("Switch to Planned to edit stored dates; this is a calculated projection.");return}
       gesture={pointerId:e.pointerId,x:e.clientX,from,to,mode:milestone?"move":e.target===resize?"resize":e.target===startHandle?"start":"move",width:track.getBoundingClientRect().width,moved:false};
       bar.classList.add("timelineDragging");line.classList.add("timelineHandlesActive");
       document.body.append(dragNote);
