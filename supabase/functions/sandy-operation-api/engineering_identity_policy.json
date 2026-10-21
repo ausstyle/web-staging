@@ -1,0 +1,30 @@
+{
+  "version": "engineering-fixtures-v1",
+  "email": "sandy-engineering-test@sandy-ai.internal",
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "repository": "ausstyle/web-staging",
+  "github_branch": "engineering/sandy-mcp-execution-fixture-20261021",
+  "github_path": "engineering-smoke/mcp-execution-20261021.txt",
+  "function_slug": "sandy-engineering-execution-fixture",
+  "function_source_sha256": [
+    "7f7dab7c87c5fc26299508e492921608e40b9a0705ef5a6026a94abc2be6118b",
+    "1805088b9242a560d7a46b1387e774128166fe41b63bbdcc8435d2c296b3e9ba"
+  ],
+  "function_console_markers": [
+    "sandy_engineering_execution_fixture_20261021_v1",
+    "sandy_engineering_execution_fixture_20261021_v2"
+  ],
+  "secret_name": "SANDY_MCP_ENGINEERING_TEST_20261021",
+  "migration_queries": [
+    "CREATE TABLE public.sandy_mcp_execution_fixture_20261021 (marker text PRIMARY KEY); ALTER TABLE public.sandy_mcp_execution_fixture_20261021 ENABLE ROW LEVEL SECURITY; REVOKE ALL ON public.sandy_mcp_execution_fixture_20261021 FROM anon,authenticated; INSERT INTO public.sandy_mcp_execution_fixture_20261021 VALUES ('sandy_mcp_fixture_end_to_end_20261021');",
+    "DROP TABLE public.sandy_mcp_execution_fixture_20261021;"
+  ],
+  "operations": [
+    "github.files.update",
+    "github.commit",
+    "supabase.deploy_edge_function",
+    "supabase.db.migrations.apply",
+    "supabase.functions.secrets.set",
+    "supabase.logs.query"
+  ]
+}

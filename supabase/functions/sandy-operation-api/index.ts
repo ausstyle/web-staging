@@ -1,3 +1,4 @@
+import { engineeringProofFor, engineeringRequest, engineeringTagged } from "./engineering_identity.ts";
 import {
   createClient,
   type SupabaseClient,
@@ -818,9 +819,19 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           executed: false,
         });
       }
+      const engineering = engineeringProofFor(credential);
+      if (engineering) {
+        // The delegated authority is never a fabricated user session: verify the
+        // actual non-owner workload JWT again before entering canonical routing.
+        const verified = await db.auth.getUser(bearer);
+        if (internalExecution || verified.error || !verified.data.user ||
+          verified.data.user.id !== engineering.machineUserId ||
+          verified.data.user.role !== "authenticated" || verified.data.user.is_anonymous === true ||
+          !engineeringTagged(verified.data.user)) return reply(401, { error: "invalid_engineering_auth_session", executed: false });
+      }
       delegation = credential;
       user = { id: credential.principalId };
-      if (credential.kind === "job_lease") {
+      if (credential.kind === "job_lease" && !engineering) {
         const execution = credential.boundExecution;
         if (
           !internalExecution || !execution ||
@@ -878,6 +889,22 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         return reply(401, { error: "invalid_identity" });
       }
       user = data.user;
+      if (engineeringTagged(data.user)) {
+        return engineeringRequest({
+          db,
+          entry: async (operation) => {
+            const selected = await db.from("sandy_operation_registry").select(registryColumns).eq("operation", operation).maybeSingle();
+            return !selected.error && isObject(selected.data) ? selected.data : null;
+          },
+          contractMatches: (entry) => enabledEntry(entry) && discoverableContract(entry),
+          argumentsValid: (schema, args) => schemaValid(schema, args) === true,
+          delegate: (forwarded, scopedCredential) => createOperationHandler({
+            ...dependencies,
+            resolveCredential: async (_request, token) => token === bearer && engineeringProofFor(scopedCredential)
+              ? scopedCredential as unknown as DelegatedIdentity : { status: 401, error: "invalid_engineering_auth_session" },
+          })(forwarded),
+        }, request, data.user as unknown as Record<string, unknown>, bearer);
+      }
     }
     if (!user && !customerKey) return reply(401, { error: "invalid_identity" });
     const { data: admin, error: roleError } = user
@@ -1124,7 +1151,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (delegation && requiresUserSession(operation)) {
+    if (delegation && !engineeringProofFor(delegation) && requiresUserSession(operation)) {
       return reply(403, {
         error: "operation_requires_user_session",
         executed: false,

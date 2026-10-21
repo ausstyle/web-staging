@@ -110,6 +110,7 @@ type Options = {
   authErrorStatus?: number;
   authThrow?: boolean;
   authRole?: string;
+  authMetadata?: Row;
   anonymous?: boolean;
   roleError?: boolean;
   tenant?: string | null;
@@ -157,6 +158,7 @@ function harness(options: Options = {}) {
             user: options.authError ? null : {
               id: options.actorId ?? "controller-test-user",
               role: options.authRole ?? "authenticated",
+              ...(options.authMetadata ? { app_metadata: options.authMetadata } : {}),
               is_anonymous: options.anonymous === true,
               ...(options.tenant !== undefined ||
                   options.memoryTenant !== undefined
@@ -6365,4 +6367,18 @@ Deno.test("Composio actual customer handler owns admission binding and finish wh
     "sandy_composio_read_finish",
   ]);
   assert.deepEqual([h.rpcCalls.length, h.calls.length, providers], [0, 1, 1]);
+});
+
+Deno.test("dedicated engineering identity never falls back to broad owner access when its policy is absent", async () => {
+  const machine="10000000-0000-4000-8000-000000000001",session="10000000-0000-4000-8000-000000000003";
+  const metadata={sandy_engineering_test:true,sandy_engineering_epoch:1};
+  const jwt="synthetic."+btoa(JSON.stringify({sub:machine,aud:"authenticated",role:"authenticated",session_id:session,exp:Date.now()/1000+3600,app_metadata:metadata}))+".signature";
+  const h=harness({actorId:machine,role:"owner",authMetadata:metadata,rpcHandler:()=>({ok:false,error:"engineering_identity_not_authorized"})});
+  const r=await h.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer "+jwt},body:JSON.stringify({action:"execute",operation:"github.files.update",arguments:{}})}));
+  assert.equal(r.status,403);assert.equal((await r.json()).error,"engineering_identity_not_authorized");assert.equal(h.calls.length,0);
+});
+Deno.test("tagged workload still requires normal Auth verification before any scoped policy RPC", async () => {
+  const h=harness({authMetadata:{sandy_engineering_test:true,sandy_engineering_epoch:1},authError:true});
+  const r=await h.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer expired.identity.token"},body:JSON.stringify({action:"list"})}));
+  assert.equal(r.status,401);assert.equal(h.calls.length,0);assert.equal(h.rpcCalls.length,0);
 });
