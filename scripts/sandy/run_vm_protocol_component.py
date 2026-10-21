@@ -36,7 +36,7 @@ def run(output):
     if status not in (200, 201):
         raise RuntimeError("vm_protocol_component_failed; inspect protected evidence file")
     evidence = body[0]["evidence"]
-    if evidence.get("passed") is not True or evidence.get("checks") != 53:
+    if evidence.get("passed") is not True or evidence.get("checks") != 55:
         raise RuntimeError("vm_protocol_expected_component_checks_missing")
     report["independent_cleanup"] = runtime._sql("SELECT to_regclass('public.sandy_vm_protocol_contracts') IS NULL AS candidate_tables_absent, (SELECT count(*) FROM auth.users WHERE email LIKE 'sandy-vm-protocol-rollback-%@example.invalid') AS fixture_users", True)
     if report["independent_cleanup"] != [{"candidate_tables_absent": True, "fixture_users": 0}]:

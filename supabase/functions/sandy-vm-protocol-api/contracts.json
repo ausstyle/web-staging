@@ -10,7 +10,7 @@
     "api_key_delegable": false,
     "requires_real_user_session": true,
     "owner_only": true,
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "input_schema": {
       "type": "object",
       "properties": {
@@ -25,6 +25,10 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 4096
+        },
+        "include_output": {
+          "type": "boolean",
+          "default": false
         }
       },
       "required": [
@@ -43,7 +47,7 @@
           "const": "gcp.vm.ssh.exec"
         },
         "contract_version": {
-          "const": "1.0.0"
+          "const": "1.1.0"
         },
         "request_state": {
           "enum": [
@@ -152,6 +156,16 @@
                   "type": "null"
                 }
               ]
+            },
+            "stdout_base64": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 87384
+            },
+            "stderr_base64": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 87384
             }
           },
           "required": [
@@ -194,7 +208,7 @@
       ],
       "additionalProperties": false
     },
-    "contract_sha256": "c9056f5b8903d39f0339e9a631f9825ad7e0fbd3810446deeef75206e7bf5a64"
+    "contract_sha256": "05910cbdbab51142c8c8323dc4a51050bca8b7290f388d1b966956c3d1587ffd"
   },
   {
     "operation": "gcp.vm.winrm.exec",
@@ -207,7 +221,7 @@
     "api_key_delegable": false,
     "requires_real_user_session": true,
     "owner_only": true,
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "input_schema": {
       "type": "object",
       "properties": {
@@ -218,6 +232,10 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 4096
+        },
+        "include_output": {
+          "type": "boolean",
+          "default": false
         }
       },
       "required": [
@@ -236,7 +254,7 @@
           "const": "gcp.vm.winrm.exec"
         },
         "contract_version": {
-          "const": "1.0.0"
+          "const": "1.1.0"
         },
         "request_state": {
           "enum": [
@@ -345,6 +363,16 @@
                   "type": "null"
                 }
               ]
+            },
+            "stdout_base64": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 87384
+            },
+            "stderr_base64": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 87384
             }
           },
           "required": [
@@ -387,7 +415,7 @@
       ],
       "additionalProperties": false
     },
-    "contract_sha256": "89317a6ab8be8057d192ba801565136ea901cd6da99d1e2310266868439f71d1"
+    "contract_sha256": "b87f36d3ffbaaeffbd16ba9ae7fd3d5446f728b1a666db074fb59d07de29437d"
   },
   {
     "operation": "cloud.vm.exec",
@@ -400,7 +428,7 @@
     "api_key_delegable": false,
     "requires_real_user_session": true,
     "owner_only": true,
-    "contract_version": "1.0.0",
+    "contract_version": "1.1.0",
     "input_schema": {
       "type": "object",
       "properties": {
@@ -421,6 +449,10 @@
           "type": "string",
           "format": "uuid",
           "pattern": "^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$"
+        },
+        "include_output": {
+          "type": "boolean",
+          "default": false
         }
       },
       "required": [
@@ -441,7 +473,7 @@
           "const": "cloud.vm.exec"
         },
         "contract_version": {
-          "const": "1.0.0"
+          "const": "1.1.0"
         },
         "request_state": {
           "enum": [
@@ -550,6 +582,16 @@
                   "type": "null"
                 }
               ]
+            },
+            "stdout_base64": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 87384
+            },
+            "stderr_base64": {
+              "type": "string",
+              "minLength": 0,
+              "maxLength": 87384
             }
           },
           "required": [
@@ -592,7 +634,7 @@
       ],
       "additionalProperties": false
     },
-    "contract_sha256": "06df301ba8bf0ae8203f4da6b884cae996703ce4cc40f6c30052e85ecb443554"
+    "contract_sha256": "48889661d1ba06c6e3694d964e1668cba8a1ba11eab1584dfc33f6dc3688e4c7"
   },
   {
     "operation": "gcp.vm.protocol_bindings.enroll",

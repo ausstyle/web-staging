@@ -285,7 +285,7 @@ GRANT EXECUTE ON FUNCTION public.sandy_vm_protocol_save_result(uuid,uuid,text,te
 CREATE FUNCTION public.sandy_vm_protocol_finish(p_admission_id uuid,p_outcome text,p_result_sha256 text,p_output_canonical text) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
 DECLARE a public.sandy_api_execution_admissions;c public.sandy_vm_protocol_contracts;proof public.sandy_vm_protocol_admission_contexts;arguments text;result jsonb;expected jsonb;outdoc jsonb;o public.sandy_vm_protocol_outputs;material text;
 BEGIN
- IF auth.role() IS DISTINCT FROM 'service_role' OR p_outcome IS NULL OR p_outcome NOT IN('succeeded','failed','unknown') OR p_result_sha256 IS NULL OR p_result_sha256 !~ '^[a-f0-9]{64}$' OR p_output_canonical IS NULL OR octet_length(p_output_canonical)>12000 OR encode(extensions.digest(p_output_canonical,'sha256'),'hex') IS DISTINCT FROM p_result_sha256 THEN RAISE EXCEPTION 'protocol_exact_receipt_required';END IF;
+ IF auth.role() IS DISTINCT FROM 'service_role' OR p_outcome IS NULL OR p_outcome NOT IN('succeeded','failed','unknown') OR p_result_sha256 IS NULL OR p_result_sha256 !~ '^[a-f0-9]{64}$' OR p_output_canonical IS NULL OR octet_length(p_output_canonical)>110000 OR encode(extensions.digest(p_output_canonical,'sha256'),'hex') IS DISTINCT FROM p_result_sha256 THEN RAISE EXCEPTION 'protocol_exact_receipt_required';END IF;
  SELECT * INTO a FROM public.sandy_api_execution_admissions WHERE id=p_admission_id FOR UPDATE;
  SELECT * INTO c FROM public.sandy_vm_protocol_contracts WHERE operation=a.operation;
  IF a.id IS NULL OR c.operation IS NULL THEN RAISE EXCEPTION 'protocol_exact_receipt_required';END IF;
@@ -312,13 +312,16 @@ BEGIN
   IF o.id IS NULL OR o.expires_at<=clock_timestamp() OR o.operation IS DISTINCT FROM a.operation OR o.input_sha256 IS DISTINCT FROM a.input_sha256 OR o.scope_sha256 IS DISTINCT FROM a.scope_sha256
   OR material IS NULL OR encode(extensions.digest(decode(material,'base64'),'sha256'),'hex') IS DISTINCT FROM o.payload_sha256 THEN RAISE EXCEPTION 'native_protocol_output_readback_required';END IF;
   result:=o.receipt_metadata||jsonb_build_object('custody_id',o.id,'output_sha256',o.payload_sha256);
+  IF arguments::jsonb->>'include_output'='true' THEN
+   result:=result||jsonb_build_object('stdout_base64',convert_from(decode(material,'base64'),'UTF8')::jsonb->>'stdout_base64','stderr_base64',convert_from(decode(material,'base64'),'UTF8')::jsonb->>'stderr_base64');
+  END IF;
   IF (result->>'command_succeeded')::boolean IS DISTINCT FROM (p_outcome='succeeded') THEN RAISE EXCEPTION 'native_protocol_exit_outcome_required';END IF;
  ELSE
   IF p_outcome IS DISTINCT FROM 'succeeded' THEN RAISE EXCEPTION 'native_protocol_metadata_outcome_required';END IF;
   SELECT m.result INTO result FROM public.sandy_vm_protocol_metadata_receipts m WHERE m.admission_id=a.id;
   IF result IS NULL THEN RAISE EXCEPTION 'native_protocol_metadata_readback_required';END IF;
  END IF;
- expected:=jsonb_build_object('ok',p_outcome='succeeded','operation',a.operation,'contract_version','1.0.0','request_state',CASE WHEN p_outcome='failed' THEN 'failed' WHEN a.is_mutation THEN 'completed' ELSE 'observed' END,'executed',true,'admission_id',a.id,'result',result,'reconciliation_required',false);
+ expected:=jsonb_build_object('ok',p_outcome='succeeded','operation',a.operation,'contract_version',c.output_schema->'properties'->'contract_version'->>'const','request_state',CASE WHEN p_outcome='failed' THEN 'failed' WHEN a.is_mutation THEN 'completed' ELSE 'observed' END,'executed',true,'admission_id',a.id,'result',result,'reconciliation_required',false);
  IF p_outcome='failed' THEN expected:=expected||jsonb_build_object('error','remote_command_failed');END IF;
  IF outdoc IS DISTINCT FROM expected THEN RAISE EXCEPTION 'native_protocol_exact_output_required';END IF;
  IF NOT a.is_mutation OR p_outcome='failed' THEN RETURN public.sandy_api_finish_execution(a.id,p_outcome,NULL,NULL,p_result_sha256);END IF;

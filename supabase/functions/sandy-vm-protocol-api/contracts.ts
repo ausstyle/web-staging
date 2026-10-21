@@ -68,12 +68,12 @@ const define = (
     api_key_delegable: false,
     requires_real_user_session: true,
     owner_only: true,
-    contract_version: "1.0.0",
+    contract_version: ["ssh", "winrm", "registered_exec"].includes(kind) ? "1.1.0" : "1.0.0",
     input_schema: input,
     output_schema: object({
       ok: { type: "boolean" },
       operation: { const: operation },
-      contract_version: { const: "1.0.0" },
+      contract_version: { const: ["ssh", "winrm", "registered_exec"].includes(kind) ? "1.1.0" : "1.0.0" },
       request_state: { enum: ["completed", "failed", "observed", "accepted"] },
       executed: { const: true },
       admission_id: uuid,
@@ -92,7 +92,8 @@ const define = (
     ]),
   };
 };
-const commandInput = object({ vm_name: vm, command: str(4096) });
+const includeOutput = { type: "boolean", default: false };
+const commandInput = object({ vm_name: vm, command: str(4096), include_output: includeOutput }, ["vm_name", "command"]);
 const executionResult = object({
   vm_name: vm,
   instance_id: str(30),
@@ -112,11 +113,13 @@ const executionResult = object({
   credential_cleanup_verified: nullable({ const: true }),
   shell_deleted: nullable({ const: true }),
 });
+(executionResult.properties as Obj).stdout_base64 = str(87384, 0);
+(executionResult.properties as Obj).stderr_base64 = str(87384, 0);
 define("gcp.vm.ssh.exec", "ssh", commandInput, executionResult, true);
 define(
   "gcp.vm.winrm.exec",
   "winrm",
-  object({ vm_name: { const: "sandy-windows" }, command: str(4096) }),
+  object({ vm_name: { const: "sandy-windows" }, command: str(4096), include_output: includeOutput }, ["vm_name", "command"]),
   executionResult,
   true,
 );
@@ -128,7 +131,8 @@ define(
     zone: { const: ZONE },
     instance: vm,
     command_ref: uuid,
-  }),
+    include_output: includeOutput,
+  }, ["project_id", "zone", "instance", "command_ref"]),
   executionResult,
   true,
   "infrastructure:execute",

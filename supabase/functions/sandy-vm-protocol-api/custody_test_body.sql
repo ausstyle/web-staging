@@ -27,11 +27,16 @@ CREATE FUNCTION pg_temp.vm_metadata(c jsonb,p jsonb DEFAULT NULL) RETURNS jsonb 
 CREATE FUNCTION pg_temp.vm_resolve(c jsonb,command_sha text DEFAULT NULL,recipe_sha text DEFAULT NULL) RETURNS jsonb LANGUAGE sql AS $$SELECT public.sandy_vm_protocol_resolve_execution((c->>'actor_id')::uuid,(c->>'admission_id')::uuid,c->>'operation',c->>'canonical_arguments',c->>'canonical_scope',command_sha,recipe_sha)$$;
 CREATE FUNCTION pg_temp.vm_claim(c jsonb) RETURNS jsonb LANGUAGE sql AS $$SELECT public.sandy_vm_protocol_claim_execution((c->>'actor_id')::uuid,(c->>'admission_id')::uuid,c->>'operation',c->>'canonical_arguments',c->>'canonical_scope')$$;
 CREATE FUNCTION pg_temp.vm_save(c jsonb,r jsonb) RETURNS jsonb LANGUAGE sql AS $$SELECT public.sandy_vm_protocol_save_result((c->>'actor_id')::uuid,(c->>'admission_id')::uuid,c->>'operation',c->>'canonical_arguments',c->>'canonical_scope',r)$$;
-CREATE FUNCTION pg_temp.vm_finish_document(c jsonb) RETURNS text LANGUAGE plpgsql AS $$DECLARE result jsonb;mutation boolean;BEGIN
+CREATE FUNCTION pg_temp.vm_finish_document(c jsonb) RETURNS text LANGUAGE plpgsql AS $$DECLARE result jsonb;mutation boolean;contract_version text;material text;BEGIN
  SELECT m.result INTO result FROM public.sandy_vm_protocol_metadata_receipts m WHERE m.admission_id=(c->>'admission_id')::uuid;
  IF result IS NULL THEN SELECT receipt_metadata||jsonb_build_object('custody_id',id,'output_sha256',payload_sha256) INTO result FROM public.sandy_vm_protocol_outputs WHERE admission_id=(c->>'admission_id')::uuid;END IF;
+ IF c->'arguments'->>'include_output'='true' THEN
+  SELECT d.decrypted_secret INTO material FROM public.sandy_vm_protocol_outputs o JOIN vault.decrypted_secrets d ON d.id=o.vault_secret_id WHERE o.admission_id=(c->>'admission_id')::uuid;
+  result:=result||jsonb_build_object('stdout_base64',convert_from(decode(material,'base64'),'UTF8')::jsonb->>'stdout_base64','stderr_base64',convert_from(decode(material,'base64'),'UTF8')::jsonb->>'stderr_base64');
+ END IF;
+ SELECT output_schema->'properties'->'contract_version'->>'const' INTO contract_version FROM public.sandy_vm_protocol_contracts WHERE operation=c->>'operation';
  SELECT is_mutation INTO mutation FROM public.sandy_api_execution_admissions WHERE id=(c->>'admission_id')::uuid;
- RETURN jsonb_build_object('ok',true,'operation',c->>'operation','contract_version','1.0.0','request_state',CASE WHEN mutation THEN 'completed' ELSE 'observed' END,'executed',true,'admission_id',c->>'admission_id','result',result,'reconciliation_required',false)::text;END $$;
+ RETURN jsonb_build_object('ok',true,'operation',c->>'operation','contract_version',contract_version,'request_state',CASE WHEN mutation THEN 'completed' ELSE 'observed' END,'executed',true,'admission_id',c->>'admission_id','result',result,'reconciliation_required',false)::text;END $$;
 CREATE FUNCTION pg_temp.vm_finish(c jsonb) RETURNS void LANGUAGE plpgsql AS $$DECLARE r jsonb;outdoc text:=pg_temp.vm_finish_document(c);BEGIN
  r:=public.sandy_vm_protocol_finish((c->>'admission_id')::uuid,'succeeded',encode(extensions.digest(outdoc,'sha256'),'hex'),outdoc);IF r->>'ok' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'VM finish refused: %',r;END IF;END $$;
 DO $fixture$
@@ -92,7 +97,7 @@ BEGIN
  bad:=jsonb_set(pg_temp.vm_finish_document(execution)::jsonb,'{result,stdout_sha256}',to_jsonb(repeat('f',64)))::text;
  denied:=false;BEGIN PERFORM public.sandy_vm_protocol_finish((execution->>'admission_id')::uuid,'succeeded',encode(extensions.digest(bad,'sha256'),'hex'),bad);EXCEPTION WHEN OTHERS THEN denied:=SQLERRM='native_protocol_exact_output_required';END;PERFORM pg_temp.vm_check('native_output_finish_tamper_refused',denied);
  PERFORM pg_temp.vm_finish(execution);
- c:=pg_temp.vm_admit('gcp.vm.ssh.exec','{"vm_name":"sandy-video","command":"printf inline"}');PERFORM pg_temp.vm_consume(c);PERFORM pg_temp.vm_check('inline_ssh_exact_command',pg_temp.vm_resolve(c)->>'command'='printf inline');
+ c:=pg_temp.vm_admit('gcp.vm.ssh.exec','{"vm_name":"sandy-video","command":"printf inline","include_output":true}');PERFORM pg_temp.vm_consume(c);PERFORM pg_temp.vm_check('inline_ssh_exact_command',pg_temp.vm_resolve(c)->>'command'='printf inline');
  -- Exercise a real nonzero native receipt: unknown must never become success.
  r:=pg_temp.vm_resolve(c);PERFORM pg_temp.vm_claim(c);
  material:=jsonb_build_object('protocol','ssh2','exit_code',1,'command_sha256',r->>'command_sha256','stdout_base64','','stderr_base64','');bytes:=convert_to(material::text,'UTF8');
@@ -104,6 +109,10 @@ BEGIN
  PERFORM pg_temp.vm_check('unknown_with_native_result_refused',denied);
  PERFORM pg_temp.vm_check('unknown_cannot_claim_success',(SELECT state='consumed' FROM public.sandy_api_execution_admissions WHERE id=(c->>'admission_id')::uuid));
  bad:=(bad::jsonb||jsonb_build_object('request_state','failed','error','remote_command_failed'))::text;
+ PERFORM pg_temp.vm_check('explicit_authorized_output_matches_private_capture',bad::jsonb->'result'->>'stdout_base64'='' AND bad::jsonb->'result'->>'stderr_base64'='');
+ denied:=false;BEGIN PERFORM public.sandy_vm_protocol_finish((c->>'admission_id')::uuid,'failed',encode(extensions.digest(jsonb_set(bad::jsonb,'{result,stdout_base64}','"Zm9yZ2Vk"')::text,'sha256'),'hex'),jsonb_set(bad::jsonb,'{result,stdout_base64}','"Zm9yZ2Vk"')::text);EXCEPTION WHEN OTHERS THEN denied:=SQLERRM='native_protocol_exact_output_required';END;
+ PERFORM pg_temp.vm_check('forged_authorized_output_refused',denied);
+
  PERFORM public.sandy_vm_protocol_finish((c->>'admission_id')::uuid,'failed',encode(extensions.digest(bad,'sha256'),'hex'),bad);
  PERFORM pg_temp.vm_check('known_nonzero_command_failed',(SELECT state='failed' AND provider_http_status IS NULL FROM public.sandy_api_execution_admissions WHERE id=(c->>'admission_id')::uuid));
  c:=pg_temp.vm_admit('gcp.vm.ssh.exec','{"vm_name":"sandy-video","command":"printf uncertain"}');PERFORM pg_temp.vm_consume(c);PERFORM pg_temp.vm_claim(c);

@@ -220,5 +220,8 @@ export async function executeRegisteredProtocol(
     ...publicMetadata,
     custody_id: receipt.custody_id,
     output_sha256: payloadSha,
+    ...(JSON.parse(context.argumentsCanonical).include_output === true ? {
+      stdout_base64: encode64(result.stdout), stderr_base64: encode64(result.stderr),
+    } : {}),
   };
 }

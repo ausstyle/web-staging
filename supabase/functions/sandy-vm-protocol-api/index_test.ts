@@ -274,6 +274,20 @@ Deno.test("nine typed original/protocol metadata handlers preserve exact grant i
     assert(!JSON.stringify(body).includes(command));
   }
 });
+Deno.test("explicit approved native output is returned through the same execution contract and digest-bound receipt", async () => {
+  for (const id of ["gcp.vm.ssh.exec", "gcp.vm.winrm.exec", "cloud.vm.exec"]) {
+    const h = await harness();
+    const response = await h.call(id, { ...argsFor(id), include_output: true });
+    const body = await response.json();
+    assert.equal(response.status, 200);
+    assert.equal(body.contract_version, "1.1.0");
+    assert.equal(new TextDecoder().decode(decode64(body.result.stdout_base64)), "private stdout");
+    assert.equal(body.result.stderr_base64, "");
+    assert.equal(h.finished[0].result_sha256, await argumentDigest(body));
+    assert.equal(h.consumed[0].input_sha256, await argumentDigest({ ...argsFor(id), include_output: true }));
+    assert(!JSON.stringify(body).includes("synthetic-private"));
+  }
+});
 Deno.test("compiled owner policy cannot drift approval, delegation, session, schema or handler metadata", () => {
   const op = protocolContracts["gcp.vm.ssh.exec"],
     row = {
