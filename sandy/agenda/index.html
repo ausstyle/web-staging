@@ -1881,30 +1881,48 @@ async function timelineDropDependency(task,event){
  return true;
 }
 function timelineDependentSchedule(rootId,newStart,newEnd){
+ const root=state.tasks.find(t=>t.id===rootId);
+ if(!root)throw Error("Task not found");
  const updates=new Map([[rootId,{start_at:new Date(newStart).toISOString(),due_at:new Date(newEnd).toISOString()}]]);
- const visited=new Set([rootId]),queue=[rootId];
+ const visiting=new Set(),done=new Set();
+ function enforce(id){
+  if(done.has(id))return;
+  if(visiting.has(id))throw Error("Circular dependencies are not allowed");
+  visiting.add(id);
+  const task=state.tasks.find(t=>t.id===id);
+  const existing=updates.get(id);
+  let start=Date.parse(existing?.start_at||task?.start_at||task?.due_at||"");
+  let end=Date.parse(existing?.due_at||task?.due_at||task?.start_at||"");
+  if(!Number.isFinite(start)||!Number.isFinite(end)){visiting.delete(id);done.add(id);return}
+  for(const dep of state.dependencies.filter(d=>d.task_id===id)){
+   if(dep.depends_on_id===id)throw Error("A task cannot depend on itself");
+   enforce(dep.depends_on_id);
+   const parent=state.tasks.find(t=>t.id===dep.depends_on_id);
+   const finish=Date.parse(updates.get(dep.depends_on_id)?.due_at||parent?.due_at||parent?.start_at||"");
+   if(Number.isFinite(finish)&&start<finish){
+    const duration=Math.max(0,end-start);start=finish;end=start+duration;
+   }
+  }
+  if(!task.shared&&(existing||start!==Date.parse(task.start_at||task.due_at||""))){
+   updates.set(id,{start_at:new Date(start).toISOString(),due_at:new Date(end).toISOString()});
+  }
+  visiting.delete(id);done.add(id);
+ }
+ // Evaluate every descendant in dependency order; multiple predecessors use the latest finish.
+ const affected=new Set([rootId]),queue=[rootId];
  while(queue.length){
-  const from=queue.shift(),parentDates=updates.get(from);
-  const predecessor=state.tasks.find(t=>t.id===from);
-  const oldEnd=new Date(predecessor?.due_at||predecessor?.start_at);
-  const newEndTime=new Date(parentDates.due_at).getTime();
-  if(!Number.isFinite(oldEnd.getTime()))continue;
-  const shift=newEndTime-oldEnd.getTime();
-  for(const d of state.dependencies.filter(d=>d.depends_on_id===from)){
-   if(visited.has(d.task_id))continue;
-   const child=state.tasks.find(t=>t.id===d.task_id);
-   if(!child||child.shared||(!child.start_at&&!child.due_at))continue;
-   visited.add(child.id);queue.push(child.id);
-   const start=new Date(child.start_at||child.due_at).getTime();
-   const end=new Date(child.due_at||child.start_at).getTime();
-   // A dependency is finish-to-start: preserve duration and any existing scheduling gap.
-   updates.set(child.id,{start_at:new Date(start+shift).toISOString(),due_at:new Date(end+shift).toISOString()});
+  const id=queue.shift();
+  for(const d of state.dependencies.filter(d=>d.depends_on_id===id)){
+   if(!affected.has(d.task_id)){affected.add(d.task_id);queue.push(d.task_id)}
   }
  }
+ for(const id of affected)enforce(id);
  return updates;
 }
 async function timelineSaveSchedule(t,start,end){
- const updates=timelineDependentSchedule(t.id,start,end);
+ let updates;
+ try{updates=timelineDependentSchedule(t.id,start,end)}
+ catch(e){toast("Schedule not changed: "+e.message,true);return false}
  const snapshots=new Map();
  for(const [id,change] of updates){
   const task=state.tasks.find(x=>x.id===id);
@@ -1913,11 +1931,12 @@ async function timelineSaveSchedule(t,start,end){
  renderTimeline();
  try{
   for(const [id,change] of updates)await api("update",{id,...change});
-  toast(updates.size>1?"Schedule saved; "+(updates.size-1)+" dependent task(s) moved":"Task schedule saved");
+  toast(updates.size>1?"Schedule saved; "+(updates.size-1)+" dependent task(s) updated":"Task schedule saved");
+  return true;
  }catch(e){
-  // A partial API failure must not be reported as a successful linked update.
   toast("Linked scheduling was not fully saved: "+e.message+". Refresh to verify dates.",true);
   await load().catch(()=>{for(const [id,old] of snapshots){const task=state.tasks.find(x=>x.id===id);if(task)Object.assign(task,old)}renderTimeline()});
+  return false;
  }
 }
 let dependencyContextMenu=null;
@@ -2060,12 +2079,18 @@ function timelineConnectFrom(source,e,handle){
    // Align the successor with its predecessor unless it has a deliberate later start.
    const finish=Date.parse(source.due_at||source.start_at||"");
    const begin=Date.parse(task.start_at||task.due_at||"");
-   if(Number.isFinite(finish)&&Number.isFinite(begin)&&begin<finish){
-    const duration=Math.max(0,Date.parse(task.due_at||task.start_at)-begin);
-    await timelineSaveSchedule(task,finish,finish+duration);
-   }else renderTimeline();
+   if(!Number.isFinite(finish)){throw Error("Predecessor needs a finish date before a dependency can be created")}
+   if(!Number.isFinite(begin)){throw Error("Dependent task needs a scheduled date")}
+   const duration=Math.max(0,Date.parse(task.due_at||task.start_at)-begin);
+   const alignedStart=Math.max(begin,finish);
+   const saved=await timelineSaveSchedule(task,alignedStart,alignedStart+duration);
+   if(!saved)throw Error("Dependent schedule could not be saved");
    toast("Finish-to-start dependency linked");
-  }catch(err){toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})}
+  }catch(err){
+   // A failed schedule must not leave a persisted, misleading dependency link.
+   try{await api("dependency",{task_id:task.id,depends_on_id:source.id,remove:true})}catch(rollbackError){console.warn("Dependency rollback failed",rollbackError)}
+   toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})
+  }
  };
  const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
  document.addEventListener("pointermove",move,true);document.addEventListener("pointerup",stop,true);document.addEventListener("pointercancel",cancel,true);
