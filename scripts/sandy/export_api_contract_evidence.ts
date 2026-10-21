@@ -38,6 +38,7 @@ import { sensitiveContracts } from "../../supabase/functions/sandy-provider-sens
 import { boundOperations } from "../../supabase/functions/sandy-provider-bound-api/gateway.ts";
 import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts";
 import { workerDiagnosisContract, workerDiagnosisOperation } from "../../supabase/functions/_shared/sandy-agent-operations/worker_diagnosis_contract.ts";
+import { missionWorkProductContract, missionWorkProductOperation } from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_contract.ts";
 import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
 import { tenantExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/download.ts";
 import { contentExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/content_download.ts";
@@ -318,6 +319,13 @@ add(
   { [workerDiagnosisOperation]: workerDiagnosisContract },
   `internal:${workerDiagnosisOperation}@1.0.0`,
   "_shared/sandy-agent-operations/worker_diagnosis.ts",
+);
+add(
+  "internal_mission_work_product",
+  "_shared/sandy-agent-operations/worker_mission_contract.ts",
+  { [missionWorkProductOperation]: missionWorkProductContract },
+  `internal:${missionWorkProductOperation}@1.0.0`,
+  "_shared/sandy-agent-operations/worker_mission.ts",
 );
 for (const group of groups) {
   for (const [operation, value] of Object.entries(group.contracts)) {
