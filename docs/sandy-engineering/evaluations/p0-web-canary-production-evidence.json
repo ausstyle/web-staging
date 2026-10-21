@@ -182,5 +182,18 @@
       "source_unchanged": true,
       "bundle_sha256": "4e789d8f128641466185bb2b6cae7df23ed38f7d17ac421b398c4b7dcdba2dd6"
     }
+  },
+  "judge_failure_diagnosis": {
+    "integration_token_binding_present": false,
+    "provider_key_binding_present": true,
+    "existing_gateway_accepts_service_auth": true,
+    "full_cycle_caller_uses_wrong_bearer_type": true,
+    "new_secret_needed": false,
+    "prepared_fix_commit": "5eb1f2c84086db4a067b484cd3de7c5ce6cec182",
+    "prepared_fix_tests_passed": 18,
+    "prepared_fix_deployed": false,
+    "new_owner_request": "p0-examiner-gateway-owner-request.json",
+    "thread_review_has_same_legacy_issue": true,
+    "thread_review_auth_or_scope_not_changed": true
   }
 }

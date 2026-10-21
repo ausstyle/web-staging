@@ -59,10 +59,15 @@
     {
       "test": "independent quality judgments",
       "status": "blocked",
-      "blocker": "All 12 existing full-cycle judge executions returned Independent judge failed; the upstream cause is unverified. Core customer runtime calls succeeded.",
+      "blocker": "The optional integration-token binding is absent. The full-cycle judge sends a provider key to the gateway, whose deployed contract requires the service credential or integration token. The existing core runtime succeeds through service authentication.",
       "blocked_by_controller_token": false,
       "new_secret_requested": false,
-      "quality_pass_claimed": false
+      "quality_pass_claimed": false,
+      "cause_class": "incorrect caller authentication for the existing gateway",
+      "prepared_fix_commit": "5eb1f2c84086db4a067b484cd3de7c5ce6cec182",
+      "focused_tests_passed": 18,
+      "deployment_status": "awaiting separate scoped owner release authorization for sandy-examiner-full-cycle; not covered by the pinned web canary approval",
+      "new_secret_required": false
     }
   ],
   "full_60_case_customer_quality_gate_passed": false,

@@ -1,0 +1,25 @@
+{
+  "action": "register",
+  "title": "Repair fixed-pilot Examiner gateway authentication without optional secrets",
+  "problem": "Every current fixed-pilot independent quality judgment fails before gateway execution because it sends a provider key as its bearer and the optional integration-token binding is absent. The existing gateway accepts the already available server service credential.",
+  "expected_behavior": "Release 5eb1f2c84086db4a067b484cd3de7c5ce6cec182; manifest 52e99810ee1d610c794bc9628b89fd3d19240739045ae12f59b63dec0bd512d4. Only sandy-examiner-full-cycle changes from observed version 13, using its existing server service identity for the normal fixed gateway contract. No other function, channel, pilot or model policy is changed.",
+  "change_purpose": "Unblock real post-canary independent quality testing using existing valid credentials and normal gateway authorization.",
+  "feature_improvement": "Remove an unnecessary caller-side provider-key dependency, preserve the existing fixed model/prompt and retain failed/incomplete/malformed judgments as needs_review with redacted failure stages.",
+  "scope": [
+    "github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021",
+    "sandy-examiner-full-cycle"
+  ],
+  "risk": "normal",
+  "idempotency_key": "sandy-p0-examiner-gateway-service-auth-5eb1f2c84086",
+  "regression_rules": [
+    "Preserve the registered consenting pilot, OIDC workflow restrictions, model and prompt and token budget.",
+    "Do not issue customer/owner tokens, add an integration secret or broaden gateway/Controller permissions.",
+    "Retain historical quality failures; never claim an incomplete or failed judge as a pass.",
+    "Hold the existing component lease and reject changed deployed source/version."
+  ],
+  "acceptance_criteria": [
+    "18 focused tests and offline entrypoint type check pass; verify all three transitive local modules against the immutable manifest.",
+    "Verify the existing full-pilot workflow executes actual judgments without the former gateway-auth denial; classify other failures explicitly.",
+    "Capture v13 rollback source and preserve V4/workspace source, customer data and all communications."
+  ]
+}

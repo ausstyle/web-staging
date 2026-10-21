@@ -187,8 +187,17 @@ The existing Management credential performed the specifically approved source
 uploads; no customer/owner session was minted and no grant was broadened.
 The expired personal token no longer blocks this canary release. Customer browser
 acceptance remains unrun: the optional session was skipped and no substitute
-principal is used. The independent judge failure is a separate unresolved test
-infrastructure issue, not evidence of an expired Controller credential.
+principal is used. The independent judge failure is separate from the expired Controller credential.
+The optional integration-token binding is absent, and the full-cycle caller sends
+a provider key to a gateway that requires a service credential or integration token.
+The fix reuses the gateway's existing service-auth path, without another secret,
+model/prompt change or authorization expansion. Commit `5eb1f2c` has 18 focused
+passing tests and an offline entrypoint type check. It remains undeployed pending
+a separately scoped owner approval; the existing web approval pins different source
+and components. See the [exact owner request](evaluations/p0-examiner-gateway-owner-request.json)
+and [three-module source manifest](evaluations/p0-examiner-gateway-source-manifest.json).
+The historical thread reviewer has the same legacy caller issue and is not changed
+by this fixed-pilot caller patch.
 
 ## Remaining channel acceptance
 
