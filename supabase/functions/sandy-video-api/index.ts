@@ -20,6 +20,20 @@ async function token(identity:string,name:string,room:string) {
  const signature=new Uint8Array(await crypto.subtle.sign("HMAC",cryptoKey,enc.encode(message)));
  return message+"."+b64(signature);
 }
+
+const escapeHtml=(v:string)=>v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
+async function submitMeetingEmail(email:string,title:string,meetingId:string){
+ const tenant=Deno.env.get("MS_GRAPH_TENANT_ID"),client=Deno.env.get("MS_GRAPH_CLIENT_ID"),secret=Deno.env.get("MS_GRAPH_CLIENT_SECRET");
+ if(!tenant||!client||!secret)throw Error("mail_not_configured");
+ const auth=await fetch("https://login.microsoftonline.com/"+encodeURIComponent(tenant)+"/oauth2/v2.0/token",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({client_id:client,client_secret:secret,grant_type:"client_credentials",scope:"https://graph.microsoft.com/.default"}),signal:AbortSignal.timeout(12000)});
+ if(!auth.ok)throw Error("mail_auth_failed");
+ const token=(await auth.json()).access_token;
+ const link="https://ausstyle.github.io/web-staging/sandy/meetings/#user="+encodeURIComponent(meetingId);
+ const html='<html><body style="background:#fafafa;padding:25px;font-family:Arial,sans-serif;color:#151515"><div style="max-width:520px;padding:28px;margin:auto;background:white;border:1px solid #ddd;border-radius:12px"><h1>sandy.</h1><h2>Meeting invitation</h2><p>'+escapeHtml(title)+'</p><p>Sign in to Sandy to accept or decline this meeting invitation.</p><a style="background:#151515;color:#fff;padding:14px 22px;display:inline-block;text-decoration:none;border-radius:6px" href="'+escapeHtml(link)+'">Open meeting invitation</a></div></body></html>';
+ const res=await fetch("https://graph.microsoft.com/v1.0/users/ai%40email.com.au/sendMail",{method:"POST",headers:{"authorization":"Bearer "+token,"content-type":"application/json"},body:JSON.stringify({message:{subject:"Sandy meeting invitation: "+title,body:{contentType:"HTML",content:html},toRecipients:[{emailAddress:{address:email}}]},saveToSentItems:true}),signal:AbortSignal.timeout(18000)});
+ if(res.status!==202)throw Error("mail_send_http_"+res.status);
+}
+
 Deno.serve(async(req)=>{
  const origin=req.headers.get("origin")||"";
  if(!ALLOWED.has(origin))return Response.json({error:"origin_not_allowed"},{status:403});
@@ -100,9 +114,9 @@ Deno.serve(async(req)=>{
  if(action==="invitations_sent"||action==="invite_users"||action==="invitation_revoke"){
   const mid=String(body.meeting_id||"");
   if(!/^[0-9a-f-]{36}$/i.test(mid))return reply(400,{error:"invalid_meeting"},origin);
-  const {data:meeting,error:me}=await db.from("sandy_video_meetings").select("owner_id,state").eq("id",mid).maybeSingle();
+  const {data:meeting,error:me}=await db.from("sandy_video_meetings").select("owner_id,state,title").eq("id",mid).maybeSingle();
   if(me)throw me;if(!meeting||meeting.owner_id!==userId)return reply(403,{error:"owner_required"},origin);
-  if(action==="invitations_sent"){const {data,error}=await db.from("sandy_video_user_invites").select("id,recipient_id,status,created_at,updated_at,whatsapp_status,whatsapp_attempted_at,whatsapp_error_code").eq("meeting_id",mid).order("created_at",{ascending:false}).limit(100);if(error)throw error;return reply(200,{ok:true,invitations:data},origin)}
+  if(action==="invitations_sent"){const {data,error}=await db.from("sandy_video_user_invites").select("id,recipient_id,status,created_at,updated_at,whatsapp_status,whatsapp_attempted_at,whatsapp_error_code,email_status,email_attempted_at,email_error_code").eq("meeting_id",mid).order("created_at",{ascending:false}).limit(100);if(error)throw error;return reply(200,{ok:true,invitations:data},origin)}
   if(action==="invitation_revoke"){const {error}=await db.from("sandy_video_user_invites").update({status:"revoked",updated_at:new Date().toISOString()}).eq("id",String(body.invitation_id||"")).eq("meeting_id",mid);if(error)throw error;return reply(200,{ok:true},origin)}
   if(meeting.state!=="scheduled")return reply(409,{error:"meeting_closed"},origin);
   const addresses=body.emails;
@@ -114,11 +128,35 @@ Deno.serve(async(req)=>{
     const person=all.data.users.find((u:any)=>u.email?.toLowerCase()===entry);
     if(!person){notFound++;deliveries.push({email:entry,in_app:"not_found",whatsapp:"not_attempted"});continue;}
     if(person.id===userId)continue;
-    const {data:existing,error:lookupError}=await db.from("sandy_video_user_invites").select("id,status,whatsapp_status").eq("meeting_id",mid).eq("recipient_id",person.id).maybeSingle();
+    const {data:existing,error:lookupError}=await db.from("sandy_video_user_invites").select("id,status,whatsapp_status,email_status").eq("meeting_id",mid).eq("recipient_id",person.id).maybeSingle();
     if(lookupError)throw lookupError;
-    const {data:invitation,error}=await db.from("sandy_video_user_invites").upsert({meeting_id:mid,inviter_id:userId,recipient_id:person.id,status:"pending",updated_at:new Date().toISOString()},{onConflict:"meeting_id,recipient_id"}).select("id").single();
-    if(error)throw error;invited++;
-    const result:any={email:entry,in_app:"pending",whatsapp:"not_requested"};
+    const {data:invitation,error}=existing
+      ? await db.from("sandy_video_user_invites").select("id").eq("id",existing.id).single()
+      : await db.from("sandy_video_user_invites").upsert({meeting_id:mid,inviter_id:userId,recipient_id:person.id,status:"pending",updated_at:new Date().toISOString()},{onConflict:"meeting_id,recipient_id",ignoreDuplicates:true}).select("id").maybeSingle();
+    const invitationId=invitation?.id||(await db.from("sandy_video_user_invites").select("id").eq("meeting_id",mid).eq("recipient_id",person.id).single()).data?.id;
+    if(error)throw error;if(!invitationId)throw Error("invitation_lookup_failed");invited++;
+    const result:any={email:entry,in_app:existing?.status||"pending",whatsapp:"not_requested",email_status:existing?.email_status||"not_attempted"};
+    if(!["revoked","declined"].includes(existing?.status||"")){
+      const {data:claim,error:claimError}=await db.from("sandy_video_user_invites")
+        .update({email_status:"sending",email_attempted_at:new Date().toISOString(),email_error_code:null})
+        .eq("id",invitationId).in("email_status",["not_attempted","failed"]).select("id").maybeSingle();
+      if(claimError)throw claimError;
+      if(claim){
+        try{
+          await submitMeetingEmail(entry,String(meeting.title||"Video meeting"),mid);
+          await db.from("sandy_video_user_invites").update({email_status:"submitted",email_error_code:null}).eq("id",invitationId).eq("email_status","sending");
+          result.email_status="submitted";
+        }catch(mailError){
+          const code=String(mailError instanceof Error?mailError.message:mailError).slice(0,80);
+          const uncertain=code.includes("Timeout")||code.includes("timed out")||code.includes("network");
+          result.email_status=uncertain?"unknown":"failed";
+          await db.from("sandy_video_user_invites").update({email_status:result.email_status,email_error_code:code}).eq("id",invitationId).eq("email_status","sending");
+        }
+      }else{
+        const {data:latest}=await db.from("sandy_video_user_invites").select("email_status").eq("id",invitationId).single();
+        result.email_status=latest?.email_status||"unknown";
+      }
+    }
     if(body.notify_whatsapp!==false){
       if(existing?.whatsapp_status==="submitted"||existing?.whatsapp_status==="unknown"){result.whatsapp=existing.whatsapp_status;result.note="Existing WhatsApp send retained; no duplicate attempted.";}
       else {
@@ -131,7 +169,7 @@ Deno.serve(async(req)=>{
           if(identity?.wa_id){
             const link="https://ausstyle.github.io/web-staging/sandy/meetings/#user="+encodeURIComponent(mid);
             const message="You're invited to a Sandy video meeting: "+link+"\nOpen it using your Sandy account to join.";
-            const idem="sandy_meeting_"+invitation.id.replaceAll("-","_");
+            const idem="sandy_meeting_"+invitationId.replaceAll("-","_");
             try{
               const sent=await fetch(ROOT+"/functions/v1/sandy-whatsapp-send",{method:"POST",headers:{"authorization":"Bearer "+SERVICE,"content-type":"application/json"},body:JSON.stringify({customer_id:account.customer_id,requested_wa_id:identity.wa_id,text:message,idempotency_key:idem}),signal:AbortSignal.timeout(18000)});
               const res=await sent.json().catch(()=>({}));
@@ -140,14 +178,14 @@ Deno.serve(async(req)=>{
             }catch(e){whatsapp="unknown";failure="send_outcome_uncertain";}
           }
         }
-        const {error:tracking}=await db.from("sandy_video_user_invites").update({whatsapp_status:whatsapp,whatsapp_error_code:failure,whatsapp_attempted_at:new Date().toISOString()}).eq("id",invitation.id);
+        const {error:tracking}=await db.from("sandy_video_user_invites").update({whatsapp_status:whatsapp,whatsapp_error_code:failure,whatsapp_attempted_at:new Date().toISOString()}).eq("id",invitationId);
         if(tracking)console.error("meeting_invite_delivery_status",tracking.code);
         result.whatsapp=whatsapp;
       }
     }
     deliveries.push(result);
   }
-  return reply(200,{ok:true,invited,not_found:notFound,recipients:deliveries,delivery:"in_app_and_eligible_whatsapp",note:"WhatsApp submitted means accepted by the sending service, not delivered to the phone. Outside the 24-hour window, an approved template is required."},origin);
+  return reply(200,{ok:true,invited,not_found:notFound,recipients:deliveries,delivery:"in_app_email_and_eligible_whatsapp",note:"WhatsApp submitted means accepted by the sending service, not delivered to the phone. Outside the 24-hour window, an approved template is required."},origin);
  }
  if(action==="invitation_respond"){
   const id=String(body.invitation_id||""),status=String(body.response||"");
