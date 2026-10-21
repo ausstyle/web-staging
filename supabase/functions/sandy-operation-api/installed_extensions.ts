@@ -9,6 +9,7 @@ import {
 import {
   onboardingContractMatches,
   onboardingOperations,
+  onboardingRequiresPortal,
 } from "../sandy-customer-provisioning-api/gateway.ts";
 import {
   customerKeyContractMatches,
@@ -308,7 +309,9 @@ export const extensionNeedsPortal = (operation: string) =>
   ) || (extensionKind(operation) === "product" &&
     productOperations[operation].authorization !== "owner") ||
   (extensionKind(operation) === "commerce" &&
-    commerceOperations[operation].authorization !== "owner");
+    commerceOperations[operation].authorization !== "owner") ||
+  (extensionKind(operation) === "onboarding" &&
+    onboardingRequiresPortal(operation));
 export const extensionNeedsAgenda = (operation: string) =>
   ["agenda", "customer_key"].includes(extensionKind(operation) ?? "");
 export const extensionOwnsGrant = (operation: string) =>
@@ -349,7 +352,8 @@ export function extensionHasAccess(
 ): boolean {
   switch (extensionKind(operation)) {
     case "onboarding":
-      return emailConfirmed;
+      return emailConfirmed &&
+        (!onboardingRequiresPortal(operation) || !!principal.portalCustomerId);
     case "agenda":
       return !!principal.portalCustomerId &&
         principal.portalCustomerId === principal.agendaCustomerId;

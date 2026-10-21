@@ -1,0 +1,331 @@
+{
+  "component_only": true,
+  "all_effects_rolled_back": true,
+  "outputs": {
+    "customer.resources.list": {
+      "ok": true,
+      "result": {
+        "resources": [
+          {
+            "id": "284deed3-6326-4c16-9f5c-24dc90f7191b",
+            "state": "ready",
+            "adapter": "supabase.workspace",
+            "version": 1,
+            "provider": "supabase",
+            "created_at": "2026-10-21T13:54:07.423939+00:00",
+            "updated_at": "2026-10-21T13:54:07.423939+00:00",
+            "cost_source": "not_individually_reported",
+            "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+            "feature_key": "database.workspace",
+            "project_ref": "zmqlyygzqoidkcwdysok",
+            "verified_at": "2026-10-21T13:54:07.46987+00:00",
+            "decommissioned_at": null,
+            "storage_bytes_limit": 1048576,
+            "actual_cost_microusd": null,
+            "provider_resource_id": "public.sandy_workspace_284deed363264c169f5c24dc90f7191b",
+            "logical_storage_bytes": 0,
+            "provider_storage_bytes": 16384,
+            "estimated_purchase_cost_microusd": 0
+          }
+        ]
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "c537ae34-3398-460f-9645-8a3d150e71cb",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.provisioning.plan": {
+      "ok": true,
+      "result": {
+        "plan": {
+          "id": "6e0b4b85-7140-4d2b-922f-a7545182727b",
+          "steps": [
+            {
+              "feature_key": "database.workspace",
+              "policy_version": 4,
+              "feature_version": 4,
+              "storage_bytes_limit": 65536,
+              "existing_resource_id": null
+            }
+          ],
+          "expires_at": "2026-10-21T13:59:07.635335+00:00",
+          "template_key": "customer.workspace",
+          "snapshot_sha256": "d45b3b9267fee6c22e3c581ad7b4309bae87aa2175a1f866d9509cc4af089b3b",
+          "actual_provider_cost_known": false,
+          "estimated_purchase_cost_microusd": 0
+        }
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "2db32995-3345-4eab-9afd-155c12faefe0",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.resources.recover": {
+      "ok": true,
+      "result": {
+        "job": {
+          "id": "cb1baa37-eb48-40df-b3fe-f690848e797c",
+          "kind": "recover",
+          "state": "succeeded",
+          "plan_id": null,
+          "created_at": "2026-10-21T13:54:07.513606+00:00",
+          "error_code": null,
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "completed_at": "2026-10-21T13:54:07.513606+00:00",
+          "resource_ids": [
+            "284deed3-6326-4c16-9f5c-24dc90f7191b"
+          ],
+          "execution_mode": "synchronous_transaction"
+        },
+        "resource": {
+          "id": "284deed3-6326-4c16-9f5c-24dc90f7191b",
+          "state": "ready",
+          "adapter": "supabase.workspace",
+          "version": 5,
+          "provider": "supabase",
+          "created_at": "2026-10-21T13:54:07.423939+00:00",
+          "updated_at": "2026-10-21T13:54:07.513278+00:00",
+          "cost_source": "not_individually_reported",
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "feature_key": "database.workspace",
+          "project_ref": "zmqlyygzqoidkcwdysok",
+          "verified_at": "2026-10-21T13:54:07.513278+00:00",
+          "decommissioned_at": null,
+          "storage_bytes_limit": 1048576,
+          "actual_cost_microusd": null,
+          "provider_resource_id": "public.sandy_workspace_284deed363264c169f5c24dc90f7191b",
+          "logical_storage_bytes": 65530,
+          "provider_storage_bytes": 32768,
+          "estimated_purchase_cost_microusd": 0
+        },
+        "effect_confirmed": true
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "956f3140-7897-44a6-8336-fae6749f4442",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.resources.reconcile": {
+      "ok": true,
+      "result": {
+        "resource": {
+          "id": "284deed3-6326-4c16-9f5c-24dc90f7191b",
+          "state": "drifted",
+          "adapter": "supabase.workspace",
+          "version": 4,
+          "provider": "supabase",
+          "created_at": "2026-10-21T13:54:07.423939+00:00",
+          "updated_at": "2026-10-21T13:54:07.509263+00:00",
+          "cost_source": "not_individually_reported",
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "feature_key": "database.workspace",
+          "project_ref": "zmqlyygzqoidkcwdysok",
+          "verified_at": "2026-10-21T13:54:07.509263+00:00",
+          "decommissioned_at": null,
+          "storage_bytes_limit": 1048576,
+          "actual_cost_microusd": null,
+          "provider_resource_id": "public.sandy_workspace_284deed363264c169f5c24dc90f7191b",
+          "logical_storage_bytes": 65530,
+          "provider_storage_bytes": 32768,
+          "estimated_purchase_cost_microusd": 0
+        },
+        "effect_confirmed": false
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "206c0952-14ed-4f26-bd9a-993374b9de82",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.provisioning.execute": {
+      "ok": true,
+      "result": {
+        "job": {
+          "id": "e21b5163-bd2a-4373-8e73-8a308f7f1c90",
+          "kind": "provision",
+          "state": "succeeded",
+          "plan_id": "4d2c35a7-80c7-4e30-98a4-db09b23a9dce",
+          "created_at": "2026-10-21T13:54:07.470969+00:00",
+          "error_code": null,
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "completed_at": "2026-10-21T13:54:07.470969+00:00",
+          "resource_ids": [
+            "284deed3-6326-4c16-9f5c-24dc90f7191b"
+          ],
+          "execution_mode": "synchronous_transaction"
+        }
+      },
+      "reused": true,
+      "executed": true,
+      "request_id": "05ead84c-4d7e-404a-aa00-903f5861f4c9",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.provisioning.jobs.get": {
+      "ok": true,
+      "result": {
+        "job": {
+          "id": "f459b1c3-385f-4c18-bc1e-902fd438390a",
+          "kind": "provision",
+          "state": "failed",
+          "plan_id": "09e41621-d1d3-4873-b2f0-6923cdf21085",
+          "created_at": "2026-10-21T13:54:07.563932+00:00",
+          "error_code": "provisioning_transaction_failed",
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "completed_at": "2026-10-21T13:54:07.563932+00:00",
+          "resource_ids": [],
+          "execution_mode": "synchronous_transaction"
+        }
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "bfd87d73-566a-4e43-a851-1e54a46475b7",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.workspace.records.get": {
+      "ok": true,
+      "result": {
+        "record": {
+          "key": "fixture",
+          "value": {
+            "hello": "Sandy"
+          },
+          "version": 1
+        },
+        "resource_id": "284deed3-6326-4c16-9f5c-24dc90f7191b"
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "5949f28e-ac09-4366-9d1c-b4e2c2b4fb23",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.resources.decommission": {
+      "ok": true,
+      "result": {
+        "job": {
+          "id": "55b9db37-1c26-4dbe-b2ff-dbadfa53cf04",
+          "kind": "decommission",
+          "state": "succeeded",
+          "plan_id": null,
+          "created_at": "2026-10-21T13:54:07.538822+00:00",
+          "error_code": null,
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "completed_at": "2026-10-21T13:54:07.538822+00:00",
+          "resource_ids": [
+            "284deed3-6326-4c16-9f5c-24dc90f7191b"
+          ],
+          "execution_mode": "synchronous_transaction"
+        },
+        "resource": {
+          "id": "284deed3-6326-4c16-9f5c-24dc90f7191b",
+          "state": "decommissioned",
+          "adapter": "supabase.workspace",
+          "version": 7,
+          "provider": "supabase",
+          "created_at": "2026-10-21T13:54:07.423939+00:00",
+          "updated_at": "2026-10-21T13:54:07.538526+00:00",
+          "cost_source": "not_individually_reported",
+          "customer_id": "b95751e7-f6cb-40f7-8558-151c3e9b4a44",
+          "feature_key": "database.workspace",
+          "project_ref": "zmqlyygzqoidkcwdysok",
+          "verified_at": "2026-10-21T13:54:07.538526+00:00",
+          "decommissioned_at": "2026-10-21T13:54:07.538526+00:00",
+          "storage_bytes_limit": 1048576,
+          "actual_cost_microusd": null,
+          "provider_resource_id": "public.sandy_workspace_284deed363264c169f5c24dc90f7191b",
+          "logical_storage_bytes": 0,
+          "provider_storage_bytes": 0,
+          "estimated_purchase_cost_microusd": 0
+        },
+        "effect_confirmed": true
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "b3ab693d-0a58-47f3-a569-6be14431382f",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.workspace.records.delete": {
+      "ok": true,
+      "result": {
+        "key": "fixture",
+        "deleted": true,
+        "resource_id": "284deed3-6326-4c16-9f5c-24dc90f7191b"
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "5fdbab1a-0da9-4b0c-89bd-cb3d1b8aa855",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.workspace.records.upsert": {
+      "ok": true,
+      "result": {
+        "key": "large",
+        "version": 1,
+        "resource_id": "284deed3-6326-4c16-9f5c-24dc90f7191b"
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "3ce3c0d2-9802-4fea-bf88-a54f9ee10a3e",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.provisioning.features.list": {
+      "ok": true,
+      "result": {
+        "features": [
+          {
+            "adapter": "supabase.workspace",
+            "enabled": false,
+            "version": 1,
+            "entitled": false,
+            "description": "Isolated JSON record workspace in the existing Supabase project. No new project, plan purchase, or provider credential is provisioned.",
+            "feature_key": "database.workspace"
+          }
+        ]
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "61cae68a-5e80-4223-84b8-0bc2bbb6b274",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    },
+    "customer.provisioning.templates.list": {
+      "ok": true,
+      "result": {
+        "templates": [
+          {
+            "version": 2,
+            "feature_keys": [
+              "database.workspace"
+            ],
+            "template_key": "customer.workspace"
+          }
+        ]
+      },
+      "reused": false,
+      "executed": true,
+      "request_id": "a6447233-2fe6-4a30-9d94-d81799773a30",
+      "request_state": "succeeded",
+      "contract_version": "1.0.0",
+      "reconciliation_required": false
+    }
+  }
+}

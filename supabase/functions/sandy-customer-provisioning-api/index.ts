@@ -1,3 +1,4 @@
+import { provisioningOperations } from "./provisioning_operations.ts";
 /** Existing Sandy API application service: normal customer Auth -> scoped RPC.
  * No service-role credential, caller-selected tenant, provider URL or SQL. */
 import { Ajv } from "npm:ajv@8.17.1";
@@ -46,7 +47,7 @@ export function createOnboardingHandler(deps: Dependencies) {
     }
     let body: unknown;
     try {
-      body = await requestJson(request, 12000);
+      body = await requestJson(request, 76000);
     } catch {
       return failure(400, "invalid_onboarding_request");
     }
@@ -101,7 +102,10 @@ export function createOnboardingHandler(deps: Dependencies) {
       });
     try {
       const response = await deps.fetch(
-        deps.base + "/rest/v1/rpc/sandy_customer_onboarding_execute",
+        deps.base + "/rest/v1/rpc/" +
+          (Object.hasOwn(provisioningOperations, body.operation)
+            ? "sandy_customer_provisioning_execute"
+            : "sandy_customer_onboarding_execute"),
         {
           method: "POST",
           headers,
@@ -134,15 +138,53 @@ export function createOnboardingHandler(deps: Dependencies) {
           "onboarding_required",
           "identity_already_bound",
           "onboarding_version_conflict",
+          "verified_customer_access_required",
+          "invalid_provisioning_request",
+          "invalid_provisioning_arguments",
+          "provisioning_rate_limit",
+          "provisioning_transaction_failed",
+          "provisioning_previous_attempt_failed",
+          "provisioning_job_not_found",
+          "provisioning_template_unavailable",
+          "invalid_provisioning_template",
+          "provisioning_feature_not_entitled",
+          "provisioning_policy_denied",
+          "existing_resource_reconciliation_required",
+          "provisioning_resource_quota_exceeded",
+          "provisioning_plan_not_found",
+          "provisioning_plan_stale",
+          "provisioning_policy_changed",
+          "provisioning_resource_changed",
+          "customer_resource_not_found",
+          "resource_identity_mismatch",
+          "decommissioned_resource_reappeared",
+          "explicit_data_deletion_required",
+          "resource_version_conflict",
+          "resource_recovery_requires_manual_investigation",
+          "resource_reconciliation_required",
+          "workspace_record_not_found",
+          "workspace_record_version_conflict",
+          "workspace_storage_quota_exceeded",
         ]);
         const error =
           typeof result.error === "string" && allowed.has(result.error)
             ? result.error
             : "onboarding_failed";
         const status = Number(result.http_status);
-        return failure(
-          [400, 401, 403, 409, 429].includes(status) ? status : 502,
-          error,
+        return reply(
+          [400, 401, 403, 404, 409, 429, 503].includes(status) ? status : 502,
+          {
+            ok: false,
+            error,
+            executed: false,
+            ...(uuid(result.job_id) ? { job_id: result.job_id } : {}),
+            ...(typeof result.request_id === "string" && uuid(result.request_id)
+              ? { request_id: result.request_id }
+              : {}),
+            ...(result.automatic_retry === false
+              ? { automatic_retry: false }
+              : {}),
+          },
         );
       }
       if (outputs.get(body.operation)?.(result) !== true) {

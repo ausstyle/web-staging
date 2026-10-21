@@ -1,0 +1,1134 @@
+{
+  "output_base": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "const": true
+      },
+      "contract_version": {
+        "const": "1.0.0"
+      },
+      "executed": {
+        "const": true
+      },
+      "request_state": {
+        "const": "succeeded"
+      },
+      "request_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "reused": {
+        "type": "boolean"
+      },
+      "reconciliation_required": {
+        "const": false
+      },
+      "result": {}
+    },
+    "required": [
+      "ok",
+      "contract_version",
+      "executed",
+      "request_state",
+      "request_id",
+      "reused",
+      "reconciliation_required",
+      "result"
+    ],
+    "additionalProperties": false
+  },
+  "result_schemas": {
+    "features": {
+      "type": "object",
+      "properties": {
+        "features": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature_key": {
+                "type": "string"
+              },
+              "adapter": {
+                "const": "supabase.workspace"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "description": {
+                "type": "string"
+              },
+              "entitled": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "feature_key",
+              "adapter",
+              "enabled",
+              "version",
+              "description",
+              "entitled"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "features"
+      ],
+      "additionalProperties": false
+    },
+    "templates": {
+      "type": "object",
+      "properties": {
+        "templates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "template_key": {
+                "type": "string"
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "feature_keys": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "template_key",
+              "version",
+              "feature_keys"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "templates"
+      ],
+      "additionalProperties": false
+    },
+    "plan": {
+      "type": "object",
+      "properties": {
+        "plan": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "template_key": {
+              "type": "string"
+            },
+            "snapshot_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "steps": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 10,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "feature_key": {
+                    "type": "string"
+                  },
+                  "feature_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "policy_version": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "storage_bytes_limit": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "existing_resource_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid"
+                  }
+                },
+                "required": [
+                  "feature_key",
+                  "feature_version",
+                  "policy_version",
+                  "storage_bytes_limit",
+                  "existing_resource_id"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "estimated_purchase_cost_microusd": {
+              "const": 0
+            },
+            "actual_provider_cost_known": {
+              "const": false
+            }
+          },
+          "required": [
+            "id",
+            "template_key",
+            "snapshot_sha256",
+            "expires_at",
+            "steps",
+            "estimated_purchase_cost_microusd",
+            "actual_provider_cost_known"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "plan"
+      ],
+      "additionalProperties": false
+    },
+    "job": {
+      "type": "object",
+      "properties": {
+        "job": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "customer_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "plan_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            },
+            "kind": {
+              "enum": [
+                "provision",
+                "decommission",
+                "recover"
+              ]
+            },
+            "state": {
+              "enum": [
+                "succeeded",
+                "failed",
+                "unknown"
+              ]
+            },
+            "resource_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "error_code": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "execution_mode": {
+              "const": "synchronous_transaction"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "customer_id",
+            "plan_id",
+            "kind",
+            "state",
+            "resource_ids",
+            "error_code",
+            "execution_mode",
+            "created_at",
+            "completed_at"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "job"
+      ],
+      "additionalProperties": false
+    },
+    "resources": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "customer_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "feature_key": {
+                "type": "string"
+              },
+              "adapter": {
+                "const": "supabase.workspace"
+              },
+              "provider": {
+                "const": "supabase"
+              },
+              "project_ref": {
+                "const": "zmqlyygzqoidkcwdysok"
+              },
+              "provider_resource_id": {
+                "type": "string",
+                "pattern": "^public\\.sandy_workspace_[a-f0-9]{32}$"
+              },
+              "state": {
+                "enum": [
+                  "ready",
+                  "drifted",
+                  "decommissioned"
+                ]
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "storage_bytes_limit": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "logical_storage_bytes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "provider_storage_bytes": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "estimated_purchase_cost_microusd": {
+                "const": 0
+              },
+              "actual_cost_microusd": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "cost_source": {
+                "const": "not_individually_reported"
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "verified_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "decommissioned_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "customer_id",
+              "feature_key",
+              "adapter",
+              "provider",
+              "project_ref",
+              "provider_resource_id",
+              "state",
+              "version",
+              "storage_bytes_limit",
+              "logical_storage_bytes",
+              "provider_storage_bytes",
+              "estimated_purchase_cost_microusd",
+              "actual_cost_microusd",
+              "cost_source",
+              "created_at",
+              "verified_at",
+              "updated_at",
+              "decommissioned_at"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "resources"
+      ],
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "customer_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "feature_key": {
+              "type": "string"
+            },
+            "adapter": {
+              "const": "supabase.workspace"
+            },
+            "provider": {
+              "const": "supabase"
+            },
+            "project_ref": {
+              "const": "zmqlyygzqoidkcwdysok"
+            },
+            "provider_resource_id": {
+              "type": "string",
+              "pattern": "^public\\.sandy_workspace_[a-f0-9]{32}$"
+            },
+            "state": {
+              "enum": [
+                "ready",
+                "drifted",
+                "decommissioned"
+              ]
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "storage_bytes_limit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "logical_storage_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "provider_storage_bytes": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "estimated_purchase_cost_microusd": {
+              "const": 0
+            },
+            "actual_cost_microusd": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cost_source": {
+              "const": "not_individually_reported"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "verified_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "decommissioned_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "customer_id",
+            "feature_key",
+            "adapter",
+            "provider",
+            "project_ref",
+            "provider_resource_id",
+            "state",
+            "version",
+            "storage_bytes_limit",
+            "logical_storage_bytes",
+            "provider_storage_bytes",
+            "estimated_purchase_cost_microusd",
+            "actual_cost_microusd",
+            "cost_source",
+            "created_at",
+            "verified_at",
+            "updated_at",
+            "decommissioned_at"
+          ],
+          "additionalProperties": false
+        },
+        "effect_confirmed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "resource",
+        "effect_confirmed"
+      ],
+      "additionalProperties": false
+    },
+    "lifecycle": {
+      "type": "object",
+      "properties": {
+        "resource": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "customer_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "feature_key": {
+              "type": "string"
+            },
+            "adapter": {
+              "const": "supabase.workspace"
+            },
+            "provider": {
+              "const": "supabase"
+            },
+            "project_ref": {
+              "const": "zmqlyygzqoidkcwdysok"
+            },
+            "provider_resource_id": {
+              "type": "string",
+              "pattern": "^public\\.sandy_workspace_[a-f0-9]{32}$"
+            },
+            "state": {
+              "enum": [
+                "ready",
+                "drifted",
+                "decommissioned"
+              ]
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "storage_bytes_limit": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "logical_storage_bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "provider_storage_bytes": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "estimated_purchase_cost_microusd": {
+              "const": 0
+            },
+            "actual_cost_microusd": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0
+            },
+            "cost_source": {
+              "const": "not_individually_reported"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "verified_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            },
+            "updated_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "decommissioned_at": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "customer_id",
+            "feature_key",
+            "adapter",
+            "provider",
+            "project_ref",
+            "provider_resource_id",
+            "state",
+            "version",
+            "storage_bytes_limit",
+            "logical_storage_bytes",
+            "provider_storage_bytes",
+            "estimated_purchase_cost_microusd",
+            "actual_cost_microusd",
+            "cost_source",
+            "created_at",
+            "verified_at",
+            "updated_at",
+            "decommissioned_at"
+          ],
+          "additionalProperties": false
+        },
+        "job": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "customer_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "plan_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            },
+            "kind": {
+              "enum": [
+                "provision",
+                "decommission",
+                "recover"
+              ]
+            },
+            "state": {
+              "enum": [
+                "succeeded",
+                "failed",
+                "unknown"
+              ]
+            },
+            "resource_ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "error_code": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "execution_mode": {
+              "const": "synchronous_transaction"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "completed_at": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          "required": [
+            "id",
+            "customer_id",
+            "plan_id",
+            "kind",
+            "state",
+            "resource_ids",
+            "error_code",
+            "execution_mode",
+            "created_at",
+            "completed_at"
+          ],
+          "additionalProperties": false
+        },
+        "effect_confirmed": {
+          "const": true
+        }
+      },
+      "required": [
+        "resource",
+        "job",
+        "effect_confirmed"
+      ],
+      "additionalProperties": false
+    },
+    "record": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "record": {
+          "type": "object",
+          "properties": {
+            "key": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"
+            },
+            "value": {
+              "type": "object"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "key",
+            "value",
+            "version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "resource_id",
+        "record"
+      ],
+      "additionalProperties": false
+    },
+    "record_write": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "resource_id",
+        "key",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "record_delete": {
+      "type": "object",
+      "properties": {
+        "resource_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"
+        },
+        "deleted": {
+          "const": true
+        }
+      },
+      "required": [
+        "resource_id",
+        "key",
+        "deleted"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "operations": [
+    {
+      "operation": "customer.provisioning.features.list",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:read",
+      "is_mutation": false,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "description": "List installed feature definitions and the current customer’s existing commerce entitlements. Listing does not enable a feature.",
+      "contract_sha256": "04005d5cb5acc9d5815906c179559fecaa9b2b0d7c1d2ebb4cd579c3e9d97d4f",
+      "result_schema": "features"
+    },
+    {
+      "operation": "customer.provisioning.templates.list",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:read",
+      "is_mutation": false,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "description": "List enabled reusable provisioning templates. Every constituent still requires an active feature entitlement and quota policy.",
+      "contract_sha256": "454962c3e4748380103c875ea57f8371a395c96476141685d61ef1f353e90ae2",
+      "result_schema": "templates"
+    },
+    {
+      "operation": "customer.provisioning.plan",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "template_key": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{2,79}$"
+          }
+        },
+        "required": [
+          "template_key"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Persist a five-minute immutable provisioning plan after checking every feature, entitlement, resource limit and purchase budget. No resource is created.",
+      "contract_sha256": "9a0a44cdae254c7a005e1a8f368e5bf3dd416ad9ec4862afc7b6bff29e26468d",
+      "result_schema": "plan"
+    },
+    {
+      "operation": "customer.provisioning.execute",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "plan_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "plan_id",
+          "plan_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Revalidate the immutable plan and provision actual isolated database workspace tables transactionally. Return a persisted completed job only after provider metadata and access controls are verified. No new project or purchase.",
+      "contract_sha256": "54153b9d261cc840bb834e6f65f5b2939da313baef7d5ce3560509ccdde2eb53",
+      "result_schema": "job"
+    },
+    {
+      "operation": "customer.provisioning.jobs.get",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:read",
+      "is_mutation": false,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Read a current-customer provisioning/recovery/decommission job; another customer’s job returns not found. Current adapter execution is a synchronous database transaction.",
+      "contract_sha256": "5bad9223c69b4078d95be7bfb02bae876da3b338b5975654e7cbcbd11d620378",
+      "result_schema": "job"
+    },
+    {
+      "operation": "customer.resources.list",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:read",
+      "is_mutation": false,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "description": "List owned resources, actual provider identifiers, configuration, verification status, storage usage and costs. Unreported provider billing is null, never presented as zero.",
+      "contract_sha256": "517fa2c092371de79dc199639b500bb8cf419f59b22b1d83e08af041b358b766",
+      "result_schema": "resources"
+    },
+    {
+      "operation": "customer.resources.reconcile",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "resource_id"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Inspect the real resource, ownership marker, column types, RLS and privileges. Record drift truthfully; never recreate an absent table automatically.",
+      "contract_sha256": "85e85e12bd249dd9368c5aac76465550d8416dc285bf647d2305169404ee709d",
+      "result_schema": "observation"
+    },
+    {
+      "operation": "customer.resources.recover",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "resource_id",
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Restore security configuration on the exact owned existing workspace under version control, verify it, and persist a recovery job. Missing or mismatched resources require investigation.",
+      "contract_sha256": "108f3d70a14c3d99aafc0d20c2eb9e600d217cdb665cd7a7e79520360550b509",
+      "result_schema": "lifecycle"
+    },
+    {
+      "operation": "customer.resources.decommission",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "delete_data": {
+            "const": true
+          }
+        },
+        "required": [
+          "resource_id",
+          "expected_version",
+          "delete_data"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Explicitly delete the exact owned workspace and its data under version control, verify provider absence, release resource usage and persist a decommission job. No automatic cascading deletion.",
+      "contract_sha256": "af3f9c08fdb1036cd6d752502d697457bd9604a23b8982147a65e341fa45e024",
+      "result_schema": "lifecycle"
+    },
+    {
+      "operation": "customer.workspace.records.get",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:read",
+      "is_mutation": false,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"
+          }
+        },
+        "required": [
+          "resource_id",
+          "key"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Read a record from the exact owned workspace through Sandy API. Retained customer data remains readable when new provisioning/writes are disabled.",
+      "contract_sha256": "5b6c5109875c2efd936e9fe319f922b4e95b2ce82336ff1878f347bfdfb1c010",
+      "result_schema": "record"
+    },
+    {
+      "operation": "customer.workspace.records.upsert",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"
+          },
+          "value": {
+            "type": "object",
+            "maxProperties": 1000
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "resource_id",
+          "key",
+          "value",
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Create or update an owned JSON record with optimistic concurrency, current entitlement and logical storage quotas. Return metadata; record data is not copied into mutation receipts.",
+      "contract_sha256": "9d7428f5ea59a383dd13d06c59fb518819562369312d0aecbaffc3d5908193ea",
+      "result_schema": "record_write"
+    },
+    {
+      "operation": "customer.workspace.records.delete",
+      "contract_version": "1.0.0",
+      "handler": "sandy-customer-provisioning-api",
+      "permission_scope": "customer:write",
+      "is_mutation": true,
+      "requires_portal": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "resource_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,79}$"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "resource_id",
+          "key",
+          "expected_version"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Delete an owned record with optimistic concurrency, including during retention after feature disablement.",
+      "contract_sha256": "5956ee5cfda3dfb0c8b642e857ee881fcfe21c148701b887580130436f08deb7",
+      "result_schema": "record_delete"
+    }
+  ]
+}
