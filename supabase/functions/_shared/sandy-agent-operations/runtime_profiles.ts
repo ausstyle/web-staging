@@ -1,4 +1,5 @@
 import { type AgentPrincipal, isAgentPrincipal } from "./identity.ts";
+import { fixedRuntimeResponses } from "./runtime_responses_transport.ts";
 
 /** These are server-side compatibility capabilities, not API arguments. The
  * process-local binding cannot be reconstructed from JSON or an HTTP header. */
@@ -78,11 +79,6 @@ export async function legacyRuntimeResponses(
         body.input.length > 1000) throw Error("legacy_response_contract_invalid");
     } else throw Error("legacy_response_operation_invalid");
   }
-  return request("https://api.openai.com/v1/responses", {
-    method: "POST",
-    redirect: "error",
-    headers: { authorization: "Bearer " + openaiKey, "content-type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(operation === "agent.execution_plan.draft" ? 45000 : 65000),
-  });
+  return fixedRuntimeResponses(body, openaiKey,
+    operation === "agent.execution_plan.draft" ? 45000 : 65000, request, true);
 }

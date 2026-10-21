@@ -12,6 +12,18 @@ export type AgentPrincipal = Readonly<{
 type RuntimeProof = Readonly<{ serviceCaller: boolean }>;
 const runtimeProofs = new WeakSet<object>();
 const principals = new WeakSet<object>();
+export type RuntimeConversationTask = Readonly<{
+  kind: "trusted_runtime";
+  customerId: string | null;
+  authUserId: null;
+  taskId: string;
+  channel: string;
+  requestId: string;
+  requestText: string;
+}>;
+const conversationTasks = new WeakSet<object>();
+export const isRuntimeConversationTask = (value: unknown): value is RuntimeConversationTask =>
+  value !== null && typeof value === "object" && conversationTasks.has(value);
 const uuid = (v: unknown): v is string => typeof v === "string" &&
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
 function principal(value: AgentPrincipal): AgentPrincipal {
@@ -67,6 +79,29 @@ export async function bindRuntimeTask(
   return principal({ kind: "trusted_runtime", customerId: data.customer_id,
     authUserId: null, taskId: data.id, controllerOwner: false,
     requestText: String(data.user_request || "") });
+}
+
+/** An internal conversation can have no customer, exactly as the original
+ * fallback runtimes permit. This separate capability cannot pass isAgentPrincipal
+ * or authorize any customer operation, even when its customer ID is non-null. */
+export async function bindRuntimeConversationTask(
+  proof: RuntimeProof,
+  db: AgentDb,
+  expected: { taskId: string; customerId: string | null; channel: string; requestId: string },
+): Promise<RuntimeConversationTask | null> {
+  if (!runtimeProofs.has(proof) || !uuid(expected.taskId) ||
+    (expected.customerId !== null && !uuid(expected.customerId))) return null;
+  const { data, error } = await db.from("sandy_agent_tasks")
+    .select("id,customer_id,channel,request_id,status,user_request")
+    .eq("id", expected.taskId).maybeSingle();
+  if (error || !data || data.id !== expected.taskId ||
+    data.customer_id !== expected.customerId || data.channel !== expected.channel ||
+    data.request_id !== expected.requestId || !["queued", "running"].includes(data.status)) return null;
+  const capability = Object.freeze({ kind: "trusted_runtime" as const,
+    customerId: data.customer_id, authUserId: null, taskId: data.id,
+    channel: data.channel, requestId: data.request_id, requestText: String(data.user_request || "") });
+  conversationTasks.add(capability);
+  return capability;
 }
 
 /** Same confirmed portal-account/primary-address contract as sandy-workspace.

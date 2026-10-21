@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
 import { setRuntimeDatabase } from "./testing/fallback_client.ts";
+import { authenticateRuntime, bindRuntimeConversationTask, isAgentPrincipal, type RuntimeConversationTask } from "../../supabase/functions/_shared/sandy-agent-operations/identity.ts";
+import { bindV2RuntimeConversation, bindV1BackupRuntimeConversation, executeRuntimeConversation, type RuntimeConversation } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation.ts";
+import { executeAgentOperation } from "../../supabase/functions/_shared/sandy-agent-operations/service.ts";
 
 // Run with the test-only import map in testing/fallback_import_map.json. The
 // actual candidate handlers, identity capabilities, Gmail code, contracts and
@@ -20,6 +23,8 @@ type Obj = Record<string, any>;
 class Database {
   serial = 0;
   bindForeignTask = false;
+  failConversationAudit = false;
+  failConversationCompletion = false;
   queries: { table: string; filters: [string, unknown][] }[] = [];
   tables: Record<string, Obj[]> = {
     sandy_agent_tasks: [], sandy_agent_operation_audit: [],
@@ -42,6 +47,8 @@ class Database {
       this.queries.push({ table, filters: structuredClone(recorded) });
       const rows = this.tables[table] ??= [];
       if (mode === "insert" || mode === "upsert") {
+        if (table === "sandy_runtime_conversation_audit" && this.failConversationAudit) return { data: null, error: { code: "fixture_audit_unavailable" } };
+        if (table === "sandy_runtime_conversation_audit" && rows.some(r => r.task_id === value.task_id && r.round === value.round)) return { data: null, error: { code: "23505" } };
         if (table === "sandy_agent_tasks" && rows.some(r => r.request_id === value.request_id)) return { data: null, error: { code: "23505" } };
         if (table === "sandy_agent_operation_audit" && value.idempotency_key && rows.some(r => ["customer_id", "principal_kind", "operation", "idempotency_key"].every(k => r[k] === value[k]))) return { data: null, error: { code: "23505" } };
         const row: Obj = { id: `20000000-0000-4000-8000-${String(++this.serial).padStart(12, "0")}`, ...structuredClone(value) };
@@ -51,6 +58,7 @@ class Database {
         return { data: single ? structuredClone(row) : [structuredClone(row)], error: null };
       }
       const selected = rows.filter(row => filters.every(f => f(row))).slice(0, maximum);
+      if (table === "sandy_runtime_conversation_audit" && mode === "update" && this.failConversationCompletion) return { data: null, error: { code: "fixture_completion_unavailable" } };
       if (mode === "update") for (const row of selected) Object.assign(row, structuredClone(value));
       return { data: head ? null : single ? structuredClone(selected[0] ?? null) : structuredClone(selected), error: null, count: selected.length };
     };
@@ -227,6 +235,22 @@ for (const slug of slugs) {
       assert.ok(audits(db).every(row => row.state === "failed"));
     } finally { app.close(); }
   });
+  Deno.test(`${slug}: source-selected approved model and nullable-customer zero-tool conversation remain compatible`, async () => {
+    const db = new Database(), requests: Recorded[] = [];
+    db.tables.sandy_v2_runtime_policy.find(row => row.policy_key === "adaptive_model_routing")!.mode = "enabled";
+    db.tables.ai_task_routes = [{ task_type: "general_assistance", primary_model: "fixture-approved-model", enabled: true }];
+    db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", eligibility: "approved", verified_at: new Date().toISOString() }];
+    const app = await runtime(slug, db, requests);
+    try {
+      const result = await app.invoke("Hello Sandy", { customer_id: null, model: "caller-selected-model", tools: [{ name: "dangerous_unregistered_tool" }] });
+      assert.equal(result.status, 200); assert.equal(requests.length, 1);
+      assert.equal(requests[0].body.model, "fixture-approved-model"); assert.deepEqual(requests[0].body.tools, []);
+      assert.equal(audits(db).length, 0);
+      const audit = db.tables.sandy_runtime_conversation_audit[0];
+      assert.equal(audit.customer_id, null); assert.equal(audit.auth_user_id, null);
+      assert.equal(audit.task_id, result.body.task_id); assert.equal(audit.selected_model, "fixture-approved-model");
+    } finally { app.close(); }
+  });
 }
 
 Deno.test("fallback v2 public version fast path preserves authoritative metadata without model execution", async () => {
@@ -236,4 +260,111 @@ Deno.test("fallback v2 public version fast path preserves authoritative metadata
     assert.equal(result.status, 200); assert.equal(result.body.response, "I'm running Sandy 2.7.3.");
     assert.equal(requests.length, 0); assert.equal(audits(db).length, 0);
   } finally { app.close(); }
+});
+
+async function anonymousTask(db: Database): Promise<RuntimeConversationTask> {
+  const taskId = "50000000-0000-4000-8000-000000000001";
+  db.tables.sandy_agent_tasks.push({ id: taskId, customer_id: null, channel: "test", request_id: "nullable-task-request", user_request: "Hello from the actual task", status: "running" });
+  const proof = await authenticateRuntime(new Request("https://internal.invalid", { headers: { authorization: "Bearer fixture-automation" } }), db, "fixture-automation");
+  assert.ok(proof);
+  const task = await bindRuntimeConversationTask(proof, db, { taskId, customerId: null, channel: "test", requestId: "nullable-task-request" });
+  assert.ok(task);
+  return task;
+}
+const initialConversation = (task: RuntimeConversationTask) => ({ model: "gpt-4.1-mini", instructions: "Fixed server adapter instructions", input: task.requestText, tools: [], max_output_tokens: 1600 });
+const response = (output: Obj[] = []) => Response.json({ id: "resp_actual_provider_fixture", status: "completed", output });
+
+Deno.test("nullable-customer conversation capability is unforgeable and cannot authorize any customer operation", async () => {
+  const db = new Database(), task = await anonymousTask(db);
+  assert.equal(task.customerId, null); assert.equal(task.authUserId, null); assert.equal(isAgentPrincipal(task), false);
+  const fake = { ...task };
+  await assert.rejects(() => bindV2RuntimeConversation(fake, initialConversation(task)), /runtime_conversation_task_required/);
+  await assert.rejects(() => bindV2RuntimeConversation(JSON.parse(JSON.stringify(task)), initialConversation(task)), /runtime_conversation_task_required/);
+  const forbidden = await executeAgentOperation(task as any, "gmail.messages.recent", { limit: 1 }, { db, base: fixtures.SUPABASE_URL, composioKey: "", openaiKey: "", integrationToken: "", fetch: (() => { throw Error("unreachable"); }) as typeof fetch });
+  assert.equal(forbidden.status, 403);
+  const taskId = task.taskId;
+  assert.equal(await bindRuntimeConversationTask({ serviceCaller: true }, db, { taskId, customerId: null, channel: "test", requestId: task.requestId }), null);
+  assert.equal(audits(db).length, 0);
+});
+
+Deno.test("both private conversation adapters preserve anonymous zero-tool transport and provider-bound continuation", async () => {
+  for (const bind of [bindV2RuntimeConversation, bindV1BackupRuntimeConversation]) {
+    const db = new Database(), task = await anonymousTask(db), initial = initialConversation(task);
+    const cap = await bind(task, initial), requests: Obj[] = [], timeouts: number[] = [];
+    const originalTimeout = AbortSignal.timeout;
+    AbortSignal.timeout = ((ms: number) => { timeouts.push(ms); return originalTimeout(ms); }) as typeof AbortSignal.timeout;
+    try {
+      const fetcher = (async (url: any, init: any) => {
+        assert.equal(String(url), "https://api.openai.com/v1/responses"); assert.equal(init.redirect, undefined);
+        assert.equal(new Headers(init.headers).get("authorization"), "Bearer fixture-model");
+        requests.push(JSON.parse(init.body));
+        return requests.length === 1 ? response([{ type: "function_call", name: "unoffered_tool", call_id: "call_from_provider" }]) : response([{ type: "message", content: [{ type: "output_text", text: "No tool executed." }] }]);
+      }) as typeof fetch;
+      const first = await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, { db, openaiKey: "fixture-model", fetch: fetcher });
+      assert.equal(first.status, 200); assert.equal(first.body.customer_id, null); assert.equal(first.body.principal_kind, "trusted_runtime");
+      assert.deepEqual(requests[0], initial);
+      assert.equal((await executeRuntimeConversation(cap, { round: 1, tool_results: [{ type: "function_call_output", call_id: "foreign_call", output: "{}" }] }, { db, openaiKey: "fixture-model", fetch: fetcher })).status, 400);
+      const results = [{ type: "function_call_output" as const, call_id: "call_from_provider", output: '{"error":"unsupported_tool"}' }];
+      const second = await executeRuntimeConversation(cap, { round: 1, tool_results: results }, { db, openaiKey: "fixture-model", fetch: fetcher });
+      assert.equal(second.status, 200);
+      assert.deepEqual(requests[1], { model: initial.model, instructions: initial.instructions, previous_response_id: "resp_actual_provider_fixture", input: results, tools: [], max_output_tokens: 1600 });
+      assert.deepEqual(timeouts, [100000, 100000]);
+      assert.equal(db.tables.sandy_runtime_conversation_audit.length, 2);
+      assert.ok(db.tables.sandy_runtime_conversation_audit.every(row => row.customer_id === null && row.auth_user_id === null && row.state === "succeeded"));
+    } finally { AbortSignal.timeout = originalTimeout; }
+  }
+});
+
+Deno.test("conversation public-shaped overrides, forged profiles, other prompts and added tools are refused before paid execution", async () => {
+  const db = new Database(), task = await anonymousTask(db), initial = initialConversation(task);
+  await assert.rejects(() => bindV2RuntimeConversation(task, { ...initial, tools: [{ type: "web_search_preview" }] }), /tool_profile_invalid/);
+  await assert.rejects(() => bindV2RuntimeConversation(task, { ...initial, input: "An unrelated request" }), /source_contract_invalid/);
+  await assert.rejects(() => bindV2RuntimeConversation(task, { ...initial, tool_choice: { type: "function", name: "search_connected_gmail" } }), /tool_choice_invalid/);
+  const cap = await bindV2RuntimeConversation(task, initial);
+  let calls = 0;
+  const deps = { db, openaiKey: "fixture-model", fetch: (async () => { calls++; return response(); }) as typeof fetch };
+  assert.equal((await executeRuntimeConversation(JSON.parse(JSON.stringify(cap)), { round: 0, tool_results: [] }, deps)).status, 403);
+  assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [], model: "unapproved", tools: [], profile: "legacy" } as any, deps)).status, 400);
+  db.tables.sandy_agent_tasks[0].customer_id = FOREIGN;
+  assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)).status, 403);
+  assert.equal(calls, 0); assert.equal(db.tables.sandy_runtime_conversation_audit?.length || 0, 0);
+});
+
+Deno.test("durable conversation audit failure and same-round concurrency prevent duplicate paid requests", async () => {
+  const db = new Database(), task = await anonymousTask(db), cap = await bindV2RuntimeConversation(task, initialConversation(task));
+  let calls = 0;
+  const deps = { db, openaiKey: "fixture-model", fetch: (async () => { calls++; await Promise.resolve(); return response(); }) as typeof fetch };
+  db.failConversationAudit = true;
+  assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)).status, 503); assert.equal(calls, 0);
+  db.failConversationAudit = false;
+  const results = await Promise.all([executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps), executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)]);
+  assert.equal(results.filter(r => r.status === 200).length, 1); assert.equal(calls, 1);
+  assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)).status, 409); assert.equal(calls, 1);
+});
+
+Deno.test("unknown conversation and missing final audit receipt cannot be retried, including through a fresh capability", async () => {
+  for (const completionFailure of [false, true]) {
+    const db = new Database(), task = await anonymousTask(db), initial = initialConversation(task), cap = await bindV2RuntimeConversation(task, initial);
+    db.failConversationCompletion = completionFailure;
+    let calls = 0;
+    const deps = { db, openaiKey: "fixture-model", fetch: (async () => { calls++; if (!completionFailure) throw Error("fixture model result lost"); return response(); }) as typeof fetch };
+    const first = await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps);
+    assert.equal(first.status, 502); assert.equal(first.body.executed, null);
+    assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)).status, 409);
+    const again = await bindV2RuntimeConversation(task, initial);
+    assert.equal((await executeRuntimeConversation(again, { round: 0, tool_results: [] }, deps)).status, 409);
+    assert.equal(calls, 1);
+  }
+});
+
+Deno.test("known incomplete/failed envelopes preserve actual provider status and cannot redispatch the same paid round", async () => {
+  for (const status of ["failed", "incomplete"]) {
+    const db = new Database(), task = await anonymousTask(db), cap = await bindV2RuntimeConversation(task, initialConversation(task));
+    let calls = 0;
+    const deps = { db, openaiKey: "fixture-model", fetch: (async () => { calls++; return Response.json({ id: "resp_partial", status, output: [] }); }) as typeof fetch };
+    const first = await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps);
+    assert.equal(first.status, 200); assert.equal(first.body.response.status, status);
+    assert.equal(db.tables.sandy_runtime_conversation_audit[0].state, "succeeded");
+    assert.equal((await executeRuntimeConversation(cap, { round: 0, tool_results: [] }, deps)).status, 409); assert.equal(calls, 1);
+  }
 });

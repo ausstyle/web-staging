@@ -5,6 +5,12 @@ customer-owned Gmail search/recent/draft/confirmed send, web research, private
 document search, evaluation listing and planning. They call the same application
 executor as `sandy-agent-operation-api` and the active v4 runtime. This is a source
 candidate; deployment and positive production session/provider tests are separate.
+The shared-eight extraction was committed as `6e0354f` and deployed as ACTIVE
+v2 version 15 and backup version 5. Release receipts account for all seven/six
+uploaded source modules respectively; authenticated runtime execution was not
+established. Eight registry evidence rows were updated while verification fields
+were preserved. The subsequent conversation extraction described below is a
+separate, uncommitted candidate.
 
 The archived v2 source was observed at version 13 with SHA-256
 `d4354d6202851117b36b5e507bfecf52b0497524fb260f29c72f124d36986b78`.
@@ -36,7 +42,7 @@ and independent Sent Mail readback. The compatibility adapter retains the empty
 Gmail query default `in:anywhere`.
 
 The source guards record hashes of unchanged request validation, tool schemas,
-customer context, model selection, conversation rounds, task/history operations,
+customer context, model selection, conversation instructions/rounds, task/history operations,
 image-approval creation and result persistence. They also pin the unchanged
 version-awareness dependency. Run:
 
@@ -49,13 +55,43 @@ deno test --allow-env --allow-read=supabase/functions,scripts/sandy/testing \
   supabase/functions/sandy-agent-operation-api/index_test.ts
 ```
 
-The 13 adapter tests execute the actual handlers, identity capabilities,
+The adapter tests execute the actual handlers, identity capabilities,
 contracts, Gmail code and shared executor with fake database/fetch transports.
 The test-only import map replaces Supabase transport and Edge declarations; it
 is not deployed. All provider hosts are intercepted and no network permission is
 granted. Six profile regressions additionally verify transport restrictions and
-the default v4 broker, alongside the existing 19 service/API regressions.
+the default v4 broker, alongside the existing 19 service/API regressions. The
+conversation candidate passes 46 tests in total (21 adapter/capability tests,
+six profile tests and 19 existing service/API tests).
 
-The baseline conversation-model transport, other internal workers and existing
-UI direct endpoints remain distinct migration work. Source extraction does not
-establish universal production routing or verified customer/provider operations.
+The follow-on `agent.runtime.conversation.respond` operation has a concrete
+versioned contract and a process-local capability bound to the actual persisted
+task, channel, request ID and nullable customer. This capability cannot pass
+`isAgentPrincipal` or authorize customer operations. A no-customer task retains
+the original empty tool list. The source adapter captures the existing selected
+model, instructions, initial input and exact archived tool-schema hash; its JSON
+operation arguments contain only the round number and provider-bound tool
+results. It makes model requests only and never executes a tool. Public callers
+cannot serialize the capability or select its legacy transport.
+
+Both candidates delegate conversation-model requests to this operation and
+share the fixed provider transport with the legacy action profiles. The original
+100-second timeout, initial/continuation payloads, history framing, adaptive
+model policy and three tool rounds remain. A private audit claim precedes every
+round; duplicate claims, interrupted responses and missing completion receipts
+prevent redispatch. A successful operation receipt means that the bounded
+provider envelope was received; the actual provider status, including an
+incomplete/failed status, is preserved and is not proof of model, tool or task
+completion. Audit rows contain response
+hashes and IDs, without retaining prompts or model content.
+
+Migration `20261021010000_sandy_runtime_conversation.sql` registers the operation
+with `internal:agent.runtime.conversation.respond@1.0.0`; all public/UI/AI
+exposure and verified flags stay false. No public HTTP handler readiness is
+claimed. Its table/trigger and metadata passed 19 actual PostgreSQL checks in a
+full rollback, without model requests or permanent registry changes.
+
+Other internal workers, runtime task/context/history branches, connection
+preflight and existing UI endpoints remain distinct migration work. Source
+extraction does not establish universal production routing or verified
+customer/provider operations.

@@ -39,7 +39,7 @@ def main() -> None:
             if sha(baseline) != runtime["baseline_source_sha256"]:
                 raise ValueError(f"Unrecognized baseline: {runtime['runtime']}")
         for protected in runtime["preserved_sections"]:
-            selected = fragment(source.decode(), protected["start"], protected["end"]).encode()
+            selected = fragment(source.decode(), protected["start"], protected.get("candidate_end", protected["end"])).encode()
             if sha(selected) != protected["sha256"] or len(selected) != protected["bytes"]:
                 raise ValueError(f"Changed original behavior: {runtime['runtime']}/{protected['name']}")
             if baseline and fragment(baseline.decode(), protected["start"], protected["end"]).encode() != selected:
