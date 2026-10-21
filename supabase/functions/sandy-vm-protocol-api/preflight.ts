@@ -1,6 +1,6 @@
 /** Administrative read/connect probe only. No SSH login, command or guest change. */
 import { once } from "node:events";
-import { providerCalls, verifyVm } from "./compute.ts";
+import { providerCalls, verifyVm, VmProviderFailure } from "./compute.ts";
 import { IapFailure, openIapTunnel } from "./iap.ts";
 import { ProtocolRefusal } from "./errors.ts";
 import { type VmName, PROJECT, ZONE, NUMBER, VMS } from "./bindings.ts";
@@ -24,7 +24,12 @@ export async function inspectComputerAccess(token: string, request: typeof fetch
         const permission = "iap.tunnelInstances.accessViaIAP";
         const response = await calls.request(new URL(`https://iap.googleapis.com/v1/projects/${NUMBER}/iap_tunnel/zones/${ZONE}/instances/${VMS[name].instance_id}:testIamPermissions`), "POST", { permissions: [permission] });
         result.iap_permission = { permission, granted: Array.isArray(response.value.permissions) && response.value.permissions.includes(permission) };
-      } catch { result.iap_permission_observation_unavailable = true; }
+      } catch (error) {
+        result.iap_permission_observation_unavailable = true;
+        result.iap_permission_error = error instanceof VmProviderFailure
+          ? { code: error.code, http_status: error.providerHttp, reason: error.providerReason }
+          : { code: "iap_permission_observation_failed" };
+      }
       if (permissionsOnly) { result.tunnel_attempted = false; results.push(result); continue; }
       result.tunnel_attempted = true;
       const stream = await tunnel(name, name === "sandy-video" ? 22 : 5986, token);

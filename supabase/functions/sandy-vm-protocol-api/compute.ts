@@ -11,6 +11,9 @@ export type ProviderCalls = {
     additionallyAccepted?: number[],
   ) => Promise<{ value: Obj; sha256: string }>;
 };
+export class VmProviderFailure extends ProtocolRefusal {
+  constructor(code: string, public providerHttp: number, public providerReason: string | null, uncertain = false) { super(code, uncertain); }
+}
 export function providerCalls(
   token: string,
   fetcher: typeof fetch = fetch,
@@ -72,13 +75,20 @@ export function providerCalls(
         }
       }
       if (!response.ok && !additionallyAccepted.includes(response.status)) {
-        throw new ProtocolRefusal(
+        let reason: string | null = null;
+        try {
+          const raw = Buffer.concat(parts.map(part => Buffer.from(part))).toString("utf8");
+          const details = JSON.parse(raw)?.error?.details;
+          const known = ["SERVICE_DISABLED", "IAM_PERMISSION_DENIED", "ACCESS_DENIED", "VPC_SERVICE_CONTROLS", "SECURITY_POLICY_VIOLATED"];
+          if (Array.isArray(details)) reason = details.find(d => known.includes(d?.reason))?.reason ?? null;
+        } catch { /* No raw provider text or credential-bearing response is returned. */ }
+        throw new VmProviderFailure(
           response.status >= 300 && response.status < 400
             ? "vm_provider_redirect_refused"
             : [401, 403].includes(response.status)
             ? "vm_provider_iam_or_identity_refused"
             : "vm_provider_http_error",
-          method !== "GET" && response.status >= 500,
+          response.status, reason, method !== "GET" && response.status >= 500,
         );
       }
       const bytes = new Uint8Array(length);

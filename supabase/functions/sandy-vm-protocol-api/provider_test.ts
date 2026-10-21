@@ -8,7 +8,7 @@ import {
   VMS,
   ZONE,
 } from "./bindings.ts";
-import { type ProviderCalls, providerCalls, verifyVm } from "./compute.ts";
+import { type ProviderCalls, providerCalls, verifyVm, VmProviderFailure } from "./compute.ts";
 import { withEphemeralOsLogin } from "./oslogin.ts";
 import { ProtocolRefusal } from "./ssh.ts";
 import { machineScope } from "../_shared/sandy_machine_identity.ts";
@@ -20,6 +20,14 @@ const version = crypto.randomUUID(),
     instance_id: VMS["sandy-video"].instance_id,
     ssh: { mode: "oslogin", host_key_sha256: hostKey },
   };
+Deno.test("VM provider errors: preserve HTTP/static reason while omitting private provider text", async () => {
+  const calls = providerCalls("synthetic", () => Promise.resolve(Response.json({
+    error: { message: "private provider credential", details: [{ reason: "SERVICE_DISABLED" }] },
+  }, { status: 403 })));
+  await assert.rejects(() => calls.request(new URL("https://iap.googleapis.com/v1/fixed"), "POST", {}),
+    (error: Error) => error instanceof VmProviderFailure && error.providerHttp === 403 &&
+      error.providerReason === "SERVICE_DISABLED" && !JSON.stringify(error).includes("private provider credential"));
+});
 Deno.test("VM binding: exact fixed identity/version/protocol pins only; caller URLs, private fields and relaxed TLS flags refused", () => {
   const binding = parseBindings(JSON.stringify({ "sandy-video": entry }));
   assert(binding);
