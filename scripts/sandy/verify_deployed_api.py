@@ -118,40 +118,51 @@ def verify(environment: Mapping[str, str], request: Transport = transport) -> di
         response = edge(slug, {})
         record(slug + ".unauthenticated", response, response.status == 401, "edge_authentication")
 
-    branch_name = None
-    for operation in (
-        "supabase.projects.get", "supabase.project.health", "supabase.branches.list",
-        "supabase.branches.get", "supabase.network.restrictions.get", "supabase.domains.get",
-        "supabase.functions.secrets.list", "supabase.backups.list", "supabase.db.migrations.list",
-        "supabase.database.inspect", "supabase.schema.tables.list", "supabase.schema.functions.list",
-        "supabase.schema.indexes.list", "supabase.database.connections.list",
-        *BOUNDED_METADATA,
-    ):
-        negative_branch = operation == "supabase.branches.get" and not branch_name
-        args = {"name": branch_name or "sandy-api-test-nonexistent-20261020"} if operation == "supabase.branches.get" else {}
-        result = edge("sandy-provider-read-api", {"operation": operation, "arguments": args}, service)
-        body = result.payload if isinstance(result.payload, dict) else {}
-        passed = result.status == 200 and body.get("ok") is True and body.get("project_id") == PROJECT_REF
-        if negative_branch:
-            passed = result.status == 404 and body.get("upstream_status") == 404
-        if operation == "supabase.projects.get" and passed:
-            passed = isinstance(body.get("result"), dict) and body["result"].get("id") == PROJECT_REF
-        if operation == "supabase.branches.list" and passed and body.get("result"):
-            branch_name = body["result"][0].get("name")
-        if operation == "supabase.functions.secrets.list" and passed:
-            passed = isinstance(body.get("result"), list) and all(
-                isinstance(row, dict) and set(row) <= {"name", "updated_at"} for row in body["result"])
-        if operation in BOUNDED_METADATA and passed:
-            rows = body.get("result")
-            passed = isinstance(rows, list) and body.get("result_limit") == BOUNDED_METADATA[operation] and len(rows) <= BOUNDED_METADATA[operation] and body.get("possibly_truncated") is (len(rows) == BOUNDED_METADATA[operation])
-        blocked = "provider_entitlement_required" if result.status == 424 and body.get("error") == "provider_entitlement_required" else result.failure if result.failure in {"network_proxy_denied", "network_unavailable", "transport_failed"} else None
-        record(operation + (".missing_branch" if negative_branch else ""), result, passed,
-               "deployed_internal_handler_to_provider", blocker=blocked)
+    # The production v5 reader requires a real gateway-consumed admission. A
+    # service identity alone is only a transport and must never obtain a read.
+    context_denial = edge("sandy-provider-read-api", {
+        "operation": "supabase.projects.get", "arguments": {}}, service)
+    denial_body = context_denial.payload if isinstance(context_denial.payload, dict) else {}
+    record("provider_read_rejects_service_without_consumed_admission", context_denial,
+           context_denial.status == 400 and denial_body.get("error") == "consumed_provider_read_context_required"
+           and denial_body.get("executed") is False, "consumed_admission_boundary")
 
+    def authenticated_provider_reads(controller: str):
+        branch_name = None
+        for operation in (
+            "supabase.projects.get", "supabase.project.health", "supabase.branches.list",
+            "supabase.branches.get", "supabase.network.restrictions.get", "supabase.domains.get",
+            "supabase.functions.secrets.list", "supabase.backups.list", "supabase.db.migrations.list",
+            "supabase.database.inspect", "supabase.schema.tables.list", "supabase.schema.functions.list",
+            "supabase.schema.indexes.list", "supabase.database.connections.list",
+            *BOUNDED_METADATA,
+        ):
+            negative_branch = operation == "supabase.branches.get" and not branch_name
+            args = {"name": branch_name or "sandy-api-test-nonexistent-20261020"} if operation == "supabase.branches.get" else {}
+            result = edge("sandy-operation-api", {"action": "execute", "operation": operation, "arguments": args}, controller)
+            gateway = result.payload if isinstance(result.payload, dict) else {}
+            body = gateway.get("result") if isinstance(gateway.get("result"), dict) else {}
+            passed = result.status == 200 and gateway.get("ok") is True and body.get("ok") is True and body.get("project_id") == PROJECT_REF
+            if negative_branch:
+                passed = result.status == 404 and body.get("upstream_status") == 404
+            if operation == "supabase.projects.get" and passed:
+                passed = isinstance(body.get("result"), dict) and body["result"].get("id") == PROJECT_REF
+            if operation == "supabase.branches.list" and passed and body.get("result"):
+                branch_name = body["result"][0].get("name")
+            if operation == "supabase.functions.secrets.list" and passed:
+                passed = isinstance(body.get("result"), list) and all(
+                    isinstance(row, dict) and set(row) <= {"name", "updated_at"} for row in body["result"])
+            if operation in BOUNDED_METADATA and passed:
+                rows = body.get("result")
+                passed = isinstance(rows, list) and body.get("result_limit") == BOUNDED_METADATA[operation] and len(rows) <= BOUNDED_METADATA[operation] and body.get("possibly_truncated") is (len(rows) == BOUNDED_METADATA[operation])
+            blocked = "provider_entitlement_required" if result.status == 424 and (body.get("error") or gateway.get("error")) == "provider_entitlement_required" else result.failure if result.failure in {"network_proxy_denied", "network_unavailable", "transport_failed"} else None
+            record(operation + (".missing_branch" if negative_branch else ""), result, passed,
+                   "authenticated_api_to_provider", blocker=blocked)
     controller = environment.get("SANDY_CONTROLLER_ACCESS_TOKEN")
     if not controller:
         record("authenticated_api_mcp_execution", HttpResult(None), False, "controller_session",
                blocker="controller_user_session_unavailable")
+        report["deferred"] = ["authenticated_provider_read_execution", "authenticated_api_mcp_checks"]
     elif controller in (service, anon, management):
         record("authenticated_api_mcp_execution", HttpResult(None), False, "configuration")
     else:
@@ -160,6 +171,8 @@ def verify(environment: Mapping[str, str], request: Transport = transport) -> di
         good = catalogue.status == 200 and data.get("ok") is True and isinstance(data.get("operations"), list) and any(
             isinstance(row, dict) and row.get("operation") == "engineering.preflight" and row.get("executable") is True for row in data["operations"])
         record("authenticated_api_catalogue", catalogue, good, "controller_session")
+        if catalogue.status == 200 and data.get("ok") is True:
+            authenticated_provider_reads(controller)
         rpc = edge("sandy-api-mcp", {"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {}}, controller)
         data = rpc.payload if isinstance(rpc.payload, dict) else {}
         result = data.get("result") if isinstance(data.get("result"), dict) else {}

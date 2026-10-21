@@ -1,4 +1,7 @@
 /** Project-scoped Management API reads. Called only by Sandy API after owner authorization. */
+import { createClient } from "npm:@supabase/supabase-js@2.57.4";
+import { createCredentialConsumer } from "../_shared/sandy_credential_consumer.ts";
+import { createGovernedProviderReadHandler } from "./governed_read.ts";
 const PROJECT = "zmqlyygzqoidkcwdysok";
 const metadataQueries: Readonly<
   Record<string, { query: string; fields: string[]; limit?: number }>
@@ -165,6 +168,18 @@ const routes: Readonly<Record<string, string>> = Object.freeze({
 type ObjectValue = Record<string, unknown>;
 const object = (value: unknown): value is ObjectValue =>
   value !== null && typeof value === "object" && !Array.isArray(value);
+export const providerReadOperationNames = Object.freeze(Object.keys(routes));
+export function providerReadArgumentsValid(
+  operation: string,
+  args: unknown,
+): boolean {
+  const branchRead = operation === "supabase.branches.get";
+  return Object.hasOwn(routes, operation) && object(args) &&
+    !Object.keys(args).some((key) => key !== "name" || !branchRead) &&
+    (!branchRead ||
+      typeof args.name === "string" &&
+        /^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(args.name));
+}
 const pick = (value: unknown, keys: string[]): ObjectValue => {
   if (!object(value)) throw Error("invalid_provider_response");
   return Object.fromEntries(
@@ -250,12 +265,15 @@ export function createProviderReadHandler(options: {
 }) {
   const requestProvider = options.fetch ?? fetch;
   return async (request: Request): Promise<Response> => {
-    const reply = (status: number, body: unknown) =>
+    const reply = (status: number, body: unknown, providerStatus?: number) =>
       Response.json(body, {
         status,
         headers: {
           "cache-control": "no-store",
           "x-content-type-options": "nosniff",
+          ...(providerStatus !== undefined
+            ? { "x-sandy-provider-http-status": String(providerStatus) }
+            : {}),
         },
       });
     if (request.method !== "POST") {
@@ -282,13 +300,7 @@ export function createProviderReadHandler(options: {
     const operation = body.operation;
     const args = body.arguments ?? {};
     const branchRead = operation === "supabase.branches.get";
-    if (
-      !object(args) ||
-      Object.keys(args).some((key) => key !== "name" || !branchRead) ||
-      (branchRead &&
-        (typeof args.name !== "string" ||
-          !/^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$/.test(args.name)))
-    ) {
+    if (!providerReadArgumentsValid(operation, args)) {
       return reply(400, { error: "invalid_operation_arguments" });
     }
     if (!options.management) {
@@ -296,7 +308,10 @@ export function createProviderReadHandler(options: {
     }
     const url = `https://api.supabase.com/v1/projects/${PROJECT}${
       routes[operation]
-    }${branchRead ? encodeURIComponent(String(args.name)) : ""}`;
+    }${
+      branchRead ? encodeURIComponent(String((args as ObjectValue).name)) : ""
+    }`;
+    let observedProviderStatus: number | undefined;
     try {
       const response = await requestProvider(url, {
         method: Object.hasOwn(metadataQueries, operation) ? "POST" : "GET",
@@ -318,6 +333,7 @@ export function createProviderReadHandler(options: {
           : {}),
         signal: AbortSignal.timeout(20000),
       });
+      observedProviderStatus = response.status;
       const provider_request_id = response.headers.get("x-request-id") ??
         response.headers.get("sb-request-id");
       if (!response.ok) {
@@ -332,7 +348,7 @@ export function createProviderReadHandler(options: {
             error: "provider_entitlement_required",
             upstream_status: response.status,
             provider_request_id,
-          });
+          }, response.status);
         }
         // Do not return provider error bodies, credentials, or redirect targets.
         return reply(
@@ -344,11 +360,16 @@ export function createProviderReadHandler(options: {
             upstream_status: response.status,
             provider_request_id,
           },
+          response.status,
         );
       }
       const text = await response.text();
       if (text.length > 2_000_000) {
-        return reply(502, { error: "provider_response_too_large" });
+        return reply(
+          502,
+          { error: "provider_response_too_large" },
+          response.status,
+        );
       }
       const result = projectResult(operation, JSON.parse(text));
       return reply(200, {
@@ -366,19 +387,41 @@ export function createProviderReadHandler(options: {
           : {}),
         observed_at: new Date().toISOString(),
         provider_request_id,
-      });
+      }, response.status);
     } catch {
       return reply(502, {
         ok: false,
         operation,
         error: "provider_response_unavailable",
-      });
+      }, observedProviderStatus);
     }
   };
 }
 if (import.meta.main) {
-  Deno.serve(createProviderReadHandler({
-    service: Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
-    management: Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const db = createClient(Deno.env.get("SUPABASE_URL") ?? "", service, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const consumer = createCredentialConsumer({
+    db,
+    legacy: {
+      supabase_management: () =>
+        Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
+      github_api: () => {
+        throw Error("credential_consumer_not_configured");
+      },
+      gcp_access_token: () => {
+        throw Error("credential_consumer_not_configured");
+      },
+    },
+  });
+  Deno.serve(createGovernedProviderReadHandler({
+    service,
+    db,
+    operations: providerReadOperationNames,
+    validArguments: providerReadArgumentsValid,
+    core: (management) => createProviderReadHandler({ service, management }),
+    withManagementCredential: (execution, use) =>
+      consumer("supabase_management", execution, use),
   }));
 }

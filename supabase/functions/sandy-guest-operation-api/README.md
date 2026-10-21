@@ -6,6 +6,8 @@ The API gateway must authenticate the actual Controller user, require an enabled
 
 For a guest operation with `arguments.vm_name`, the canonical gateway uses `guestExecutionScope(vm_name)` and the contract hash from `guestOperations`. The safe `gcp.vm.tasks.get` receipt uses scope `{provider:"gcp_guest",project_id:"elaborate-haven-511518-a5",receipt_actor_id:<verified actor UUID>}`. Both identifiers are fixed server values, never caller-selected hosts or SSH credentials. All Compute methods use the immutable numeric instance ID; the pinned discovery parameter pattern in `compute_instance_binding.json` explicitly permits this form. The handler consumes the grant once. Queue acceptance returns `accepted:true,executed:false`; receipt queries never redispatch.
 
+Guest v2 resolves the current GCP credential consumer only after consuming the exact owner admission. The resolver rechecks the current owner, registry and provider scope; an active-key refusal cannot fall back to the existing WIF identity. Queue/status operations and the VM worker's separate metadata identity do not acquire this Compute credential. Apply credential-consumer migration `20261021006100` before deploying this cutover. Configuring the Ed25519 signer alone does not enroll a VM, dispatch a task or run startup code.
+
 Required deployment configuration:
 
 - Preserve Edge `verify_jwt=true`, `SUPABASE_URL`, the service-role binding and public `SUPABASE_ANON_KEY`.

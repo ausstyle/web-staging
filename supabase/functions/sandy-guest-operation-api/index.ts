@@ -15,6 +15,11 @@ import {
   type MachineAuth,
 } from "../_shared/sandy_machine_identity.ts";
 import {
+  ConsumerCredentialError,
+  type ConsumerExecution,
+  createCredentialConsumer,
+} from "../_shared/sandy_credential_consumer.ts";
+import {
   type AgentConfig,
   installMetadata,
   WORKER_SHA256,
@@ -94,6 +99,10 @@ export type GuestDependencies = {
     }
   >;
   getGcpAccessToken?: () => Promise<string>;
+  withGcpCredential?: <T>(
+    execution: ConsumerExecution,
+    use: (token: string) => Promise<T>,
+  ) => Promise<T>;
   fetch?: typeof fetch;
 };
 const obj = (v: unknown): v is ObjectValue =>
@@ -483,15 +492,10 @@ export function createGuestOperationHandler(deps: GuestDependencies) {
         return refuse(503, "guest_signing_configuration_required");
       }
     }
-    let token: string | undefined;
-    if (["install", "logs"].includes(op.kind)) {
-      try {
-        token = await deps.getGcpAccessToken?.();
-      } catch {
-        return refuse(424, "guest_provider_identity_unavailable");
-      }
-      if (!token) return refuse(424, "guest_provider_identity_unavailable");
-    }
+    if (
+      ["install", "logs"].includes(op.kind) && !deps.getGcpAccessToken &&
+      !deps.withGcpCredential
+    ) return refuse(424, "guest_provider_identity_unavailable");
     const inputSha = await argumentDigest(args);
     let grant;
     try {
@@ -516,7 +520,7 @@ export function createGuestOperationHandler(deps: GuestDependencies) {
     const common = { p_actor_id: body.actor_id };
     const record = async (
       outcome: string,
-      status: number,
+      status: number | null,
       result: ObjectValue,
     ) => {
       const saved = await call("sandy_api_finish_execution", {
@@ -581,158 +585,176 @@ export function createGuestOperationHandler(deps: GuestDependencies) {
           202,
         );
       }
-      const url =
-        `https://compute.googleapis.com/compute/v1/projects/${manifest.project_id}/zones/${manifest.zone}/instances/${
-          vm!.instance_id
-        }`;
-      const headers = {
-        authorization: `Bearer ${token}`,
-        "content-type": "application/json",
-      };
-      if (op.kind === "logs") {
-        const upstream = await fetcher(
-          url + "/serialPort?port=1&start=" +
-            encodeURIComponent(String(args.start)),
-          { headers, redirect: "error", signal: AbortSignal.timeout(20000) },
-        );
-        const raw = await boundedProviderJson(upstream);
-        if (!upstream.ok || !obj(raw) || typeof raw.contents !== "string") {
-          return refuse(502, "guest_bootstrap_logs_unavailable", {
-            provider_http_status: upstream.status,
-          });
-        }
-        const projection = {
-          contents: raw.contents.slice(-8192),
-          next: typeof raw.next === "string" ? raw.next : null,
-          truncated: raw.contents.length > 8192,
-          source: "compute_serial_port",
-          agent_installation_confirmed: false,
+      const provider = async (token: string): Promise<Response> => {
+        if (!token) throw Error("guest_provider_identity_unavailable");
+        const url =
+          `https://compute.googleapis.com/compute/v1/projects/${manifest.project_id}/zones/${manifest.zone}/instances/${
+            vm!.instance_id
+          }`;
+        const headers = {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json",
         };
-        await record("succeeded", upstream.status, projection);
-        return resultResponse(projection, op.operation, "observed", true);
-      }
-      const enrollment = await call("sandy_guest_get_status", {
-        ...common,
-        p_vm_name: vm!.vm_name,
-        p_job_id: null,
-      });
-      if (
-        enrollment.enabled !== true ||
-        !Number.isSafeInteger(enrollment.generation)
-      ) return refuse(424, "guest_enrollment_required");
-      const observed = await fetcher(url, {
-        headers,
-        redirect: "error",
-        signal: AbortSignal.timeout(20000),
-      });
-      const instance = await boundedProviderJson(observed);
-      if (
-        !observed.ok || !obj(instance) ||
-        String(instance.id) !== vm!.instance_id
-      ) return refuse(409, "guest_instance_binding_changed");
-      const config: AgentConfig = {
-        endpoint: deps.endpoint,
-        anon_jwt: deps.anonJwt,
-        vm_name: vm!.vm_name,
-        instance_id: vm!.instance_id,
-        project_id: vm!.project_id,
-        generation: Number(enrollment.generation),
-        key_id: deps.signing!.keyId,
-        public_key_spki_b64: deps.signing!.publicKeySpkiB64,
-        platform: vm!.platform,
-      };
-      const metadata = installMetadata(
-        instance,
-        String(args.expected_metadata_fingerprint),
-        config,
-        op.operation.endsWith(".update"),
-      );
-      const staged = await fetcher(url + "/setMetadata", {
-        method: "POST",
-        headers,
-        body: JSON.stringify(metadata),
-        redirect: "error",
-        signal: AbortSignal.timeout(20000),
-      });
-      const receipt = await boundedProviderJson(staged);
-      if (!staged.ok || !obj(receipt)) {
-        await record(
-          staged.status >= 500 ? "unknown" : "failed",
-          staged.status,
-          { error: "guest_install_metadata_not_accepted" },
-        );
-        return refuse(502, "guest_install_metadata_not_accepted", {
-          executed: true,
-          provider_http_status: staged.status,
+        if (op.kind === "logs") {
+          const upstream = await fetcher(
+            url + "/serialPort?port=1&start=" +
+              encodeURIComponent(String(args.start)),
+            { headers, redirect: "error", signal: AbortSignal.timeout(20000) },
+          );
+          const raw = await boundedProviderJson(upstream);
+          if (!upstream.ok || !obj(raw) || typeof raw.contents !== "string") {
+            return refuse(502, "guest_bootstrap_logs_unavailable", {
+              provider_http_status: upstream.status,
+            });
+          }
+          const projection = {
+            contents: raw.contents.slice(-8192),
+            next: typeof raw.next === "string" ? raw.next : null,
+            truncated: raw.contents.length > 8192,
+            source: "compute_serial_port",
+            agent_installation_confirmed: false,
+          };
+          await record("succeeded", upstream.status, projection);
+          return resultResponse(projection, op.operation, "observed", true);
+        }
+        const enrollment = await call("sandy_guest_get_status", {
+          ...common,
+          p_vm_name: vm!.vm_name,
+          p_job_id: null,
         });
-      }
-      if (receipt.error != null) {
-        await record("failed", staged.status, {
-          error: "guest_metadata_provider_operation_failed",
-        });
-        return refuse(502, "guest_metadata_provider_operation_failed", {
-          executed: true,
-        });
-      }
-      if (
-        typeof receipt.name !== "string" ||
-        !["PENDING", "RUNNING", "DONE"].includes(String(receipt.status))
-      ) {
-        await record("unknown", staged.status, {
-          error: "guest_provider_operation_contract_mismatch",
-        });
-        return refuse(502, "guest_provider_operation_contract_mismatch", {
-          executed: true,
-          reconciliation_required: true,
-        });
-      }
-      let confirmed = false;
-      try {
-        const readback = await fetcher(url, {
+        if (
+          enrollment.enabled !== true ||
+          !Number.isSafeInteger(enrollment.generation)
+        ) return refuse(424, "guest_enrollment_required");
+        const observed = await fetcher(url, {
           headers,
           redirect: "error",
           signal: AbortSignal.timeout(20000),
         });
-        const current = await boundedProviderJson(readback);
-        const currentMetadata = obj(current) && obj(current.metadata)
-          ? current.metadata
-          : null;
-        const expected = metadata.items.find((item) =>
-          item.key ===
-            (vm!.platform === "win32"
-              ? "windows-startup-script-ps1"
-              : "startup-script")
+        const instance = await boundedProviderJson(observed);
+        if (
+          !observed.ok || !obj(instance) ||
+          String(instance.id) !== vm!.instance_id
+        ) return refuse(409, "guest_instance_binding_changed");
+        const config: AgentConfig = {
+          endpoint: deps.endpoint,
+          anon_jwt: deps.anonJwt,
+          vm_name: vm!.vm_name,
+          instance_id: vm!.instance_id,
+          project_id: vm!.project_id,
+          generation: Number(enrollment.generation),
+          key_id: deps.signing!.keyId,
+          public_key_spki_b64: deps.signing!.publicKeySpkiB64,
+          platform: vm!.platform,
+        };
+        const metadata = installMetadata(
+          instance,
+          String(args.expected_metadata_fingerprint),
+          config,
+          op.operation.endsWith(".update"),
         );
-        confirmed = readback.ok && obj(current) &&
-          String(current.id) === vm!.instance_id && !!expected &&
-          Array.isArray(currentMetadata?.items) &&
-          currentMetadata.items.some((item) =>
-            obj(item) && item.key === expected.key &&
-            item.value === expected.value
+        const staged = await fetcher(url + "/setMetadata", {
+          method: "POST",
+          headers,
+          body: JSON.stringify(metadata),
+          redirect: "error",
+          signal: AbortSignal.timeout(20000),
+        });
+        const receipt = await boundedProviderJson(staged);
+        if (!staged.ok || !obj(receipt)) {
+          await record(
+            staged.status >= 500 ? "unknown" : "failed",
+            staged.status,
+            { error: "guest_install_metadata_not_accepted" },
           );
-      } catch {
-        /* The accepted provider request remains accepted; no staging proof is invented. */
-      }
-      const projection = {
-        metadata_request_accepted: true,
-        metadata_staged: confirmed,
-        metadata_readback_confirmed: confirmed,
-        provider_operation: receipt.name,
-        provider_operation_status: String(receipt.status),
-        worker_sha256: WORKER_SHA256,
-        installation_confirmed: false,
-        startup_execution_requires_reboot_or_provider_startup_runner: true,
+          return refuse(502, "guest_install_metadata_not_accepted", {
+            executed: true,
+            provider_http_status: staged.status,
+          });
+        }
+        if (receipt.error != null) {
+          await record("failed", staged.status, {
+            error: "guest_metadata_provider_operation_failed",
+          });
+          return refuse(502, "guest_metadata_provider_operation_failed", {
+            executed: true,
+          });
+        }
+        if (
+          typeof receipt.name !== "string" ||
+          !["PENDING", "RUNNING", "DONE"].includes(String(receipt.status))
+        ) {
+          await record("unknown", staged.status, {
+            error: "guest_provider_operation_contract_mismatch",
+          });
+          return refuse(502, "guest_provider_operation_contract_mismatch", {
+            executed: true,
+            reconciliation_required: true,
+          });
+        }
+        let confirmed = false;
+        try {
+          const readback = await fetcher(url, {
+            headers,
+            redirect: "error",
+            signal: AbortSignal.timeout(20000),
+          });
+          const current = await boundedProviderJson(readback);
+          const currentMetadata = obj(current) && obj(current.metadata)
+            ? current.metadata
+            : null;
+          const expected = metadata.items.find((item) =>
+            item.key ===
+              (vm!.platform === "win32"
+                ? "windows-startup-script-ps1"
+                : "startup-script")
+          );
+          confirmed = readback.ok && obj(current) &&
+            String(current.id) === vm!.instance_id && !!expected &&
+            Array.isArray(currentMetadata?.items) &&
+            currentMetadata.items.some((item) =>
+              obj(item) && item.key === expected.key &&
+              item.value === expected.value
+            );
+        } catch {
+          /* The accepted provider request remains accepted; no staging proof is invented. */
+        }
+        const projection = {
+          metadata_request_accepted: true,
+          metadata_staged: confirmed,
+          metadata_readback_confirmed: confirmed,
+          provider_operation: receipt.name,
+          provider_operation_status: String(receipt.status),
+          worker_sha256: WORKER_SHA256,
+          installation_confirmed: false,
+          startup_execution_requires_reboot_or_provider_startup_runner: true,
+        };
+        await record("accepted", staged.status, projection);
+        return resultResponse(
+          projection,
+          op.operation,
+          confirmed ? "metadata_staged" : "metadata_request_accepted",
+          true,
+          true,
+          202,
+        );
       };
-      await record("accepted", staged.status, projection);
-      return resultResponse(
-        projection,
-        op.operation,
-        confirmed ? "metadata_staged" : "metadata_request_accepted",
-        true,
-        true,
-        202,
-      );
+      return deps.withGcpCredential
+        ? await deps.withGcpCredential({
+          actorId: String(body.actor_id),
+          admissionId: grant.admission_id,
+          operation: op.operation,
+        }, provider)
+        : await provider(await deps.getGcpAccessToken!());
     } catch (e) {
+      if (e instanceof ConsumerCredentialError && !e.requestMayHaveExecuted) {
+        try {
+          await record("failed", e.providerHttpStatus, { error: e.code });
+        } catch {
+          /* The canonical admission remains available for reconciliation. */
+        }
+        return refuse(e.status, e.code);
+      }
       return refuse(
         503,
         e instanceof Error &&
@@ -765,6 +787,19 @@ if (import.meta.main) {
     publicKeySpkiB64 =
       Deno.env.get("SANDY_GUEST_ED25519_PUBLIC_KEY_SPKI_B64") ?? "",
     keyId = Deno.env.get("SANDY_GUEST_SIGNING_KEY_ID") ?? "";
+  const machine = createMachineAccessToken(db.auth as unknown as MachineAuth);
+  const consumer = createCredentialConsumer({
+    db,
+    legacy: {
+      gcp_access_token: machine,
+      supabase_management: () => {
+        throw Error("credential_consumer_not_configured");
+      },
+      github_api: () => {
+        throw Error("credential_consumer_not_configured");
+      },
+    },
+  });
   Deno.serve(createGuestOperationHandler({
     service,
     anonJwt,
@@ -773,9 +808,8 @@ if (import.meta.main) {
       ? { privateKeyPkcs8B64, publicKeySpkiB64, keyId }
       : undefined,
     rpc: async (name, args) => await db.rpc(name, args),
-    getGcpAccessToken: createMachineAccessToken(
-      db.auth as unknown as MachineAuth,
-    ),
+    withGcpCredential: (execution, use) =>
+      consumer("gcp_access_token", execution, use),
     verifyVm: async (jwt, audience) => {
       const { payload } = await jwtVerify(jwt, keys, {
         audience,

@@ -27,8 +27,20 @@ class DeployedApiVerificationTests(unittest.TestCase):
         for secret in (MANAGEMENT_KEY, USER_TOKEN):
             self.assertNotIn(secret, json.dumps(report))
 
-    def fake(self, *, leak=False, empty_catalogue=False, invalid_json=False):
+    def fake(self, *, leak=False, empty_catalogue=False, invalid_json=False, old_service_bypass=False):
         calls = []
+
+        def provider_read(operation):
+            if operation == "supabase.domains.get":
+                return HttpResult(424, {"ok": False, "error": "provider_entitlement_required"})
+            if operation == "supabase.branches.get":
+                return HttpResult(404, {"ok": False, "error": "provider_query_failed", "upstream_status": 404})
+            if invalid_json and operation == "supabase.project.health":
+                return HttpResult(200, failure="invalid_json_response")
+            result = {"id": PROJECT_REF} if operation == "supabase.projects.get" else []
+            if operation == "supabase.functions.secrets.list":
+                result = [{"name": "EXAMPLE", **({"value": "fixture-must-not-escape"} if leak else {})}]
+            return HttpResult(200, {"ok": True, "project_id": PROJECT_REF, "result": result, **({"result_limit": BOUNDED_METADATA[operation], "possibly_truncated": False} if operation in BOUNDED_METADATA else {})})
 
         def request(method, url, headers, body):
             calls.append((method, url, headers, body))
@@ -41,6 +53,15 @@ class DeployedApiVerificationTests(unittest.TestCase):
                 if headers.get("authorization") == "Bearer " + SERVICE_KEY:
                     return HttpResult(401, {"error": "invalid_identity"})
                 self.assertEqual(headers.get("authorization"), "Bearer " + USER_TOKEN)
+                if body.get("action") == "execute":
+                    # A real user session reaches the API; this test never
+                    # supplies or fabricates a handler admission context.
+                    self.assertEqual(set(body), {"action", "operation", "arguments"})
+                    value = provider_read(body["operation"])
+                    if value.failure:
+                        return value
+                    return HttpResult(value.status, {"ok": value.payload.get("ok") is True,
+                                                    "result": value.payload})
                 return HttpResult(200, {"ok": True, "operations": [] if empty_catalogue else [
                     {"operation": "engineering.preflight", "executable": True}]})
             if "authorization" not in headers:
@@ -52,17 +73,9 @@ class DeployedApiVerificationTests(unittest.TestCase):
                 return HttpResult(200, {"jsonrpc": "2.0", "id": body["id"], "result": result})
             self.assertEqual(url, BASE + "sandy-provider-read-api")
             self.assertEqual(headers.get("authorization"), "Bearer " + SERVICE_KEY)
-            operation = body["operation"]
-            if operation == "supabase.domains.get":
-                return HttpResult(424, {"error": "provider_entitlement_required"})
-            if operation == "supabase.branches.get":
-                return HttpResult(404, {"error": "provider_query_failed", "upstream_status": 404})
-            if invalid_json and operation == "supabase.project.health":
-                return HttpResult(200, failure="invalid_json_response")
-            result = {"id": PROJECT_REF} if operation == "supabase.projects.get" else []
-            if operation == "supabase.functions.secrets.list":
-                result = [{"name": "EXAMPLE", **({"value": "fixture-must-not-escape"} if leak else {})}]
-            return HttpResult(200, {"ok": True, "project_id": PROJECT_REF, "result": result, **({"result_limit": BOUNDED_METADATA[operation], "possibly_truncated": False} if operation in BOUNDED_METADATA else {})})
+            self.assertEqual(body, {"operation": "supabase.projects.get", "arguments": {}})
+            return provider_read(body["operation"]) if old_service_bypass else HttpResult(400, {
+                "ok": False, "executed": False, "error": "consumed_provider_read_context_required"})
 
         return request, calls
 
@@ -73,6 +86,7 @@ class DeployedApiVerificationTests(unittest.TestCase):
         by_name = {row["test"]: row for row in report["tests"]}
         self.assertEqual(by_name["authenticated_mcp_api_preflight_execution"]["outcome"], "passed")
         self.assertEqual(by_name["gateway_rejects_service_key_as_user_session"]["outcome"], "passed")
+        self.assertEqual(by_name["provider_read_rejects_service_without_consumed_admission"]["outcome"], "passed")
         self.assertEqual(by_name["supabase.domains.get"]["outcome"], "blocked")
         self.assertFalse(report["complete"])
         for _, url, headers, body in calls:
@@ -92,10 +106,13 @@ class DeployedApiVerificationTests(unittest.TestCase):
             self.assertFalse(any(body and body.get("method") == "tools/call" for _, _, _, body in calls))
 
     def test_missing_controller_session_defers_only_user_path_tests(self):
-        request, _ = self.fake()
+        request, calls = self.fake()
         report = verify({"SANDY_SUPABASE_MANAGEMENT_TOKEN": MANAGEMENT_KEY}, request)
-        self.assertTrue(any(row["test"] == "supabase.projects.get" and row["outcome"] == "passed" for row in report["tests"]))
+        self.assertTrue(any(row["test"] == "provider_read_rejects_service_without_consumed_admission" and row["outcome"] == "passed" for row in report["tests"]))
         self.assertEqual(report["tests"][-1]["blocker"], "controller_user_session_unavailable")
+        self.assertFalse(any(body and body.get("action") == "execute" for _, _, _, body in calls))
+        self.assertFalse(any(body and any(key in body for key in ("actor_id", "admission_id", "grant_id")) for _, _, _, body in calls))
+        self.assertIn("authenticated_provider_read_execution", report["deferred"])
 
     def test_secret_projection_violation_and_empty_catalogues_cannot_pass(self):
         request, _ = self.fake(leak=True, empty_catalogue=True)
@@ -108,10 +125,18 @@ class DeployedApiVerificationTests(unittest.TestCase):
 
     def test_invalid_provider_json_is_a_failure_not_an_external_blocker(self):
         request, _ = self.fake(invalid_json=True)
-        report = verify({"SANDY_SUPABASE_MANAGEMENT_TOKEN": MANAGEMENT_KEY}, request)
+        report = verify({"SANDY_SUPABASE_MANAGEMENT_TOKEN": MANAGEMENT_KEY,
+                         "SANDY_CONTROLLER_ACCESS_TOKEN": USER_TOKEN}, request)
         row = next(row for row in report["tests"] if row["test"] == "supabase.project.health")
         self.assertEqual(row["outcome"], "failed")
         self.assertNotIn("blocker", row)
+
+    def test_old_service_only_reader_cannot_pass_the_new_admission_boundary(self):
+        request, calls = self.fake(old_service_bypass=True)
+        report = verify({"SANDY_SUPABASE_MANAGEMENT_TOKEN": MANAGEMENT_KEY}, request)
+        row = next(row for row in report["tests"] if row["test"] == "provider_read_rejects_service_without_consumed_admission")
+        self.assertEqual(row["outcome"], "failed")
+        self.assertFalse(any(body and "admission_id" in body for _, _, _, body in calls))
 
 
 if __name__ == "__main__":

@@ -8,6 +8,13 @@ import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
 import { parseApiJobRoute, resolveApiJobRoute } from "./api_job_routes.ts";
+import {
+  buildCustomerKeyReadRequest,
+  type CustomerKeyPrincipal,
+  getCustomerKeyReceipt,
+  governedCustomerKeyExecution,
+  resolveCustomerKeyRequest,
+} from "./customer_key_principal.ts";
 import type { ExecutionAdmission } from "./access_policy.ts";
 import {
   executePolicyOperation,
@@ -363,6 +370,26 @@ function validOperation(value: unknown): value is string {
 function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
+async function executionContractDigest(
+  entry: Record<string, unknown>,
+): Promise<string> {
+  const configured = isObject(entry.error_contract)
+    ? entry.error_contract.contract_sha256
+    : null;
+  return typeof configured === "string" && /^[a-f0-9]{64}$/.test(configured)
+    ? configured
+    : await argumentDigest(Object.fromEntries([
+      "operation",
+      "handler",
+      "permission_scope",
+      "is_mutation",
+      "input_schema",
+      "output_schema",
+      "api_exposed",
+      "ai_exposed",
+      "verified",
+    ].map((key) => [key, entry[key]])));
+}
 function enabledEntry(
   entry: unknown,
 ): entry is Record<string, unknown> & {
@@ -526,7 +553,9 @@ async function upstreamResult(
   operation: string,
   response: Response,
   outputSchema: unknown,
+  trustedProviderStatus?: number,
 ) {
+  const upstreamStatus = trustedProviderStatus ?? response.status;
   let result: unknown;
   try {
     result = await response.json();
@@ -535,7 +564,7 @@ async function upstreamResult(
       ok: false,
       operation,
       executed: true,
-      upstream_status: response.status,
+      upstream_status: upstreamStatus,
       error: "upstream_invalid_json",
     });
   }
@@ -544,7 +573,7 @@ async function upstreamResult(
       ok: false,
       operation,
       executed: true,
-      upstream_status: response.status,
+      upstream_status: upstreamStatus,
       error: "upstream_invalid_response",
       result,
     });
@@ -555,7 +584,7 @@ async function upstreamResult(
       ok: false,
       operation,
       executed: true,
-      upstream_status: response.status,
+      upstream_status: upstreamStatus,
       error: "upstream_output_schema_mismatch",
     });
   }
@@ -572,7 +601,7 @@ async function upstreamResult(
     ok,
     operation,
     executed: true,
-    upstream_status: response.status,
+    upstream_status: upstreamStatus,
     result,
     ...(!ok
       ? {
@@ -703,7 +732,27 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       | { id: string; email?: string; email_confirmed_at?: string | null }
       | null = null;
     let credential: CredentialResolution = null;
-    if (dependencies.resolveCredential) {
+    let customerKey: CustomerKeyPrincipal | null = null;
+    const customerKeySecret = request.headers.get("x-sandy-api-key");
+    const customerKeyResolution = await resolveCustomerKeyRequest(
+      db,
+      request,
+      anon,
+    );
+    if (customerKeyResolution) {
+      if (!customerKeyResolution.ok) {
+        return reply(customerKeyResolution.status, {
+          ok: false,
+          error: customerKeyResolution.error,
+          executed: false,
+        });
+      }
+      if (internalExecution) {
+        return reply(403, { error: "job_lease_required", executed: false });
+      }
+      customerKey = customerKeyResolution.value;
+    }
+    if (!customerKey && dependencies.resolveCredential) {
       try {
         credential = await dependencies.resolveCredential(
           request.clone(),
@@ -731,7 +780,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         },
       );
     }
-    if (credential) {
+    if (customerKey) {
+      // This principal has a key ID and tenant, and no Auth user or email.
+    } else if (credential) {
       if (
         !["api_key", "job_lease"].includes(credential.kind) ||
         !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
@@ -786,14 +837,19 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       }
       user = data.user;
     }
-    if (!user) return reply(401, { error: "invalid_identity" });
-    const { data: admin, error: roleError } = await db.from(
-      "sandy_controller_admins",
-    )
-      .select("role,enabled").eq("auth_user_id", user.id).eq("enabled", true)
-      .maybeSingle();
+    if (!user && !customerKey) return reply(401, { error: "invalid_identity" });
+    const { data: admin, error: roleError } = user
+      ? await db.from(
+        "sandy_controller_admins",
+      )
+        .select("role,enabled").eq("auth_user_id", user.id).eq("enabled", true)
+        .maybeSingle()
+      : { data: null, error: null };
     if (roleError) return reply(503, { error: "authorisation_unavailable" });
     if (jobRoute) {
+      if (customerKey || !user) {
+        return reply(404, { error: "job_not_found", executed: false });
+      }
       const resolved = await resolveApiJobRoute(db, {
         kind: delegation?.kind ?? "user",
         actorId: user.id,
@@ -843,8 +899,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     // Reuse the existing customer-access directory; never trust a caller's
     // customer_id. The downstream customer handler independently verifies the
     // same user session and scopes every resource query to that tenant.
-    let tenantAccess = false;
-    let agendaCustomerId: string | null = null;
+    let tenantAccess = customerKey !== null;
+    let agendaCustomerId: string | null = customerKey?.customerId ?? null;
     const additionalGrant = typeof body.operation === "string"
       ? customerServiceGrant(body.operation)
       : undefined;
@@ -858,7 +914,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         isCustomerOperation(body.operation) || additionalGrant === "portal" ||
         additionalGrant === "portal_and_agenda");
     if (
-      typeof user.email === "string" &&
+      typeof user?.email === "string" &&
       (customerRequest || body.action === "list" || !admin)
     ) {
       const { data: access, error: accessError } = await db.from(
@@ -879,7 +935,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     let memoryAccess = false;
     let portalCustomerId: string | null = null;
     if (
-      typeof user.email === "string" && user.email_confirmed_at &&
+      typeof user?.email === "string" && user.email_confirmed_at &&
       (memoryRequest || body.action === "list" || !admin)
     ) {
       const { data: portal, error: portalError } = await db.from(
@@ -909,12 +965,14 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     if (!admin && !tenantAccess && !memoryAccess) {
       return reply(403, { error: "controller_administrator_required" });
     }
-    const customerServicePrincipal = {
-      id: user.id,
-      portalCustomerId,
-      agendaCustomerId,
-      controllerOwner: admin?.role === "owner",
-    };
+    const customerServicePrincipal = user
+      ? {
+        id: user.id,
+        portalCustomerId,
+        agendaCustomerId,
+        controllerOwner: admin?.role === "owner",
+      }
+      : null;
     if (body.action === "list") {
       const { data, error } = dependencies.catalogueRpc
         ? await db.rpc("sandy_api_catalogue_records", {
@@ -936,14 +994,21 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             !requiresUserSession(entry.operation))
         )
         .filter((entry) =>
-          extensionKind(entry.operation)
+          customerKey
+            ? entry.is_mutation === false &&
+              (customerKey.allowedOperations.includes(entry.operation) ||
+                entry.operation === "system.execution.get")
+            : extensionKind(entry.operation)
             ? extensionHasAccess(
               entry.operation,
-              customerServicePrincipal,
+              customerServicePrincipal!,
               !!user!.email_confirmed_at,
             )
             : isCustomerServiceOperation(entry.operation)
-            ? hasCustomerServiceGrant(customerServicePrincipal, entry.operation)
+            ? hasCustomerServiceGrant(
+              customerServicePrincipal!,
+              entry.operation,
+            )
             : (isMemoryRead(entry.operation) ||
                 isCustomerOperation(entry.operation))
             ? memoryAccess
@@ -953,7 +1018,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             : !!admin
         )
         .filter((entry) =>
-          !ownerOnly(entry.operation) || admin?.role === "owner"
+          !ownerOnly(entry.operation) || admin?.role === "owner" ||
+          (customerKey !== null && entry.operation === "system.execution.get")
         )
         .map((entry) => ({
           ...entry,
@@ -976,6 +1042,14 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       return reply(400, { error: "invalid_operation" });
     }
     const operation = body.operation;
+    const customerKeyReceipt = customerKey !== null &&
+      operation === "system.execution.get";
+    if (
+      customerKey && !customerKey.allowedOperations.includes(operation) &&
+      !customerKeyReceipt
+    ) {
+      return reply(404, { error: "operation_not_registered", executed: false });
+    }
     if (
       delegation && !delegation.allowedOperations.includes(operation) &&
       !(delegation.kind === "api_key" && operation === "system.execution.get")
@@ -1028,14 +1102,17 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       });
     }
     if (
-      extensionKind(operation)
+      customerKey
+        ? !customerKey.allowedOperations.includes(operation) &&
+          !customerKeyReceipt
+        : extensionKind(operation)
         ? !extensionHasAccess(
           operation,
-          customerServicePrincipal,
-          !!user.email_confirmed_at,
+          customerServicePrincipal!,
+          !!user?.email_confirmed_at,
         )
         : isCustomerServiceOperation(operation)
-        ? !hasCustomerServiceGrant(customerServicePrincipal, operation)
+        ? !hasCustomerServiceGrant(customerServicePrincipal!, operation)
         : (isMemoryRead(operation) || isCustomerOperation(operation))
         ? !memoryAccess
         : (isCustomerRead(operation) || isCustomerMutationOperation(operation))
@@ -1052,7 +1129,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (ownerOnly(operation) && admin?.role !== "owner") {
+    if (
+      ownerOnly(operation) && admin?.role !== "owner" && !customerKeyReceipt
+    ) {
       return reply(403, { error: "owner_required", executed: false });
     }
     if (body.action === "describe") {
@@ -1123,6 +1202,58 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         error: extensionReady.unavailable_reason,
         executed: false,
       });
+    }
+    if (customerKey) {
+      if (!customerKeySecret) {
+        return reply(401, { error: "invalid_customer_key", executed: false });
+      }
+      if (customerKeyReceipt) {
+        const result = await getCustomerKeyReceipt(
+          db,
+          customerKey,
+          customerKeySecret,
+          isObject(body.arguments) ? body.arguments.request_id : undefined,
+        );
+        return result.ok
+          ? applicationResult(
+            operation,
+            reply(200, result.value),
+            entry.output_schema,
+          )
+          : reply(result.status, {
+            ok: false,
+            error: result.error,
+            executed: false,
+          });
+      }
+      const forwarded = buildCustomerKeyReadRequest(
+        base,
+        anon,
+        customerKey,
+        customerKeySecret,
+        operation,
+        body.arguments ?? {},
+      );
+      if (!forwarded) {
+        return reply(400, {
+          error: "invalid_operation_arguments",
+          executed: false,
+        });
+      }
+      return governedCustomerKeyExecution(db, customerKey, customerKeySecret, {
+        operation,
+        arguments: body.arguments ?? {},
+        requestId: request.headers.get("x-sandy-request-id") ??
+          crypto.randomUUID(),
+        channel: body.channel === "mcp" ? "mcp" : "api",
+        contractSha256: await executionContractDigest(entry),
+      }, async () => {
+        const result = await fetchBackend(forwarded.url, forwarded.init);
+        return upstreamResult(operation, result, entry.output_schema);
+      });
+    }
+    if (!user || !customerServicePrincipal) {
+      return reply(401, { error: "invalid_identity" });
     }
     const dispatchUser = user;
     const originalChannel = body.channel === "mcp" ? "mcp" : "api";
@@ -1732,6 +1863,16 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         // reaches this fixed read-only handler through this gateway.
         const args = body.arguments ?? {};
         if (
+          handler.functionName === "sandy-provider-read-api" &&
+          dependencies.executionPolicy && !_admission
+        ) {
+          return reply(424, {
+            ok: false,
+            error: "consumed_read_admission_required",
+            executed: false,
+          });
+        }
+        if (
           !isObject(args) ||
           (args.limit !== undefined &&
             (!Number.isInteger(args.limit) || Number(args.limit) < 1 ||
@@ -1752,10 +1893,47 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                 apikey: anon,
                 "content-type": "application/json",
               },
-              body: JSON.stringify({ operation, arguments: args }),
+              body: JSON.stringify({
+                operation,
+                arguments: args,
+                ...(handler.functionName === "sandy-provider-read-api" &&
+                    _admission
+                  ? {
+                    protocol: "consumed-admission-v1",
+                    actor_id: dispatchUser.id,
+                    tenant_id: null,
+                    request_id: _admission.requestId,
+                    grant_id: _admission.grantId,
+                    admission_id: _admission.admissionId,
+                    credential_id: delegation?.credentialId ?? null,
+                  }
+                  : {}),
+              }),
               signal: AbortSignal.timeout(20000),
             },
           );
+          if (handler.functionName === "sandy-provider-read-api") {
+            if (!response.ok) {
+              return applicationResult(
+                operation,
+                response,
+                entry.output_schema,
+              );
+            }
+            const statusHeader = response.headers.get(
+              "x-sandy-provider-http-status",
+            );
+            const providerStatus =
+              statusHeader !== null && /^[1-5][0-9]{2}$/.test(statusHeader)
+                ? Number(statusHeader)
+                : undefined;
+            return upstreamResult(
+              operation,
+              response,
+              entry.output_schema,
+              providerStatus,
+            );
+          }
           return upstreamResult(operation, response, entry.output_schema);
         } catch {
           return reply(502, {
@@ -1901,27 +2079,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         extensionOwnsGrant(operation)) &&
       !isPolicyOperation(operation)
     ) {
-      const configuredContract = isObject(entry.error_contract)
-        ? entry.error_contract.contract_sha256
-        : null;
-      const contractSha256 = typeof configuredContract === "string" &&
-          /^[a-f0-9]{64}$/.test(configuredContract)
-        ? configuredContract
-        : await argumentDigest(
-          Object.fromEntries(
-            [
-              "operation",
-              "handler",
-              "permission_scope",
-              "is_mutation",
-              "input_schema",
-              "output_schema",
-              "api_exposed",
-              "ai_exposed",
-              "verified",
-            ].map((key) => [key, entry[key]]),
-          ),
-        );
+      const contractSha256 = await executionContractDigest(entry);
       let scope: unknown;
       try {
         scope = extensionOwnsGrant(operation)

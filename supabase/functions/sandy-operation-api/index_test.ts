@@ -9,6 +9,7 @@ import { orchestrationContracts } from "../sandy-orchestration-api/contracts.ts"
 import { extensionContracts } from "./installed_extensions.ts";
 import { providerOperations } from "../sandy-provider-operation-api/gateway.ts";
 import { installedOperationIds } from "./index.ts";
+import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
 
 const preflight = {
   operation: "engineering.preflight",
@@ -68,6 +69,7 @@ function harness(options: Options = {}) {
   const calls: { url: string; init?: RequestInit }[] = [];
   const rpcCalls: { name: string; args: unknown }[] = [];
   const identityTokens: string[] = [];
+  const tables: string[] = [];
   const db = {
     async rpc(name: string, args: unknown) {
       rpcCalls.push({ name, args });
@@ -100,6 +102,7 @@ function harness(options: Options = {}) {
       },
     },
     from(table: string) {
+      tables.push(table);
       let rows = table === "sandy_memory_portal_accounts"
         ? options.memoryTenant
           ? [{
@@ -208,7 +211,7 @@ function harness(options: Options = {}) {
         body: JSON.stringify(body),
       }),
     );
-  return { handler, request, calls, rpcCalls, identityTokens };
+  return { handler, request, calls, rpcCalls, identityTokens, tables };
 }
 
 Deno.test("gateway requires authenticated controller membership", async () => {
@@ -737,6 +740,421 @@ const customerRead = (operation = "tasks.list") => ({
   operation,
   handler: "sandy-operations-api",
   permission_scope: `${operation.split(".")[0]}:read`,
+});
+const opaqueKey = "sandyop_" + "a".repeat(64);
+const opaqueKeyId = "40000000-0000-4000-8000-000000000001";
+const opaqueTenant = "40000000-0000-4000-8000-000000000002";
+const opaqueAdmission = "40000000-0000-4000-8000-000000000003";
+const opaqueGrant = "40000000-0000-4000-8000-000000000004";
+function opaqueKeyHarness(
+  options: { refusal?: string; ai?: boolean; backend?: Options["backend"] } =
+    {},
+) {
+  return harness({
+    role: null,
+    rows: [
+      { ...customerRead(), ai_exposed: options.ai ?? true },
+      customerRead("calendar.list"),
+      release,
+    ],
+    rpcHandler(name, args) {
+      if (name === "sandy_api_authenticate_customer_key") {
+        return {
+          ok: true,
+          kind: "customer_key",
+          key_id: opaqueKeyId,
+          customer_id: opaqueTenant,
+          scopes: ["tasks:read"],
+          allowed_operations: ["tasks.get", "tasks.list"],
+          key_revision_sha256: "b".repeat(64),
+          expires_at: null,
+        };
+      }
+      if (name === "sandy_api_admit_customer_key_execution") {
+        assert.equal(args.p_key_id, opaqueKeyId);
+        assert.equal(args.p_customer_id, opaqueTenant);
+        assert.equal(Object.hasOwn(args, "p_actor_id"), false);
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          principal_kind: "customer_key",
+          customer_key_id: opaqueKeyId,
+          tenant_id: opaqueTenant,
+          admission_id: opaqueAdmission,
+          grant_id: opaqueGrant,
+          state: "admitted",
+          executed: false,
+          expires_at: "2099-01-01T00:00:00Z",
+        };
+      }
+      if (name === "sandy_api_consume_customer_key_grant") {
+        return options.refusal
+          ? { ok: false, error: options.refusal, http_status: 403 }
+          : {
+            ok: true,
+            allowed: true,
+            reused: false,
+            admission_id: opaqueAdmission,
+          };
+      }
+      if (name === "sandy_api_finish_execution") {
+        return {
+          ok: true,
+          admission_id: opaqueAdmission,
+          state: args.p_outcome,
+          reused: false,
+        };
+      }
+      throw Error("unexpected customer key RPC");
+    },
+    backend: options.backend ?? (() => Response.json({ ok: true, items: [] })),
+  });
+}
+function opaqueRequest(body: unknown, bearer = "test-anon-key") {
+  return new Request("https://local.invalid", {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${bearer}`,
+      "x-sandy-api-key": opaqueKey,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+}
+Deno.test("legacy customer keys have explicit tenant scope and no fabricated Auth/Controller/Agenda identity in the composed gateway", async () => {
+  const h = opaqueKeyHarness();
+  const list = await h.handler(opaqueRequest({ action: "list" }));
+  assert.equal(list.status, 200);
+  assert.deepEqual(
+    (await list.json()).operations.map((r: Row) => r.operation),
+    ["tasks.list"],
+  );
+  assert.deepEqual(h.identityTokens, []);
+  assert.deepEqual(h.tables, ["sandy_operation_registry"]);
+  for (
+    const operation of [
+      "calendar.list",
+      "tasks.create",
+      "customer.keys.create",
+      "memory.tree",
+      "supabase.projects.get",
+    ]
+  ) {
+    const result = await h.handler(
+      opaqueRequest({ action: "execute", operation, arguments: {} }),
+    );
+    assert.equal(result.status, 404);
+  }
+  const result = await h.handler(
+    opaqueRequest({
+      action: "execute",
+      operation: "tasks.list",
+      arguments: {},
+    }),
+  );
+  assert.equal(result.status, 200);
+  assert.equal((await result.json()).admission_id, opaqueAdmission);
+  assert.equal(h.calls.length, 1);
+  assert.equal(
+    new Headers(h.calls[0].init?.headers).get("authorization"),
+    `Bearer ${opaqueKey}`,
+  );
+  assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+    operation: "tasks.list",
+    arguments: {},
+  });
+  assert.deepEqual(h.rpcCalls.slice(-4).map((c) => c.name), [
+    "sandy_api_authenticate_customer_key",
+    "sandy_api_admit_customer_key_execution",
+    "sandy_api_consume_customer_key_grant",
+    "sandy_api_finish_execution",
+  ]);
+  assert.deepEqual(h.identityTokens, []);
+  assert.ok(h.tables.every((t) => t === "sandy_operation_registry"));
+});
+Deno.test("customer key gateway preserves mixed-auth rejection, final grant refusal, AI flags and job tenant non-disclosure", async () => {
+  const h = opaqueKeyHarness();
+  assert.equal(
+    (await h.handler(opaqueRequest({ action: "list" }, "actual-user-session")))
+      .status,
+    401,
+  );
+  assert.equal(h.rpcCalls.length, 0);
+  const hidden = await h.handler(
+    new Request(`https://local.invalid/v1/jobs/${retryJobId}`, {
+      headers: {
+        authorization: "Bearer test-anon-key",
+        "x-sandy-api-key": opaqueKey,
+      },
+    }),
+  );
+  assert.equal(hidden.status, 404);
+  assert.ok(
+    h.rpcCalls.every((c) => c.name === "sandy_api_authenticate_customer_key"),
+  );
+  const refused = opaqueKeyHarness({ refusal: "customer_key_scope_denied" });
+  assert.equal(
+    (await refused.handler(
+      opaqueRequest({
+        action: "execute",
+        operation: "tasks.list",
+        arguments: {},
+      }),
+    )).status,
+    403,
+  );
+  assert.equal(refused.calls.length, 0);
+  const ai = opaqueKeyHarness({ ai: false });
+  assert.equal(
+    (await ai.handler(
+      opaqueRequest({
+        action: "execute",
+        operation: "tasks.list",
+        arguments: {},
+        channel: "mcp",
+      }),
+    )).status,
+    403,
+  );
+  assert.equal(ai.calls.length, 0);
+  assert.equal(
+    (await ai.handler(
+      opaqueRequest({
+        action: "execute",
+        operation: "tasks.list",
+        arguments: {},
+      }),
+    )).status,
+    200,
+  );
+});
+Deno.test("canonical MCP reaches the governed customer key API with its original opaque backend identity", async () => {
+  const h = opaqueKeyHarness(), apiRequests: Request[] = [];
+  const mcp = createHandler(
+    createApi(
+      "https://example.supabase.co",
+      "test-anon-key",
+      (async (input, init) => {
+        const req = new Request(input, init);
+        apiRequests.push(req.clone());
+        return h.handler(req);
+      }) as typeof fetch,
+    ),
+  );
+  const response = await mcp(
+    new Request("https://local.invalid/mcp", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer test-anon-key",
+        "x-sandy-api-key": opaqueKey,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "tools/call",
+        params: { name: "tasks.list", arguments: {} },
+      }),
+    }),
+  );
+  assert.equal(response.status, 200);
+  const result = await response.json();
+  assert.equal(result.result.isError, false);
+  assert.deepEqual(result.result.structuredContent, { ok: true, items: [] });
+  assert.equal(apiRequests.length, 1);
+  assert.equal(apiRequests[0].headers.get("x-sandy-api-key"), opaqueKey);
+  assert.equal((await apiRequests[0].json()).channel, "mcp");
+  assert.deepEqual(h.identityTokens, []);
+  assert.equal(h.calls.length, 1);
+  assert.equal(h.rpcCalls.length, 4);
+});
+Deno.test("customer key execution receipt URLs recover only projected own-key evidence without admitting or dispatching again", async () => {
+  const requestId = "40000000-0000-4000-8000-000000000005";
+  const h = harness({
+    role: null,
+    rows: [{
+      ...policyOperationContracts["system.execution.get"],
+      operation: "system.execution.get",
+      handler: "sandy-operation-api",
+      api_exposed: true,
+      ai_exposed: true,
+      verified: false,
+    }],
+    rpcHandler(name, args) {
+      if (name === "sandy_api_authenticate_customer_key") {
+        return {
+          ok: true,
+          kind: "customer_key",
+          key_id: opaqueKeyId,
+          customer_id: opaqueTenant,
+          scopes: ["tasks:read"],
+          allowed_operations: ["tasks.get", "tasks.list"],
+          key_revision_sha256: "b".repeat(64),
+          expires_at: null,
+        };
+      }
+      assert.equal(name, "sandy_api_get_customer_key_receipt");
+      assert.equal(args.p_key_id, opaqueKeyId);
+      assert.equal(args.p_customer_id, opaqueTenant);
+      assert.equal(args.p_request_id, requestId);
+      return {
+        ok: true,
+        admission_id: opaqueAdmission,
+        request_id: requestId,
+        operation: "tasks.list",
+        request_state: "consumed",
+        accepted: false,
+        executed: null,
+        completed: false,
+        outcome: "pending",
+        provider_http_status: null,
+        provider_request_id_sha256: null,
+        result_sha256: null,
+        reconciliation_required: true,
+        redispatch_permitted: false,
+        created_at: "2026-10-21T00:00:00Z",
+        finished_at: null,
+        grant_id: opaqueGrant,
+        key_hash: "must not expose",
+      };
+    },
+  });
+  const result = await h.handler(
+    new Request(`https://local.invalid/v1/executions/${requestId}`, {
+      headers: {
+        authorization: "Bearer test-anon-key",
+        "x-sandy-api-key": opaqueKey,
+      },
+    }),
+  );
+  assert.equal(result.status, 200);
+  const body = await result.json();
+  assert.equal(body.result.executed, null);
+  assert.equal(body.result.redispatch_permitted, false);
+  assert.equal(Object.hasOwn(body.result, "grant_id"), false);
+  assert.equal(JSON.stringify(body).includes("must not expose"), false);
+  assert.deepEqual(h.rpcCalls.map((c) => c.name), [
+    "sandy_api_authenticate_customer_key",
+    "sandy_api_get_customer_key_receipt",
+  ]);
+  assert.deepEqual(h.identityTokens, []);
+  assert.equal(h.calls.length, 0);
+  assert.ok(h.tables.every((t) => t === "sandy_operation_registry"));
+});
+Deno.test("original provider read dispatch carries one consumed versioned proof with its actual arguments and receipt", async () => {
+  const operation = "supabase.branches.get",
+    requestId = "50000000-0000-4000-8000-000000000001";
+  const readArguments = { name: "main" };
+  const expectedInputDigest = await argumentDigest(readArguments);
+  const admission = "50000000-0000-4000-8000-000000000002",
+    grant = "50000000-0000-4000-8000-000000000003";
+  let refusedBeforeProvider = false;
+  const h = harness({
+    actorId: retryActorId,
+    executionPolicy: true,
+    backend: () =>
+      refusedBeforeProvider
+        ? Response.json({
+          ok: false,
+          error: "consumer_active_binding_refused",
+          executed: false,
+        }, { status: 424 })
+        : Response.json({ ok: true }, {
+          headers: { "x-sandy-provider-http-status": "201" },
+        }),
+    rows: [{
+      ...infrastructure(operation),
+      handler: "sandy-provider-read-api",
+      input_schema: {
+        type: "object",
+        required: ["name"],
+        properties: { name: { type: "string" } },
+        additionalProperties: false,
+      },
+    }],
+    rpcHandler(name, args) {
+      if (name === "sandy_api_admit_execution") {
+        assert.equal(args.p_input_sha256, expectedInputDigest);
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: admission,
+          grant_id: grant,
+          state: "admitted",
+          executed: false,
+          expires_at: "2099-01-01T00:00:00Z",
+        };
+      }
+      if (name === "sandy_api_consume_execution_grant") {
+        assert.equal(args.p_input_sha256, expectedInputDigest);
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: admission,
+        };
+      }
+      if (name === "sandy_api_finish_execution") {
+        assert.equal(
+          args.p_provider_http_status,
+          refusedBeforeProvider ? null : 201,
+        );
+        return {
+          ok: true,
+          admission_id: admission,
+          state: args.p_outcome,
+          reused: false,
+        };
+      }
+      throw Error("unexpected RPC");
+    },
+  });
+  const response = await h.handler(
+    new Request("https://local.invalid", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer original-user-jwt",
+        "content-type": "application/json",
+        "x-sandy-request-id": requestId,
+      },
+      body: JSON.stringify({
+        action: "execute",
+        operation,
+        arguments: readArguments,
+      }),
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).upstream_status, 201);
+  assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+    protocol: "consumed-admission-v1",
+    operation,
+    arguments: readArguments,
+    actor_id: retryActorId,
+    tenant_id: null,
+    request_id: requestId,
+    grant_id: grant,
+    admission_id: admission,
+    credential_id: null,
+  });
+  assert.deepEqual(h.rpcCalls.map((c) => c.name), [
+    "sandy_api_admit_execution",
+    "sandy_api_consume_execution_grant",
+    "sandy_api_finish_execution",
+  ]);
+  assert.equal(h.calls.length, 1);
+  refusedBeforeProvider = true;
+  const refused = await h.request({
+    action: "execute",
+    operation,
+    arguments: readArguments,
+  });
+  assert.equal(refused.status, 424);
+  assert.equal((await refused.json()).executed, false);
+  assert.equal(h.rpcCalls.length, 6);
+  assert.equal(h.calls.length, 2);
 });
 const memoryRead = (operation = "memory.tree") => ({
   ...preflight,

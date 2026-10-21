@@ -206,6 +206,26 @@ Deno.test("provider add-on prerequisite is explicit and excludes billing details
   assert.ok(!text.includes("billing"));
 });
 
+Deno.test("trusted provider status header reflects actual Management responses and is absent before dispatch", async () => {
+  const accepted = harness({ id: "zmqlyygzqoidkcwdysok" }, 201);
+  const response = await accepted.request("supabase.projects.get");
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("x-sandy-provider-http-status"), "201");
+  const rejected = await accepted.request(
+    "supabase.projects.get",
+    {},
+    "user-session",
+  );
+  assert.equal(rejected.headers.get("x-sandy-provider-http-status"), null);
+  const entitlement = harness({ error: { code: "entitlement_required" } }, 400);
+  assert.equal(
+    (await entitlement.request("supabase.domains.get")).headers.get(
+      "x-sandy-provider-http-status",
+    ),
+    "400",
+  );
+});
+
 Deno.test("database metadata operations use fixed provider-enforced read-only queries and omit SQL bodies and private data", async () => {
   const cases: [string, Record<string, unknown>][] = [
     ["supabase.db.migrations.list", { version: "20261020", name: "test" }],

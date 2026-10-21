@@ -17,6 +17,7 @@ import {
   canonicalJson,
 } from "../_shared/sandy_api_protocol.ts";
 import { installMetadata, WORKER_SHA256 } from "./installer.ts";
+import { ConsumerCredentialError } from "../_shared/sandy_credential_consumer.ts";
 const actor = "10000000-0000-4000-8000-000000000001",
   request = "10000000-0000-4000-8000-000000000002",
   grant = "10000000-0000-4000-8000-000000000003",
@@ -522,6 +523,105 @@ Deno.test("bootstrap logs address immutable instance ID accepted by the pinned C
     true,
   );
   assert.equal(urls[0].includes("/instances/sandy-video/"), false);
+});
+
+Deno.test("guest provider credentials resolve only after the actual exact owner grant is consumed", async () => {
+  const events: string[] = [];
+  const f = setup({
+    consumeGrant: async (context) => {
+      events.push("consume");
+      assert.equal(context.actor_id, actor);
+      assert.equal(
+        context.input_sha256,
+        await argumentDigest({ vm_name: "sandy-video", start: "0" }),
+      );
+      return { allowed: true, admission_id: admission };
+    },
+    withGcpCredential: async (execution, use) => {
+      events.push("consumer");
+      assert.equal(execution.actorId, actor);
+      assert.equal(execution.admissionId, admission);
+      assert.equal(execution.operation, "gcp.vm.bootstrap.get_logs");
+      return await use("synthetic-current-provider");
+    },
+    getGcpAccessToken: () => {
+      throw Error("configured consumer must never fall back");
+    },
+    fetch: async (_input, init) => {
+      events.push("provider");
+      assert.equal(
+        new Headers(init?.headers).get("authorization"),
+        "Bearer synthetic-current-provider",
+      );
+      return Response.json({ contents: "Synthetic bootstrap log", next: "0" });
+    },
+  });
+  assert.equal(
+    (await f.handler(
+      api("gcp.vm.bootstrap.get_logs", { vm_name: "sandy-video", start: "0" }),
+    )).status,
+    200,
+  );
+  assert.deepEqual(events, ["consume", "consumer", "provider"]);
+});
+
+Deno.test("guest rejected grants and active consumer refusals cannot mint or use legacy machine credentials", async () => {
+  let credentials = 0;
+  let providers = 0;
+  const denied = setup({
+    consumeGrant: async () => ({ allowed: false, http_status: 409 }),
+    getGcpAccessToken: async () => {
+      credentials++;
+      return "synthetic";
+    },
+  });
+  assert.equal(
+    (await denied.handler(
+      api("gcp.vm.bootstrap.get_logs", { vm_name: "sandy-video", start: "0" }),
+    )).status,
+    409,
+  );
+  assert.equal(credentials, 0);
+  const refused = setup({
+    withGcpCredential: async () => {
+      throw new ConsumerCredentialError("consumer_active_readback_required");
+    },
+    getGcpAccessToken: async () => {
+      credentials++;
+      return "synthetic";
+    },
+    fetch: async () => {
+      providers++;
+      return Response.json({});
+    },
+  });
+  const response = await refused.handler(
+    api("gcp.vm.bootstrap.get_logs", { vm_name: "sandy-video", start: "0" }),
+  );
+  assert.equal(response.status, 424);
+  assert.equal((await response.json()).executed, false);
+  assert.equal(credentials, 0);
+  assert.equal(providers, 0);
+  assert.ok(
+    refused.calls.some((call) =>
+      call.name === "sandy_api_finish_execution" &&
+      call.args.p_outcome === "failed" &&
+      call.args.p_provider_http_status === null
+    ),
+  );
+});
+
+Deno.test("guest queue/status and VM transport do not look up an unrelated provider credential", async () => {
+  const f = setup({
+    withGcpCredential: () => {
+      throw Error("status has no GCP API credential dependency");
+    },
+  });
+  assert.equal(
+    (await f.handler(api("gcp.vm.agent.status", { vm_name: "sandy-video" })))
+      .status,
+    200,
+  );
 });
 
 Deno.test("provider discovery binding explicitly permits immutable numeric instance identifiers", () => {
