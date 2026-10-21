@@ -608,7 +608,7 @@ export async function deliver(db:any,message:any){
     try{
       const recent=context.slice(-8).filter((m:any)=>m.role==="user").map((m:any)=>String(m.content||""));
       const referential=/\\b(?:that|this|it)\\b/i.test(text)&&/\\b(?:improvement|feature|roadmap|list)\\b/i.test(text);
-      const raw=(referential&&recent.length?recent.slice(-3).reverse().find((v:string)=>!/(?:improvement list|not to my tasks)/i.test(v))||text:text).trim().slice(0,800);
+      const raw:string=(referential&&recent.length?recent.slice(-3).reverse().find((v:string)=>!/(?:improvement list|not to my tasks)/i.test(v))||text:text).trim().slice(0,800);
       const delegation=/\\b(?:chris|delegate|delegation|assignee|email address)\\b/i.test(raw+" "+recent.slice(-4).join(" "));
       const taskUpdateFailure=errorReportIntent&&/multiple task changes|separate messages|task update/i.test(text+" "+context.slice(-5).map((m:any)=>String(m.content||"")).join(" "));
       const key=taskUpdateFailure?"sandy_multi_task_updates_whatsapp":delegation?"sandy_task_inline_delegation_dropdown":"requested_"+Array.from(raw.toLowerCase()).reduce((v:number,c:string)=>((v*31+c.charCodeAt(0))>>>0),7).toString(16);
