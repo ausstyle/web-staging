@@ -64,6 +64,39 @@ Deno.serve(async(req)=>{
   const summary=(data.output||[]).flatMap((x:any)=>x.content||[]).filter((x:any)=>x.type==="output_text").map((x:any)=>x.text).join("\n").trim();
   return reply(200,{ok:true,summary,partial:true},origin);
  }
+ if(action==="invitations_received"){
+  const {data,error}=await db.from("sandy_video_user_invites").select("id,meeting_id,status,created_at,sandy_video_meetings(title,state,starts_at)").eq("recipient_id",userId!).neq("status","revoked").order("created_at",{ascending:false}).limit(40);
+  if(error)throw error;return reply(200,{ok:true,invitations:data||[]},origin);
+ }
+ if(action==="invitations_sent"||action==="invite_users"||action==="invitation_revoke"){
+  const mid=String(body.meeting_id||"");
+  if(!/^[0-9a-f-]{36}$/i.test(mid))return reply(400,{error:"invalid_meeting"},origin);
+  const {data:meeting,error:me}=await db.from("sandy_video_meetings").select("owner_id,state").eq("id",mid).maybeSingle();
+  if(me)throw me;if(!meeting||meeting.owner_id!==userId)return reply(403,{error:"owner_required"},origin);
+  if(action==="invitations_sent"){const {data,error}=await db.from("sandy_video_user_invites").select("id,recipient_id,status,created_at,updated_at").eq("meeting_id",mid).order("created_at",{ascending:false}).limit(100);if(error)throw error;return reply(200,{ok:true,invitations:data},origin)}
+  if(action==="invitation_revoke"){const {error}=await db.from("sandy_video_user_invites").update({status:"revoked",updated_at:new Date().toISOString()}).eq("id",String(body.invitation_id||"")).eq("meeting_id",mid);if(error)throw error;return reply(200,{ok:true},origin)}
+  if(meeting.state!=="scheduled")return reply(409,{error:"meeting_closed"},origin);
+  const addresses=body.emails;
+  if(!Array.isArray(addresses)||addresses.length<1||addresses.length>10||addresses.some((x:any)=>typeof x!=="string"||x.length>320||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))return reply(400,{error:"invalid_recipient_emails"},origin);
+  const all=await db.auth.admin.listUsers({page:1,perPage:1000});
+  if(all.error)throw all.error;
+  let invited=0,notFound=0;
+  for(const entry of [...new Set(addresses.map((x:string)=>x.trim().toLowerCase()))]){
+    const person=all.data.users.find((u:any)=>u.email?.toLowerCase()===entry);
+    if(!person){notFound++;continue}
+    if(person.id===userId)continue;
+    const {error}=await db.from("sandy_video_user_invites").upsert({meeting_id:mid,inviter_id:userId,recipient_id:person.id,status:"pending",updated_at:new Date().toISOString()},{onConflict:"meeting_id,recipient_id"});
+    if(error)throw error;invited++;
+  }
+  return reply(200,{ok:true,invited,not_found:notFound,delivery:"in_app",note:"Invitation available within Sandy Meetings. No external message has been sent."},origin);
+ }
+ if(action==="invitation_respond"){
+  const id=String(body.invitation_id||""),status=String(body.response||"");
+  if(!/^[a-f0-9-]{36}$/i.test(id)||!["accepted","declined"].includes(status))return reply(400,{error:"invalid_invitation_response"},origin);
+  const {data,error}=await db.from("sandy_video_user_invites").update({status,updated_at:new Date().toISOString()}).eq("id",id).eq("recipient_id",userId!).eq("status","pending").select("id,meeting_id").maybeSingle();
+  if(error)throw error;if(!data)return reply(409,{error:"invitation_not_pending"},origin);
+  return reply(200,{ok:true,meeting_id:data.meeting_id,status},origin);
+ }
  if(action==="list"){
   const {data,error}=await db.from("sandy_video_meetings").select("id,title,state,starts_at,created_at").eq("owner_id",userId!).order("created_at",{ascending:false}).limit(50);
   if(error)throw error;
@@ -99,13 +132,15 @@ Deno.serve(async(req)=>{
     return reply(200,{ok:true,invite},origin);
   }
   if(!owner){
-   const invite=String(body.invite||"");
+   const {data:userInvitation,error:userInvitationError}=userId?await db.from("sandy_video_user_invites").select("id,status").eq("meeting_id",id).eq("recipient_id",userId).in("status",["pending","accepted"]).maybeSingle():{data:null,error:null};
+   if(userInvitationError)throw userInvitationError;
+   if(!userInvitation){const invite=String(body.invite||"");
    if(!/^[a-zA-Z0-9_-]{43}$/.test(invite))return reply(403,{error:"valid_invite_required"},origin);
    const {data,error}=await db.from("sandy_video_invites").select("id").eq("meeting_id",id).eq("token_sha256",await sha(invite)).is("revoked_at",null).gt("expires_at",new Date().toISOString()).maybeSingle();
    if(error)throw error;
-   if(!data)return reply(403,{error:"invite_invalid_or_expired"},origin);
+   if(!data)return reply(403,{error:"invite_invalid_or_expired"},origin);}
   }
-  const participant=owner?"host-"+userId:"guest-"+crypto.randomUUID();
+  const participant=owner?"host-"+userId:userId?"member-"+userId:"guest-"+crypto.randomUUID();
   const display=owner?"Host":String(body.display_name||"Guest").slice(0,60).replace(/[<>]/g,"").trim()||"Guest";
   const jwt=await token(participant,display,meeting.room_name);
   return reply(200,{ok:true,server_url:LIVEKIT_URL,token:jwt,title:meeting.title},origin);
