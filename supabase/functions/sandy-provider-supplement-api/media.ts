@@ -5,16 +5,13 @@ import {
   GCP_PROJECT,
   type Obj,
   REGION,
-  REPOSITORY,
 } from "./contracts.ts";
 import {
-  argumentDigest,
   bytesDigest,
   Calls,
   type Context,
   decode64,
   type Dependencies,
-  encode64,
   fail,
   json,
   object,
@@ -23,6 +20,7 @@ import {
   text,
 } from "./runtime.ts";
 import { bindingFor, capture } from "./providers.ts";
+import { requestActionsDownload } from "./github_download.ts";
 const parentFor = (args: Obj) =>
   `projects/${GCP_PROJECT}/locations/${REGION}/repositories/${args.repository}`;
 const safePath = (value: unknown, max = 1000): string => {
@@ -264,84 +262,20 @@ export async function executeMedia(
     };
   }
   if (op.kind.startsWith("download_")) {
-    let path: string;
-    if (op.kind === "download_job") path = `actions/jobs/${args.job_id}/logs`;
-    else if (op.kind === "download_step") {
-      path = `actions/jobs/${args.job_id}/steps/${args.step_number}/logs`;
-    } else if (op.kind === "download_attempt") {
-      path = `actions/runs/${args.run_id}/attempts/${args.attempt_number}/logs`;
-    } else if (op.kind === "download_run") {
-      path = `actions/runs/${args.run_id}/logs`;
-    } else if (op.kind === "download_artifact") {
-      path = `actions/artifacts/${args.artifact_id}/zip`;
-    } else return fail("operation_not_implemented", 404);
-    const url = new URL(`https://api.github.com/repos/${REPOSITORY}/${path}`);
-    const reply = await calls.request(url, "GET", undefined, undefined, [
-      200,
-      302,
-    ]);
-    if (reply.status === 200) {
-      return await capture(
-        reply,
-        await bindingFor(
-          op,
-          args,
-          deps,
-          context,
-          admission,
-          url.toString(),
-          "artifact",
-        ),
-        deps,
-      );
-    }
-    // A fixed-resource provider response can create opaque initiation state. A
-    // documented, reviewed storage-host policy is required before following it.
-    const raw = reply.headers.get("location");
-    let location: URL;
-    try {
-      location = new URL(raw ?? "");
-    } catch {
-      return fail("provider_download_location_invalid", 502);
-    }
-    if (
-      location.protocol !== "https:" || location.username ||
-      location.password || location.port || location.hash ||
-      location.hostname.length > 253 ||
-      !/^[a-z0-9](?:[a-z0-9.-]*[a-z0-9])$/.test(location.hostname) ||
-      /^[0-9.]+$/.test(location.hostname) || (raw?.length ?? 0) > 8192
-    ) fail("provider_download_location_invalid", 502);
-    const bytes = new TextEncoder().encode(location.toString()),
-      sourceSha = await argumentDigest({
-        provider_url: url.toString(),
-        status: reply.status,
-        request_id: reply.id,
-        location_sha256: await bytesDigest(bytes),
-      });
-    const receipt = await deps.saveOpaque({
-      ...await bindingFor(
+    const reply = await requestActionsDownload(op, args, calls, deps);
+    return await capture(
+      reply,
+      await bindingFor(
         op,
         args,
         deps,
         context,
         admission,
-        url.toString(),
-        "redirect",
+        reply.url,
+        "artifact",
       ),
-      payload_base64: encode64(bytes),
-      payload_sha256: await bytesDigest(bytes),
-      byte_length: bytes.length,
-      media_type: "application/x-sandy-private-download-location",
-    });
-    return {
-      custody_id: receipt.custody_id,
-      source_response_sha256: sourceSha,
-      signed_url_returned: false,
-      content_returned: false,
-      transfer_state: "redirect_initiated_private",
-      expires_at: receipt.expires_at,
-      payload_transfer_complete: false,
-    };
+      deps,
+    );
   }
   return fail("operation_not_implemented", 404);
 }

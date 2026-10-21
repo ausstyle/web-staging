@@ -81,10 +81,17 @@ function setup(transport: typeof fetch = () => Promise.resolve(reply({}))) {
     fetch: ((url, init) => {
       events.push("fetch");
       urls.push(String(url));
-      assertEquals(
-        new Headers(init?.headers).get("authorization"),
-        "Bearer fixture-provider-token",
-      );
+      const host = new URL(String(url)).hostname;
+      if (/^[a-z0-9]{3,24}\.blob\.core\.windows\.net$/.test(host)) {
+        assertEquals(new Headers(init?.headers).get("authorization"), null);
+        assertEquals(init?.credentials, "omit");
+        assertEquals(init?.referrerPolicy, "no-referrer");
+      } else {
+        assertEquals(
+          new Headers(init?.headers).get("authorization"),
+          "Bearer fixture-provider-token",
+        );
+      }
       assertEquals(init?.redirect, "manual");
       return transport(url, init);
     }) as typeof fetch,
@@ -558,7 +565,7 @@ Deno.test("supplement: Storage ownership/precondition and export destination rel
   assertEquals(g.urls.length, 1);
   assertEquals(g.receipts[0].outcome, "failed");
 });
-Deno.test("supplement: five GitHub redirects remain opaque initiation, no credential forwarding or invented transfer claim", async () => {
+Deno.test("supplement: all five GitHub redirects complete bounded private capture without credential or signed-URL output", async () => {
   for (
     const [op, args] of [
       ["github.actions.jobs.logs.capture", { job_id: 1 }],
@@ -571,27 +578,36 @@ Deno.test("supplement: five GitHub redirects remain opaque initiation, no creden
       ["github.actions.artifacts.download.capture", { artifact_id: 1 }],
     ] as [string, Obj][]
   ) {
-    const f = setup(() =>
+    const f = setup((url) =>
       Promise.resolve(
-        new Response(null, {
-          status: 302,
-          headers: {
-            location:
-              "https://provider-storage.example.invalid/download?signature=private-fixture",
-          },
-        }),
+        new URL(String(url)).hostname.endsWith(".blob.core.windows.net")
+          ? new Response(fixture, {
+            headers: { "content-type": "application/zip" },
+          })
+          : new Response(null, {
+            status: 302,
+            headers: {
+              location:
+                "https://storageaccount123.blob.core.windows.net/download?signature=private-fixture",
+            },
+          }),
       )
     );
     const result = await f.run(op, args);
     assertEquals(result.status, 200);
-    assertEquals(f.urls.length, 1);
-    assertEquals(result.body.result.payload_transfer_complete, false);
-    assertEquals(f.opaque[0].kind, "redirect");
+    assertEquals(f.urls.length, 2);
+    assertEquals(result.body.provider_http_status, 200);
+    assertEquals(result.body.result.transfer_state, "captured_private");
+    assertEquals(result.body.result.byte_length, fixture.length);
+    assertEquals(result.body.result.sha256, sha);
+    assertEquals(result.body.result.content_returned, false);
+    assertEquals(f.opaque[0].kind, "artifact");
+    assertEquals(f.opaque[0].target, f.urls[0]);
     assert(!JSON.stringify(result).includes("signature"));
     assert(!JSON.stringify(result).includes("provider-storage"));
   }
 });
-Deno.test("supplement: redirects never fetched, oversized content and invalid receipts fail closed", async () => {
+Deno.test("supplement: undocumented redirects never fetched, oversized content and invalid receipts fail closed", async () => {
   const f = setup(() =>
     Promise.resolve(
       new Response(null, {
