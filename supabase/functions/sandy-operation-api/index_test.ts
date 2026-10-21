@@ -95,6 +95,10 @@ type Options = {
   actorId?: string;
   registryError?: boolean;
   authError?: boolean;
+  authErrorStatus?: number;
+  authThrow?: boolean;
+  authRole?: string;
+  anonymous?: boolean;
   roleError?: boolean;
   tenant?: string | null;
   tenantError?: boolean;
@@ -133,10 +137,15 @@ function harness(options: Options = {}) {
     auth: {
       getUser: (token: string) => {
         identityTokens.push(token);
+        if (options.authThrow) {
+          throw new Error("Synthetic Auth transport failure");
+        }
         return Promise.resolve({
           data: {
             user: options.authError ? null : {
               id: options.actorId ?? "controller-test-user",
+              role: options.authRole ?? "authenticated",
+              is_anonymous: options.anonymous === true,
               ...(options.tenant !== undefined ||
                   options.memoryTenant !== undefined
                 ? { email: "fixture-user@example.invalid" }
@@ -147,7 +156,9 @@ function harness(options: Options = {}) {
                 : {}),
             },
           },
-          error: options.authError ? { message: "invalid" } : null,
+          error: options.authError
+            ? { message: "invalid", status: options.authErrorStatus ?? 401 }
+            : null,
         });
       },
     },
@@ -281,6 +292,48 @@ Deno.test("gateway requires authenticated controller membership", async () => {
     const h = harness(options);
     assert.equal((await h.request({ action: "list" }, token)).status, status);
     assert.equal(h.calls.length, 0);
+  }
+});
+
+Deno.test("Auth outages return503 and untrusted roles remain401 before any policy or provider access", async () => {
+  for (
+    const [options, status, error] of [
+      [{ authThrow: true }, 503, "authentication_unavailable"],
+      [
+        { authError: true, authErrorStatus: 0 },
+        503,
+        "authentication_unavailable",
+      ],
+      [
+        { authError: true, authErrorStatus: 429 },
+        503,
+        "authentication_unavailable",
+      ],
+      [
+        { authError: true, authErrorStatus: 503 },
+        503,
+        "authentication_unavailable",
+      ],
+      [{ authError: true, authErrorStatus: 401 }, 401, "invalid_identity"],
+      [{ authRole: "service_role" }, 401, "invalid_identity"],
+      [{ authRole: "anon" }, 401, "invalid_identity"],
+      [{ anonymous: true }, 401, "invalid_identity"],
+    ] as [Options, number, string][]
+  ) {
+    const h = harness(options);
+    const response = await h.request({
+      action: "execute",
+      operation: "engineering.preflight",
+      arguments: {},
+    });
+    assert.equal(response.status, status);
+    assert.equal((await response.json()).error, error);
+    assert.deepEqual([h.tables.length, h.rpcCalls.length, h.calls.length], [
+      0,
+      0,
+      0,
+    ]);
+    assert.deepEqual(h.identityTokens, ["test-user-jwt"]);
   }
 });
 

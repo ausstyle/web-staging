@@ -851,8 +851,31 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           executed: false,
         });
       }
-      const { data, error: authError } = await db.auth.getUser(bearer);
-      if (authError || !data.user) {
+      let identity: Awaited<ReturnType<typeof db.auth.getUser>>;
+      try {
+        identity = await db.auth.getUser(bearer);
+      } catch {
+        return reply(503, {
+          error: "authentication_unavailable",
+          executed: false,
+        });
+      }
+      const { data, error: authError } = identity;
+      if (authError) {
+        const invalidSession = [400, 401, 403, 422].includes(
+          Number(authError.status),
+        );
+        return reply(invalidSession ? 401 : 503, {
+          error: invalidSession
+            ? "invalid_identity"
+            : "authentication_unavailable",
+          executed: false,
+        });
+      }
+      if (
+        !data.user || data.user.role !== "authenticated" ||
+        data.user.is_anonymous === true
+      ) {
         return reply(401, { error: "invalid_identity" });
       }
       user = data.user;
