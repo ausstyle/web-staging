@@ -16,6 +16,7 @@ SOURCE = "supabase/functions/sandy-operation-api/index.ts"
 OPTIONS = ["--loader=ts", "--minify-whitespace", "--target=esnext", "--charset=utf8", "--legal-comments=none", "--sourcefile=" + SOURCE]
 
 def build(root: Path, commit: str, output: Path):
+    commit = subprocess.check_output(["git", "rev-parse", "--verify", commit + "^{commit}"], cwd=root, text=True).strip()
     source = subprocess.check_output(["git", "show", commit + ":" + SOURCE], cwd=root)
     command = ["deno", "run", "--allow-env", "--allow-read", "--allow-run", "--allow-write", "--allow-net", "npm:esbuild@" + VERSION]
     version = subprocess.check_output(command + ["--version"], text=True).strip()
