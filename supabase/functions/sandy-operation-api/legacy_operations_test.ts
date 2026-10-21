@@ -100,7 +100,10 @@ Deno.test("every installed legacy contract selects a fixed application endpoint 
       headers.get("authorization"),
       `Bearer ${contract.authentication === "user" ? userToken : service}`,
     );
-    equal(headers.get("apikey"), anon);
+    equal(
+      headers.get("apikey"),
+      contract.authentication === "user" ? anon : service,
+    );
     const sent = JSON.parse(String(request.init.body));
     equal(sent.action, contract.action, operation);
     if (operation === "github.job.reconcile") {
@@ -550,4 +553,58 @@ Deno.test("contract matching preserves approval and execution scopes and classif
     legacyOperationContracts["engineering.rollback.verify"].is_mutation,
     true,
   );
+});
+
+Deno.test("service-authenticated diagnostics use a matching API key and customer routes retain their anonymous application key", async () => {
+  const h = harness({ ok: true, http_status: 200, granted: [], missing: [] });
+  h.dependencies.fetch =
+    (async (_input: RequestInfo | URL, init: RequestInit = {}) => {
+      const headers = new Headers(init.headers);
+      if (
+        headers.get("authorization") === "Bearer " + service &&
+        headers.get("apikey") !== service
+      ) return Response.json({ message: "Invalid JWT" }, { status: 401 });
+      return Response.json({
+        ok: true,
+        http_status: 200,
+        granted: [],
+        missing: [],
+      });
+    }) as typeof fetch;
+  const response = await executeLegacyOperation(
+    h.dependencies,
+    userToken,
+    "video.osconfig.permissions",
+    {},
+  );
+  assert(response.status === 200, await response.clone().text());
+});
+
+Deno.test("provider denials retain the actual bounded error while scrubbing credentials", async () => {
+  const jwt =
+    "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzeW50aGV0aWMifQ.c3ludGhldGljc2lnbmF0dXJl";
+  const h = harness({
+    ok: false,
+    http_status: 403,
+    error_status: "PERMISSION_DENIED",
+    error_message: "requires osconfig.osPolicyAssignments.list; " + service +
+      " Bearer " + jwt,
+  }, 403);
+  const response = await executeLegacyOperation(
+    h.dependencies,
+    userToken,
+    "video.osconfig.policy_preflight",
+    {},
+  );
+  equal(response.status, 403);
+  const result = await body(response);
+  equal(result.upstream_status, 403);
+  assert(
+    (result.upstream_error as ObjectValue).error_status === "PERMISSION_DENIED",
+  );
+  const text = JSON.stringify(result);
+  assert(text.includes("osconfig.osPolicyAssignments.list"));
+  assert(!text.includes(service));
+  assert(!text.includes(jwt));
+  assert(!text.includes("eyJhbGci"));
 });

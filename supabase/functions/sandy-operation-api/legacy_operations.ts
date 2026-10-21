@@ -892,7 +892,9 @@ export function buildLegacyOperationRequest(
       signal: AbortSignal.timeout(c.is_mutation ? 55000 : 35000),
       headers: {
         authorization: `Bearer ${token}`,
-        apikey: dependencies.anon,
+        apikey: c.authentication === "user"
+          ? dependencies.anon
+          : dependencies.service,
         "content-type": "application/json",
       },
       // A fixed action and fixed reconciliation marker are written last.
@@ -932,6 +934,45 @@ function scrub(value: unknown, credentials: string[]): unknown {
     return clean;
   }
   return value;
+}
+/** Preserve bounded provider diagnostics without exposing credential bodies. */
+function upstreamError(value: unknown, credentials: string[]): ObjectValue {
+  if (!object(value)) return {};
+  const result: ObjectValue = {};
+  for (
+    const key of [
+      "error",
+      "error_status",
+      "error_message",
+      "message",
+      "google_http",
+      "http_status",
+      "google_error_status",
+      "google_error_message",
+      "osconfig_http",
+    ]
+  ) {
+    const field = value[key];
+    if (
+      typeof field === "number" && Number.isInteger(field) && field >= 100 &&
+      field <= 599
+    ) {
+      result[key] = field;
+      continue;
+    }
+    if (typeof field !== "string") continue;
+    let text = String(scrub(field, credentials));
+    text = text.replace(/eyJ[A-Za-z0-9._-]{15,}/g, "[REDACTED]").replace(
+      /(?:ya29\.|gh[pousr]_|sk-)[A-Za-z0-9._-]{8,}/g,
+      "[REDACTED]",
+    ).replace(/-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*/g, "[REDACTED]")
+      .replace(
+        /((?:access_token|refresh_token|api_key|apikey|token)=)[^&\s]+/gi,
+        "$1[REDACTED]",
+      );
+    result[key] = text.slice(0, 700);
+  }
+  return result;
 }
 function scopedRecord(
   value: unknown,
@@ -1151,6 +1192,11 @@ export async function executeLegacyOperation(
       ok: false,
       error: "legacy_backend_rejected",
       upstream_status: status,
+      upstream_error: upstreamError(payload, [
+        dependencies.service,
+        dependencies.anon,
+        userToken,
+      ]),
       executed: true,
       reconciliation_required: c.is_mutation && status >= 500,
     });

@@ -98,7 +98,7 @@ Deno.serve(async(req)=>{
   }
   if(action==="video_osconfig_policy_preflight"){
     const headers={authorization:"Bearer "+i.accessToken};
-    const endpoint="https://osconfig.googleapis.com/v2/projects/"+P+"/locations/europe-west1/osPolicyAssignments";
+    const endpoint="https://osconfig.googleapis.com/v1/projects/"+P+"/locations/"+Z+"/osPolicyAssignments";
     const response=await fetch(endpoint,{headers,signal:AbortSignal.timeout(16000)});
     const data=await response.json().catch(()=>({}));
     return reply({ok:response.ok,http_status:response.status,assignments:response.ok?(data.osPolicyAssignments||[]).map((x:any)=>x.name):[],error_status:data.error?.status||null,error_message:String(data.error?.message||"").slice(0,250)},response.ok?200:502);
