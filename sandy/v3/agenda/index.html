@@ -659,8 +659,7 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
  const confirm=el("button","draftConfirm","Add task");confirm.type="button";confirm.title="Save task (Enter)";
  main.append(field);row.append(dragSpace,el("span","branchToggle","·"),check,main,confirm);ghost.append(row);
  const prev=after?document.getElementById("task-"+after):null;
- // No preceding sibling means directly below the parent, before its existing children.
- box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:(box.querySelector(":scope > .childrow, :scope > .task")||box.querySelector(":scope > .addchild")));
+ box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:box.querySelector(":scope > .addchild"));
  let closed=false;
  async function save(){
   if(closed||!field.value.trim())return;
@@ -676,7 +675,7 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
   else if(e.key==="Escape"){e.preventDefault();closed=true;ghost.remove()}
   else if(e.key==="Tab"){
    e.preventDefault();
-   if(!e.shiftKey&&after){closed=true;outlineDraft(after,null,company,field.value)}
+   if(!e.shiftKey&&after){closed=true;outlineDraft(after,outlinePeers(after).at(-1)?.id||null,company,field.value)}
    else if(e.shiftKey&&parent){closed=true;const p=state.tasks.find(t=>t.id===parent);if(p)outlineDraft(p.parent_task_id||null,p.id,company,field.value)}
   }
  });
@@ -1040,7 +1039,7 @@ function renderTask(t,depth){
  const notesButton=btn("✎","iconbtn",()=>{const panel=outer.querySelector(".inlineTaskNotes");if(!panel)return;panel.classList.toggle("hidden");if(!panel.classList.contains("hidden")){panel.loadHistory();panel.querySelector("textarea").focus()}});
  notesButton.title="Add or edit notes / comments";notesButton.setAttribute("aria-label","Notes for "+t.title);right.append(notesButton);
  if(!t.shared){right.append(quickTaskControls(t));right.append(shareTaskControl(t));right.append(delegationControl(t))}
- const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,null,t.company_id||"personal"));
+ const add=btn("＋","iconbtn",()=>t.shared?createSharedRow(t.id):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
   add.title="Add a subtask";right.append(add);
  if(!t.shared&&!t.metadata?.sandy_mission_step){
   const mission=btn("🚀","iconbtn",async()=>{
