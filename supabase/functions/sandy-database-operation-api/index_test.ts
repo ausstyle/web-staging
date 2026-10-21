@@ -19,6 +19,8 @@ import {
   publicRelation,
 } from "./sql.ts";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
+import { ConsumerCredentialError } from "../_shared/sandy_credential_consumer.ts";
+import { databaseOperations as currentDatabaseOperations } from "./gateway.ts";
 type Row = Record<string, any>;
 const actor = "11111111-1111-4111-8111-111111111111";
 const requestId = "22222222-2222-4222-8222-222222222222";
@@ -359,8 +361,11 @@ function fixture(
   return { dependencies, calls, grants, finishes, policies, invoke, handler };
 }
 
-Deno.test("Every concrete database contract compiles to an executable plan; existing provider migration IDs remain untouched", async () => {
-  assert.equal(validateDatabaseContracts(), databaseOperationNames.length);
+Deno.test("Baseline database plans remain valid and existing provider migration IDs remain untouched", async () => {
+  assert.equal(
+    validateDatabaseContracts(),
+    Object.keys(currentDatabaseOperations).length,
+  );
   assert.ok(databaseOperationNames.length >= 75);
   for (
     const id of [
@@ -1003,19 +1008,19 @@ Deno.test("Receipt reconciliation uses a fresh owner-bound read and wildcard nes
   }
 });
 
-Deno.test("Top-level VACUUM remains blocked when Management cannot enforce a server deadline", async () => {
+Deno.test("Native VACUUM remains closed until its separate fixed-project TLS connector is configured", async () => {
   const f = fixture();
   const response = await f.invoke("supabase.database.vacuum");
   assert.equal(response.status, 424);
   assert.equal(
     (await response.json()).error,
-    "database_top_level_vacuum_deadline_unavailable",
+    "database_native_maintenance_configuration_required",
   );
   assert.equal(f.grants.length, 0);
   assert.equal(f.calls.length, 0);
 });
 
-Deno.test("Unsafe future scheduled execution and oversized payloads fail before any grant", async () => {
+Deno.test("Old unbounded cron contracts and oversized SQL payloads fail before any grant", async () => {
   for (
     const operation of [
       "supabase.database.cron.jobs.create",
@@ -1024,7 +1029,12 @@ Deno.test("Unsafe future scheduled execution and oversized payloads fail before 
   ) {
     const f = fixture();
     const response = await f.invoke(operation);
-    assert.equal(response.status, 424, operation);
+    assert.equal(response.status, 400, operation);
+    assert.equal(
+      (await response.json()).error,
+      "invalid_maintenance_arguments",
+      operation,
+    );
     assert.equal(f.grants.length, 0, operation);
     assert.equal(f.calls.length, 0, operation);
   }
@@ -1054,4 +1064,34 @@ Deno.test("Unsafe future scheduled execution and oversized payloads fail before 
       'LOCK TABLE "public"."fixture_table" IN ACCESS SHARE MODE; SELECT',
     ),
   );
+});
+
+Deno.test("Existing SQL handlers resolve the current Management consumer after grant without fallback", async () => {
+  const f = fixture();
+  let resolved = 0;
+  f.dependencies.withManagementCredential = async (execution, use) => {
+    assert.equal(f.grants.length, 1);
+    assert.equal(f.calls.length, 0);
+    assert.equal(execution.actorId, actor);
+    assert.equal(execution.admissionId, admissionId);
+    assert.equal(execution.operation, "supabase.sql.query");
+    resolved++;
+    return await use("synthetic-current-consumer");
+  };
+  const accepted = await f.invoke();
+  assert.equal(accepted.status, 200);
+  assert.equal(resolved, 1);
+  assert.equal(
+    f.calls[0].init.headers.authorization,
+    "Bearer synthetic-current-consumer",
+  );
+  const g = fixture();
+  g.dependencies.withManagementCredential = async () => {
+    throw new ConsumerCredentialError("consumer_active_readback_required");
+  };
+  const refused = await g.invoke();
+  assert.equal(refused.status, 424);
+  assert.equal((await refused.json()).executed, false);
+  assert.equal(g.calls.length, 0);
+  assert.equal(g.finishes[0].outcome, "failed");
 });

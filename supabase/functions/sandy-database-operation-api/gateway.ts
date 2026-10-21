@@ -1,11 +1,19 @@
 /** Gateway metadata only: no parser/WASM, SDK, provider credential or dispatch. */
-import { databaseOperations, databaseScope } from "./contracts.ts";
-export {
-  databaseHandler,
-  databaseOperationNames,
-  databaseOperations,
-  databaseProject,
+import {
+  databaseOperations as baseDatabaseOperations,
+  databaseScope,
 } from "./contracts.ts";
+import { maintenanceOperations } from "./maintenance_contracts.ts";
+export { databaseHandler, databaseProject } from "./contracts.ts";
+// The existing contracts remain byte-stable. Only the three previously closed
+// maintenance operations are superseded by v2 plus an owned recovery read.
+export const databaseOperations = Object.freeze({
+  ...baseDatabaseOperations,
+  ...maintenanceOperations,
+});
+export const databaseOperationNames = Object.freeze(
+  Object.keys(databaseOperations),
+);
 export function databaseExecutionScope(operation: string) {
   if (!databaseOperations[operation]) {
     throw new Error("operation_not_implemented");
@@ -20,12 +28,5 @@ export function databaseCapability(operation: string) {
       unavailable_reason: "operation_not_implemented",
     };
   }
-  const unavailable = op.kind === "maintenance_vacuum"
-    ? "database_top_level_vacuum_deadline_unavailable"
-    : ["cron_create", "cron_update"].includes(op.kind)
-    ? "database_scheduled_execution_guard_unavailable"
-    : null;
-  return unavailable
-    ? { executable: false, unavailable_reason: unavailable }
-    : { executable: true };
+  return { executable: true };
 }

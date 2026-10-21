@@ -695,6 +695,16 @@ Deno.test("canonical execute route binds operation to URL and rejects conflictin
 Deno.test("canonical job routes delegate exact job identifier to installed read handler", async () => {
   const job_id = "11111111-2222-4333-8444-555555555555";
   const h = harness({
+    actorId: "10000000-0000-4000-8000-000000000003",
+    rpcHandler: (name, args) => {
+      assert.equal(name, "sandy_api_resolve_job_route");
+      return {
+        ok: true,
+        job_id,
+        job_kind: "legacy",
+        operation: `deployment.jobs.${args.p_action}`,
+      };
+    },
     rows: [
       infrastructure("deployment.jobs.get"),
       infrastructure("deployment.jobs.events"),
@@ -1568,12 +1578,21 @@ Deno.test("cancellation preserves running-job refusal, ownership denial and ambi
 Deno.test("canonical cancellation route rejects actor overrides and uses the registered operation", async () => {
   const h = harness({
     rows: [cancelOperation],
-    rpcData: {
-      ok: true,
-      job_id: cancelJobId,
-      state: "cancelled",
-      already_cancelled: true,
-    },
+    actorId: "10000000-0000-4000-8000-000000000003",
+    rpcHandler: (name) =>
+      name === "sandy_api_resolve_job_route"
+        ? {
+          ok: true,
+          job_id: cancelJobId,
+          job_kind: "legacy",
+          operation: "deployment.jobs.cancel",
+        }
+        : {
+          ok: true,
+          job_id: cancelJobId,
+          state: "cancelled",
+          already_cancelled: true,
+        },
   });
   const request = (body: unknown) =>
     h.handler(
@@ -1588,12 +1607,316 @@ Deno.test("canonical cancellation route rejects actor overrides and uses the reg
     );
   assert.equal((await request({})).status, 200);
   assert.equal((await request({ actor_id: "forged" })).status, 400);
-  assert.equal(h.rpcCalls.length, 1);
+  assert.deepEqual(h.rpcCalls.map((c) => c.name), [
+    "sandy_api_resolve_job_route",
+    "sandy_api_cancel_deployment_job",
+  ]);
 });
 
 const retryJobId = "10000000-0000-4000-8000-000000000001";
 const retryChildId = "10000000-0000-4000-8000-000000000002";
 const retryActorId = "10000000-0000-4000-8000-000000000003";
+function canonicalJobRequest(
+  jobId: string,
+  suffix = "",
+  body?: unknown,
+  headers: Record<string, string> = {},
+) {
+  return new Request(`https://local.invalid/v1/jobs/${jobId}${suffix}`, {
+    method: body === undefined ? "GET" : "POST",
+    headers: {
+      authorization: "Bearer actual-user-session",
+      "content-type": "application/json",
+      ...headers,
+    },
+    ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+  });
+}
+Deno.test("durable job URLs resolve the actual principal once and reach existing canonical handlers without legacy fallback", async () => {
+  const actions = ["get", "events", "cancel", "retry"] as const;
+  const names = [
+    "sandy_orch_job",
+    "sandy_orch_events_page",
+    "sandy_orch_cancel",
+    "sandy_orch_retry",
+  ];
+  for (const [index, action] of actions.entries()) {
+    const operation = `orchestration.jobs.${action}`;
+    const contract = orchestrationContracts.find((c) =>
+      c.operation === operation
+    )!;
+    assert.ok(contract);
+    const h = harness({
+      actorId: retryActorId,
+      rows: [{
+        ...contract,
+        handler: "sandy-orchestration-api",
+        permission_scope: contract.is_mutation
+          ? "orchestration:write"
+          : "orchestration:read",
+        api_exposed: true,
+        ai_exposed: false,
+        verified: true,
+        output_schema: { type: "object" },
+      }],
+      rpcHandler: (name, args) => {
+        if (name === "sandy_api_resolve_job_route") {
+          assert.equal(args.p_actor_id, retryActorId);
+          assert.equal(args.p_channel, "api");
+          assert.equal(args.p_action, action);
+          return {
+            ok: true,
+            job_id: retryJobId,
+            job_kind: "durable",
+            operation,
+          };
+        }
+        assert.equal(name, names[index]);
+        assert.equal(args.p_actor_id, retryActorId);
+        assert.equal(args.p_job_id, retryJobId);
+        if (action === "events") {
+          assert.deepEqual(args, {
+            p_actor_id: retryActorId,
+            p_job_id: retryJobId,
+            p_after: 14,
+            p_limit: 15,
+          });
+        }
+        return { ok: true };
+      },
+    });
+    const response = await h.handler(
+      canonicalJobRequest(
+        retryJobId,
+        action === "events"
+          ? "/events?after=14&limit=15"
+          : action === "get"
+          ? ""
+          : `:${action}`,
+        ["cancel", "retry"].includes(action) ? {} : undefined,
+      ),
+    );
+    assert.equal(
+      response.status,
+      action === "retry" ? 202 : 200,
+      JSON.stringify(await response.clone().json()),
+    );
+    assert.equal((await response.json()).operation, operation);
+    assert.deepEqual(h.rpcCalls.map((c) => c.name), [
+      "sandy_api_resolve_job_route",
+      names[index],
+    ]);
+    assert.equal(h.calls.length, 0);
+    assert.deepEqual(h.identityTokens, ["actual-user-session"]);
+  }
+});
+Deno.test("resolved job reads retain one central admission, grant, request ID and receipt", async () => {
+  const admission = "20000000-0000-4000-8000-000000000001";
+  const grant = "20000000-0000-4000-8000-000000000002";
+  const requestId = "20000000-0000-4000-8000-000000000003";
+  const contract = orchestrationContracts.find((c) =>
+    c.operation === "orchestration.jobs.get"
+  )!;
+  const h = harness({
+    actorId: retryActorId,
+    executionPolicy: true,
+    rows: [{
+      ...contract,
+      handler: "sandy-orchestration-api",
+      permission_scope: "orchestration:read",
+      api_exposed: true,
+      ai_exposed: true,
+      verified: false,
+      output_schema: { type: "object" },
+    }],
+    rpcHandler(name, args) {
+      switch (name) {
+        case "sandy_api_resolve_job_route":
+          return {
+            ok: true,
+            job_id: retryJobId,
+            job_kind: "durable",
+            operation: "orchestration.jobs.get",
+          };
+        case "sandy_api_admit_execution":
+          assert.equal(args.p_request_id, requestId);
+          assert.equal(args.p_actor_id, retryActorId);
+          assert.equal(args.p_operation, "orchestration.jobs.get");
+          return {
+            ok: true,
+            allowed: true,
+            reused: false,
+            admission_id: admission,
+            grant_id: grant,
+            state: "admitted",
+            executed: false,
+            expires_at: "2099-01-01T00:00:00Z",
+          };
+        case "sandy_api_consume_execution_grant":
+          assert.equal(args.p_grant_id, grant);
+          return {
+            ok: true,
+            allowed: true,
+            reused: false,
+            admission_id: admission,
+          };
+        case "sandy_orch_job":
+          return { ok: true };
+        case "sandy_api_finish_execution":
+          assert.equal(args.p_admission_id, admission);
+          return {
+            ok: true,
+            admission_id: admission,
+            state: "succeeded",
+            reused: false,
+          };
+        default:
+          throw Error("unexpected RPC");
+      }
+    },
+  });
+  const response = await h.handler(
+    canonicalJobRequest(retryJobId, "", undefined, {
+      "x-sandy-request-id": requestId,
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).admission_id, admission);
+  assert.deepEqual(h.rpcCalls.map((c) => c.name), [
+    "sandy_api_resolve_job_route",
+    "sandy_api_admit_execution",
+    "sandy_api_consume_execution_grant",
+    "sandy_orch_job",
+    "sandy_api_finish_execution",
+  ]);
+  assert.equal(h.calls.length, 0);
+});
+Deno.test("job URLs preserve key scope, authenticated non-disclosure and verified rollback dependencies", async () => {
+  const keyId = "30000000-0000-4000-8000-000000000001";
+  const approval = "30000000-0000-4000-8000-000000000002";
+  const source = "30000000-0000-4000-8000-000000000003";
+  const badAuth = harness({ actorId: retryActorId, authError: true });
+  assert.equal(
+    (await badAuth.handler(canonicalJobRequest(retryJobId))).status,
+    401,
+  );
+  assert.equal(badAuth.rpcCalls.length, 0);
+  for (
+    const error of [
+      "job_not_found",
+      "ambiguous_job_id",
+      "job_rollback_snapshot_required",
+    ]
+  ) {
+    const status = error === "job_not_found"
+      ? 404
+      : error === "ambiguous_job_id"
+      ? 409
+      : 424;
+    const h = harness({
+      actorId: retryActorId,
+      rpcData: { ok: false, error, http_status: status },
+    });
+    const response = await h.handler(
+      canonicalJobRequest(
+        retryJobId,
+        error === "job_rollback_snapshot_required" ? ":rollback" : "",
+        error === "job_rollback_snapshot_required"
+          ? { compensation_approval_id: approval }
+          : undefined,
+      ),
+    );
+    assert.equal(response.status, status);
+    assert.equal((await response.json()).executed, false);
+    assert.equal(h.rpcCalls.length, 1);
+    assert.equal(h.calls.length, 0);
+  }
+  const key = harness({
+    actorId: retryActorId,
+    rows: [{
+      ...infrastructure("deployment.jobs.get"),
+      input_schema: {
+        type: "object",
+        required: ["job_id"],
+        properties: { job_id: { type: "string", format: "uuid" } },
+        additionalProperties: false,
+      },
+    }],
+    resolveCredential: async () => ({
+      kind: "api_key",
+      principalId: retryActorId,
+      credentialId: keyId,
+      allowedOperations: ["deployment.jobs.get"],
+    }),
+    rpcHandler(name, args) {
+      assert.equal(name, "sandy_api_resolve_job_route");
+      assert.equal(args.p_credential_id, keyId);
+      assert.deepEqual(args.p_allowed_operations, ["deployment.jobs.get"]);
+      return {
+        ok: true,
+        job_id: retryJobId,
+        job_kind: "legacy",
+        operation: "deployment.jobs.get",
+      };
+    },
+  });
+  assert.equal(
+    (await key.handler(canonicalJobRequest(retryJobId))).status,
+    200,
+  );
+  assert.deepEqual(key.identityTokens, []);
+  assert.equal(key.calls.length, 1);
+  const refused = await key.handler(
+    canonicalJobRequest(retryJobId, ":cancel", {}),
+  );
+  assert.equal(refused.status, 404);
+  assert.equal(key.rpcCalls.length, 1);
+  const rollback = harness({
+    actorId: retryActorId,
+    rows: [extensionRow("system.lifecycle.compensate")],
+    rpcData: {
+      ok: true,
+      job_id: retryJobId,
+      job_kind: "legacy",
+      operation: "system.lifecycle.compensate",
+      source_request_id: source,
+    },
+  });
+  const result = await rollback.handler(
+    canonicalJobRequest(retryJobId, ":rollback", {
+      compensation_approval_id: approval,
+    }),
+  );
+  assert.equal(result.status, 424);
+  assert.equal(
+    (await result.json()).error,
+    "operation_requires_live_verification",
+  );
+  assert.equal(rollback.rpcCalls.length, 1);
+  assert.equal(rollback.calls.length, 0);
+  const leased = harness({
+    actorId: retryActorId,
+    resolveCredential: async () => ({
+      kind: "job_lease",
+      principalId: retryActorId,
+      allowedOperations: ["orchestration.jobs.get"],
+      boundExecution: {
+        operation: "orchestration.jobs.get",
+        arguments: { job_id: retryJobId },
+        inputDigest: "0".repeat(64),
+        channel: "api",
+      },
+    }),
+  });
+  // A leased worker enters only its fixed internal route. A caller cannot use
+  // a public job URL to resolve a second job or consume that lease again.
+  assert.equal(
+    (await leased.handler(canonicalJobRequest(retryJobId))).status,
+    403,
+  );
+  assert.equal(leased.rpcCalls.length, 0);
+  assert.equal(leased.calls.length, 0);
+});
 const retryEntry = {
   ...preflight,
   operation: "deployment.jobs.retry",
@@ -1623,7 +1946,15 @@ Deno.test("canonical retry records a receipt through one fixed RPC with authenti
   const h = harness({
     rows: [retryEntry],
     actorId: retryActorId,
-    rpcData: retryReceipt,
+    rpcHandler: (name) =>
+      name === "sandy_api_resolve_job_route"
+        ? {
+          ok: true,
+          job_id: retryJobId,
+          job_kind: "legacy",
+          operation: "deployment.jobs.retry",
+        }
+        : retryReceipt,
   });
   const response = await h.handler(
     new Request(`https://local.invalid/v1/jobs/${retryJobId}:retry`, {
@@ -1643,6 +1974,16 @@ Deno.test("canonical retry records a receipt through one fixed RPC with authenti
   assert.equal(result.retry_job_id, retryChildId);
   assert.equal(result.operation, "deployment.jobs.retry");
   assert.deepEqual(h.rpcCalls, [{
+    name: "sandy_api_resolve_job_route",
+    args: {
+      p_actor_id: retryActorId,
+      p_job_id: retryJobId,
+      p_action: "retry",
+      p_channel: "api",
+      p_credential_id: null,
+      p_allowed_operations: null,
+    },
+  }, {
     name: "sandy_api_retry_read_deployment_job",
     args: { p_job_id: retryJobId, p_actor_id: retryActorId },
   }]);
@@ -2083,8 +2424,8 @@ function extensionRow(operation: string, verified = false): Row {
     },
   };
 }
-Deno.test("all 174 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 174);
+Deno.test("all 175 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 175);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,

@@ -21,7 +21,21 @@ import { databaseCapability, databaseExecutionScope } from "./gateway.ts";
 export { databaseExecutionScope } from "./gateway.ts";
 import { compileDatabasePlan, type DatabasePlan } from "./plan.ts";
 import { DatabaseCompileError, publicRelation } from "./sql.ts";
-export { databaseOperations, databaseProject } from "./contracts.ts";
+import {
+  executeMaintenanceOperation,
+  type MaintenanceDependencies,
+} from "./maintenance.ts";
+import {
+  isMaintenanceOperation,
+  type MaintenanceContract,
+  maintenanceOperations,
+} from "./maintenance_contracts.ts";
+import {
+  ConsumerCredentialError,
+  createCredentialConsumer,
+} from "../_shared/sandy_credential_consumer.ts";
+export { databaseOperations } from "./gateway.ts";
+export { databaseProject } from "./contracts.ts";
 type Row = Record<string, any>;
 export type DatabaseContext = {
   actor_id: string;
@@ -54,11 +68,15 @@ export type DatabaseFinish = {
 export type DatabaseDependencies = {
   service: string;
   management?: string;
+  maintenanceUrl?: string;
   fetch?: typeof fetch;
+  connect?: MaintenanceDependencies["connect"];
+  withManagementCredential?:
+    MaintenanceDependencies["withManagementCredential"];
   reviewedTriggerFunctions?: Record<string, string>;
   authorizeContext(
     context: DatabaseContext,
-    contract: DatabaseContract,
+    contract: DatabaseContract | MaintenanceContract,
   ): Promise<DatabasePolicyResult>;
   consumeGrant(request: DatabaseGrant): Promise<DatabasePolicyResult>;
   finishExecution(request: DatabaseFinish): Promise<DatabasePolicyResult>;
@@ -86,7 +104,8 @@ const validators = new Map(
   ),
 );
 export function validateDatabaseContracts() {
-  return validators.size;
+  return new Set([...validators.keys(), ...Object.keys(maintenanceOperations)])
+    .size;
 }
 
 const reply = (status: number, body: Row) =>
@@ -283,6 +302,14 @@ export function createDatabaseOperationHandler(deps: DatabaseDependencies) {
         ].includes(k)
       )
     ) return refuse(400, "invalid_request");
+    if (isMaintenanceOperation(body.operation)) {
+      return executeMaintenanceOperation(
+        deps,
+        body as DatabaseContext,
+        body.operation,
+        body.arguments,
+      );
+    }
     const op = typeof body.operation === "string"
       ? databaseOperations[body.operation]
       : undefined;
@@ -314,7 +341,9 @@ export function createDatabaseOperationHandler(deps: DatabaseDependencies) {
         permission.error ?? "execution_policy_refused",
       );
     }
-    if (!deps.management) return refuse(424, "provider_credential_unavailable");
+    if (!deps.management && !deps.withManagementCredential) {
+      return refuse(424, "provider_credential_unavailable");
+    }
     const capability = databaseCapability(op.operation);
     if (!capability.executable) {
       return refuse(424, capability.unavailable_reason!);
@@ -422,6 +451,7 @@ export function createDatabaseOperationHandler(deps: DatabaseDependencies) {
         return false;
       }
     };
+    let providerAttempted = false;
     const call = async (
       sql: string,
       read_only: boolean,
@@ -432,18 +462,29 @@ export function createDatabaseOperationHandler(deps: DatabaseDependencies) {
           "SET LOCAL statement_timeout='15000'; SET LOCAL lock_timeout='3000'; SET LOCAL standard_conforming_strings=on; " +
           sql;
       }
-      const response = await fetcher(endpoint, {
-        method: "POST",
-        headers: {
-          authorization: `Bearer ${deps.management}`,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({ query: sql, read_only }),
-        redirect: "error",
-        signal: AbortSignal.timeout(25000),
-      });
-      const data = await boundedJson(response);
-      return { response, data };
+      const use = async (token: string) => {
+        if (!token) throw Error("provider_credential_unavailable");
+        providerAttempted = true;
+        const response = await fetcher(endpoint, {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ query: sql, read_only }),
+          redirect: "error",
+          signal: AbortSignal.timeout(25000),
+        });
+        const data = await boundedJson(response);
+        return { response, data };
+      };
+      return deps.withManagementCredential
+        ? await deps.withManagementCredential({
+          actorId: context.actor_id,
+          admissionId: admission_id,
+          operation: op.operation,
+        }, use)
+        : await use(deps.management ?? "");
     };
     let provider: { response: Response; data: unknown };
     try {
@@ -568,7 +609,19 @@ export function createDatabaseOperationHandler(deps: DatabaseDependencies) {
           ),
           plan.mode === "read",
         );}
-    } catch {
+    } catch (error) {
+      if (
+        !providerAttempted && error instanceof ConsumerCredentialError &&
+        !error.requestMayHaveExecuted
+      ) {
+        await finish("failed", error.providerHttpStatus, null, {
+          error: error.code,
+        });
+        return refuse(error.status, error.code, {
+          operation: op.operation,
+          admission_id,
+        });
+      }
       await finish("unknown", null, null, {
         error: "database_execution_outcome_unknown",
       });
@@ -727,10 +780,25 @@ if (import.meta.main) {
       )
     ) reviewedTriggerFunctions = configured;
   } catch { /* fail closed, no inferred routine approval */ }
+  const credentialConsumer = createCredentialConsumer({
+    db,
+    legacy: {
+      supabase_management: () =>
+        Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
+      github_api: () => {
+        throw new Error("credential_consumer_not_configured");
+      },
+      gcp_access_token: () => {
+        throw new Error("credential_consumer_not_configured");
+      },
+    },
+  });
   Deno.serve(
     createDatabaseOperationHandler({
       service,
-      management: Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") ?? "",
+      maintenanceUrl: Deno.env.get("SANDY_DATABASE_MAINTENANCE_URL") ?? "",
+      withManagementCredential: (execution, use) =>
+        credentialConsumer("supabase_management", execution, use),
       reviewedTriggerFunctions,
       authorizeContext: async (context, op) => {
         const [owner, registry] = await Promise.all([

@@ -7,6 +7,7 @@ import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
+import { parseApiJobRoute, resolveApiJobRoute } from "./api_job_routes.ts";
 import type { ExecutionAdmission } from "./access_policy.ts";
 import {
   executePolicyOperation,
@@ -631,17 +632,22 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     const executePath = path.match(
       /^\/v1\/operations\/([a-z][a-z0-9_.-]{2,100}):execute$/,
     );
-    const jobPath = path.match(/^\/v1\/jobs\/([a-f0-9-]{36})(\/events)?$/i);
+    const parsedJob = await parseApiJobRoute(request);
+    if (!parsedJob.ok) {
+      return reply(parsedJob.status, {
+        ok: false,
+        error: parsedJob.error,
+        executed: false,
+      });
+    }
+    const jobRoute = parsedJob.value;
     const executionReceiptPath = path.match(
       /^\/v1\/executions\/([a-f0-9-]{36})$/i,
     );
-    const cancelPath = path.match(
-      /^\/v1\/jobs\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}):cancel$/i,
-    );
-    const retryPath = path.match(
-      /^\/v1\/jobs\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}):retry$/i,
-    );
-    if (request.method === "GET") {
+    if (jobRoute) {
+      // Classification follows actual authentication below; the URL never
+      // chooses durable/legacy scope or supplies an execution identity.
+    } else if (request.method === "GET") {
       if (path === "/v1/capabilities") routedBody = { action: "list" };
       else if (describePath) {
         routedBody = { action: "describe", operation: describePath[1] };
@@ -676,27 +682,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             ...(operation ? { operation } : {}),
           },
         };
-      } else if (jobPath) {
-        const job_id = jobPath[1];
-        if (
-          !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
-            .test(job_id)
-        ) {
-          return reply(400, { error: "invalid_job_id" });
-        }
-        routedBody = {
-          action: "execute",
-          operation: jobPath[2]
-            ? "deployment.jobs.events"
-            : "deployment.jobs.get",
-          arguments: { job_id },
-        };
       } else return reply(405, { error: "method_not_allowed" });
     } else if (request.method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
     } else if (
-      path !== "" && path !== "/" && !executePath && !cancelPath &&
-      !retryPath && !internalExecution && !planAction
+      path !== "" && path !== "/" && !executePath &&
+      !internalExecution && !planAction
     ) {
       return reply(404, { error: "route_not_found" });
     }
@@ -802,6 +793,30 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       .select("role,enabled").eq("auth_user_id", user.id).eq("enabled", true)
       .maybeSingle();
     if (roleError) return reply(503, { error: "authorisation_unavailable" });
+    if (jobRoute) {
+      const resolved = await resolveApiJobRoute(db, {
+        kind: delegation?.kind ?? "user",
+        actorId: user.id,
+        // REST job URLs are the API channel. MCP calls use their named
+        // operation and retain their original channel in the existing pipeline.
+        channel: "api",
+        tenantId: null,
+        credentialId: delegation?.credentialId,
+        allowedOperations: delegation?.allowedOperations,
+      }, jobRoute);
+      if (!resolved.ok) {
+        return reply(resolved.status, {
+          ok: false,
+          error: resolved.error,
+          executed: false,
+        });
+      }
+      routedBody = {
+        action: "execute",
+        operation: resolved.value.operation,
+        arguments: resolved.value.arguments,
+      };
+    }
     let body: Record<string, unknown>;
     try {
       const value = routedBody ?? await requestJson(request);
@@ -818,16 +833,6 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (
         executePath && Object.keys(value).some((key) => key !== "arguments")
       ) throw Error();
-      if (cancelPath || retryPath) {
-        if (Object.keys(value).length) throw Error();
-        body = {
-          action: "execute",
-          operation: cancelPath
-            ? "deployment.jobs.cancel"
-            : "deployment.jobs.retry",
-          arguments: { job_id: (cancelPath ?? retryPath)![1] },
-        };
-      }
     } catch (error) {
       return reply(error instanceof JsonRequestError ? error.status : 400, {
         error: error instanceof JsonRequestError
