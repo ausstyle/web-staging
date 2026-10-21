@@ -1062,8 +1062,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           ((delegation.allowedOperations.includes(entry.operation) ||
             (delegation.kind === "api_key" &&
               entry.operation === "system.execution.get")) &&
-            entry.is_mutation === false &&
-            !requiresUserSession(entry.operation))
+            (engineeringProofFor(delegation) ||
+              (entry.is_mutation === false &&
+                !requiresUserSession(entry.operation))))
         )
         .filter((entry) =>
           customerKey

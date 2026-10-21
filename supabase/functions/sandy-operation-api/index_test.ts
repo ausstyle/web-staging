@@ -1,3 +1,4 @@
+import { engineeringPolicy } from "./engineering_identity.ts";
 import assert from "node:assert/strict";
 import { createOperationHandler, type OperationDependencies } from "./index.ts";
 import { createApi, createHandler } from "../sandy-api-mcp/index.ts";
@@ -105,6 +106,7 @@ type Options = {
   rows?: readonly Row[];
   role?: string | null;
   actorId?: string;
+  authorityId?: string;
   registryError?: boolean;
   authError?: boolean;
   authErrorStatus?: number;
@@ -210,7 +212,7 @@ function harness(options: Options = {}) {
         : [{
           role: options.role ?? "owner",
           enabled: true,
-          auth_user_id: options.actorId ?? "controller-test-user",
+          auth_user_id: options.authorityId ?? options.actorId ?? "controller-test-user",
         }];
       const error = table === "sandy_memory_portal_accounts"
         ? options.memoryError
@@ -6381,4 +6383,18 @@ Deno.test("tagged workload still requires normal Auth verification before any sc
   const h=harness({authMetadata:{sandy_engineering_test:true,sandy_engineering_epoch:1},authError:true});
   const r=await h.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer expired.identity.token"},body:JSON.stringify({action:"list"})}));
   assert.equal(r.status,401);assert.equal(h.calls.length,0);assert.equal(h.rpcCalls.length,0);
+});
+
+Deno.test("scoped workload discovery includes approved write handlers without widening ordinary delegated access", async () => {
+  const machine="10000000-0000-4000-8000-000000000001",owner="10000000-0000-4000-8000-000000000002",session="10000000-0000-4000-8000-000000000003";
+  const metadata={sandy_engineering_test:true,sandy_engineering_epoch:1};
+  const jwt="synthetic."+btoa(JSON.stringify({sub:machine,aud:"authenticated",role:"authenticated",session_id:session,exp:Date.now()/1000+3600,app_metadata:metadata}))+".signature";
+  const digest=await argumentDigest(engineeringPolicy);
+  // Resolve the real policy hash; the provider authorization is not mocked as a broad owner.
+  const scoped=harness({actorId:machine,authorityId:owner,authMetadata:metadata,rows:[extensionRow("github.commit",true),preflight],rpcHandler:()=>({ok:true,identity_user_id:machine,owner_authority_id:owner,session_id:session,credential_epoch:1,policy_sha256:digest,operations:engineeringPolicy.operations})});
+  const response=await scoped.handler(new Request("https://example.supabase.co/functions/v1/sandy-operation-api",{method:"POST",headers:{authorization:"Bearer "+jwt},body:JSON.stringify({action:"list",channel:"mcp"})}));
+  assert.equal(response.status,200,await response.clone().text());
+  const value=await response.json();
+  assert.deepEqual(value.operations.map((row:Row)=>row.operation).sort(),["github.commit"]);
+  assert.equal(scoped.calls.length,0);
 });
