@@ -2127,23 +2127,14 @@ function timelineConnectFrom(source,e,handle){
   if(!task||task.id===source.id||task.shared)return;
   if(!await timelineConfirmLink(source,task,ev.clientX,ev.clientY))return;
   try{
+   // The API owns both insertion and successor alignment. Never issue a second,
+   // stale timelineSaveSchedule request or roll back an already committed link.
    await api("dependency",{task_id:task.id,depends_on_id:source.id});
-   if(!state.dependencies.some(d=>d.task_id===task.id&&d.depends_on_id===source.id))state.dependencies.push({task_id:task.id,depends_on_id:source.id});
-   // Align the successor with its predecessor unless it has a deliberate later start.
-   const finish=Date.parse(source.due_at||source.start_at||"");
-   const begin=Date.parse(task.start_at||task.due_at||"");
-   if(!Number.isFinite(finish)){throw Error("Predecessor needs a finish date before a dependency can be created")}
-   if(!Number.isFinite(begin)){throw Error("Dependent task needs a scheduled date")}
-   const duration=Math.max(0,Date.parse(task.due_at||task.start_at)-begin);
-   const alignedStart=Math.max(begin,finish);
-   // Date repair runs after link creation, and persists all downstream corrections.
-   const saved=await timelineSaveSchedule(task,alignedStart,alignedStart+duration);
-   if(!saved)throw Error("Dependent schedule could not be saved");
-   toast("Finish-to-start dependency linked");
+   await load();
+   toast("Dependency linked and schedule updated");
   }catch(err){
-   // A failed schedule must not leave a persisted, misleading dependency link.
-   try{await api("dependency",{task_id:task.id,depends_on_id:source.id,remove:true})}catch(rollbackError){console.warn("Dependency rollback failed",rollbackError)}
-   toast("Could not link tasks: "+err.message,true);await load().catch(()=>{})
+   toast("Could not create dependency: "+err.message,true);
+   await load().catch(()=>{});
   }
  };
  const cancel=()=>{line.remove();document.removeEventListener("pointermove",move,true);document.removeEventListener("pointerup",stop,true);document.removeEventListener("pointercancel",cancel,true)};
