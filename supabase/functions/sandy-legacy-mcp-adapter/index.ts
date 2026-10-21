@@ -5,7 +5,11 @@
  */
 type ObjectValue = Record<string, unknown>;
 export type ApiResult = { status: number; result: unknown };
-export type ApiAuthContext = { apiKey?: string };
+export type ApiAuthContext = {
+  apiKey?: string;
+  approvalId?: string;
+  requestId?: string;
+};
 export type InvokeApi = (
   token: string,
   body: ObjectValue,
@@ -22,6 +26,24 @@ const own = (value: ObjectValue, key: string) => Object.hasOwn(value, key);
 const uuid = (value: unknown): value is string =>
   typeof value === "string" &&
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
+function executionHeaders(
+  context?: ApiAuthContext,
+): Record<string, string> | null {
+  const headers: Record<string, string> = {};
+  for (
+    const [key, header] of [["approvalId", "x-sandy-approval-id"], [
+      "requestId",
+      "x-sandy-request-id",
+    ]] as const
+  ) {
+    const value = context?.[key];
+    if (value !== undefined) {
+      if (!uuid(value)) return null;
+      headers[header] = value;
+    }
+  }
+  return headers;
+}
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const json = (
   value: unknown,
@@ -97,6 +119,17 @@ export function createApi(
     origin.pathname !== "/" || origin.search || origin.hash
   ) throw Error("invalid_api_origin");
   return async (token, body, context) => {
+    const forwarded = executionHeaders(context);
+    if (!forwarded) {
+      return {
+        status: 400,
+        result: {
+          ok: false,
+          error: "invalid_execution_metadata",
+          executed: false,
+        },
+      };
+    }
     const response = await request(
       `${origin.origin}/functions/v1/sandy-operation-api`,
       {
@@ -107,6 +140,7 @@ export function createApi(
           apikey: anon,
           "content-type": "application/json",
           ...(context?.apiKey ? { "x-sandy-api-key": context.apiKey } : {}),
+          ...forwarded,
         },
         body: JSON.stringify(body),
         signal: AbortSignal.timeout(60000),
@@ -779,7 +813,22 @@ export function createLegacyHandler(
     }
     // Only Sandy API resolves a private issued key. The Authorization header
     // remains the caller's actual user JWT or public platform JWT.
-    const authContext = apiKey === null ? undefined : { apiKey };
+    const authContext: ApiAuthContext | undefined = apiKey === null &&
+        !req.headers.has("x-sandy-approval-id") &&
+        !req.headers.has("x-sandy-request-id")
+      ? undefined
+      : {
+        ...(apiKey === null ? {} : { apiKey }),
+        ...(req.headers.has("x-sandy-approval-id")
+          ? { approvalId: req.headers.get("x-sandy-approval-id")! }
+          : {}),
+        ...(req.headers.has("x-sandy-request-id")
+          ? { requestId: req.headers.get("x-sandy-request-id")! }
+          : {}),
+      };
+    if (!executionHeaders(authContext)) {
+      return json({ error: "invalid_execution_metadata" }, 400);
+    }
     let parsed: unknown;
     try {
       parsed = await readBody(req);

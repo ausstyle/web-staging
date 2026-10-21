@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { ListToolsRequestSchema, CallToolRequestSchema, McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
-import { callTool, createApiInvoker, discover, DiscoveryFailure, isPublicAnonJwt } from "./api-adapter.mjs";
+import { callTool, createApiInvoker, discover, DiscoveryFailure, executionMetadataHeaders, isPublicAnonJwt } from "./api-adapter.mjs";
 
 export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
   api = createApiInvoker(
@@ -30,10 +30,15 @@ export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || 
       apiKey = userToken;
       userToken = publicAnon;
     }
+    const metadata = {
+      ...(req.get("x-sandy-approval-id") === undefined ? {} : { approvalId: req.get("x-sandy-approval-id") }),
+      ...(req.get("x-sandy-request-id") === undefined ? {} : { requestId: req.get("x-sandy-request-id") })
+    };
+    if (!executionMetadataHeaders(metadata)) return res.status(400).json({ error: "invalid_execution_metadata" });
     // API discovery authenticates and authorizes the actual caller on every
     // request. No user-specific catalogue or token survives this request.
     let catalogue;
-    try { catalogue = await discover(api, userToken, apiKey); }
+    try { catalogue = await discover(api, userToken, apiKey, metadata); }
     catch (error) {
       const known = error instanceof DiscoveryFailure;
       return res.status(known ? error.status : 503).json({
@@ -48,7 +53,7 @@ export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || 
       return { tools: catalogue.tools, _meta: catalogue.metadata };
     });
     server.setRequestHandler(CallToolRequestSchema, request =>
-      callTool(api, userToken, catalogue, request.params.name, request.params.arguments ?? {}, apiKey));
+      callTool(api, userToken, catalogue, request.params.name, request.params.arguments ?? {}, apiKey, metadata));
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
     try {
       await server.connect(transport);

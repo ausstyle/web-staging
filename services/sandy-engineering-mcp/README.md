@@ -40,6 +40,13 @@ authorizes the user. An incoming `x-sandy-api-key` also travels unchanged on dis
 and execution; API must validate all supplied context. The adapter does not derive
 a principal or permissions from the key.
 
+Optional `x-sandy-approval-id` and `x-sandy-request-id` UUID headers travel unchanged
+with those credentials through discovery and execution. Empty, malformed or
+duplicate values are refused before API calls. Use a new request ID for each
+distinct execution and retain it for retries. Sandy API independently binds an
+existing approval to the actual caller, operation, arguments and scope; these
+headers add no permission and do not change the API-derived tool schemas.
+
 For clients that send a `sandyop_...` or issued `sandy_api_...` key in the bearer header, configure the public
 project anon JWT. The adapter then sends that public JWT as gateway authorization
 and the original opaque key in `x-sandy-api-key`. This transport translation does

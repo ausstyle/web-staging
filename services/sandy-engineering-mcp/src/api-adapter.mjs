@@ -30,6 +30,18 @@ export class DiscoveryFailure extends Error {
   }
 }
 
+export function executionMetadataHeaders(metadata) {
+  const headers = {};
+  for (const [key, header] of [["approvalId", "x-sandy-approval-id"], ["requestId", "x-sandy-request-id"]]) {
+    const value = metadata?.[key];
+    if (value !== undefined) {
+      if (typeof value !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)) return null;
+      headers[header] = value;
+    }
+  }
+  return headers;
+}
+
 async function boundedText(response) {
   if (!response.body) return "";
   const reader = response.body.getReader();
@@ -57,14 +69,17 @@ export function createApiInvoker(projectRef, request = fetch, anon = "") {
   if (!/^[a-z0-9]{20}$/.test(projectRef)) throw new Error("Invalid Supabase project reference");
   const endpoint = `https://${projectRef}.supabase.co/functions/v1/sandy-operation-api`;
   const publicProjectKey = isPublicAnonJwt(anon) || /^sb_publishable_[A-Za-z0-9_-]+$/.test(anon) ? anon : "";
-  return async (userToken, body, apiKey) => {
+  return async (userToken, body, apiKey, metadata) => {
+    const forwarded = executionMetadataHeaders(metadata);
+    if (!forwarded) return { status: 400, result: { ok: false, error: "invalid_execution_metadata", executed: false } };
     const response = await request(endpoint, {
       method: "POST",
       headers: {
         authorization: `Bearer ${userToken}`,
         "content-type": "application/json",
         ...(publicProjectKey ? { apikey: publicProjectKey } : {}),
-        ...(apiKey !== undefined ? { "x-sandy-api-key": apiKey } : {})
+        ...(apiKey !== undefined ? { "x-sandy-api-key": apiKey } : {}),
+        ...forwarded
       },
       body: JSON.stringify(body),
       redirect: "error",
@@ -81,9 +96,9 @@ export function createApiInvoker(projectRef, request = fetch, anon = "") {
   };
 }
 
-export async function discover(api, userToken, apiKey) {
+export async function discover(api, userToken, apiKey, metadata) {
   let response;
-  try { response = await api(userToken, { action: "list" }, apiKey); }
+  try { response = await api(userToken, { action: "list" }, apiKey, metadata); }
   catch { throw new DiscoveryFailure(503, "sandy_api_discovery_unavailable"); }
   if (!object(response)) throw new DiscoveryFailure(503, "invalid_sandy_api_catalogue");
   if (response.status === 401) throw new DiscoveryFailure(401, "invalid_identity");
@@ -170,7 +185,7 @@ function legacySuccess(name, status, envelope, payload) {
   return { ...payload, http_status: status };
 }
 
-export async function callTool(api, userToken, catalogue, name, args = {}, apiKey) {
+export async function callTool(api, userToken, catalogue, name, args = {}, apiKey, metadata) {
   if (!operationName(name) || !object(args)) {
     return toolError(400, "invalid_tool_arguments", null, catalogue.metadata);
   }
@@ -185,7 +200,7 @@ export async function callTool(api, userToken, catalogue, name, args = {}, apiKe
   try {
     response = await api(userToken, {
       action: "execute", channel: "mcp", operation, arguments: args
-    }, apiKey);
+    }, apiKey, metadata);
   } catch {
     // The response was lost: the adapter cannot infer whether API executed work.
     return toolError(502, "sandy_api_outcome_unknown", operation, catalogue.metadata, {

@@ -992,3 +992,96 @@ Deno.test("legacy adapter composes with the real Sandy API gateway and retains i
     }
   }
 });
+
+Deno.test("legacy aliases preserve the same validated execution IDs and actual caller/key as canonical names", async () => {
+  const approvalId = "ABCDEF12-3456-4789-ABCD-EF1234567890",
+    requestId = "12345678-1234-4234-8234-1234567890ab";
+  const f = fixture();
+  for (const name of ["deployment_status", "deployment.jobs.status"]) {
+    const response = await f.request("tools/call", {
+      name,
+      arguments: { job_id: jobId },
+      _meta: { actor_id: "forged", tenant_id: "forged" },
+    }, {
+      authorization: "Bearer actual.user.jwt",
+      "x-sandy-api-key": "opaque-key",
+      "x-sandy-approval-id": approvalId,
+      "x-sandy-request-id": requestId,
+    });
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).result.isError, false);
+  }
+  for (const call of f.calls) {
+    assert.equal(call.token, "actual.user.jwt");
+    assert.deepEqual(call.context, {
+      apiKey: "opaque-key",
+      approvalId,
+      requestId,
+    });
+  }
+  const executions = f.calls.filter((call) => call.body.action === "execute");
+  assert.equal(executions.length, 2);
+  assert.deepEqual(executions[0].body, executions[1].body);
+  assert.deepEqual(executions[0].body, {
+    action: "execute",
+    channel: "mcp",
+    operation: "deployment.jobs.status",
+    arguments: { job_id: jobId },
+  });
+  const requests: Request[] = [];
+  const api = createApi(
+    "https://api.fixture.invalid",
+    "anon",
+    (async (input, init) => {
+      requests.push(new Request(input, init));
+      return Response.json({ ok: true });
+    }) as typeof fetch,
+  );
+  await api("actual.user.jwt", executions[0].body, {
+    apiKey: "opaque-key",
+    approvalId,
+    requestId,
+  });
+  assert.equal(requests[0].headers.get("x-sandy-approval-id"), approvalId);
+  assert.equal(requests[0].headers.get("x-sandy-request-id"), requestId);
+  assert.equal(
+    requests[0].headers.get("authorization"),
+    "Bearer actual.user.jwt",
+  );
+  assert.equal(requests[0].headers.get("x-sandy-api-key"), "opaque-key");
+});
+Deno.test("legacy malformed or duplicated execution IDs are refused before discovery or execution", async () => {
+  const id = "12345678-1234-4234-8234-1234567890ab";
+  for (const header of ["x-sandy-approval-id", "x-sandy-request-id"]) {
+    for (
+      const value of ["", "bad", id + ", " + id, id + "extra", "x".repeat(4096)]
+    ) {
+      const f = fixture();
+      const response = await f.request("tools/call", {
+        name: "deployment_status",
+        arguments: { job_id: jobId },
+      }, { [header]: value });
+      assert.equal(response.status, 400);
+      assert.equal((await response.json()).error, "invalid_execution_metadata");
+      assert.equal(f.calls.length, 0);
+    }
+  }
+  const api = createApi(
+    "https://api.fixture.invalid",
+    "anon",
+    (() => {
+      throw Error("must not dispatch");
+    }) as typeof fetch,
+  );
+  assert.deepEqual(
+    await api("actual.user.jwt", { action: "list" }, { approvalId: "bad" }),
+    {
+      status: 400,
+      result: {
+        ok: false,
+        error: "invalid_execution_metadata",
+        executed: false,
+      },
+    },
+  );
+});

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { once } from "node:events";
+import { request as httpRequest } from "node:http";
 import { AjvJsonSchemaValidator } from "@modelcontextprotocol/sdk/validation/ajv";
 import { createApp } from "../src/server.mjs";
 import { aliases, callTool, createApiInvoker, discover } from "../src/api-adapter.mjs";
@@ -26,6 +27,8 @@ function fixture() {
     assert.equal(url, endpoint, "Every request must target canonical API only");
     assert.equal(new Headers(init.headers).get("authorization"), `Bearer ${state.expectedToken}`);
     assert.equal(new Headers(init.headers).get("x-sandy-api-key"), state.expectedKey ?? null);
+    assert.equal(new Headers(init.headers).get("x-sandy-approval-id"), state.expectedApproval ?? null);
+    assert.equal(new Headers(init.headers).get("x-sandy-request-id"), state.expectedRequest ?? null);
     assert.equal(init.redirect, "error");
     const body = JSON.parse(init.body);
     calls.push(body);
@@ -58,14 +61,15 @@ async function http(t, api, configuredAnon = "") {
   await once(server, "listening");
   t.after(() => { server.closeAllConnections(); server.close(); });
   const root = `http://127.0.0.1:${server.address().port}`;
-  return async (method, params = {}, token = user, apiKey) => {
+  return async (method, params = {}, token = user, apiKey, extraHeaders = {}) => {
     const response = await fetch(root + "/mcp", {
       method: "POST",
       headers: {
         "content-type": "application/json", accept: "application/json, text/event-stream",
         "mcp-protocol-version": "2025-03-26",
         ...(token === null ? {} : { authorization: `Bearer ${token}` }),
-        ...(apiKey !== undefined ? { "x-sandy-api-key": apiKey } : {})
+        ...(apiKey !== undefined ? { "x-sandy-api-key": apiKey } : {}),
+        ...extraHeaders
       },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params })
     });
@@ -337,4 +341,60 @@ test("missing/publication-unsafe gateway config and ambiguous key contexts fail 
     return Response.json({ ok: true, operations: [], catalogue_version: "a".repeat(64) });
   }, serviceJwt);
   await discover(api, user);
+});
+
+test("HTTP aliases and canonical tools preserve caller/key and validated approval/request IDs without argument overrides", async t => {
+  const f = fixture(), post = await http(t, f.api);
+  const approvalId = "ABCDEF12-3456-4789-ABCD-EF1234567890", requestId = "12345678-1234-4234-8234-1234567890ab";
+  f.state.expectedKey = "opaque-private-key";
+  f.state.expectedApproval = approvalId;
+  f.state.expectedRequest = requestId;
+  const headers = { "x-sandy-approval-id": approvalId, "x-sandy-request-id": requestId, "x-sandy-actor-id": "forged", "x-sandy-tenant-id": "forged" };
+  for (const name of ["sandy_engineering_change_details", "engineering.change.get"]) {
+    const { response, body } = await post("tools/call", { name, arguments: {}, _meta: { actor_id: "forged", tenant_id: "forged" } }, user, "opaque-private-key", headers);
+    assert.equal(response.status, 200);
+    assert.equal(body.result.isError, false);
+  }
+  const executions = f.calls.filter(call => call.action === "execute");
+  assert.equal(executions.length, 2);
+  assert.deepEqual(executions[0], executions[1]);
+  assert.deepEqual(executions[0], { action: "execute", channel: "mcp", operation: "engineering.change.get", arguments: {} });
+});
+
+test("malformed or duplicate execution IDs are rejected before Node discovery and execution", async t => {
+  const f = fixture(), post = await http(t, f.api), id = "12345678-1234-4234-8234-1234567890ab";
+  for (const header of ["x-sandy-approval-id", "x-sandy-request-id"]) {
+    for (const value of ["", "bad", id + ", " + id, id + "extra", "x".repeat(4096)]) {
+      const { response, body } = await post("tools/call", { name: "sandy_engineering_change_details", arguments: {} }, user, undefined, { [header]: value });
+      assert.equal(response.status, 400);
+      assert.equal(body.error, "invalid_execution_metadata");
+      assert.equal(f.calls.length, 0);
+    }
+  }
+  const api = createApiInvoker(project, () => { throw Error("must not dispatch"); }, publicAnon);
+  assert.deepEqual(await api(user, { action: "execute" }, undefined, { requestId: "bad" }), {
+    status: 400, result: { ok: false, error: "invalid_execution_metadata", executed: false }
+  });
+});
+
+test("separate duplicate UUID header lines fail before Node invokes Sandy API", async t => {
+  let calls = 0;
+  const server = createApp({ api: async () => { calls++; throw Error("must not dispatch"); } }).listen(0, "127.0.0.1");
+  await once(server, "listening");
+  t.after(() => { server.closeAllConnections(); server.close(); });
+  const id = "12345678-1234-4234-8234-1234567890ab";
+  const result = await new Promise((resolve, reject) => {
+    const req = httpRequest({ hostname: "127.0.0.1", port: server.address().port, path: "/mcp", method: "POST", headers: {
+      authorization: `Bearer ${user}`, "content-type": "application/json", "x-sandy-request-id": [id, id]
+    } }, response => {
+      let raw = "";
+      response.on("data", chunk => { raw += chunk; });
+      response.on("end", () => resolve({ status: response.statusCode, body: JSON.parse(raw) }));
+    });
+    req.on("error", reject);
+    req.end(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }));
+  });
+  assert.equal(result.status, 400);
+  assert.equal(result.body.error, "invalid_execution_metadata");
+  assert.equal(calls, 0);
 });

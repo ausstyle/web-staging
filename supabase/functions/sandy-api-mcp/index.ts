@@ -5,10 +5,12 @@
  */
 type JsonObject = Record<string, unknown>;
 export type ApiResponse = { status: number; result: unknown };
+export type ApiExecutionMetadata = { approvalId?: string; requestId?: string };
 export type InvokeApi = (
   token: string,
   body: JsonObject,
   apiKey?: string,
+  metadata?: ApiExecutionMetadata,
 ) => Promise<ApiResponse>;
 
 const isObject = (value: unknown): value is JsonObject =>
@@ -30,13 +32,45 @@ const json = (data: unknown, status = 200) =>
 const validId = (id: unknown) =>
   id === null || typeof id === "string" ||
   (typeof id === "number" && Number.isFinite(id));
+const uuid = (value: unknown): value is string =>
+  typeof value === "string" &&
+  /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
+function executionHeaders(
+  metadata?: ApiExecutionMetadata,
+): Record<string, string> | null {
+  const headers: Record<string, string> = {};
+  for (
+    const [key, header] of [["approvalId", "x-sandy-approval-id"], [
+      "requestId",
+      "x-sandy-request-id",
+    ]] as const
+  ) {
+    const value = metadata?.[key];
+    if (value !== undefined) {
+      if (!uuid(value)) return null;
+      headers[header] = value;
+    }
+  }
+  return headers;
+}
 
 export function createApi(
   base: string,
   anon: string,
   request: typeof fetch = fetch,
 ): InvokeApi {
-  return async (token, body, apiKey) => {
+  return async (token, body, apiKey, metadata) => {
+    const forwarded = executionHeaders(metadata);
+    if (!forwarded) {
+      return {
+        status: 400,
+        result: {
+          ok: false,
+          error: "invalid_execution_metadata",
+          executed: false,
+        },
+      };
+    }
     const response = await request(`${base}/functions/v1/sandy-operation-api`, {
       method: "POST",
       headers: {
@@ -44,6 +78,7 @@ export function createApi(
         apikey: anon,
         "content-type": "application/json",
         ...(apiKey === undefined ? {} : { "x-sandy-api-key": apiKey }),
+        ...forwarded,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60000),
@@ -96,7 +131,20 @@ export function createHandler(api: InvokeApi) {
     const bearer = auth.match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
     if (!bearer) return json({ error: "authentication_required" }, 401);
     const apiKey = req.headers.get("x-sandy-api-key") ?? undefined;
-    if (apiKey !== undefined && !apiKey.trim()) return json({ error: "invalid_api_credential" }, 401);
+    if (apiKey !== undefined && !apiKey.trim()) {
+      return json({ error: "invalid_api_credential" }, 401);
+    }
+    const metadata: ApiExecutionMetadata = {
+      ...(req.headers.has("x-sandy-approval-id")
+        ? { approvalId: req.headers.get("x-sandy-approval-id")! }
+        : {}),
+      ...(req.headers.has("x-sandy-request-id")
+        ? { requestId: req.headers.get("x-sandy-request-id")! }
+        : {}),
+    };
+    if (!executionHeaders(metadata)) {
+      return json({ error: "invalid_execution_metadata" }, 400);
+    }
     let parsed: unknown;
     try {
       parsed = await req.json();
@@ -155,7 +203,7 @@ export function createHandler(api: InvokeApi) {
           );
         }
         // Initialization authenticates through the same API as discovery.
-        const a = await api(bearer, { action: "list" }, apiKey);
+        const a = await api(bearer, { action: "list" }, apiKey, metadata);
         if (a.status !== 200 || !isObject(a.result) || failedResult(a.result)) {
           const status = a.status >= 400 && a.status <= 599 ? a.status : 502;
           return json(
@@ -195,14 +243,20 @@ export function createHandler(api: InvokeApi) {
             400,
           );
         }
-        const a = await api(bearer, {
-          action: "execute",
-          channel: "mcp",
-          operation: params.name,
-          arguments: params.arguments ?? {},
-        }, apiKey);
+        const a = await api(
+          bearer,
+          {
+            action: "execute",
+            channel: "mcp",
+            operation: params.name,
+            arguments: params.arguments ?? {},
+          },
+          apiKey,
+          metadata,
+        );
         const output = isObject(a.result) ? a.result.result : undefined;
-        const accepted = isObject(a.result) && a.result.accepted === true && a.result.executed === false && isObject(output);
+        const accepted = isObject(a.result) && a.result.accepted === true &&
+          a.result.executed === false && isObject(output);
         const failed = a.status < 200 || a.status >= 300 ||
           !isObject(a.result) || (a.result.executed !== true && !accepted) ||
           failedResult(a.result) || !isObject(output);

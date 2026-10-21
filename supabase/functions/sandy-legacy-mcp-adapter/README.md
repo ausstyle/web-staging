@@ -62,6 +62,14 @@ does not create sessions, read credential tables or substitute a service key.
 An opaque bearer-only key must be translated by an upstream transport configured
 with the public anon JWT; this Edge endpoint retains platform JWT verification.
 
+Clients can also supply `x-sandy-approval-id` and `x-sandy-request-id` as optional
+UUID headers. The adapter forwards them unchanged to Sandy API beside the same
+caller credentials. Empty, malformed or duplicate values are refused before API
+discovery or execution. Use a new request ID for each distinct execution and
+retain it for retries of that execution. The API binds an existing approval to
+the actual caller, operation, arguments and scope; transport metadata adds no
+permission and does not change the API-derived tool schemas.
+
 When packaging this source as the existing function, retain slug
 `sandy-operations-mcp`, `verify_jwt:true`, its public OAuth resource URL and issuer.
 The self-contained entrypoint requires only `SUPABASE_URL` and the existing public

@@ -305,27 +305,191 @@ Deno.test("API transport targets only Sandy operation API and preserves caller i
 
 Deno.test("scoped credential remains a separate header through MCP discovery and invocation", async () => {
   const headers: string[] = [];
-  const api = createApi("https://project.test.invalid", "public-anon", (async (_url, init) => {
-    const h = new Headers(init?.headers);
-    equal(h.get("authorization"), "Bearer public.anon.jwt");
-    headers.push(h.get("x-sandy-api-key") ?? "missing");
-    const body = JSON.parse(String(init?.body));
-    return Response.json(body.action === "list" ? { ok: true, operations: [] } : { ok: true, executed: true, result: { ok: true } });
-  }) as typeof fetch);
+  const api = createApi(
+    "https://project.test.invalid",
+    "public-anon",
+    (async (_url, init) => {
+      const h = new Headers(init?.headers);
+      equal(h.get("authorization"), "Bearer public.anon.jwt");
+      headers.push(h.get("x-sandy-api-key") ?? "missing");
+      const body = JSON.parse(String(init?.body));
+      return Response.json(
+        body.action === "list"
+          ? { ok: true, operations: [] }
+          : { ok: true, executed: true, result: { ok: true } },
+      );
+    }) as typeof fetch,
+  );
   const handler = createHandler(api);
-  for (const body of [message("tools/list"), message("tools/call", { name: "resource.inspect", arguments: {} })]) {
-    const response = await handler(new Request("https://local.invalid", { method: "POST", headers: { authorization: "Bearer public.anon.jwt", "x-sandy-api-key": "opaque.private.credential" }, body: JSON.stringify(body) }));
+  for (
+    const body of [
+      message("tools/list"),
+      message("tools/call", { name: "resource.inspect", arguments: {} }),
+    ]
+  ) {
+    const response = await handler(
+      new Request("https://local.invalid", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer public.anon.jwt",
+          "x-sandy-api-key": "opaque.private.credential",
+        },
+        body: JSON.stringify(body),
+      }),
+    );
     equal(response.status, 200);
   }
   equal(headers, ["opaque.private.credential", "opaque.private.credential"]);
 });
 
 Deno.test("a typed accepted job receipt is successful MCP admission without claiming execution", async () => {
-  const receipt = { ok: true, accepted: true, executed: false, job_id: "11111111-1111-4111-8111-111111111111", state: "queued" };
-  const handler = createHandler(async () => ({ status: 202, result: { ...receipt, operation: "orchestration.plans.execute", result: receipt } }));
-  const response = await handler(request(message("tools/call", { name: "orchestration.plans.execute", arguments: {} })));
+  const receipt = {
+    ok: true,
+    accepted: true,
+    executed: false,
+    job_id: "11111111-1111-4111-8111-111111111111",
+    state: "queued",
+  };
+  const handler = createHandler(async () => ({
+    status: 202,
+    result: {
+      ...receipt,
+      operation: "orchestration.plans.execute",
+      result: receipt,
+    },
+  }));
+  const response = await handler(
+    request(
+      message("tools/call", {
+        name: "orchestration.plans.execute",
+        arguments: {},
+      }),
+    ),
+  );
   const body = await response.json();
   equal(body.result.isError, false);
   equal(body.result.structuredContent, receipt);
   equal(body.result.structuredContent.executed, false);
+});
+
+Deno.test("MCP forwards validated approval/request headers beside the unchanged user and key without changing tool arguments", async () => {
+  const approvalId = "ABCDEF12-3456-4789-ABCD-EF1234567890",
+    requestId = "12345678-1234-4234-8234-1234567890ab";
+  const requests: Request[] = [];
+  const handler = createHandler(
+    createApi(
+      "https://api.fixture.invalid",
+      "anon",
+      (async (input, init) => {
+        const req = new Request(input, init);
+        requests.push(req.clone());
+        return Response.json({
+          ok: true,
+          operation: "fixture.execute",
+          executed: true,
+          result: { ok: true },
+        });
+      }) as typeof fetch,
+    ),
+  );
+  const response = await handler(
+    new Request("https://mcp.fixture.invalid", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer actual.user.jwt",
+        "x-sandy-api-key": "opaque-private-key",
+        "x-sandy-approval-id": approvalId,
+        "x-sandy-request-id": requestId,
+        "x-sandy-actor-id": "forged",
+        "x-sandy-tenant-id": "forged",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(
+        message("tools/call", {
+          name: "fixture.execute",
+          arguments: { value: "original" },
+          _meta: {
+            actor_id: "forged",
+            tenant_id: "forged",
+            approvalId: "ignored",
+          },
+        }),
+      ),
+    }),
+  );
+  equal(response.status, 200);
+  equal((await response.json()).result.isError, false);
+  equal(requests.length, 1);
+  const sent = requests[0];
+  equal(sent.headers.get("authorization"), "Bearer actual.user.jwt");
+  equal(sent.headers.get("x-sandy-api-key"), "opaque-private-key");
+  equal(sent.headers.get("x-sandy-approval-id"), approvalId);
+  equal(sent.headers.get("x-sandy-request-id"), requestId);
+  equal(sent.headers.get("x-sandy-actor-id"), null);
+  equal(sent.headers.get("x-sandy-tenant-id"), null);
+  equal(await sent.json(), {
+    action: "execute",
+    channel: "mcp",
+    operation: "fixture.execute",
+    arguments: { value: "original" },
+  });
+});
+Deno.test("malformed or duplicate execution metadata fails before any canonical API call", async () => {
+  const id = "12345678-1234-4234-8234-1234567890ab";
+  for (const header of ["x-sandy-approval-id", "x-sandy-request-id"]) {
+    for (
+      const value of ["", "bad", id + ", " + id, id + "extra", "x".repeat(4096)]
+    ) {
+      const response = await createHandler(noApi)(
+        new Request("https://mcp.fixture.invalid", {
+          method: "POST",
+          headers: {
+            authorization: "Bearer actual.user.jwt",
+            [header]: value,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(
+            message("tools/call", { name: "fixture.execute", arguments: {} }),
+          ),
+        }),
+      );
+      equal(response.status, 400);
+      equal((await response.json()).error, "invalid_execution_metadata");
+    }
+  }
+  const headers = new Headers({ authorization: "Bearer actual.user.jwt" });
+  headers.append("x-sandy-request-id", id);
+  headers.append("x-sandy-request-id", id);
+  equal(
+    (await createHandler(noApi)(
+      new Request("https://mcp.fixture.invalid", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(init),
+      }),
+    )).status,
+    400,
+  );
+});
+Deno.test("canonical API invoker also refuses malformed execution context without transport dispatch", async () => {
+  const api = createApi(
+    "https://api.fixture.invalid",
+    "anon",
+    (() => {
+      throw Error("must not dispatch");
+    }) as typeof fetch,
+  );
+  equal(
+    await api("actual.user.jwt", { action: "execute" }, undefined, {
+      requestId: "invalid",
+    }),
+    {
+      status: 400,
+      result: {
+        ok: false,
+        error: "invalid_execution_metadata",
+        executed: false,
+      },
+    },
+  );
 });
