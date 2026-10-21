@@ -15,8 +15,10 @@
 </main></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
-import {Room,RoomEvent,Track} from "https://esm.sh/livekit-client@2.17.2";\nimport {installSandyIdleLock} from "../security-lock.js";
-const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});\nconst idle=installSandyIdleLock(db.auth,{redirect:"../app/?locked=1"});
+import {Room,RoomEvent,Track} from "https://esm.sh/livekit-client@2.17.2";
+import {installSandyIdleLock} from "../security-lock.js";
+const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
+const idle=installSandyIdleLock(db.auth,{redirect:"../app/?locked=1"});
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-video-api";
 const $=id=>document.getElementById(id);
 let room=null,meetingId=null,owner=false,inviteToken=null;
