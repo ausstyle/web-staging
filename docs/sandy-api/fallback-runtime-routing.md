@@ -135,6 +135,9 @@ actual customer/API refusal, tenant isolation, child-ID replay and lost-write
 reconciliation. Source guards verify 21 unchanged archived sections and the
 three exact version/Gmail dependencies; extracted action block hashes are kept
 separately.
+That extraction was committed as `c90471a` and deployed with exact source
+readbacks as v4 version 15, v2 version 17 and backup version 7; this is source
+attestation, without an authenticated runtime execution test.
 
 Six further internal inspection contracts now cover source-qualified web
 activity, cross-channel counts, recorded connections, environment, capability
@@ -144,19 +147,31 @@ supply or select this context; a no-customer conversation grants no customer
 inspection authority. The central executor preserves v1's unsupported versions,
 unavailable version registry results, partial counts, email-authorship caveats,
 channel filtering, stale-module invalidation and no physical-location claims.
-The original fixed adapters still collect their initial facts; this extraction
-centralizes the tool execution without representing observations as provider
-proof.
+The fixed adapters use a shared fact-collection dependency without representing
+observations as provider proof.
 
 Migration `10030` keeps these six contracts internal and all exposure/verified
 flags false. It passed 12 actual PostgreSQL metadata checks in a full rollback.
-The composed suite passes 70 tests, including every runtime's inspection loop,
+The inspection extraction passed 70 tests, including every runtime's inspection loop,
 serialized/cross-principal context refusal, captured-fact immutability and stored
 channel revalidation. Source guards cover 18 unchanged source sections and three
 exact dependencies. No real customer or provider execution was tested for these
 new operations.
 
-Other internal workers, initial source-qualified snapshot collection, connection
-preflight and existing UI endpoints remain distinct migration work. Source
+The follow-on snapshot/model-policy dependencies preserve the exact common
+82-line fact collector and 21-line model-selection block from all three
+archives. They bind the actual persisted task/channel/request/prompt before
+customer reads or shadow decision records. A nullable conversation capability
+can collect only global policy and empty tenant facts; a non-null conversation
+capability cannot substitute for a real customer-task principal. Model selection
+retains enabled/recent/approved server policy and stale/shadow fallback behavior;
+JSON cannot select a model or customer. These dependencies perform no model or
+provider request. The composed suite passes 73 tests. Source guards verify 18
+unchanged runtime sections, the two exact common extracted sections, and three
+exact dependencies. Migration `10030` is unchanged; no additional database
+migration or repeated PostgreSQL component run is needed for these dependencies.
+
+Other internal workers, connection preflight and existing UI endpoints remain
+distinct migration work. Source
 extraction does not establish universal production routing or verified customer
 or provider operations.

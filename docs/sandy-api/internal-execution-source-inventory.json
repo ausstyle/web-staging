@@ -6,7 +6,6 @@
   "current_numeric_versions_not_attested_by_this_report": true,
   "universal_production_routing_operational": false,
   "remaining_runtime_branches": [
-    "initial source-qualified customer/channel snapshot collection",
     "connected-account provider preflight/status reconciliation and auto-improve dispatch"
   ],
   "functions": [
@@ -270,6 +269,7 @@
       "operational inspection and its customer/channel/context fact reads",
       "connected-account provider preflight/status reconciliation and auto-improve dispatch"
     ],
-    "closed_operational_contracts": 6
+    "closed_operational_contracts": 6,
+    "shared_snapshot_and_model_policy_dependencies": true
   }
 }

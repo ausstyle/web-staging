@@ -48,7 +48,16 @@ def main() -> None:
     for dependency in manifest["dependencies"]:
         if sha((root / dependency["path"]).read_bytes()) != dependency["sha256"]:
             raise ValueError(f"Changed archived dependency: {dependency['path']}")
-    print(json.dumps({"status": "pass", "runtimes": len(manifest["runtimes"]), "preserved_source_sections": checked, "dependencies": len(manifest["dependencies"]), "baseline_checked": args.baseline_dir is not None}))
+    for shared in manifest.get("shared_sections", []):
+        selected = fragment((root / shared["path"]).read_text(), shared["start"], shared["end"]).encode()
+        if sha(selected) != shared["sha256"] or len(selected) != shared["bytes"]:
+            raise ValueError(f"Changed shared original behavior: {shared['path']}")
+        if args.baseline_dir:
+            for runtime in manifest["runtimes"]:
+                baseline = (args.baseline_dir / (runtime["runtime"] + ".ts")).read_text()
+                if fragment(baseline, shared["start"], shared["baseline_end"]).encode() != selected:
+                    raise ValueError(f"Shared source differs from archive: {runtime['runtime']}/{shared['path']}")
+    print(json.dumps({"status": "pass", "runtimes": len(manifest["runtimes"]), "preserved_source_sections": checked, "shared_original_sections": len(manifest.get("shared_sections", [])), "dependencies": len(manifest["dependencies"]), "baseline_checked": args.baseline_dir is not None}))
 
 
 if __name__ == "__main__":

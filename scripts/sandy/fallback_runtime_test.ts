@@ -8,6 +8,8 @@ import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared
 import { createAgentOperationHandler } from "../../supabase/functions/sandy-agent-operation-api/index.ts";
 import { bindRuntimeOperationalContext, type RuntimeOperationalFacts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational.ts";
 import { internalRuntimeOperationalContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational_contracts.ts";
+import { collectRuntimeSnapshot } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_snapshot.ts";
+import { selectRuntimeModel } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_model_policy.ts";
 
 // Run with the test-only import map in testing/fallback_import_map.json. The
 // actual candidate handlers, identity capabilities, Gmail code, contracts and
@@ -590,4 +592,42 @@ for (const slug of slugs) Deno.test(`${slug}: operational tool domains share fix
     assert.equal(audits(db).length, slug === "sandy-agent-runtime-v1-backup-r50" ? 5 : 6);
     assert.equal(Object.keys(agentOperationContracts).length, 8);
   } finally { app.close(); }
+});
+
+Deno.test("shared snapshot collector derives only actual customer facts and refuses serialized or non-customer conversation capabilities", async () => {
+  const db = new Database(), principal = await recordPrincipal(db);
+  db.tables.sandy_web_turns = [{ id: DRAFT, customer_id: CUSTOMER }, { id: FOREIGN, customer_id: FOREIGN }];
+  const expected = { channel: "web", requestId: "runtime-records-request", conversationId: null };
+  const facts = await collectRuntimeSnapshot(principal, db, expected);
+  assert.equal(facts.activityFacts.all_web_messages, 1); assert.equal(facts.v2Connections.length, 2);
+  const before = db.queries.length;
+  await assert.rejects(() => collectRuntimeSnapshot(JSON.parse(JSON.stringify(principal)), db, expected), /runtime_snapshot_task_required/);
+  assert.equal(db.queries.length, before);
+  const proof = await authenticateRuntime(new Request("https://internal.invalid", { headers: { authorization: "Bearer fixture-worker" } }), db, "fixture-worker"); assert.ok(proof);
+  const conversation = await bindRuntimeConversationTask(proof, db, { taskId: RECORD_TASK, customerId: CUSTOMER, channel: "web", requestId: expected.requestId }); assert.ok(conversation);
+  await assert.rejects(() => collectRuntimeSnapshot(conversation, db, expected), /runtime_snapshot_task_required/);
+  await assert.rejects(() => collectRuntimeSnapshot(principal, db, { ...expected, requestId: "another-request-id" }), /persisted_scope_mismatch/);
+});
+Deno.test("actual NULL-customer snapshot reads global policy only and never supplies a fabricated tenant or conversation", async () => {
+  const db = new Database(), task = await anonymousTask(db); db.queries.length = 0;
+  const expected = { channel: task.channel, requestId: task.requestId, conversationId: null };
+  const facts = await collectRuntimeSnapshot(task, db, expected);
+  assert.equal(facts.activityFacts.status, "not_checked"); assert.equal(facts.communicationFacts.status, "unavailable"); assert.deepEqual(facts.v2Connections, []); assert.deepEqual(facts.v2Services, []);
+  assert.deepEqual([...new Set(db.queries.map(q => q.table))].sort(), ["sandy_agent_tasks", "sandy_v2_runtime_policy"]);
+  await assert.rejects(() => collectRuntimeSnapshot(task, db, { ...expected, conversationId: DRAFT }), /anonymous_scope_mismatch/);
+});
+
+Deno.test("shared model policy keeps approved recent server routes, stale/disabled fallback and actual shadow task ownership", async () => {
+  const db = new Database(), principal = await recordPrincipal(db), options = { mode: "enabled", prompt: principal.requestText, requestId: "runtime-records-request" };
+  db.tables.ai_task_routes = [{ task_type: "general_assistance", primary_model: "fixture-approved-model", enabled: true }];
+  db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", eligibility: "approved", verified_at: "2000-01-01T00:00:00Z" }];
+  assert.equal((await selectRuntimeModel(principal, db, options)).model, "gpt-4.1-mini");
+  db.tables.ai_model_registry[0].verified_at = new Date().toISOString();
+  assert.equal((await selectRuntimeModel(principal, db, { ...options, mode: "shadow" })).model, "gpt-4.1-mini");
+  assert.equal((await selectRuntimeModel(principal, db, options)).model, "fixture-approved-model");
+  assert.ok(db.tables.sandy_v2_model_decisions.every(row => row.customer_id === CUSTOMER && row.request_id === options.requestId));
+  const count = db.tables.sandy_v2_model_decisions.length;
+  await assert.rejects(() => selectRuntimeModel(JSON.parse(JSON.stringify(principal)), db, options), /task_required/);
+  await assert.rejects(() => selectRuntimeModel(principal, db, { ...options, prompt: "An unrelated request" }), /scope_mismatch/);
+  assert.equal(db.tables.sandy_v2_model_decisions.length, count);
 });
