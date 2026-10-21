@@ -6,7 +6,28 @@ This review inventories production source readbacks from Supabase project
 the 21 October release changes are recorded separately here and in
 [release validation](release-validation-20261021.json).
 
-## Confirmed 21 October release
+## Current 21 October release
+
+The current source-attested gateway is **v15**, from `b8a9e8f`, with **2,390**
+installed operation IDs. Canonical Edge MCP **v7** and legacy Edge MCP **v74**
+execute only through Sandy API, preserving caller identity and scoped request and
+approval metadata. Forty-two regressions passed against the exact deployed MCP
+source. A real authenticated request remains blocked by the Codex machine's
+project-host proxy denial, before Auth; source attestation is not that test.
+
+Active runtime **v4 v17**, fallback **v2 v19** and backup **v9** share the eight
+application actions, task-bound inference, nine record operations, six operational
+reads and connection preflight. The router remains byte-identical at **v56**.
+The dedicated reliability worker **v13** shares a versioned proposal service with
+durable one-use model claims and approval handoff. Broader worker/UI migration
+continues. The five passive Workspace UI reads now use API contracts in local
+commit `7cecf00`; they have not been published or browser-tested. The Node Cloud
+Run MCP replacement is also source-only. **Universal production routing remains
+incomplete.** See [current release evidence](release-validation-20261021.json)
+and [implementation status](implementation-status.md) for deployment and test
+boundaries. The sections below retain their dated initial-source findings.
+
+## Initial 21 October release, historical
 
 The published `02279e4` release initially deployed `sandy-operation-api` v8;
 the published `b139a75` follow-up now runs gateway v9 with 1,021 installed IDs.

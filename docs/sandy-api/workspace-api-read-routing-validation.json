@@ -1,0 +1,49 @@
+{
+  "reviewer": "auth_storage_scope",
+  "reviewed_at": "2026-10-21T04:19:29.130048+00:00",
+  "status": "pass",
+  "files": [
+    {
+      "path": "sandy/workspace-api-reads.mjs",
+      "sha256": "2d928375d40a98e11cca84d12db2b5e292c57445a353a73fb58ba2198d8c0a22"
+    },
+    {
+      "path": "sandy/app/index.html",
+      "sha256": "0f0fd2f33b5d462de15cae2ceaaae489389d8d6ede027c9de359c59936e9d23a"
+    },
+    {
+      "path": "scripts/sandy/workspace_api_reads_test.mjs",
+      "sha256": "faad2ad090854a451b21b54a01d271e5264ee76e2e3cf964cf592b4de083e2c2"
+    }
+  ],
+  "findings": [],
+  "checks": [
+    "Five fixed passive operation IDs only; unknown actions remain outside module",
+    "Real browser getSession access token, exactly one refresh after 401, no service-key or synthetic principal",
+    "No legacy fallback after API refusal, malformed or deferred success, or network error",
+    "Strict standard executed envelope with matching operation and contract_version",
+    "Null first-page history cursor omitted without mutating caller payload; subsequent bounded cursor unchanged",
+    "API confirmed primary-email and nonrevoked portal-account resolution matches original sandy-workspace ownerFor; Agenda and Controller membership alone do not confer workspace access",
+    "Existing customer executor forwards same actual user token to independently authenticated sandy-workspace; no caller customer_id/endpoint/action injection",
+    "Other UI actions and original auth/lifecycle behavior unchanged by three-line routing patch"
+  ],
+  "validation": {
+    "node_workspace_reads": {
+      "passed": 5,
+      "failed": 0
+    },
+    "deno_customer_executor": {
+      "passed": 9,
+      "failed": 0
+    },
+    "browser_real_session_tested": false,
+    "publication_or_deployment_claimed": false
+  },
+  "limitations": [
+    "Actual customer browser session integration not performed; source/component evidence only",
+    "Static-site publication remains root-owned and is not implied by this review"
+  ],
+  "source_commit": "7cecf00",
+  "deployed": false,
+  "publication_dependency": "GitHub write authentication"
+}
