@@ -1,0 +1,242 @@
+{
+  "operation": "supabase.tenant.financial.exports.available",
+  "handler": "sandy-operation-api",
+  "permission_scope": "customer:read",
+  "is_mutation": false,
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483000
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      }
+    },
+    "required": [
+      "offset",
+      "limit"
+    ],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "const": true
+      },
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483000
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      },
+      "total_count": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483647
+      },
+      "next_offset": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483000
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "items": {
+        "type": "array",
+        "maxItems": 50,
+        "items": {
+          "type": "object",
+          "properties": {
+            "snapshot_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "tenant_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "manifest": {
+              "const": "customer_financial_fragments_v1"
+            },
+            "manifest_sha256": {
+              "const": "ccac4b06066c1f9ed0613d47e00e6abc85075063a29ce26f9b82f11fe43eaeb1"
+            },
+            "schema_sha256": {
+              "const": "ac5691a58acaf456d1490c0ea45f0f1bd8ce1ae37592f8574da1388cac336380"
+            },
+            "fragment_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2048
+            },
+            "row_counts": {
+              "type": "object",
+              "properties": {
+                "sandy_commerce_configuration": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_consents": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_accounts": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_entries": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_entry_lines": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_statements": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_statement_lines": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_reconciliations": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_invoices": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_commerce_entitlements": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                }
+              },
+              "required": [
+                "sandy_commerce_configuration",
+                "sandy_commerce_consents",
+                "sandy_commerce_accounts",
+                "sandy_commerce_entries",
+                "sandy_commerce_entry_lines",
+                "sandy_commerce_statements",
+                "sandy_commerce_statement_lines",
+                "sandy_commerce_reconciliations",
+                "sandy_commerce_invoices",
+                "sandy_commerce_entitlements"
+              ],
+              "additionalProperties": false
+            },
+            "total_plaintext_bytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 134217728
+            },
+            "artifact_index_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "state": {
+              "enum": [
+                "exported",
+                "purged"
+              ]
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "complete_tenant_coverage": {
+              "const": false
+            },
+            "external_provider_assets_included": {
+              "const": false
+            },
+            "erasure_supported": {
+              "const": false
+            },
+            "restore_supported": {
+              "const": false
+            },
+            "financial_source": {
+              "const": "internal_commerce_records"
+            },
+            "provider_verified": {
+              "const": false
+            },
+            "payment_executed": {
+              "const": false
+            }
+          },
+          "required": [
+            "snapshot_id",
+            "tenant_id",
+            "manifest",
+            "manifest_sha256",
+            "schema_sha256",
+            "fragment_count",
+            "row_counts",
+            "total_plaintext_bytes",
+            "artifact_index_sha256",
+            "state",
+            "created_at",
+            "expires_at",
+            "complete_tenant_coverage",
+            "external_provider_assets_included",
+            "erasure_supported",
+            "restore_supported",
+            "financial_source",
+            "provider_verified",
+            "payment_executed"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "ok",
+      "offset",
+      "limit",
+      "total_count",
+      "next_offset",
+      "items"
+    ],
+    "additionalProperties": false
+  },
+  "requires_real_user_session": true,
+  "api_key_delegable": false,
+  "requirement_ids": [
+    111
+  ],
+  "complete_tenant_coverage": false,
+  "contract_sha256": "abe5538f563d0002e2f0fedf248cc568633b7d596186e76d5c1bf74c86787fc7"
+}
