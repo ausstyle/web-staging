@@ -2458,9 +2458,25 @@ $("sendTaskRequest").addEventListener("submit",async e=>{
  e.preventDefault();const form=e.currentTarget,button=form.querySelector("button");button.disabled=true;
  try{await api("request-task",{title:$("requestTaskTitle").value.trim(),recipient_email:$("requestTaskRecipient").value.trim()});$("requestTaskTitle").value="";toast("Request sent — awaiting recipient approval");await loadTaskRequests();await loadOutgoingRequests()}catch(err){toast(err.message,true)}finally{button.disabled=false}
 });
+let timelineAutoRepairRunning=false;
+function timelineHasInvalidDependencies(){
+ const tasks=new Map(state.tasks.map(t=>[t.id,t]));
+ return state.dependencies.some(dep=>{
+  const predecessor=tasks.get(dep.depends_on_id),successor=tasks.get(dep.task_id);
+  if(!predecessor||!successor||successor.shared)return false;
+  const finish=Date.parse(predecessor.due_at||predecessor.start_at||"");
+  const begin=Date.parse(successor.start_at||successor.due_at||"");
+  return Number.isFinite(finish)&&Number.isFinite(begin)&&begin<finish;
+ });
+}
 async function load(){
  const data=await api("list");
  applyAgendaData(data);taskFiles.refreshCounts(state.tasks);refreshMissionStatus();startAgendaSync();loadTaskRequests();loadOutgoingRequests();
+ // Repair older dependency dates on opening the timeline. The guard prevents reload recursion.
+ if(state.view==="timeline"&&!timelineAutoRepairRunning&&timelineHasInvalidDependencies()){
+  timelineAutoRepairRunning=true;
+  try{await timelineRepairDependencies()}finally{timelineAutoRepairRunning=false}
+ }
 }
 async function markTask(t,done,control){
  control.disabled=true;
