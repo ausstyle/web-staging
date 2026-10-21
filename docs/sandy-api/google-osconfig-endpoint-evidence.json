@@ -1,0 +1,10 @@
+{
+  "source_repository": "googleapis/google-api-go-client",
+  "public_sdk_v1_blob_sha": "782e0e763742e9ae110c60d9e122efe73071096e",
+  "public_sdk_v2_blob_sha": "d473bf76270f7fc720bd8e0845678152054ebf3f",
+  "v1_os_policy_assignment_list": "v1/{+parent}/osPolicyAssignments",
+  "v2_has_os_policy_assignments": false,
+  "fixed_vm_location": "europe-west1-b",
+  "repaired_backend": "sandy-deploy-provision",
+  "source_before_sha256": "1f1bfb9ac9e635dafee10e6249978a9867a7402e55be0f2bd05af1c54e2a6d85"
+}
