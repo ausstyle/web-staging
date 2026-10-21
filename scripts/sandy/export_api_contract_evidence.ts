@@ -24,6 +24,7 @@ import {
   runtimeConversationOperation,
 } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation_contract.ts";
 import { productOperations } from "../../supabase/functions/sandy-product-service-api/contracts.ts";
+import { commerceOperations } from "../../supabase/functions/sandy-commerce-ledger-api/contracts.ts";
 import { databaseOperations } from "../../supabase/functions/sandy-database-operation-api/gateway.ts";
 import { providerOperations } from "../../supabase/functions/sandy-provider-operation-api/gateway.ts";
 import { providerExpansionOperations } from "../../supabase/functions/sandy-provider-operation-api/expansion_gateway.ts";
@@ -205,6 +206,13 @@ add(
   productOperations,
   "sandy-product-service-api",
   "sandy-product-service-api/index.ts",
+);
+add(
+  "commerce_internal",
+  "sandy-commerce-ledger-api/contracts.json",
+  commerceOperations,
+  "sandy-commerce-ledger-api",
+  "sandy-commerce-ledger-api/index.ts",
 );
 add(
   "internal_runtime_records",
