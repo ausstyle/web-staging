@@ -2,7 +2,7 @@
 
 ## Source of truth
 
-1. **Master Software Scope** — Sandy's governing target architecture and acceptance standards, version 1.0 dated 19 October 2026. The original owner-provided Word document is **Sandy_AI_Master_Software_Scope_v1(1).docx**. Its verbatim source must be checked in as a binary document before this source is considered fully published. See [master-scope-reference.md](master-scope-reference.md) for a structured reference (not a substitute for the original).
+1. **Master Software Scope** — Sandy's governing target architecture and acceptance standards, version 1.0 dated 19 October 2026. The original owner-provided Word document is **Sandy_AI_Master_Software_Scope_v1(1).docx**. A [full searchable text extraction](master-scope-v1.md) is published for Codex; the original DOCX remains the archival source. See [master-scope-reference.md](master-scope-reference.md) for a navigable section index.
 2. **API implementation specification** — [../sandy-api/api-scope-161.md](../sandy-api/api-scope-161.md), subordinate to the Master Scope. The original DOCX/PDF source should be attached as the governing archive.
 3. **Subtask engineering scopes** — one numbered specification per engineering objective in [tasks/](tasks/), written using [templates/engineering-task-scope.md](templates/engineering-task-scope.md).
 4. **Live capabilities and verification** — Supabase project `zmqlyygzqoidkcwdysok`, `public.sandy_operation_registry`. Registered does not mean executable, and deployed does not mean tested.
