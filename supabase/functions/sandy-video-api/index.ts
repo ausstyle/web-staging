@@ -73,22 +73,52 @@ Deno.serve(async(req)=>{
   if(!/^[0-9a-f-]{36}$/i.test(mid))return reply(400,{error:"invalid_meeting"},origin);
   const {data:meeting,error:me}=await db.from("sandy_video_meetings").select("owner_id,state").eq("id",mid).maybeSingle();
   if(me)throw me;if(!meeting||meeting.owner_id!==userId)return reply(403,{error:"owner_required"},origin);
-  if(action==="invitations_sent"){const {data,error}=await db.from("sandy_video_user_invites").select("id,recipient_id,status,created_at,updated_at").eq("meeting_id",mid).order("created_at",{ascending:false}).limit(100);if(error)throw error;return reply(200,{ok:true,invitations:data},origin)}
+  if(action==="invitations_sent"){const {data,error}=await db.from("sandy_video_user_invites").select("id,recipient_id,status,created_at,updated_at,whatsapp_status,whatsapp_attempted_at,whatsapp_error_code").eq("meeting_id",mid).order("created_at",{ascending:false}).limit(100);if(error)throw error;return reply(200,{ok:true,invitations:data},origin)}
   if(action==="invitation_revoke"){const {error}=await db.from("sandy_video_user_invites").update({status:"revoked",updated_at:new Date().toISOString()}).eq("id",String(body.invitation_id||"")).eq("meeting_id",mid);if(error)throw error;return reply(200,{ok:true},origin)}
   if(meeting.state!=="scheduled")return reply(409,{error:"meeting_closed"},origin);
   const addresses=body.emails;
   if(!Array.isArray(addresses)||addresses.length<1||addresses.length>10||addresses.some((x:any)=>typeof x!=="string"||x.length>320||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))return reply(400,{error:"invalid_recipient_emails"},origin);
   const all=await db.auth.admin.listUsers({page:1,perPage:1000});
   if(all.error)throw all.error;
-  let invited=0,notFound=0;
+  let invited=0,notFound=0;const deliveries:any[]=[];
   for(const entry of [...new Set(addresses.map((x:string)=>x.trim().toLowerCase()))]){
     const person=all.data.users.find((u:any)=>u.email?.toLowerCase()===entry);
-    if(!person){notFound++;continue}
+    if(!person){notFound++;deliveries.push({email:entry,in_app:"not_found",whatsapp:"not_attempted"});continue;}
     if(person.id===userId)continue;
-    const {error}=await db.from("sandy_video_user_invites").upsert({meeting_id:mid,inviter_id:userId,recipient_id:person.id,status:"pending",updated_at:new Date().toISOString()},{onConflict:"meeting_id,recipient_id"});
+    const {data:existing,error:lookupError}=await db.from("sandy_video_user_invites").select("id,status,whatsapp_status").eq("meeting_id",mid).eq("recipient_id",person.id).maybeSingle();
+    if(lookupError)throw lookupError;
+    const {data:invitation,error}=await db.from("sandy_video_user_invites").upsert({meeting_id:mid,inviter_id:userId,recipient_id:person.id,status:"pending",updated_at:new Date().toISOString()},{onConflict:"meeting_id,recipient_id"}).select("id").single();
     if(error)throw error;invited++;
+    const result:any={email:entry,in_app:"pending",whatsapp:"not_requested"};
+    if(body.notify_whatsapp!==false){
+      if(existing?.whatsapp_status==="submitted"||existing?.whatsapp_status==="unknown"){result.whatsapp=existing.whatsapp_status;result.note="Existing WhatsApp send retained; no duplicate attempted.";}
+      else {
+        const {data:account,error:accountError}=await db.from("sandy_memory_portal_accounts").select("customer_id").eq("auth_user_id",person.id).is("revoked_at",null).maybeSingle();
+        if(accountError)throw accountError;
+        let whatsapp="no_verified_account",failure:string|null=null;
+        if(account?.customer_id){
+          const {data:identity,error:identityError}=await db.from("sandy_whatsapp_identities").select("wa_id").eq("customer_id",account.customer_id).eq("verification_status","verified").order("is_primary",{ascending:false}).limit(1).maybeSingle();
+          if(identityError)throw identityError;
+          if(identity?.wa_id){
+            const link="https://ausstyle.github.io/web-staging/sandy/meetings/#user="+encodeURIComponent(mid);
+            const message="You're invited to a Sandy video meeting: "+link+"\nOpen it using your Sandy account to join.";
+            const idem="sandy_meeting_"+invitation.id.replaceAll("-","_");
+            try{
+              const sent=await fetch(ROOT+"/functions/v1/sandy-whatsapp-send",{method:"POST",headers:{"authorization":"Bearer "+SERVICE,"content-type":"application/json"},body:JSON.stringify({customer_id:account.customer_id,requested_wa_id:identity.wa_id,text:message,idempotency_key:idem}),signal:AbortSignal.timeout(18000)});
+              const res=await sent.json().catch(()=>({}));
+              whatsapp=sent.ok&&res.ok!==false?"submitted":res.error==="customer_service_window_closed"?"window_closed":res.error==="already_processed"?"submitted":"failed";
+              failure=whatsapp==="failed"?String(res.error||"whatsapp_send_failed").slice(0,80):null;
+            }catch(e){whatsapp="unknown";failure="send_outcome_uncertain";}
+          }
+        }
+        const {error:tracking}=await db.from("sandy_video_user_invites").update({whatsapp_status:whatsapp,whatsapp_error_code:failure,whatsapp_attempted_at:new Date().toISOString()}).eq("id",invitation.id);
+        if(tracking)console.error("meeting_invite_delivery_status",tracking.code);
+        result.whatsapp=whatsapp;
+      }
+    }
+    deliveries.push(result);
   }
-  return reply(200,{ok:true,invited,not_found:notFound,delivery:"in_app",note:"Invitation available within Sandy Meetings. No external message has been sent."},origin);
+  return reply(200,{ok:true,invited,not_found:notFound,recipients:deliveries,delivery:"in_app_and_eligible_whatsapp",note:"WhatsApp submitted means accepted by the sending service, not delivered to the phone. Outside the 24-hour window, an approved template is required."},origin);
  }
  if(action==="invitation_respond"){
   const id=String(body.invitation_id||""),status=String(body.response||"");
