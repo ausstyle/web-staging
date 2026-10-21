@@ -1239,11 +1239,22 @@ function inlineEditor(t,focus){
     // Immediate visual indentation/outdentation; save and reconciliation follow asynchronously.
     state.expanded.delete(parent);
     render();
+    // Keep the moved task in edit mode, with its title selected.
+    const movedTitle=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
+    if(movedTitle)movedTitle.replaceWith(inlineEditor(t,true));
    }
    const patch={id:t.id};
    if(title!==previous.title)patch.title=title;
    if(moving){patch.parent_task_id=parent;patch.position=await positionPromise;t.position=patch.position}
-   if(Object.keys(patch).length>1){await api(t.shared?"shared-update":"update",patch);await load()}
+   if(Object.keys(patch).length>1){
+    await api(t.shared?"shared-update":"update",patch);
+    await load();
+    if(moving){
+     const updated=state.tasks.find(x=>x.id===t.id);
+     const label=document.getElementById("task-"+t.id)?.querySelector(":scope > .taskrow .tasktitle");
+     if(updated&&label)label.replaceWith(inlineEditor(updated,true));
+    }
+   }
    if(mode==="enter"){if(t.shared)await createSharedRow(t.parent_task_id||t.id);else outlineDraft(t.parent_task_id||null,t.id,t.company_id||"personal")}
    else if(!moving&&Object.keys(patch).length===1)field.replaceWith(outlineTitle(t));
   }catch(e){
