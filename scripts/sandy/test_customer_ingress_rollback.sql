@@ -1,0 +1,50 @@
+-- Component integration against the real database. Synthetic service/customer
+-- claims test role boundaries only; this is not signed provider-webhook proof.
+DO $test$
+DECLARE customer uuid:=gen_random_uuid();other_customer uuid:=gen_random_uuid();conversation uuid:=gen_random_uuid();message uuid:=gen_random_uuid();suffix text:=gen_random_uuid()::text;email text;unknown_email text;wa text;contact uuid;observed jsonb;resolved jsonb;checks integer:=0;before_customers bigint;
+BEGIN
+ email:='sandy-ingress-'||suffix||'@example.invalid';unknown_email:='unknown-'||suffix||'@example.invalid';
+ wa:='1555'||lpad((floor(random()*10000000)::bigint)::text,7,'0');
+ IF has_function_privilege('anon','public.sandy_customer_contact_resolve(uuid)','EXECUTE') OR has_function_privilege('authenticated','public.sandy_customer_contact_resolve(uuid)','EXECUTE') OR has_function_privilege('service_role','public.sandy_customer_ingress_observe()','EXECUTE') THEN RAISE EXCEPTION 'ingress privilege boundary';END IF;checks:=checks+3;
+ INSERT INTO public.email_customers(id,display_name,google_drive_folder_status) VALUES(customer,'Isolated ingress fixture','excluded'),(other_customer,'Isolated second ingress fixture','excluded');
+ INSERT INTO public.email_customer_addresses(customer_id,email_address,is_primary,verified_at) VALUES(customer,email,true,clock_timestamp());
+ INSERT INTO public.email_conversations(id,customer_id) VALUES(conversation,customer);
+ SELECT count(*) INTO before_customers FROM public.email_customers;
+ PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+ INSERT INTO public.email_messages(id,customer_id,conversation_id,sender_address,direction,body_text) VALUES(message,customer,conversation,upper(email),'incoming','');
+ SELECT id INTO contact FROM public.sandy_customer_provisional_contacts WHERE channel='email' AND subject=email;
+ IF contact IS NULL OR NOT EXISTS(SELECT 1 FROM public.sandy_customer_contact_events WHERE channel='email' AND provider_event_id='email_message:'||message::text AND contact_id=contact) THEN RAISE EXCEPTION 'automatic email ingress';END IF;checks:=checks+2;
+ resolved:=public.sandy_customer_contact_resolve(contact);
+ IF resolved->>'matched_customer_id' IS DISTINCT FROM customer::text OR resolved->>'state' IS DISTINCT FROM 'matched_existing_record' OR resolved->>'authorized' IS DISTINCT FROM 'false' OR resolved->>'identity_merged' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'existing canonical record is not authorization';END IF;checks:=checks+4;
+ INSERT INTO public.email_messages(customer_id,conversation_id,sender_address,direction,body_text) VALUES(customer,conversation,email,'incoming','');
+ IF (SELECT count(*) FROM public.sandy_customer_provisional_contacts WHERE channel='email' AND subject=email)<>1 THEN RAISE EXCEPTION 'contact deduplication';END IF;checks:=checks+1;
+ INSERT INTO public.email_messages(customer_id,conversation_id,sender_address,direction,body_text) VALUES(customer,conversation,unknown_email,'incoming','');
+ SELECT id INTO contact FROM public.sandy_customer_provisional_contacts WHERE channel='email' AND subject=unknown_email;
+ resolved:=public.sandy_customer_contact_resolve(contact);
+ IF resolved->>'state' IS DISTINCT FROM 'provisional' OR resolved->'matched_customer_id' IS DISTINCT FROM 'null'::jsonb OR resolved->>'customer_created' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'unknown subject remains provisional';END IF;checks:=checks+3;
+ IF (SELECT count(*) FROM public.email_customers)<>before_customers THEN RAISE EXCEPTION 'observation created customer';END IF;checks:=checks+1;
+ INSERT INTO public.email_messages(customer_id,conversation_id,sender_address,direction,body_text) VALUES(customer,conversation,'outbound-'||suffix||'@example.invalid','outgoing','');
+ IF EXISTS(SELECT 1 FROM public.sandy_customer_provisional_contacts WHERE subject='outbound-'||suffix||'@example.invalid') THEN RAISE EXCEPTION 'outbound mistaken for inbound';END IF;checks:=checks+1;
+ PERFORM set_config('request.jwt.claims','{"role":"authenticated"}',true);
+ INSERT INTO public.email_messages(customer_id,conversation_id,sender_address,direction,body_text) VALUES(customer,conversation,'untrusted-'||suffix||'@example.invalid','incoming','');
+ IF EXISTS(SELECT 1 FROM public.sandy_customer_provisional_contacts WHERE subject='untrusted-'||suffix||'@example.invalid') THEN RAISE EXCEPTION 'customer write became trusted ingress';END IF;checks:=checks+1;
+ PERFORM set_config('request.jwt.claims','{"role":"service_role"}',true);
+ INSERT INTO public.sandy_whatsapp_messages(meta_message_id,phone_number_id,sender_wa_id,direction,message_type,payload) VALUES('sandy-ingress-'||suffix,'fixture',wa,'inbound','text','{}');
+ SELECT id INTO contact FROM public.sandy_customer_provisional_contacts WHERE channel='whatsapp' AND subject=wa;
+ IF contact IS NULL THEN RAISE EXCEPTION 'automatic whatsapp ingress';END IF;checks:=checks+1;
+ resolved:=public.sandy_customer_contact_resolve(contact);IF resolved->>'state' IS DISTINCT FROM 'provisional' THEN RAISE EXCEPTION 'unverified whatsapp not matched';END IF;checks:=checks+1;
+ INSERT INTO public.sandy_whatsapp_identities(wa_id,customer_id,verification_status,verified_at,allowed_scopes) VALUES(wa,customer,'verified',clock_timestamp(),ARRAY['memory_read']);
+ resolved:=public.sandy_customer_contact_resolve(contact);IF resolved->>'matched_customer_id' IS DISTINCT FROM customer::text OR resolved->>'authorized' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'verified whatsapp current routing';END IF;checks:=checks+2;
+ UPDATE public.sandy_whatsapp_identities SET verification_status='revoked',allowed_scopes='{}' WHERE wa_id=wa;
+ resolved:=public.sandy_customer_contact_resolve(contact);IF resolved->>'state' IS DISTINCT FROM 'provisional' OR resolved->'matched_customer_id' IS DISTINCT FROM 'null'::jsonb THEN RAISE EXCEPTION 'revocation remains current';END IF;checks:=checks+2;
+ UPDATE public.sandy_whatsapp_identities SET verification_status='verified',verified_at=clock_timestamp()-interval '91 days' WHERE wa_id=wa;
+ resolved:=public.sandy_customer_contact_resolve(contact);IF resolved->>'state' IS DISTINCT FROM 'provisional' THEN RAISE EXCEPTION 'expired link remains matched';END IF;checks:=checks+1;
+ observed:=public.sandy_customer_contact_observe('voice',wa,'voice-'||suffix);resolved:=public.sandy_customer_contact_resolve((observed->>'contact_id')::uuid);
+ IF resolved->>'state' IS DISTINCT FROM 'provisional' OR resolved->>'authorized' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'caller ID did not prove channel ownership';END IF;checks:=checks+2;
+ UPDATE public.email_customer_addresses SET verified_at=NULL WHERE customer_id=customer;
+ SELECT id INTO contact FROM public.sandy_customer_provisional_contacts WHERE channel='email' AND subject=email;
+ resolved:=public.sandy_customer_contact_resolve(contact);IF resolved->>'state' IS DISTINCT FROM 'provisional' THEN RAISE EXCEPTION 'email verification removed';END IF;checks:=checks+1;
+ resolved:=public.sandy_customer_contact_resolve(gen_random_uuid());IF resolved->>'error' IS DISTINCT FROM 'contact_not_found' THEN RAISE EXCEPTION 'missing contact truthfulness';END IF;checks:=checks+1;
+ CREATE TEMP TABLE sandy_ingress_test_report AS SELECT checks passed,0 failed,true rolled_back,false external_provider_webhook_verified;
+END $test$;
+SELECT * FROM sandy_ingress_test_report;
