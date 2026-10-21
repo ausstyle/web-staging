@@ -2753,11 +2753,33 @@ async function load(){
   try{await timelineRepairDependencies()}finally{timelineAutoRepairRunning=false}
  }
 }
+function confirmTaskSubtreeInline(task,control){
+ return new Promise(resolve=>{
+  document.querySelector(".taskSubtreeConfirm")?.remove();
+  const pop=el("div","timelineInlineConfirm taskSubtreeConfirm");
+  pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Complete task and subtasks");
+  pop.append(el("div","timelineInlineConfirmTitle","Complete all subtasks?"));
+  pop.append(el("div","timelineInlineConfirmDetail","Completing “"+task.title+"” will also complete its unfinished subtasks."));
+  const actions=el("div","timelineInlineConfirmActions");
+  const cancel=el("button","","Cancel"),confirm=el("button","confirm","Complete all");
+  cancel.type=confirm.type="button";actions.append(cancel,confirm);pop.append(actions);document.body.append(pop);
+  const rect=control.getBoundingClientRect(),bounds=pop.getBoundingClientRect();
+  pop.style.left=Math.max(8,Math.min(innerWidth-bounds.width-8,rect.right+10))+"px";
+  pop.style.top=Math.max(8,Math.min(innerHeight-bounds.height-8,rect.top-6))+"px";
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();resolve(value)};
+  const outside=e=>{if(!pop.contains(e.target))done(false)};
+  const key=e=>{if(e.key==="Escape"){e.preventDefault();done(false)}};
+  cancel.onclick=()=>done(false);confirm.onclick=()=>done(true);
+  document.addEventListener("pointerdown",outside,true);document.addEventListener("keydown",key,true);
+  confirm.focus({preventScroll:true});
+ });
+}
 async function markTask(t,done,control){
  control.disabled=true;
  try{
   if(done&&countDesc(t).total>countDesc(t).done){if(t.shared){toast("Complete the shared subtasks first.",true);control.checked=false;return}
-    if(!confirm("This task has unfinished subtasks. Mark the whole task and every remaining subtask complete?")){control.checked=false;return}
+    if(!await confirmTaskSubtreeInline(t,control)){control.checked=false;return}
     await api("complete-tree",{id:t.id,confirm_all:true})
   }else{
     await api(t.shared?"shared-update":"update",{id:t.id,status:done?"completed":"todo"})
