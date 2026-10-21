@@ -314,6 +314,11 @@ html,body{max-width:100%;overflow-x:clip}
 .taskDeletePopover strong{display:block;font-size:14px;overflow-wrap:anywhere}.taskDeletePopover p{margin:6px 0 12px;color:#777}
 .taskDeleteActions{display:flex;flex-wrap:wrap;gap:7px}.taskDeleteActions button{border-radius:8px;border:1px solid #ddd;padding:8px 11px;font-size:12px;cursor:pointer;background:#fafafa;color:#333}
 .taskDeleteActions .taskDeleteDanger{background:#b42318;color:white;border-color:#b42318;font-weight:650}.taskDeleteActions button:hover{filter:brightness(.94)}
+
+/* Centred task-delete confirmation, with a calm dark-green action. */
+.taskDeletePopover{position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;z-index:10000!important}
+.taskDeleteActions .taskDeleteDanger{background:#243c30!important;border-color:#243c30!important;color:#fff!important}
+.taskDeleteActions .taskDeleteDanger:hover{background:#365747!important}
 </style>
 <link rel="stylesheet" href="../agenda/task-attachments.css?v=20261018v4b"><style id="sandyTasksV4Theme">
 :root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important;color:#292d29!important;background:#f8f8f5!important;--ink:#282d29!important;--muted:#747b73!important;--line:#e5e8e2!important;--green:#273e32!important;--pale:#e8ece5!important;--white:#fff!important}
@@ -1559,8 +1564,8 @@ function confirmTaskDelete(title,options){
   const cancel=document.createElement("button");cancel.type="button";cancel.textContent="Cancel";cancel.className="taskDeleteCancel";cancel.addEventListener("click",()=>finish(null));actions.append(cancel);
   for(const option of options){const button=document.createElement("button");button.type="button";button.className="taskDeleteDanger";button.textContent=option.label;button.addEventListener("click",()=>finish(option.value));actions.append(button)}
   document.body.append(panel);
-  panel.style.left=Math.max(8,Math.min(innerWidth-panel.offsetWidth-8,taskDeletePoint.x+10))+"px";
-  panel.style.top=Math.max(8,Math.min(innerHeight-panel.offsetHeight-8,taskDeletePoint.y+10))+"px";
+  // The confirmation is centred and does not follow the pointer.
+  panel.style.left="50%";panel.style.top="50%";
   document.addEventListener("keydown",keyHandler,true);
   setTimeout(()=>document.addEventListener("pointerdown",outside,true),0);
   cancel.focus();
@@ -1578,8 +1583,23 @@ $("deleteTask").addEventListener("click",async()=>{
  const childMode=await confirmTaskDelete(t.title,options);
  if(!childMode)return;
  const button=$("deleteTask");button.disabled=true;
- try{const result=await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});closeDialog();await load();toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted")}
- catch(e){toast(e.message,true)}finally{button.disabled=false}
+ // Optimistically remove deleted tasks immediately; restore if the server refuses.
+ const previousTasks=state.tasks.slice();
+ const previousExpanded=new Set(state.expanded);
+ const parentId=t.parent_task_id||null;
+ if(childMode==="delete_all")state.tasks=state.tasks.filter(x=>!descendants.has(x.id));
+ else{
+  state.tasks=state.tasks.filter(x=>x.id!==t.id);
+  for(const x of state.tasks)if(x.parent_task_id===t.id)x.parent_task_id=parentId;
+ }
+ closeDialog();render();
+ try{
+  await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});
+  toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted");
+ }catch(e){
+  state.tasks=previousTasks;state.expanded=previousExpanded;render();
+  toast("Task deletion failed: "+e.message,true);
+ }finally{button.disabled=false}
 });
 $("archiveTask").addEventListener("click",async()=>{if(!state.edit)return;if(!confirm("Archive this task and all of its subtasks? You will no longer see them in your active agenda."))return;try{await api("archive-tree",{id:state.edit.id,confirm_all:true});closeDialog();await load();toast("Task archived")}catch(e){toast(e.message,true)}});
 $("cancelDialog").addEventListener("click",closeDialog);
