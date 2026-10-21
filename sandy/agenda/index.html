@@ -1211,8 +1211,7 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
  const confirm=el("button","draftConfirm","Add task");confirm.type="button";confirm.title="Save task (Enter)";
  main.append(field);row.append(dragSpace,el("span","branchToggle","·"),check,main,confirm);ghost.append(row);
  const prev=after?document.getElementById("task-"+after):null;
- // No preceding sibling means directly below the parent, before its existing children.
- box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:(box.querySelector(":scope > .childrow, :scope > .task")||box.querySelector(":scope > .addchild")));
+ box.insertBefore(ghost,prev?.parentElement===box?prev.nextSibling:box.querySelector(":scope > .addchild"));
  let closed=false;
  async function save(){
   if(closed||!field.value.trim())return;
@@ -1228,7 +1227,7 @@ function outlineDraft(parent=null,after=null,company=state.entryWorkspace,initia
   else if(e.key==="Escape"){e.preventDefault();closed=true;ghost.remove()}
   else if(e.key==="Tab"){
    e.preventDefault();
-   if(!e.shiftKey&&after){closed=true;outlineDraft(after,null,company,field.value)}
+   if(!e.shiftKey&&after){closed=true;outlineDraft(after,outlinePeers(after).at(-1)?.id||null,company,field.value)}
    else if(e.shiftKey&&parent){closed=true;const p=state.tasks.find(t=>t.id===parent);if(p)outlineDraft(p.parent_task_id||null,p.id,company,field.value)}
   }
  });
@@ -1678,7 +1677,7 @@ function openTaskContextMenu(t,x,y){
  action("Edit task",()=>{state.edit=t;state.parent=null;openDialog()});
  action("Set due date",()=>{state.edit=t;state.parent=null;openDialog();$("taskDue").focus()});
  action("Change priority",()=>{state.edit=t;state.parent=null;openDialog();$("taskPriority").focus()});
- action("Add subtask",()=>state.view==="timeline"?timelineNewRow(t.id,null,t.company_id||"personal"):outlineDraft(t.id,null,t.company_id||"personal"));
+ action("Add subtask",()=>state.view==="timeline"?timelineNewRow(t.id,null,t.company_id||"personal"):outlineDraft(t.id,outlinePeers(t.id).at(-1)?.id||null,t.company_id||"personal"));
  if(!t.shared){
   const peers=outlinePeers(t.parent_task_id||null),idx=peers.findIndex(p=>p.id===t.id),previous=peers[idx-1];
   if(previous&&!["completed","cancelled"].includes(previous.status))action("↳ Make subtask of previous",()=>moveOutlineTask(t.id,previous.id,"inside"));
