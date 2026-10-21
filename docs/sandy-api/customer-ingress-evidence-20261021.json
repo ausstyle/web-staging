@@ -1,0 +1,48 @@
+{
+  "http_status": 201,
+  "migration_sha256": "c347a5f10b20b229ef9453cf35dee00035288b85ae83b9eecd790d5bd458a11d",
+  "test_sha256": "2a28ff68ff694aec95556cd1a68fc15fe00f67be4786b166ea863dfa05a1db42",
+  "candidate_ddl_rolled_back": false,
+  "result": [
+    {
+      "passed": 27,
+      "failed": 0,
+      "rolled_back": true,
+      "external_provider_webhook_verified": false
+    }
+  ],
+  "external_provider_webhook_verified": false,
+  "normal_auth_mcp_test": false,
+  "postrollback_fixture_counts": [
+    {
+      "customers": 0,
+      "contacts": 0,
+      "messages": 0
+    }
+  ],
+  "source_commit": "9f2f9af",
+  "migration": {
+    "migration": "20261021160000_sandy_customer_ingress_observation.sql",
+    "source_sha256": "c347a5f10b20b229ef9453cf35dee00035288b85ae83b9eecd790d5bd458a11d",
+    "apply_http": 201,
+    "version": "20261021160000",
+    "readback_http": 201,
+    "readback": [
+      {
+        "version": "20261021160000",
+        "name": "sandy_customer_ingress_observation",
+        "exact_source_match": true
+      }
+    ]
+  },
+  "existing_onboarding_regression": [
+    {
+      "passed": 31,
+      "failed": 0,
+      "rolled_back": true
+    }
+  ],
+  "provider_messages_sent": 0,
+  "new_catalogue_operations": 0,
+  "capability": "Existing trusted email and WhatsApp inserts automatically deduplicate provisional contacts. Live resolver matches current verified records without granting authorization or creating/merging customers. Voice caller ID remains provisional; external signed webhook acceptance remains unverified."
+}
