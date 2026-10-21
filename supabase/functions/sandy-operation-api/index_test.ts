@@ -1,5 +1,8 @@
 import { createHandler as createMcpHandler } from "../sandy-api-mcp/index.ts";
-import { engineeringPolicy } from "./engineering_identity.ts";
+import {
+  engineeringPolicy,
+  engineeringVmReadPolicy,
+} from "./engineering_identity.ts";
 import assert from "node:assert/strict";
 import { createOperationHandler, type OperationDependencies } from "./index.ts";
 import { createApi, createHandler } from "../sandy-api-mcp/index.ts";
@@ -6632,4 +6635,87 @@ Deno.test("resource provisioning is hidden until a verified customer portal is b
     (await after.json()).operations.map((r: Row) => r.operation).sort(),
     rows.map((r) => r.operation).sort(),
   );
+});
+
+Deno.test("owner-approved VM diagnostics retain real workload Auth and fixed service routing through the gateway", async () => {
+  const machine = "10000000-0000-4000-8000-000000000001",
+    owner = "10000000-0000-4000-8000-000000000002",
+    session = "10000000-0000-4000-8000-000000000003";
+  const metadata = { sandy_engineering_test: true, sandy_engineering_epoch: 1 };
+  const jwt = "synthetic." +
+    btoa(
+      JSON.stringify({
+        sub: machine,
+        aud: "authenticated",
+        role: "authenticated",
+        session_id: session,
+        exp: Date.now() / 1000 + 3600,
+        app_metadata: metadata,
+      }),
+    ) + ".signature";
+  const vmScope = {
+    policy_sha256: await argumentDigest(engineeringVmReadPolicy),
+    owner_authority_id: owner,
+    source_change_id: productRequestId,
+    expires_at: new Date(Date.now() + 3600000).toISOString(),
+    operations: engineeringVmReadPolicy.operations,
+  };
+  const digest = await argumentDigest(engineeringPolicy);
+  const row = {
+    ...videoRead("video.status"),
+    input_schema: {
+      type: "object",
+      properties: { target: { const: "sandy-video" } },
+    },
+  };
+  const h = harness({
+    actorId: machine,
+    authorityId: owner,
+    authMetadata: metadata,
+    rows: [row],
+    rpcHandler: (name) =>
+      name === "sandy_engineering_resolve_identity"
+        ? {
+          ok: true,
+          identity_user_id: machine,
+          owner_authority_id: owner,
+          session_id: session,
+          credential_epoch: 1,
+          policy_sha256: digest,
+          operations: engineeringPolicy.operations,
+          vm_read_scope: vmScope,
+        }
+        : { ok: true },
+    backend: () =>
+      Response.json({
+        ok: true,
+        name: "sandy-video",
+        status: "RUNNING",
+        instance_id: engineeringVmReadPolicy.instance_id,
+      }),
+  });
+  const r = await h.handler(
+    new Request(
+      "https://example.supabase.co/functions/v1/sandy-operation-api",
+      {
+        method: "POST",
+        headers: { authorization: "Bearer " + jwt },
+        body: JSON.stringify({
+          action: "execute",
+          operation: "video.status",
+          arguments: {},
+          channel: "mcp",
+        }),
+      },
+    ),
+  );
+  assert.equal(r.status, 200, await r.clone().text());
+  assert.equal((await r.json()).result.name, "sandy-video");
+  assert.equal(h.calls.length, 1);
+  assert.ok(h.calls[0].url.endsWith("/sandy-deploy-provision"));
+  assert.equal(
+    JSON.parse(String(h.calls[0].init?.body)).action,
+    "video_status",
+  );
+  assert.ok(h.identityTokens.every((t) => t === jwt));
 });
