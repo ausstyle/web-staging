@@ -2,6 +2,7 @@
 import { Ajv, type ValidateFunction } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import manifest from "./manifest.json" with { type: "json" };
+import { scalarManifestPayloadSchema } from "./scalar_contracts.ts";
 type Obj = Record<string, unknown>;
 const object = (v: unknown): v is Obj =>
   v !== null && typeof v === "object" && !Array.isArray(v);
@@ -51,12 +52,12 @@ const output = obj({
     type: "string",
     pattern: "^sandy-tenant-links-[a-f0-9-]{36}\\.json$",
   },
-  export: payload,
+  export: { oneOf: [payload, scalarManifestPayloadSchema] },
 });
 export const tenantExportDownloadOperation = Object.freeze({
   operation: "supabase.tenant.exports.download",
   contract_sha256:
-    "204d664cb9e0ac13baf258601c4715d777f155eb59b12c666f974a1f9e30fda3",
+    "4c0e4b39c528fd070031269036968d6f1481233655cce47f8d6d7750b6fb9f8f",
   handler: "sandy-operation-api",
   permission_scope: "customer:read",
   is_mutation: false,

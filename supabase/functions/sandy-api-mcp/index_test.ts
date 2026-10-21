@@ -493,3 +493,61 @@ Deno.test("canonical API invoker also refuses malformed execution context withou
     },
   );
 });
+Deno.test("canonical MCP bounds actual bytes while accepting a one MiB base64 tool envelope", async () => {
+  let calls = 0;
+  const handler = createHandler(async (_token, body) => {
+    calls++;
+    equal(
+      (body.arguments as Record<string, unknown>).content_base64,
+      "AAAA".repeat(349525) + "AA==",
+    );
+    return {
+      status: 200,
+      result: { ok: true, executed: true, result: { ok: true } },
+    };
+  });
+  const accepted = await handler(
+    request(
+      message("tools/call", {
+        name: "gcp.storage.objects.upload.media",
+        arguments: { content_base64: "AAAA".repeat(349525) + "AA==" },
+      }),
+    ),
+  );
+  equal(accepted.status, 200);
+  equal(calls, 1);
+  const overflow = await handler(
+    new Request("https://mcp.test.invalid", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer test.identity.token",
+        "content-length": "1",
+      },
+      body: " ".repeat(1550001),
+    }),
+  );
+  equal(overflow.status, 413);
+  equal(calls, 1);
+});
+Deno.test("canonical MCP API response bound accepts exact capacity and refuses overflow", async () => {
+  const empty = JSON.stringify({ padding: "" });
+  for (const size of [2300000, 2300001]) {
+    const transport = (() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ padding: "x".repeat(size - empty.length) }),
+        ),
+      )) as typeof fetch;
+    const api = createApi("https://api.fixture.invalid", "anon", transport);
+    const response = await api("actual.user.jwt", { action: "list" });
+    const result = response.result as Record<string, unknown>;
+    equal(
+      size === 2300000 ? typeof result.padding : result.error,
+      size === 2300000 ? "string" : "sandy_api_response_size_limit",
+    );
+    if (size > 2300000) {
+      equal(result.executed, null);
+      equal(result.reconciliation_required, true);
+    }
+  }
+});

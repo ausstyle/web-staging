@@ -53,6 +53,36 @@ function executionHeaders(
   }
   return headers;
 }
+async function boundedJson(
+  message: Request | Response,
+  limit: number,
+): Promise<unknown> {
+  const reader = message.body?.getReader();
+  if (!reader) throw Error("invalid_json");
+  const parts: Uint8Array[] = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const part = await reader.read();
+      if (part.done) break;
+      size += part.value.byteLength;
+      if (size > limit) {
+        await reader.cancel().catch(() => {});
+        throw Error("body_size_limit");
+      }
+      parts.push(part.value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const part of parts) {
+    bytes.set(part, offset);
+    offset += part.byteLength;
+  }
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+}
 
 export function createApi(
   base: string,
@@ -83,8 +113,12 @@ export function createApi(
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60000),
     });
-    const result = await response.json().catch(() => ({
-      error: "invalid_api_response",
+    const result = await boundedJson(response, 2300000).catch((error) => ({
+      error: error instanceof Error && error.message === "body_size_limit"
+        ? "sandy_api_response_size_limit"
+        : "invalid_api_response",
+      executed: null,
+      reconciliation_required: true,
     }));
     return { status: response.status, result };
   };
@@ -147,9 +181,18 @@ export function createHandler(api: InvokeApi) {
     }
     let parsed: unknown;
     try {
-      parsed = await req.json();
-    } catch {
-      return json(rpcError(null, -32700, "Invalid JSON"), 400);
+      parsed = await boundedJson(req, 1550000);
+    } catch (error) {
+      const oversized = error instanceof Error &&
+        error.message === "body_size_limit";
+      return json(
+        rpcError(
+          null,
+          -32700,
+          oversized ? "Request too large" : "Invalid JSON",
+        ),
+        oversized ? 413 : 400,
+      );
     }
     if (
       !isObject(parsed) || parsed.jsonrpc !== "2.0" ||

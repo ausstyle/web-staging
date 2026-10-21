@@ -516,7 +516,11 @@ function executionAvailability(
   entry: Record<string, unknown>,
   config?: ProviderConfig,
 ) {
-  const extension = extensionAvailability(String(entry.operation), entry);
+  const extension = extensionAvailability(
+    String(entry.operation),
+    entry,
+    config?.verifiedBindings,
+  );
   if (extension) return extension;
   const provider = providerOperations[String(entry.operation)];
   if (
@@ -891,7 +895,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     }
     let body: Record<string, unknown>;
     try {
-      const value = routedBody ?? await requestJson(request);
+      const value = routedBody ?? await requestJson(request, 1550000);
       if (!isObject(value)) throw Error();
       body = planAction
         ? { action: "execute", operation: planAction, arguments: value }
@@ -2161,7 +2165,10 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               if (error) throw Error("verified_credential_target_required");
               return data;
             },
-            { restoreBindings: dependencies.packageRestoreBindings },
+            {
+              restoreBindings: dependencies.packageRestoreBindings,
+              providerBindings: dependencies.providerConfig?.verifiedBindings,
+            },
           )
           : providerOperations[operation]
           ? providerExecutionScope(operation, dependencies.providerConfig)

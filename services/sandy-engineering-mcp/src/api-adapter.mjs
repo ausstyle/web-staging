@@ -52,7 +52,7 @@ async function boundedText(response) {
       const chunk = await reader.read();
       if (chunk.done) break;
       length += chunk.value.byteLength;
-      if (length > 2 * 1024 * 1024) {
+      if (length > 2300000) {
         await reader.cancel().catch(() => {});
         return null;
       }

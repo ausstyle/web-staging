@@ -148,8 +148,12 @@ export function createApi(
     );
     return {
       status: response.status,
-      result: await response.json().catch(() => ({
-        error: "invalid_api_response",
+      result: await readBody(response, 2300000).catch((error) => ({
+        error: error instanceof Error && error.message === "request_too_large"
+          ? "sandy_api_response_size_limit"
+          : "invalid_api_response",
+        executed: null,
+        reconciliation_required: true,
       })),
     };
   };
@@ -721,7 +725,10 @@ function missingResult(
   };
 }
 
-async function readBody(req: Request): Promise<unknown> {
+async function readBody(
+  req: Request | Response,
+  limit = 1550000,
+): Promise<unknown> {
   const reader = req.body?.getReader();
   if (!reader) throw Error("invalid_json");
   const parts: Uint8Array[] = [];
@@ -730,7 +737,7 @@ async function readBody(req: Request): Promise<unknown> {
     const { done, value } = await reader.read();
     if (done) break;
     size += value.length;
-    if (size > 65536) {
+    if (size > limit) {
       await reader.cancel();
       throw Error("request_too_large");
     }

@@ -11,17 +11,20 @@ import {
   JsonRequestError,
   requestJson,
 } from "../_shared/sandy_api_protocol.ts";
+import { type JsonObject, tenantLifecycleHandler } from "./contracts.ts";
 import {
-  type JsonObject,
-  tenantLifecycleHandler,
-  tenantLifecycleScope,
-} from "./contracts.ts";
-import { tenantLifecycleOperations } from "./gateway.ts";
+  tenantLifecycleExecutionScope,
+  tenantLifecycleOperations,
+} from "./gateway.ts";
 import {
   executeProtectedInventoryRpc,
   protectedInventoryOperationName,
   protectedInventoryRpcName,
 } from "./protected_inventory.ts";
+import {
+  contentExportOperations,
+  contentExportRpcName,
+} from "./content_contracts.ts";
 export type Operation = {
   operation: string;
   is_mutation: boolean;
@@ -75,7 +78,10 @@ export type Dependencies = {
   consumeGrant(request: GrantRequest): Promise<PolicyResult>;
   finishExecution(request: FinishRequest): Promise<PolicyResult>;
   rpc(
-    name: "sandy_tenant_lifecycle_execute" | typeof protectedInventoryRpcName,
+    name:
+      | "sandy_tenant_lifecycle_execute"
+      | typeof protectedInventoryRpcName
+      | typeof contentExportRpcName,
     args: JsonObject,
   ): Promise<RpcResult>;
 };
@@ -203,6 +209,12 @@ function resultMatchesRequest(
     "supabase.tenant.erase": "erased",
     "supabase.tenant.restore": "restored",
     "supabase.tenant.exports.purge": "purged",
+    "supabase.tenant.manifests.export": "exported",
+    "supabase.tenant.manifests.erase": "erased",
+    "supabase.tenant.manifests.restore": "restored",
+    "supabase.tenant.manifests.exports.purge": "purged",
+    "supabase.tenant.content.export": "exported",
+    "supabase.tenant.content.exports.purge": "purged",
   };
   return !state[operation.operation] ||
     result.state === state[operation.operation];
@@ -276,7 +288,9 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
         operation: operation.operation,
         input_sha256: await argumentDigest(args),
         contract_sha256: operation.contract_sha256,
-        scope_sha256: await argumentDigest(tenantLifecycleScope),
+        scope_sha256: await argumentDigest(
+          tenantLifecycleExecutionScope(operation.operation),
+        ),
       });
     } catch {
       return refusal(503, "execution_policy_unavailable");
@@ -328,7 +342,12 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
         ? await executeProtectedInventoryRpc({
           rpc: (name, params) => deps.rpc(name, params),
         }, parameters)
-        : await deps.rpc("sandy_tenant_lifecycle_execute", parameters);
+        : await deps.rpc(
+          Object.hasOwn(contentExportOperations, operation.operation)
+            ? contentExportRpcName
+            : "sandy_tenant_lifecycle_execute",
+          parameters,
+        );
     } catch {
       const outcome = operation.is_mutation ? "unknown" : "failed",
         recorded = await finish(outcome, {

@@ -1,0 +1,175 @@
+{
+  "operation": "supabase.tenant.content.exports.download",
+  "handler": "sandy-operation-api",
+  "permission_scope": "customer:read",
+  "is_mutation": false,
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "snapshot_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      }
+    },
+    "required": [
+      "snapshot_id",
+      "sequence"
+    ],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "const": true
+      },
+      "snapshot_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      },
+      "artifact_sha256": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "artifact_json": {
+        "type": "string",
+        "maxLength": 1048576
+      }
+    },
+    "required": [
+      "ok",
+      "snapshot_id",
+      "sequence",
+      "artifact_sha256",
+      "artifact_json"
+    ],
+    "additionalProperties": false
+  },
+  "requires_real_user_session": true,
+  "api_key_delegable": false,
+  "requirement_ids": [
+    111
+  ],
+  "complete_tenant_coverage": false,
+  "artifact_digest_encoding": "sha256_of_decoded_artifact_json_utf8",
+  "artifact_schema": {
+    "type": "object",
+    "properties": {
+      "manifest": {
+        "const": "customer_content_fragments_v1"
+      },
+      "manifest_sha256": {
+        "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+      },
+      "tenant_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "table": {
+        "enum": [
+          "email_customers",
+          "email_customer_addresses",
+          "sandy_people",
+          "sandy_social_people",
+          "sandy_tasks",
+          "sandy_agenda_companies",
+          "sandy_life_spaces",
+          "sandy_life_goals",
+          "sandy_knowledge_documents",
+          "sandy_knowledge_entities",
+          "email_conversations",
+          "email_messages",
+          "sandy_product_support_cases",
+          "sandy_product_support_comments",
+          "sandy_product_notification_preferences",
+          "sandy_product_notification_quiet_hours",
+          "sandy_product_notification_subscriptions",
+          "sandy_product_notification_inbox",
+          "sandy_product_whatsapp_media",
+          "sandy_product_graph_drafts"
+        ]
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      },
+      "table_sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      },
+      "table_complete": {
+        "type": "boolean"
+      },
+      "table_row_count": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "table_row_chain_sha256": {
+        "anyOf": [
+          {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "json_fragment": {
+        "type": "string",
+        "maxLength": 65536
+      },
+      "snapshot_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "schema_sha256": {
+        "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+      },
+      "complete_tenant_coverage": {
+        "const": false
+      },
+      "external_provider_assets_included": {
+        "const": false
+      }
+    },
+    "required": [
+      "manifest",
+      "manifest_sha256",
+      "tenant_id",
+      "table",
+      "sequence",
+      "table_sequence",
+      "table_complete",
+      "table_row_count",
+      "table_row_chain_sha256",
+      "json_fragment",
+      "snapshot_id",
+      "schema_sha256",
+      "complete_tenant_coverage",
+      "external_provider_assets_included"
+    ],
+    "additionalProperties": false
+  },
+  "contract_sha256": "e0f1b2f108bc2da6f4edb951e7b30eee93992452620ccf1fa06b2774f47da50b"
+}

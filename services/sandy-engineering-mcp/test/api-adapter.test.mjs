@@ -271,7 +271,7 @@ test("caller auth, malformed discovery, duplicate contracts and transport failur
 
 test("transport only accepts the fixed project URL and rejects oversized or invalid API bodies", async () => {
   assert.throws(() => createApiInvoker("https://elsewhere.invalid"));
-  for (const body of ["not-json", "x".repeat(2 * 1024 * 1024 + 1)]) {
+  for (const body of ["not-json", "x".repeat(2300001)]) {
     const api = createApiInvoker(project, async (url, init) => {
       assert.equal(url, endpoint);
       assert.equal(init.redirect, "error");
@@ -284,6 +284,15 @@ test("transport only accepts the fixed project URL and rejects oversized or inva
   const result = await callTool(f.api, user, catalogue, "constructor", {});
   assert.equal(result.isError, true);
   assert.equal(f.calls.some(row => row.action === "execute"), false);
+});
+test("API response capacity admits exact bytes and rejects one byte more", async () => {
+  const empty = JSON.stringify({ padding: "" });
+  for (const size of [2300000, 2300001]) {
+    const api = createApiInvoker(project, async () => new Response(JSON.stringify({ padding: "x".repeat(size - empty.length) })));
+    const response = await api(user, { action: "list" });
+    assert.equal(size === 2300000 ? typeof response.result.padding : response.result.error,
+      size === 2300000 ? "string" : "sandy_api_response_size_limit");
+  }
 });
 
 test("an incoming API-key header travels unchanged with the user JWT on both discovery and execution", async t => {

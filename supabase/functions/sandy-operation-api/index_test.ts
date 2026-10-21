@@ -15,7 +15,10 @@ import {
 import { loadExpandedProviderOperation } from "../sandy-provider-operation-api/expansion.ts";
 import { createProviderOperationHandler } from "../sandy-provider-operation-api/index.ts";
 import { installedOperationIds } from "./index.ts";
-import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
+import {
+  argumentDigest,
+  canonicalJson,
+} from "../_shared/sandy_api_protocol.ts";
 import { gapContracts } from "../sandy-provider-gap-api/contracts.ts";
 import {
   createGapHandler,
@@ -26,12 +29,18 @@ import {
   type Dependencies as ServiceDependencies,
 } from "../sandy-supabase-service-api/index.ts";
 import { productOperations } from "../sandy-product-service-api/contracts.ts";
+import { supplementContracts } from "../sandy-provider-supplement-api/contracts.ts";
+import { createSupplementHandler } from "../sandy-provider-supplement-api/index.ts";
+import { scalarManifestScope } from "../sandy-tenant-lifecycle-api/scalar_contracts.ts";
 import { createTenantLifecycleHandler } from "../sandy-tenant-lifecycle-api/index.ts";
 import {
   tenantLifecycleOperations,
   tenantLifecycleScope,
 } from "../sandy-tenant-lifecycle-api/contracts.ts";
 import tenantManifest from "../sandy-tenant-lifecycle-api/manifest.json" with {
+  type: "json",
+};
+import contentManifest from "../sandy-tenant-lifecycle-api/content_manifest.json" with {
   type: "json",
 };
 
@@ -2942,6 +2951,7 @@ function extensionRow(operation: string, verified = false): Row {
   assert.ok(c, operation);
   return {
     ...gapContracts[operation],
+    ...supplementContracts[operation],
     ...c,
     operation,
     api_exposed: true,
@@ -2954,6 +2964,13 @@ function extensionRow(operation: string, verified = false): Row {
         : {}),
       ...(c.kind === "tenant_lifecycle"
         ? { requires_approval: true, api_key_delegable: false }
+        : {}),
+      ...(c.kind === "provider_supplement"
+        ? {
+          requires_approval: true,
+          requires_grant: true,
+          api_key_delegable: false,
+        }
         : {}),
       ...(c.kind === "product"
         ? {
@@ -3373,8 +3390,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 363 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 363);
+Deno.test("all 401 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 401);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -3402,6 +3419,7 @@ Deno.test("all 363 service extensions are installed with their exact contracts a
         "supabase_service",
         "tenant_lifecycle",
         "tenant_download",
+        "provider_supplement",
       ].includes(
         String(row.kind),
       ) ||
@@ -3412,6 +3430,346 @@ Deno.test("all 363 service extensions are installed with their exact contracts a
     assert.equal(payload.operation.handler, row.handler);
   }
   assert.equal(h.calls.length, 0);
+});
+Deno.test("scalar gateway admission uses its exact manifest scope before one private backend dispatch", async () => {
+  const operation = "supabase.tenant.manifests.exports.get";
+  const h = harness({
+    actorId: extensionActor,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    rpcHandler: async (name, args) => {
+      assert.equal(name, "sandy_api_admit_execution");
+      assert.equal(
+        args.p_scope_sha256,
+        await argumentDigest(scalarManifestScope),
+      );
+      return {
+        ok: true,
+        allowed: true,
+        reused: false,
+        admission_id: productAdmissionId,
+        grant_id: productRequestId,
+        state: "admitted",
+        executed: false,
+        expires_at: "2099-01-01T00:00:00Z",
+      };
+    },
+    backend: (_url, init) => {
+      const body = JSON.parse(String(init?.body));
+      assert.equal(body.operation, operation);
+      assert.equal(body.actor_id, extensionActor);
+      assert.equal(body.tenant_id, null);
+      assert.equal(body.admission_id, productAdmissionId);
+      return Response.json({
+        ok: false,
+        error: "synthetic_refusal",
+        executed: false,
+      }, { status: 424 });
+    },
+  });
+  assert.equal(
+    (await h.request({
+      action: "execute",
+      operation,
+      arguments: { tenant_id: extensionTenant, snapshot_id: productRequestId },
+    })).status,
+    424,
+  );
+  assert.equal(h.rpcCalls.length, 1);
+  assert.equal(h.calls.length, 1);
+});
+Deno.test("MCP content discovery and exact artifact download execute through API with the actual customer JWT", async () => {
+  const downloadOperation = "supabase.tenant.content.exports.download";
+  const availableOperation = "supabase.tenant.content.exports.available";
+  const artifact = {
+    manifest: contentManifest.id,
+    manifest_sha256: contentManifest.manifest_sha256,
+    tenant_id: extensionTenant,
+    table: "sandy_knowledge_documents",
+    sequence: 0,
+    table_sequence: 0,
+    table_complete: true,
+    table_row_count: 1,
+    table_row_chain_sha256: "a".repeat(64),
+    json_fragment: '{"title":"🍋 synthetic content"}\n',
+    snapshot_id: productRequestId,
+    schema_sha256: contentManifest.schema_sha256,
+    complete_tenant_coverage: false,
+    external_provider_assets_included: false,
+  };
+  const download = {
+    ok: true,
+    snapshot_id: productRequestId,
+    sequence: 0,
+    artifact_json: canonicalJson(artifact),
+    artifact_sha256: await argumentDigest(artifact),
+  };
+  const available = {
+    ok: true,
+    offset: 0,
+    limit: 1,
+    total_count: 1,
+    next_offset: null,
+    items: [{
+      snapshot_id: productRequestId,
+      tenant_id: extensionTenant,
+      manifest: contentManifest.id,
+      manifest_sha256: contentManifest.manifest_sha256,
+      schema_sha256: contentManifest.schema_sha256,
+      fragment_count: 20,
+      row_counts: Object.fromEntries(
+        contentManifest.tables.map((t) => [t.table, 0]),
+      ),
+      total_plaintext_bytes: 0,
+      artifact_index_sha256: "a".repeat(64),
+      state: "exported",
+      created_at: "2026-10-21T00:00:00Z",
+      expires_at: "2026-10-22T00:00:00Z",
+      complete_tenant_coverage: false,
+      external_provider_assets_included: false,
+      erasure_supported: false,
+      restore_supported: false,
+    }],
+  };
+  const tokens: string[] = [], calls: Row[] = [];
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    executionPolicy: true,
+    rows: [
+      extensionRow(downloadOperation, true),
+      extensionRow(availableOperation, true),
+    ],
+    authenticatedDb: (token) => {
+      tokens.push(token);
+      return {
+        rpc: async (name, args) => {
+          calls.push({ name, args });
+          return {
+            error: null,
+            data: name === "sandy_tenant_content_fragment_download"
+              ? download
+              : available,
+          };
+        },
+      };
+    },
+  });
+  const transport = createHandler(
+    createApi(
+      "https://example.supabase.co",
+      "test-anon-key",
+      ((url, init) => h.handler(new Request(url, init))) as typeof fetch,
+    ),
+  );
+  for (
+    const [operation, args, expected] of [
+      [
+        downloadOperation,
+        { snapshot_id: productRequestId, sequence: 0 },
+        download,
+      ],
+      [availableOperation, { offset: 0, limit: 1 }, available],
+    ] as const
+  ) {
+    const response = await transport(
+      new Request("https://mcp.fixture.invalid", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer test-user-jwt",
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: { name: operation, arguments: args },
+        }),
+      }),
+    );
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.result.isError, false, JSON.stringify(body));
+    assert.deepEqual(body.result.structuredContent, expected);
+  }
+  assert.deepEqual(tokens, ["test-user-jwt", "test-user-jwt"]);
+  assert.deepEqual(calls.map((c) => c.name), [
+    "sandy_tenant_content_fragment_download",
+    "sandy_tenant_content_exports_available",
+  ]);
+  assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+});
+Deno.test("provider supplement composes the actual executor with one owner grant and filtered provider read", async () => {
+  const operation = "gcp.projects.search_filtered";
+  let consumed = 0, finished = 0, reads = 0;
+  const backend = createSupplementHandler({
+    service: "test-service-credential",
+    authorizeContext: async () => ({ allowed: true }),
+    consumeGrant: async (input) => {
+      consumed++;
+      assert.equal(input.actor_id, extensionActor);
+      assert.equal(input.grant_id, productRequestId);
+      return { allowed: true, admission_id: productAdmissionId, reused: false };
+    },
+    finishExecution: async (input) => {
+      finished++;
+      assert.equal(input.outcome, "succeeded");
+      return { allowed: true };
+    },
+    credentialForExecution: async () => "synthetic-provider-token",
+    saveOpaque: async () => {
+      throw Error("No cursor expected");
+    },
+    takeOpaque: async () => {
+      throw Error("No cursor expected");
+    },
+    fetch: (async (input, init) => {
+      reads++;
+      const url = new URL(String(input));
+      assert.equal(url.origin, "https://cloudresourcemanager.googleapis.com");
+      assert.equal(url.pathname, "/v3/projects:search");
+      assert.equal(
+        url.searchParams.get("query"),
+        "projectId:elaborate-haven-511518-a5",
+      );
+      assert.equal(
+        new Headers(init?.headers).get("authorization"),
+        "Bearer synthetic-provider-token",
+      );
+      return Response.json({
+        projects: [
+          {
+            name: "projects/1030223524306",
+            projectId: "elaborate-haven-511518-a5",
+            displayName: "Synthetic project",
+            state: "ACTIVE",
+          },
+          {
+            name: "projects/999",
+            projectId: "foreign-project",
+            displayName: "must-not-expose",
+          },
+        ],
+      });
+    }) as typeof fetch,
+  });
+  const h = harness({
+    actorId: extensionActor,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    rpcHandler: (name) => {
+      assert.equal(name, "sandy_api_admit_execution");
+      return {
+        ok: true,
+        allowed: true,
+        reused: false,
+        admission_id: productAdmissionId,
+        grant_id: productRequestId,
+        state: "admitted",
+        executed: false,
+        expires_at: "2099-01-01T00:00:00Z",
+      };
+    },
+    backend: (url, init) => {
+      assert.equal(
+        url,
+        "https://example.supabase.co/functions/v1/sandy-provider-supplement-api",
+      );
+      return backend(new Request(url, init));
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: {},
+  });
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.equal((await response.text()).includes("must-not-expose"), false);
+  assert.deepEqual([
+    consumed,
+    finished,
+    reads,
+    h.rpcCalls.length,
+    h.calls.length,
+  ], [1, 1, 1, 1, 1]);
+});
+Deno.test("supplement approval flags and normal-user owner identity cannot be weakened", async () => {
+  const operation = "gcp.projects.search_filtered";
+  for (
+    const patch of [{ requires_approval: false }, { api_key_delegable: true }, {
+      requires_grant: false,
+    }]
+  ) {
+    const row = extensionRow(operation, true);
+    row.error_contract = { ...(row.error_contract as Row), ...patch };
+    const h = harness({ actorId: extensionActor, rows: [row] });
+    assert.equal(
+      (await h.request({ action: "execute", operation, arguments: {} })).status,
+      503,
+    );
+    assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+  }
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    rows: [extensionRow(operation, true)],
+  });
+  assert.equal(
+    (await h.request({ action: "execute", operation, arguments: {} })).status,
+    403,
+  );
+  assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+});
+Deno.test("supplement discovery and execution require the same verified server parent binding", async () => {
+  const operation = "gcp.projects.list_filtered";
+  const h = harness({
+    actorId: extensionActor,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+  });
+  const described = await h.request({ action: "describe", operation });
+  const body = await described.json();
+  assert.equal(body.operation.executable, false);
+  assert.equal(
+    body.operation.unavailable_reason,
+    "verified_organization_scope_binding_required",
+  );
+  assert.equal(
+    (await h.request({ action: "execute", operation, arguments: {} })).status,
+    424,
+  );
+  assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
+});
+Deno.test("media capacity accepts one MiB base64 envelope and rejects oversized bodies before admission", async () => {
+  const operation = "gcp.storage.objects.upload.media";
+  const h = harness({
+    actorId: extensionActor,
+    rows: [extensionRow(operation)],
+    executionPolicy: true,
+  });
+  const args = {
+    bucket: "synthetic-bucket",
+    object_name: "synthetic.bin",
+    if_generation_match: "0",
+    content_base64: "AAAA".repeat(349525) + "AA==",
+    sha256: "a".repeat(64),
+    media_type: "application/octet-stream",
+  };
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: args,
+  });
+  assert.equal(response.status, 424, await response.clone().text());
+  const overflow = await h.request({
+    action: "execute",
+    operation,
+    arguments: { ...args, content_base64: "x".repeat(1550000) },
+  });
+  assert.equal(overflow.status, 413);
+  assert.deepEqual([h.calls.length, h.rpcCalls.length], [0, 0]);
 });
 Deno.test("new owner service and provider-gap operations retain verified approval and real-user boundaries", async () => {
   const ownerOps = [
@@ -4115,7 +4473,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2352);
+  assert.equal(installedOperationIds.length, 2390);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);

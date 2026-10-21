@@ -1,0 +1,1452 @@
+{
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "manifest": "application_scalar_links_v1",
+  "operations": [
+    {
+      "operation": "supabase.tenant.manifests.export",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "erased",
+              "restored",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_person_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_life_document_contexts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_knowledge_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_timezone_email_offsets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_person_links",
+              "sandy_life_document_contexts",
+              "sandy_knowledge_links",
+              "sandy_timezone_email_offsets"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Export the explicit application_leaf_links_v1 four-table scalar-link owned-link manifest to a private encrypted Vault artifact; return metadata only. This is a bounded manifest export, not complete tenant/provider export.",
+      "manifest": "application_scalar_links_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.manifests.export"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "application_scalar_links_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "erased",
+                  "restored",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_person_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_life_document_contexts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_knowledge_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_timezone_email_offsets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_person_links",
+                  "sandy_life_document_contexts",
+                  "sandy_knowledge_links",
+                  "sandy_timezone_email_offsets"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435",
+      "schema_sha256": "cac095467d37d12512669286db8ff394ff3ae323bdc370d50c4f26139a788f6c",
+      "contract_sha256": "dee0c9cfa2e8e6ceffa608bbd1313b8083ea5b2580a438aa03701f72fc4567ae"
+    },
+    {
+      "operation": "supabase.tenant.manifests.erase",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_current_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm_manifest_erasure": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "snapshot_id",
+          "expected_current_sha256",
+          "confirm_manifest_erasure"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "erased",
+              "restored",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_person_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_life_document_contexts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_knowledge_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_timezone_email_offsets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_person_links",
+              "sandy_life_document_contexts",
+              "sandy_knowledge_links",
+              "sandy_timezone_email_offsets"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "after_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "readback_verified": {
+            "const": true
+          },
+          "scope": {
+            "const": "exact_snapshot_manifest_rows"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "before_sha256",
+          "after_sha256",
+          "readback_verified",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Erase only exact unchanged rows in the encrypted reviewed four-table scalar-link snapshot. Enforce tenant consent, hold, retention and stale-state protection; preserve accounts, credentials, access grants, audit and external assets.",
+      "manifest": "application_scalar_links_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.manifests.erase"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "application_scalar_links_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "erased",
+                  "restored",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_person_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_life_document_contexts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_knowledge_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_timezone_email_offsets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_person_links",
+                  "sandy_life_document_contexts",
+                  "sandy_knowledge_links",
+                  "sandy_timezone_email_offsets"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "before_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "after_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "readback_verified": {
+                "const": true
+              },
+              "scope": {
+                "const": "exact_snapshot_manifest_rows"
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "before_sha256",
+              "after_sha256",
+              "readback_verified",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435",
+      "schema_sha256": "cac095467d37d12512669286db8ff394ff3ae323bdc370d50c4f26139a788f6c",
+      "contract_sha256": "2c8df5495a8cc0f0e65f715663cc7b9268b1f6fb65673c84d02bd9754973e692"
+    },
+    {
+      "operation": "supabase.tenant.manifests.restore",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_current_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm_manifest_restore": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "snapshot_id",
+          "expected_current_sha256",
+          "confirm_manifest_restore"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "erased",
+              "restored",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_person_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_life_document_contexts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_knowledge_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_timezone_email_offsets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_person_links",
+              "sandy_life_document_contexts",
+              "sandy_knowledge_links",
+              "sandy_timezone_email_offsets"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "after_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "readback_verified": {
+            "const": true
+          },
+          "scope": {
+            "const": "empty_target_manifest_only"
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "before_sha256",
+          "after_sha256",
+          "readback_verified",
+          "scope"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Restore the server-captured four-table scalar-link manifest into an empty target manifest after ownership/constraint/schema checks; no upsert, parent recreation, access regrant, messages or task-work enqueue.",
+      "manifest": "application_scalar_links_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.manifests.restore"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "application_scalar_links_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "erased",
+                  "restored",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_person_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_life_document_contexts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_knowledge_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_timezone_email_offsets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_person_links",
+                  "sandy_life_document_contexts",
+                  "sandy_knowledge_links",
+                  "sandy_timezone_email_offsets"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "before_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "after_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "readback_verified": {
+                "const": true
+              },
+              "scope": {
+                "const": "empty_target_manifest_only"
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "before_sha256",
+              "after_sha256",
+              "readback_verified",
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435",
+      "schema_sha256": "cac095467d37d12512669286db8ff394ff3ae323bdc370d50c4f26139a788f6c",
+      "contract_sha256": "49f29794944159148feeea734fd15aeeb3601fd4a7018e345bac1545db18e495"
+    },
+    {
+      "operation": "supabase.tenant.manifests.exports.get",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": false,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:read",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "snapshot_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "erased",
+              "restored",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_person_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_life_document_contexts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_knowledge_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_timezone_email_offsets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_person_links",
+              "sandy_life_document_contexts",
+              "sandy_knowledge_links",
+              "sandy_timezone_email_offsets"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Read only encrypted export metadata for the exact consented tenant; no private row values or Vault material.",
+      "manifest": "application_scalar_links_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.manifests.exports.get"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "application_scalar_links_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "erased",
+                  "restored",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_person_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_life_document_contexts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_knowledge_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_timezone_email_offsets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_person_links",
+                  "sandy_life_document_contexts",
+                  "sandy_knowledge_links",
+                  "sandy_timezone_email_offsets"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435",
+      "schema_sha256": "cac095467d37d12512669286db8ff394ff3ae323bdc370d50c4f26139a788f6c",
+      "contract_sha256": "1ce82a6728bc7a697ee4625ed82f164f7b9e7033e0c52706004c36cdbd460b04"
+    },
+    {
+      "operation": "supabase.tenant.manifests.exports.purge",
+      "requirement": 111,
+      "handler": "sandy-tenant-lifecycle-api",
+      "kind": "tenant_lifecycle_sql",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "permission_scope": "infrastructure:write",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirm_artifact_purge": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "snapshot_id",
+          "confirm_artifact_purge"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "application_scalar_links_v1"
+          },
+          "manifest_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "schema_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "snapshot_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "erased",
+              "restored",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "sandy_person_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_life_document_contexts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_knowledge_links": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "sandy_timezone_email_offsets": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              }
+            },
+            "required": [
+              "sandy_person_links",
+              "sandy_life_document_contexts",
+              "sandy_knowledge_links",
+              "sandy_timezone_email_offsets"
+            ],
+            "additionalProperties": false
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "readback_verified": {
+            "const": true
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "snapshot_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "row_counts",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "readback_verified"
+        ],
+        "additionalProperties": false
+      },
+      "description": "Purge the exact encrypted export payload with tenant erasure consent and hold/retention checks; keep append-only digest evidence and safe snapshot metadata.",
+      "manifest": "application_scalar_links_v1",
+      "complete_tenant_coverage": false,
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.manifests.exports.purge"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "application_scalar_links_v1"
+              },
+              "manifest_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "schema_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "snapshot_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "erased",
+                  "restored",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "sandy_person_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_life_document_contexts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_knowledge_links": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  },
+                  "sandy_timezone_email_offsets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 1000
+                  }
+                },
+                "required": [
+                  "sandy_person_links",
+                  "sandy_life_document_contexts",
+                  "sandy_knowledge_links",
+                  "sandy_timezone_email_offsets"
+                ],
+                "additionalProperties": false
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "readback_verified": {
+                "const": true
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "snapshot_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "row_counts",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "readback_verified"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "manifest_sha256": "7a19a77fa4f1a7d9cc3a83517a9482ddfdd3d4c91cdc303e0cd18e77ed551435",
+      "schema_sha256": "cac095467d37d12512669286db8ff394ff3ae323bdc370d50c4f26139a788f6c",
+      "contract_sha256": "a07056f91a553abc36333a3273d7d00fafd5f9a238bd1812480a2bd2956f8688"
+    }
+  ]
+}

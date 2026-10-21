@@ -20,6 +20,13 @@ import {
   protectedInventoryResources,
   protectedInventoryRpcName,
 } from "./protected_inventory.ts";
+import {
+  scalarManifestOperations,
+  scalarManifestScope,
+} from "./scalar_contracts.ts";
+import scalarManifest from "./scalar_manifest.json" with { type: "json" };
+import { contentExportScope } from "./content_contracts.ts";
+import contentManifest from "./content_manifest.json" with { type: "json" };
 const actor = "00000000-0000-4000-8000-000000000001",
   tenant = "00000000-0000-4000-8000-000000000002",
   snapshot = "00000000-0000-4000-8000-000000000003",
@@ -165,8 +172,119 @@ function fixture(overrides: Partial<Dependencies> = {}) {
   };
   return { deps, calls, handler, invoke };
 }
-Deno.test("five manifest operations and protected metadata have executable strict contracts", () =>
-  equal(validateTenantLifecycleContracts(), 6));
+Deno.test("thirteen manifest operations and protected metadata have executable strict contracts", () =>
+  equal(validateTenantLifecycleContracts(), 14));
+
+Deno.test("scalar manifest execution binds its own scope and uses the existing grant and SQL boundary once", async () => {
+  const operation = "supabase.tenant.manifests.export";
+  const args = {
+    tenant_id: tenant,
+    manifest: scalarManifest.id,
+    expected_manifest_sha256: scalarManifest.manifest_sha256,
+  };
+  const f = fixture({
+    rpc: async (name) => {
+      equal(name, "sandy_tenant_lifecycle_execute");
+      return {
+        status: 200,
+        error: null,
+        data: {
+          ok: true,
+          reused: false,
+          result: {
+            snapshot_id: snapshot,
+            tenant_id: tenant,
+            manifest: scalarManifest.id,
+            manifest_sha256: scalarManifest.manifest_sha256,
+            schema_sha256: scalarManifest.schema_sha256,
+            snapshot_sha256: "d".repeat(64),
+            state: "exported",
+            created_at: "2026-10-21T00:00:00Z",
+            expires_at: "2026-10-22T00:00:00Z",
+            row_counts: Object.fromEntries(
+              scalarManifest.tables.map((t) => [t.table, 0]),
+            ),
+            complete_tenant_coverage: false,
+            external_provider_assets_included: false,
+          },
+        },
+      };
+    },
+  });
+  const response = await f.invoke(operation, args);
+  equal(response.status, 200);
+  equal(f.calls.map((c) => c.name), ["authorize", "consume", "finish"]);
+  const consume = f.calls[1].value as {
+    scope_sha256: string;
+    contract_sha256: string;
+  };
+  equal(consume.scope_sha256, await argumentDigest(scalarManifestScope));
+  equal(
+    consume.contract_sha256,
+    scalarManifestOperations[operation].contract_sha256,
+  );
+  assert(consume.scope_sha256 !== await argumentDigest(tenantLifecycleScope));
+});
+Deno.test("content artifact operations share one owner grant and use only the dedicated SQL RPC", async () => {
+  for (const action of ["export", "exports.get", "exports.purge"]) {
+    const operation = "supabase.tenant.content." + action;
+    const args = action === "export"
+      ? {
+        tenant_id: tenant,
+        manifest: contentManifest.id,
+        expected_manifest_sha256: contentManifest.manifest_sha256,
+      }
+      : {
+        tenant_id: tenant,
+        snapshot_id: snapshot,
+        ...(action === "exports.purge" ? { confirm_artifact_purge: true } : {}),
+      };
+    let sqlCalls = 0;
+    const f = fixture({
+      rpc: async (name, parameters) => {
+        sqlCalls++;
+        equal(name, "sandy_tenant_content_execute");
+        equal(parameters.p_actor, actor);
+        return {
+          status: 200,
+          error: null,
+          data: {
+            ok: true,
+            reused: false,
+            result: {
+              snapshot_id: snapshot,
+              tenant_id: tenant,
+              manifest: contentManifest.id,
+              manifest_sha256: contentManifest.manifest_sha256,
+              schema_sha256: contentManifest.schema_sha256,
+              fragment_count: 20,
+              row_counts: Object.fromEntries(
+                contentManifest.tables.map((t) => [t.table, 0]),
+              ),
+              total_plaintext_bytes: 0,
+              artifact_index_sha256: "a".repeat(64),
+              state: action === "exports.purge" ? "purged" : "exported",
+              created_at: "2026-10-21T00:00:00Z",
+              expires_at: "2026-10-22T00:00:00Z",
+              complete_tenant_coverage: false,
+              external_provider_assets_included: false,
+              erasure_supported: false,
+              restore_supported: false,
+            },
+          },
+        };
+      },
+    });
+    const response = await f.invoke(operation, args);
+    equal(response.status, 200);
+    equal(sqlCalls, 1);
+    equal(f.calls.map((c) => c.name), ["authorize", "consume", "finish"]);
+    equal(
+      (f.calls[1].value as { scope_sha256: string }).scope_sha256,
+      await argumentDigest(contentExportScope),
+    );
+  }
+});
 
 function unavailableInventoryResult(): Record<string, unknown> {
   return {

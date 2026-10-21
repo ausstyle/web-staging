@@ -58,6 +58,14 @@ import {
   tenantExportDownloadOperation,
 } from "../sandy-tenant-lifecycle-api/download.ts";
 import {
+  contentExportDownloadOperation,
+  executeContentExportDownload,
+} from "../sandy-tenant-lifecycle-api/content_download.ts";
+import {
+  contentExportAvailableOperation,
+  executeContentExportAvailable,
+} from "../sandy-tenant-lifecycle-api/content_available.ts";
+import {
   tenantLifecycleExecutionScope,
   tenantLifecycleOperations,
 } from "../sandy-tenant-lifecycle-api/gateway.ts";
@@ -72,6 +80,11 @@ import {
   gapGatewayOperations,
   type ScopeBinding,
 } from "../sandy-provider-gap-api/gateway.ts";
+import {
+  supplementExecutionScope,
+  supplementOperations,
+} from "../sandy-provider-supplement-api/gateway.ts";
+import type { VerifiedProviderBindings } from "../sandy-provider-operation-api/configured_scopes.ts";
 export {
   parsePackageRestoreBindings,
   type ScopeBinding,
@@ -93,6 +106,7 @@ export type ExtensionKind =
   | "tenant_lifecycle"
   | "product"
   | "provider_gap"
+  | "provider_supplement"
   | "lifecycle";
 export type ExtensionContract = {
   kind: ExtensionKind;
@@ -157,6 +171,11 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
     ),
     ...grouped(gapGatewayOperations, "provider_gap", "sandy-provider-gap-api"),
     ...grouped(
+      supplementOperations,
+      "provider_supplement",
+      "sandy-provider-supplement-api",
+    ),
+    ...grouped(
       tenantLifecycleOperations,
       "tenant_lifecycle",
       "sandy-tenant-lifecycle-api",
@@ -165,6 +184,10 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       {
         [tenantExportDownloadOperation.operation]:
           tenantExportDownloadOperation,
+        [contentExportDownloadOperation.operation]:
+          contentExportDownloadOperation,
+        [contentExportAvailableOperation.operation]:
+          contentExportAvailableOperation,
       },
       "tenant_download",
       "sandy-operation-api",
@@ -194,6 +217,7 @@ export const extensionOwnsGrant = (operation: string) =>
     "credential",
     "supabase_service",
     "provider_gap",
+    "provider_supplement",
     "tenant_lifecycle",
   ]
     .includes(extensionKind(operation) ?? "");
@@ -241,6 +265,7 @@ export function extensionHasAccess(
     case "lifecycle":
     case "supabase_service":
     case "provider_gap":
+    case "provider_supplement":
     case "tenant_lifecycle":
       return principal.controllerOwner;
     default:
@@ -268,6 +293,13 @@ export function extensionContractMatches(
   }
   if (c.kind === "product") return productContractMatches(operation, entry);
   if (
+    c.kind === "provider_supplement" &&
+    (!object(entry.error_contract) ||
+      entry.error_contract.requires_approval !== true ||
+      entry.error_contract.requires_grant !== true ||
+      entry.error_contract.api_key_delegable !== false)
+  ) return false;
+  if (
     ["tenant_lifecycle", "tenant_download", "tenant_consent"].includes(c.kind)
   ) {
     try {
@@ -293,6 +325,7 @@ export function extensionContractMatches(
 export function extensionAvailability(
   operation: string,
   entry: Obj,
+  providerBindings?: VerifiedProviderBindings,
 ): { executable: boolean; unavailable_reason?: string } | null {
   const kind = extensionKind(operation);
   if (!kind) return null;
@@ -322,6 +355,19 @@ export function extensionAvailability(
     };
   }
   if (kind === "database") return databaseCapability(operation);
+  if (kind === "provider_supplement") {
+    try {
+      supplementExecutionScope(operation, providerBindings);
+    } catch (error) {
+      return {
+        executable: false,
+        unavailable_reason: error instanceof Error &&
+            /^verified_[a-z_]+_scope_binding_required$/.test(error.message)
+          ? error.message
+          : "provider_scope_configuration_required",
+      };
+    }
+  }
   return { executable: true };
 }
 export async function executeUserExtension(
@@ -350,7 +396,11 @@ export async function executeUserExtension(
         }, { status: 503, headers: { "cache-control": "no-store" } });
     case "tenant_download":
       return deps.userDb
-        ? executeTenantExportDownload(deps.userDb, args)
+        ? operation === contentExportDownloadOperation.operation
+          ? executeContentExportDownload(deps.userDb, args)
+          : operation === contentExportAvailableOperation.operation
+          ? executeContentExportAvailable(deps.userDb, args)
+          : executeTenantExportDownload(deps.userDb, args)
         : Response.json({
           ok: false,
           error: "tenant_export_session_required",
@@ -365,7 +415,10 @@ export async function extensionExecutionScope(
   args: Obj,
   actorId: string,
   getCredentialTarget: (id: unknown) => Promise<unknown>,
-  options?: { restoreBindings?: ScopeBinding[] },
+  options?: {
+    restoreBindings?: ScopeBinding[];
+    providerBindings?: VerifiedProviderBindings;
+  },
 ): Promise<unknown> {
   const kind = extensionKind(operation);
   if (kind === "database") return databaseExecutionScope(operation);
@@ -375,6 +428,9 @@ export async function extensionExecutionScope(
   }
   if (kind === "provider_gap") {
     return gapExecutionScope(operation, options?.restoreBindings);
+  }
+  if (kind === "provider_supplement") {
+    return supplementExecutionScope(operation, options?.providerBindings);
   }
   if (kind === "guest") {
     return guestOperations[operation].kind === "task_status"

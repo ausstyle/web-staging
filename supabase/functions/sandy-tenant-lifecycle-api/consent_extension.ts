@@ -1,7 +1,7 @@
 /** Versioned schema extension; the existing SQL consent ledger remains the authority. */
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
-import revised from "./consent_inventory_contract.json" with { type: "json" };
+import revised from "./consent_content_contract.json" with { type: "json" };
 import {
   executeTenantConsent,
   type TenantConsentDb,

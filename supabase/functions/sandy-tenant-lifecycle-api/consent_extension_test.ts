@@ -4,6 +4,7 @@ import {
   tenantLifecycleConsentOverride,
 } from "./consent_extension.ts";
 import type { TenantConsentDb } from "../sandy-supabase-service-api/tenant_consent.ts";
+import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
 const tenant = "00000000-0000-4000-8000-000000000002";
 const policy = {
   ok: true,
@@ -29,6 +30,8 @@ Deno.test("lifecycle consent uses the same actual-user RPC and ledger with a rev
       "supabase.tenant.export",
       "supabase.storage.objects.get",
       "supabase.tenant.protected_resources.inventory",
+      "supabase.tenant.manifests.export",
+      "supabase.tenant.content.export",
     ],
     approved_emails: [],
     allow_erasure: false,
@@ -49,10 +52,12 @@ Deno.test("lifecycle consent uses the same actual-user RPC and ledger with a rev
     },
   }]);
   assert(tenantLifecycleConsentOverride.contract_sha256);
+  const { contract_sha256, ...contract } = tenantLifecycleConsentOverride;
+  equal(await argumentDigest(contract), contract_sha256);
   equal(
     tenantLifecycleConsentOverride.input_schema.properties.operations.items.enum
       .length,
-    52,
+    60,
   );
 });
 Deno.test("lifecycle consent cannot authorize arbitrary SQL, credentials or an actor override", async () => {

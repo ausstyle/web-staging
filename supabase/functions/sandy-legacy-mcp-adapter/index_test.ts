@@ -206,6 +206,52 @@ function fixture(
 const text = (body: Row) =>
   JSON.parse((body.result as { content: { text: string }[] }).content[0].text);
 
+Deno.test("legacy MCP accepts a one MiB base64 envelope and bounds actual request bytes", async () => {
+  const f = fixture();
+  const value = "AAAA".repeat(349525) + "AA==";
+  const accepted = await f.request("tools/call", {
+    name: "fixture.echo",
+    arguments: { content_base64: value },
+  });
+  assert.equal(accepted.status, 200);
+  assert.equal((await accepted.json()).result.isError, false);
+  const before = f.calls.length;
+  const overflow = await f.handler(
+    new Request("https://mcp.fixture.invalid", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer fixture.user.jwt",
+        "content-length": "1",
+      },
+      body: " ".repeat(1550001),
+    }),
+  );
+  assert.equal(overflow.status, 413);
+  assert.equal(f.calls.length, before);
+});
+Deno.test("legacy API response bound accepts exact capacity and refuses overflow", async () => {
+  const empty = JSON.stringify({ padding: "" });
+  for (const size of [2300000, 2300001]) {
+    const transport = (() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ padding: "x".repeat(size - empty.length) }),
+        ),
+      )) as typeof fetch;
+    const api = createApi("https://api.fixture.invalid", "anon", transport);
+    const response = await api("actual.user.jwt", { action: "list" });
+    const result = response.result as Row;
+    assert.equal(
+      size === 2300000 ? typeof result.padding : result.error,
+      size === 2300000 ? "string" : "sandy_api_response_size_limit",
+    );
+    if (size > 2300000) {
+      assert.equal(result.executed, null);
+      assert.equal(result.reconciliation_required, true);
+    }
+  }
+});
+
 Deno.test("legacy adapter discovers canonical schemas and all 16 compatibility aliases dynamically", async () => {
   const f = fixture();
   const body = await (await f.request("tools/list")).json();

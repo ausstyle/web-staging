@@ -13,7 +13,7 @@ export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || 
 ) } = {}) {
   const app = express();
   app.disable("x-powered-by");
-  app.use(express.json({ limit: "24kb" }));
+  app.use(express.json({ limit: 1550000 }));
   app.use((_req, res, next) => {
     res.set("cache-control", "no-store");
     res.set("x-content-type-options", "nosniff");

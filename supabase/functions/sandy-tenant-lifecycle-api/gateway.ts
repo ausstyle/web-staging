@@ -7,11 +7,27 @@ import {
   protectedInventoryOperation,
   protectedInventoryOperationName,
 } from "./protected_inventory.ts";
+import {
+  scalarManifestExecutionScope,
+  scalarManifestOperations,
+} from "./scalar_contracts.ts";
+import {
+  contentExportExecutionScope,
+  contentExportOperations,
+} from "./content_contracts.ts";
 export const tenantLifecycleOperations = Object.freeze({
   ...manifestOperations,
   [protectedInventoryOperationName]: protectedInventoryOperation,
+  ...scalarManifestOperations,
+  ...contentExportOperations,
 });
 export function tenantLifecycleExecutionScope(operation: string) {
+  if (Object.hasOwn(contentExportOperations, operation)) {
+    return contentExportExecutionScope(operation);
+  }
+  if (Object.hasOwn(scalarManifestOperations, operation)) {
+    return scalarManifestExecutionScope(operation);
+  }
   if (!Object.hasOwn(tenantLifecycleOperations, operation)) {
     throw Error("operation_not_implemented");
   }

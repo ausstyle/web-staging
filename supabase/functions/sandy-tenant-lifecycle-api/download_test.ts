@@ -1,6 +1,12 @@
 import { deepStrictEqual as equal, ok as assert } from "node:assert/strict";
-import { executeTenantExportDownload, type UserExportDb } from "./download.ts";
+import {
+  executeTenantExportDownload,
+  tenantExportDownloadOperation,
+  type UserExportDb,
+} from "./download.ts";
+import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
 import manifest from "./manifest.json" with { type: "json" };
+import scalarManifest from "./scalar_manifest.json" with { type: "json" };
 const id = "00000000-0000-4000-8000-000000000001",
   tenant = "00000000-0000-4000-8000-000000000002";
 const payload = {
@@ -23,6 +29,10 @@ const valid = {
 const db = (data: unknown): UserExportDb => ({
   rpc: () => Promise.resolve({ data, error: null }),
 });
+Deno.test("download union contract hash covers the exact delivered schemas", async () => {
+  const { contract_sha256, ...contract } = tenantExportDownloadOperation;
+  equal(await argumentDigest(contract), contract_sha256);
+});
 Deno.test("real-user export delivery exposes only a validated bounded manifest attachment", async () => {
   const result = await executeTenantExportDownload(db(valid), {
     snapshot_id: id,
@@ -31,6 +41,50 @@ Deno.test("real-user export delivery exposes only a validated bounded manifest a
   equal(await result.json(), valid);
   assert(result.headers.get("content-disposition")?.includes(valid.file_name));
   equal(result.headers.get("cache-control"), "no-store");
+});
+Deno.test("real-user scalar delivery preserves decimal precision and rejects cross-manifest projections", async () => {
+  const scalar = {
+    ...payload,
+    manifest: scalarManifest.id,
+    manifest_sha256: scalarManifest.manifest_sha256,
+    schema_sha256: scalarManifest.schema_sha256,
+    tables: {
+      ...Object.fromEntries(scalarManifest.tables.map((t) => [t.table, []])),
+      sandy_knowledge_links: [{
+        id,
+        owner_customer_id: tenant,
+        document_id: id,
+        entity_id: id,
+        relationship_type: "synthetic",
+        evidence_excerpt: null,
+        confidence: "0.123456789012345678901234567890123456789",
+        created_at: "2026-10-21T00:00:00Z",
+      }],
+    },
+  };
+  const response = await executeTenantExportDownload(
+    db({ ...valid, export: scalar }),
+    { snapshot_id: id },
+  );
+  equal(response.status, 200);
+  equal(
+    (await response.json()).export.tables.sandy_knowledge_links[0].confidence,
+    scalar.tables.sandy_knowledge_links[0].confidence,
+  );
+  for (
+    const changed of [
+      { ...scalar, manifest_sha256: manifest.manifest_sha256 },
+      { ...scalar, tables: payload.tables },
+      { ...payload, tables: scalar.tables },
+    ]
+  ) {
+    equal(
+      (await executeTenantExportDownload(db({ ...valid, export: changed }), {
+        snapshot_id: id,
+      })).status,
+      502,
+    );
+  }
 });
 Deno.test("download caller cannot substitute tenant, actor, credential or raw Vault ID", async () => {
   let called = false;
