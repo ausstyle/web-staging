@@ -25,7 +25,11 @@ Deno.test("lifecycle consent uses the same actual-user RPC and ledger with a rev
     },
   };
   const args = {
-    operations: ["supabase.tenant.export", "supabase.storage.objects.get"],
+    operations: [
+      "supabase.tenant.export",
+      "supabase.storage.objects.get",
+      "supabase.tenant.protected_resources.inventory",
+    ],
     approved_emails: [],
     allow_erasure: false,
     expires_at: "2026-10-22T00:00:00Z",
@@ -48,7 +52,7 @@ Deno.test("lifecycle consent uses the same actual-user RPC and ledger with a rev
   equal(
     tenantLifecycleConsentOverride.input_schema.properties.operations.items.enum
       .length,
-    51,
+    52,
   );
 });
 Deno.test("lifecycle consent cannot authorize arbitrary SQL, credentials or an actor override", async () => {

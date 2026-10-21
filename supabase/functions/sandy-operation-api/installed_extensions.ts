@@ -46,10 +46,27 @@ import {
   serviceOperations,
 } from "../sandy-supabase-service-api/gateway.ts";
 import {
-  executeTenantConsent,
   type TenantConsentDb,
   tenantConsentOperations,
 } from "../sandy-supabase-service-api/tenant_consent.ts";
+import {
+  executeLifecycleConsent,
+  tenantLifecycleConsentOverride,
+} from "../sandy-tenant-lifecycle-api/consent_extension.ts";
+import {
+  executeTenantExportDownload,
+  tenantExportDownloadOperation,
+} from "../sandy-tenant-lifecycle-api/download.ts";
+import {
+  tenantLifecycleExecutionScope,
+  tenantLifecycleOperations,
+} from "../sandy-tenant-lifecycle-api/gateway.ts";
+import {
+  productContractMatches,
+  productGatewayContracts,
+  productOperations,
+} from "../sandy-product-service-api/gateway.ts";
+import { canonicalJson } from "../_shared/sandy_api_protocol.ts";
 import {
   gapExecutionScope,
   gapGatewayOperations,
@@ -72,6 +89,9 @@ export type ExtensionKind =
   | "credential"
   | "supabase_service"
   | "tenant_consent"
+  | "tenant_download"
+  | "tenant_lifecycle"
+  | "product"
   | "provider_gap"
   | "lifecycle";
 export type ExtensionContract = {
@@ -127,11 +147,29 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       "sandy-supabase-service-api",
     ),
     ...grouped(
-      tenantConsentOperations,
+      {
+        ...tenantConsentOperations,
+        [tenantLifecycleConsentOverride.operation]:
+          tenantLifecycleConsentOverride,
+      },
       "tenant_consent",
       "sandy-operation-api",
     ),
     ...grouped(gapGatewayOperations, "provider_gap", "sandy-provider-gap-api"),
+    ...grouped(
+      tenantLifecycleOperations,
+      "tenant_lifecycle",
+      "sandy-tenant-lifecycle-api",
+    ),
+    ...grouped(
+      {
+        [tenantExportDownloadOperation.operation]:
+          tenantExportDownloadOperation,
+      },
+      "tenant_download",
+      "sandy-operation-api",
+    ),
+    ...grouped(productGatewayContracts, "product", "sandy-product-service-api"),
   ]));
 export const extensionHandlers = Object.freeze(
   Object.fromEntries(
@@ -143,18 +181,31 @@ export const extensionHandlers = Object.freeze(
 export const extensionKind = (operation: string): ExtensionKind | undefined =>
   extensionContracts[operation]?.kind;
 export const extensionNeedsPortal = (operation: string) =>
-  ["agenda", "memory", "agent", "tenant_consent"].includes(
+  ["agenda", "memory", "agent", "tenant_consent", "tenant_download"].includes(
     extensionKind(operation) ?? "",
-  );
+  ) || (extensionKind(operation) === "product" &&
+    productOperations[operation].authorization !== "owner");
 export const extensionNeedsAgenda = (operation: string) =>
   ["agenda", "customer_key"].includes(extensionKind(operation) ?? "");
 export const extensionOwnsGrant = (operation: string) =>
-  ["guest", "database", "credential", "supabase_service", "provider_gap"]
+  [
+    "guest",
+    "database",
+    "credential",
+    "supabase_service",
+    "provider_gap",
+    "tenant_lifecycle",
+  ]
     .includes(extensionKind(operation) ?? "");
 export const extensionOwnerOnly = (operation: string) =>
   extensionOwnsGrant(operation) || extensionKind(operation) === "lifecycle" ||
   (extensionKind(operation) === "agent" &&
-    agentOperationContracts[operation].owner_only);
+    agentOperationContracts[operation].owner_only) ||
+  (extensionKind(operation) === "product" &&
+    productOperations[operation].authorization === "owner");
+/** These handlers derive and consume their own admission from the actual JWT. */
+export const extensionOwnsUserAdmission = (operation: string) =>
+  extensionKind(operation) === "product";
 export const extensionRequiresUserSession = (operation: string) =>
   !!extensionKind(operation) && operation !== "system.lifecycle.poll";
 export function extensionHasAccess(
@@ -171,7 +222,15 @@ export function extensionHasAccess(
     case "memory":
       return !!principal.portalCustomerId;
     case "tenant_consent":
+    case "tenant_download":
       return !!principal.portalCustomerId && emailConfirmed;
+    case "product":
+      return emailConfirmed &&
+        (productOperations[operation].authorization === "owner"
+          ? principal.controllerOwner
+          : productOperations[operation].authorization === "portal"
+          ? !!principal.portalCustomerId
+          : principal.controllerOwner || !!principal.portalCustomerId);
     case "agent":
       return !!principal.portalCustomerId &&
         (!agentOperationContracts[operation].owner_only ||
@@ -182,6 +241,7 @@ export function extensionHasAccess(
     case "lifecycle":
     case "supabase_service":
     case "provider_gap":
+    case "tenant_lifecycle":
       return principal.controllerOwner;
     default:
       return false;
@@ -205,6 +265,24 @@ export function extensionContractMatches(
   if (c.kind === "agent") return agentContractMatches(operation, entry);
   if (c.kind === "lifecycle") {
     return providerLifecycleContractMatches(operation, entry);
+  }
+  if (c.kind === "product") return productContractMatches(operation, entry);
+  if (
+    ["tenant_lifecycle", "tenant_download", "tenant_consent"].includes(c.kind)
+  ) {
+    try {
+      if (
+        canonicalJson(entry.input_schema) !== canonicalJson(c.input_schema) ||
+        canonicalJson(entry.output_schema) !== canonicalJson(c.output_schema) ||
+        !object(entry.error_contract) ||
+        entry.error_contract.api_key_delegable !== false ||
+        (c.kind === "tenant_lifecycle"
+          ? entry.error_contract.requires_approval !== true
+          : entry.error_contract.requires_real_user_session !== true)
+      ) return false;
+    } catch {
+      return false;
+    }
   }
   return entry.handler === c.handler &&
     entry.permission_scope === c.permission_scope &&
@@ -231,6 +309,8 @@ export function extensionAvailability(
   }
   if (
     (entry.is_mutation === true ||
+      (kind === "product" && productOperations[operation].sensitive) ||
+      kind === "tenant_download" ||
       (kind === "provider_gap"
         ? extensionContracts[operation].requires_grant === true
         : extensionOwnsGrant(operation))) &&
@@ -262,10 +342,18 @@ export async function executeUserExtension(
       return executeMemoryOperation(deps, bearer, operation, args);
     case "tenant_consent":
       return deps.userDb
-        ? executeTenantConsent(deps.userDb, operation, args)
+        ? executeLifecycleConsent(deps.userDb, operation, args)
         : Response.json({
           ok: false,
           error: "tenant_consent_session_required",
+          executed: false,
+        }, { status: 503, headers: { "cache-control": "no-store" } });
+    case "tenant_download":
+      return deps.userDb
+        ? executeTenantExportDownload(deps.userDb, args)
+        : Response.json({
+          ok: false,
+          error: "tenant_export_session_required",
           executed: false,
         }, { status: 503, headers: { "cache-control": "no-store" } });
     default:
@@ -282,6 +370,9 @@ export async function extensionExecutionScope(
   const kind = extensionKind(operation);
   if (kind === "database") return databaseExecutionScope(operation);
   if (kind === "supabase_service") return serviceExecutionScope(operation);
+  if (kind === "tenant_lifecycle") {
+    return tenantLifecycleExecutionScope(operation);
+  }
   if (kind === "provider_gap") {
     return gapExecutionScope(operation, options?.restoreBindings);
   }

@@ -63,6 +63,7 @@ import {
   extensionNeedsPortal,
   extensionOwnerOnly,
   extensionOwnsGrant,
+  extensionOwnsUserAdmission,
   extensionRequiresUserSession,
   parsePackageRestoreBindings,
   type ScopeBinding,
@@ -547,8 +548,12 @@ async function upstreamResult(
   response: Response,
   outputSchema: unknown,
   trustedProviderStatus?: number,
+  preserveExecutionClaim = false,
 ) {
   const upstreamStatus = trustedProviderStatus ?? response.status;
+  const untrustedExecution = preserveExecutionClaim
+    ? { executed: null, reconciliation_required: true }
+    : { executed: true };
   let result: unknown;
   try {
     result = await response.json();
@@ -556,7 +561,7 @@ async function upstreamResult(
     return reply(502, {
       ok: false,
       operation,
-      executed: true,
+      ...untrustedExecution,
       upstream_status: upstreamStatus,
       error: "upstream_invalid_json",
     });
@@ -565,7 +570,7 @@ async function upstreamResult(
     return reply(502, {
       ok: false,
       operation,
-      executed: true,
+      ...untrustedExecution,
       upstream_status: upstreamStatus,
       error: "upstream_invalid_response",
       result,
@@ -576,7 +581,7 @@ async function upstreamResult(
     return reply(502, {
       ok: false,
       operation,
-      executed: true,
+      ...untrustedExecution,
       upstream_status: upstreamStatus,
       error: "upstream_output_schema_mismatch",
     });
@@ -593,9 +598,18 @@ async function upstreamResult(
   return reply(response.ok && !ok ? 502 : response.status, {
     ok,
     operation,
-    executed: true,
+    executed: preserveExecutionClaim ? (ok ? result.executed : null) : true,
     upstream_status: upstreamStatus,
     result,
+    ...(preserveExecutionClaim && ok
+      ? {
+        request_state: result.request_state,
+        request_id: result.request_id,
+        admission_id: result.admission_id,
+        reconciliation_required: result.reconciliation_required,
+      }
+      : {}),
+    ...(preserveExecutionClaim && !ok ? { reconciliation_required: true } : {}),
     ...(!ok
       ? {
         error: typeof result.error === "string"
@@ -612,8 +626,17 @@ async function applicationResult(
   operation: string,
   response: Response,
   outputSchema: unknown,
+  preserveExecutionClaim = false,
 ) {
-  if (response.ok) return upstreamResult(operation, response, outputSchema);
+  if (response.ok) {
+    return upstreamResult(
+      operation,
+      response,
+      outputSchema,
+      undefined,
+      preserveExecutionClaim,
+    );
+  }
   let result: unknown;
   try {
     result = await response.json();
@@ -1385,7 +1408,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           return applicationResult(operation, response, entry.output_schema);
         }
         let userDb: TenantConsentDb | undefined;
-        if (kind === "tenant_consent") {
+        if (kind === "tenant_consent" || kind === "tenant_download") {
           if (!anon && !dependencies.authenticatedDb) {
             return reply(503, {
               error: "tenant_consent_session_required",
@@ -1425,9 +1448,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         }
         let response: Response;
         try {
-          if (kind === "agent") {
+          if (kind === "agent" || kind === "product") {
             response = await fetchBackend(
-              `${base}/functions/v1/sandy-agent-operation-api`,
+              `${base}/functions/v1/${extensionContracts[operation].handler}`,
               {
                 method: "POST",
                 redirect: "error",
@@ -1440,8 +1463,20 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                   operation,
                   arguments: body.arguments ?? {},
                   channel: originalChannel,
+                  ...(kind === "product" &&
+                      request.headers.has("x-sandy-request-id")
+                    ? { request_id: request.headers.get("x-sandy-request-id") }
+                    : {}),
+                  ...(kind === "product" &&
+                      request.headers.has("x-sandy-approval-id")
+                    ? {
+                      approval_id: request.headers.get("x-sandy-approval-id"),
+                    }
+                    : {}),
                 }),
-                signal: AbortSignal.timeout(60000),
+                signal: AbortSignal.timeout(
+                  kind === "product" ? 120000 : 60000,
+                ),
               },
             );
           } else {
@@ -1485,7 +1520,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             reconciliation_required: true,
           });
         }
-        return applicationResult(operation, response, entry.output_schema);
+        return applicationResult(
+          operation,
+          response,
+          entry.output_schema,
+          kind === "product",
+        );
       }
       if (isCustomerMutationOperation(operation)) {
         const response = await executeCustomerMutation(
@@ -2095,6 +2135,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     };
     if (
       dependencies.executionPolicy && admin?.role === "owner" &&
+      !extensionOwnsUserAdmission(operation) &&
       (entry.is_mutation === false || !!providerOperations[operation] ||
         extensionOwnsGrant(operation)) &&
       !isPolicyOperation(operation)

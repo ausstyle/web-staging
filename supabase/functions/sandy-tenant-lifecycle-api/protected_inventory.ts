@@ -1,6 +1,6 @@
 /** Safe metadata only. This operation neither exports credential material nor
  * restores/revokes credentials, consent, access grants or retention controls. */
-import { Ajv } from "npm:ajv@8.17.1";
+import { Ajv, type ValidateFunction } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import {
   argumentDigest,
@@ -243,12 +243,24 @@ export const protectedInventoryOperation = Object.freeze({
   ...protectedInventoryContractPayload,
   contract_sha256: await argumentDigest(protectedInventoryContractPayload),
 });
-const ajv = new Ajv({ strict: true });
-for (const [name, format] of Object.entries(fullFormats)) {
-  ajv.addFormat(name, format);
+let validators:
+  | { input: ValidateFunction; result: ValidateFunction }
+  | undefined;
+function executionValidators() {
+  if (!validators) {
+    // Gateway discovery imports the descriptor but never executes this RPC.
+    // Compile the two fixed schemas only at the backend execution boundary.
+    const ajv = new Ajv({ strict: true });
+    for (const [name, format] of Object.entries(fullFormats)) {
+      ajv.addFormat(name, format);
+    }
+    validators = {
+      input: ajv.compile(inputSchema),
+      result: ajv.compile(protectedInventoryResultSchema),
+    };
+  }
+  return validators;
 }
-const inputValidator = ajv.compile(inputSchema);
-const resultValidator = ajv.compile(protectedInventoryResultSchema);
 const uuidPattern =
   /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 export type ProtectedInventoryRpcParameters = {
@@ -287,7 +299,7 @@ export async function executeProtectedInventoryRpc(
     throw new Error("tenant_inventory_parameters_invalid");
   }
   if (
-    !object(args) || !inputValidator(args) ||
+    !object(args) || !executionValidators().input(args) ||
     canonicalJson(args) !== params.p_canonical
   ) throw new Error("tenant_inventory_parameters_invalid");
   let reply;
@@ -316,7 +328,8 @@ export async function executeProtectedInventoryRpc(
   if (
     !object(data) || Object.keys(data).length !== 3 || data.ok !== true ||
     data.reused !== false || !object(data.result) ||
-    !resultValidator(data.result) || data.result.tenant_id !== args.tenant_id ||
+    !executionValidators().result(data.result) ||
+    data.result.tenant_id !== args.tenant_id ||
     data.result.offset !== args.offset || data.result.limit !== args.limit ||
     JSON.stringify(data).length > 1048576 ||
     !Object.values(data.result.resources as Obj).every((page) =>

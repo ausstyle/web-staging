@@ -25,6 +25,15 @@ import {
   createServiceHandler,
   type Dependencies as ServiceDependencies,
 } from "../sandy-supabase-service-api/index.ts";
+import { productOperations } from "../sandy-product-service-api/contracts.ts";
+import { createTenantLifecycleHandler } from "../sandy-tenant-lifecycle-api/index.ts";
+import {
+  tenantLifecycleOperations,
+  tenantLifecycleScope,
+} from "../sandy-tenant-lifecycle-api/contracts.ts";
+import tenantManifest from "../sandy-tenant-lifecycle-api/manifest.json" with {
+  type: "json",
+};
 
 const preflight = {
   operation: "engineering.preflight",
@@ -221,6 +230,7 @@ function harness(options: Options = {}) {
   const request = (
     body: unknown,
     authorization: string | null = "Bearer test-user-jwt",
+    headers: Record<string, string> = {},
   ) =>
     handler(
       new Request("https://local.invalid", {
@@ -228,6 +238,7 @@ function harness(options: Options = {}) {
         headers: {
           "content-type": "application/json",
           ...(authorization ? { authorization } : {}),
+          ...headers,
         },
         body: JSON.stringify(body),
       }),
@@ -2938,11 +2949,432 @@ function extensionRow(operation: string, verified = false): Row {
     verified,
     error_contract: {
       ...(c.contract_sha256 ? { contract_sha256: c.contract_sha256 } : {}),
+      ...(["tenant_consent", "tenant_download"].includes(c.kind)
+        ? { requires_real_user_session: true, api_key_delegable: false }
+        : {}),
+      ...(c.kind === "tenant_lifecycle"
+        ? { requires_approval: true, api_key_delegable: false }
+        : {}),
+      ...(c.kind === "product"
+        ? {
+          requires_approval:
+            productOperations[operation].authorization === "owner" &&
+            (productOperations[operation].is_mutation ||
+              productOperations[operation].sensitive),
+          api_key_delegable: false,
+        }
+        : {}),
     },
   };
 }
-Deno.test("all 258 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 258);
+const productRequestId = "80000000-0000-4000-8000-000000000001";
+const productAdmissionId = "80000000-0000-4000-8000-000000000002";
+function productResponse(operation: string, patch: Row = {}): Response {
+  return Response.json({
+    ok: true,
+    operation,
+    contract_version: "1.0.0",
+    request_id: productRequestId,
+    admission_id: productAdmissionId,
+    request_state: "observed",
+    executed: true,
+    result: {
+      item: null,
+      items: [],
+      changed: false,
+      next_cursor: null,
+      possibly_truncated: false,
+      provider_id: null,
+      provider_http_status: null,
+      delivery_verified: false,
+    },
+    reconciliation_required: false,
+    ...patch,
+  });
+}
+Deno.test("product owner and tenant operations forward only the original confirmed JWT and own their admission once", async () => {
+  for (
+    const [operation, args] of [
+      ["customer.profile.get", {}],
+      ["product.configuration.providers.get", { provider_key: "openai" }],
+    ] as const
+  ) {
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: extensionTenant,
+      executionPolicy: true,
+      rows: [extensionRow(operation)],
+      backend: (_url, init) => {
+        const headers = new Headers(init?.headers);
+        assert.equal(headers.get("authorization"), "Bearer test-user-jwt");
+        assert.equal(headers.get("apikey"), "test-anon-key");
+        assert.deepEqual(JSON.parse(String(init?.body)), {
+          operation,
+          arguments: args,
+          channel: "mcp",
+          request_id: productRequestId,
+        });
+        return productResponse(operation);
+      },
+    });
+    const response = await h.request(
+      { action: "execute", operation, arguments: args, channel: "mcp" },
+      undefined,
+      { "x-sandy-request-id": productRequestId },
+    );
+    assert.equal(response.status, 200, await response.clone().text());
+    assert.equal(h.calls.length, 1);
+    assert.equal(
+      h.calls[0].url,
+      "https://example.supabase.co/functions/v1/sandy-product-service-api",
+    );
+    assert.equal(
+      h.rpcCalls.length,
+      0,
+      "product owns admission; no second gateway reservation/consume",
+    );
+  }
+});
+Deno.test("product mutation keeps exact request and approval metadata without introducing actor or tenant fields", async () => {
+  const operation = "notifications.templates.create";
+  const approval = "80000000-0000-4000-8000-000000000003";
+  const args = {
+    name: "synthetic_template",
+    body_text: "Synthetic text",
+    idempotency_key: productRequestId,
+  };
+  const h = harness({
+    actorId: extensionActor,
+    memoryTenant: extensionTenant,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    backend: (_url, init) => {
+      assert.deepEqual(JSON.parse(String(init?.body)), {
+        operation,
+        arguments: args,
+        channel: "api",
+        request_id: productRequestId,
+        approval_id: approval,
+      });
+      assert.equal(
+        new Headers(init?.headers).get("authorization"),
+        "Bearer test-user-jwt",
+      );
+      return productResponse(operation, {
+        request_state: "accepted",
+        reconciliation_required: true,
+      });
+    },
+  });
+  const response = await h.request(
+    { action: "execute", operation, arguments: args },
+    undefined,
+    { "x-sandy-request-id": productRequestId, "x-sandy-approval-id": approval },
+  );
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.equal(h.rpcCalls.length, 0);
+  assert.equal(h.calls.length, 1);
+});
+Deno.test("product positive replay preserves false or unknown execution and reconciliation instead of inventing dispatch", async () => {
+  for (const executed of [false, null]) {
+    const operation = "customer.profile.get";
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: extensionTenant,
+      role: null,
+      rows: [extensionRow(operation)],
+      backend: () =>
+        productResponse(operation, {
+          request_state: "replayed",
+          executed,
+          reconciliation_required: true,
+        }),
+    });
+    const response = await h.request({
+      action: "execute",
+      operation,
+      arguments: {},
+    });
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.equal(payload.executed, executed);
+    assert.equal(payload.reconciliation_required, true);
+    assert.equal(payload.request_state, "replayed");
+    assert.equal(payload.result.executed, executed);
+  }
+});
+Deno.test("product malformed JSON and non-object responses preserve unknown execution", async () => {
+  for (const upstream of ["not-json", "null", "[]"]) {
+    const operation = "customer.profile.get";
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: extensionTenant,
+      role: null,
+      rows: [extensionRow(operation)],
+      backend: () => new Response(upstream),
+    });
+    const response = await h.request({
+      action: "execute",
+      operation,
+      arguments: {},
+    });
+    assert.equal(response.status, 502);
+    const payload = await response.json();
+    assert.equal(payload.executed, null);
+    assert.equal(payload.reconciliation_required, true);
+    assert.equal(h.calls.length, 1);
+    assert.equal(h.rpcCalls.length, 0);
+  }
+});
+Deno.test("product output schema mismatch cannot assert execution", async () => {
+  const operation = "customer.profile.get";
+  const h = harness({
+    actorId: extensionActor,
+    memoryTenant: extensionTenant,
+    role: null,
+    rows: [extensionRow(operation)],
+    backend: () => productResponse(operation, { result: "invalid" }),
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: {},
+  });
+  assert.equal(response.status, 502);
+  const payload = await response.json();
+  assert.equal(payload.error, "upstream_output_schema_mismatch");
+  assert.equal(payload.executed, null);
+  assert.equal(payload.reconciliation_required, true);
+});
+Deno.test("product HTTP200 refusal cannot assert execution from an untyped envelope", async () => {
+  const operation = "customer.profile.get";
+  const h = harness({
+    actorId: extensionActor,
+    memoryTenant: extensionTenant,
+    role: null,
+    rows: [extensionRow(operation)],
+    backend: () =>
+      productResponse(operation, {
+        ok: false,
+        error: "synthetic_refusal",
+        executed: true,
+        reconciliation_required: false,
+      }),
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: {},
+  });
+  assert.equal(response.status, 502);
+  const payload = await response.json();
+  assert.equal(payload.error, "synthetic_refusal");
+  assert.equal(payload.executed, null);
+  assert.equal(payload.reconciliation_required, true);
+});
+Deno.test("product grants and sensitivity cannot be weakened by Controller privilege, unconfirmed sessions or contract flag drift", async () => {
+  const portalOperation = "customer.profile.get",
+    ownerOperation = "graph.messages.search";
+  for (
+    const [options, operation] of [
+      [{ role: "owner" }, portalOperation],
+      [{ role: null, memoryTenant: extensionTenant }, ownerOperation],
+      [
+        { role: null, memoryTenant: extensionTenant, emailConfirmed: false },
+        portalOperation,
+      ],
+    ] as const
+  ) {
+    const h = harness({
+      ...options,
+      actorId: extensionActor,
+      rows: [extensionRow(operation, true)],
+    });
+    assert.equal(
+      (await h.request({ action: "describe", operation })).status,
+      403,
+    );
+    assert.equal(h.calls.length, 0);
+    assert.equal(h.rpcCalls.length, 0);
+  }
+  const bad = extensionRow(ownerOperation, true);
+  (bad.error_contract as Row).requires_approval = false;
+  const h = harness({
+    actorId: extensionActor,
+    memoryTenant: extensionTenant,
+    rows: [bad],
+  });
+  assert.equal(
+    (await h.request({
+      action: "execute",
+      operation: ownerOperation,
+      arguments: { query: "synthetic" },
+    })).status,
+    503,
+  );
+  assert.equal(h.calls.length, 0);
+  assert.equal(h.rpcCalls.length, 0);
+});
+Deno.test("unverified sensitive product reads and tenant exports are unavailable before any downstream request", async () => {
+  for (
+    const [operation, args] of [
+      ["graph.messages.get", { message_id: productRequestId }],
+      ["supabase.tenant.exports.download", { snapshot_id: productRequestId }],
+    ] as const
+  ) {
+    const h = harness({
+      actorId: extensionActor,
+      memoryTenant: extensionTenant,
+      rows: [extensionRow(operation)],
+      authenticatedDb: () => {
+        throw Error("must not obtain session");
+      },
+    });
+    assert.equal(
+      (await h.request({ action: "execute", operation, arguments: args }))
+        .status,
+      424,
+    );
+    assert.equal(h.calls.length, 0);
+    assert.equal(h.rpcCalls.length, 0);
+  }
+});
+Deno.test("tenant export download uses only the original actual-user RPC and never a Controller or service session", async () => {
+  const operation = "supabase.tenant.exports.download",
+    calls: Row[] = [],
+    tokens: string[] = [];
+  const h = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    rows: [extensionRow(operation, true)],
+    authenticatedDb: (token) => {
+      tokens.push(token);
+      return {
+        rpc: async (name, args) => {
+          calls.push({ name, args });
+          return {
+            error: null,
+            data: {
+              ok: true,
+              snapshot_id: productRequestId,
+              snapshot_sha256: "a".repeat(64),
+              file_name: `sandy-tenant-links-${productRequestId}.json`,
+              export: {
+                format_version: "1.0.0",
+                tenant_id: extensionTenant,
+                manifest: tenantManifest.id,
+                manifest_sha256: tenantManifest.manifest_sha256,
+                schema_sha256: tenantManifest.schema_sha256,
+                complete_tenant_coverage: false,
+                external_provider_assets_included: false,
+                tables: Object.fromEntries(
+                  tenantManifest.tables.map((t) => [t.table, []]),
+                ),
+              },
+            },
+          };
+        },
+      };
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: { snapshot_id: productRequestId },
+  });
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.deepEqual(tokens, ["test-user-jwt"]);
+  assert.deepEqual(calls, [{
+    name: "sandy_tenant_export_download",
+    args: { p_snapshot: productRequestId },
+  }]);
+  assert.equal(h.rpcCalls.length, 0);
+  assert.equal(h.calls.length, 0);
+});
+Deno.test("tenant lifecycle backend consumes and finishes the gateway owner grant exactly once", async () => {
+  const operation = "supabase.tenant.exports.get",
+    grant = "80000000-0000-4000-8000-000000000004";
+  let consumed = 0, finished = 0, sqlCalls = 0;
+  const backend = createTenantLifecycleHandler({
+    service: "test-service-credential",
+    projectUrl: "https://zmqlyygzqoidkcwdysok.supabase.co",
+    authorizeContext: async () => ({ allowed: true }),
+    consumeGrant: async (input) => {
+      consumed++;
+      assert.equal(input.grant_id, grant);
+      assert.equal(
+        input.scope_sha256,
+        await argumentDigest(tenantLifecycleScope),
+      );
+      return { allowed: true, reused: false, admission_id: productAdmissionId };
+    },
+    finishExecution: async (input) => {
+      finished++;
+      assert.equal(input.outcome, "succeeded");
+      return { allowed: true };
+    },
+    rpc: async (name, args) => {
+      sqlCalls++;
+      assert.equal(name, "sandy_tenant_lifecycle_execute");
+      assert.equal(args.p_actor, extensionActor);
+      return {
+        error: null,
+        status: 200,
+        data: {
+          ok: true,
+          reused: false,
+          result: {
+            snapshot_id: productRequestId,
+            tenant_id: extensionTenant,
+            manifest: tenantManifest.id,
+            manifest_sha256: tenantManifest.manifest_sha256,
+            schema_sha256: tenantManifest.schema_sha256,
+            snapshot_sha256: "a".repeat(64),
+            state: "exported",
+            created_at: "2026-10-21T00:00:00Z",
+            expires_at: "2026-10-22T00:00:00Z",
+            row_counts: Object.fromEntries(
+              tenantManifest.tables.map((t) => [t.table, 0]),
+            ),
+            complete_tenant_coverage: false,
+            external_provider_assets_included: false,
+          },
+        },
+      };
+    },
+  });
+  const h = harness({
+    actorId: extensionActor,
+    executionPolicy: true,
+    rows: [extensionRow(operation, true)],
+    rpcHandler: (name) => {
+      assert.equal(name, "sandy_api_admit_execution");
+      return {
+        ok: true,
+        allowed: true,
+        reused: false,
+        admission_id: productAdmissionId,
+        grant_id: grant,
+        state: "admitted",
+        executed: false,
+        expires_at: "2099-01-01T00:00:00Z",
+      };
+    },
+    backend: (url, init) => backend(new Request(url, init)),
+  });
+  const response = await h.request({
+    action: "execute",
+    operation,
+    arguments: { tenant_id: extensionTenant, snapshot_id: productRequestId },
+  });
+  assert.equal(response.status, 200, await response.clone().text());
+  assert.deepEqual([consumed, finished, sqlCalls], [1, 1, 1]);
+  assert.equal(h.rpcCalls.length, 1);
+  assert.equal(h.calls.length, 1);
+});
+Deno.test("all 363 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 363);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -2963,10 +3395,19 @@ Deno.test("all 258 service extensions are installed with their exact contracts a
     assert.equal(response.status, 200, String(row.operation));
     const payload = await response.json();
     const closed = row.is_mutation === true ||
-      ["guest", "database", "credential", "supabase_service"].includes(
+      [
+        "guest",
+        "database",
+        "credential",
+        "supabase_service",
+        "tenant_lifecycle",
+        "tenant_download",
+      ].includes(
         String(row.kind),
       ) ||
-      (row.kind === "provider_gap" && row.requires_grant === true);
+      (row.kind === "provider_gap" && row.requires_grant === true) ||
+      (row.kind === "product" &&
+        productOperations[String(row.operation)].sensitive);
     assert.equal(payload.operation.executable, !closed, String(row.operation));
     assert.equal(payload.operation.handler, row.handler);
   }
@@ -3674,7 +4115,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2247);
+  assert.equal(installedOperationIds.length, 2352);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);

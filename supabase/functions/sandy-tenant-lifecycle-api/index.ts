@@ -14,15 +14,20 @@ import {
 import {
   type JsonObject,
   tenantLifecycleHandler,
-  tenantLifecycleOperations,
   tenantLifecycleScope,
 } from "./contracts.ts";
+import { tenantLifecycleOperations } from "./gateway.ts";
+import {
+  executeProtectedInventoryRpc,
+  protectedInventoryOperationName,
+  protectedInventoryRpcName,
+} from "./protected_inventory.ts";
 export type Operation = {
   operation: string;
   is_mutation: boolean;
   contract_sha256: string;
-  manifest_sha256: string;
-  schema_sha256: string;
+  manifest_sha256?: string;
+  schema_sha256?: string;
   input_schema: JsonObject;
   result_schema: JsonObject;
 };
@@ -70,7 +75,7 @@ export type Dependencies = {
   consumeGrant(request: GrantRequest): Promise<PolicyResult>;
   finishExecution(request: FinishRequest): Promise<PolicyResult>;
   rpc(
-    name: "sandy_tenant_lifecycle_execute",
+    name: "sandy_tenant_lifecycle_execute" | typeof protectedInventoryRpcName,
     args: JsonObject,
   ): Promise<RpcResult>;
 };
@@ -173,6 +178,10 @@ function resultMatchesRequest(
   args: JsonObject,
   result: JsonObject,
 ): boolean {
+  if (operation.operation === protectedInventoryOperationName) {
+    return result.tenant_id === args.tenant_id &&
+      result.offset === args.offset && result.limit === args.limit;
+  }
   if (
     result.tenant_id !== args.tenant_id ||
     result.manifest_sha256 !== operation.manifest_sha256 ||
@@ -310,11 +319,16 @@ export function createTenantLifecycleHandler(deps: Dependencies) {
     }
     let reply: RpcResult;
     try {
-      reply = await deps.rpc("sandy_tenant_lifecycle_execute", {
+      const parameters = {
         p_actor: context.actor_id,
         p_admission: admission,
         p_canonical: canonicalJson(args),
-      });
+      };
+      reply = operation.operation === protectedInventoryOperationName
+        ? await executeProtectedInventoryRpc({
+          rpc: (name, params) => deps.rpc(name, params),
+        }, parameters)
+        : await deps.rpc("sandy_tenant_lifecycle_execute", parameters);
     } catch {
       const outcome = operation.is_mutation ? "unknown" : "failed",
         recorded = await finish(outcome, {

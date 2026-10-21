@@ -1,0 +1,404 @@
+{
+  "phase": "api14_tenant_product_source_frozen_not_deployed_by_author",
+  "recorded_at_utc": "2026-10-21T03:46:39.094392+00:00",
+  "baseline_gateway_commit": "4e669f1",
+  "foundation_source_commit": "3b3491b",
+  "protected_inventory_source_commit": "d4f24a8",
+  "product_source_commit": "1ae4dd7",
+  "previous_gateway_ids": 2247,
+  "target_gateway_ids": 2352,
+  "new_gateway_ids": 105,
+  "new_operations": {
+    "tenant_owner_backend": 6,
+    "actual_user_export_download": 1,
+    "product": 98
+  },
+  "consent_contract": {
+    "replaces_existing_operation": true,
+    "allowed_operations": 52,
+    "contract_sha256": "7a9ed304551bffc702c93f750361c607e3c4fc16da84991abab9c324f851b25d",
+    "migration": "20261021007225"
+  },
+  "single_execution_ownership": {
+    "tenant_owner": "gateway admits; tenant backend consumes and finishes once",
+    "tenant_download_consent": "actual user JWT retained on separate authenticated RPC client; no administrative substitution",
+    "product": "gateway forwards actual JWT and exact request/approval headers; product service independently admits/consumes/finishes; second gateway admission skipped",
+    "positive_replay_claims": "validated false/null executed claims and reconciliation preserved in canonical envelope",
+    "business_execution_duplicated": false,
+    "untrusted_product_responses": "malformed, nonobject, schema-mismatched and HTTP200 refusal responses carry executed:null and reconciliation_required:true; positive validated replay claims preserved"
+  },
+  "tests": {
+    "composed_deno_passed": 223,
+    "failed": 0,
+    "files": [
+      {
+        "file": "./supabase/functions/sandy-tenant-lifecycle-api/index_test.ts",
+        "passed": 19
+      },
+      {
+        "file": "./supabase/functions/sandy-tenant-lifecycle-api/download_test.ts",
+        "passed": 6
+      },
+      {
+        "file": "./supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts",
+        "passed": 2
+      },
+      {
+        "file": "./supabase/functions/sandy-tenant-lifecycle-api/protected_inventory_test.ts",
+        "passed": 12
+      },
+      {
+        "file": "./supabase/functions/sandy-product-service-api/index_test.ts",
+        "passed": 13
+      },
+      {
+        "file": "./supabase/functions/sandy-product-service-api/providers_test.ts",
+        "passed": 28
+      },
+      {
+        "file": "./supabase/functions/sandy-legacy-mcp-adapter/index_test.ts",
+        "passed": 14
+      },
+      {
+        "file": "./supabase/functions/sandy-operation-api/index_test.ts",
+        "passed": 85
+      },
+      {
+        "file": "./supabase/functions/sandy-operation-api/registry_schema_validator_test.ts",
+        "passed": 5
+      },
+      {
+        "file": "./supabase/functions/sandy-operation-api/customer_key_principal_test.ts",
+        "passed": 8
+      },
+      {
+        "file": "./supabase/functions/sandy-operation-api/api_job_routes_test.ts",
+        "passed": 7
+      },
+      {
+        "file": "./supabase/functions/sandy-api-mcp/index_test.ts",
+        "passed": 18
+      },
+      {
+        "file": "./supabase/functions/sandy-api-mcp/gateway_integration_test.ts",
+        "passed": 6
+      }
+    ],
+    "overlap_with_author_suites": true,
+    "typecheck": "pass",
+    "diff_check": "pass",
+    "real_auth_session_tested": false,
+    "real_provider_calls": 0,
+    "product_envelope_regressions": {
+      "passed": 85,
+      "failed": 0,
+      "log": "api14-product-envelope-regression.log",
+      "new_cases": [
+        "invalid_json_or_nonobject_execution_unknown",
+        "positive_output_schema_mismatch_execution_unknown",
+        "http200_refusal_execution_unknown"
+      ],
+      "composed_log": "api14-product-envelope-composed-deno.log",
+      "typecheck_log": "api14-product-envelope-typecheck.log",
+      "memory_sweeps_repeated": false
+    }
+  },
+  "postgres_component": {
+    "http": 201,
+    "timestamp_utc": "2026-10-21T03:34:02.951336+00:00",
+    "full_rollback": true,
+    "real_auth_session": false,
+    "real_owner_approval": false,
+    "provider_calls": 0,
+    "query_sha256": "caeb1f7d7181fb1ceacf30fee79ee20c425a454b51fcfdd278c3efb5cef3255c",
+    "checks": 53,
+    "evidence_groups": [
+      {
+        "layer": "administrative_database_component",
+        "checks": [
+          "exact_revised_consent_hash",
+          "preserved51_options_plus_protected_inventory",
+          "exposure_and_verification_remain_closed",
+          "actual_user_only_consent_acl_preserved"
+        ],
+        "passed": true,
+        "fixtures": "always_rolled_back",
+        "external_provider_called": false,
+        "real_auth_session_tested": false
+      },
+      {
+        "layer": "administrative_database_component",
+        "checks": [
+          "service_only_primitive_acl",
+          "private_capture_acl",
+          "default_disabled_unverified_sensitive_read",
+          "exact_customer_and_owner_filters",
+          "eight_populated_projections",
+          "actual_scopes_and_revocation_expiry_metadata",
+          "held_tenant_read_without_hold_change",
+          "unknown_unmapped_counts",
+          "UUID_coincidence_not_ownership",
+          "no_hash_ciphertext_vaultref_Authid_or_externalaccount_projection",
+          "no_cross_customer_rows",
+          "explicit_pagination_and_total_counts",
+          "empty_page_preserves_total_count",
+          "current_owner_bound_admission",
+          "canonical_tenant_binding",
+          "current_exact_operation_consent",
+          "expired_consent_refused",
+          "current_verified_registry_required",
+          "arbitrary_relation_refused",
+          "page_bound_refused",
+          "other_operation_admission_refused",
+          "unapproved_sensitive_read_refused",
+          "no_credential_or_control_mutation",
+          "no_Vault_secret_access"
+        ],
+        "passed": true,
+        "fixtures": "always_rolled_back",
+        "complete_tenant_coverage": false,
+        "external_provider_called": false,
+        "owner_membership_changed": false,
+        "real_auth_session_tested": false,
+        "reviewed_resource_classes": 11,
+        "real_owner_approval_tested": false,
+        "credential_or_session_issued": false,
+        "unmapped_credential_namespaces": 3,
+        "populated_exact_customer_projections": 8
+      },
+      {
+        "layer": "administrative_database_component",
+        "checks": [
+          "service_only_acl",
+          "pinned_schema_hash",
+          "exact_consent_extension",
+          "encrypted_private_snapshot_roundtrip",
+          "metadata_only_admin_response",
+          "simulated_claim_customer_download",
+          "service_key_not_customer_session",
+          "cross_customer_download_refusal",
+          "cross_tenant_snapshot_refusal",
+          "stale_state_refusal",
+          "legal_hold_refusal",
+          "retention_refusal",
+          "exact_captured_row_erase",
+          "parent_records_preserved",
+          "no_parent_task_or_mission_restore",
+          "foreign_PK_conflict_full_rollback",
+          "empty_target_exact_restore_readback",
+          "expired_delivery_refusal",
+          "payload_purge_real_vault_readback",
+          "row_bound_without_truncation",
+          "transactional_one_use_receipts",
+          "native_id_FK_is_not_tenant_proof",
+          "native_parent_fixture_did_not_queue_analysis_or_mission",
+          "text_download_boundary_accepted",
+          "oversize_text_refused_before_snapshot"
+        ],
+        "passed": true,
+        "fixtures": "always_rolled_back",
+        "manifest": "application_leaf_links_v1",
+        "populated_tables_tested": 6,
+        "complete_tenant_coverage": false,
+        "external_provider_called": false,
+        "owner_membership_changed": false,
+        "real_auth_session_tested": false,
+        "real_owner_approval_tested": false,
+        "empty_tables_structurally_tested": 0
+      }
+    ]
+  },
+  "post_rollback_cleanup": {
+    "http": 201,
+    "read_only": true,
+    "cleanup": [
+      {
+        "lifecycle_schema_absent": true,
+        "protected_function_absent": true,
+        "lasting_fixture_users": 0
+      }
+    ]
+  },
+  "peer_review": {
+    "author": "auth_storage_scope",
+    "result": "pass_no_blocking_finding",
+    "independent_deno_passed": 39,
+    "report_sha256": "f6743e65f08fc5f8ae0c20b8e8f43b63c08a74561c477fae275fcd798dbb155d"
+  },
+  "memory": {
+    "current_exposed_discovery": {
+      "old_space_limit_mib": 96,
+      "optimize": "default",
+      "inlineRefs": false,
+      "cache_max_entries": 12,
+      "cache_max_schema_bytes": 262144,
+      "key_and_snapshot_charge_multiplier": 4,
+      "exit_code": 0,
+      "peak_rss_kib": 157272,
+      "log": "api14-discovery-memory-96.txt",
+      "benchmark": "expanded-gateway-discovery-memory-benchmark.ts",
+      "gc_observed_peak_heap_used_mib": 55.2,
+      "gc_observed_peak_heap_total_mib": 76.4,
+      "gateway_measurements": {
+        "installed_operations": 2352,
+        "exposed_registry_rows": 424,
+        "owner_visible_operations": 359,
+        "discovery_calls": 10,
+        "catalogue_rpc_calls": 10,
+        "response_bytes": 750018,
+        "provider_calls": 0,
+        "initial": {
+          "rss": 129445888,
+          "heapTotal": 65306624,
+          "heapUsed": 37203752,
+          "external": 1470134
+        },
+        "final": {
+          "rss": 160636928,
+          "heapTotal": 63070208,
+          "heapUsed": 24350912,
+          "external": 8924409
+        },
+        "sampled_peak_heap_bytes": 57841368,
+        "sampled_peak_rss_bytes": 161476608
+      },
+      "conservative_peak_rss_bytes": 161476608
+    },
+    "candidate_all4704_schemas_before_lazy_execution_validators": {
+      "old_space_limit_mib": 128,
+      "optimize": "default",
+      "inlineRefs": false,
+      "cache_max_entries": 12,
+      "cache_max_schema_bytes": 262144,
+      "key_and_snapshot_charge_multiplier": 4,
+      "exit_code": 0,
+      "peak_rss_kib": 259784,
+      "log": "api14-streamed-catalogue-memory-128.txt",
+      "benchmark": "api14-streamed-catalogue-memory-benchmark.ts",
+      "gc_observed_peak_heap_used_mib": 131.7,
+      "gc_observed_peak_heap_total_mib": 177.0,
+      "gateway_measurements": {
+        "installed_operations": 2352,
+        "catalogue_operations": 2352,
+        "schemas_validated": 4704,
+        "input_refusals": 4248,
+        "forced_output_schema_refusals": 456,
+        "provider_calls": 0,
+        "rpc_calls": 0,
+        "initial": {
+          "rss": 120545280,
+          "heapTotal": 62316544,
+          "heapUsed": 33129256,
+          "external": 1565082
+        },
+        "final": {
+          "rss": 212041728,
+          "heapTotal": 137281536,
+          "heapUsed": 115054840,
+          "external": 1564055
+        },
+        "sampled_peak_heap_bytes": 137587944,
+        "sampled_peak_rss_bytes": 253153280
+      },
+      "conservative_peak_rss_bytes": 266018816
+    },
+    "candidate_all4704_schemas_after_lazy_first_run": {
+      "old_space_limit_mib": 128,
+      "optimize": "default",
+      "inlineRefs": false,
+      "cache_max_entries": 12,
+      "cache_max_schema_bytes": 262144,
+      "key_and_snapshot_charge_multiplier": 4,
+      "exit_code": 0,
+      "peak_rss_kib": 320392,
+      "log": "api14-lazy-streamed-catalogue-memory-128.txt",
+      "benchmark": "api14-streamed-catalogue-memory-benchmark.ts",
+      "gc_observed_peak_heap_used_mib": 130.4,
+      "gc_observed_peak_heap_total_mib": 177.4,
+      "gateway_measurements": {
+        "installed_operations": 2352,
+        "catalogue_operations": 2352,
+        "schemas_validated": 4704,
+        "input_refusals": 4248,
+        "forced_output_schema_refusals": 456,
+        "provider_calls": 0,
+        "rpc_calls": 0,
+        "initial": {
+          "rss": 116260864,
+          "heapTotal": 63574016,
+          "heapUsed": 23954800,
+          "external": 1565082
+        },
+        "final": {
+          "rss": 204644352,
+          "heapTotal": 133558272,
+          "heapUsed": 114656504,
+          "external": 1562999
+        },
+        "sampled_peak_heap_bytes": 135608152,
+        "sampled_peak_rss_bytes": 253292544
+      },
+      "conservative_peak_rss_bytes": 328081408
+    },
+    "candidate_all4704_schemas_after_lazy_cached_run": {
+      "old_space_limit_mib": 128,
+      "optimize": "default",
+      "inlineRefs": false,
+      "cache_max_entries": 12,
+      "cache_max_schema_bytes": 262144,
+      "key_and_snapshot_charge_multiplier": 4,
+      "exit_code": 0,
+      "peak_rss_kib": 255968,
+      "log": "api14-lazy-streamed-catalogue-memory-128-cached.txt",
+      "benchmark": "api14-streamed-catalogue-memory-benchmark.ts",
+      "gc_observed_peak_heap_used_mib": 130.6,
+      "gc_observed_peak_heap_total_mib": 177.7,
+      "gateway_measurements": {
+        "installed_operations": 2352,
+        "catalogue_operations": 2352,
+        "schemas_validated": 4704,
+        "input_refusals": 4248,
+        "forced_output_schema_refusals": 456,
+        "provider_calls": 0,
+        "rpc_calls": 0,
+        "initial": {
+          "rss": 116224000,
+          "heapTotal": 63836160,
+          "heapUsed": 44417144,
+          "external": 1565169
+        },
+        "final": {
+          "rss": 204484608,
+          "heapTotal": 133296128,
+          "heapUsed": 114535984,
+          "external": 1557645
+        },
+        "sampled_peak_heap_bytes": 136488072,
+        "sampled_peak_rss_bytes": 249872384
+      },
+      "conservative_peak_rss_bytes": 262111232
+    },
+    "interpretation": "Current exposed discovery remains bounded in the local96MiB heap fixture. All newly mapped105 operations remain closed. Forced all4704-schema churn is a future-activation workload boundary: first uncached CLI run exceeded256MiB whole-processRSS; cached rerun was about250MiB. No universal memory guarantee or actualEdge load attestation; compilation effects were not isolated."
+  },
+  "source_sha256": {
+    "supabase/functions/sandy-operation-api/index.ts": "1068035c2c38fb495eed65eb5ddb003e5ce7bb2a47c1243e4f982f5996a6f7ec",
+    "supabase/functions/sandy-operation-api/index_test.ts": "90392cea1deb749510d430db33d2433b9e26a0351f9863528aaee564c35c5470",
+    "supabase/functions/sandy-operation-api/installed_extensions.ts": "b5b3869b23e0c82c99dd8233000cd81c2809e372d86488971af71dbb9390d435",
+    "supabase/functions/sandy-tenant-lifecycle-api/gateway.ts": "f7c89218df82e997555b43d2e0abd13bb0dfdd2baf1caeb9865397a2af93bff3",
+    "supabase/functions/sandy-tenant-lifecycle-api/index.ts": "a322fd12658581acf3d519e92dad209b4edaeca3d7424449a13ec5624c7d5082",
+    "supabase/functions/sandy-tenant-lifecycle-api/index_test.ts": "d18ba9194035f747205bfad6ba4aec66234e797319d8152f8ca81be0e068c172",
+    "supabase/functions/sandy-tenant-lifecycle-api/download.ts": "46ec6ec5a00d0e577e8848bb0c916af6b3823d2c80ed27bc8cb13b24c9439248",
+    "supabase/functions/sandy-tenant-lifecycle-api/protected_inventory.ts": "80ee355060e0ee11a07809534a31aad322244fff0805436dac02f9672419b9cd",
+    "supabase/functions/sandy-tenant-lifecycle-api/consent_extension.ts": "5ad42e8807d34ea93139275c653c74bb969e1381cb73a281a23842ace2d242c4",
+    "supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts": "7e3ba2cb26eda34af4f82f8f1d03071b3b2c3ce42282ea4bcba27e3cdb6704fa",
+    "supabase/functions/sandy-tenant-lifecycle-api/consent_inventory_contract.json": "8d74f3b5d1832c684b47ae7356b8b7abed109bb2e17f42d3325db9daab03b017",
+    "supabase/functions/sandy-tenant-lifecycle-api/consent_inventory_component_test.sql": "3e874279f409ce6fe2d30b1f1b3a226ca4f4891748de3d33d6fd822857431bdd",
+    "supabase/migrations/20261021007225_sandy_tenant_inventory_consent.sql": "77fb7bab9ad8158ff65f05107c095f4838502420a89e16535361fb88a902859c"
+  },
+  "exposure_or_verification_changed": false,
+  "new_verified_operations": 0,
+  "original_requirements_certified_complete_added": 0,
+  "scalar_07230_included": false,
+  "commerce_091xx_included": false,
+  "real_authentication_and_provider_mutations_deferred": true
+}

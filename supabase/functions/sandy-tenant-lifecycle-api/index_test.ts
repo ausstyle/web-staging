@@ -15,6 +15,11 @@ import {
   type RpcResult,
   validateTenantLifecycleContracts,
 } from "./index.ts";
+import {
+  protectedInventoryOperationName,
+  protectedInventoryResources,
+  protectedInventoryRpcName,
+} from "./protected_inventory.ts";
 const actor = "00000000-0000-4000-8000-000000000001",
   tenant = "00000000-0000-4000-8000-000000000002",
   snapshot = "00000000-0000-4000-8000-000000000003",
@@ -160,8 +165,147 @@ function fixture(overrides: Partial<Dependencies> = {}) {
   };
   return { deps, calls, handler, invoke };
 }
-Deno.test("all five fixed manifest operations have executable strict contracts", () =>
-  equal(validateTenantLifecycleContracts(), 5));
+Deno.test("five manifest operations and protected metadata have executable strict contracts", () =>
+  equal(validateTenantLifecycleContracts(), 6));
+
+function unavailableInventoryResult(): Record<string, unknown> {
+  return {
+    tenant_id: tenant,
+    inventory_version: "protected_resource_metadata_v1",
+    observed_at: "2026-10-21T00:00:00Z",
+    offset: 0,
+    limit: 2,
+    complete_tenant_coverage: false,
+    provider_revocation_verified: false,
+    generic_restore_permitted: false,
+    audit_evidence_disposition: "retain_append_only_digest_evidence",
+    resources: Object.fromEntries(
+      Object.entries(protectedInventoryResources).map(
+        ([name, resource]) => [name, {
+          ownership: resource.ownership,
+          revocation_disposition: resource.revocation,
+          retention_disposition: resource.retention,
+          generic_restore_permitted: false,
+          offset: 0,
+          limit: 2,
+          status: "unavailable" in resource
+            ? "ownership_mapping_unavailable"
+            : "schema_unavailable",
+          reason: "unavailable" in resource
+            ? resource.unavailable
+            : "reviewed_metadata_schema_not_available",
+          total_count: null,
+          items: [],
+          next_offset: null,
+        }],
+      ),
+    ),
+  };
+}
+Deno.test("protected metadata uses the same owner grant and finish once, with its own fixed SQL primitive", async () => {
+  const rpcCalls: { name: string; args: unknown }[] = [];
+  const f = fixture({
+    rpc: async (name, args) => {
+      rpcCalls.push({ name, args });
+      return {
+        data: { ok: true, reused: false, result: unavailableInventoryResult() },
+        error: null,
+        status: 200,
+      };
+    },
+  });
+  const args = { tenant_id: tenant, offset: 0, limit: 2 };
+  const reply = await f.invoke(protectedInventoryOperationName, args);
+  equal(reply.status, 200);
+  equal((await reply.json()).request_state, "observed");
+  equal(rpcCalls, [{
+    name: protectedInventoryRpcName,
+    args: {
+      p_actor: actor,
+      p_admission: admission,
+      p_canonical: canonicalJson(args),
+    },
+  }]);
+  equal(f.calls.map((x) => x.name), ["authorize", "consume", "finish"]);
+  equal(
+    (f.calls[1].value as { scope_sha256: string }).scope_sha256,
+    await argumentDigest(tenantLifecycleScope),
+  );
+  equal((f.calls[2].value as FinishRequest).outcome, "succeeded");
+});
+Deno.test("protected metadata cannot bypass owner denial or reuse a consumed grant", async () => {
+  for (
+    const override of [
+      {
+        authorizeContext: async () => ({
+          allowed: false,
+          error: "owner_required",
+          http_status: 403,
+        }),
+      },
+      {
+        consumeGrant: async () => ({
+          allowed: true,
+          reused: true,
+          admission_id: admission,
+        }),
+      },
+    ]
+  ) {
+    let rpcCalls = 0;
+    const f = fixture({
+      ...override,
+      rpc: async () => {
+        rpcCalls++;
+        throw Error("must not dispatch");
+      },
+    });
+    const reply = await f.invoke(protectedInventoryOperationName, {
+      tenant_id: tenant,
+      offset: 0,
+      limit: 2,
+    });
+    assert([403, 409].includes(reply.status));
+    equal(rpcCalls, 0);
+    equal(f.calls.filter((x) => x.name === "finish").length, 0);
+  }
+});
+Deno.test("protected metadata refuses tenant/page changes, secret fields and false restoration claims", async () => {
+  for (
+    const patch of [
+      { tenant_id: actor },
+      { offset: 1 },
+      { limit: 3 },
+      { private_key: "must-never-leave" },
+      { generic_restore_permitted: true },
+    ]
+  ) {
+    const f = fixture({
+      rpc: async () => ({
+        data: {
+          ok: true,
+          reused: false,
+          result: { ...unavailableInventoryResult(), ...patch },
+        },
+        error: null,
+        status: 200,
+      }),
+    });
+    const reply = await f.invoke(protectedInventoryOperationName, {
+      tenant_id: tenant,
+      offset: 0,
+      limit: 2,
+    });
+    equal(reply.status, 502);
+    assert(!(await reply.text()).includes("must-never-leave"));
+    equal(f.calls.filter((x) => x.name === "finish").length, 1);
+    equal(
+      (f.calls.find((x) => x.name === "finish")!.value as FinishRequest)
+        .outcome,
+      "failed",
+    );
+  }
+});
 Deno.test("internal service identity and exact project are checked before provider/policy", async () => {
   const f = fixture();
   equal(

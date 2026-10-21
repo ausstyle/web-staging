@@ -1,5 +1,5 @@
 /** A normal confirmed portal Auth session releases its own bounded export. */
-import { Ajv } from "npm:ajv@8.17.1";
+import { Ajv, type ValidateFunction } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import manifest from "./manifest.json" with { type: "json" };
 type Obj = Record<string, unknown>;
@@ -66,11 +66,20 @@ export const tenantExportDownloadOperation = Object.freeze({
   requirement_ids: [111],
   complete_tenant_coverage: false,
 });
-const ajv = new Ajv({ strict: true });
-for (const [name, format] of Object.entries(fullFormats)) {
-  ajv.addFormat(name, format);
+let validators:
+  | { input: ValidateFunction; output: ValidateFunction }
+  | undefined;
+function deliveryValidators() {
+  if (!validators) {
+    // Catalogue discovery needs schemas, not a compiled private-data executor.
+    const ajv = new Ajv({ strict: true });
+    for (const [name, format] of Object.entries(fullFormats)) {
+      ajv.addFormat(name, format);
+    }
+    validators = { input: ajv.compile(input), output: ajv.compile(output) };
+  }
+  return validators;
 }
-const validateInput = ajv.compile(input), validateOutput = ajv.compile(output);
 export type UserExportDb = {
   rpc(name: string, args: Obj): PromiseLike<{ data: unknown; error: unknown }>;
 };
@@ -83,7 +92,7 @@ export async function executeTenantExportDownload(
       status,
       headers: { "cache-control": "no-store" },
     });
-  if (!object(args) || !validateInput(args)) {
+  if (!object(args) || !deliveryValidators().input(args)) {
     return fail(400, "invalid_arguments");
   }
   try {
@@ -109,7 +118,8 @@ export async function executeTenantExportDownload(
       );
     }
     if (
-      !validateOutput(data) || data.snapshot_id !== args.snapshot_id ||
+      !deliveryValidators().output(data) ||
+      data.snapshot_id !== args.snapshot_id ||
       data.file_name !== "sandy-tenant-links-" + args.snapshot_id + ".json" ||
       JSON.stringify(data).length > 2200000
     ) {
