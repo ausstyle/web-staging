@@ -52,3 +52,21 @@ this release does not replace them or claim to repair every portal entrypoint.
 The two failing reads above are now repaired and verified through actual normal-Auth MCP with nonempty own fixtures and foreign-resource denials. Migration 20261022010000 matches the production ledger. Gateway releases 35/38/39 are committed at b4177a5/e18c05a/5f84645; latest observed metadata 40 preserves the final source. REST paging/description and strict log output contracts are also repaired. Four REST pages, 16 scoped engineering tools and real provider log execution passed without VM diagnostics.
 
 Current main was merged at 8555388, preserving all 121 deployed gateway source files byte-for-byte. No runtime, workspace, VM, media or LiveKit release occurred. The original pre-release text is historical; current acceptance is linked in implementation-status.md. The component leases were released after source, provider and receipt verification. The ordinary-customer durable receipt deficiency remains open; it must use the existing ledger with tenant authorization rather than owner privilege.
+
+## Customer read admission follow-up
+
+The next gateway slice surrounds the eight already verified task/calendar/Agenda
+reads with normal-JWT admission and grant consumption, reusing the existing
+`sandy_api_execution_admissions`, rate windows and append-only audit chain.
+The service client only settles digest-only receipts; it does not become the
+customer session. Existing owner/provider/key admission functions are unchanged.
+Registry flags cannot expand the fixed read allowlist. No new ledger or table is
+introduced. Unknown outcomes and failed settlement cannot be labelled success.
+
+Migration `20261022020000_sandy_customer_read_admissions.sql` adds three functions
+(two authenticated RPCs, one private policy helper); no table privileges change.
+The prior normal-customer backend still repeats its own tenant checks. Restore the
+preserved prior gateway before using
+`scripts/sandy/rollback_customer_read_admissions.sql`. Audit history is retained.
+Pre-release source regression: 408 passed. Real PostgreSQL boundary assertions:
+27 passed inside ROLLBACK. Production/MCP acceptance is pending this slice.

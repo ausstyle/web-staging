@@ -349,7 +349,7 @@ export type ExecutionAdmission = {
   grantId: string;
   requestId: string;
   actorId: string;
-  tenantId: null;
+  tenantId: string | null;
   operation: string;
   inputSha256: string;
   contractSha256: string;

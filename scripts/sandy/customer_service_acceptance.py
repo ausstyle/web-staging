@@ -27,7 +27,7 @@ def unpack(status, body):
     api = envelope.get('result', {})
     return {'http_status': status, 'api_status': envelope.get('status'),
             'is_error': result.get('isError'), 'executed': api.get('executed'),
-            'error': api.get('error'), 'admission_id': api.get('admission_id')}, result.get('structuredContent', {})
+            'error': api.get('error'), 'admission_id': api.get('admission_id'), 'request_id': api.get('request_id')}, result.get('structuredContent', {})
 
 
 def passing_read(result, payload):
@@ -42,10 +42,11 @@ def fixture_contains(payload, own_id, foreign_ids):
 
 
 class Acceptance:
-    def __init__(self, output, only=None):
+    def __init__(self, output, only=None, require_read_receipts=False):
         self.r = EngineeringRuntime()
         self.output = output
         self.only = set(only or [])
+        self.require_read_receipts = require_read_receipts
         self.keys = self.r._api_keys()
         self.fixtures = []
         self.report = {'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -69,7 +70,9 @@ class Acceptance:
                             {'jsonrpc': '2.0', 'id': str(uuid.uuid4()), 'method': method, 'params': params},
                             self.keys['anon'])
 
-    def call(self, fixture, operation, args, setup=False):
+    def call(self, fixture, operation, args, setup=False, request_id=None):
+        if request_id:
+            args = {'__sandy_execution': {'request_id': request_id}, 'arguments': args}
         status, raw = self.rpc(fixture, 'tools/call', {'name': operation, 'arguments': args})
         result, payload = unpack(status, raw)
         if not setup:
@@ -163,8 +166,37 @@ class Acceptance:
             for operation, args, expected in [('tasks.get', {'id': foreign['task']}, 404), ('calendar.get', {'id': foreign['event']}, 404),
                                                 ('tasks.list', {'customer_id': foreign['customer']}, 400)]:
                 result, _ = self.call(fixture, operation, args)
-                self.report['calls'][-1].update({'negative': True, 'passed': result['is_error'] is True and result['api_status'] == expected and not result['admission_id']})
+                self.report['calls'][-1].update({'negative': True, 'passed': result['is_error'] is True and result['api_status'] == expected
+                    and (bool(result['admission_id']) if self.require_read_receipts and expected == 404 else not result['admission_id'])})
                 self.save()
+            if self.require_read_receipts:
+                request_id = str(uuid.uuid4())
+                result, payload = self.call(fixture, 'tasks.list', {}, request_id=request_id)
+                self.report['calls'][-1]['passed'] = passing_read(result, payload) and bool(result['admission_id']) and result['request_id'] == request_id
+                for operation in ['tasks.list', 'calendar.list']:
+                    result, _ = self.call(fixture, operation, {}, request_id=request_id)
+                    self.report['calls'][-1].update({'negative': True, 'request_replay': True,
+                        'passed': result['is_error'] is True and result['api_status'] == 409 and result['executed'] is False})
+                self.save()
+
+    def verify_read_receipts(self):
+        operations = {'tasks.list', 'tasks.get', 'calendar.list', 'calendar.get', 'agenda.overview',
+                      'calendar.client.overview', 'agenda.pins.list', 'calendar.client.timezone.get'}
+        expected = [c for c in self.report['calls'] if c['operation'] in operations and not c.get('request_replay')
+                    and c['api_status'] in (200, 404)]
+        self.check('all_selected_reads_have_durable_admission', bool(expected) and all(c.get('admission_id') for c in expected))
+        ids = sorted({c['admission_id'] for c in expected})
+        rows = self.r._sql("SELECT a.id,a.actor_id,a.tenant_id,a.operation,a.state,a.provider_http_status,a.result_sha256,"
+            "(SELECT count(*) FROM public.sandy_api_audit_events e WHERE e.admission_id=a.id) audit_events "
+            "FROM public.sandy_api_execution_admissions a WHERE a.id IN (" + ','.join(self.r._quote(x) for x in ids) + ")", True)
+        by_id = {row['id']: row for row in rows}
+        self.report['independent_read_receipts'] = rows
+        self.check('real_shared_ledger_and_audit_settlement', len(rows) == len(ids) and all(
+            (r := by_id.get(c['admission_id'], {})).get('state') == ('failed' if c.get('negative') else 'succeeded')
+            and r.get('actor_id') == self.fixtures[c['fixture_index']]['user']
+            and r.get('tenant_id') == self.fixtures[c['fixture_index']]['customer']
+            and r.get('operation') == c['operation'] and r.get('audit_events') == 3 and bool(r.get('result_sha256'))
+            for c in expected))
 
     def cleanup(self):
         q = self.r._quote
@@ -200,6 +232,8 @@ class Acceptance:
             self.prepare()
             self.independent_fixture_state()
             self.exercise()
+            if self.require_read_receipts:
+                self.verify_read_receipts()
         except Exception as error:
             self.report['runner_error'] = type(error).__name__
             if isinstance(error, RuntimeError) and str(error).replace('_', '').isalnum():
@@ -217,5 +251,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--only', nargs='+', help='Rerun only changed or failed operation contracts')
+    parser.add_argument('--require-read-receipts', action='store_true', help='Require shared ledger settlement and exercise request replay refusal')
     args = parser.parse_args()
-    raise SystemExit(0 if Acceptance(args.output, args.only).run() else 1)
+    raise SystemExit(0 if Acceptance(args.output, args.only, args.require_read_receipts).run() else 1)

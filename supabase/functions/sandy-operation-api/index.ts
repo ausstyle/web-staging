@@ -13,6 +13,10 @@ import { operationRequestPath } from "./request_path.ts";
 import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
+import {
+  admittedCustomerReads,
+  governedCustomerRead,
+} from "./customer_read_admission.ts";
 import { parseApiJobRoute, resolveApiJobRoute } from "./api_job_routes.ts";
 import {
   buildCustomerKeyReadRequest,
@@ -703,14 +707,27 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     } else if (request.method === "GET") {
       if (path === "/v1/capabilities") {
         const limit = url.searchParams.get("limit") ?? "100";
-        if (!/^[1-9][0-9]{0,2}$/.test(limit) || Number(limit) > 100 ||
-          [...url.searchParams.keys()].some((key) => !["limit", "cursor"].includes(key) || url.searchParams.getAll(key).length !== 1)) {
-          return reply(400, { error: "invalid_catalogue_page", executed: false });
+        if (
+          !/^[1-9][0-9]{0,2}$/.test(limit) || Number(limit) > 100 ||
+          [...url.searchParams.keys()].some((key) =>
+            !["limit", "cursor"].includes(key) ||
+            url.searchParams.getAll(key).length !== 1
+          )
+        ) {
+          return reply(400, {
+            error: "invalid_catalogue_page",
+            executed: false,
+          });
         }
-        routedBody = { action: "list", channel: "api", limit: Number(limit),
-          ...(url.searchParams.has("cursor") ? { cursor: url.searchParams.get("cursor") } : {}) };
-      }
-      else if (describePath) {
+        routedBody = {
+          action: "list",
+          channel: "api",
+          limit: Number(limit),
+          ...(url.searchParams.has("cursor")
+            ? { cursor: url.searchParams.get("cursor") }
+            : {}),
+        };
+      } else if (describePath) {
         routedBody = { action: "describe", operation: describePath[1] };
       } else if (executionReceiptPath) {
         routedBody = {
@@ -942,7 +959,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           // a GET must not lose its already validated pagination or operation.
           routedBody && request.method === "GET"
             ? new Request(`${base}/functions/v1/sandy-operation-api`, {
-              method: "POST", headers: request.headers, body: JSON.stringify(routedBody),
+              method: "POST",
+              headers: request.headers,
+              body: JSON.stringify(routedBody),
             })
             : request,
           data.user as unknown as Record<string, unknown>,
@@ -2274,6 +2293,29 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       }
       return upstreamResult(operation, response, entry.output_schema);
     };
+    if (
+      dependencies.executionPolicy && !delegation && !customerKey &&
+      admin?.role !== "owner" && admittedCustomerReads.includes(operation) &&
+      entry.is_mutation === false
+    ) {
+      const authenticatedDb = dependencies.authenticatedDb
+        ? dependencies.authenticatedDb(bearer)
+        : createClient(base, anon, {
+          global: { headers: { Authorization: `Bearer ${bearer}` } },
+          auth: { persistSession: false },
+        });
+      return governedCustomerRead(
+        db,
+        authenticatedDb,
+        dispatchUser.id,
+        operation,
+        body.arguments ?? {},
+        request.headers.get("x-sandy-request-id") ?? crypto.randomUUID(),
+        await executionContractDigest(entry),
+        originalChannel,
+        () => dispatch(),
+      );
+    }
     if (
       dependencies.executionPolicy && admin?.role === "owner" &&
       !extensionOwnsUserAdmission(operation) &&
