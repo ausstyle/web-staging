@@ -83,7 +83,7 @@
         ]
       },
       "identity": "Existing renewal-key worker credential plus claimed persistent mission-run row; no customer/owner Auth session.",
-      "remaining": "Direct Responses planner and clarification review at archived lines 31/56. Needs named queue-bound internal contracts/shared service.",
+      "remaining": "Primary planning and optional clarification review are extracted to two closed shared application services in the source candidate. Commit, migration, deployment and source readback pending; no actual model execution test.",
       "boundaries_to_preserve": [
         "atomic queued-to-running claim",
         "persisted customer/mission match",
@@ -93,7 +93,15 @@
         "prior answers/deduplication",
         "client-owned active tasks",
         "draft/client review gates"
-      ]
+      ],
+      "inspected_live_version": 18,
+      "inspected_status": "ACTIVE",
+      "candidate_contracts": [
+        "agent.missions.plan.prepare@1.0.0",
+        "agent.missions.questions.review@1.0.0"
+      ],
+      "candidate_deployed": false,
+      "scope_strengthening": "Actual queued run/customer/mission capability; immutable recorded proposal-derived reviewer; atomic plan/questions/decisions; changed authoritative context refuses completion; unknown logical mission cannot repeat through another run ID."
     },
     {
       "slug": "sandy-mission-executor",
@@ -106,7 +114,7 @@
         ]
       },
       "identity": "Existing renewal-key worker credential plus claimed execute-stage mission run.",
-      "remaining": "All executor behavior extracted to a closed shared application service source candidate; commit, migration, deployment and readback pending. No actual model execution test.",
+      "remaining": "Shared application source committed 5e837b8 and final migration10060 permanently applied by parent; pinned executor9 deployment was in flight at the latest parent receipt. Final live source readback is parent-owned. No actual model execution test.",
       "boundaries_to_preserve": [
         "approved/provisional plan state",
         "ready prerequisite milestones",
@@ -120,7 +128,9 @@
       "inspected_status": "ACTIVE",
       "candidate_contract": "agent.missions.work_product.prepare@1.0.0",
       "candidate_deployed": false,
-      "scope_strengthening": "Actual completed same-tenant plan run; context change/cancellation refusal; unknown milestone cannot repeat through another run ID."
+      "scope_strengthening": "Actual completed same-tenant plan run; context change/cancellation refusal; unknown milestone cannot repeat through another run ID.",
+      "candidate_commit": "5e837b8",
+      "migration_applied": true
     },
     {
       "slug": "sandy-computer-worker",
