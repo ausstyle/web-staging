@@ -8,7 +8,7 @@
       "scope_kind": "master",
       "parent_scope_id": null,
       "path": "docs/sandy-engineering/master-scope-v1.md",
-      "source_version": "1.0",
+      "source_version": "1.1",
       "status": "DRAFT",
       "priority": "P0"
     },
@@ -31,6 +31,16 @@
       "source_version": "1.0",
       "status": "DRAFT",
       "priority": "P0"
+    },
+    {
+      "scope_id": "SANDY-ENG-0002",
+      "title": "Always-On Autonomy and Dots Competitive Parity",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0002-always-on-autonomy-dots-parity.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P1"
     }
   ]
 }
