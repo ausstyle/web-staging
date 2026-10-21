@@ -70,7 +70,7 @@ for (const [operation, payload] of Object.entries(observed.outputs)) {
           body: JSON.stringify({
             operation,
             arguments: args[operation],
-            request_id: rid,
+            request_id: payload.request_id,
             channel: "mcp",
           }),
         }),

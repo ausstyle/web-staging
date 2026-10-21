@@ -200,3 +200,34 @@ Deno.test("catalogue schema, hash and authorization flags must match installed h
     );
   }
 });
+
+Deno.test("a different completed request receipt is an unknown outcome, never a substituted success", async () => {
+  const h = harness(goodUser, { ...goodResult, request_id: customer }),
+    r = await h.request();
+  assert.equal(r.status, 503);
+  const value = await r.json();
+  assert.equal(value.executed, null);
+  assert.equal(value.request_id, rid);
+  assert.equal(value.automatic_retry, false);
+});
+Deno.test("failed transactional job keeps its real job identifier and explicit denial through the handler", async () => {
+  const h = harness(goodUser, {
+    ok: false,
+    error: "provisioning_transaction_failed",
+    http_status: 503,
+    executed: false,
+    automatic_retry: false,
+    request_id: rid,
+    job_id: customer,
+  });
+  const r = await h.request();
+  assert.equal(r.status, 503);
+  assert.deepEqual(await r.json(), {
+    ok: false,
+    error: "provisioning_transaction_failed",
+    executed: false,
+    automatic_retry: false,
+    request_id: rid,
+    job_id: customer,
+  });
+});

@@ -187,6 +187,9 @@ export function createOnboardingHandler(deps: Dependencies) {
           },
         );
       }
+      if (result.request_id !== requestId) {
+        return unknown("invalid_onboarding_result");
+      }
       if (outputs.get(body.operation)?.(result) !== true) {
         return unknown("invalid_onboarding_result");
       }

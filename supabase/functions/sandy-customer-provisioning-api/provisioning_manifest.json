@@ -65,6 +65,44 @@
               },
               "entitled": {
                 "type": "boolean"
+              },
+              "policy": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "resource_limit": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "storage_bytes_limit": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "purchase_budget_microusd": {
+                        "const": 0
+                      }
+                    },
+                    "required": [
+                      "enabled",
+                      "version",
+                      "resource_limit",
+                      "storage_bytes_limit",
+                      "purchase_budget_microusd"
+                    ],
+                    "additionalProperties": false
+                  }
+                ]
               }
             },
             "required": [
@@ -73,7 +111,8 @@
               "enabled",
               "version",
               "description",
-              "entitled"
+              "entitled",
+              "policy"
             ],
             "additionalProperties": false
           }
@@ -828,7 +867,7 @@
         "additionalProperties": false
       },
       "description": "List installed feature definitions and the current customer’s existing commerce entitlements. Listing does not enable a feature.",
-      "contract_sha256": "04005d5cb5acc9d5815906c179559fecaa9b2b0d7c1d2ebb4cd579c3e9d97d4f",
+      "contract_sha256": "7a8a167490f734dce727cc7a0916c25be4e33372dff831a8a69f344b60d3266b",
       "result_schema": "features"
     },
     {
