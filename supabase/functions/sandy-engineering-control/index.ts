@@ -20,8 +20,10 @@ Deno.serve(async req=>{
   let workloadGrant=null;
   let admin:any=null;
   if(user.app_metadata?.sandy_engineering_test===true){
-   workloadGrant=await authorizeWorkloadControl(user,token,b,db);
-   if(!workloadGrant)return respond({error:"engineering_control_scope_denied",executed:false},403);
+   const admitted=await authorizeWorkloadControl(user,token,b,db);
+   if(!admitted)return respond({error:"engineering_control_scope_denied",executed:false},403);
+   if("error" in admitted)return respond({error:admitted.error,executed:false},401);
+   workloadGrant=admitted;
    admin={role:"engineering",enabled:true};
   }else{
    const lookup=await db.from("sandy_controller_admins").select("role,enabled").eq("auth_user_id",user.id).eq("enabled",true).maybeSingle();

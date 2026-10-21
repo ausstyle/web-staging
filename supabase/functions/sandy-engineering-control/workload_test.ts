@@ -38,6 +38,7 @@ Deno.test("verified workload uses the existing session/epoch resolver and record
       action: "register",
     }, store);
   assert.ok(grant);
+  assert.ok(!("error" in grant));
   assert.equal(grant.ownerId, OWNER);
   assert.deepEqual(store.calls, [{
     name: "sandy_engineering_resolve_control_grant",
@@ -169,5 +170,25 @@ Deno.test("registration allows exact approved components and bounded repository 
       risk: "critical",
     }, grant),
     false,
+  );
+});
+Deno.test("retired session is a pre-dispatch authentication failure while revoked grant stays a scope denial", async () => {
+  assert.deepEqual(
+    await authorizeWorkloadControl(
+      user,
+      token(claims),
+      { action: "register" },
+      db({ ok: false, error: "engineering_identity_not_authorized" }),
+    ),
+    { error: "invalid_engineering_auth_session" },
+  );
+  assert.equal(
+    await authorizeWorkloadControl(
+      user,
+      token(claims),
+      { action: "register" },
+      db({ ok: false, error: "engineering_control_scope_denied" }),
+    ),
+    null,
   );
 });

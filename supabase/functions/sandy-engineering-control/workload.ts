@@ -24,7 +24,9 @@ export async function authorizeWorkloadControl(
   token: string,
   body: Obj,
   db: any,
-): Promise<WorkloadControlGrant | null> {
+): Promise<
+  WorkloadControlGrant | { error: "invalid_engineering_auth_session" } | null
+> {
   if (
     !uuid(user.id) || user.app_metadata?.sandy_engineering_test !== true ||
     !workloadControlActions.includes(body.action as any)
@@ -53,6 +55,15 @@ export async function authorizeWorkloadControl(
       p_action: body.action,
     },
   );
+  // A retired/expired session is distinct from a revoked control grant. The
+  // runtime can renew this pre-dispatch authentication failure exactly once,
+  // after checking its bootstrap again. Scope denials must never be replayed.
+  if (
+    !error && object(data) && data.ok === false &&
+    data.error === "engineering_identity_not_authorized"
+  ) {
+    return { error: "invalid_engineering_auth_session" };
+  }
   if (
     error || !object(data) || data.ok !== true ||
     !uuid(data.owner_authority_id) ||
