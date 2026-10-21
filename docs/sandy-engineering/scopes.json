@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "canonical_repo": "ausstyle/web-staging",
+  "scopes": [
+    {
+      "scope_id": "SANDY-MASTER-1",
+      "title": "Sandy AI Master Software Scope v1.0",
+      "scope_kind": "master",
+      "parent_scope_id": null,
+      "path": "docs/sandy-engineering/master-scope-reference.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P0"
+    },
+    {
+      "scope_id": "SANDY-API-161",
+      "title": "Sandy API Scope — 161 Requirement Families",
+      "scope_kind": "api",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-api/api-scope-161.md",
+      "source_version": "1.0",
+      "status": "APPROVED",
+      "priority": "P1"
+    },
+    {
+      "scope_id": "SANDY-ENG-0001",
+      "title": "Chat reasoning and agent runtime reliability",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0001-runtime-reasoning-reliability.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P0"
+    }
+  ]
+}
