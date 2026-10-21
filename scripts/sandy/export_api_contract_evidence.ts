@@ -17,6 +17,12 @@ import {
 } from "../../supabase/functions/sandy-operation-api/mcp_diagnostics.ts";
 import { orchestrationContracts } from "../../supabase/functions/sandy-orchestration-api/contracts.ts";
 import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
+import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts";
+import {
+  runtimeConversationContract,
+  runtimeConversationOperation,
+} from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation_contract.ts";
+import { productOperations } from "../../supabase/functions/sandy-product-service-api/contracts.ts";
 import { databaseOperations } from "../../supabase/functions/sandy-database-operation-api/gateway.ts";
 import { providerOperations } from "../../supabase/functions/sandy-provider-operation-api/gateway.ts";
 import { providerExpansionOperations } from "../../supabase/functions/sandy-provider-operation-api/expansion_gateway.ts";
@@ -179,6 +185,34 @@ add(
   providerExpansionOperations,
   "sandy-provider-operation-api",
   "sandy-provider-operation-api/index.ts",
+);
+add(
+  "product_services",
+  "sandy-product-service-api/contracts.json",
+  productOperations,
+  "sandy-product-service-api",
+  "sandy-product-service-api/index.ts",
+);
+add(
+  "internal_runtime_records",
+  "_shared/sandy-agent-operations/runtime_record_contracts.ts",
+  Object.fromEntries(
+    Object.entries(internalRuntimeRecordContracts).map((
+      [operation, contract],
+    ) => [
+      operation,
+      { ...contract, handler: `internal:${operation}@1.0.0` },
+    ]),
+  ),
+  "",
+  "_shared/sandy-agent-operations/runtime_records.ts",
+);
+add(
+  "internal_runtime_conversation",
+  "_shared/sandy-agent-operations/runtime_conversation_contract.ts",
+  { [runtimeConversationOperation]: runtimeConversationContract },
+  "internal:agent.runtime.conversation.respond@1.0.0",
+  "_shared/sandy-agent-operations/runtime_conversation.ts",
 );
 const rows: Row[] = [];
 for (const group of groups) {
