@@ -1536,6 +1536,7 @@ function shareTaskControl(t){
  wrap.append(toggle,panel);return wrap;
 }
 let draggingTaskId=null;
+let taskOrderSavePending=0;
 async function moveOutlineTask(dragId,targetId,zone){
  const drag=state.tasks.find(t=>t.id===dragId),target=state.tasks.find(t=>t.id===targetId);
  if(!drag||!target||drag.shared||target.shared||drag.id===target.id)return;
@@ -1555,6 +1556,7 @@ async function moveOutlineTask(dragId,targetId,zone){
  reordered.forEach((t,i)=>{t.position=(i+1)*1000});
  state.expanded.delete(parentId);
  localStorage.setItem("sandy_tree_collapsed",JSON.stringify([...state.expanded]));
+ taskOrderSavePending++;
  render();
  const changes=state.tasks.filter(t=>{const p=previous.get(t.id);return p&&((p.parent_task_id||null)!==(t.parent_task_id||null)||p.position!==t.position)});
  try{
@@ -1566,6 +1568,8 @@ async function moveOutlineTask(dragId,targetId,zone){
   // Restore the last persisted hierarchy on failure; never report a false save.
   for(const t of state.tasks){const p=previous.get(t.id);if(p)Object.assign(t,p)}
   render();toast("Unable to move task: "+e.message,true);
+ }finally{
+  taskOrderSavePending=Math.max(0,taskOrderSavePending-1);
  }
 }
 
@@ -2588,6 +2592,7 @@ function liveSignature(data){
  return JSON.stringify([(data.tasks||[]).map(t=>[t.id,t.parent_task_id,t.company_id,t.category_id,t.status,t.title,t.details,t.updated_at,t.version,t.position,t.archived_at,t.due_at,t.priority]),(data.categories||[]).map(c=>[c.id,c.company_id,c.parent_category_id,c.name]),(data.delegations||[]).map(d=>[d.id,d.status,d.scope]),(data.receivedDelegations||[]).map(d=>[d.id,d.status,d.scope])]);
 }
 function editingAgenda(){
+ if(taskOrderSavePending)return true;
  if(state.outlineBusy||document.querySelector(".outlineDraft,.inlineTitle:not(.outlineDraft .inlineTitle)"))return true;
  if($("dialogOverlay")?.classList.contains("show"))return true;
  const active=document.activeElement;
@@ -2673,6 +2678,7 @@ function timelineHasInvalidDependencies(){
 }
 async function load(){
  const data=await api("list");
+ if(taskOrderSavePending)return;
  applyAgendaData(data);taskFiles.refreshCounts(state.tasks);refreshMissionStatus();startAgendaSync();loadTaskRequests();loadOutgoingRequests();
  // Repair older dependency dates on opening the timeline. The guard prevents reload recursion.
  if(state.view==="timeline"&&!timelineAutoRepairRunning&&timelineHasInvalidDependencies()){
