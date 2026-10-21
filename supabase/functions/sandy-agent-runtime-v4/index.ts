@@ -9,6 +9,7 @@ import {selectRuntimeModel} from "../_shared/sandy-agent-operations/runtime_mode
 import {runExecutiveTurn,runCompatibilityTurn} from "../_shared/sandy-executive/turn.ts";
 import {normalizeRuntimeHistory} from "../_shared/sandy-executive/history.ts";
 import {executiveCanaryEnabled} from "../_shared/sandy-executive/rollout.ts";
+import {confirmationOutcome} from "../_shared/sandy-executive/outcome.ts";
 import {executingBuild,getVersionAwareness,needsVersionInspection,versionInstructions,versionFactsForModel} from "./version-awareness.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
@@ -82,6 +83,13 @@ Deno.serve(async req=>{
  const confirmation=/^confirm send\s+([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\s*$/i.exec(prompt.trim());
  if(confirmation&&customerId){
   const sent=await runOperation("gmail.drafts.confirm_send",{draft_id:confirmation[1],confirmation:prompt.trim()},"explicit-confirmation");
+  if(executiveCanary){
+   const outcome=confirmationOutcome(sent);
+   const toolTrace=[{tool:"gmail_send",principal_kind:"trusted_runtime",success:outcome.verified,draft_id:confirmation[1],state:sent.state,message_id:sent.message_id||null,sent_mail_verified:outcome.verified,duplicate_prevented:sent.duplicate_prevented===true}];
+   const completion={completion_state:outcome.state,completion_verified:outcome.verified,continuation_scheduled:false};
+   await update({status:outcome.verified?"completed":"failed",result:{text:outcome.text,...completion},failure:outcome.reason,tool_trace:toolTrace});
+   return json(200,{ok:true,task_id:id,response:outcome.text,...completion,tools_used:toolTrace});
+  }
   const toolTrace=[{tool:"gmail_send",principal_kind:"trusted_runtime",success:sent.success===true,draft_id:confirmation[1],state:sent.state,message_id:sent.message_id||null,sent_mail_verified:sent.sent_mail_verified===true,duplicate_prevented:sent.duplicate_prevented===true}];
   await update({status:"completed",result:{text:sent.text},tool_trace:toolTrace});
   return json(200,{ok:true,task_id:id,response:sent.text,tools_used:toolTrace});
