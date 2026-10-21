@@ -17,7 +17,7 @@ export async function diagnoseComputerAuthority(token: string, request: typeof f
   if (zone.value.name !== ZONE || !/^[0-9]{1,20}$/.test(String(zone.value.id))) throw Error("fixed_zone_identity_required");
   const zoneId = String(zone.value.id);
   const targets = await Promise.all(Object.entries(VMS).map(async ([name, vm]) => {
-    const resource = `projects/${NUMBER}/iap_tunnel/zones/${zoneId}/instances/${vm.instance_id}`;
+    const resource = `projects/${NUMBER}/iap_tunnel/zones/${ZONE}/instances/${vm.instance_id}`;
     const base = "https://iap.googleapis.com/v1/" + resource;
     const [policy, permissions, computePermissions] = await Promise.all([
       observe(base + ":getIamPolicy", { options: { requestedPolicyVersion: 3 } }),

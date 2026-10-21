@@ -5,9 +5,8 @@ Deno.test("Computer readiness: exact IAP target permission tests do not retry de
   const paths: string[] = [];
   const request: typeof fetch = (input, options) => {
     const url = new URL(String(input)); paths.push(url.toString());
-    if (url.pathname.endsWith("/zones/" + ZONE)) return Promise.resolve(Response.json({ name: ZONE, id: "2101" }));
     if (url.pathname.endsWith(":testIamPermissions")) {
-      if (url.hostname === "iap.googleapis.com") assert(url.pathname.includes("/zones/2101/instances/"));
+      if (url.hostname === "iap.googleapis.com") assert(url.pathname.includes("/zones/" + ZONE + "/instances/"));
       assert.equal(options?.method, "POST");
       return Promise.resolve(Response.json({ permissions: url.hostname === "iap.googleapis.com" ? [] : ["compute.instances.osLogin", "compute.instances.get"] }));
     }

@@ -1,14 +1,14 @@
 import assert from "node:assert/strict";
 import { diagnoseComputerAuthority } from "./authority_diagnosis.ts";
 import { VMS, PROJECT, ZONE } from "./bindings.ts";
-Deno.test("IAP authority: canonical numeric zone, exact targets and bounded failure projection; no write or tunnel", async () => {
+Deno.test("IAP authority: documented zone-name resource, exact targets and bounded failure projection; no write or tunnel", async () => {
   const routes: string[] = [];
   const request: typeof fetch = (input, init) => {
     const u = new URL(String(input)); routes.push(u.toString());
     assert(!u.pathname.includes(":setIamPolicy"));
     if (u.pathname.endsWith("/zones/" + ZONE)) return Promise.resolve(Response.json({ name: ZONE, id: "2000" }));
     if (u.hostname === "iap.googleapis.com") {
-      assert(u.pathname.includes("/zones/2000/instances/"));
+      assert(u.pathname.includes("/zones/" + ZONE + "/instances/"));
       assert(Object.values(VMS).some(vm => u.pathname.includes(vm.instance_id)));
       if (u.pathname.endsWith(":getIamPolicy")) return Promise.resolve(Response.json({ error: { message: "Permission 'iap.tunnelInstances.getIamPolicy' denied: private text" } }, { status: 403 }));
       return Promise.resolve(Response.json({ permissions: [] }));
