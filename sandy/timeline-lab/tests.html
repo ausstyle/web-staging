@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Timeline Lab · Test suite</title><style>body{font:14px/1.5 system-ui,sans-serif;margin:40px auto;max-width:780px;padding:0 20px;color:#26432f;background:#f8faf8}.result{padding:10px;margin:6px 0;background:#fff;border:1px solid #dce7df;border-radius:8px}.fail{border-color:#c76255;color:#9a3a32}.pass{border-left:4px solid #4d9566}a{color:#306d48}button{padding:10px;border:1px solid #cddfcf;border-radius:8px;cursor:pointer;background:white}</style></head><body><h1>Sandy Timeline Lab · Acceptance Tests</h1><p>This page tests the isolated demo scheduling engine only. It does not access live Sandy data.</p><div id="results">Running…</div><button onclick="location.reload()">Run again</button> <a href="./">Back to Timeline Lab</a><script type="module">
+import {seed,ms,HOUR,DAY,duration,byId,move,link,completion,reorder,validateAll,criticalPath,topo,requiredStart} from "./engine.js";
+const out=document.getElementById("results");out.innerHTML="";let passed=0,failed=0;
+const check=(condition,message)=>{if(!condition)throw Error(message||"Assertion failed")};
+const test=(name,fn)=>{const div=document.createElement("div");try{fn();passed++;div.className="result pass";div.textContent="✓ "+name}catch(e){failed++;div.className="result fail";div.textContent="✗ "+name+" — "+e.message}out.append(div)};
+test("Seed graph is valid",()=>check(validateAll(seed()).length===0));
+test("Milestone has exactly zero duration",()=>check(duration(byId(seed(),"E"))===0));
+test("Finish-to-start endpoints are identical",()=>{const s=seed();check(ms(byId(s,"B").end)===ms(byId(s,"C").start))});
+test("Moving predecessor cascades and preserves successor duration",()=>{const s=seed(),c=byId(s,"C"),d=duration(c),b=byId(s,"B"),n=move(s,"B",ms(b.start)+DAY,ms(b.end)+DAY);check(ms(byId(n,"B").end)===ms(byId(n,"C").start));check(duration(byId(n,"C"))===d)});
+test("Downstream chain remains valid after a move",()=>{const s=seed(),b=byId(s,"B"),n=move(s,"B",ms(b.start)+DAY,ms(b.end)+DAY);check(validateAll(n).length===0)});
+test("Completion updates actual end and propagates",()=>{const s=seed(),at=ms(byId(s,"B").end)+HOUR,n=completion(s,"B",at);check(ms(byId(n,"B").end)===at);check(ms(byId(n,"C").start)===at)});
+test("Moving zero-duration milestone does not stretch it",()=>{const s=seed(),t=byId(s,"E"),at=ms(t.start)+HOUR,n=move(s,"E",at,at);check(duration(byId(n,"E"))===0)});
+test("Circular dependencies are rejected",()=>{let rejected=false;try{link(seed(),"F","B")}catch{rejected=true}check(rejected)});
+test("Self-dependency is rejected",()=>{let rejected=false;try{link(seed(),"B","B")}catch{rejected=true}check(rejected)});
+test("Nested task cannot be moved inside descendant",()=>{let rejected=false;try{reorder(seed(),"A","B","inside")}catch{rejected=true}check(rejected)});
+test("Valid reordering succeeds",()=>{const n=reorder(seed(),"B","D","after");check(byId(n,"B").parent===byId(n,"D").parent)});
+test("Four dependency types accepted",()=>{for(const type of ["FS","SS","FF","SF"]){const s=seed(),n=link(s,"L","K",type,0);check(n.dependencies.some(d=>d.from==="L"&&d.to==="K"&&d.type===type))}});
+test("Critical path resolves to valid task IDs",()=>{const s=seed(),cp=criticalPath(s);check(cp.ids.length>0);check(cp.ids.every(id=>byId(s,id)))});
+test("Topological scheduling includes every task",()=>{const s=seed();check(topo(s).length===s.tasks.length)});
+test("No silent twenty-four-hour lag is inserted",()=>{const s=seed();check(requiredStart(s,"C").at===ms(byId(s,"B").end))});
+const headline=document.createElement("h2");headline.textContent=passed+" passed · "+failed+" failed";out.prepend(headline);
+</script></body></html>
