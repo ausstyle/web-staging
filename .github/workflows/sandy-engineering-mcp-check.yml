@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - "services/sandy-engineering-mcp/**"
+      - "supabase/functions/_shared/sandy_mcp_transport.mjs"
+      - "scripts/sandy/sync_mcp_transport.py"
       - ".github/workflows/sandy-engineering-mcp-check.yml"
   workflow_dispatch:
 jobs:
@@ -21,8 +23,10 @@ jobs:
       - name: Verify syntax
         run: node --check src/server.mjs
       - name: Install dependencies
-        run: npm install --ignore-scripts --no-audit --no-fund
+        run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Verify package scripts
         run: npm run check
+      - name: Verify shared transport provenance
+        run: python3 ../../scripts/sandy/sync_mcp_transport.py --check
       - name: Run HTTP authentication smoke tests
-        run: node --test test/server.test.mjs
+        run: npm test

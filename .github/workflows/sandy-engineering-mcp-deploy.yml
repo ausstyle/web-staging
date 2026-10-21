@@ -4,15 +4,19 @@ on:
     branches: [main]
     paths:
       - 'services/sandy-engineering-mcp/**'
+      - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'scripts/sandy/sync_mcp_transport.py'
       - '.github/workflows/sandy-engineering-mcp-deploy.yml'
   pull_request:
     paths:
       - 'services/sandy-engineering-mcp/**'
+      - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'scripts/sandy/sync_mcp_transport.py'
       - '.github/workflows/sandy-engineering-mcp-deploy.yml'
   workflow_dispatch:
     inputs:
       dry_run:
-        description: Validate deployment configuration without changing Google Cloud
+        description: Run source and transport checks without changing Google Cloud
         required: true
         default: true
         type: boolean
@@ -35,8 +39,9 @@ jobs:
         run: |
           set -euo pipefail
           node --check src/server.mjs
-          npm install --ignore-scripts --no-audit --no-fund
-          node --test test/server.test.mjs
+          npm ci --ignore-scripts --no-audit --no-fund
+          python3 ../../scripts/sandy/sync_mcp_transport.py --check
+          npm test
   deploy:
     if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
     needs: verify
@@ -64,16 +69,65 @@ jobs:
           workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
           service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
-      - name: Deploy isolated MCP service to Cloud Run
+      - name: Preserve current revision and deploy a candidate without changing traffic
         env:
           PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/sandy-mcp-release"
+          gcloud run services describe sandy-engineering-mcp \
+            --project "$PROJECT" --region europe-west1 --format=json > "$RUNNER_TEMP/sandy-mcp-before-private.json"
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ['RUNNER_TEMP'])
+          raw = root / 'sandy-mcp-before-private.json'
+          service = json.loads(raw.read_text())
+          status = service.get('status', {})
+          traffic = [{key: row[key] for key in ('revisionName', 'percent', 'tag') if key in row}
+                     for row in status.get('traffic', [])]
+          revisions = []
+          for row in traffic:
+              if row.get('percent', 0) > 0:
+                  revision = row.get('revisionName')
+                  if not revision:
+                      raise RuntimeError('resolved_previous_revision_required')
+                  revisions.append(revision + '=' + str(row['percent']))
+          if not revisions or sum(row.get('percent', 0) for row in traffic) != 100:
+              raise RuntimeError('exact_previous_traffic_required')
+          out = root / 'sandy-mcp-release'
+          (out / 'before.json').write_text(json.dumps({'service': 'sandy-engineering-mcp',
+              'project': os.environ['PROJECT'], 'region': 'europe-west1', 'traffic': traffic,
+              'latestReadyRevisionName': status.get('latestReadyRevisionName'),
+              'source_commit_candidate': os.environ['GITHUB_SHA'], 'environment_values_recorded': False}, indent=2))
+          (out / 'rollback-command.txt').write_text('gcloud run services update-traffic sandy-engineering-mcp '
+              '--project elaborate-haven-511518-a5 --region europe-west1 --to-revisions=' + ','.join(revisions) + ' --quiet\n')
+          raw.unlink()
+          PY
           gcloud run deploy sandy-engineering-mcp \
             --project "$PROJECT" \
             --region europe-west1 \
             --source services/sandy-engineering-mcp \
             --service-account "sandy-mcp-runtime@$PROJECT.iam.gserviceaccount.com" \
-            --allow-unauthenticated \
+            --revision-suffix "api-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" \
+            --no-traffic --tag sandy-api-review \
             --quiet
-          echo "Deployment submitted. Cloud Run IAM, external MCP access and tool authentication require independent verification."
+          gcloud run services describe sandy-engineering-mcp \
+            --project "$PROJECT" --region europe-west1 \
+            --format='json(status.latestCreatedRevisionName,status.latestReadyRevisionName,status.traffic)' \
+            > "$RUNNER_TEMP/sandy-mcp-release/after.json"
+          python3 - <<'PY'
+          import json, os, pathlib
+          root = pathlib.Path(os.environ['RUNNER_TEMP']) / 'sandy-mcp-release'
+          before = json.loads((root / 'before.json').read_text())
+          after = json.loads((root / 'after.json').read_text())['status']
+          def active(rows):
+              return sorted((row['revisionName'], row['percent']) for row in rows if row.get('percent', 0) > 0)
+          if active(before['traffic']) != active(after.get('traffic', [])):
+              raise RuntimeError('production_traffic_changed_requires_recorded_rollback')
+          PY
+          echo "Candidate deployed without changing production traffic or invoker IAM. Authenticated MCP/provider acceptance is required before promotion."
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-mcp-release-${{ github.sha }}
+          path: ${{ runner.temp }}/sandy-mcp-release/

@@ -1,3 +1,5 @@
+import { executionMetadataHeaders as executionHeaders, transportInputSchema, unpackExecution } from "../_shared/sandy_mcp_transport.mjs";
+export { transportInputSchema } from "../_shared/sandy_mcp_transport.mjs";
 /**
  * Sandy MCP is a transport adapter. Sandy API authenticates the caller, filters
  * executable operations, owns their schemas, and dispatches their handlers.
@@ -33,27 +35,6 @@ const json = (data: unknown, status = 200) =>
 const validId = (id: unknown) =>
   id === null || typeof id === "string" ||
   (typeof id === "number" && Number.isFinite(id));
-const uuid = (value: unknown): value is string =>
-  typeof value === "string" &&
-  /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
-function executionHeaders(
-  metadata?: ApiExecutionMetadata,
-): Record<string, string> | null {
-  const headers: Record<string, string> = {};
-  for (
-    const [key, header] of [["approvalId", "x-sandy-approval-id"], [
-      "requestId",
-      "x-sandy-request-id",
-    ]] as const
-  ) {
-    const value = metadata?.[key];
-    if (value !== undefined) {
-      if (!uuid(value)) return null;
-      headers[header] = value;
-    }
-  }
-  return headers;
-}
 async function boundedJson(
   message: Request | Response,
   limit: number,
@@ -129,39 +110,6 @@ function failedResult(value: unknown): boolean {
   if (!isObject(value)) return false;
   if (value.ok === false || value.error != null) return true;
   return isObject(value.result) && failedResult(value.result);
-}
-
-/** A backward-compatible tool envelope lets MCP clients supply per-call
- * approvals without changing connection headers or the Sandy API arguments. */
-export function transportInputSchema(input: JsonObject): JsonObject {
-  const prefix = "#/$defs/sandy_api_arguments";
-  const relocate = (value: unknown): unknown => {
-    if (Array.isArray(value)) return value.map(relocate);
-    if (!isObject(value)) return value;
-    return Object.fromEntries(Object.entries(value).map(([key, child]) => [key,
-      key === "$ref" && typeof child === "string" && child.startsWith("#")
-        ? prefix + child.slice(1) : relocate(child)]));
-  };
-  const metadata = { type: "object", minProperties: 1, additionalProperties: false,
-    properties: { approval_id: { type: "string", format: "uuid" }, request_id: { type: "string", format: "uuid" } } };
-  return { type: "object", $defs: { sandy_api_arguments: relocate(input) }, anyOf: [
-    { $ref: prefix },
-    { type: "object", required: ["__sandy_execution", "arguments"], additionalProperties: false,
-      properties: { __sandy_execution: metadata, arguments: { $ref: prefix } } },
-  ] };
-}
-function unpackExecution(arguments_: JsonObject, header: ApiExecutionMetadata) {
-  if (!Object.hasOwn(arguments_, "__sandy_execution")) return { arguments_, metadata: header };
-  const value = arguments_.__sandy_execution;
-  if (Object.keys(arguments_).length !== 2 || !isObject(arguments_.arguments) || !isObject(value) ||
-    Object.keys(value).length === 0 || Object.keys(value).some(key => !["approval_id", "request_id"].includes(key))) return null;
-  const metadata = { ...header };
-  for (const [field, key] of [["approval_id", "approvalId"], ["request_id", "requestId"]] as const) {
-    if (value[field] === undefined) continue;
-    if (!uuid(value[field]) || (header[key] !== undefined && header[key]!.toLowerCase() !== value[field].toLowerCase())) return null;
-    metadata[key] = value[field];
-  }
-  return { arguments_: arguments_.arguments, metadata };
 }
 
 function discoveryTools(result: JsonObject) {

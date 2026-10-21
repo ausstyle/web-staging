@@ -1,8 +1,11 @@
 # Sandy Engineering MCP
 
-Version 0.2.0 is a thin, stateless adapter to canonical Sandy API. Every authenticated
-request refreshes the caller's API catalogue. Tool discovery uses its exact input
-and output schemas and includes `sandy_catalogue_version` in result metadata.
+Version 0.3.0 is a thin, stateless adapter to canonical Sandy API. Discovery asks
+for a bounded, caller-filtered API catalogue page and forwards `nextCursor`.
+Clients continue `tools/list` with that cursor; a changed catalogue requires a
+restart. A tool call describes its one canonical operation, including tools from
+later pages, rather than downloading the entire catalogue. Input/output schemas
+come from API; discovery includes `sandy_catalogue_version` in result metadata.
 Execution calls only `sandy-operation-api` with `channel:"mcp"`; API owns permissions,
 schema validation, installed handlers and provider execution.
 
@@ -47,6 +50,15 @@ distinct execution and retain it for retries. Sandy API independently binds an
 existing approval to the actual caller, operation, arguments and scope; these
 headers add no permission and do not change the API-derived tool schemas.
 
+Clients can also provide `arguments: {"__sandy_execution":{"approval_id":"UUID",
+"request_id":"UUID"},"arguments":{...API arguments...}}` for an individual call.
+Mutation and grant-requiring tool schemas advertise this envelope alongside
+ordinary arguments. Metadata travels as headers to API; the nested arguments
+remain unchanged. Malformed or conflicting envelope/header IDs fail before
+execution. Local schema references are relocated when wrapping the input. Edge
+MCP and Cloud Run use the same canonical transport module; the isolated Docker
+context receives an exact generated copy checked in CI.
+
 For clients that send a `sandyop_...` or issued `sandy_api_...` key in the bearer header, configure the public
 project anon JWT. The adapter then sends that public JWT as gateway authorization
 and the original opaque key in `x-sandy-api-key`. This transport translation does
@@ -63,16 +75,19 @@ translation. Supabase JWT verification remains enabled at the API gateway. Serve
 HTTPS `POST /mcp` behind the production reverse proxy. `GET /healthz` is liveness
 only and does not attest API or provider access.
 
-From this directory run `npm install --package-lock=false --ignore-scripts`,
-`npm run check`, `npm test`, and `npm start`. Existing dependency ranges remain
-unlocked; perform the container's checks against the resolved versions when
-releasing. Local tests exercise real HTTP/MCP transport against an injected
+From this directory run `npm ci --ignore-scripts`, `npm run check`, `npm test`,
+and `npm start`. CI and Docker use the committed lockfile. Run
+`python3 ../../scripts/sandy/sync_mcp_transport.py --check` to verify the generated
+transport artifact. Local tests exercise real HTTP/MCP transport against an injected
 canonical API fixture, including every alias. They are not deployed user-session
 or provider integration evidence.
 
-This source change does not deploy the Cloud Run service. Before replacing an
-existing instance, verify the canonical operations, compare successful legacy
-envelopes, and run authenticated deployed regressions. Missing model readiness or
+Source/test success does not deploy or verify Cloud Run. The authorized release
+workflow preserves the existing resolved traffic/revision without recording
+environment values and deploys a `sandy-api-review` candidate with no production
+traffic or invoker-IAM change. It records a rollback command and checks that
+existing traffic remains identical. Authenticated candidate MCP/provider tests
+are required before promotion. Missing model readiness or
 canary contracts are explicit compatibility gaps; the adapter does not replace
 them with direct backend calls. The model canary's existing bounded content checks
 do not establish general model quality or authorize routing changes.
