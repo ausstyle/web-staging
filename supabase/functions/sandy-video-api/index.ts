@@ -23,7 +23,7 @@ async function token(identity:string,name:string,room:string) {
 Deno.serve(async(req)=>{
  const origin=req.headers.get("origin")||"";
  if(!ALLOWED.has(origin))return Response.json({error:"origin_not_allowed"},{status:403});
- if(req.method==="OPTIONS")return reply(204,{},origin);
+ if(req.method==="OPTIONS")return new Response(null,{status:204,headers:{"access-control-allow-origin":origin,"access-control-allow-headers":"authorization,content-type","access-control-allow-methods":"POST, OPTIONS","vary":"Origin"}});
  if(req.method!=="POST")return reply(405,{error:"post_required"},origin);
  if(Number(req.headers.get("content-length")||"0")>12000)return reply(413,{error:"request_too_large"},origin);
  if(!ROOT||!SERVICE)return reply(503,{error:"backend_unconfigured"},origin);
