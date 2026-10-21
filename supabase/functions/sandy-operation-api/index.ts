@@ -2,8 +2,7 @@ import {
   createClient,
   type SupabaseClient,
 } from "npm:@supabase/supabase-js@2.57.0";
-import { Ajv } from "npm:ajv@8.17.1";
-import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
+import { createRegistrySchemaValidator } from "./registry_schema_validator.ts";
 import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
@@ -61,6 +60,9 @@ import {
   extensionOwnerOnly,
   extensionOwnsGrant,
   extensionRequiresUserSession,
+  parsePackageRestoreBindings,
+  type ScopeBinding,
+  type TenantConsentDb,
 } from "./installed_extensions.ts";
 import {
   captureLifecyclePreimage,
@@ -133,6 +135,8 @@ export type OperationDependencies = {
   executionPolicy?: boolean;
   catalogueRpc?: boolean;
   providerConfig?: ProviderConfig;
+  packageRestoreBindings?: ScopeBinding[];
+  authenticatedDb?: (userJWT: string) => TenantConsentDb;
   resolveCredential?: (
     request: Request,
     bearer: string,
@@ -336,32 +340,7 @@ const allowedHandlers: Readonly<
 export const installedOperationIds: readonly string[] = Object.freeze(
   Object.keys(allowedHandlers).sort(),
 );
-const ajv = new Ajv({
-  strict: true,
-  strictTypes: false,
-  strictRequired: false,
-  allowUnionTypes: true,
-  allErrors: false,
-  validateFormats: true,
-});
-for (const [name, format] of Object.entries(fullFormats)) {
-  ajv.addFormat(name, format);
-}
-function schemaValid(schema: unknown, value: unknown): boolean | null {
-  if (
-    !isObject(schema) || schema.type !== "object" || schema.$async !== undefined
-  ) return null;
-  try {
-    // No coercion, defaults, remote references, or schema-controlled code execution.
-    // Do not cache arbitrary mutable registry schemas across requests.
-    const validate = ajv.compile(schema);
-    const valid = validate(value);
-    ajv.removeSchema(schema);
-    return valid === true;
-  } catch {
-    return null;
-  }
-}
+const schemaValid = createRegistrySchemaValidator().isValid;
 const registryColumns =
   "operation,domain,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ai_exposed,verified,last_verified_at,error_contract";
 function validOperation(value: unknown): value is string {
@@ -1387,6 +1366,28 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           );
           return applicationResult(operation, response, entry.output_schema);
         }
+        let userDb: TenantConsentDb | undefined;
+        if (kind === "tenant_consent") {
+          if (!anon && !dependencies.authenticatedDb) {
+            return reply(503, {
+              error: "tenant_consent_session_required",
+              executed: false,
+            });
+          }
+          try {
+            userDb = dependencies.authenticatedDb
+              ? dependencies.authenticatedDb(bearer)
+              : createClient(base, anon, {
+                global: { headers: { Authorization: `Bearer ${bearer}` } },
+                auth: { persistSession: false, autoRefreshToken: false },
+              });
+          } catch {
+            return reply(503, {
+              error: "tenant_consent_session_required",
+              executed: false,
+            });
+          }
+        }
         const local = await executeUserExtension(
           {
             base,
@@ -1395,6 +1396,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             principal: customerServicePrincipal,
             fetch: fetchBackend,
             emailConfirmed: !!dispatchUser.email_confirmed_at,
+            ...(userDb ? { userDb } : {}),
           },
           bearer,
           operation,
@@ -2100,6 +2102,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               if (error) throw Error("verified_credential_target_required");
               return data;
             },
+            { restoreBindings: dependencies.packageRestoreBindings },
           )
           : providerOperations[operation]
           ? providerExecutionScope(operation, dependencies.providerConfig)
@@ -2173,6 +2176,9 @@ if (import.meta.main) {
           Deno.env.get("SANDY_GCP_SCOPE_BINDINGS_JSON"),
         ),
       },
+      packageRestoreBindings: parsePackageRestoreBindings(
+        Deno.env.get("SANDY_GITHUB_PACKAGE_RESTORE_BINDINGS_JSON"),
+      ),
     }));
   }
 }

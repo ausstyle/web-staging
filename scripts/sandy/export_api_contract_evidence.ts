@@ -19,6 +19,7 @@ import { orchestrationContracts } from "../../supabase/functions/sandy-orchestra
 import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
 import { databaseOperations } from "../../supabase/functions/sandy-database-operation-api/gateway.ts";
 import { providerOperations } from "../../supabase/functions/sandy-provider-operation-api/gateway.ts";
+import { providerExpansionOperations } from "../../supabase/functions/sandy-provider-operation-api/expansion_gateway.ts";
 import { credentialOperations } from "../../supabase/functions/sandy-credential-lifecycle-api/gateway.ts";
 import { serviceOperations } from "../../supabase/functions/sandy-supabase-service-api/gateway.ts";
 import { tenantConsentOperations } from "../../supabase/functions/sandy-supabase-service-api/tenant_consent.ts";
@@ -171,6 +172,13 @@ add(
   gapGatewayOperations,
   "sandy-provider-gap-api",
   "sandy-provider-gap-api/index.ts",
+);
+add(
+  "provider_constituents",
+  "sandy-provider-operation-api/expansion_gateway_manifest.json",
+  providerExpansionOperations,
+  "sandy-provider-operation-api",
+  "sandy-provider-operation-api/index.ts",
 );
 const rows: Row[] = [];
 for (const group of groups) {

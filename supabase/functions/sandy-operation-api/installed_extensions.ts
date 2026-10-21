@@ -41,6 +41,25 @@ import {
   providerLifecycleContractMatches,
   providerLifecycleContracts,
 } from "./provider_lifecycle.ts";
+import {
+  serviceExecutionScope,
+  serviceOperations,
+} from "../sandy-supabase-service-api/gateway.ts";
+import {
+  executeTenantConsent,
+  type TenantConsentDb,
+  tenantConsentOperations,
+} from "../sandy-supabase-service-api/tenant_consent.ts";
+import {
+  gapExecutionScope,
+  gapGatewayOperations,
+  type ScopeBinding,
+} from "../sandy-provider-gap-api/gateway.ts";
+export {
+  parsePackageRestoreBindings,
+  type ScopeBinding,
+} from "../sandy-provider-gap-api/gateway.ts";
+export type { TenantConsentDb } from "../sandy-supabase-service-api/tenant_consent.ts";
 
 type Obj = Record<string, unknown>;
 export type ExtensionKind =
@@ -51,15 +70,19 @@ export type ExtensionKind =
   | "guest"
   | "database"
   | "credential"
+  | "supabase_service"
+  | "tenant_consent"
+  | "provider_gap"
   | "lifecycle";
 export type ExtensionContract = {
   kind: ExtensionKind;
   handler: string;
   permission_scope: string;
   is_mutation: boolean;
-  input_schema: Obj;
-  output_schema: Obj;
+  input_schema?: Obj;
+  output_schema?: Obj;
   contract_sha256?: string;
+  requires_grant?: boolean;
 };
 const object = (v: unknown): v is Obj =>
   v !== null && typeof v === "object" && !Array.isArray(v);
@@ -67,8 +90,8 @@ const grouped = <
   T extends {
     permission_scope: string;
     is_mutation: boolean;
-    input_schema: Obj;
-    output_schema: Obj;
+    input_schema?: Obj;
+    output_schema?: Obj;
   },
 >(
   records: Readonly<Record<string, T>>,
@@ -98,6 +121,17 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       "sandy-credential-lifecycle-api",
     ),
     ...grouped(providerLifecycleContracts, "lifecycle", "sandy-operation-api"),
+    ...grouped(
+      serviceOperations,
+      "supabase_service",
+      "sandy-supabase-service-api",
+    ),
+    ...grouped(
+      tenantConsentOperations,
+      "tenant_consent",
+      "sandy-operation-api",
+    ),
+    ...grouped(gapGatewayOperations, "provider_gap", "sandy-provider-gap-api"),
   ]));
 export const extensionHandlers = Object.freeze(
   Object.fromEntries(
@@ -109,11 +143,14 @@ export const extensionHandlers = Object.freeze(
 export const extensionKind = (operation: string): ExtensionKind | undefined =>
   extensionContracts[operation]?.kind;
 export const extensionNeedsPortal = (operation: string) =>
-  ["agenda", "memory", "agent"].includes(extensionKind(operation) ?? "");
+  ["agenda", "memory", "agent", "tenant_consent"].includes(
+    extensionKind(operation) ?? "",
+  );
 export const extensionNeedsAgenda = (operation: string) =>
   ["agenda", "customer_key"].includes(extensionKind(operation) ?? "");
 export const extensionOwnsGrant = (operation: string) =>
-  ["guest", "database", "credential"].includes(extensionKind(operation) ?? "");
+  ["guest", "database", "credential", "supabase_service", "provider_gap"]
+    .includes(extensionKind(operation) ?? "");
 export const extensionOwnerOnly = (operation: string) =>
   extensionOwnsGrant(operation) || extensionKind(operation) === "lifecycle" ||
   (extensionKind(operation) === "agent" &&
@@ -133,6 +170,8 @@ export function extensionHasAccess(
       return !!principal.agendaCustomerId && emailConfirmed;
     case "memory":
       return !!principal.portalCustomerId;
+    case "tenant_consent":
+      return !!principal.portalCustomerId && emailConfirmed;
     case "agent":
       return !!principal.portalCustomerId &&
         (!agentOperationContracts[operation].owner_only ||
@@ -141,6 +180,8 @@ export function extensionHasAccess(
     case "database":
     case "credential":
     case "lifecycle":
+    case "supabase_service":
+    case "provider_gap":
       return principal.controllerOwner;
     default:
       return false;
@@ -189,7 +230,10 @@ export function extensionAvailability(
     };
   }
   if (
-    (entry.is_mutation === true || extensionOwnsGrant(operation)) &&
+    (entry.is_mutation === true ||
+      (kind === "provider_gap"
+        ? extensionContracts[operation].requires_grant === true
+        : extensionOwnsGrant(operation))) &&
     entry.verified !== true
   ) {
     return {
@@ -201,7 +245,10 @@ export function extensionAvailability(
   return { executable: true };
 }
 export async function executeUserExtension(
-  deps: CustomerServiceDependencies & { emailConfirmed: boolean },
+  deps: CustomerServiceDependencies & {
+    emailConfirmed: boolean;
+    userDb?: TenantConsentDb;
+  },
   bearer: string,
   operation: string,
   args: unknown,
@@ -213,6 +260,14 @@ export async function executeUserExtension(
       return executeCustomerKeyOperation(deps, bearer, operation, args);
     case "memory":
       return executeMemoryOperation(deps, bearer, operation, args);
+    case "tenant_consent":
+      return deps.userDb
+        ? executeTenantConsent(deps.userDb, operation, args)
+        : Response.json({
+          ok: false,
+          error: "tenant_consent_session_required",
+          executed: false,
+        }, { status: 503, headers: { "cache-control": "no-store" } });
     default:
       return null;
   }
@@ -222,9 +277,14 @@ export async function extensionExecutionScope(
   args: Obj,
   actorId: string,
   getCredentialTarget: (id: unknown) => Promise<unknown>,
+  options?: { restoreBindings?: ScopeBinding[] },
 ): Promise<unknown> {
   const kind = extensionKind(operation);
   if (kind === "database") return databaseExecutionScope(operation);
+  if (kind === "supabase_service") return serviceExecutionScope(operation);
+  if (kind === "provider_gap") {
+    return gapExecutionScope(operation, options?.restoreBindings);
+  }
   if (kind === "guest") {
     return guestOperations[operation].kind === "task_status"
       ? {
