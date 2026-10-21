@@ -69,13 +69,16 @@ async function join(id,isOwner,invite,display_name){
  room=new Room({adaptiveStream:true,dynacast:true});
  room.on(RoomEvent.TrackSubscribed,(track,publication,participant)=>attachTrack(track,participant.identity));
  room.on(RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
- room.on(RoomEvent.ParticipantConnected,p=>{attachParticipant(p);roster()});\n room.on(RoomEvent.ParticipantDisconnected,()=>roster());\n room.on(RoomEvent.DataReceived,(payload,participant)=>{try{const m=JSON.parse(decoder.decode(payload));if(m.type==="chat"&&typeof m.text==="string"&&m.text.length<=1000)message(participant?.name||"Participant",m.text)}catch{}});
+ room.on(RoomEvent.ParticipantConnected,p=>{attachParticipant(p);roster()});
+ room.on(RoomEvent.ParticipantDisconnected,()=>roster());
+ room.on(RoomEvent.DataReceived,(payload,participant)=>{try{const m=JSON.parse(decoder.decode(payload));if(m.type==="chat"&&typeof m.text==="string"&&m.text.length<=1000)message(participant?.name||"Participant",m.text)}catch{}});
  room.on(RoomEvent.Disconnected,()=>{$("callStatus").textContent="Disconnected from meeting"});
  try{
  await room.connect(response.server_url,response.token);
  await room.localParticipant.enableCameraAndMicrophone();
  room.remoteParticipants.forEach(attachParticipant);
- room.localParticipant.trackPublications.forEach(pub=>{if(pub.track)attachTrack(pub.track,room.localParticipant.identity)});\n roster();
+ room.localParticipant.trackPublications.forEach(pub=>{if(pub.track)attachTrack(pub.track,room.localParticipant.identity)});
+ roster();
  $("callStatus").textContent="Connected to Sandy Video";
  }catch(e){$("callStatus").textContent="Connection failed: "+e.message;await leave();throw e;}
 }
