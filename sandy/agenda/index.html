@@ -2178,7 +2178,7 @@ function timelineDrawDependencies(){
  const nodes=new Map(rows.map(r=>[r.dataset.timelineId,r]));
  for(const dep of state.dependencies){
   const a=nodes.get(dep.depends_on_id),b=nodes.get(dep.task_id);
-  const x=a?.querySelector(".ganttBar"),y=b?.querySelector(".ganttBar");
+  const x=a?.querySelector(".ganttBar, .timelineUnscheduledMarker"),y=b?.querySelector(".ganttBar, .timelineUnscheduledMarker");
   if(!x||!y)continue;
   const ar=x.getBoundingClientRect(),br=y.getBoundingClientRect();
   const predecessor=state.tasks.find(t=>t.id===dep.depends_on_id);
@@ -2198,6 +2198,7 @@ function timelineDrawDependencies(){
   path.setAttribute("d",aligned?"M"+sx+","+sy+" V"+ey:"M"+sx+","+sy+" H"+bend+" V"+ey+" H"+(ex-5));
   path.setAttribute("fill","none");path.setAttribute("stroke","#698b78");
   path.setAttribute("stroke-width","1.7");path.setAttribute("opacity",".85");
+  if(!Number.isFinite(finish)||!Number.isFinite(start)){path.setAttribute("stroke-dasharray","5 4");path.setAttribute("opacity",".7")}
   // Retain visible dependency lines while making each connector directly editable.
   const hit=document.createElementNS("http://www.w3.org/2000/svg","path");
   hit.setAttribute("d",path.getAttribute("d"));hit.setAttribute("fill","none");
