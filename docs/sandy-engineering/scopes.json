@@ -121,6 +121,16 @@
       "source_version": "1.0",
       "status": "DRAFT",
       "priority": "P3"
+    },
+    {
+      "scope_id": "SANDY-ENG-0011",
+      "title": "Passive & Active Browser Learning and Verified Skill Execution",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0011-browser-workflow-learning.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P1"
     }
   ]
 }
