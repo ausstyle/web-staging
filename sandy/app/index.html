@@ -146,9 +146,11 @@
  <aside class="sidebar"><a class="logo" href="./">sandy<span>.</span></a>
  <div class="navheading">WORKSPACE</div>
  <button class="nav active" data-view="home"><span class="sym">◫</span> Overview</button>
+ <button class="nav" id="quickSignOut" type="button"><span class="sym">↗</span> Sign out</button>
  <button class="nav" data-view="history"><span class="sym">☰</span> All conversations</button><a class="nav" href="../chat/"><span class="sym">✳</span> Chat with Sandy</a>
  <a class="nav" href="../agenda/"><span class="sym">☑</span> Agenda & tasks</a>
  <a class="nav" href="../calendar/"><span class="sym">▦</span> Calendar</a>
+ <a class="nav" href="../meetings/"><span class="sym">▣</span> Meetings</a>
  <a class="nav" href="../memory/"><span class="sym">◇</span> Memory Centre</a>
  <a class="nav" href="../temporal/"><span class="sym">◷</span> Temporal Review</a>
  <a class="nav" href="../files/"><span class="sym">▤</span> Files</a>
@@ -159,7 +161,7 @@
  <button class="nav" data-channel="voice"><span class="sym">♫</span> Voice transcripts</button><button class="nav" data-channel="web"><span class="sym">✳</span> Web chats</button>
  <div class="sidefoot"><div class="sideuser" id="sideEmail"></div><button class="nav" id="signOut"><span class="sym">↗</span> Sign out</button></div>
  </aside>
- <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm hide" id="addPasskey" type="button">＋ Set up passkey</button><button class="btn sm" id="refresh">↻ Refresh</button></div></div>
+ <main class="main"><div class="topbar"><div><span class="dot"></span> &nbsp; <span id="breadcrumb">YOUR WORKSPACE</span></div><div class="topright"><span class="small">Private · Secure session</span><button class="btn sm hide" id="addPasskey" type="button">＋ Set up passkey</button><button class="btn sm" id="refresh">↻ Refresh</button><button class="btn sm" id="headerSignOut" type="button">↗ Sign out</button></div></div>
  <div id="content" class="content"></div></main>
  <div id="mobileShade" class="mobileShade hide" aria-hidden="true"></div><nav class="mobileNav" aria-label="Mobile primary navigation"><button data-view="home" class="active"><span aria-hidden="true">⌂</span>Home</button><a href="../agenda/"><span aria-hidden="true">☑</span>Tasks</a><a href="../calendar/" aria-label="Calendar"><span aria-hidden="true">▦</span>Calendar</a><button data-channel="email"><span aria-hidden="true">✉</span>Email</button><button id="mobileMenu" type="button" aria-label="Open full navigation" aria-expanded="false"><span aria-hidden="true">☰</span>Menu</button></nav>
 </div>
@@ -454,7 +456,7 @@ async function loadMore(){
 }
 let entering=null;
 async function observeBrowserTimezone(){try{const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone;if(!timezone)return;const {data:{session}}=await sb.auth.getSession();if(!session?.access_token)return;await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-calendar-api",{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"content-type":"application/json"},body:JSON.stringify({action:"timezone_observe",payload:{timezone}}),signal:AbortSignal.timeout(7000)})}catch(e){console.warn("timezone_observation_unavailable",String(e))}}
-async function enter(){if(entering)return entering;entering=(async()=>{if(await idle.check())return;try{const returnPath=new URLSearchParams(location.search).get("return")||sessionStorage.getItem("sandy_agenda_return");if(returnPath&&/^\/web-staging\/sandy\/(?:agenda|chat)\/(?:\?[a-zA-Z0-9=&_-]*)?$/.test(returnPath)){sessionStorage.removeItem("sandy_agenda_return");location.replace(returnPath);return}profile=await call("overview");observeBrowserTimezone();showWorkspace();changeView(view,filter==="all"?undefined:filter,true);await offerPasskeySetup()}catch(e){const {data}=await sb.auth.getSession();if(data?.session){showWorkspace();$("content").replaceChildren(el("div","empty","Signed in successfully, but Sandy could not load your workspace. "+(e.message||"Please try Refresh.")));}else showLogin(e.message||"Authentication failed.")}})();try{return await entering}finally{entering=null}}
+async function enter(){if(entering)return entering;entering=(async()=>{if(await idle.check())return;try{const returnPath=new URLSearchParams(location.search).get("return")||sessionStorage.getItem("sandy_agenda_return");if(returnPath&&/^\/web-staging\/sandy\/(?:agenda|chat|meetings)\/(?:\?[a-zA-Z0-9=&_-]*)?$/.test(returnPath)){sessionStorage.removeItem("sandy_agenda_return");location.replace(returnPath);return}profile=await call("overview");observeBrowserTimezone();showWorkspace();changeView(view,filter==="all"?undefined:filter,true);await offerPasskeySetup()}catch(e){const {data}=await sb.auth.getSession();if(data?.session){showWorkspace();$("content").replaceChildren(el("div","empty","Signed in successfully, but Sandy could not load your workspace. "+(e.message||"Please try Refresh.")));}else showLogin(e.message||"Authentication failed.")}})();try{return await entering}finally{entering=null}}
 async function offerPasskeySetup(){if(!passkeysEnabled||!window.PublicKeyCredential||!sb.auth.registerPasskey)return;const {data:{user}}=await sb.auth.getUser();if(!user)return;const key="sandy_passkey_setup_prompted_"+user.id;if(sessionStorage.getItem(key))return;sessionStorage.setItem(key,"true");try{const {data}=await sb.auth.passkey.list();if(Array.isArray(data)&&data.length){localStorage.setItem("sandy_passkey_enrolled_on_device","true");return}}catch{}if(!confirm("Make next sign-in easier? Set up a passkey using your device or password manager. You can also do this later using Set up passkey."))return;await registerSandyPasskey()}
 async function registerSandyPasskey(){if(!window.PublicKeyCredential||!sb.auth.registerPasskey)throw Error("Your browser does not support passkeys.");const {error}=await sb.auth.registerPasskey();if(error)throw error;localStorage.setItem("sandy_passkey_enrolled_on_device","true");$("addPasskey").textContent="✓ Passkey ready";setLoginPasskeyState()}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>changeView(b.dataset.view)));
@@ -464,7 +466,7 @@ $("mobileMenu").addEventListener("click",()=>{const open=!$("workspace").classLi
 $("mobileShade").addEventListener("click",closeMobileMenu);
 $("workspace").querySelectorAll(".sidebar [data-view],.sidebar [data-channel]").forEach(n=>n.addEventListener("click",closeMobileMenu));
 document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMobileMenu()});
-$("signOut").addEventListener("click",async()=>{await sb.auth.signOut();showLogin("Signed out.");});
+const signOutWorkspace=async()=>{const {error}=await sb.auth.signOut();if(error){alert("Unable to sign out. Please try again.");return;}showLogin("Signed out.");};$("signOut").addEventListener("click",signOutWorkspace);$("headerSignOut").addEventListener("click",signOutWorkspace);$("quickSignOut").addEventListener("click",signOutWorkspace);
 $("addPasskey").addEventListener("click",async()=>{const b=$("addPasskey");b.disabled=true;try{await registerSandyPasskey()}catch(e){alert(e.message||"Passkey setup could not finish.")}finally{b.disabled=false}});
 $("showExistingPasskey").addEventListener("click",()=>{setLoginPasskeyState(true);authStatus("Use this only if you have already created a passkey. Otherwise request an email link first.")});
 $("refresh").addEventListener("click",async()=>{try{profile=await call("overview");changeView(view,filter==="all"?undefined:filter)}catch(e){alert(e.message)}});

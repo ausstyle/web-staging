@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f8faf6">
+<title>Sandy · Timeline Lab</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="app">
+<aside class="rail">
+  <div class="wordmark">sandy<span>.</span></div>
+  <div class="lab-badge">TIMELINE LAB <span>TEST DATA</span></div>
+  <div class="rail-heading">WORKSPACE</div>
+  <button class="rail-link active" data-view="timeline">▤ &nbsp; Timeline</button>
+  <button class="rail-link" data-view="outline">☷ &nbsp; Task outline</button>
+  <button class="rail-link" data-view="network">◇ &nbsp; Dependencies</button>
+  <button class="rail-link" data-view="calendar">▦ &nbsp; Calendar</button>
+  <button class="rail-link" data-view="workload">♙ &nbsp; Workload</button>
+  <button class="rail-link" data-view="activity">◷ &nbsp; Activity</button>
+  <button class="rail-link" data-view="scenarios">◈ &nbsp; Scenarios</button>
+  <div class="rail-bottom">
+    <p>This lab is isolated from Sandy's live tasks, email and calendar. Actions operate on demo data only.</p>
+    <a href="../agenda/?view=timeline">← Return to current Sandy timeline</a>
+  </div>
+</aside>
+<main class="main">
+  <header class="topbar">
+    <div><div class="eyebrow">Sandy / Projects</div><h1>Project timeline <small>Lab preview</small></h1></div>
+    <div class="top-actions">
+      <button id="undo" title="Undo (Ctrl/⌘ Z)">↶ Undo</button><button id="redo" title="Redo">↷ Redo</button>
+      <button id="export">Export ▾</button><button id="reset" class="light">Reset test data</button>
+    </div>
+  </header>
+  <div class="notice"><b>Private test environment:</b> changes remain in this browser's local storage, not Sandy's production database. Email, AI, Mission and calendar integrations are simulated until explicitly connected and verified.</div>
+  <div class="metrics" id="metrics"></div>
+  <section class="content">
+    <div class="content-head">
+      <div><h2 id="viewTitle">Timeline</h2><p id="viewSubtitle">Coordinate tasks, dependencies and milestones.</p></div>
+      <div class="head-controls"><label class="toggle"><input type="checkbox" id="critical" checked> Critical path</label><label class="toggle"><input type="checkbox" id="baseline"> Baseline</label><label class="toggle"><input type="checkbox" id="events"> Events</label></div>
+    </div>
+    <div class="toolbar">
+      <div class="group"><button class="primary" id="newTask">+ Task</button><button id="template">+ Template</button><button id="addLink">⤳ Dependency</button></div>
+      <div class="group"><input type="search" id="search" placeholder="Search tasks" aria-label="Search tasks"><select id="ownerFilter" aria-label="Filter by owner"><option value="">Everyone</option></select></div>
+      <div class="group"><button id="zoomOut" title="Zoom out">−</button><span id="zoomLabel">Week</span><button id="zoomIn" title="Zoom in">+</button><button id="today">Today</button></div>
+    </div>
+    <div class="quick-add"><span>＋</span><input id="quick" placeholder="Add a task, press Enter" aria-label="Quickly add a task"><span class="tip">Drag names to reorder/nest · bars to reschedule · right-click links to edit</span></div>
+    <div id="view" class="view"></div>
+  </section>
+  <section class="assistant-strip">
+    <div class="ask-icon">✳</div>
+    <div class="ask-text"><b>Ask Sandy · Lab commands</b><small>Try “critical path”, “what's blocked?”, or “delay Review pack by 2 days”. This is a demonstration parser, not connected to Sandy AI.</small></div>
+    <form id="askForm"><input id="askInput" placeholder="Ask about or modify this demo schedule…" aria-label="Ask Sandy lab"><button class="primary">Run</button></form>
+  </section>
+</main>
+</div>
+<div id="detail" class="detail hidden" role="dialog" aria-label="Task details"></div>
+<div id="menu" class="context hidden"></div>
+<div id="popover" class="popover hidden" role="dialog" aria-label="Dependency editor"></div>
+<div id="dragBubble" class="drag-bubble hidden" role="status" aria-live="off"></div>
+<div id="toast" class="toast hidden" role="status"></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
