@@ -1,0 +1,125 @@
+{
+  "status": "committed_source_pending_matching_integration_and_deployment",
+  "updated_at_utc": "2026-10-21T04:55:14.315604+00:00",
+  "requirements": [
+    111,
+    112
+  ],
+  "complete_tenant_coverage": false,
+  "new_owner_operations": [
+    "supabase.tenant.financial.export",
+    "supabase.tenant.financial.exports.get",
+    "supabase.tenant.financial.exports.purge"
+  ],
+  "new_actual_customer_operations": [
+    "supabase.tenant.financial.exports.available",
+    "supabase.tenant.financial.exports.download"
+  ],
+  "explicit_financial_projection_tables": 10,
+  "financial_erasure_or_restore_supported": false,
+  "provider_verified": false,
+  "payment_executed": false,
+  "scope_sha256": "bceaaef0ff9b597918fc55ac9658db0b928eaa85739a4ef8435fa7ca10a9085d",
+  "manifest_sha256": "ccac4b06066c1f9ed0613d47e00e6abc85075063a29ce26f9b82f11fe43eaeb1",
+  "schema_sha256": "ac5691a58acaf456d1490c0ea45f0f1bd8ce1ae37592f8574da1388cac336380",
+  "validation": {
+    "deno_passed": 6,
+    "native_database_checks": 19,
+    "governed_database_checks": 20,
+    "combined_database_checks": 175,
+    "full_rollback_http": 201,
+    "synthetic_auth_rows_after_rollback": 0,
+    "new_functions_and_contracts_absent_after_rollback": true,
+    "financial_production_rows_changed": false,
+    "real_auth_session_tested": false,
+    "real_owner_approval_tested": false,
+    "provider_called": false
+  },
+  "combined_components": [
+    {
+      "path": "supabase/functions/sandy-supabase-service-api/component_test.sql",
+      "checks": 24,
+      "source_sha256": "88c09e39c9a260ad5d7f9b0b8464a58e051f5eb4190ad684b1738766b697b247"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/component_test.sql",
+      "checks": 25,
+      "source_sha256": "1563414eecbcdf32f68d97ca7bfb5d3abfb60fbf0c6c19304aef10e9c2566124"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/scalar_component_test.sql",
+      "checks": 26,
+      "source_sha256": "61da52c6232efa91dffccaf360710c0f9a6ce11a0deb6e6425dfe23c22af09bd"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/content_component_test.sql",
+      "checks": 36,
+      "source_sha256": "56f8e4ad41f3082ba2be6c80699544d7836243d222aeb01ac0d51faa08faae0e"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/support_recovery_boundary_component_test.sql",
+      "checks": 16,
+      "source_sha256": "34de8d6238ad09418b25a343ea5867c0e5d5d91ef4a8b5018cff448c333aae9a"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/financial_capture_component_test.sql",
+      "checks": 19,
+      "source_sha256": "42114bd6b5b13f01bbdb38ef07339f08eed3e4a03667ed0111f36be5a7a605d6"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/financial_boundary_component_test.sql",
+      "checks": 20,
+      "source_sha256": "15b84f78bb7b8bf628a87ce4402fff80a2405e68a207e1dfe2c93b08e3d447a2"
+    },
+    {
+      "path": "supabase/functions/sandy-tenant-lifecycle-api/consent_financial_component_test.sql",
+      "checks": 9,
+      "source_sha256": "91349371b1b94a72cb449c621ebf665e24e28aecbe31bb6fcfa58c0a172a31c2"
+    }
+  ],
+  "commerce_author_review": {
+    "reviewer": "customer_release_review",
+    "scope": [
+      "financial_manifest.json",
+      "20261021007280_sandy_tenant_financial_capture.sql"
+    ],
+    "status": "pass",
+    "notes": "All10 explicit owner/projection, line/account/reversal/reconciliation/source-email checks, precision/nonfinite and strict JSON gates; historical matches remain unverified internal evidence. Proposed09120 changes output contracts only, no data schema."
+  },
+  "limits": {
+    "fragment_characters": 65536,
+    "maximum_row_bytes": 16777216,
+    "maximum_total_plaintext_bytes": 134217728,
+    "maximum_fragments": 2048,
+    "maximum_rows_per_table": 50000
+  },
+  "evidence_artifacts": [
+    "tenant-financial-capture-rollback.json",
+    "tenant-financial-boundary-rollback.json",
+    "tenant-financial-all-regression-rollback.json",
+    "tenant-financial-post-rollback.json"
+  ],
+  "remaining_independent_engineering": [
+    "Review, integrate and deploy these5 closed operations through Sandy API/MCP and record truthful registry evidence",
+    "Parent tasks/missions and memory forget/rejection fence-preserving erasure/restore adapters",
+    "Operation-specific product/commerce result/evidence redaction and retention",
+    "Other direct and indirect customer content adapters",
+    "Financial erase/restore requires a dedicated retention policy and source-specific controls; no generic history, numbering, consent or entitlement replay"
+  ],
+  "external_dependencies_separate": [
+    "Runtime project-host egress",
+    "Genuine Controller/customer Auth session for real API transport integration",
+    "Provider Custom Domain entitlement"
+  ],
+  "source_commit": "1794858e5f932d9a732097139532481c738b38e6",
+  "independent_peer_review": {
+    "reviewer": "gateway_release",
+    "status": "pass",
+    "frozen_source_hashes_matched": 16,
+    "deno_passed": 23,
+    "actual_database_full_rollback_http": 201,
+    "differential_prior_vs_shared_content_capture": "All20 complete fragment streams exactly equal with populated product/indirect projections and3.2MiBUnicode",
+    "report": "tenant-financial-export-gateway-peer-review.json",
+    "provider_or_auth_session_tested": false
+  }
+}
