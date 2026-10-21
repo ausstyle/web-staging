@@ -4,7 +4,7 @@
   "scopes": [
     {
       "scope_id": "SANDY-MASTER-1",
-      "title": "Sandy AI Master Software Scope v1.0",
+      "title": "Sandy AI Master Software Scope v1.1",
       "scope_kind": "master",
       "parent_scope_id": null,
       "path": "docs/sandy-engineering/master-scope-v1.md",
@@ -28,7 +28,7 @@
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0001-runtime-reasoning-reliability.md",
-      "source_version": "1.0",
+      "source_version": "1.1",
       "status": "DRAFT",
       "priority": "P0"
     },
@@ -38,9 +38,89 @@
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0002-always-on-autonomy-dots-parity.md",
+      "source_version": "1.1",
+      "status": "DRAFT",
+      "priority": "P1"
+    },
+    {
+      "scope_id": "SANDY-ENG-0003",
+      "title": "Unified Executive Orchestrator",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0003-unified-executive-orchestrator.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P0"
+    },
+    {
+      "scope_id": "SANDY-ENG-0004",
+      "title": "Durable Missions, Commitments and Truth Engine",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0004-durable-missions-truth-engine.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P0"
+    },
+    {
+      "scope_id": "SANDY-ENG-0005",
+      "title": "Sandy API, MCP and Engineering Delivery Completion",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0005-api-mcp-engineering-delivery.md",
       "source_version": "1.0",
       "status": "DRAFT",
       "priority": "P1"
+    },
+    {
+      "scope_id": "SANDY-ENG-0006",
+      "title": "Memory, Context Intelligence and World Model",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0006-memory-world-model.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P1"
+    },
+    {
+      "scope_id": "SANDY-ENG-0007",
+      "title": "Automatic Two-Way Calendar Synchronization",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0007-calendar-two-way-sync.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0008",
+      "title": "Video Conferencing and LiveKit Delivery",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0008-video-conferencing-livekit.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0009",
+      "title": "Customer Experience, Portal and Controller",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0009-customer-experience-portal.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0010",
+      "title": "Commercial Infrastructure and Production Readiness",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0010-commercial-infrastructure-readiness.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P3"
     }
   ]
 }

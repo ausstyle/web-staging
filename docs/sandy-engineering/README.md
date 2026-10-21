@@ -1,45 +1,46 @@
 # Sandy Engineering — specification hierarchy and task scopes
 
-## Source of truth
+## Start here
 
-1. **Master Software Scope** — Sandy's governing target architecture and acceptance standards, version 1.0 dated 19 October 2026. The original owner-provided Word document is **Sandy_AI_Master_Software_Scope_v1(1).docx**. A [full searchable text extraction](master-scope-v1.md) is published for Codex; the original DOCX remains the archival source. See [master-scope-reference.md](master-scope-reference.md) for a navigable section index.
-2. **API implementation specification** — [../sandy-api/api-scope-161.md](../sandy-api/api-scope-161.md), subordinate to the Master Scope. The original DOCX/PDF source should be attached as the governing archive.
-3. **Subtask engineering scopes** — one numbered specification per engineering objective in [tasks/](tasks/), written using [templates/engineering-task-scope.md](templates/engineering-task-scope.md).
-4. **Live capabilities and verification** — Supabase project `zmqlyygzqoidkcwdysok`, `public.sandy_operation_registry`. Registered does not mean executable, and deployed does not mean tested.
+The governing target is **Master Software Scope v1.1**: the original v1.0 baseline plus section 22, Amendment A. The stable filename remains `master-scope-v1.md`.
 
-## Governance
+Read the [implementation program and ten-scope index](implementation-program.md), then [shared architecture contracts](architecture-contracts.md) and the relevant numbered task. **P0 is Sandy chat reasoning and runtime reliability**, not growing the API operation count. Eight detailed implementation scopes, 0003–0010, now complement 0001 and 0002 with explicit ownership, dependencies, API contracts, tests and recovery requirements.
 
-- Master Scope takes precedence for mission, behavior, security, runtime, product requirements and architecture.
-- Detailed API spec defines provider-operation contracts; task scopes refine, but cannot silently override, higher-level requirements.
-- GitHub holds approved, version-controlled specifications; Supabase holds a searchable catalogue, status, references and evidence. Do not duplicate full mutable document contents in two locations.
-- Every task references specific Master Scope sections, API requirement numbers, previous related changes, source paths, environments, dependencies, risks, acceptance criteria, tests and actual deployed release.
-- Any conflict must be recorded as an architecture decision with owner approval.
-- Do not change or mark master requirements completed simply because a task's PR is merged.
-- Codex, Sandy agents and ChatGPT should first read this file and the relevant linked task spec before acting.
+## Sources of truth
+
+1. **Master Software Scope** — [full searchable text with v1.1 amendment](master-scope-v1.md), governing mission, architecture, safety and acceptance. The original owner-supplied `Sandy_AI_Master_Software_Scope_v1(1).docx` is the archival v1.0 source; it is not a regenerated v1.1 Word file. See [section index](master-scope-reference.md).
+2. **API specification** — [161 requirement families](../sandy-api/api-scope-161.md), subordinate to the Master Scope. Families expand into concrete actions; registry totals are not requirement completion counts.
+3. **Engineering implementation program** — [program/dependencies](implementation-program.md), [shared contracts](architecture-contracts.md) and one numbered [task scope](tasks/) per objective. Supporting files refine the Master Scope; they do not silently override it.
+4. **Live implementation and evidence** — Supabase project `zmqlyygzqoidkcwdysok`, `public.sandy_operation_registry`, release records and real provider/customer acceptance evidence.
+
+## Governance and ownership
+
+GitHub holds version-controlled requirements. Supabase holds searchable references, source hashes, status metadata and linked operational evidence. Do not edit the same document independently in both locations. Preserve existing customer state and working services; map existing implementation before adding tables, runtimes or queues.
+
+0001 owns runtime-quality acceptance; 0003 the orchestrator; 0004 durability/truth; 0005 API/MCP and release control; 0006 knowledge; 0007 calendar; 0008 video; 0009 UI; 0010 commercial readiness. 0002 coordinates autonomy and owns bounded computer/proactive work. The [ownership map](architecture-contracts.md) prevents duplicate implementations.
+
+Each substantial task references Master sections, API requirements, existing source/deployed state, dependencies, risks, acceptance IDs, migrations/releases and evidence. Use the [task scope template](templates/engineering-task-scope.md) and [acceptance evidence template](templates/acceptance-evidence.md). Any architectural deviation requires an ADR and the applicable owner review. Do not change master completion status because a task PR is merged.
 
 ## Lifecycle
 
-`DRAFT → REVIEWED → APPROVED → IMPLEMENTING → TESTING → DEPLOYED → VERIFIED → CLOSED`; optional `BLOCKED` with precise reason. State must reflect evidence, not intent.
+`DRAFT → REVIEWED → APPROVED → IMPLEMENTING → TESTING → DEPLOYED → VERIFIED → CLOSED`, with explicit `BLOCKED` and precise reason as needed. These are engineering workflow states, not proof from document publication. A scope may contain independently accepted slices while the overall scope remains incomplete; record both accurately.
 
-Task ID format: `SANDY-ENG-0001` etc. Store as `tasks/SANDY-ENG-0001-slug.md`. One owner, one canonical document and source-control history per task.
-
-## Initial priorities
-
-P0: Chat/agent runtime reasoning reliability and accurate tool execution. P1: MCP/API engineering delivery, automatic two-way calendar sync, video infrastructure once remote execution works. Treat priorities as adjustable by product owner.
-
-## Supabase catalogue
-
-Use `public.sandy_engineering_scope_catalogue` to discover document locations, versions, hierarchy and delivery status. Application clients must access it through authenticated Sandy API with tenant and engineering permissions; no anonymous direct table exposure.
+Task IDs are `SANDY-ENG-0001` etc., with one canonical file in `tasks/`. New IDs and document metadata are added to `scopes.json`. Scope 0005's engineering foundations and scope 0006's context foundations support P0 even though their full programs are P1. Calendar/video are P2; safety and tenant isolation are never deferred to P3 commercial launch.
 
 ## Automatic GitHub → Supabase synchronization
 
-The source for every specification is a GitHub file. The machine-readable document index is [scopes.json](scopes.json). Whenever `main` changes a scope, the [Sandy scope sync workflow](../../.github/workflows/sandy-scope-sync.yml) runs and authenticates with a **short-lived GitHub Actions OIDC token** to the deployed `sandy-engineering-scope-sync` Supabase Edge Function. It also runs daily and can be manually dispatched to repair missed push events. No permanent GitHub-to-Supabase API key is required.
+The source for every specification is a GitHub file. The machine-readable index is [scopes.json](scopes.json). Changes on `main` under the scope directories trigger the existing [scope sync workflow](../../.github/workflows/sandy-scope-sync.yml). It uses a short-lived GitHub Actions OIDC identity to invoke `sandy-engineering-scope-sync`; it also has a daily reconciliation schedule and manual dispatch.
 
-The sync function verifies the exact GitHub repository, branch and workflow, reads `scopes.json` and each referenced Markdown file at the immutable commit SHA, computes a SHA-256 content hash and upserts metadata in `public.sandy_engineering_scope_catalogue`. It records success/failure in `public.sandy_engineering_scope_sync_runs`. Existing verification evidence is preserved.
+The service verifies its allowed workflow identity, reads the manifest and each referenced Markdown at an immutable commit, computes content hashes and updates `public.sandy_engineering_scope_catalogue`. It records runs in `public.sandy_engineering_scope_sync_runs`. Metadata/source synchronization does not deploy the architecture or certify an API operation. Existing implementation evidence must be preserved.
 
-**To change a document:** edit the Markdown in GitHub, update `scopes.json` when adding/removing/renaming a scope or changing its title, priority, hierarchy or status, merge to `main`, and check the sync workflow plus the database `last_synced_at` and `source_commit_sha`. Merely changing a Markdown document triggers a sync and new content hash even if its manifest metadata is unchanged.
+To change a scope, edit its Markdown; update the manifest for a version/title/priority/status/path/hierarchy change; commit/merge to main; inspect the workflow and the catalogue's source commit/hash/time. The source_version must match the document's engineering version. A filename need not change for a new version. Supporting architecture/program/template files are resolved at the same pinned commit for reproducibility.
 
-**Authoritative source:** GitHub is authoritative for document text and source metadata; Supabase stores discovery data, linked records and verified operational evidence. There is no two-way document editing or automatic Supabase → GitHub document write. Manual updates to synchronized catalogue fields may be overwritten by the next GitHub sync. A missing file causes the sync to fail visibly; it never silently marks a document as synchronized. Omission from the manifest does not erase historical records.
+GitHub is the one-way authority for document content/metadata; Supabase is not a parallel editor. Missing sources must fail visibly. Omission from the manifest is not silent deletion of historical records. Stale/out-of-order commits must not overwrite newer accepted state; inspect and log sync defects rather than masking them with manual catalogue edits.
 
-**Runtime access:** `sandy-engineering-scope-api` provides authenticated list/detail discovery to Controller operators and trusted Sandy services; clients must not query this administrative table anonymously. An authenticated end-to-end user-session test is still required before claiming availability via every Sandy channel.
+## Runtime access
 
+`sandy-engineering-scope-api` supplies authenticated scope discovery for eligible Controller operators and trusted services; ordinary users must not receive privileged engineering information via anonymous direct tables. A database catalogue entry is not proof that every Sandy channel reads it correctly. Scope retrieval, API/MCP exposure and agent usage each need their own real integration evidence under 0005/0003.
+
+## Immediate Codex work
+
+Follow [AGENTS.md](../../AGENTS.md). Reproduce the 0001 failure cohort and implement the minimum 0003/0004/0005/0006 slices needed for accurate, contextual, truthful chat. Reuse verified work, commit source, stage/canary and record real outcomes. Do not start an unrelated frontend rebuild or wait for all provider families before fixing current runtime defects.
