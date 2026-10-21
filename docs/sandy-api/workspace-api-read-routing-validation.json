@@ -1,19 +1,19 @@
 {
   "reviewer": "auth_storage_scope",
-  "reviewed_at": "2026-10-21T04:19:29.130048+00:00",
+  "reviewed_at": "2026-10-21T04:28:34.936415+00:00",
   "status": "pass",
   "files": [
     {
       "path": "sandy/workspace-api-reads.mjs",
-      "sha256": "2d928375d40a98e11cca84d12db2b5e292c57445a353a73fb58ba2198d8c0a22"
+      "sha256": "f91eba0e1c432fa16e16b98db44615aeffe7c21ae80e5ebc6ee98205e7ec60c3"
     },
     {
       "path": "sandy/app/index.html",
-      "sha256": "0f0fd2f33b5d462de15cae2ceaaae489389d8d6ede027c9de359c59936e9d23a"
+      "sha256": "7ffacffa46f66cc572a4b3cb44e5c32fcf6d8fcede9e68719892a7613835a4ed"
     },
     {
       "path": "scripts/sandy/workspace_api_reads_test.mjs",
-      "sha256": "faad2ad090854a451b21b54a01d271e5264ee76e2e3cf964cf592b4de083e2c2"
+      "sha256": "96a2f52514fe525129039fbc610d333105067d8b7687ab5d8fca7cc01f055888"
     }
   ],
   "findings": [],
@@ -43,7 +43,8 @@
     "Actual customer browser session integration not performed; source/component evidence only",
     "Static-site publication remains root-owned and is not implied by this review"
   ],
-  "source_commit": "7cecf00",
+  "followup": "Optional existing public project apikey header is supplied from the same sandyPublicKey variable as browser SDK; Authorization remains actual userJWT. No credential values recorded. Independent Node5 rerunpass, existing executorDeno9 evidence unchanged.",
+  "source_commit_predecessor": "7cecf00",
   "deployed": false,
   "publication_dependency": "GitHub write authentication"
 }

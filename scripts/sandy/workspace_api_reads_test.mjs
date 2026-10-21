@@ -7,6 +7,7 @@ const ok = (operation, result = {}) => Response.json({ ok: true, operation, exec
 test("all five passive UI actions execute fixed API operations with the real session", async () => {
   const calls = [];
   const client = createWorkspaceReadClient({ getSession: async () => session("user-session") }, {
+    publicKey: "sb_publishable_fixture",
     request: async (url, init) => { const body = JSON.parse(init.body); calls.push({ url, init, body }); return ok(body.operation, { name: "Fixture" }); },
   });
   for (const [action, operation] of Object.entries(workspaceReadOperations)) {
@@ -15,6 +16,7 @@ test("all five passive UI actions execute fixed API operations with the real ses
     const { url, init, body } = calls.at(-1);
     assert.equal(url, "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-operation-api");
     assert.equal(init.headers.Authorization, "Bearer user-session");
+    assert.equal(init.headers.apikey, "sb_publishable_fixture");
     assert.equal(init.cache, "no-store");
     assert.equal(body.operation, operation);
     assert.equal(body.channel, "api");

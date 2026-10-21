@@ -9,7 +9,7 @@ export const workspaceReadOperations = Object.freeze({
   mission_overview: "workspace.missions.list",
 });
 const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
-export function createWorkspaceReadClient(auth, { request = fetch, onSessionExpired = () => {} } = {}) {
+export function createWorkspaceReadClient(auth, { request = fetch, publicKey, onSessionExpired = () => {} } = {}) {
   const handles = action => Object.hasOwn(workspaceReadOperations, action);
   return Object.freeze({
     handles,
@@ -30,7 +30,8 @@ export function createWorkspaceReadClient(auth, { request = fetch, onSessionExpi
       if (!token) throw expired();
       const send = () => request(endpoint, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
+        headers: { "Content-Type": "application/json", Authorization: "Bearer " + token,
+          ...(publicKey ? { apikey: publicKey } : {}) },
         body: JSON.stringify({ action: "execute", operation, arguments: args, channel: "api" }),
         cache: "no-store",
       });
