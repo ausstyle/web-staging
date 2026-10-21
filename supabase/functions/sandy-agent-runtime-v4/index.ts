@@ -52,7 +52,7 @@ Deno.serve(async req=>{
  // Identity is established by the authenticated automation caller, never inferred from prompt.
  const {data:channelCapabilities,error:capabilityError}=await db.from("sandy_channel_capabilities").select("capability,state,requires_consent,constraints").eq("channel",channel);
  const effectiveChannelCapabilities=capabilityError?[]:(channelCapabilities||[]);
- const runtimeIdentity=executingBuild("sandy-agent-runtime-v2",Deno.env.get("DENO_DEPLOYMENT_ID")||"");
+ const runtimeIdentity=executingBuild("sandy-agent-runtime-v4",Deno.env.get("DENO_DEPLOYMENT_ID")||"");
  const {data:existing,error:reserved}=await db.from("sandy_agent_tasks").insert({channel,request_id:requestId,customer_id:customerId,user_request:prompt,status:"queued",plan:{runtime_identity:runtimeIdentity}}).select("id").maybeSingle();
  if(reserved?.code==="23505")return json(409,{error:"duplicate request_id"});
  if(reserved||!existing)return json(500,{error:"task reservation failed",code:reserved?.code});
@@ -65,7 +65,7 @@ Deno.serve(async req=>{
  if(customerId&&["web","whatsapp","email","voice"].includes(channel)){
    const {error:eventError}=await db.from("sandy_universal_message_events").upsert({
      customer_id:customerId,channel,direction:"inbound",provider_message_id:requestId,
-     content_ref:"sandy_agent_tasks:"+id,capabilities_snapshot:{policy:"sandy_conversation_policy",runtime:"v2"}
+     content_ref:"sandy_agent_tasks:"+id,capabilities_snapshot:{policy:"sandy_conversation_policy",runtime:"v4"}
    },{onConflict:"channel,provider_message_id",ignoreDuplicates:true});
    if(eventError)console.error("universal_message_event",eventError.code);
  }
