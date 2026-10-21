@@ -171,7 +171,34 @@ unchanged runtime sections, the two exact common extracted sections, and three
 exact dependencies. Migration `10030` is unchanged; no additional database
 migration or repeated PostgreSQL component run is needed for these dependencies.
 
-Other internal workers, connection preflight and existing UI endpoints remain
-distinct migration work. Source
+The connection preflight is now a separate internal versioned contract,
+`agent.runtime.connections.preflight@1.0.0`, through the same central audit
+executor. Its private capability binds the actual task/customer/channel/request;
+all three runtime adapters preserve their original intent, feature and version
+gates, response text, trace and optional existing diagnosis secret. The contract
+is explicitly a sensitive mutation that can consume model resources through
+that diagnosis workflow; API/UI/AI/verified flags remain false in migration
+`10040`. Public customer sessions cannot invoke it and the public catalogue
+remains eight operations.
+
+A complete, bounded, structurally valid Composio page must bind every unique
+account to the actual customer. Malformed, foreign or paginated 2xx results are
+unavailable and cannot authorize a discrepancy finding or diagnosis. The prior
+implementation treated a malformed `{}` result as a confirmed empty page; that
+false-proof path is closed. A confirmed mismatch records a scoped finding and
+may schedule the same fixed private diagnosis request; it never repairs a
+connection or claims diagnosis completion. A stable task-step audit prevents
+repeat dispatch, including after a lost final receipt. The composed regression
+suite passes 82 tests, and all three handlers type-check. Registry metadata
+passed eight actual PostgreSQL checks in a full rollback (HTTP 201; migration
+SHA-256 `1d5594c791d02557c2a85ecb0b6458bceebc0431ffd147f2a77a7c33efbcea08`).
+The first rollback fixture used an unavailable PostgreSQL helper; correcting
+that fixture required no migration change. No real provider, diagnosis or
+customer execution occurred in these component tests. Source guards preserve
+all 18 unchanged boundaries, including each original fast-path gate, plus the
+two exact shared snapshot/model sections and three archived dependencies.
+Deployment and source readback remain pending for this candidate.
+
+Other internal workers and existing UI endpoints remain distinct migration work. Source
 extraction does not establish universal production routing or verified customer
 or provider operations.

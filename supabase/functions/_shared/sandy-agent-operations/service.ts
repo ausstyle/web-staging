@@ -7,6 +7,9 @@ import { runtimeRecordOperation } from "./runtime_records.ts";
 import { runtimeOperationalContract, validRuntimeOperationalInput, validRuntimeOperationalOutput } from "./runtime_operational_contracts.ts";
 import { runtimeOperationalOperation, type RuntimeOperationalContext } from "./runtime_operational.ts";
 
+import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName, validRuntimeConnectionPreflightInput, validRuntimeConnectionPreflightOutput } from "./runtime_connection_preflight_contract.ts";
+import { runtimeConnectionPreflightOperation, type RuntimeConnectionPreflight } from "./runtime_connection_preflight.ts";
+
 type Obj = Record<string, any>;
 export type AgentServices = {
   db: AgentDb;
@@ -17,6 +20,9 @@ export type AgentServices = {
   fetch?: typeof fetch;
   legacyRuntimeProfile?: LegacyRuntimeProfile;
   runtimeContext?: RuntimeOperationalContext;
+  connectionPreflight?: RuntimeConnectionPreflight;
+  autoImproveKey?: string;
+  defer?: (promise: Promise<unknown>) => void;
 };
 export type AgentOutcome = { status: number; body: Obj; legacy: Obj };
 const object = (x: unknown): x is Obj => x !== null && typeof x === "object" && !Array.isArray(x);
@@ -131,6 +137,10 @@ async function recentGmail(ctx: AgentPrincipal, limit: number, deps: AgentServic
 }
 async function rawOperation(ctx: AgentPrincipal, operation: string, args: Obj, deps: AgentServices): Promise<Obj> {
   const { db } = deps;
+  if (operation === runtimeConnectionPreflightOperationName) return await runtimeConnectionPreflightOperation(ctx, deps.connectionPreflight, {
+    db, base: deps.base, composioKey: deps.composioKey, autoImproveKey: deps.autoImproveKey || "", request: deps.fetch ?? fetch,
+    defer: deps.defer ?? (() => { throw Error("runtime_defer_required"); }),
+  });
   if (runtimeOperationalContract(operation)) return await runtimeOperationalOperation(ctx, operation, db, deps.runtimeContext);
   if (internalRuntimeRecordContracts[operation]) return await runtimeRecordOperation(ctx, operation, args, db);
   if (operation === "gmail.drafts.prepare") return await prepareConnectedGmail(db, ctx.customerId, args);
@@ -225,12 +235,13 @@ export async function executeAgentOperation(
     return refused(403, "runtime_transport_profile_denied");
   const record = internalRuntimeRecordContracts[operation];
   const operational = runtimeOperationalContract(operation);
-  const internal = record || operational;
+  const preflight = operation === runtimeConnectionPreflightOperationName ? runtimeConnectionPreflightContract : null;
+  const internal = record || operational || preflight;
   const contract = agentOperationContracts[operation] || internal;
   if (!contract) return refused(404, "agent_operation_not_supported");
   if (internal && context.kind !== "trusted_runtime") return refused(403, "trusted_runtime_customer_task_required");
-  const validInput = record ? validRuntimeRecordInput : operational ? validRuntimeOperationalInput : validAgentInput;
-  const validOutput = record ? validRuntimeRecordOutput : operational ? validRuntimeOperationalOutput : validAgentOutput;
+  const validInput = record ? validRuntimeRecordInput : operational ? validRuntimeOperationalInput : preflight ? validRuntimeConnectionPreflightInput : validAgentInput;
+  const validOutput = record ? validRuntimeRecordOutput : operational ? validRuntimeOperationalOutput : preflight ? validRuntimeConnectionPreflightOutput : validAgentOutput;
   if (!validInput(operation, args)) return refused(400, "invalid_agent_arguments");
   if (contract.owner_only && context.kind === "auth_user" && !context.controllerOwner)
     return refused(403, "controller_owner_required");
@@ -293,7 +304,7 @@ export async function executeRuntimeOperation(
 ): Promise<Obj> {
   if (!context || context.kind !== "trusted_runtime") return failure("runtime_customer_binding_required");
   const input = { ...args };
-  if (["gmail.drafts.prepare", "agent.web.research", "agent.documents.search", "agent.execution_plan.draft"].includes(operation) || internalRuntimeRecordContracts[operation]?.is_mutation)
+  if (["gmail.drafts.prepare", "agent.web.research", "agent.documents.search", "agent.execution_plan.draft"].includes(operation) || internalRuntimeRecordContracts[operation]?.is_mutation || operation === runtimeConnectionPreflightOperationName)
     input.idempotency_key = "runtime:" + context.taskId + ":" + (await digest(step)).slice(0, 40);
   const outcome = await executeAgentOperation(context, operation, input, deps);
   return outcome.legacy;

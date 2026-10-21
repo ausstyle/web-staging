@@ -5,9 +5,7 @@
   "historical_snapshot": "2026-10-20T18:36:33.784802+00:00",
   "current_numeric_versions_not_attested_by_this_report": true,
   "universal_production_routing_operational": false,
-  "remaining_runtime_branches": [
-    "connected-account provider preflight/status reconciliation and auto-improve dispatch"
-  ],
+  "remaining_runtime_branches": [],
   "functions": [
     {
       "slug": "sandy-controller-api",
@@ -271,5 +269,15 @@
     ],
     "closed_operational_contracts": 6,
     "shared_snapshot_and_model_policy_dependencies": true
+  },
+  "runtime_preflight_candidate": {
+    "operation": "agent.runtime.connections.preflight",
+    "version": "1.0.0",
+    "deployed": false,
+    "private_capability_only": true,
+    "actual_provider_execution_tested": false,
+    "mutation": true,
+    "consumes_model_resources": true,
+    "legacy_auto_improve_worker_not_yet_extracted": true
   }
 }

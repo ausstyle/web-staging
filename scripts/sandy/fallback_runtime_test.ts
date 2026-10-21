@@ -8,6 +8,8 @@ import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared
 import { createAgentOperationHandler } from "../../supabase/functions/sandy-agent-operation-api/index.ts";
 import { bindRuntimeOperationalContext, type RuntimeOperationalFacts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational.ts";
 import { internalRuntimeOperationalContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_operational_contracts.ts";
+import { bindRuntimeConnectionPreflight } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight.ts";
+import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts";
 import { collectRuntimeSnapshot } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_snapshot.ts";
 import { selectRuntimeModel } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_model_policy.ts";
 
@@ -24,6 +26,8 @@ const fixtures = {
   OPENAI_API_KEY: "fixture-runtime-openai-credential",
   COMPOSIO_API_KEY: "fixture-runtime-composio-credential",
   SANDY_INTEGRATION_API_TOKEN: "fixture-runtime-broker-credential",
+  SANDY_AUTO_IMPROVE_KEY: "",
+  EMAIL_AI_INTERNAL_KEY: "",
   DENO_DEPLOYMENT_ID: "test-unverified-build",
 };
 const slugs = ["sandy-agent-runtime-v2", "sandy-agent-runtime-v1-backup-r50", "sandy-agent-runtime-v4"];
@@ -31,6 +35,8 @@ type Obj = Record<string, any>;
 class Database {
   serial = 0;
   bindForeignTask = false;
+  failAgentAudit = false;
+  failAgentCompletion = false;
   failConversationAudit = false;
   failConversationCompletion = false;
   loseTaskWriteResponse = false;
@@ -59,6 +65,7 @@ class Database {
       this.queries.push({ table, filters: structuredClone(recorded) });
       const rows = this.tables[table] ??= [];
       if (mode === "insert" || mode === "upsert") {
+        if (table === "sandy_agent_operation_audit" && this.failAgentAudit) return { data: null, error: { code: "fixture_agent_audit_unavailable" } };
         if (table === "sandy_runtime_conversation_audit" && this.failConversationAudit) return { data: null, error: { code: "fixture_audit_unavailable" } };
         if (table === "sandy_runtime_conversation_audit" && rows.some(r => r.task_id === value.task_id && r.round === value.round)) return { data: null, error: { code: "23505" } };
         if (table === "sandy_agent_tasks" && rows.some(r => r.request_id === value.request_id)) return { data: null, error: { code: "23505" } };
@@ -71,6 +78,7 @@ class Database {
         return { data: single ? structuredClone(project(row)) : [structuredClone(project(row))], error: null };
       }
       const selected = rows.filter(row => filters.every(f => f(row))).slice(0, maximum);
+      if (table === "sandy_agent_operation_audit" && mode === "update" && this.failAgentCompletion) return { data: null, error: { code: "fixture_agent_completion_unavailable" } };
       if (table === "sandy_runtime_conversation_audit" && mode === "update" && this.failConversationCompletion) return { data: null, error: { code: "fixture_completion_unavailable" } };
       if (mode === "update") for (const row of selected) Object.assign(row, structuredClone(value));
       return { data: head ? null : single ? structuredClone(project(selected[0] ?? null)) : structuredClone(selected.map(project)), error: null, count: selected.length };
@@ -102,7 +110,7 @@ class Database {
 }
 type Recorded = { url: string; body: Obj; headers: Headers };
 let importSerial = 0;
-async function runtime(slug: string, db: Database, requests: Recorded[], options: { tools?: Obj[]; unknownSend?: boolean } = {}) {
+async function runtime(slug: string, db: Database, requests: Recorded[], options: { tools?: Obj[]; unknownSend?: boolean; preflightBody?: any } = {}) {
   const previousEnv = Object.fromEntries(Object.keys(fixtures).map(key => [key, Deno.env.get(key)]));
   for (const [key, value] of Object.entries(fixtures)) Deno.env.set(key, value);
   const originalServe = Deno.serve, originalFetch = globalThis.fetch;
@@ -129,6 +137,11 @@ async function runtime(slug: string, db: Database, requests: Recorded[], options
       }
       const annotation = body.tools?.[0]?.type === "file_search" ? { type: "file_citation", file_id: "file_fixture", filename: "fixture.txt" } : { type: "url_citation", title: "Fixture", url: "https://example.invalid/source" };
       return Response.json({ status: "completed", output: [{ content: [{ type: "output_text", text: "Fixture provider output", annotations: [annotation] }] }] });
+    }
+    if (target.startsWith("https://backend.composio.dev/api/v3.1/connected_accounts?")) {
+      assert.equal(headers.get("x-api-key"), fixtures.COMPOSIO_API_KEY);
+      assert.equal(new URL(target).searchParams.get("user_ids"), "sandy_customer_" + CUSTOMER);
+      return Response.json(options.preflightBody ?? { items: ["ca_owned", "ca_company"].map(id => ({ id, user_id: "sandy_customer_" + CUSTOMER, status: "ACTIVE" })) });
     }
     if (target === "https://api.openai.com/v1/evals?limit=20") return Response.json({ data: [{ id: "eval_fixture", name: "Fixture eval", created_at: 123 }] });
     assert.ok(target.startsWith("https://backend.composio.dev/api/v3/tools/execute/"), "unexpected external URL: " + target);
@@ -444,6 +457,7 @@ Deno.test("nine runtime record contracts remain separately exported and closed t
   const user = await authenticatePortalUser(request, db, auth, "fixture-service"); assert.ok(user);
   assert.equal((await executeAgentOperation(user, "agent.runtime.tasks.list", {}, recordServices(db))).status, 403);
   assert.equal((await executeAgentOperation(user, "agent.runtime.operational.activity", {}, recordServices(db))).status, 403);
+  assert.equal((await executeAgentOperation(user, runtimeConnectionPreflightOperationName, { idempotency_key: "customer-denied-key" }, recordServices(db))).status, 403);
   const handler = createAgentOperationHandler({ ...recordServices(db), auth, serviceCredential: "fixture-service" });
   assert.equal((await handler(request)).status, 400);
   assert.equal(audits(db).length, 0);
@@ -630,4 +644,52 @@ Deno.test("shared model policy keeps approved recent server routes, stale/disabl
   await assert.rejects(() => selectRuntimeModel(JSON.parse(JSON.stringify(principal)), db, options), /task_required/);
   await assert.rejects(() => selectRuntimeModel(principal, db, { ...options, prompt: "An unrelated request" }), /scope_mismatch/);
   assert.equal(db.tables.sandy_v2_model_decisions.length, count);
+});
+
+for (const slug of slugs) {
+  Deno.test(`${slug}: shared connection preflight preserves the existing fast path and rejects false provider confirmation`, async () => {
+    for (const malformed of [false, true]) {
+      const db = new Database(), requests: Recorded[] = [];
+      db.tables.sandy_v2_runtime_policy[0].mode = "approved_recent";
+      const app = await runtime(slug, db, requests, malformed ? { preflightBody: {} } : {});
+      try {
+        const result = await app.invoke("Which apps are connected?");
+        assert.equal(result.status, 200); assert.equal(result.body.tools_used[0].tool, "v2_connection_preflight");
+        assert.equal(result.body.tools_used[0].provider_check, malformed ? "unavailable" : "confirmed");
+        assert.match(result.body.response, malformed ? /live provider status not verified/ : /confirmed active by provider/);
+        assert.equal(requests.length, 1); assert.equal(db.tables.sandy_runtime_conversation_audit?.length || 0, 0);
+        assert.equal(audits(db).length, 1); assert.equal(audits(db)[0].operation, runtimeConnectionPreflightOperationName);
+        assert.equal(audits(db)[0].customer_id, CUSTOMER); assert.equal(audits(db)[0].state, "succeeded");
+        assert.equal(db.tables.sandy_supervisor_findings?.length || 0, 0);
+      } finally { app.close(); }
+    }
+  });
+}
+Deno.test("connection preflight is a closed cost/mutation contract and stable audit prevents repeated diagnosis or unknown replay", async () => {
+  assert.equal(Object.keys(agentOperationContracts).length, 8);
+  assert.ok(runtimeConnectionPreflightContract.is_mutation && runtimeConnectionPreflightContract.consumes_model_resources && runtimeConnectionPreflightContract.sensitive);
+  assert.equal(runtimeConnectionPreflightContract.api_exposed, false);
+  for (const completionLost of [false, true]) {
+    const db = new Database(), principal = await recordPrincipal(db), work: Promise<unknown>[] = []; let provider = 0, diagnosis = 0;
+    const deps = { ...recordServices(db), composioKey: "fixture-composio", autoImproveKey: "fixture-diagnosis", defer: (promise: Promise<unknown>) => work.push(promise),
+      connectionPreflight: bindRuntimeConnectionPreflight(principal, { channel: "web", requestId: "runtime-records-request", connections: [db.tables.sandy_composio_connections[0]], workspaceNames: new Map(), connectionError: null, requestedService: null }),
+      fetch: (async (url: any) => { if (String(url).startsWith("https://backend.composio.dev/")) { provider++; return Response.json({ items: [] }); } diagnosis++; return Response.json({ accepted: true }); }) as typeof fetch };
+    db.failAgentCompletion = completionLost;
+    const result = await executeRuntimeOperation(principal, runtimeConnectionPreflightOperationName, {}, deps, "same-preflight");
+    await Promise.all(work);
+    if (completionLost) assert.equal(result.state, "unknown"); else assert.equal(result.diagnosis_requests_scheduled, 1);
+    const repeated = await executeRuntimeOperation(principal, runtimeConnectionPreflightOperationName, {}, deps, "same-preflight");
+    if (completionLost) assert.equal(repeated.error, "agent_operation_outcome_requires_reconciliation"); else assert.deepEqual(repeated, result);
+    assert.equal(provider, 1); assert.equal(diagnosis, 1); assert.equal(db.tables.sandy_supervisor_findings.length, 1);
+  }
+});
+Deno.test("connection preflight cannot reach a provider without persisted audit and exact live request binding", async () => {
+  const db = new Database(), principal = await recordPrincipal(db); let calls = 0;
+  const deps = { ...recordServices(db), connectionPreflight: bindRuntimeConnectionPreflight(principal, { channel: "web", requestId: "runtime-records-request", connections: [], workspaceNames: new Map(), connectionError: null, requestedService: null }),
+    fetch: (async () => { calls++; throw Error("unreachable"); }) as typeof fetch };
+  db.failAgentAudit = true;
+  assert.equal((await executeRuntimeOperation(principal, runtimeConnectionPreflightOperationName, {}, deps, "refused-audit")).error, "agent_audit_unavailable");
+  db.failAgentAudit = false; db.tables.sandy_agent_tasks[0].request_id = "different-request";
+  assert.equal((await executeRuntimeOperation(principal, runtimeConnectionPreflightOperationName, {}, deps, "refused-task")).error, "runtime_connection_preflight_task_mismatch");
+  assert.equal(calls, 0);
 });

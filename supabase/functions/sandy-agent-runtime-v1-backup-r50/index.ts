@@ -3,6 +3,7 @@ import {authenticateRuntime,bindRuntimeTask,bindRuntimeConversationTask} from ".
 import {bindV1BackupRuntimeConversation,executeRuntimeConversation,type RuntimeConversation} from "../_shared/sandy-agent-operations/runtime_conversation.ts";
 import {executeRuntimeOperation} from "../_shared/sandy-agent-operations/service.ts";
 import {bindRuntimeOperationalContext,type RuntimeOperationalContext} from "../_shared/sandy-agent-operations/runtime_operational.ts";
+import {bindRuntimeConnectionPreflight,type RuntimeConnectionPreflight} from "../_shared/sandy-agent-operations/runtime_connection_preflight.ts";
 import {collectRuntimeSnapshot} from "../_shared/sandy-agent-operations/runtime_snapshot.ts";
 import {selectRuntimeModel} from "../_shared/sandy-agent-operations/runtime_model_policy.ts";
 import {bindV1BackupFallbackTransport} from "../_shared/sandy-agent-operations/runtime_profiles.ts";
@@ -47,7 +48,7 @@ Deno.serve(async req=>{
  const id=existing.id;
  const operationPrincipal=customerId?await bindRuntimeTask(runtimeProof,db,{taskId:id,customerId,channel,requestId}):null;
  const legacyRuntimeProfile=operationPrincipal?bindV1BackupFallbackTransport(operationPrincipal):undefined;
- const operationServices={db,base:url,composioKey:Deno.env.get("COMPOSIO_API_KEY")||"",openaiKey:aiKey,integrationToken:"",legacyRuntimeProfile,runtimeContext:undefined as RuntimeOperationalContext|undefined};
+ const operationServices={db,base:url,composioKey:Deno.env.get("COMPOSIO_API_KEY")||"",openaiKey:aiKey,integrationToken:"",legacyRuntimeProfile,runtimeContext:undefined as RuntimeOperationalContext|undefined,connectionPreflight:undefined as RuntimeConnectionPreflight|undefined,autoImproveKey:Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY")||"",defer:(work:Promise<unknown>)=>EdgeRuntime.waitUntil(work)};
  const runOperation=(operation:string,args:any,step:string)=>executeRuntimeOperation(operationPrincipal,operation,args,operationServices,step);
  const update=async(fields:any)=>{const{error}=await db.from("sandy_agent_tasks").update({...fields,updated_at:new Date().toISOString()}).eq("id",id);if(error)console.error("task_write",error.code)};
 
@@ -69,62 +70,12 @@ Deno.serve(async req=>{
  const v2DirectStatus=!!customerId&&v2Mode!=="disabled"&&v2Question&&!isGmailAction(prompt)&&/^(?:.{0,80})(?:connected|connections|linked|integrated|installed|available apps?|which apps?|what apps?|access to)(?:.{0,110})[?.!\s]*$/i.test(prompt)&&
    !/\b(read|search|find|send|create|delete|write|summari[sz]e|download|upload|open|list files|retrieve|schedule)\b/i.test(prompt);
  if(v2DirectStatus){
-   if(v2ConnectionError){
-     const msg="I could not verify your current app connections from Sandy's database. I won't guess which services are linked.";
-     await db.from("sandy_v2_awareness_audit").insert({customer_id:customerId,channel,request_id:requestId,subject:"connections",outcome:"error",evidence:{reason:v2ConnectionError}});
-     await update({status:"completed",model:"sandy-v2-system-awareness",result:{text:msg},tool_trace:[{tool:"v2_connection_preflight",success:false}]});
-     return json(200,{ok:true,task_id:id,response:msg,tools_used:[{tool:"v2_connection_preflight",success:false}]});
-   }
-   let providerCheck:"not_checked"|"confirmed"|"unavailable"="not_checked";
-   const verifiedIds=new Set<string>();
-   const apiKey=Deno.env.get("COMPOSIO_API_KEY");
-   if(apiKey){
-     try{
-       const upstream=await fetch("https://backend.composio.dev/api/v3.1/connected_accounts?limit=100&user_ids="+encodeURIComponent("sandy_customer_"+customerId),{headers:{"x-api-key":apiKey},signal:AbortSignal.timeout(12000)});
-       if(upstream.ok){
-         const body=await upstream.json();const rows=Array.isArray(body.items)?body.items:Array.isArray(body.data)?body.data:[];
-         for(const x of rows){if(x.user_id==="sandy_customer_"+customerId&&String(x.status).toUpperCase()==="ACTIVE"&&typeof x.id==="string")verifiedIds.add(x.id);}
-         providerCheck=body.next_cursor?"unavailable":"confirmed";
-       }else providerCheck="unavailable";
-     }catch{providerCheck="unavailable"}
-   }else providerCheck="unavailable";
-   const active=v2Connections.filter((x:any)=>String(x.status).toUpperCase()==="ACTIVE");
-   const selected=v2RequestedService?active.filter((x:any)=>x.toolkit_slug.toLowerCase()===v2RequestedService):active;
-   const described=selected.map((x:any)=>{
-      const loc=x.company_id?(v2WorkspaceNames.get(x.company_id)||"a company workspace"):"Personal";
-      const provider=providerCheck==="confirmed"?(verifiedIds.has(x.connected_account_id)?"confirmed active by provider":"not confirmed active by provider"):"recorded active in Sandy; live provider status not verified";
-      const ability=x.toolkit_slug==="gmail"?"Gmail search and approval-gated sending are implemented in this chat":"A connection does not establish that this chat can perform actions in that app";
-      return x.toolkit_slug+" ("+loc+"): "+provider+". "+ability+".";
-   });
-   const msg=described.length?("Sandy's connection records show:\n"+described.join("\n")):
-     (v2RequestedService?"I found no active "+v2RequestedService+" connection recorded for your Sandy account. This does not establish whether authorisation is pending or has not been synced.":"I found no active app connections recorded for your Sandy account.");
-   const mismatched=providerCheck==="confirmed"?selected.filter((x:any)=>!verifiedIds.has(x.connected_account_id)):[];
-   for(const x of mismatched){
-     const fingerprint="v2:connection:"+customerId+":"+x.toolkit_slug+":"+(x.company_id||"personal");
-     const {error:findingError}=await db.from("sandy_supervisor_findings").upsert({
-       fingerprint,category:"integration_state_discrepancy",severity:"medium",state:"open",
-       subject:"Recorded app connection not confirmed by provider",
-       explanation:"The authenticated customer's local ACTIVE connection was not confirmed by Composio. Inspect provider status, sync and permissions before executing.",
-       evidence:{app:x.toolkit_slug,provider_check:providerCheck,workspace:x.company_id?"company":"personal"},
-       recommendation:"Recheck the provider and resolve tenant-scoped connection drift; do not claim repair without evidence.",
-       source_type:"sandy_v2_awareness",source_id:fingerprint,updated_at:new Date().toISOString()
-     },{onConflict:"fingerprint"});
-     if(findingError)console.error("v2_chat_finding_write",findingError.code);
-     const improveKey=Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY")||"";
-     if(!findingError&&improveKey){
-       const hash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(fingerprint)))).map(b=>b.toString(16).padStart(2,"0")).join("");
-       EdgeRuntime.waitUntil(fetch(url+"/functions/v1/sandy-auto-improve",{
-          method:"POST",headers:{"authorization":"Bearer "+improveKey,"content-type":"application/json"},
-          body:JSON.stringify({source_type:"system_awareness",source_ref:"v2_conn_"+hash.slice(0,40),
-            problem:"Sandy records an ACTIVE "+x.toolkit_slug+" connection but the provider did not confirm it active. Diagnose provider permissions, sync, execution scope and verification without exposing customer details."}),
-          signal:AbortSignal.timeout(35000)
-       }).then(async q=>{if(!q.ok)console.error("v2_chat_autodiagnosis_http",q.status)}).catch(e=>console.error("v2_chat_autodiagnosis_failed",String(e).slice(0,100))));
-     }
-   }
-   const outcome=mismatched.length?"contradiction":(providerCheck==="confirmed"?"verified":"unverified");
-   await db.from("sandy_v2_awareness_audit").insert({customer_id:customerId,channel,request_id:requestId,subject:"connections",outcome,evidence:{provider_check:providerCheck,records:selected.length,mismatches:mismatched.length,requested_service:v2RequestedService||"all"}});
-   await update({status:"completed",model:"sandy-v2-system-awareness",result:{text:msg},tool_trace:[{tool:"v2_connection_preflight",success:true,provider_check:providerCheck}]});
-   return json(200,{ok:true,task_id:id,response:msg,tools_used:[{tool:"v2_connection_preflight",success:true,provider_check:providerCheck}]});
+   operationServices.connectionPreflight=bindRuntimeConnectionPreflight(operationPrincipal,{channel,requestId,connections:v2Connections,workspaceNames:v2WorkspaceNames,connectionError:v2ConnectionError,requestedService:v2RequestedService});
+   const checked=await runOperation("agent.runtime.connections.preflight",{},"connection-preflight");
+   if(checked.error){await update({status:"failed",failure:checked.error});return json(503,{ok:false,task_id:id,error:checked.error,reconciliation_required:checked.state==="unknown"||checked.reconciliation_required===true});}
+   const toolTrace=[{tool:"v2_connection_preflight",success:checked.success,...(v2ConnectionError?{}:{provider_check:checked.provider_check})}];
+   await update({status:"completed",model:"sandy-v2-system-awareness",result:{text:checked.response},tool_trace:toolTrace});
+   return json(200,{ok:true,task_id:id,response:checked.response,tools_used:toolTrace});
  }
  const {complex,model}=await selectRuntimeModel(snapshotIdentity,db,{mode:v2ModelMode,prompt,requestId});
  await update({status:"running",model,plan:{strategy:complex?"reasoning":"fast",tools:["search_history"]}});
