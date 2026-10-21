@@ -60,5 +60,18 @@
     "public_schema_fixtures": 25,
     "fixture_bytes_gzip": 2252117,
     "external_provider_calls": 0
+  },
+  "IAP_authority_release_20261021": {
+    "source_commit": "1999fe267bac5e8dad5c1d33fb7f243c23756bff",
+    "remote_applicable_checks_passed": 5,
+    "api_contract_run": 39658723238,
+    "offline_regression_run": 39658723159,
+    "focused_local_component_tests_passed": 9,
+    "backend_version": 66,
+    "source_files_accounted_for": 16,
+    "source_readback": "iap-access-blocker-20261021.json",
+    "provider_authorization_fixed": false,
+    "new_VM_MCP_acceptance": false,
+    "wider_MCP_log_regression": "engineering-logs-mcp-regression-20261021.json"
   }
 }
