@@ -1415,6 +1415,7 @@ $("deleteTask").addEventListener("click",async()=>{
  const button=$("deleteTask");button.disabled=true;
  // Optimistically remove deleted tasks immediately; restore if the server refuses.
  const previousTasks=state.tasks.slice();
+ const previousParents=new Map(previousTasks.map(x=>[x.id,x.parent_task_id]));
  const previousExpanded=new Set(state.expanded);
  const parentId=t.parent_task_id||null;
  if(childMode==="delete_all")state.tasks=state.tasks.filter(x=>!descendants.has(x.id));
@@ -1427,6 +1428,7 @@ $("deleteTask").addEventListener("click",async()=>{
   await api("delete-task",{id:t.id,confirm_delete:true,confirm_title:t.title,child_mode:childMode});
   toast(childMode==="delete_all"&&childCount?"Parent and "+childCount+" subtasks deleted":childCount?"Parent deleted; subtasks moved up one level":"Task deleted");
  }catch(e){
+  previousTasks.forEach(x=>{x.parent_task_id=previousParents.get(x.id)});
   state.tasks=previousTasks;state.expanded=previousExpanded;render();
   toast("Task deletion failed: "+e.message,true);
  }finally{button.disabled=false}
