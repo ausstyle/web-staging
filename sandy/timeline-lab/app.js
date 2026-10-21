@@ -91,7 +91,7 @@ function outlineRename(id,label){
  const saveName=()=>{if(done)return;done=true;let name=input.value.trim();if(name&&name!==t.name)commit(s=>setFields(s,id,{name}));else renderView()};
  input.onkeydown=e=>{
  if(e.key==="Escape"){done=true;renderView();return}
- if(e.key==="Enter"){e.preventDefault();const name=input.value.trim();if(name&&name!==t.name){commit(s=>setFields(s,id,{name}))}else renderView();commit(s=>{const next=addTask(s,"New task",t.parent,ms(t.end));const fresh=next.tasks.at(-1);const peers=next.tasks.filter(q=>q.parent===t.parent).sort((a,b)=>a.order-b.order);fresh.order=t.order+0.01;return next});return}
+ if(e.key==="Enter"){e.preventDefault();done=true;const name=input.value.trim();if(name&&name!==t.name)commit(s=>setFields(s,id,{name}));commit(s=>{const next=addTask(s,"New task",t.parent,ms(t.end));next.tasks.at(-1).order=t.order+0.01;return next});const created=active().tasks.filter(q=>q.parent===t.parent&&q.name==="New task").at(-1);if(created){const button=[...document.querySelectorAll(".time-row")].find(r=>r.dataset.id===created.id)?.querySelector(".task-text");if(button)outlineRename(created.id,button)}return}
  if(e.key==="Tab"){e.preventDefault();done=true;commit(s=>{const next=clone(s),cur=byId(next,id),siblings=next.tasks.filter(q=>q.parent===cur.parent&&q.id!==id).sort((a,b)=>a.order-b.order);if(e.shiftKey){cur.parent=cur.parent?byId(next,cur.parent)?.parent||null:null}else{const previous=siblings.filter(q=>q.order<cur.order).at(-1);if(previous)cur.parent=previous.id}record(next,"Changed task indentation");return next})}
  };
  input.onblur=saveName;
