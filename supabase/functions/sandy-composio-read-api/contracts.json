@@ -1,0 +1,341 @@
+[
+  {
+    "operation": "composio.discover_toolkits",
+    "handler": "sandy-composio-read-api",
+    "contract_version": "1.0.0",
+    "authorization": "portal",
+    "owns_user_admission": true,
+    "is_mutation": false,
+    "sensitive": true,
+    "requires_approval": false,
+    "requires_grant": true,
+    "requires_real_user_session": true,
+    "api_key_delegable": false,
+    "permission_scope": "connections:read",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "company_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "composio.discover_toolkits"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "replayed"
+          ]
+        },
+        "executed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reconciliation_required": {
+          "type": "boolean"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "toolkits": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "toolkit_slug": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_-]{2,80}$",
+                    "maxLength": 80
+                  },
+                  "company_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid"
+                  },
+                  "provider_confirmed_active": {
+                    "type": "boolean"
+                  },
+                  "read_profiles": {
+                    "type": "array",
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9_-]{3,100}$",
+                      "maxLength": 100
+                    }
+                  }
+                },
+                "required": [
+                  "toolkit_slug",
+                  "company_id",
+                  "provider_confirmed_active",
+                  "read_profiles"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "data": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "maxProperties": 100
+            },
+            "profile_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 100
+            },
+            "result_sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "provider_verified": {
+              "type": "boolean"
+            },
+            "source": {
+              "const": "composio_customer_read_service"
+            },
+            "payload_stored": {
+              "const": false
+            }
+          },
+          "required": [
+            "toolkits",
+            "data",
+            "profile_id",
+            "result_sha256",
+            "provider_verified",
+            "source",
+            "payload_stored"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "request_id",
+        "admission_id",
+        "request_state",
+        "executed",
+        "reconciliation_required",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "89c0ed1f1dbffcf972b206a352b7776ead214ed4b02885c7b741eb9df66e50f2"
+  },
+  {
+    "operation": "composio.execute_read",
+    "handler": "sandy-composio-read-api",
+    "contract_version": "1.0.0",
+    "authorization": "portal",
+    "owns_user_admission": true,
+    "is_mutation": false,
+    "sensitive": true,
+    "requires_approval": false,
+    "requires_grant": true,
+    "requires_real_user_session": true,
+    "api_key_delegable": false,
+    "permission_scope": "connections:read",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "profile_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9_-]{3,100}$",
+          "maxLength": 100
+        },
+        "company_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "uuid"
+        },
+        "arguments": {
+          "type": "object",
+          "maxProperties": 100
+        }
+      },
+      "required": [
+        "profile_id",
+        "company_id",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "composio.execute_read"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "replayed"
+          ]
+        },
+        "executed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "reconciliation_required": {
+          "type": "boolean"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "toolkits": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "properties": {
+                  "toolkit_slug": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9_-]{2,80}$",
+                    "maxLength": 80
+                  },
+                  "company_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "uuid"
+                  },
+                  "provider_confirmed_active": {
+                    "type": "boolean"
+                  },
+                  "read_profiles": {
+                    "type": "array",
+                    "maxItems": 100,
+                    "items": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9_-]{3,100}$",
+                      "maxLength": 100
+                    }
+                  }
+                },
+                "required": [
+                  "toolkit_slug",
+                  "company_id",
+                  "provider_confirmed_active",
+                  "read_profiles"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "data": {
+              "type": [
+                "object",
+                "null"
+              ],
+              "maxProperties": 100
+            },
+            "profile_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "maxLength": 100
+            },
+            "result_sha256": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "provider_verified": {
+              "type": "boolean"
+            },
+            "source": {
+              "const": "composio_customer_read_service"
+            },
+            "payload_stored": {
+              "const": false
+            }
+          },
+          "required": [
+            "toolkits",
+            "data",
+            "profile_id",
+            "result_sha256",
+            "provider_verified",
+            "source",
+            "payload_stored"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "request_id",
+        "admission_id",
+        "request_state",
+        "executed",
+        "reconciliation_required",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "contract_sha256": "439728390ca31f82be580d59022a9eda1b36d5ffb0e1417db855a3f5df9ed94c"
+  }
+]

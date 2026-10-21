@@ -1,0 +1,67 @@
+{
+  "timestamp_utc": "2026-10-21T05:38:38.883932+00:00",
+  "operation_count": 2,
+  "operations": [
+    "composio.discover_toolkits",
+    "composio.execute_read"
+  ],
+  "api_exposed": false,
+  "ai_exposed": false,
+  "verified": false,
+  "original_161_requirements_newly_certified_complete": 0,
+  "deno": {
+    "passed": 10,
+    "failed": 0,
+    "log": "composio-read-final-tests.log"
+  },
+  "postgresql": {
+    "timestamp_utc": "2026-10-21T05:36:20.617379+00:00",
+    "http_status": 201,
+    "query_sha256": "a4cd2a15524630a2360bae32b05cea1eb2f3da630bbae694038acf40aac4b5b4",
+    "full_rollback": true,
+    "actual_auth_session": false,
+    "actual_provider_calls": 0,
+    "source_sha256": {
+      "supabase/migrations/20261021010820_sandy_composio_read_boundary.sql": "ab573596f5bc80baf95cd09bca556ea390df39169cf3e1a1f952589a3dff1823",
+      "supabase/migrations/20261021010830_sandy_composio_read_contracts.sql": "85f9b4cdc4490c26b04ef5adc56c8bb07e4d27971720f51d181dfe08070cdd8d",
+      "supabase/tests/sandy_composio_read_rollback.sql": "d0ada5d9dfdeb052af6afb469204c49cbacbd3ded4f52c79fd829c6f67c6e5b7"
+    }
+  },
+  "postgresql_checks": 47,
+  "post_rollback": {
+    "http_status": 201,
+    "read_only": true,
+    "timestamp_utc": "2026-10-21T05:37:16.804614+00:00",
+    "original_two_registry_rows_unchanged": true,
+    "admit_absent": true,
+    "profiles_absent": true,
+    "contracts_absent": true,
+    "dispatches_absent": true,
+    "fixture_auth_count": 0
+  },
+  "generation_idempotence": {
+    "passed": true,
+    "source_sha256": {
+      "supabase/functions/sandy-composio-read-api/contracts.json": "5ef724a1a1e194c0851aa81b1adee0bfc314dcd4b1dd690b8701ed2c92ab57c3",
+      "supabase/migrations/20261021010830_sandy_composio_read_contracts.sql": "85f9b4cdc4490c26b04ef5adc56c8bb07e4d27971720f51d181dfe08070cdd8d"
+    }
+  },
+  "actual_http_auth_session": false,
+  "actual_provider_calls": 0,
+  "actual_credential_material_reads": 0,
+  "production_profiles_installed": 0,
+  "production_deployed": false,
+  "gateway_integration_pending": true,
+  "runtime_dependencies": [
+    "actual confirmed nonanonymous customer JWT and current portal/primary-email match",
+    "COMPOSIO_API_KEY and enabled connector",
+    "one active owned provider account",
+    "developer-reviewed real provider read profile and exact fresh definition hash"
+  ],
+  "schema_boundary": "Strict outer operation envelope; dynamic data validated against the immutable strict reviewed profile. Production profile inventory is empty.",
+  "custody_classification": {
+    "sandy_composio_read_contracts": "global private policy",
+    "sandy_composio_read_profiles": "global private reviewed-effect policy",
+    "sandy_composio_read_dispatches": "tenant security receipt metadata; no payload/arguments/account IDs/tokens"
+  }
+}
