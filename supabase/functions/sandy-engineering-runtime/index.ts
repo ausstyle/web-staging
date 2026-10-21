@@ -16,6 +16,7 @@ import policy from "../sandy-operation-api/engineering_identity_policy.json" wit
 import vmReadPolicy from "../sandy-operation-api/engineering_vm_read_policy.json" with {
   type: "json",
 };
+import { workloadControlActions } from "../sandy-engineering-control/workload.ts";
 type Obj = Record<string, unknown>;
 const object = (v: unknown): v is Obj =>
   !!v && typeof v === "object" && !Array.isArray(v);
@@ -43,6 +44,10 @@ export type RuntimeDependencies = {
   session(workload: Workload): Promise<IssuedSession>;
   invalidate?(): void;
   mcp(token: string, message: Obj): Promise<{ status: number; body: unknown }>;
+  control?(
+    token: string,
+    body: Obj,
+  ): Promise<{ status: number; body: unknown }>;
 };
 function preDispatchAuthFailure(
   result: { status: number; body: unknown },
@@ -128,11 +133,28 @@ export function createEngineeringRuntime(deps: RuntimeDependencies) {
     }
     if (
       !object(message) || message.jsonrpc !== "2.0" ||
-      !["initialize", "tools/list", "tools/call"].includes(
-        String(message.method),
-      ) || !Object.hasOwn(message, "id")
+      !["initialize", "tools/list", "tools/call", "engineering/control"]
+        .includes(
+          String(message.method),
+        ) ||
+      !Object.hasOwn(message, "id")
     ) return reply(400, { error: "invalid_runtime_request" });
     const params = message.params;
+    const controlCall = message.method === "engineering/control";
+    if (
+      controlCall &&
+      (!deps.control || !object(params) ||
+        !workloadControlActions.includes(params.action as any) ||
+        (params.action === "register" &&
+          (typeof params.idempotency_key !== "string" ||
+            params.idempotency_key.length < 1 ||
+            params.idempotency_key.length > 160)))
+    ) {
+      return reply(403, {
+        error: "engineering_control_scope_denied",
+        executed: false,
+      });
+    }
     if (
       message.method === "tools/call" &&
       (!object(params) || typeof params.name !== "string" ||
@@ -156,7 +178,11 @@ export function createEngineeringRuntime(deps: RuntimeDependencies) {
     try {
       const stableMessage = stableExecutionRequest(message);
       const privateValues = [credential, session.token];
-      let result = await deps.mcp(session.token, stableMessage);
+      const dispatch = (token: string) =>
+        controlCall
+          ? deps.control!(token, params as Obj)
+          : deps.mcp(token, stableMessage);
+      let result = await dispatch(session.token);
       if (deps.invalidate && preDispatchAuthFailure(result, message.method)) {
         const current = await deps.resolve(credentialHash);
         if (
@@ -176,7 +202,7 @@ export function createEngineeringRuntime(deps: RuntimeDependencies) {
           bootstrapGeneration: Number(current.bootstrap_generation),
         });
         privateValues.push(session.token);
-        result = await deps.mcp(session.token, stableMessage);
+        result = await dispatch(session.token);
       }
       // Defensive transport redaction as well as the API's provider projections.
       let serialized = JSON.stringify(result.body);
@@ -275,6 +301,23 @@ if (import.meta.main) {
         rpc("sandy_engineering_resolve_bootstrap", { p_sha256: hash }),
       session: (workload) => sessions.get(workload),
       invalidate: () => sessions.invalidate(),
+      control: async (token, body) => {
+        const r = await fetch(
+          `${base}/functions/v1/sandy-engineering-control`,
+          {
+            method: "POST",
+            redirect: "error",
+            headers: {
+              authorization: `Bearer ${token}`,
+              apikey: anon,
+              "content-type": "application/json",
+            },
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(30000),
+          },
+        );
+        return { status: r.status, body: await boundedResponse(r) };
+      },
       mcp: async (token, message) => {
         const r = await fetch(`${base}/functions/v1/sandy-api-mcp`, {
           method: "POST",

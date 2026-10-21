@@ -1,4 +1,5 @@
 import { isCanonicalEngineeringOperation, prepareCanonicalEngineeringRequest, sameCanonicalRequest } from "./canonical_request.ts";
+import {authorizeWorkloadControl,workloadRegistrationAllowed} from "./workload.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const url=Deno.env.get("SUPABASE_URL")!,key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -15,9 +16,18 @@ Deno.serve(async req=>{
   if(!token)return respond({error:"Unauthorized"},401);
   const {data:{user},error:authErr}=await db.auth.getUser(token);
   if(authErr||!user)return respond({error:"Unauthorized"},401);
-  const {data:admin,error:adminErr}=await db.from("sandy_controller_admins").select("role,enabled").eq("auth_user_id",user.id).eq("enabled",true).maybeSingle();
-  if(adminErr||!admin)return respond({error:"Sandy Controller administrator required"},403);
   const b=await req.json();const action=string(b.action,48);
+  let workloadGrant=null;
+  let admin:any=null;
+  if(user.app_metadata?.sandy_engineering_test===true){
+   workloadGrant=await authorizeWorkloadControl(user,token,b,db);
+   if(!workloadGrant)return respond({error:"engineering_control_scope_denied",executed:false},403);
+   admin={role:"engineering",enabled:true};
+  }else{
+   const lookup=await db.from("sandy_controller_admins").select("role,enabled").eq("auth_user_id",user.id).eq("enabled",true).maybeSingle();
+   if(lookup.error||!lookup.data)return respond({error:"Sandy Controller administrator required"},403);
+   admin=lookup.data;
+  }
   if(action==="preflight"){
    const [changes,rollbackRequests,pendingJobs]=await Promise.all([
      db.from("sandy_engineering_changes").select("id",{count:"exact",head:true}),
@@ -31,6 +41,7 @@ Deno.serve(async req=>{
      registered_change_count:changes.count,rollback_request_count:rollbackRequests.count,pending_engineering_jobs:pendingJobs.count});
   }
   if(action==="register"){
+   if(workloadGrant&&!workloadRegistrationAllowed(b,workloadGrant))return respond({error:"engineering_registration_scope_denied",executed:false},403);
    const title=string(b.title,240),problem=string(b.problem,4000),expected=string(b.expected_behavior,4000),purpose=string(b.change_purpose,4000),improvement=string(b.feature_improvement,4000);
    if(title.length<5||problem.length<10||expected.length<10||purpose.length<10||improvement.length<10)return respond({error:"title, problem, expected_behavior, change_purpose and feature_improvement are required with meaningful detail"},400);
    const keyValue=string(b.idempotency_key,160)||null;
@@ -46,11 +57,12 @@ Deno.serve(async req=>{
    await db.from("sandy_engineering_change_events").insert({change_id:data.id,event_type:delegated?"delegated_auto_approved":"registered",actor:user.id,detail:{source:"engineering_api",approval_mode:delegated?"automatic_owner_delegation":"manual",test_required_before_execution:true}});
    return respond({change:data},201);
   }
-  if(action==="list"){const {data,error}=await db.from("sandy_engineering_changes").select("id,title,status,risk,created_at,updated_at,verified_at").order("created_at",{ascending:false}).limit(100);if(error)throw error;return respond({changes:data})}
+  if(action==="list"){let query=db.from("sandy_engineering_changes").select("id,title,status,risk,created_at,updated_at,verified_at");if(workloadGrant)query=query.eq("requested_by",user.id);const {data,error}=await query.order("created_at",{ascending:false}).limit(100);if(error)throw error;return respond({changes:data})}
   if(!uuid(b.change_id))return respond({error:"Valid change_id required"},400);
   const id=b.change_id;
   const {data:change,error:changeErr}=await db.from("sandy_engineering_changes").select("*").eq("id",id).maybeSingle();
   if(changeErr)throw changeErr;if(!change)return respond({error:"Change not found"},404);
+  if(workloadGrant&&change.requested_by!==user.id)return respond({error:"Change not found"},404);
   if(action==="get"){
    const [events,artifacts,tests,rollbacks]=await Promise.all([
     db.from("sandy_engineering_change_events").select("*").eq("change_id",id).order("occurred_at",{ascending:false}).limit(200),

@@ -13,6 +13,16 @@ const message = {
   method: "tools/call",
   params: { name: "github.files.update", arguments: {} },
 };
+const controlMessage = {
+  jsonrpc: "2.0",
+  id: "register-fixture",
+  method: "engineering/control",
+  params: {
+    action: "register",
+    idempotency_key: "registration-fixture",
+    title: "Fixture change",
+  },
+};
 function request(value: unknown = message, key = KEY) {
   return new Request("https://runtime.invalid", {
     method: "POST",
@@ -63,6 +73,100 @@ Deno.test("runtime uses a normal workload JWT only for Sandy MCP and returns no 
   const text = await r.text();
   assert.equal(text.includes(TOKEN), false);
   assert.equal(text.includes(KEY), false);
+});
+Deno.test("Controller extension forwards a genuine workload session to existing Control without exposing it", async () => {
+  let received: any;
+  const h = await fixture({
+    control: async (token, body) => {
+      received = { token, body };
+      return {
+        status: 201,
+        body: { change: { id: USER, status: "proposed" } },
+      };
+    },
+  });
+  const response = await h.handler(request(controlMessage));
+  assert.equal(response.status, 201);
+  assert.deepEqual(received, { token: TOKEN, body: controlMessage.params });
+  assert.equal(h.state.mcp, 0);
+  assert.equal((await response.text()).includes(TOKEN), false);
+});
+Deno.test("expired Control session renews once and preserves registration idempotency", async () => {
+  let calls = 0, issued = 0, invalidations = 0;
+  const bodies: any[] = [];
+  const h = await fixture({
+    session: async (workload) => ({
+      token: "session-" + (++issued),
+      sessionId: USER,
+      expiresAt: Date.now() + 3600000,
+      workload,
+    }),
+    invalidate: () => {
+      invalidations++;
+    },
+    control: async (_token, body) => {
+      bodies.push(body);
+      return ++calls === 1
+        ? { status: 401, body: { error: "Unauthorized" } }
+        : { status: 201, body: { change: { id: USER, status: "proposed" } } };
+    },
+  });
+  assert.equal((await h.handler(request(controlMessage))).status, 201);
+  assert.equal(issued, 2);
+  assert.equal(invalidations, 1);
+  assert.deepEqual(bodies[0], bodies[1]);
+});
+Deno.test("Control permission errors never trigger renewal or replay", async () => {
+  let calls = 0;
+  const h = await fixture({
+    control: async () => {
+      calls++;
+      return {
+        status: 403,
+        body: { error: "engineering_control_scope_denied" },
+      };
+    },
+    invalidate: () => assert.fail("must not renew"),
+  });
+  assert.equal((await h.handler(request(controlMessage))).status, 403);
+  assert.equal(calls, 1);
+});
+Deno.test("Control transport uncertainty is not retried", async () => {
+  let calls = 0;
+  const h = await fixture({
+    control: async () => {
+      calls++;
+      throw Error(TOKEN);
+    },
+  });
+  const r = await h.handler(request(controlMessage));
+  assert.equal(r.status, 503);
+  assert.equal(calls, 1);
+  const v = await r.json();
+  assert.equal(v.reconciliation_required, true);
+  assert.equal(JSON.stringify(v).includes(TOKEN), false);
+});
+Deno.test("Control cannot select owner-only operations or submit non-idempotent registration", async () => {
+  let calls = 0;
+  const h = await fixture({
+    control: async () => {
+      calls++;
+      return { status: 200, body: {} };
+    },
+  });
+  for (
+    const params of [{ action: "execute_job" }, {
+      action: "status",
+      status: "approved",
+    }, { action: "register" }]
+  ) {
+    assert.equal(
+      (await h.handler(request({ ...controlMessage, params }))).status,
+      403,
+    );
+  }
+  assert.equal(calls, 0);
+  assert.equal(h.state.sessions, 0);
 });
 Deno.test("customer, Controller and service JWTs cannot substitute for the private workload bootstrap", async () => {
   for (
