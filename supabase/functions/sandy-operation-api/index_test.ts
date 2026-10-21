@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { createOperationHandler, type OperationDependencies } from "./index.ts";
 import { createApi, createHandler } from "../sandy-api-mcp/index.ts";
+import { legacyOperationContracts } from "./legacy_operations.ts";
+import { customerOperationContracts } from "./customer_operations.ts";
+import { customerServiceContracts } from "./customer_services.ts";
+import { policyOperationContracts } from "./policy_operations.ts";
+import { orchestrationContracts } from "../sandy-orchestration-api/contracts.ts";
+import { extensionContracts } from "./installed_extensions.ts";
+import { providerOperations } from "../sandy-provider-operation-api/gateway.ts";
+import { installedOperationIds } from "./index.ts";
 
 const preflight = {
   operation: "engineering.preflight",
@@ -16,6 +24,7 @@ const preflight = {
 const release = {
   ...preflight,
   operation: "deployment.management.release",
+  verified: true,
   is_mutation: true,
   input_schema: {
     type: "object",
@@ -50,19 +59,24 @@ type Options = {
   emailConfirmed?: boolean;
   rpcData?: Row;
   rpcError?: boolean;
+  rpcHandler?: (name: string, args: Row) => unknown | Promise<unknown>;
+  executionPolicy?: boolean;
   backend?: (input: string, init?: RequestInit) => Response | Promise<Response>;
+  resolveCredential?: OperationDependencies["resolveCredential"];
 };
 function harness(options: Options = {}) {
   const calls: { url: string; init?: RequestInit }[] = [];
   const rpcCalls: { name: string; args: unknown }[] = [];
   const identityTokens: string[] = [];
   const db = {
-    rpc(name: string, args: unknown) {
+    async rpc(name: string, args: unknown) {
       rpcCalls.push({ name, args });
-      return Promise.resolve({
-        data: options.rpcData ?? null,
+      return {
+        data: options.rpcHandler
+          ? await options.rpcHandler(name, args as Row)
+          : options.rpcData ?? null,
         error: options.rpcError ? { message: "connection lost" } : null,
-      });
+      };
     },
     auth: {
       getUser: (token: string) => {
@@ -168,6 +182,8 @@ function harness(options: Options = {}) {
     service: "test-service-credential",
     anon: "test-anon-key",
     db,
+    resolveCredential: options.resolveCredential,
+    executionPolicy: options.executionPolicy,
     fetch: ((input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       calls.push({ url, init });
@@ -1823,4 +1839,545 @@ Deno.test("engineering API read admission rejects action overrides, corrupt cont
   const body = await unknown.json();
   assert.equal(body.executed, null);
   assert.equal(JSON.stringify(body).includes("private diagnostic"), false);
+});
+
+Deno.test("delegated API identity never substitutes a transport credential for a customer session", async () => {
+  const actor = "20000000-0000-4000-8000-000000000001";
+  const read = infrastructure("supabase.functions.list");
+  const h = harness({
+    actorId: actor,
+    rows: [read, preflight],
+    resolveCredential: async () => ({
+      kind: "api_key",
+      principalId: actor,
+      allowedOperations: [read.operation, preflight.operation],
+    }),
+  });
+  const listed =
+    await (await h.request({ action: "list" }, "Bearer public-anon-transport"))
+      .json();
+  assert.deepEqual(listed.operations.map((row: Row) => row.operation), [
+    read.operation,
+  ]);
+  const response = await h.request({
+    action: "execute",
+    operation: read.operation,
+    arguments: {},
+  }, "Bearer public-anon-transport");
+  assert.equal(response.status, 200);
+  assert.deepEqual(h.identityTokens, []);
+  assert.equal(
+    new Headers(h.calls[0].init?.headers).get("authorization"),
+    "Bearer test-service-credential",
+  );
+  const userOnly = await h.request({
+    action: "execute",
+    operation: preflight.operation,
+    arguments: {},
+  }, "Bearer public-anon-transport");
+  assert.equal(userOnly.status, 403);
+  assert.equal(
+    (await userOnly.json()).error,
+    "operation_requires_user_session",
+  );
+  const denied = await h.request({
+    action: "execute",
+    operation: "video.status",
+    arguments: {},
+  }, "Bearer public-anon-transport");
+  assert.equal(denied.status, 403);
+  assert.equal(h.calls.length, 1);
+});
+Deno.test("job leases execute only the stored operation and canonical argument digest through the same gateway", async () => {
+  const actor = "20000000-0000-4000-8000-000000000001";
+  const read = infrastructure("supabase.functions.list");
+  const digest =
+    "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a";
+  const resolver = async () => ({
+    kind: "job_lease" as const,
+    principalId: actor,
+    allowedOperations: [read.operation],
+    boundExecution: {
+      operation: read.operation,
+      arguments: {},
+      inputDigest: digest,
+      channel: "api" as const,
+    },
+  });
+  const h = harness({
+    actorId: actor,
+    rows: [read],
+    resolveCredential: resolver,
+  });
+  const response = await h.handler(
+    new Request("https://local.invalid/v1/internal/execute", {
+      method: "POST",
+      headers: { authorization: "Bearer internal-service" },
+      body: '{"operation":"forged","arguments":{"target":"other"}}',
+    }),
+  );
+  assert.equal(response.status, 200);
+  assert.deepEqual(h.identityTokens, []);
+  assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), {
+    operation: read.operation,
+    arguments: {},
+  });
+  const bad = harness({
+    actorId: actor,
+    rows: [read],
+    resolveCredential: async () => ({
+      ...await resolver(),
+      boundExecution: {
+        operation: read.operation,
+        arguments: {},
+        channel: "api" as const,
+        inputDigest: "0".repeat(64),
+      },
+    }),
+  });
+  assert.equal(
+    (await bad.handler(
+      new Request("https://local.invalid/v1/internal/execute", {
+        method: "POST",
+        headers: { authorization: "Bearer internal-service" },
+        body: "{}",
+      }),
+    )).status,
+    403,
+  );
+  assert.equal(bad.calls.length, 0);
+});
+Deno.test("delegated identities recheck current membership and cannot enter through unconfigured resolver", async () => {
+  const actor = "20000000-0000-4000-8000-000000000001";
+  const read = infrastructure();
+  for (const role of [null, "viewer"]) {
+    const h = harness({
+      actorId: actor,
+      role,
+      rows: [read],
+      resolveCredential: async () => ({
+        kind: "api_key",
+        principalId: actor,
+        allowedOperations: [read.operation],
+      }),
+    });
+    assert.equal(
+      (await h.request({
+        action: "execute",
+        operation: read.operation,
+        arguments: {},
+      })).status,
+      403,
+    );
+    assert.equal(h.calls.length, 0);
+  }
+  const h = harness({ rows: [read] });
+  const response = await h.handler(
+    new Request("https://local.invalid/v1/internal/execute", {
+      method: "POST",
+      headers: { authorization: "Bearer internal-service" },
+      body: "{}",
+    }),
+  );
+  assert.equal(response.status, 401);
+  assert.equal(h.calls.length, 0);
+  assert.deepEqual(h.identityTokens, []);
+});
+Deno.test("all unverified mutations fail closed and discovery declares them nonexecutable", async () => {
+  const unverified = { ...release, verified: false };
+  const h = harness({ rows: [unverified] });
+  const catalogue = await (await h.request({ action: "list" })).json();
+  assert.equal(catalogue.operations[0].executable, false);
+  const response = await h.request({
+    action: "execute",
+    operation: unverified.operation,
+    arguments: releaseArgs,
+  });
+  assert.equal(response.status, 424);
+  assert.equal(h.calls.length, 0);
+});
+
+Deno.test("all newly installed application contracts traverse the same gateway and preserve user grants and verification gates", async () => {
+  const actor = "10000000-0000-4000-8000-000000000001";
+  const tenant = "10000000-0000-4000-8000-000000000002";
+  const contracts: Row[] = [
+    ...Object.entries(legacyOperationContracts).map(([operation, c]) => ({
+      ...c,
+      operation,
+    })),
+    ...Object.entries(customerOperationContracts).map(([operation, c]) => ({
+      ...c,
+      operation,
+    })),
+    ...Object.entries(customerServiceContracts).map(([operation, c]) => ({
+      ...c,
+      operation,
+    })),
+    ...Object.entries(policyOperationContracts).map(([operation, c]) => ({
+      ...c,
+      operation,
+      handler: "sandy-operation-api",
+    })),
+    ...orchestrationContracts.map((c) => ({
+      ...c,
+      handler: "sandy-orchestration-api",
+      permission_scope: c.is_mutation
+        ? "orchestration:write"
+        : "orchestration:read",
+    })),
+  ];
+  const rows: Row[] = contracts.map((c) => ({
+    ...c,
+    api_exposed: true,
+    ai_exposed: true,
+    verified: false,
+  }));
+  const h = harness({ actorId: actor, tenant, memoryTenant: tenant, rows });
+  for (const row of rows) {
+    const response = await h.request({
+      action: "describe",
+      operation: row.operation,
+    });
+    assert.equal(response.status, 200, String(row.operation));
+    const body = await response.json();
+    assert.equal(body.operation.operation, row.operation);
+    assert.equal(body.operation.executable, row.is_mutation !== true);
+  }
+  assert.equal(h.calls.length, 0);
+  const ownerOnly = harness({ actorId: actor, rows });
+  const portalOnly = harness({
+    actorId: actor,
+    role: null,
+    memoryTenant: tenant,
+    rows,
+  });
+  assert.equal(
+    (await ownerOnly.request({
+      action: "describe",
+      operation: "social.people.list",
+    })).status,
+    403,
+  );
+  assert.equal(
+    (await portalOnly.request({
+      action: "describe",
+      operation: "controller.overview",
+    })).status,
+    403,
+  );
+});
+
+const extensionActor = "10000000-0000-4000-8000-000000000001";
+const extensionTenant = "10000000-0000-4000-8000-000000000002";
+function extensionRow(operation: string, verified = false): Row {
+  const c = extensionContracts[operation];
+  assert.ok(c, operation);
+  return {
+    ...c,
+    operation,
+    api_exposed: true,
+    ai_exposed: true,
+    verified,
+    error_contract: {
+      ...(c.contract_sha256 ? { contract_sha256: c.contract_sha256 } : {}),
+    },
+  };
+}
+Deno.test("all 174 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 174);
+  assert.equal(
+    new Set(installedOperationIds).size,
+    installedOperationIds.length,
+  );
+  assert.ok(Object.isFrozen(installedOperationIds));
+  const rows = Object.keys(extensionContracts).map((op) => extensionRow(op));
+  const h = harness({
+    actorId: extensionActor,
+    tenant: extensionTenant,
+    memoryTenant: extensionTenant,
+    rows,
+  });
+  for (const row of rows) {
+    const response = await h.request({
+      action: "describe",
+      operation: row.operation,
+    });
+    assert.equal(response.status, 200, String(row.operation));
+    const payload = await response.json();
+    const closed = row.is_mutation === true ||
+      ["guest", "database", "credential"].includes(String(row.kind));
+    assert.equal(payload.operation.executable, !closed, String(row.operation));
+    assert.equal(payload.operation.handler, row.handler);
+  }
+  assert.equal(h.calls.length, 0);
+});
+Deno.test("Agenda, customer key and agent grants remain independent from Controller privilege", async () => {
+  const rows = [
+    extensionRow("agenda.pins.list"),
+    extensionRow("customer.keys.list"),
+    extensionRow("gmail.messages.search"),
+  ];
+  const owner = harness({ actorId: extensionActor, rows });
+  for (const row of rows) {
+    assert.equal(
+      (await owner.request({ action: "describe", operation: row.operation }))
+        .status,
+      403,
+    );
+  }
+  const portal = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    rows,
+  });
+  assert.equal(
+    (await portal.request({
+      action: "describe",
+      operation: "gmail.messages.search",
+    })).status,
+    200,
+  );
+  assert.equal(
+    (await portal.request({
+      action: "describe",
+      operation: "agenda.pins.list",
+    })).status,
+    403,
+  );
+  const mismatched = harness({
+    actorId: extensionActor,
+    role: null,
+    tenant: "10000000-0000-4000-8000-000000000003",
+    memoryTenant: extensionTenant,
+    rows,
+  });
+  assert.equal(
+    (await mismatched.request({
+      action: "describe",
+      operation: "agenda.pins.list",
+    })).status,
+    403,
+  );
+  const unconfirmed = harness({
+    actorId: extensionActor,
+    tenant: extensionTenant,
+    memoryTenant: extensionTenant,
+    emailConfirmed: false,
+    rows,
+  });
+  assert.equal(
+    (await unconfirmed.request({
+      action: "describe",
+      operation: "customer.keys.list",
+    })).status,
+    403,
+  );
+});
+Deno.test("customer key administration and Gmail reads forward the real user JWT to their fixed services", async () => {
+  const key = harness({
+    actorId: extensionActor,
+    role: null,
+    tenant: extensionTenant,
+    memoryTenant: extensionTenant,
+    rows: [extensionRow("customer.keys.list")],
+    backend: () => Response.json({ ok: true, keys: [] }),
+  });
+  assert.equal(
+    (await key.request({
+      action: "execute",
+      operation: "customer.keys.list",
+      arguments: {},
+    })).status,
+    200,
+  );
+  assert.equal(
+    key.calls[0].url,
+    "https://example.supabase.co/functions/v1/sandy-operations-api",
+  );
+  assert.deepEqual(JSON.parse(String(key.calls[0].init?.body)), {
+    operation: "keys.list",
+    arguments: {},
+  });
+  assert.equal(
+    new Headers(key.calls[0].init?.headers).get("authorization"),
+    "Bearer test-user-jwt",
+  );
+  const gmail = harness({
+    actorId: extensionActor,
+    role: null,
+    memoryTenant: extensionTenant,
+    rows: [extensionRow("gmail.messages.search")],
+    backend: () =>
+      Response.json({
+        ok: true,
+        contract_version: "1.0.0",
+        principal_kind: "auth_user",
+        task_id: null,
+        read_only: true,
+        data: "fixture",
+      }),
+  });
+  assert.equal(
+    (await gmail.request({
+      action: "execute",
+      channel: "mcp",
+      operation: "gmail.messages.search",
+      arguments: { query: "in:inbox" },
+    })).status,
+    200,
+  );
+  assert.equal(
+    gmail.calls[0].url,
+    "https://example.supabase.co/functions/v1/sandy-agent-operation-api",
+  );
+  assert.equal(
+    new Headers(gmail.calls[0].init?.headers).get("authorization"),
+    "Bearer test-user-jwt",
+  );
+  assert.deepEqual(JSON.parse(String(gmail.calls[0].init?.body)), {
+    operation: "gmail.messages.search",
+    arguments: { query: "in:inbox" },
+    channel: "mcp",
+  });
+});
+Deno.test("sensitive reads and unavailable SSH stay closed before grants, provider access or credential lookup", async () => {
+  const cases: [string, Row][] = [
+    ["supabase.sql.query", { sql: "SELECT 1" }],
+    ["gcp.vm.agent.status", { vm_name: "sandy-video" }],
+    ["system.credentials.provider.verify", {
+      target_id: extensionActor,
+      rotation_id: extensionTenant,
+    }],
+  ];
+  for (const [operation, args] of cases) {
+    const h = harness({
+      actorId: extensionActor,
+      rows: [extensionRow(operation)],
+    });
+    const response = await h.request({
+      action: "execute",
+      operation,
+      arguments: args,
+    });
+    assert.equal(response.status, 424, operation);
+    assert.equal(
+      (await response.json()).error,
+      "operation_requires_live_verification",
+    );
+    assert.equal(h.rpcCalls.length, 0);
+    assert.equal(h.calls.length, 0);
+  }
+  const ssh = harness({
+    actorId: extensionActor,
+    rows: [extensionRow("gcp.vm.ssh.exec", true)],
+  });
+  const response = await ssh.request({
+    action: "execute",
+    operation: "gcp.vm.ssh.exec",
+    arguments: { vm_name: "sandy-video", command: "true" },
+  });
+  assert.equal(response.status, 424);
+  assert.equal(
+    (await response.json()).error,
+    "guest_ssh_transport_unavailable",
+  );
+  assert.equal(ssh.calls.length, 0);
+});
+Deno.test("lifecycle polling reenters the real gateway and consumes the provider envelope with original proof", async () => {
+  const child = "gcp.compute.zone_operations.get",
+    c = providerOperations[child];
+  const rows = [extensionRow("system.lifecycle.poll"), {
+    ...c,
+    handler: "sandy-provider-operation-api",
+    input_schema: { type: "object" },
+    output_schema: { type: "object" },
+    api_exposed: true,
+    ai_exposed: true,
+    verified: false,
+    error_contract: { contract_sha256: c.contract_sha256 },
+  }];
+  const grants = new Map<string, string>();
+  let admissions = 0;
+  const h = harness({
+    actorId: extensionActor,
+    rows,
+    executionPolicy: true,
+    rpcHandler: (name, args) => {
+      if (name === "sandy_api_admit_execution") {
+        admissions++;
+        const admission = crypto.randomUUID(), grant = crypto.randomUUID();
+        grants.set(grant, admission);
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: admission,
+          grant_id: grant,
+          state: "admitted",
+          executed: false,
+          expires_at: new Date(Date.now() + 60000).toISOString(),
+        };
+      }
+      if (name === "sandy_api_consume_execution_grant") {
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: grants.get(String(args.p_grant_id)),
+        };
+      }
+      if (name === "sandy_api_finish_execution") {
+        return {
+          ok: true,
+          admission_id: args.p_admission_id,
+          state: args.p_outcome,
+          reused: false,
+        };
+      }
+      throw Error(`unexpected RPC ${name}`);
+    },
+    backend: (_url, init) => {
+      const sent = JSON.parse(String(init?.body));
+      assert.equal(sent.operation, child);
+      assert.equal(sent.actor_id, extensionActor);
+      assert.equal(sent.tenant_id, null);
+      assert.equal(
+        new Headers(init?.headers).get("authorization"),
+        "Bearer test-service-credential",
+      );
+      return Response.json({
+        ok: true,
+        operation: child,
+        contract_version: "1.0.0",
+        provider: "gcp",
+        request_state: "observed",
+        executed: true,
+        admission_id: sent.admission_id,
+        provider_http_status: 200,
+        provider_request_id: "fixture-provider-read",
+        result: { name: "operation-test", status: "DONE", id: "22" },
+        possibly_truncated: false,
+        result_limit: 100,
+        next_page: null,
+      });
+    },
+  });
+  const response = await h.request({
+    action: "execute",
+    operation: "system.lifecycle.poll",
+    arguments: { scope: "zone", operation_name: "operation-test" },
+  });
+  assert.equal(
+    response.status,
+    200,
+    JSON.stringify(await response.clone().json()),
+  );
+  const body = await response.json();
+  assert.equal(body.result.terminal, true);
+  assert.equal(body.result.effect_confirmed, false);
+  assert.match(body.result.read_admission_id, /^[a-f0-9-]{36}$/);
+  assert.equal(admissions, 2);
+  assert.equal(h.calls.length, 1);
+  assert.deepEqual(h.identityTokens, ["test-user-jwt", "test-user-jwt"]);
 });

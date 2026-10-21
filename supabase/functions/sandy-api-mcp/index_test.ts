@@ -302,3 +302,30 @@ Deno.test("API transport targets only Sandy operation API and preserves caller i
   );
   equal(await api("test.identity.token", { action: "list" }), catalogue);
 });
+
+Deno.test("scoped credential remains a separate header through MCP discovery and invocation", async () => {
+  const headers: string[] = [];
+  const api = createApi("https://project.test.invalid", "public-anon", (async (_url, init) => {
+    const h = new Headers(init?.headers);
+    equal(h.get("authorization"), "Bearer public.anon.jwt");
+    headers.push(h.get("x-sandy-api-key") ?? "missing");
+    const body = JSON.parse(String(init?.body));
+    return Response.json(body.action === "list" ? { ok: true, operations: [] } : { ok: true, executed: true, result: { ok: true } });
+  }) as typeof fetch);
+  const handler = createHandler(api);
+  for (const body of [message("tools/list"), message("tools/call", { name: "resource.inspect", arguments: {} })]) {
+    const response = await handler(new Request("https://local.invalid", { method: "POST", headers: { authorization: "Bearer public.anon.jwt", "x-sandy-api-key": "opaque.private.credential" }, body: JSON.stringify(body) }));
+    equal(response.status, 200);
+  }
+  equal(headers, ["opaque.private.credential", "opaque.private.credential"]);
+});
+
+Deno.test("a typed accepted job receipt is successful MCP admission without claiming execution", async () => {
+  const receipt = { ok: true, accepted: true, executed: false, job_id: "11111111-1111-4111-8111-111111111111", state: "queued" };
+  const handler = createHandler(async () => ({ status: 202, result: { ...receipt, operation: "orchestration.plans.execute", result: receipt } }));
+  const response = await handler(request(message("tools/call", { name: "orchestration.plans.execute", arguments: {} })));
+  const body = await response.json();
+  equal(body.result.isError, false);
+  equal(body.result.structuredContent, receipt);
+  equal(body.result.structuredContent.executed, false);
+});

@@ -5,6 +5,105 @@ import {
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import { requestReadJobRetry } from "./retry_read_job.ts";
+import { createCredentialResolver } from "./gateway_credentials.ts";
+import { governedExecution } from "./governed_execution.ts";
+import type { ExecutionAdmission } from "./access_policy.ts";
+import {
+  executePolicyOperation,
+  isPolicyOperation,
+  policyContractMatches,
+  policyOperationContracts,
+  requiresPolicyUserJWT,
+} from "./policy_operations.ts";
+import {
+  inspectEngineeringMcp,
+  MCP_DISCOVERY_OPERATION,
+  mcpDiscoveryContract,
+} from "./mcp_diagnostics.ts";
+import {
+  customerServiceContractMatches,
+  customerServiceContracts,
+  customerServiceGrant,
+  executeCustomerService,
+  hasCustomerServiceGrant,
+  isCustomerServiceOperation,
+} from "./customer_services.ts";
+import {
+  type ProviderConfig,
+  providerExecutionScope,
+  providerOperations,
+} from "../sandy-provider-operation-api/gateway.ts";
+import { parseProviderBindings } from "../sandy-provider-operation-api/configured_scopes.ts";
+import {
+  customerMutationContracts,
+  executeCustomerMutation,
+  isCustomerMutationOperation,
+} from "./customer_mutations.ts";
+import {
+  executeUserExtension,
+  extensionAvailability,
+  extensionContractMatches,
+  extensionContracts,
+  extensionExecutionScope,
+  extensionHandlers,
+  extensionHasAccess,
+  extensionKind,
+  extensionNeedsAgenda,
+  extensionNeedsPortal,
+  extensionOwnerOnly,
+  extensionOwnsGrant,
+  extensionRequiresUserSession,
+} from "./installed_extensions.ts";
+import {
+  captureLifecyclePreimage,
+  executeProviderLifecycle,
+  type LifecycleContext,
+} from "./provider_lifecycle.ts";
+import {
+  customerContractMatches,
+  customerOperationContracts,
+  executeCustomerOperation,
+  isCustomerOperation,
+  requiresCustomerOwner,
+} from "./customer_operations.ts";
+import {
+  executeLegacyOperation,
+  isLegacyOperation,
+  legacyContractMatches,
+  legacyOperationContracts,
+  requiresLegacyUserJWT,
+} from "./legacy_operations.ts";
+import {
+  handleOrchestrationAction,
+  isOrchestrationOperation,
+  orchestrationActions,
+  requestLegacyDeploymentJob,
+} from "../sandy-orchestration-api/index.ts";
+import { orchestrationContracts } from "../sandy-orchestration-api/contracts.ts";
+import {
+  argumentDigest,
+  canonicalJson,
+  JsonRequestError,
+  requestJson,
+} from "../_shared/sandy_api_protocol.ts";
+export type DelegatedIdentity = {
+  kind: "api_key" | "job_lease";
+  principalId: string;
+  allowedOperations: readonly string[];
+  credentialId?: string;
+  boundExecution?: {
+    operation: string;
+    arguments: Record<string, unknown>;
+    inputDigest: string;
+    channel: "api" | "mcp";
+    registryContract?: Record<string, unknown>;
+    dispatchId?: string;
+  };
+};
+export type CredentialResolution = DelegatedIdentity | {
+  status: number;
+  error: string;
+} | null;
 import {
   buildEngineeringReadRequest,
   engineeringReadActions,
@@ -23,6 +122,13 @@ export type OperationDependencies = {
   anon: string;
   db: Pick<SupabaseClient, "auth" | "from" | "rpc">;
   fetch?: typeof fetch;
+  executionPolicy?: boolean;
+  catalogueRpc?: boolean;
+  providerConfig?: ProviderConfig;
+  resolveCredential?: (
+    request: Request,
+    bearer: string,
+  ) => Promise<CredentialResolution>;
 };
 const reply = (status: number, data: unknown) =>
   Response.json(data, {
@@ -112,6 +218,68 @@ const videoReadActions: Readonly<Record<string, string>> = Object.freeze({
 const allowedHandlers: Readonly<
   Record<string, { functionName: string; action?: string }>
 > = Object.freeze({
+  ...extensionHandlers,
+  ...Object.fromEntries(
+    Object.entries(customerMutationContracts).map(
+      (
+        [operation, contract],
+      ) => [operation, { functionName: contract.handler }],
+    ),
+  ),
+  ...Object.fromEntries(
+    Object.keys(providerOperations).map(
+      (
+        operation,
+      ) => [operation, { functionName: "sandy-provider-operation-api" }],
+    ),
+  ),
+  ...Object.fromEntries(
+    Object.entries(customerServiceContracts).map(
+      (
+        [operation, contract],
+      ) => [operation, {
+        functionName: contract.handler,
+        action: contract.action,
+      }],
+    ),
+  ),
+  ...Object.fromEntries(
+    Object.entries(policyOperationContracts).map(
+      ([operation]) => [operation, { functionName: "sandy-operation-api" }],
+    ),
+  ),
+  [MCP_DISCOVERY_OPERATION]: { functionName: "sandy-operation-api" },
+  ...Object.fromEntries(
+    Object.entries(customerOperationContracts).map(
+      (
+        [operation, contract],
+      ) => [operation, {
+        functionName: contract.handler,
+        action: contract.action,
+      }],
+    ),
+  ),
+  ...Object.fromEntries(
+    Object.entries(legacyOperationContracts).map(
+      (
+        [operation, contract],
+      ) => [operation, {
+        functionName: contract.handler,
+        action: contract.action,
+      }],
+    ),
+  ),
+  ...Object.fromEntries(
+    Object.entries(orchestrationActions).map(
+      (
+        [operation, action],
+      ) => [operation, { functionName: "sandy-orchestration-api", action }],
+    ),
+  ),
+  "deployment.jobs.request": {
+    functionName: "sandy-orchestration-api",
+    action: "legacy_job_request",
+  },
   ...Object.fromEntries(
     Object.entries(engineeringReadActions).map((
       [operation, action],
@@ -157,7 +325,17 @@ const allowedHandlers: Readonly<
     action: "engineering_release",
   },
 });
-const ajv = new Ajv({ strict: true, allErrors: false, validateFormats: true });
+export const installedOperationIds: readonly string[] = Object.freeze(
+  Object.keys(allowedHandlers).sort(),
+);
+const ajv = new Ajv({
+  strict: true,
+  strictTypes: false,
+  strictRequired: false,
+  allowUnionTypes: true,
+  allErrors: false,
+  validateFormats: true,
+});
 for (const [name, format] of Object.entries(fullFormats)) {
   ajv.addFormat(name, format);
 }
@@ -177,7 +355,7 @@ function schemaValid(schema: unknown, value: unknown): boolean | null {
   }
 }
 const registryColumns =
-  "operation,domain,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ai_exposed,verified,last_verified_at";
+  "operation,domain,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ai_exposed,verified,last_verified_at,error_contract";
 function validOperation(value: unknown): value is string {
   return typeof value === "string" && /^[a-z][a-z0-9_.-]{2,100}$/.test(value);
 }
@@ -200,6 +378,53 @@ function enabledEntry(
 // Discovery must not advertise a malformed read contract that dispatch refuses.
 function discoverableContract(entry: Record<string, unknown>): boolean {
   const operation = String(entry.operation);
+  if (extensionKind(operation)) {
+    return extensionContractMatches(operation, entry);
+  }
+  if (isCustomerMutationOperation(operation)) {
+    const c = customerMutationContracts[operation];
+    return entry.handler === c.handler && entry.is_mutation === true &&
+      entry.permission_scope === c.permission_scope;
+  }
+  const provider = providerOperations[operation];
+  if (provider) {
+    return entry.handler === "sandy-provider-operation-api" &&
+      entry.is_mutation === provider.is_mutation &&
+      entry.permission_scope === provider.permission_scope &&
+      isObject(entry.error_contract) &&
+      entry.error_contract.contract_sha256 === provider.contract_sha256;
+  }
+  if (isCustomerServiceOperation(operation)) {
+    return customerServiceContractMatches(operation, entry);
+  }
+  if (isPolicyOperation(operation)) {
+    return policyContractMatches(operation, entry);
+  }
+  if (operation === MCP_DISCOVERY_OPERATION) {
+    return entry.handler === "sandy-operation-api" &&
+      entry.is_mutation === false &&
+      entry.permission_scope === "infrastructure:read";
+  }
+  if (isCustomerOperation(operation)) {
+    return customerContractMatches(operation, entry);
+  }
+  if (isLegacyOperation(operation)) {
+    return legacyContractMatches(operation, entry);
+  }
+  if (isOrchestrationOperation(operation)) {
+    const contract = orchestrationContracts.find((item) =>
+      item.operation === operation
+    );
+    return !!contract && entry.handler === "sandy-orchestration-api" &&
+      entry.is_mutation === contract.is_mutation &&
+      entry.permission_scope ===
+        (contract.is_mutation ? "orchestration:write" : "orchestration:read");
+  }
+  if (operation === "deployment.jobs.request") {
+    return entry.handler === "sandy-orchestration-api" &&
+      entry.is_mutation === true &&
+      entry.permission_scope === "deployment:write";
+  }
   if (Object.hasOwn(videoReadActions, operation)) {
     return entry.handler === "sandy-deploy-provision" &&
       entry.is_mutation === false &&
@@ -236,8 +461,24 @@ function discoverableContract(entry: Record<string, unknown>): boolean {
   }
   return true;
 }
+function requiresUserSession(operation: string): boolean {
+  return extensionRequiresUserSession(operation) ||
+    isCustomerMutationOperation(operation) ||
+    isCustomerServiceOperation(operation) || requiresPolicyUserJWT(operation) ||
+    operation === MCP_DISCOVERY_OPERATION || isCustomerOperation(operation) ||
+    requiresLegacyUserJWT(operation) || isCustomerRead(operation) ||
+    isMemoryRead(operation) ||
+    isEngineeringReadOperation(operation) ||
+    operation === "engineering.preflight";
+}
 function ownerOnly(operation: string) {
-  return operation === "deployment.management.release" ||
+  return extensionOwnerOnly(operation) || !!providerOperations[operation] ||
+    customerServiceGrant(operation) === "controller_owner" ||
+    isPolicyOperation(operation) || operation === MCP_DISCOVERY_OPERATION ||
+    requiresCustomerOwner(operation) || isLegacyOperation(operation) ||
+    isOrchestrationOperation(operation) ||
+    operation === "deployment.jobs.request" ||
+    operation === "deployment.management.release" ||
     operation === "deployment.jobs.cancel" ||
     operation === "deployment.jobs.retry" ||
     Object.hasOwn(videoReadActions, operation) ||
@@ -248,6 +489,37 @@ function ownerOnly(operation: string) {
     providerReadOperations.includes(
       operation as typeof providerReadOperations[number],
     );
+}
+function executionAvailability(
+  entry: Record<string, unknown>,
+  config?: ProviderConfig,
+) {
+  const extension = extensionAvailability(String(entry.operation), entry);
+  if (extension) return extension;
+  const provider = providerOperations[String(entry.operation)];
+  if (
+    (entry.is_mutation === true || provider?.requires_grant) &&
+    entry.verified !== true
+  ) {
+    return {
+      executable: false,
+      unavailable_reason: "operation_requires_live_verification",
+    };
+  }
+  if (provider) {
+    try {
+      providerExecutionScope(provider.operation, config);
+    } catch (error) {
+      return {
+        executable: false,
+        unavailable_reason: error instanceof Error &&
+            /^verified_[a-z_]+_scope_binding_required$/.test(error.message)
+          ? error.message
+          : "provider_scope_configuration_required",
+      };
+    }
+  }
+  return { executable: true };
 }
 async function upstreamResult(
   operation: string,
@@ -286,6 +558,15 @@ async function upstreamResult(
       error: "upstream_output_schema_mismatch",
     });
   }
+  if (ok && result.accepted === true && result.executed === false) {
+    return reply(202, {
+      ...result,
+      ok: true,
+      operation,
+      executed: false,
+      result,
+    });
+  }
   return reply(response.ok && !ok ? 502 : response.status, {
     ok,
     operation,
@@ -302,6 +583,32 @@ async function upstreamResult(
   });
 }
 
+// Installed application handlers return sanitized refusal/unknown envelopes.
+// Preserve those execution claims while validating every positive result.
+async function applicationResult(
+  operation: string,
+  response: Response,
+  outputSchema: unknown,
+) {
+  if (response.ok) return upstreamResult(operation, response, outputSchema);
+  let result: unknown;
+  try {
+    result = await response.json();
+  } catch {
+    result = null;
+  }
+  if (!isObject(result)) {
+    return reply(502, {
+      ok: false,
+      operation,
+      error: "application_handler_invalid_response",
+      executed: null,
+      reconciliation_required: true,
+    });
+  }
+  return reply(response.status, { ...result, ok: false, operation });
+}
+
 export function createOperationHandler(dependencies: OperationDependencies) {
   const { base, service, anon, db } = dependencies;
   const fetchBackend = dependencies.fetch ?? fetch;
@@ -312,6 +619,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       "",
     );
     let routedBody: Record<string, unknown> | undefined;
+    const internalExecution = path === "/v1/internal/execute";
+    const planAction = path === "/v1/plans:validate"
+      ? "orchestration.plans.validate"
+      : path === "/v1/plans:execute"
+      ? "orchestration.plans.execute"
+      : null;
     const describePath = path.match(
       /^\/v1\/capabilities\/([a-z][a-z0-9_.-]{2,100})$/,
     );
@@ -319,6 +632,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       /^\/v1\/operations\/([a-z][a-z0-9_.-]{2,100}):execute$/,
     );
     const jobPath = path.match(/^\/v1\/jobs\/([a-f0-9-]{36})(\/events)?$/i);
+    const executionReceiptPath = path.match(
+      /^\/v1\/executions\/([a-f0-9-]{36})$/i,
+    );
     const cancelPath = path.match(
       /^\/v1\/jobs\/([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}):cancel$/i,
     );
@@ -329,6 +645,37 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (path === "/v1/capabilities") routedBody = { action: "list" };
       else if (describePath) {
         routedBody = { action: "describe", operation: describePath[1] };
+      } else if (executionReceiptPath) {
+        routedBody = {
+          action: "execute",
+          operation: "system.execution.get",
+          arguments: { request_id: executionReceiptPath[1] },
+        };
+      } else if (path === "/v1/audit") {
+        const after = url.searchParams.get("after") ?? "0";
+        const limit = url.searchParams.get("limit") ?? "100";
+        if (
+          !/^\d{1,15}$/.test(after) || !/^\d{1,3}$/.test(limit) ||
+          [...url.searchParams.keys()].some((key) =>
+            !["after", "limit", "operation", "resource"].includes(key)
+          )
+        ) return reply(400, { error: "invalid_audit_query" });
+        const operation = url.searchParams.get("operation") ??
+          url.searchParams.get("resource");
+        if (operation && !validOperation(operation)) {
+          return reply(400, {
+            error: "audit_resource_filter_requires_operation_id",
+          });
+        }
+        routedBody = {
+          action: "execute",
+          operation: "system.audit.list",
+          arguments: {
+            after_sequence: Number(after),
+            limit: Number(limit),
+            ...(operation ? { operation } : {}),
+          },
+        };
       } else if (jobPath) {
         const job_id = jobPath[1];
         if (
@@ -348,7 +695,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     } else if (request.method !== "POST") {
       return reply(405, { error: "method_not_allowed" });
     } else if (
-      path !== "" && path !== "/" && !executePath && !cancelPath && !retryPath
+      path !== "" && path !== "/" && !executePath && !cancelPath &&
+      !retryPath && !internalExecution && !planAction
     ) {
       return reply(404, { error: "route_not_found" });
     }
@@ -359,8 +707,95 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       /^Bearer\s+(.+)$/i,
     )?.[1];
     if (!bearer) return reply(401, { error: "authentication_required" });
-    const { data: { user }, error: authError } = await db.auth.getUser(bearer);
-    if (authError || !user) return reply(401, { error: "invalid_identity" });
+    let delegation: DelegatedIdentity | null = null;
+    let user:
+      | { id: string; email?: string; email_confirmed_at?: string | null }
+      | null = null;
+    let credential: CredentialResolution = null;
+    if (dependencies.resolveCredential) {
+      try {
+        credential = await dependencies.resolveCredential(
+          request.clone(),
+          bearer,
+        );
+      } catch {
+        return reply(503, {
+          error: "credential_authorisation_unavailable",
+          executed: false,
+        });
+      }
+    }
+    if (credential && "error" in credential) {
+      return reply(
+        [400, 401, 403, 404, 409, 410, 413, 423, 429, 503].includes(
+            credential.status,
+          )
+          ? credential.status
+          : 503,
+        {
+          error: /^[a-z][a-z0-9_]{2,80}$/.test(credential.error)
+            ? credential.error
+            : "credential_authorisation_failed",
+          executed: false,
+        },
+      );
+    }
+    if (credential) {
+      if (
+        !["api_key", "job_lease"].includes(credential.kind) ||
+        !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+          credential.principalId,
+        ) ||
+        !Array.isArray(credential.allowedOperations) ||
+        !credential.allowedOperations.length ||
+        credential.allowedOperations.some((operation) =>
+          !validOperation(operation)
+        )
+      ) {
+        return reply(401, {
+          error: "invalid_delegated_identity",
+          executed: false,
+        });
+      }
+      delegation = credential;
+      user = { id: credential.principalId };
+      if (credential.kind === "job_lease") {
+        const execution = credential.boundExecution;
+        if (
+          !internalExecution || !execution ||
+          !credential.allowedOperations.includes(execution.operation) ||
+          !isObject(execution.arguments) ||
+          !["api", "mcp"].includes(execution.channel) ||
+          await argumentDigest(execution.arguments) !== execution.inputDigest
+        ) {
+          return reply(403, {
+            error: "invalid_job_execution_scope",
+            executed: false,
+          });
+        }
+        routedBody = {
+          action: "execute",
+          operation: execution.operation,
+          arguments: execution.arguments,
+          channel: execution.channel,
+        };
+      } else if (internalExecution) {
+        return reply(403, { error: "job_lease_required", executed: false });
+      }
+    } else {
+      if (internalExecution || request.headers.has("x-sandy-api-key")) {
+        return reply(401, {
+          error: "delegated_authentication_required",
+          executed: false,
+        });
+      }
+      const { data, error: authError } = await db.auth.getUser(bearer);
+      if (authError || !data.user) {
+        return reply(401, { error: "invalid_identity" });
+      }
+      user = data.user;
+    }
+    if (!user) return reply(401, { error: "invalid_identity" });
     const { data: admin, error: roleError } = await db.from(
       "sandy_controller_admins",
     )
@@ -369,9 +804,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     if (roleError) return reply(503, { error: "authorisation_unavailable" });
     let body: Record<string, unknown>;
     try {
-      const value = routedBody ?? await request.json();
+      const value = routedBody ?? await requestJson(request);
       if (!isObject(value)) throw Error();
-      body = executePath
+      body = planAction
+        ? { action: "execute", operation: planAction, arguments: value }
+        : executePath
         ? {
           action: "execute",
           operation: executePath[1],
@@ -391,17 +828,30 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           arguments: { job_id: (cancelPath ?? retryPath)![1] },
         };
       }
-    } catch {
-      return reply(400, { error: "invalid_request" });
+    } catch (error) {
+      return reply(error instanceof JsonRequestError ? error.status : 400, {
+        error: error instanceof JsonRequestError
+          ? error.code
+          : "invalid_request",
+      });
     }
     // Reuse the existing customer-access directory; never trust a caller's
     // customer_id. The downstream customer handler independently verifies the
     // same user session and scopes every resource query to that tenant.
     let tenantAccess = false;
+    let agendaCustomerId: string | null = null;
+    const additionalGrant = typeof body.operation === "string"
+      ? customerServiceGrant(body.operation)
+      : undefined;
     const customerRequest = typeof body.operation === "string" &&
-      isCustomerRead(body.operation);
+      (extensionNeedsAgenda(body.operation) || isCustomerRead(body.operation) ||
+        isCustomerMutationOperation(body.operation) ||
+        additionalGrant === "agenda" ||
+        additionalGrant === "portal_and_agenda");
     const memoryRequest = typeof body.operation === "string" &&
-      isMemoryRead(body.operation);
+      (extensionNeedsPortal(body.operation) || isMemoryRead(body.operation) ||
+        isCustomerOperation(body.operation) || additionalGrant === "portal" ||
+        additionalGrant === "portal_and_agenda");
     if (
       typeof user.email === "string" &&
       (customerRequest || body.action === "list" || !admin)
@@ -417,10 +867,12 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         return reply(503, { error: "tenant_authorisation_unavailable" });
       }
       tenantAccess = !accessError && typeof access?.customer_id === "string";
+      if (tenantAccess) agendaCustomerId = access!.customer_id;
     }
     // Memory Portal has its own grant and verified primary-email check. Agenda
     // access and Controller membership confer no access to these private records.
     let memoryAccess = false;
+    let portalCustomerId: string | null = null;
     if (
       typeof user.email === "string" && user.email_confirmed_at &&
       (memoryRequest || body.action === "list" || !admin)
@@ -446,31 +898,62 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         }
         memoryAccess = !addressError &&
           address?.normalized_email === user.email.toLowerCase();
+        if (memoryAccess) portalCustomerId = portal.customer_id;
       }
     }
     if (!admin && !tenantAccess && !memoryAccess) {
       return reply(403, { error: "controller_administrator_required" });
     }
+    const customerServicePrincipal = {
+      id: user.id,
+      portalCustomerId,
+      agendaCustomerId,
+      controllerOwner: admin?.role === "owner",
+    };
     if (body.action === "list") {
-      const { data, error } = await db.from("sandy_operation_registry")
-        .select(registryColumns).eq("api_exposed", true)
-        .in("operation", Object.keys(allowedHandlers)).order("operation");
+      const { data, error } = dependencies.catalogueRpc
+        ? await db.rpc("sandy_api_catalogue_records", {
+          p_operations: Object.keys(allowedHandlers),
+        })
+        : await db.from("sandy_operation_registry")
+          .select(registryColumns).eq("api_exposed", true)
+          .in("operation", Object.keys(allowedHandlers)).order("operation");
       if (error) return reply(503, { error: "operation_registry_unavailable" });
       const entries: unknown[] = data ?? [];
       const operations = entries.filter(enabledEntry)
         .filter(discoverableContract)
         .filter((entry) =>
-          isMemoryRead(entry.operation)
+          !delegation ||
+          ((delegation.allowedOperations.includes(entry.operation) ||
+            (delegation.kind === "api_key" &&
+              entry.operation === "system.execution.get")) &&
+            entry.is_mutation === false &&
+            !requiresUserSession(entry.operation))
+        )
+        .filter((entry) =>
+          extensionKind(entry.operation)
+            ? extensionHasAccess(
+              entry.operation,
+              customerServicePrincipal,
+              !!user!.email_confirmed_at,
+            )
+            : isCustomerServiceOperation(entry.operation)
+            ? hasCustomerServiceGrant(customerServicePrincipal, entry.operation)
+            : (isMemoryRead(entry.operation) ||
+                isCustomerOperation(entry.operation))
             ? memoryAccess
-            : isCustomerRead(entry.operation)
+            : (isCustomerRead(entry.operation) ||
+                isCustomerMutationOperation(entry.operation))
             ? tenantAccess
             : !!admin
         )
         .filter((entry) =>
           !ownerOnly(entry.operation) || admin?.role === "owner"
         )
-        // executable means an enabled source dispatch exists, not production verification.
-        .map((entry) => ({ ...entry, executable: true }));
+        .map((entry) => ({
+          ...entry,
+          ...executionAvailability(entry, dependencies.providerConfig),
+        }));
       const bytes = new TextEncoder().encode(JSON.stringify(operations));
       const digest = new Uint8Array(
         await crypto.subtle.digest("SHA-256", bytes),
@@ -488,6 +971,21 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       return reply(400, { error: "invalid_operation" });
     }
     const operation = body.operation;
+    if (
+      delegation && !delegation.allowedOperations.includes(operation) &&
+      !(delegation.kind === "api_key" && operation === "system.execution.get")
+    ) {
+      return reply(403, {
+        error: "credential_operation_scope_denied",
+        executed: false,
+      });
+    }
+    if (delegation && requiresUserSession(operation)) {
+      return reply(403, {
+        error: "operation_requires_user_session",
+        executed: false,
+      });
+    }
     const { data: storedEntry, error } = await db.from(
       "sandy_operation_registry",
     )
@@ -496,6 +994,19 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     const entry: unknown = storedEntry;
     if (!isObject(entry) || entry.api_exposed !== true) {
       return reply(404, { error: "operation_not_registered" });
+    }
+    const boundContract = delegation?.boundExecution?.registryContract;
+    if (
+      boundContract &&
+      Object.entries(boundContract).some(([key, value]) =>
+        !Object.hasOwn(entry, key) ||
+        canonicalJson(entry[key]) !== canonicalJson(value)
+      )
+    ) {
+      return reply(409, {
+        error: "job_execution_contract_changed",
+        executed: false,
+      });
     }
     if (body.channel === "mcp" && entry.ai_exposed !== true) {
       return reply(403, {
@@ -512,16 +1023,25 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       });
     }
     if (
-      isMemoryRead(operation)
+      extensionKind(operation)
+        ? !extensionHasAccess(
+          operation,
+          customerServicePrincipal,
+          !!user.email_confirmed_at,
+        )
+        : isCustomerServiceOperation(operation)
+        ? !hasCustomerServiceGrant(customerServicePrincipal, operation)
+        : (isMemoryRead(operation) || isCustomerOperation(operation))
         ? !memoryAccess
-        : isCustomerRead(operation)
+        : (isCustomerRead(operation) || isCustomerMutationOperation(operation))
         ? !tenantAccess
         : !admin
     ) {
       return reply(403, {
-        error: isMemoryRead(operation)
+        error: (isMemoryRead(operation) || isCustomerOperation(operation))
           ? "memory_access_required"
-          : isCustomerRead(operation)
+          : (isCustomerRead(operation) ||
+              isCustomerMutationOperation(operation))
           ? "customer_access_required"
           : "controller_administrator_required",
         executed: false,
@@ -539,7 +1059,10 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       }
       return reply(200, {
         ok: true,
-        operation: { ...entry, executable: true },
+        operation: {
+          ...entry,
+          ...executionAvailability(entry, dependencies.providerConfig),
+        },
       });
     }
     const handler = allowedHandlers[entry.operation];
@@ -561,377 +1084,908 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (isEngineeringReadOperation(operation)) {
-      if (!discoverableContract(entry)) {
-        return reply(503, {
-          error: "engineering_read_executor_contract_conflict",
-          executed: false,
-        });
-      }
-      const forwarded = buildEngineeringReadRequest(
-        base,
-        anon,
-        bearer,
+    if (!discoverableContract(entry)) {
+      return reply(503, {
+        error: isCustomerRead(operation)
+          ? "customer_executor_contract_conflict"
+          : isMemoryRead(operation)
+          ? "memory_executor_contract_conflict"
+          : isEngineeringReadOperation(operation)
+          ? "engineering_read_executor_contract_conflict"
+          : Object.hasOwn(videoReadActions, operation)
+          ? "video_read_executor_contract_conflict"
+          : "read_executor_contract_conflict",
+        executed: false,
+      });
+    }
+    if (entry.is_mutation === true && delegation?.kind === "api_key") {
+      return reply(403, {
+        error: "credential_mutation_scope_denied",
+        executed: false,
+      });
+    }
+    if (entry.is_mutation === true && entry.verified !== true) {
+      return reply(424, {
+        error: "operation_requires_live_verification",
+        executed: false,
+      });
+    }
+    const extensionReady = extensionAvailability(operation, entry);
+    if (extensionReady && !extensionReady.executable) {
+      return reply(424, {
+        ok: false,
         operation,
-        body.arguments ?? {},
-      );
-      if (!forwarded) {
-        return reply(400, {
-          error: "invalid_operation_arguments",
+        error: extensionReady.unavailable_reason,
+        executed: false,
+      });
+    }
+    const dispatchUser = user;
+    const originalChannel = body.channel === "mcp" ? "mcp" : "api";
+    const lifecycleContext = (requestId: string): LifecycleContext => ({
+      actorId: dispatchUser.id,
+      kind: delegation?.kind ?? "user",
+      requestId,
+      originalChannel,
+      ...(request.headers.get("x-sandy-approval-id")
+        ? { scope: { approvalId: request.headers.get("x-sandy-approval-id")! } }
+        : {}),
+    });
+    const executeCanonical = async (
+      context: LifecycleContext,
+      childOperation: string,
+      args: Record<string, unknown>,
+    ): Promise<Response> => {
+      if (
+        context.actorId !== dispatchUser.id ||
+        context.kind !== (delegation?.kind ?? "user") ||
+        context.originalChannel !== originalChannel ||
+        !validOperation(childOperation)
+      ) {
+        return reply(403, {
+          ok: false,
+          error: "lifecycle_canonical_context_denied",
           executed: false,
         });
       }
-      try {
-        const response = await fetchBackend(forwarded.url, forwarded.init);
-        const normalized = await normalizeEngineeringReadResponse(
+      const headers: Record<string, string> = {
+        authorization: `Bearer ${bearer}`,
+        "content-type": "application/json",
+        "x-sandy-request-id": context.requestId,
+      };
+      if (context.scope?.approvalId) {
+        headers["x-sandy-approval-id"] = context.scope.approvalId;
+      }
+      let canonical: (request: Request) => Promise<Response>;
+      let childRequest: Request;
+      if (context.kind === "user") {
+        // The existing verified user's real JWT is forwarded, not replaced by
+        // the internal platform/service credential.
+        canonical = createOperationHandler(dependencies);
+        childRequest = new Request(`${base}/functions/v1/sandy-operation-api`, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            action: "execute",
+            operation: childOperation,
+            arguments: args,
+            channel: originalChannel,
+          }),
+        });
+      } else {
+        // A leased lifecycle poll may derive only these two read contracts.
+        // This resolver is in-process and not an HTTP authentication endpoint.
+        if (
+          context.kind !== "job_lease" ||
+          operation !== "system.lifecycle.poll" ||
+          ![
+            "gcp.compute.zone_operations.get",
+            "gcp.compute.global_operations.get",
+          ].includes(childOperation) ||
+          providerOperations[childOperation]?.is_mutation !== false ||
+          providerOperations[childOperation]?.requires_grant !== false
+        ) {
+          return reply(403, {
+            ok: false,
+            error: "lifecycle_job_child_scope_denied",
+            executed: false,
+          });
+        }
+        const inputDigest = await argumentDigest(args);
+        canonical = createOperationHandler({
+          ...dependencies,
+          resolveCredential: async () => ({
+            kind: "job_lease",
+            principalId: dispatchUser.id,
+            allowedOperations: [childOperation],
+            boundExecution: {
+              operation: childOperation,
+              arguments: args,
+              inputDigest,
+              channel: originalChannel,
+              dispatchId: context.requestId,
+            },
+          }),
+        });
+        childRequest = new Request(
+          `${base}/functions/v1/sandy-operation-api/v1/internal/execute`,
+          { method: "POST", headers, body: "{}" },
+        );
+      }
+      const response = await canonical(childRequest);
+      const result: unknown = await response.json().catch(() => null);
+      if (!isObject(result)) {
+        return reply(502, {
+          ok: false,
+          error: "canonical_child_response_invalid",
+          executed: null,
+        });
+      }
+      // Public API envelopes retain the handler payload for MCP's output schema.
+      // Lifecycle consumes that real provider payload and its original proof.
+      if (
+        response.ok && isObject(result.result) &&
+        result.result.operation === childOperation &&
+        result.result.contract_version === "1.0.0" &&
+        result.result.admission_id === result.admission_id
+      ) {
+        return reply(response.status, {
+          ...result.result,
+          request_id: result.request_id,
+        });
+      }
+      return reply(response.status, result);
+    };
+    const dispatch = async (
+      _admission?: ExecutionAdmission,
+    ): Promise<Response> => {
+      const kind = extensionKind(operation);
+      if (kind) {
+        if (kind === "lifecycle") {
+          const response = await executeProviderLifecycle(
+            { db, executeCanonical },
+            lifecycleContext(
+              request.headers.get("x-sandy-request-id") ?? crypto.randomUUID(),
+            ),
+            operation,
+            body.arguments ?? {},
+          );
+          return applicationResult(operation, response, entry.output_schema);
+        }
+        const local = await executeUserExtension(
+          {
+            base,
+            anon,
+            service,
+            principal: customerServicePrincipal,
+            fetch: fetchBackend,
+            emailConfirmed: !!dispatchUser.email_confirmed_at,
+          },
+          bearer,
           operation,
           body.arguments ?? {},
-          response,
         );
-        return upstreamResult(operation, normalized, entry.output_schema);
-      } catch {
-        return reply(502, engineeringReadTransportFailure());
-      }
-    }
-    if (operation === "deployment.jobs.retry") {
-      if (entry.verified !== true) {
-        return reply(424, {
-          error: "operation_requires_live_verification",
-          executed: false,
-        });
-      }
-      if (
-        entry.handler !== "sandy-operation-api" || entry.is_mutation !== true ||
-        entry.permission_scope !== "deployment:write"
-      ) {
-        return reply(503, {
-          error: "retry_executor_contract_conflict",
-          executed: false,
-        });
-      }
-      const admission = await requestReadJobRetry(
-        db,
-        user.id,
-        body.arguments ?? {},
-      );
-      const receipt: Record<string, unknown> = { ...admission.body, operation };
-      if (
-        receipt.ok === true &&
-        schemaValid(entry.output_schema, receipt) !== true
-      ) {
-        return reply(502, {
-          error: "retry_result_invalid",
-          accepted: null,
-          executed: null,
-          reconciliation_required: true,
-        });
-      }
-      return reply(admission.status, receipt);
-    }
-    if (operation === "deployment.jobs.cancel") {
-      if (entry.verified !== true) {
-        return reply(424, {
-          error: "operation_requires_live_verification",
-          executed: false,
-        });
-      }
-      const { data, error } = await Promise.resolve().then(() =>
-        db.rpc("sandy_api_cancel_deployment_job", {
-          p_job_id: (body.arguments as Record<string, unknown>).job_id,
-          p_actor_id: user.id,
-        })
-      ).catch(() => ({ data: null, error: true }));
-      if (error) {
-        return reply(502, {
-          error: "cancellation_outcome_unknown",
-          executed: null,
-          reconciliation_required: true,
-        });
-      }
-      if (!isObject(data) || data.ok !== true) {
-        return reply(
-          isObject(data) && [403, 404, 409].includes(Number(data.http_status))
-            ? Number(data.http_status)
-            : 503,
-          {
+        if (local) {
+          return applicationResult(operation, local, entry.output_schema);
+        }
+        let response: Response;
+        try {
+          if (kind === "agent") {
+            response = await fetchBackend(
+              `${base}/functions/v1/sandy-agent-operation-api`,
+              {
+                method: "POST",
+                redirect: "error",
+                headers: {
+                  authorization: `Bearer ${bearer}`,
+                  apikey: anon,
+                  "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                  operation,
+                  arguments: body.arguments ?? {},
+                  channel: originalChannel,
+                }),
+                signal: AbortSignal.timeout(60000),
+              },
+            );
+          } else {
+            if (!_admission) {
+              return reply(503, {
+                ok: false,
+                error: "execution_policy_required",
+                executed: false,
+              });
+            }
+            response = await fetchBackend(
+              `${base}/functions/v1/${extensionContracts[operation].handler}`,
+              {
+                method: "POST",
+                redirect: "error",
+                headers: {
+                  authorization: `Bearer ${service}`,
+                  apikey: anon,
+                  "content-type": "application/json",
+                },
+                body: JSON.stringify({
+                  operation,
+                  arguments: body.arguments ?? {},
+                  actor_id: dispatchUser.id,
+                  tenant_id: null,
+                  request_id: _admission.requestId,
+                  grant_id: _admission.grantId,
+                  admission_id: _admission.admissionId,
+                  credential_id: null,
+                }),
+                signal: AbortSignal.timeout(60000),
+              },
+            );
+          }
+        } catch {
+          return reply(502, {
             ok: false,
-            error: isObject(data) && typeof data.error === "string"
-              ? data.error
-              : "cancellation_unavailable",
+            operation,
+            error: "application_execution_outcome_unknown",
+            executed: null,
+            reconciliation_required: true,
+          });
+        }
+        return applicationResult(operation, response, entry.output_schema);
+      }
+      if (isCustomerMutationOperation(operation)) {
+        const response = await executeCustomerMutation(
+          { base, anon, db, fetch: fetchBackend },
+          bearer,
+          operation,
+          body.arguments ?? {},
+        );
+        return applicationResult(
+          operation,
+          reply(response.status, response.body),
+          entry.output_schema,
+        );
+      }
+      if (providerOperations[operation]) {
+        if (!_admission) {
+          return reply(503, {
+            ok: false,
+            error: "execution_policy_required",
             executed: false,
-          },
-        );
-      }
-      if (schemaValid(entry.output_schema, data) !== true) {
-        return reply(502, {
-          error: "cancellation_result_invalid",
-          executed: null,
-          reconciliation_required: true,
-        });
-      }
-      return reply(200, { ok: true, operation, executed: true, result: data });
-    }
-    if (handler.functionName === "sandy-operations-api") {
-      if (
-        entry.is_mutation !== false ||
-        entry.permission_scope !== `${operation.split(".")[0]}:read`
-      ) {
-        return reply(503, {
-          error: "customer_executor_contract_conflict",
-          executed: false,
-        });
-      }
-      try {
-        const response = await fetchBackend(
-          `${base}/functions/v1/sandy-operations-api`,
-          {
-            method: "POST",
-            headers: {
-              authorization: `Bearer ${bearer}`,
-              apikey: anon,
-              "content-type": "application/json",
+          });
+        }
+        if (
+          [
+            "github.files.upsert",
+            "gcp.compute.instances.start",
+            "gcp.compute.instances.stop",
+          ].includes(operation)
+        ) {
+          const captured = await captureLifecyclePreimage(
+            { db, executeCanonical },
+            lifecycleContext(_admission.requestId),
+            _admission.admissionId,
+            operation,
+            isObject(body.arguments) ? body.arguments : {},
+          );
+          if (!captured.ok) return captured;
+        }
+        let response: Response;
+        try {
+          response = await fetchBackend(
+            `${base}/functions/v1/sandy-provider-operation-api`,
+            {
+              method: "POST",
+              redirect: "error",
+              headers: {
+                authorization: `Bearer ${service}`,
+                apikey: anon,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({
+                operation,
+                arguments: body.arguments ?? {},
+                actor_id: dispatchUser.id,
+                tenant_id: null,
+                request_id: _admission.requestId,
+                grant_id: _admission.grantId,
+                admission_id: _admission.admissionId,
+                credential_id: delegation?.credentialId ?? null,
+              }),
+              signal: AbortSignal.timeout(60000),
             },
-            body: JSON.stringify({
-              operation,
-              arguments: body.arguments ?? {},
-            }),
-            signal: AbortSignal.timeout(20000),
-          },
-        );
-        return upstreamResult(operation, response, entry.output_schema);
-      } catch {
-        return reply(502, {
-          ok: false,
-          error: "upstream_unavailable",
-          executed: false,
-        });
+          );
+        } catch {
+          return reply(502, {
+            ok: false,
+            error: "provider_execution_outcome_unknown",
+            executed: null,
+            reconciliation_required: true,
+          });
+        }
+        return applicationResult(operation, response, entry.output_schema);
       }
-    }
-    if (handler.functionName === "sandy-memory-centre") {
-      if (!discoverableContract(entry)) {
-        return reply(503, {
-          error: "memory_executor_contract_conflict",
-          executed: false,
-        });
-      }
-      const args = body.arguments ?? {};
-      // Keep this check even if a registry contract is accidentally broadened:
-      // neither tenant identity nor backend action can be caller-controlled.
-      if (
-        !isObject(args) ||
-        (operation === "memory.evidence"
-          ? Object.keys(args).some((key) => key !== "id") ||
-            typeof args.id !== "string" ||
-            !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
-              .test(args.id)
-          : Object.keys(args).length !== 0)
-      ) {
-        return reply(400, {
-          error: "invalid_operation_arguments",
-          executed: false,
-        });
-      }
-      try {
-        const response = await fetchBackend(
-          `${base}/functions/v1/sandy-memory-centre?op=${
-            memoryReadActions[operation]
-          }`,
+      if (isCustomerServiceOperation(operation)) {
+        const response = await executeCustomerService(
           {
-            method: "POST",
-            headers: {
-              authorization: `Bearer ${bearer}`,
-              apikey: anon,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify(args),
-            signal: AbortSignal.timeout(25000),
+            base,
+            anon,
+            service,
+            principal: customerServicePrincipal,
+            fetch: fetchBackend,
           },
+          bearer,
+          operation,
+          body.arguments ?? {},
         );
-        return upstreamResult(operation, response, entry.output_schema);
-      } catch {
-        return reply(502, {
-          ok: false,
-          error: "upstream_unavailable",
-          executed: false,
-        });
+        return applicationResult(operation, response, entry.output_schema);
       }
-    }
-    if (
-      ["sandy-infrastructure-read", "sandy-provider-read-api"].includes(
-        handler.functionName,
-      )
-    ) {
-      if (!discoverableContract(entry)) {
-        return reply(503, {
-          error: "read_executor_contract_conflict",
-          executed: false,
-        });
-      }
-      // These are global infrastructure records. Never grant a tenant caller
-      // the service credential; only the already authenticated Controller admin
-      // reaches this fixed read-only handler through this gateway.
-      const args = body.arguments ?? {};
-      if (
-        !isObject(args) ||
-        (args.limit !== undefined &&
-          (!Number.isInteger(args.limit) || Number(args.limit) < 1 ||
-            Number(args.limit) > 200))
-      ) {
-        return reply(400, {
-          error: "invalid_operation_arguments",
-          executed: false,
-        });
-      }
-      try {
-        const response = await fetchBackend(
-          `${base}/functions/v1/${handler.functionName}`,
+      if (isPolicyOperation(operation)) {
+        const response = await executePolicyOperation(
           {
-            method: "POST",
-            headers: {
-              authorization: `Bearer ${service}`,
-              apikey: anon,
-              "content-type": "application/json",
+            db,
+            verifySession: async (token) => {
+              const { data, error } = await db.auth.getUser(token);
+              return !error && data.user ? { id: data.user.id } : null;
             },
-            body: JSON.stringify({ operation, arguments: args }),
-            signal: AbortSignal.timeout(20000),
           },
-        );
-        return upstreamResult(operation, response, entry.output_schema);
-      } catch {
-        return reply(502, {
-          ok: false,
-          error: "upstream_unavailable",
-          executed: false,
-        });
-      }
-    }
-    if (Object.hasOwn(videoReadActions, operation)) {
-      if (
-        entry.handler !== "sandy-deploy-provision" ||
-        entry.is_mutation !== false ||
-        entry.permission_scope !== "infrastructure:read"
-      ) {
-        return reply(503, {
-          error: "video_read_executor_contract_conflict",
-          executed: false,
-        });
-      }
-      const args = body.arguments ?? {};
-      if (
-        !isObject(args) || Object.keys(args).some((key) =>
-          operation !== "video.status" || key !== "target"
-        ) || (args.target !== undefined && args.target !== "sandy-video")
-      ) {
-        return reply(400, {
-          error: "invalid_operation_arguments",
-          executed: false,
-        });
-      }
-      try {
-        // Retain the existing fixed read actions, including the effective
-        // single OS Config check for video.execution.preflight. The API owns
-        // caller authorization; the provider handler receives only its service
-        // identity and cannot be retargeted or given an action by the caller.
-        const response = await fetchBackend(
-          `${base}/functions/v1/sandy-deploy-provision`,
           {
-            method: "POST",
-            headers: {
-              authorization: `Bearer ${service}`,
-              apikey: anon,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({ action: videoReadActions[operation] }),
-            signal: AbortSignal.timeout(45000),
+            kind: delegation?.kind ?? "user",
+            actorId: dispatchUser.id,
+            ...(!delegation ? { userJWT: bearer } : {}),
+            credentialId: delegation?.credentialId,
           },
+          operation,
+          body.arguments ?? {},
         );
-        return upstreamResult(operation, response, entry.output_schema);
-      } catch {
-        return reply(502, {
-          ok: false,
-          error: "upstream_unavailable",
-          executed: false,
+        return applicationResult(operation, response, entry.output_schema);
+      }
+      if (operation === MCP_DISCOVERY_OPERATION) {
+        const result = await inspectEngineeringMcp(body.arguments ?? {}, {
+          userToken: bearer,
+          request: fetchBackend,
+        });
+        return applicationResult(
+          operation,
+          reply(result.status, result.body),
+          entry.output_schema,
+        );
+      }
+      if (isCustomerOperation(operation)) {
+        const response = await executeCustomerOperation(
+          {
+            base,
+            anon,
+            service,
+            principal: {
+              id: dispatchUser.id,
+              customerId: portalCustomerId ?? "",
+              portalAccess: memoryAccess,
+              controllerOwner: admin?.role === "owner",
+            },
+            fetch: fetchBackend,
+          },
+          bearer,
+          operation,
+          body.arguments ?? {},
+        );
+        return applicationResult(operation, response, entry.output_schema);
+      }
+      if (isLegacyOperation(operation)) {
+        const response = await executeLegacyOperation(
+          {
+            base,
+            service,
+            anon,
+            principal: {
+              id: dispatchUser.id,
+              role: admin?.role ?? "",
+              enabled: admin?.enabled === true,
+            },
+            rpc: (name, args) => db.rpc(name, args),
+            fetch: fetchBackend,
+          },
+          bearer,
+          operation,
+          body.arguments ?? {},
+        );
+        return applicationResult(operation, response, entry.output_schema);
+      }
+      if (isOrchestrationOperation(operation)) {
+        const response = await handleOrchestrationAction(
+          db,
+          dispatchUser.id,
+          orchestrationActions[operation],
+          body.arguments ?? {},
+          body.channel === "mcp" ? "mcp" : "api",
+        );
+        return applicationResult(operation, response, entry.output_schema);
+      }
+      if (operation === "deployment.jobs.request") {
+        const response = await requestLegacyDeploymentJob(
+          db,
+          dispatchUser.id,
+          body.arguments ?? {},
+        );
+        return applicationResult(operation, response, entry.output_schema);
+      }
+      if (isEngineeringReadOperation(operation)) {
+        if (!discoverableContract(entry)) {
+          return reply(503, {
+            error: "engineering_read_executor_contract_conflict",
+            executed: false,
+          });
+        }
+        const forwarded = buildEngineeringReadRequest(
+          base,
+          anon,
+          bearer,
+          operation,
+          body.arguments ?? {},
+        );
+        if (!forwarded) {
+          return reply(400, {
+            error: "invalid_operation_arguments",
+            executed: false,
+          });
+        }
+        try {
+          const response = await fetchBackend(forwarded.url, forwarded.init);
+          const normalized = await normalizeEngineeringReadResponse(
+            operation,
+            body.arguments ?? {},
+            response,
+          );
+          return upstreamResult(operation, normalized, entry.output_schema);
+        } catch {
+          return reply(502, engineeringReadTransportFailure());
+        }
+      }
+      if (operation === "deployment.jobs.retry") {
+        if (entry.verified !== true) {
+          return reply(424, {
+            error: "operation_requires_live_verification",
+            executed: false,
+          });
+        }
+        if (
+          entry.handler !== "sandy-operation-api" ||
+          entry.is_mutation !== true ||
+          entry.permission_scope !== "deployment:write"
+        ) {
+          return reply(503, {
+            error: "retry_executor_contract_conflict",
+            executed: false,
+          });
+        }
+        const admission = await requestReadJobRetry(
+          db,
+          dispatchUser.id,
+          body.arguments ?? {},
+        );
+        const receipt: Record<string, unknown> = {
+          ...admission.body,
+          operation,
+        };
+        if (
+          receipt.ok === true &&
+          schemaValid(entry.output_schema, receipt) !== true
+        ) {
+          return reply(502, {
+            error: "retry_result_invalid",
+            accepted: null,
+            executed: null,
+            reconciliation_required: true,
+          });
+        }
+        return reply(admission.status, receipt);
+      }
+      if (operation === "deployment.jobs.cancel") {
+        if (entry.verified !== true) {
+          return reply(424, {
+            error: "operation_requires_live_verification",
+            executed: false,
+          });
+        }
+        const { data, error } = await Promise.resolve().then(() =>
+          db.rpc("sandy_api_cancel_deployment_job", {
+            p_job_id: (body.arguments as Record<string, unknown>).job_id,
+            p_actor_id: dispatchUser.id,
+          })
+        ).catch(() => ({ data: null, error: true }));
+        if (error) {
+          return reply(502, {
+            error: "cancellation_outcome_unknown",
+            executed: null,
+            reconciliation_required: true,
+          });
+        }
+        if (!isObject(data) || data.ok !== true) {
+          return reply(
+            isObject(data) && [403, 404, 409].includes(Number(data.http_status))
+              ? Number(data.http_status)
+              : 503,
+            {
+              ok: false,
+              error: isObject(data) && typeof data.error === "string"
+                ? data.error
+                : "cancellation_unavailable",
+              executed: false,
+            },
+          );
+        }
+        if (schemaValid(entry.output_schema, data) !== true) {
+          return reply(502, {
+            error: "cancellation_result_invalid",
+            executed: null,
+            reconciliation_required: true,
+          });
+        }
+        return reply(200, {
+          ok: true,
+          operation,
+          executed: true,
+          result: data,
         });
       }
-    }
-    if (operation === "deployment.management.release") {
-      const args = body.arguments;
+      if (handler.functionName === "sandy-operations-api") {
+        if (
+          entry.is_mutation !== false ||
+          entry.permission_scope !== `${operation.split(".")[0]}:read`
+        ) {
+          return reply(503, {
+            error: "customer_executor_contract_conflict",
+            executed: false,
+          });
+        }
+        try {
+          const response = await fetchBackend(
+            `${base}/functions/v1/sandy-operations-api`,
+            {
+              method: "POST",
+              headers: {
+                authorization: `Bearer ${bearer}`,
+                apikey: anon,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({
+                operation,
+                arguments: body.arguments ?? {},
+              }),
+              signal: AbortSignal.timeout(20000),
+            },
+          );
+          return upstreamResult(operation, response, entry.output_schema);
+        } catch {
+          return reply(502, {
+            ok: false,
+            error: "upstream_unavailable",
+            executed: false,
+          });
+        }
+      }
+      if (handler.functionName === "sandy-memory-centre") {
+        if (!discoverableContract(entry)) {
+          return reply(503, {
+            error: "memory_executor_contract_conflict",
+            executed: false,
+          });
+        }
+        const args = body.arguments ?? {};
+        // Keep this check even if a registry contract is accidentally broadened:
+        // neither tenant identity nor backend action can be caller-controlled.
+        if (
+          !isObject(args) ||
+          (operation === "memory.evidence"
+            ? Object.keys(args).some((key) => key !== "id") ||
+              typeof args.id !== "string" ||
+              !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+                .test(args.id)
+            : Object.keys(args).length !== 0)
+        ) {
+          return reply(400, {
+            error: "invalid_operation_arguments",
+            executed: false,
+          });
+        }
+        try {
+          const response = await fetchBackend(
+            `${base}/functions/v1/sandy-memory-centre?op=${
+              memoryReadActions[operation]
+            }`,
+            {
+              method: "POST",
+              headers: {
+                authorization: `Bearer ${bearer}`,
+                apikey: anon,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify(args),
+              signal: AbortSignal.timeout(25000),
+            },
+          );
+          return upstreamResult(operation, response, entry.output_schema);
+        } catch {
+          return reply(502, {
+            ok: false,
+            error: "upstream_unavailable",
+            executed: false,
+          });
+        }
+      }
       if (
-        !isObject(args) || Object.keys(args).some((key) =>
-          !["function_slug", "source_ref", "change_id"].includes(key)
-        ) ||
-        typeof args.function_slug !== "string" ||
-        !["sandy-operation-api", "sandy-api-mcp"].includes(
-          args.function_slug,
-        ) ||
-        args.source_ref !== "main" || typeof args.change_id !== "string" ||
-        !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
-          args.change_id,
+        ["sandy-infrastructure-read", "sandy-provider-read-api"].includes(
+          handler.functionName,
         )
       ) {
+        if (!discoverableContract(entry)) {
+          return reply(503, {
+            error: "read_executor_contract_conflict",
+            executed: false,
+          });
+        }
+        // These are global infrastructure records. Never grant a tenant caller
+        // the service credential; only the already authenticated Controller admin
+        // reaches this fixed read-only handler through this gateway.
+        const args = body.arguments ?? {};
+        if (
+          !isObject(args) ||
+          (args.limit !== undefined &&
+            (!Number.isInteger(args.limit) || Number(args.limit) < 1 ||
+              Number(args.limit) > 200))
+        ) {
+          return reply(400, {
+            error: "invalid_operation_arguments",
+            executed: false,
+          });
+        }
+        try {
+          const response = await fetchBackend(
+            `${base}/functions/v1/${handler.functionName}`,
+            {
+              method: "POST",
+              headers: {
+                authorization: `Bearer ${service}`,
+                apikey: anon,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({ operation, arguments: args }),
+              signal: AbortSignal.timeout(20000),
+            },
+          );
+          return upstreamResult(operation, response, entry.output_schema);
+        } catch {
+          return reply(502, {
+            ok: false,
+            error: "upstream_unavailable",
+            executed: false,
+          });
+        }
+      }
+      if (Object.hasOwn(videoReadActions, operation)) {
+        if (
+          entry.handler !== "sandy-deploy-provision" ||
+          entry.is_mutation !== false ||
+          entry.permission_scope !== "infrastructure:read"
+        ) {
+          return reply(503, {
+            error: "video_read_executor_contract_conflict",
+            executed: false,
+          });
+        }
+        const args = body.arguments ?? {};
+        if (
+          !isObject(args) || Object.keys(args).some((key) =>
+            operation !== "video.status" || key !== "target"
+          ) || (args.target !== undefined && args.target !== "sandy-video")
+        ) {
+          return reply(400, {
+            error: "invalid_operation_arguments",
+            executed: false,
+          });
+        }
+        try {
+          // Retain the existing fixed read actions, including the effective
+          // single OS Config check for video.execution.preflight. The API owns
+          // caller authorization; the provider handler receives only its service
+          // identity and cannot be retargeted or given an action by the caller.
+          const response = await fetchBackend(
+            `${base}/functions/v1/sandy-deploy-provision`,
+            {
+              method: "POST",
+              headers: {
+                authorization: `Bearer ${service}`,
+                apikey: anon,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({ action: videoReadActions[operation] }),
+              signal: AbortSignal.timeout(45000),
+            },
+          );
+          return upstreamResult(operation, response, entry.output_schema);
+        } catch {
+          return reply(502, {
+            ok: false,
+            error: "upstream_unavailable",
+            executed: false,
+          });
+        }
+      }
+      if (operation === "deployment.management.release") {
+        const args = body.arguments;
+        if (
+          !isObject(args) || Object.keys(args).some((key) =>
+            !["function_slug", "source_ref", "change_id"].includes(key)
+          ) ||
+          typeof args.function_slug !== "string" ||
+          !["sandy-operation-api", "sandy-api-mcp"].includes(
+            args.function_slug,
+          ) ||
+          args.source_ref !== "main" || typeof args.change_id !== "string" ||
+          !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+            .test(
+              args.change_id,
+            )
+        ) {
+          return reply(400, {
+            error: "invalid_release_parameters",
+            executed: false,
+          });
+        }
+        let response: Response;
+        try {
+          response = await fetchBackend(
+            `${base}/functions/v1/${handler.functionName}`,
+            {
+              method: "POST",
+              headers: {
+                authorization: `Bearer ${service}`,
+                apikey: anon,
+                "content-type": "application/json",
+              },
+              body: JSON.stringify({ action: handler.action, ...args }),
+              signal: AbortSignal.timeout(45000),
+            },
+          );
+        } catch {
+          return reply(502, {
+            ok: false,
+            error: "release_backend_unavailable",
+            executed: null,
+            reconciliation_required: true,
+          });
+        }
+        return upstreamResult(operation, response, entry.output_schema);
+      }
+      const args = body.arguments;
+      if (
+        args !== undefined &&
+        (!isObject(args) || Object.keys(args).length !== 0)
+      ) {
         return reply(400, {
-          error: "invalid_release_parameters",
+          error: "operation_accepts_no_arguments",
           executed: false,
         });
       }
       let response: Response;
       try {
+        // Engineering Control must receive the authenticated controller user's JWT.
         response = await fetchBackend(
           `${base}/functions/v1/${handler.functionName}`,
           {
             method: "POST",
             headers: {
-              authorization: `Bearer ${service}`,
+              authorization: `Bearer ${bearer}`,
               apikey: anon,
               "content-type": "application/json",
             },
-            body: JSON.stringify({ action: handler.action, ...args }),
-            signal: AbortSignal.timeout(45000),
+            body: JSON.stringify({ action: handler.action }),
+            signal: AbortSignal.timeout(20000),
           },
         );
       } catch {
         return reply(502, {
           ok: false,
-          error: "release_backend_unavailable",
-          executed: null,
-          reconciliation_required: true,
+          error: "upstream_unavailable",
+          executed: false,
         });
       }
       return upstreamResult(operation, response, entry.output_schema);
-    }
-    const args = body.arguments;
+    };
     if (
-      args !== undefined && (!isObject(args) || Object.keys(args).length !== 0)
+      dependencies.executionPolicy && admin?.role === "owner" &&
+      (entry.is_mutation === false || !!providerOperations[operation] ||
+        extensionOwnsGrant(operation)) &&
+      !isPolicyOperation(operation)
     ) {
-      return reply(400, {
-        error: "operation_accepts_no_arguments",
-        executed: false,
-      });
-    }
-    let response: Response;
-    try {
-      // Engineering Control must receive the authenticated controller user's JWT.
-      response = await fetchBackend(
-        `${base}/functions/v1/${handler.functionName}`,
+      const configuredContract = isObject(entry.error_contract)
+        ? entry.error_contract.contract_sha256
+        : null;
+      const contractSha256 = typeof configuredContract === "string" &&
+          /^[a-f0-9]{64}$/.test(configuredContract)
+        ? configuredContract
+        : await argumentDigest(
+          Object.fromEntries(
+            [
+              "operation",
+              "handler",
+              "permission_scope",
+              "is_mutation",
+              "input_schema",
+              "output_schema",
+              "api_exposed",
+              "ai_exposed",
+              "verified",
+            ].map((key) => [key, entry[key]]),
+          ),
+        );
+      let scope: unknown;
+      try {
+        scope = extensionOwnsGrant(operation)
+          ? await extensionExecutionScope(
+            operation,
+            isObject(body.arguments) ? body.arguments : {},
+            dispatchUser.id,
+            async (id) => {
+              if (
+                typeof id !== "string" ||
+                !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i
+                  .test(id)
+              ) return null;
+              const { data, error } = await db.from("sandy_credential_targets")
+                .select(
+                  "id,provider,resource,enabled,verified,config_sha256,scope_sha256",
+                ).eq("id", id).maybeSingle();
+              if (error) throw Error("verified_credential_target_required");
+              return data;
+            },
+          )
+          : providerOperations[operation]
+          ? providerExecutionScope(operation, dependencies.providerConfig)
+          : {
+            sandy_project_ref: "zmqlyygzqoidkcwdysok",
+            permission_scope: entry.permission_scope,
+          };
+      } catch (error) {
+        return reply(424, {
+          ok: false,
+          error: error instanceof Error &&
+              (/^verified_[a-z_]+_scope_binding_required$/.test(
+                error.message,
+              ) ||
+                ["verified_credential_target_required", "fixed_vm_required"]
+                  .includes(error.message))
+            ? error.message
+            : "provider_scope_configuration_required",
+          executed: false,
+        });
+      }
+      const declaredUnits = request.headers.get("x-sandy-declared-units") ??
+        "0";
+      if (!/^\d{1,7}$/.test(declaredUnits) || Number(declaredUnits) > 1000000) {
+        return reply(400, {
+          error: "invalid_declared_unit_budget",
+          executed: false,
+        });
+      }
+      return governedExecution(
+        db,
         {
-          method: "POST",
-          headers: {
-            authorization: `Bearer ${bearer}`,
-            apikey: anon,
-            "content-type": "application/json",
-          },
-          body: JSON.stringify({ action: handler.action }),
-          signal: AbortSignal.timeout(20000),
+          actorId: dispatchUser.id,
+          tenantId: null,
+          operation,
+          arguments: body.arguments ?? {},
+          requestId: delegation?.boundExecution?.dispatchId ??
+            request.headers.get("x-sandy-request-id") ?? crypto.randomUUID(),
+          credentialId: delegation?.credentialId ?? null,
+          contractSha256,
+          scope,
+          declaredCostUnits: Number(declaredUnits),
+          approvalId: request.headers.get("x-sandy-approval-id"),
         },
+        dispatch,
+        !!providerOperations[operation] || extensionOwnsGrant(operation),
       );
-    } catch {
-      return reply(502, {
-        ok: false,
-        error: "upstream_unavailable",
-        executed: false,
-      });
     }
-    return upstreamResult(operation, response, entry.output_schema);
+    return dispatch();
   };
 }
 
@@ -943,6 +1997,19 @@ if (import.meta.main) {
     Deno.serve(() => reply(503, { error: "api_configuration_missing" }));
   } else {
     const db = createClient(base, service, { auth: { persistSession: false } });
-    Deno.serve(createOperationHandler({ base, service, anon, db }));
+    Deno.serve(createOperationHandler({
+      base,
+      service,
+      anon,
+      db,
+      resolveCredential: createCredentialResolver(db, service, anon),
+      executionPolicy: true,
+      catalogueRpc: true,
+      providerConfig: {
+        verifiedBindings: parseProviderBindings(
+          Deno.env.get("SANDY_GCP_SCOPE_BINDINGS_JSON"),
+        ),
+      },
+    }));
   }
 }

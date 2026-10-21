@@ -8,6 +8,7 @@ export type ApiResponse = { status: number; result: unknown };
 export type InvokeApi = (
   token: string,
   body: JsonObject,
+  apiKey?: string,
 ) => Promise<ApiResponse>;
 
 const isObject = (value: unknown): value is JsonObject =>
@@ -35,13 +36,14 @@ export function createApi(
   anon: string,
   request: typeof fetch = fetch,
 ): InvokeApi {
-  return async (token, body) => {
+  return async (token, body, apiKey) => {
     const response = await request(`${base}/functions/v1/sandy-operation-api`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${token}`,
         apikey: anon,
         "content-type": "application/json",
+        ...(apiKey === undefined ? {} : { "x-sandy-api-key": apiKey }),
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60000),
@@ -93,6 +95,8 @@ export function createHandler(api: InvokeApi) {
     const auth = req.headers.get("authorization") ?? "";
     const bearer = auth.match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
     if (!bearer) return json({ error: "authentication_required" }, 401);
+    const apiKey = req.headers.get("x-sandy-api-key") ?? undefined;
+    if (apiKey !== undefined && !apiKey.trim()) return json({ error: "invalid_api_credential" }, 401);
     let parsed: unknown;
     try {
       parsed = await req.json();
@@ -151,7 +155,7 @@ export function createHandler(api: InvokeApi) {
           );
         }
         // Initialization authenticates through the same API as discovery.
-        const a = await api(bearer, { action: "list" });
+        const a = await api(bearer, { action: "list" }, apiKey);
         if (a.status !== 200 || !isObject(a.result) || failedResult(a.result)) {
           const status = a.status >= 400 && a.status <= 599 ? a.status : 502;
           return json(
@@ -196,10 +200,11 @@ export function createHandler(api: InvokeApi) {
           channel: "mcp",
           operation: params.name,
           arguments: params.arguments ?? {},
-        });
+        }, apiKey);
         const output = isObject(a.result) ? a.result.result : undefined;
+        const accepted = isObject(a.result) && a.result.accepted === true && a.result.executed === false && isObject(output);
         const failed = a.status < 200 || a.status >= 300 ||
-          !isObject(a.result) || a.result.executed !== true ||
+          !isObject(a.result) || (a.result.executed !== true && !accepted) ||
           failedResult(a.result) || !isObject(output);
         return json(rpc(id, {
           isError: failed,
