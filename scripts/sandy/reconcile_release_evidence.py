@@ -51,6 +51,17 @@ LEGACY_SCOPE = {
     'video.ssh.iam_grant': [22, 35, 150], 'video.ssh.preflight': [35, 36, 150],
 }
 EXTRA_SCOPE = {'deployment.jobs.request': [3, 11]}
+PRIVATE_PLANNING_SCOPE = {
+    'agent.missions.plan.prepare': [154, 155, 160],
+    'agent.missions.questions.review': [154, 155, 160],
+}
+# These seven handlers report recorded Controller metadata. They do not execute
+# provider operations or independently attest the core/platform capabilities.
+CONTROLLER_METADATA_OPERATIONS = frozenset({
+    'system.capabilities', 'system.catalog', 'system.connections',
+    'system.coverage', 'system.operation_catalog', 'system.operation_status',
+    'system.runtime',
+})
 
 
 def mapped_requirements(contract):
@@ -70,6 +81,13 @@ def mapped_requirements(contract):
         return LIFECYCLE_SCOPE[operation], 'reviewed_provider_lifecycle_contract'
     if group == 'mcp_diagnostic':
         return [1, 2, 155], 'reviewed_discovery_diagnostic_not_provider_execution'
+    if group == 'system_metadata' and operation in CONTROLLER_METADATA_OPERATIONS:
+        return [155], 'reviewed_recorded_controller_metadata_not_core_or_provider_verification'
+    if group == 'provider_artifact_delivery' and operation == 'provider.artifacts.read_private':
+        # The compiled operation admits only the fixed Artifact Registry file
+        # adapter and five GitHub Actions downloads. This is custody delivery,
+        # not implementation/verification of every constituent in those families.
+        return [63, 128, 129], 'reviewed_six_class_private_delivery_not_live_provider_verification'
     if group == 'legacy_application':
         if operation in LEGACY_SCOPE:
             return LEGACY_SCOPE[operation], 'reviewed_fixed_compatibility_contract'
@@ -108,6 +126,10 @@ def reconcile(prior, source, live, gateway_ids=None):
         basis[operation] = method
     for operation, ids in EXTRA_SCOPE.items():
         mappings.setdefault(operation, set()).update(ids)
+    for operation, ids in PRIVATE_PLANNING_SCOPE.items():
+        if operation not in source_ids:
+            mappings.setdefault(operation, set()).update(ids)
+            basis[operation] = 'reviewed_private_worker_contract_not_public_gateway_or_model_verification'
     registry = live['registry']
     registered = {r['operation']: r for r in registry['operations']}
     deployed = set(live.get('deployed_gateway_operation_ids', baseline_deployed))
@@ -144,6 +166,9 @@ def reconcile(prior, source, live, gateway_ids=None):
             'source_gateway_operation_mappings': 'IDs in the current composed working-tree gateway; null means not yet captured.',
             'historically_verified_registry_operations': 'Existing registry flags preserved; no fresh deployed-user-path attestation is inferred.',
             'completion': 'All161 platform-wide acceptance gates remain unmet; source/registry/deployment evidence alone cannot set complete=true.',
+            'controller_metadata': 'Seven reviewed recorded-Controller metadata handlers map only to requirement155; no independent core/platform/provider execution is inferred.',
+            'provider_artifact_delivery': 'The single bounded private-delivery contract maps to its explicit Artifact Registry/Actions source-family requirements63/128/129; it neither completes those families nor verifies a live download.',
+            'private_planning_registry_addendum': 'Two reviewed10070 private worker contracts map to requirements154/155/160. An explicit pinned export may include them in typed source records; registry-only fallback never adds them to that count or to public gateway IDs.',
         },
         'source_mapping_basis': basis,
     })
@@ -151,7 +176,11 @@ def reconcile(prior, source, live, gateway_ids=None):
     for missing in result.get('unavailable_schema_sources', []):
         if missing.get('provider') == 'gcp-cloudquotas':
             missing['alternative_contract_source_handler_operation_ids'] = quota_ids
-            missing['alternative_contract_source_handler_state'] = 'working_tree_source_not_deployed_or_functionally_verified'
+            missing['alternative_contract_source_handler_state'] = (
+                'source_attested_gateway_mapping_not_functional_verification'
+                if quota_ids and set(quota_ids).issubset(deployed)
+                else 'source_only_or_pending_gateway_mapping_not_functional_verification'
+            )
     return result
 
 

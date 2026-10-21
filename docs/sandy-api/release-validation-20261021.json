@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-21T04:12:50.674507+00:00",
+  "recorded_at_utc": "2026-10-21T05:12:36.378686+00:00",
   "release_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
   "release_published": true,
   "published_branch": "b139a759489d87a1479f19776579b86d81160f5b",
@@ -218,9 +218,9 @@
   "completion": {
     "original_requirements": 161,
     "certified_complete": 0,
-    "source_contract_count": 2361,
-    "source_contract_commit": "78293d1954958fd64dc57c51215ecf8f0c450703",
-    "deployed_gateway_ids": 2390,
+    "source_contract_count": 2483,
+    "source_contract_commit": "e2d49fdfab6147783e4bbfde373d6550db906763",
+    "deployed_gateway_ids": 2527,
     "requirements_with_typed_source_contracts": 160,
     "requirements_with_typed_source_or_prior_gateway_coverage": 161,
     "new_fully_verified_deployed_authenticated_operations": 0,
@@ -244,6 +244,8 @@
       "backup": 9
     },
     "reliability_worker_version": 13,
+    "mission_executor_version": 9,
+    "mission_planner_version": 19,
     "real_session_path_tested": false
   },
   "logs": {
@@ -300,8 +302,8 @@
     },
     "actual_provider_rotation_or_auth_attested": false
   },
-  "current_deployed_release_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-  "release_commit_semantics": "release_commit pins initial full regression; current_deployed_release_commit includes separately validated follow-ups",
+  "current_deployed_release_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+  "release_commit_semantics": "release_commit/release_published retain the historical initial02279e4 publication. Current gateway release is74a4535/API17, committed locally and source-attested in Supabase; no later Git push or new merge is established.",
   "latest_functions": [
     {
       "slug": "sandy-auto-improve",
@@ -318,6 +320,18 @@
     {
       "slug": "sandy-controller-api",
       "version": 36,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-mission-runner",
+      "version": 19,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-mission-executor",
+      "version": 9,
       "status": "ACTIVE",
       "verify_jwt": false
     },
@@ -347,7 +361,7 @@
     },
     {
       "slug": "sandy-operation-api",
-      "version": 15,
+      "version": 17,
       "status": "ACTIVE",
       "verify_jwt": true
     },
@@ -425,13 +439,13 @@
     },
     {
       "slug": "sandy-provider-supplement-api",
-      "version": 1,
+      "version": 2,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-tenant-lifecycle-api",
-      "version": 2,
+      "version": 4,
       "status": "ACTIVE",
       "verify_jwt": true
     },
@@ -440,14 +454,38 @@
       "version": 1,
       "status": "ACTIVE",
       "verify_jwt": true
+    },
+    {
+      "slug": "sandy-commerce-ledger-api",
+      "version": 2,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-system-metadata-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-provider-bound-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-provider-artifact-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
     }
   ],
   "latest_registry_evidence": {
-    "rows": 2447,
-    "evidence_rows": 2428,
+    "rows": 2562,
+    "evidence_rows": 2549,
     "verified_count": 3,
-    "ai_exposed_count": 422,
-    "api_exposed_count": 437,
+    "ai_exposed_count": 416,
+    "api_exposed_count": 431,
     "verified_operations": [
       "video.execution.preflight",
       "video.install.preflight",
@@ -455,11 +493,11 @@
     ]
   },
   "live_catalogue_audit": {
-    "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-    "gateway_version": 15,
+    "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+    "gateway_version": 17,
     "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
-    "installed_count": 2390,
-    "registry_count": 2447,
+    "installed_count": 2527,
+    "registry_count": 2562,
     "mismatches": [],
     "all_installed_contracts_match": true
   },
@@ -831,7 +869,7 @@
       }
     ]
   },
-  "current_gateway_release_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+  "current_gateway_release_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
   "api12_release": {
     "write_http": 201,
     "readback_http": 201,
@@ -1264,7 +1302,2396 @@
     "credential_exposed": false,
     "read_only": true
   },
+  "git_publication": {
+    "last_confirmed_pushed_commit": "3b3491ba3547394609e4766a891576d5db39b576",
+    "published_branch": "engineering/sandy-api-project-reads-20261020",
+    "remote_read_exit": 0,
+    "remote_refs": {
+      "refs/heads/engineering/sandy-api-project-reads-20261020": "3b3491ba3547394609e4766a891576d5db39b576",
+      "refs/heads/main": "350ede13e373fb2108d57748b20e44d57302135d"
+    },
+    "write_authenticated": false,
+    "write_failure": "Existing GitHub credential rejected; normal credential-helper attempt also rejected. Secure refresh requested; no credential value retained.",
+    "new_merge_established": false
+  },
+  "api13_and_product_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2367,
+        "gateway_evidence_rows": 2247,
+        "product_backend_evidence_rows": 98,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "gateway_evidence": {
+      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
+      "gateway_source_commit": "4e669f1",
+      "gateway_version": 13,
+      "gateway_mapped": true,
+      "installed_operation_count": 2247,
+      "new_operation_count": 1143,
+      "provider_backend_version": 4,
+      "gateway_source_readback_sha256": "1155deaed48f5f812a27d3a27f000d8a218351461d2cd3de59ea26ac4dfb5103",
+      "all_2247_live_registry_contracts_match": true,
+      "live_metadata_audit_sha256": "d8cb36e6f3c8d74a388bd42cc2d8bd1b15dd92d422b0d6f2434791ee1d70ad6f",
+      "regression": {
+        "composed_deno_passed": 127,
+        "gateway_deno_passed": 75,
+        "typecheck": true,
+        "format": true,
+        "diff": true,
+        "backend_synthetic_compositions": 4,
+        "real_provider_called": false,
+        "actual_auth_session_tested": false
+      },
+      "memory": {
+        "whole_resident_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 228112,
+          "log": "expanded-gateway-live-catalogue-memory-96.txt",
+          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 109.6,
+          "gc_observed_peak_heap_total_mib": 148.9
+        },
+        "whole_resident_128": {
+          "old_space_limit_mib": 128,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 258592,
+          "log": "expanded-gateway-live-catalogue-memory-128.txt",
+          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 127.7,
+          "gc_observed_peak_heap_total_mib": 177.5
+        },
+        "streamed_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 214368,
+          "log": "expanded-gateway-streamed-catalogue-memory-96.txt",
+          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 107.2,
+          "gc_observed_peak_heap_total_mib": 148.3
+        },
+        "streamed_128": {
+          "old_space_limit_mib": 128,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 250700,
+          "log": "expanded-gateway-streamed-catalogue-memory-128.txt",
+          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 133.4,
+          "gc_observed_peak_heap_total_mib": 176.3,
+          "gateway_measurements": {
+            "installed_operations": 2247,
+            "catalogue_operations": 2247,
+            "schemas_validated": 4494,
+            "input_refusals": 4063,
+            "forced_output_schema_refusals": 431,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 113610752,
+              "heapTotal": 59904000,
+              "heapUsed": 38369744,
+              "external": 1521871
+            },
+            "final": {
+              "rss": 192249856,
+              "heapTotal": 118542336,
+              "heapUsed": 105866184,
+              "external": 1565427
+            },
+            "sampled_peak_heap_bytes": 138682384,
+            "sampled_peak_rss_bytes": 251117568
+          },
+          "conservative_peak_rss_bytes": 256716800
+        },
+        "current_exposed_discovery_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 132356,
+          "log": "expanded-gateway-discovery-memory-96.txt",
+          "benchmark": "expanded-gateway-discovery-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 41.4,
+          "gc_observed_peak_heap_total_mib": 67.1,
+          "gateway_measurements": {
+            "installed_operations": 2247,
+            "exposed_registry_rows": 424,
+            "owner_visible_operations": 359,
+            "discovery_calls": 10,
+            "catalogue_rpc_calls": 10,
+            "response_bytes": 750018,
+            "provider_calls": 0,
+            "initial": {
+              "rss": 116633600,
+              "heapTotal": 62107648,
+              "heapUsed": 25797584,
+              "external": 1480670
+            },
+            "final": {
+              "rss": 135348224,
+              "heapTotal": 59609088,
+              "heapUsed": 23181928,
+              "external": 1631815
+            },
+            "sampled_peak_heap_bytes": 43366896,
+            "sampled_peak_rss_bytes": 135499776
+          },
+          "conservative_peak_rss_bytes": 135532544
+        },
+        "qualification": "All4494 schema streaming succeeds128MiB with244.8MiB peakRSS and narrow margin. Resident catalogue96/128 and streamed96 fail. Current exposed424-row/359-owner-operation discovery fits96MiB with129.3MiB RSS. New1143 remainclosed/unverified, blocked before validation in production. Eventual all-operations-exposed/concurrent provider-load acceptance is NOT claimed."
+      },
+      "normal_controller_session_available": false,
+      "deployed_authenticated_provider_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_operations_remain_closed_unverified": true,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_requirements_complete": 0
+    },
+    "product_backend_evidence": {
+      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
+      "source_commit": "1ae4dd7",
+      "backend_version": 1,
+      "backend_deployed": true,
+      "gateway_mapped": false,
+      "gateway_version": 13,
+      "implementation_state": "backend_deployed_gateway_pending",
+      "operation_count": 98,
+      "source_readback_sha256": "b023000072b8f6029c776c3c23ac3d5fce5521fd819e9534db21a0ab32dcf3eb",
+      "source_files": 5,
+      "regression": {
+        "deno": {
+          "exit_code": 0,
+          "passed": 41,
+          "failed": 0,
+          "utc": "2026-10-21T03:21:33.915777+00:00",
+          "real_provider_execution": false
+        },
+        "postgresql": {
+          "kind": "real_postgresql_component_full_rollback",
+          "http": 201,
+          "query_sha256": "acc9569e3572b36f536e134983838b912cefbd5e458773079e9af11a35b38dd9",
+          "evidence": [
+            {
+              "evidence": {
+                "kind": "real_postgresql_component_full_rollback",
+                "labels": [
+                  "acl.auth_cannot_finish_provider",
+                  "acl.auth_cannot_mutate_tables",
+                  "acl.helpers_private",
+                  "acl.service_cannot_admit_customer",
+                  "addresses.owned",
+                  "alerts.empty_owned_list",
+                  "approval.api_key_delegation_drift_denied",
+                  "approval.immutable_sensitive_flag_drift_denied",
+                  "approval.sensitive_owner_read_requires_exact_job",
+                  "audit.all_accepted_internal_mutations_have_before_after",
+                  "audit.hash_chain_allows_normal_sequence_gaps",
+                  "catalogue.all98_typed_private_registry_contracts_agree",
+                  "configuration.existing_provider_read",
+                  "configuration.restore",
+                  "configuration.snapshot_before_after",
+                  "configuration.versioned_update_snapshot",
+                  "delta.approved_owner_grant",
+                  "delta.concurrent_cursor_dispatch_denied",
+                  "delta.persisted_cursor_claimed",
+                  "delta.synthetic_callback_persists_private_cursor",
+                  "draft.concurrent_edit_or_send_denied",
+                  "draft.private_provider_id_and_recipients",
+                  "draft.stale_preview_version_denied_before_send",
+                  "draft.synthetic_callback_private_state",
+                  "draft.verified_owned_recipient_binding",
+                  "executor.fence",
+                  "grant.channel_fenced",
+                  "grant.consume_once",
+                  "grant.mcp_exposure_revocation_rechecked",
+                  "grant.reconsume_rejected",
+                  "grant.wrong_grant",
+                  "graph.empty_owned_list",
+                  "identity.actual_confirmation_rechecked",
+                  "identity.portal_revocation_enforced",
+                  "improvements.empty_owned_list",
+                  "inbox.acknowledge",
+                  "inbox.get",
+                  "inbox.persisted_support_events",
+                  "input.array_duplicate_categories_denied",
+                  "ledger.normal_customer_actor_never_owner_impersonation",
+                  "ledger.support_exactly_one_from_replay",
+                  "media.bind_actual_customer_grant",
+                  "media.foreign_private_binding_denied",
+                  "media.synthetic_callback_local_readback",
+                  "owner.operation_denied_to_customer",
+                  "preferences.actually_close_email_send",
+                  "preferences.actually_close_whatsapp_send",
+                  "preferences.closed_default",
+                  "preferences.explicit_optin_actually_allows",
+                  "preferences.update",
+                  "profile.get",
+                  "profile.update",
+                  "provider.callback_actor_mismatch_denied",
+                  "provider.callback_replay_never_redispatches",
+                  "provider.owned_resource_required",
+                  "quiet_hours.actually_gate_provider_sends",
+                  "quiet_hours.default",
+                  "quiet_hours.invalid_zone",
+                  "quiet_hours.update",
+                  "receipt.closed_registry_gate_enforced",
+                  "receipt.own",
+                  "receipt.preflight_failure_is_not_provider_execution",
+                  "receipt.preflight_failure_readback_stays_unexecuted",
+                  "subscriptions.actually_suppress_inbox_event",
+                  "subscriptions.readback",
+                  "subscriptions.update",
+                  "support.close",
+                  "support.comment_after_optout",
+                  "support.comment.create",
+                  "support.comments.list",
+                  "support.conflicting_reuse",
+                  "support.create",
+                  "support.get",
+                  "support.list",
+                  "support.reopen",
+                  "support.stable_replay",
+                  "support.update",
+                  "support.version_conflict",
+                  "templates.create_scoped_approval",
+                  "templates.delete",
+                  "templates.deleted_not_returned",
+                  "templates.get",
+                  "templates.stale_version_denied",
+                  "templates.versioned_update",
+                  "tenant.argument_injection_denied",
+                  "tenant.foreign_case_denied",
+                  "tenant.foreign_comment_denied",
+                  "tenant.foreign_inbox_empty",
+                  "tenant.foreign_list_empty",
+                  "whatsapp.empty_owned_list"
+                ],
+                "checks_passed": 90,
+                "auth_session_created": false,
+                "external_provider_requests": 0,
+                "all_new_operations_remain_production_disabled": true
+              }
+            }
+          ],
+          "no_HTTP_Auth_session": true,
+          "no_external_provider_calls": true,
+          "utc": "2026-10-21T03:21:40.140130+00:00"
+        },
+        "cleanup": {
+          "http": 201,
+          "utc": "2026-10-21T03:21:41.045981+00:00",
+          "data": [
+            {
+              "snapshot": {
+                "fixture_customers": 0,
+                "fixture_auth_users": 0,
+                "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
+                "product_rpc_functions": 0,
+                "registry_product_rows": 0,
+                "product_private_tables": 0,
+                "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
+              }
+            }
+          ]
+        }
+      },
+      "independent_peer_review": {
+        "reviewed_at_utc": "2026-10-21T03:23:13.957945+00:00",
+        "review": "independent_product_service_boundary_review",
+        "frozen_manifest_sha256": "f76bf91461335e4364ce83a7ef48ea0ee6dcebd4bbd03e619d0f5cdbd4f1b1b1",
+        "source_files": {
+          "supabase/functions/sandy-product-service-api/build_contracts.py": "8133f1484b949920f553ada568b38018e811e6d1da894f06dc424696946c7eb1",
+          "supabase/functions/sandy-product-service-api/contracts.json": "3631b7a8d25a087931571cc0ab90f58217a47c98008cc84a01b098d896502223",
+          "supabase/functions/sandy-product-service-api/contracts.ts": "512934c436fadf800cc22cde65dc858dedbe65d1a85412a2c96740436405db56",
+          "supabase/functions/sandy-product-service-api/gateway.ts": "9a7a5470c820f4d45df6bf51a9a8fb622d629a54b203d0330e60b37fd5330036",
+          "supabase/functions/sandy-product-service-api/index.ts": "3ed1c62294575b2651f96a65dbd3f67346de181f6a1cde3298c92f184864fc42",
+          "supabase/functions/sandy-product-service-api/index_test.ts": "8db7714bebc900c8a388070604f34e83e9a23c685bfca04ed3d0e86186c3a884",
+          "supabase/functions/sandy-product-service-api/providers.ts": "95a11ce818b3de086014433530848fea707b82a81b66c3a485f52818ab8e4c71",
+          "supabase/functions/sandy-product-service-api/providers_test.ts": "c1ddfd0d62633a0a85b79ce06b3ca0eb02778e61cec2101cc944f973d9c54016",
+          "supabase/migrations/20261021009000_sandy_product_service_boundary.sql": "46c2376f208be79d9ded4c33efac7997fb4cf85a62cbd92976bdef11e685a40b",
+          "supabase/migrations/20261021009010_sandy_product_service_contracts.sql": "4557da4ae1a6d7a718611c1ace411f5941627396d2836236fe40f147dca412b0",
+          "supabase/tests/sandy_product_services_rollback.sql": "3c08d0767349aa18ee43fbe451515f6f6c20b93fa5fb0853ff316edebf7c6546",
+          "docs/sandy-api/product-service-coverage.md": "855a09a87c3618688219eac90a28ef1f519940303c7aed695752be773db2e3c9",
+          "docs/sandy-api/product-service-handoff.md": "4726a2ddbbd0ee5a92e46898483605b6ddf4a587908bb1fe32506e877046c790"
+        },
+        "all_frozen_hashes_matched": true,
+        "blocking_findings": [],
+        "resolved_review_findings": [
+          "Graph draft confirmation now binds persisted API version and complete bounded reviewed content fingerprint; no remaining nextLink or unsupported item/reference attachments",
+          "Draft recipient preflight and preview include from/sender/replyTo/cc/bcc",
+          "Owner sensitive/mutation approval and nondelegable policy are source-required at admission/consume/contract match",
+          "WhatsApp reads use the same fixed business phone scope as dispatch"
+        ],
+        "withdrawn_finding": "Initial inferred WhatsApp bigint/string mismatch was withdrawn after reading the full existing id::text projection; explicit large-ID output regression was added.",
+        "independent_local_tests": {
+          "passed": 41,
+          "failed": 0,
+          "log": "boundary-peer-product-deno.log",
+          "overlaps_author_suites": true
+        },
+        "local_cold_start": {
+          "old_space_mib": 96,
+          "rss_bytes": 89231360,
+          "heap_used_bytes": 31895112,
+          "provider_calls": 0,
+          "production_load_attestation": false
+        },
+        "author_postgres_component_evidence": {
+          "http": 201,
+          "checks": 90,
+          "full_rollback": true,
+          "auth_session_created": false,
+          "external_provider_calls": 0,
+          "fixture_cleanup": {
+            "http": 201,
+            "utc": "2026-10-21T03:21:41.045981+00:00",
+            "data": [
+              {
+                "snapshot": {
+                  "fixture_customers": 0,
+                  "fixture_auth_users": 0,
+                  "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
+                  "product_rpc_functions": 0,
+                  "registry_product_rows": 0,
+                  "product_private_tables": 0,
+                  "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
+                }
+              }
+            ]
+          }
+        },
+        "actual_read_only_metadata_checks": {
+          "http": 201,
+          "provider_config_columns": "Six existing safe fields; no credential fields observed",
+          "profile_trigger": "Drive provision trigger only AFTER INSERT OR UPDATE OF google_drive_folder_status; display_name-only update does not fire it"
+        },
+        "remaining_limitations": [
+          "DB grant/state/evidence/result are transactional.",
+          "Provider HTTP and PostgreSQL receipt persistence are separate transactions.",
+          "Draft preview version and complete bounded content fingerprint fence API edits; an external Outlook/legacy writer can still race between Graph preflight read and send.",
+          "Provider submission/Sent Mail existence are not recipient delivery or payment execution.",
+          "Database rollback removes all fixture rows; normal PostgreSQL sequence allocations may leave harmless gaps."
+        ],
+        "new_operations_exposed_or_verified": false,
+        "real_provider_or_auth_verified": false,
+        "deployment_performed_by_reviewer": false
+      },
+      "deployed_authenticated_provider_execution_tested": false,
+      "real_provider_calls": 0,
+      "new_operations_remain_closed_unverified": true,
+      "new_verification_asserted": false,
+      "original_scope_requirements_complete": 0
+    }
+  },
+  "service_v4_followup": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "evidence_rows": 47,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:21:05.921646+00:00",
+      "source_readbacks": {
+        "sandy-supabase-service-api": {
+          "version": 2,
+          "source_commit": "1cbba6fa36a84a2207b8d91e25da67684f150a54",
+          "source_readback_sha256": "11e49e5efcf64e0bc42ab029da1c55c076ef6575f125c34f73cc500d3853ea6b"
+        },
+        "sandy-agent-runtime-v4": {
+          "version": 14,
+          "source_commit": "d020ab1df937f823682e2abd4a802b6527d020ef",
+          "source_readback_sha256": "a21aa03ebd0f00bae55808a20d9e715c1b92070991b836627b8c5852436f5431"
+        }
+      },
+      "source_required_approval_runtime": {
+        "composed_service_and_consent_tests": 19,
+        "approval_helper_tests": 1,
+        "actual_postgres_rollback_assertions": 24,
+        "immutable_approval_negative_assertions": 6,
+        "applied_migration": "20261021007010"
+      },
+      "active_v4_conversation": {
+        "composed_regressions": 56,
+        "actual_postgres_rollback_assertions": 8,
+        "preserved_runtime_source_sections": 24,
+        "applied_migration": "20261021010010",
+        "same_broker_credentials_and_task_headers": true
+      },
+      "overlapping_tests_not_summed": true,
+      "real_model_calls": 0,
+      "deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false
+    }
+  },
+  "runtime_records_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "evidence_rows": 9,
+        "verified_rows": 3
+      }
+    ],
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:37:40.294550+00:00",
+      "source_commit": "c90471a",
+      "backend_deployed": true,
+      "public_gateway_mapped": false,
+      "runtime_sources": {
+        "sandy-agent-runtime-v4": {
+          "version": 15,
+          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+          "source_readback_sha256": "b529aaae3f5d45f95b15c376eb5e6fc7adae9ee0dc49ed3b7da3062502293ef7"
+        },
+        "sandy-agent-runtime-v2": {
+          "version": 17,
+          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+          "source_readback_sha256": "c1632e5af8c43163ea2b4cf82e8d51467dcc1fd50ae4afd58406c38fb0361669"
+        },
+        "sandy-agent-runtime-v1-backup-r50": {
+          "version": 7,
+          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+          "source_readback_sha256": "0da9b28735e28246b1b43eb77824f7badeede02cef2e58a383970bceb9f9879a"
+        }
+      },
+      "regression": {
+        "deno_passed": 64,
+        "runtime_capability_tests": 37,
+        "v4_transport_tests": 2,
+        "legacy_profile_tests": 6,
+        "existing_service_API_tests": 19,
+        "three_runtime_typechecks": "pass",
+        "preserved_source_sections": 21,
+        "exact_archived_dependencies": 3,
+        "real_provider_calls": 0,
+        "real_customer_execution_tested": false,
+        "Management_PostgreSQL_component_HTTP": 201,
+        "Management_PostgreSQL_component_checks": 16,
+        "all_database_changes_rolled_back": true
+      },
+      "applied_migration": {
+        "version": "20261021010020",
+        "exact_source_sha256": "c4d9ad620ddb427d3299a473a7207aa99f82355c639cf97318c60c431b83a440",
+        "ledger_readback_http": 201
+      },
+      "new_internal_operations": 9,
+      "real_model_or_provider_calls": 0,
+      "real_deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "scope": "Trusted runtime customer-task capability only; normal Auth users cannot invoke these routes. Shared audit claims precede writes; unknown writes cannot be redispatched with the same step."
+    }
+  },
+  "mcp_metadata_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "evidence_rows": 2247,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:39:19.572446+00:00",
+      "source_commit": "71749f6",
+      "deployed_edge_transports": {
+        "sandy-api-mcp": {
+          "version": 6,
+          "source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+          "source_readback_sha256": "a66e0e8e99f0aef6c7b174fc6f2f6ac28cd0a03554edd25bdb5862870d8738b6"
+        },
+        "sandy-operations-mcp": {
+          "version": 73,
+          "source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+          "source_readback_sha256": "eae89f707bbf6e9e1d4102713d9dbb243e8e6ca36cbba6a7c131813c08ed6c1f"
+        }
+      },
+      "gateway_version": 13,
+      "transport_only_evidence": true,
+      "operation_specific_execution_verified": false,
+      "forwarded_headers": [
+        "x-sandy-approval-id",
+        "x-sandy-request-id"
+      ],
+      "validation": "Optional single UUID; malformed/empty/duplicate rejected before API call. Actor/tenant override is never forwarded. Existing caller JWT/key unchanged.",
+      "regression": {
+        "pinned_71749f6_edge_tests_passed": 38,
+        "node_tests_passed": 16,
+        "node_deployed": false,
+        "composed_actual_api_source_test_uses_synthetic_auth_and_policy": true,
+        "new_real_provider_calls": 0
+      },
+      "deployed_authentication": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T03:38:18.285208+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "remaining": "Cloud Run Node transport deployment and remaining application/runtime adoption are unverified/incomplete."
+    }
+  },
+  "committed_changes_after_530007a": [
+    {
+      "commit": "b3e1a42c075a2e308bffae84b4ea2e3dc7f6a8f7",
+      "subject": "Implement durable Sandy API orchestration with scoped lease dispatch"
+    },
+    {
+      "commit": "a9489053dd06236c62864be0f2223484227d4423",
+      "subject": "Add 595 scoped provider handlers and guarded credential custody"
+    },
+    {
+      "commit": "f7eb112f76078d2d1477774944b5f0ca6185da58",
+      "subject": "Add tenant API handlers, scoped credentials and atomic customer mutations"
+    },
+    {
+      "commit": "e310a4449c92110108565eeb043ad47d951a5e43",
+      "subject": "Reduce generated provider catalogue upload size without changing contracts"
+    },
+    {
+      "commit": "043e7b4948162dda3b484ef0d6f308c192598dd3",
+      "subject": "Implement shared agent, database, guest and guarded lifecycle services"
+    },
+    {
+      "commit": "d86df5dee5b1ac12edf55bbd4b83cb8fbeb88596",
+      "subject": "Route all Sandy MCP tools through the governed 1020-operation API"
+    },
+    {
+      "commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
+      "subject": "Package provider contracts with verified gzip catalogue loader"
+    },
+    {
+      "commit": "da5d5871d4cc36169d51b5608e7d975084c7ef7f",
+      "subject": "Connect provider credential consumers to verified managed custody"
+    },
+    {
+      "commit": "b139a759489d87a1479f19776579b86d81160f5b",
+      "subject": "Resolve scoped job routes and implement guarded native database maintenance"
+    },
+    {
+      "commit": "6063a419528c82ddbf67f6a5054427baf79cb537",
+      "subject": "Record production API v9 rollout and actual operation verification evidence"
+    },
+    {
+      "commit": "7ce33be6aeb16a7b415da3ef822545d6c062a908",
+      "subject": "Add explicit tenant key principals and consumed provider credential proofs"
+    },
+    {
+      "commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+      "subject": "Implement managed Supabase services and scoped provider gap handlers"
+    },
+    {
+      "commit": "6e0354f4368eff6fff1e7e4ba319e20ec147f82c",
+      "subject": "Consolidate fallback runtime actions through the shared governed agent service"
+    },
+    {
+      "commit": "a1dd1d4abbbc0aae884424418d235ef08b935733",
+      "subject": "Implement 1143 additional scoped provider constituent handlers with bounded lazy catalogues"
+    },
+    {
+      "commit": "270fcf5bc6edf69166cbfbd9c2600eb66546c5cb",
+      "subject": "Reconcile Supabase service consent and provider gap contract evidence"
+    },
+    {
+      "commit": "65f331be138cf5cb07ee7aa584c9dd625cabb620",
+      "subject": "Centralize task-bound fallback conversation inference with durable per-round receipts"
+    },
+    {
+      "commit": "f38fb443f8cf9dd62ccdc5df268e9c5705398a00",
+      "subject": "Require immutable scoped approvals for sensitive Supabase services"
+    },
+    {
+      "commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "subject": "Route managed Supabase and provider gap operations through the bounded API gateway"
+    },
+    {
+      "commit": "d020ab1df937f823682e2abd4a802b6527d020ef",
+      "subject": "Route active runtime conversation through the shared task-bound inference service"
+    },
+    {
+      "commit": "121342aa3c756e729d422010432ad16e433b1b8e",
+      "subject": "Record API v12 deployment registry evidence and remaining 161-scope acceptance gates"
+    },
+    {
+      "commit": "1cbba6fa36a84a2207b8d91e25da67684f150a54",
+      "subject": "Enforce source-required approval flags in the managed Supabase runtime"
+    },
+    {
+      "commit": "3b3491ba3547394609e4766a891576d5db39b576",
+      "subject": "Implement consent-bound tenant export erasure and restore with encrypted snapshots"
+    },
+    {
+      "commit": "d4f24a8330bf861359dbf8b4ced6b75fd5437b8a",
+      "subject": "Implement tenant-scoped protected resource metadata without exporting credentials"
+    },
+    {
+      "commit": "1ae4dd7125a090cc40e111c6f9947bb193350ceb",
+      "subject": "Implement tenant product services with scoped provider receipts and reviewed sends"
+    },
+    {
+      "commit": "4e669f1cc73ff750d3466623656c3736579366b5",
+      "subject": "Route all reviewed provider constituent handlers through Sandy API"
+    },
+    {
+      "commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+      "subject": "Centralize trusted runtime record actions with immutable audit claims"
+    },
+    {
+      "commit": "6fe7147742ddefabb8c2cdbc4fff75e03b2ed9e2",
+      "subject": "Include product and internal runtime contracts in scope evidence exports"
+    },
+    {
+      "commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+      "subject": "Forward scoped approval and request identifiers through every MCP adapter"
+    },
+    {
+      "commit": "ea44e2cb084e3a59e56320210220ccc2131447a0",
+      "subject": "Centralize principal-bound runtime operational snapshots and inspection"
+    },
+    {
+      "commit": "d7e550eb6eb0770e1690671b72eebbfd5638d16c",
+      "subject": "Record API v13 MCP transport deployment and exact verification boundaries"
+    },
+    {
+      "commit": "f1e490671a0e83b63e51ab4ccfe0c191d8d622e2",
+      "subject": "Implement scoped provider supplement adapters with private cursor and media custody"
+    },
+    {
+      "commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
+      "subject": "Share task-bound runtime fact collection and model policy dependencies"
+    },
+    {
+      "commit": "2032b81cae244b55bdaa52085d41bc173917b6a6",
+      "subject": "Route tenant lifecycle and product services with actual user admission ownership"
+    },
+    {
+      "commit": "2d8bad6582c82f1764f40b6d495a71822d6cb24c",
+      "subject": "Export current tenant supplement and operational contracts for reconciliation"
+    },
+    {
+      "commit": "24aa4bc2511dcf81a4d2a2aafb48907ea5877b8f",
+      "subject": "Implement integrity-checked provider protocols with private result custody"
+    },
+    {
+      "commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
+      "subject": "Route task-bound connection preflight through governed runtime operations"
+    },
+    {
+      "commit": "2386ab947914f5d6c92e51059c3c64b6864aede1",
+      "subject": "Include private preflight and integrity checked provider protocols in source evidence"
+    },
+    {
+      "commit": "718f9a8459cf335585e16b7009714cfb34bd7774",
+      "subject": "Centralize reliability diagnosis with durable no-redispatch model claims"
+    },
+    {
+      "commit": "86c7a1474f9fac49ecdfb3063c283752c937d920",
+      "subject": "Document separate machine authentication and export the governed reliability operation"
+    },
+    {
+      "commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+      "subject": "Route typed scalar exports provider supplements and customer content through Sandy API"
+    },
+    {
+      "commit": "ad46abcc4d7129946b82d89f442b67dc5ff47a86",
+      "subject": "Record API v15 composed regression and independent tenant review"
+    },
+    {
+      "commit": "78293d1954958fd64dc57c51215ecf8f0c450703",
+      "subject": "Include actual customer content delivery contracts in scope evidence"
+    },
+    {
+      "commit": "c7bc286a7edbfac59f0530f87c62a9074d1e38ed",
+      "subject": "Record API v15 production versions registry evidence and remaining scope gates"
+    },
+    {
+      "commit": "05d0431202de82a0ef457b948b38d6a13ea570b3",
+      "subject": "Implement scoped internal commerce ledger invoices and reconciliation"
+    },
+    {
+      "commit": "cc90c36af4ed128527bd51f2044a505271598eb9",
+      "subject": "Retain commerce component validation and operation coverage evidence"
+    },
+    {
+      "commit": "7cecf002ad089e6e7398445b14f86cae60ab2b53",
+      "subject": "Route passive Workspace views through existing Sandy API contracts"
+    },
+    {
+      "commit": "b49b482a2877b541e40c0eaa8b6afc884f6de224",
+      "subject": "Update routing audit with production API v15 and source-only Workspace migration"
+    },
+    {
+      "commit": "61f400817125fd2657c75d76f9902657e344a5f4",
+      "subject": "Implement private ordered support-case recovery and bounded actual-user consent"
+    },
+    {
+      "commit": "559b59ba600f78b7d073e38ca1e217f35720276f",
+      "subject": "Implement owner-scoped legacy metadata reads with atomic execution receipts"
+    },
+    {
+      "commit": "2ffd89ef4948ed9cf8ed8b218ac0d8129aa249ef",
+      "subject": "Forward the existing public project key alongside Workspace user sessions"
+    },
+    {
+      "commit": "c37e374a2e291d8b310013e19ba170b829bc95a6",
+      "subject": "Include implemented legacy system metadata handlers in scope exports"
+    },
+    {
+      "commit": "19c55fd9734a3913904da0d608d83c4db6238bd3",
+      "subject": "Implement provider operations with fresh parent membership and resource bindings"
+    },
+    {
+      "commit": "7c95cb3d6823049eb71f060159904847ef736bb0",
+      "subject": "Interpret registry schemas with bounded validation and fixed AJV compatibility reference"
+    },
+    {
+      "commit": "d60b8286e7b98b1dd69b6127cd23fcd205137cd9",
+      "subject": "Route reviewed sensitive commerce recovery metadata and provider relationship services"
+    },
+    {
+      "commit": "4ee0aa451c0131d77ab619eace9b49b746f48470",
+      "subject": "Include scoped provider relationship operations in reconciliation exports"
+    },
+    {
+      "commit": "5e837b8527f724a632d62a5cad28230df9fec5bf",
+      "subject": "Centralize mission work products with immutable claims and locked finalization"
+    },
+    {
+      "commit": "05fa746679243491d3dbe4cde33e0e2b2f14dce1",
+      "subject": "Bound GitHub Actions downloads to reviewed hosts and private capture"
+    },
+    {
+      "commit": "1794858e5f932d9a732097139532481c738b38e6",
+      "subject": "Implement governed tenant financial export fragments and shared capture"
+    },
+    {
+      "commit": "1812c8a42e5f41dd46151d80da1a2df8f973b8a9",
+      "subject": "Include governed mission work products in scope reconciliation"
+    },
+    {
+      "commit": "08e273febeed3e31e52bd284a057027e9d753a34",
+      "subject": "Constrain all commerce operation results with operation-specific strict contracts"
+    },
+    {
+      "commit": "aaceb7058061784fefaa75c45ab9b0747330a554",
+      "subject": "Record reviewed financial export scope and differential evidence"
+    },
+    {
+      "commit": "dadc54cd3403e22b2c83cf0ea152703068ca8627",
+      "subject": "Deliver approved private provider artifacts with bounded one-use custody"
+    },
+    {
+      "commit": "b1b878633cf952c8f6148d9df5cafd76134fc5d7",
+      "subject": "Integrate governed financial export into tenant executor"
+    },
+    {
+      "commit": "b46fc5f5e6e2c6e3c5b49bdc81571d1098d02c44",
+      "subject": "Centralize governed mission planning and clarification review"
+    },
+    {
+      "commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+      "subject": "Route strict commerce financial exports and approved private artifacts through Sandy API"
+    },
+    {
+      "commit": "e2d49fdfab6147783e4bbfde373d6550db906763",
+      "subject": "Include governed mission planning operations in reconciliation exports"
+    }
+  ],
+  "api14_tenant_product_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2435,
+        "gateway_evidence_rows": 2352,
+        "supplement_backend_evidence_rows": 28,
+        "runtime_operational_evidence_rows": 6,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "gateway_evidence": {
+      "recorded_at_utc": "2026-10-21T04:03:26.341686+00:00",
+      "real_deployed_authenticated_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_original_requirements_complete": 0,
+      "gateway": {
+        "version": 14,
+        "source_commit": "2032b81cae244b55bdaa52085d41bc173917b6a6",
+        "source_readback_sha256": "716c28f4d9a1449f81a914032133067491c66692f83b9aa89e57851f9656aaf5"
+      },
+      "gateway_mapped": true,
+      "installed_operations": 2352,
+      "new_operations": 105,
+      "tenant_backend": {
+        "version": 1,
+        "source_commit": "2032b81cae244b55bdaa52085d41bc173917b6a6",
+        "source_readback_sha256": "8223a8d59f1cdd99706697eebf8fc59a78cfcd8a172884f8a81f4f57b6ddbd8c"
+      },
+      "product_backend": {
+        "version": 1,
+        "source_commit": "1ae4dd7125a090cc40e111c6f9947bb193350ceb",
+        "source_readback_sha256": "b023000072b8f6029c776c3c23ac3d5fce5521fd819e9534db21a0ab32dcf3eb"
+      },
+      "regression": {
+        "composed_deno_passed": 223,
+        "failed": 0,
+        "files": [
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/index_test.ts",
+            "passed": 19
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/download_test.ts",
+            "passed": 6
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts",
+            "passed": 2
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/protected_inventory_test.ts",
+            "passed": 12
+          },
+          {
+            "file": "./supabase/functions/sandy-product-service-api/index_test.ts",
+            "passed": 13
+          },
+          {
+            "file": "./supabase/functions/sandy-product-service-api/providers_test.ts",
+            "passed": 28
+          },
+          {
+            "file": "./supabase/functions/sandy-legacy-mcp-adapter/index_test.ts",
+            "passed": 14
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/index_test.ts",
+            "passed": 85
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/registry_schema_validator_test.ts",
+            "passed": 5
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/customer_key_principal_test.ts",
+            "passed": 8
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/api_job_routes_test.ts",
+            "passed": 7
+          },
+          {
+            "file": "./supabase/functions/sandy-api-mcp/index_test.ts",
+            "passed": 18
+          },
+          {
+            "file": "./supabase/functions/sandy-api-mcp/gateway_integration_test.ts",
+            "passed": 6
+          }
+        ],
+        "overlap_with_author_suites": true,
+        "typecheck": "pass",
+        "diff_check": "pass",
+        "real_auth_session_tested": false,
+        "real_provider_calls": 0,
+        "product_envelope_regressions": {
+          "passed": 85,
+          "failed": 0,
+          "log": "api14-product-envelope-regression.log",
+          "new_cases": [
+            "invalid_json_or_nonobject_execution_unknown",
+            "positive_output_schema_mismatch_execution_unknown",
+            "http200_refusal_execution_unknown"
+          ],
+          "composed_log": "api14-product-envelope-composed-deno.log",
+          "typecheck_log": "api14-product-envelope-typecheck.log",
+          "memory_sweeps_repeated": false
+        }
+      },
+      "administrative_database_full_rollback_checks": 53,
+      "all_live_registry_contracts_match": true,
+      "registry_metadata_audit_sha256": "1d4747adc4b85b70e7a0da5843d879616ff853b37837ed53a704cff2477a630b",
+      "new_operations_remain_closed_unverified": true,
+      "actual_customer_JWT_preserved": true,
+      "future_all_schema_memory_boundary": "Current exposed discovery remains bounded in the local96MiB heap fixture. All newly mapped105 operations remain closed. Forced all4704-schema churn is a future-activation workload boundary: first uncached CLI run exceeded256MiB whole-processRSS; cached rerun was about250MiB. No universal memory guarantee or actualEdge load attestation; compilation effects were not isolated."
+    },
+    "supplement_evidence": {
+      "recorded_at_utc": "2026-10-21T04:03:26.341686+00:00",
+      "real_deployed_authenticated_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_original_requirements_complete": 0,
+      "backend": {
+        "version": 1,
+        "source_commit": "f1e490671a0e83b63e51ab4ccfe0c191d8d622e2",
+        "source_readback_sha256": "6f5845dd91f2d2dd78cbb0a0b01668f76b59480bc86e2be06baad68eca25e5b0"
+      },
+      "backend_deployed": true,
+      "gateway_mapped": false,
+      "gateway_version": 14,
+      "operations": 28,
+      "bounded_adapters": 22,
+      "explicitly_partial_protocols": 6,
+      "validation": {
+        "source_ready_operations": 28,
+        "fully_implemented_bounded_adapters": 22,
+        "explicitly_partial_adapters": 6,
+        "deno_tests_passed": 19,
+        "python_tests_passed": 3,
+        "sql_http_status": 201,
+        "sql_checks": 18,
+        "sql_all_rolled_back": true,
+        "runtime_memory": {
+          "passed": true,
+          "layer": "local_synthetic_provider_http",
+          "contract_schemas": 56,
+          "one_mib_actual_handler_transfers": 32,
+          "peak_rss": 212385792,
+          "peak_heap_used": 21788264,
+          "final_memory": {
+            "rss": 212385792,
+            "heapTotal": 85774336,
+            "heapUsed": 16121824,
+            "external": 12620937
+          },
+          "external_provider_called": false,
+          "auth_session_tested": false,
+          "explicit_gc": false
+        },
+        "deno_test_driver_64mib_failed_during_typecheck": true,
+        "real_provider_verified_operations": 0,
+        "all_161_completed": false,
+        "existing_provider_v4_edits": false,
+        "migration_sha256": "69f11b68b4f31d0e4ccae2ad535e48ae271cc9add5cc2e7138f835571dd9153a"
+      },
+      "private_result_byte_retrieval_complete": false,
+      "signed_GitHub_download_complete": false,
+      "new_operations_remain_closed_unverified": true
+    },
+    "runtime_evidence": {
+      "recorded_at_utc": "2026-10-21T04:03:26.341686+00:00",
+      "real_deployed_authenticated_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_original_requirements_complete": 0,
+      "runtime_sources": {
+        "sandy-agent-runtime-v4": {
+          "version": 16,
+          "source_commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
+          "source_readback_sha256": "ed1faecf25def123ee849e325760a3762b8b8de8c01208b8de7ecd4d95d1387c"
+        },
+        "sandy-agent-runtime-v2": {
+          "version": 18,
+          "source_commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
+          "source_readback_sha256": "01a9d8b6ec56cfa9c9f1da3a51f1efda652358eaabd2aa4e933d9da8ace0d711"
+        },
+        "sandy-agent-runtime-v1-backup-r50": {
+          "version": 8,
+          "source_commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
+          "source_readback_sha256": "7e79d5031827e16b624c2be6503b2246885abde7edb60e35709ee09c807dfbad"
+        }
+      },
+      "backend_deployed": true,
+      "public_gateway_mapped": false,
+      "internal_operations": 6,
+      "shared_runtime_fact_and_model_policy": true,
+      "regression": {
+        "deno_passed": 73,
+        "runtime_capability_tests": 46,
+        "v4_transport_tests": 2,
+        "legacy_profile_tests": 6,
+        "existing_service_API_tests": 19,
+        "three_runtime_typechecks": "pass",
+        "preserved_runtime_sections": 18,
+        "shared_original_sections": 2,
+        "exact_archived_dependencies": 3,
+        "real_provider_calls": 0,
+        "real_customer_execution_tested": false
+      },
+      "administrative_database_component": {
+        "deno_passed": 70,
+        "runtime_capability_tests": 43,
+        "v4_transport_tests": 2,
+        "legacy_profile_tests": 6,
+        "existing_service_API_tests": 19,
+        "three_runtime_typechecks": "pass",
+        "preserved_source_sections": 18,
+        "exact_archived_dependencies": 3,
+        "real_provider_calls": 0,
+        "real_customer_execution_tested": false,
+        "Management_PostgreSQL_component_HTTP": 201,
+        "Management_PostgreSQL_component_checks": 12,
+        "all_database_changes_rolled_back": true
+      },
+      "private_task_capability_required": true
+    }
+  },
+  "sensitive_and_preflight_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "sensitive_evidence_rows": 18,
+        "preflight_evidence_rows": 1,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "sensitive_evidence": {
+      "recorded_at_utc": "2026-10-21T04:05:54.515966+00:00",
+      "real_provider_calls": 0,
+      "real_model_calls": 0,
+      "real_deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "certified_original_requirements_complete": 0,
+      "universal_routing_operational": false,
+      "backend": {
+        "version": 1,
+        "source_commit": "24aa4bc2511dcf81a4d2a2aafb48907ea5877b8f",
+        "source_readback_sha256": "29dc82c05f1b9b3f23cc965d6ab46b4bce11ce9cea410d23013851068faecadc"
+      },
+      "backend_deployed": true,
+      "gateway_mapped": false,
+      "gateway_version": 14,
+      "operation_count": 18,
+      "source_commit": "24aa4bc",
+      "migration_version": "20261021008500",
+      "migration_source_sha256": "884c9e88562148a80005976f752562a3509e70a02e6ef5fe136b82d50c07b812",
+      "ledger_readback_http": 201,
+      "deno_tests": 8,
+      "python_tests": 3,
+      "local_synthetic_HTTP_private_captures": 32,
+      "administrative_PostgreSQL_full_rollback_checks": 18,
+      "peer_review": {
+        "reviewer": "gateway_release",
+        "status": "clear_after_missing_public_key_integrity_fixed",
+        "manifest_sha256": "4939e7d3b2b0a518aca8f3d482b13178128a302d8478b4b5ff4f7d93d8fdd914",
+        "files_checked": 19,
+        "mismatches": [],
+        "finding_fixed": "getPublicKey required a nonempty encoded key plus checksum or nonempty PEM instead of accepting publicKey:{}",
+        "scope": [
+          "normal current owner and exact grant/admission/args/scope/registry revision",
+          "fixed provider hosts/resources and no followed redirects",
+          "server-request CRC32C and required provider integrity booleans",
+          "response key identity/CRC32C before private Vault capture",
+          "existing service-only custody extension with exact prior-function guards and no public bytes or credential activation"
+        ],
+        "validation_reviewed": {
+          "author_tests": 8,
+          "author_sql": "18 full-rollback target/foreign/capture/non-cursor checks HTTP201; SQL unchanged by final TS fix",
+          "author_localhost_protocols": 32,
+          "author_memory_old_space_mib": 64,
+          "author_peak_rss_bytes": 116158464
+        },
+        "limits": [
+          "No real Auth/provider execution or activation verified",
+          "Private protocol captures only; no raw public bytes retrieval",
+          "No independent repeated test run claimed; reviewed source/frozen hashes and author evidence"
+        ]
+      },
+      "private_raw_result_delivery_complete": false,
+      "new_operations_remain_closed_unverified": true
+    },
+    "preflight_evidence": {
+      "recorded_at_utc": "2026-10-21T04:05:54.515966+00:00",
+      "real_provider_calls": 0,
+      "real_model_calls": 0,
+      "real_deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "certified_original_requirements_complete": 0,
+      "universal_routing_operational": false,
+      "runtime_sources": {
+        "sandy-agent-runtime-v4": {
+          "version": 17,
+          "source_commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
+          "source_readback_sha256": "8c7b68229d8b8ff4e116233b1e6c1d00be37880630ddb07e934da6facc40588f"
+        },
+        "sandy-agent-runtime-v2": {
+          "version": 19,
+          "source_commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
+          "source_readback_sha256": "94bbd4a6fb77ed53ff1eaeb98dbca48da9398d8fe41655298cfb733ae58c37df"
+        },
+        "sandy-agent-runtime-v1-backup-r50": {
+          "version": 9,
+          "source_commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
+          "source_readback_sha256": "395b8e5c0590580d9a4fce5850dd9e9389fb0e509289aacd9fe10289f7ff8df6"
+        }
+      },
+      "source_commit": "771e9bb",
+      "backend_deployed": true,
+      "public_gateway_mapped": false,
+      "private_task_capability_required": true,
+      "frozen_validation": {
+        "composed_deno_pass": 82,
+        "runtime_type_checks": 3,
+        "source_guard_preserved_sections": 18,
+        "shared_original_sections": 2,
+        "archived_dependencies": 3
+      },
+      "administrative_PostgreSQL_full_rollback_checks": 8,
+      "independent_root_targeted_Deno_tests": 4,
+      "migration_version": "20261021010040",
+      "migration_source_sha256": "1d5594c791d02557c2a85ecb0b6458bceebc0431ffd147f2a77a7c33efbcea08",
+      "ledger_readback_http": 201,
+      "diagnosis_scheduled_is_not_completed": true
+    }
+  },
+  "worker_diagnosis_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "worker_evidence_rows": 1,
+        "verified_rows": 3
+      }
+    ],
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T04:09:10.058168+00:00",
+      "source_commit": "718f9a8",
+      "backend_deployed": true,
+      "backend_version": 13,
+      "runtime": "sandy-auto-improve",
+      "public_gateway_mapped": false,
+      "dedicated_internal_automation_identity": true,
+      "source_readback_sha256": "59abb0a0192ffbcba7258dfc6bf01d129785a8f77ad47247c9a0a7f9632fd0a3",
+      "regression": {
+        "deno_pass": 8,
+        "entrypoint_type_checks": 1,
+        "real_postgresql_rollback_checks": 24
+      },
+      "peer_review": {
+        "reviewer": "gateway_release",
+        "status": "no_blocking_findings",
+        "source_manifest_sha256": "a631c4a4f3e62918f6fbeaa1bb61cd78a4b771ea07e962024de29bb15cf44b48",
+        "checked_files": 10,
+        "mismatches": [],
+        "review_scope": [
+          "Dedicated configured automation secret and process-local proof; customer/owner/service tokens alone cannot mint worker capability",
+          "Stored queued job source/ref/problem binding; private one-use atomic row-locked DB claim before fixed paid model request",
+          "Fixed policy/model/transport/proposal-only JSON output; source declaration cannot select tools or model",
+          "Only saved proposal and actual QA approval handoff permit success receipt; no proposed code/provider deployment executes",
+          "Unique job audit, immutable hashes, terminal receipt guards and historical failed/analysing refusal prevent automatic redispatch after uncertainty"
+        ],
+        "limits": [
+          "No real model/provider call or customer Auth claim",
+          "Preserves legacy authenticated body coercion/truncation; full untrusted-body parser hardening is separate",
+          "No independent test rerun claimed; reviewed author8-handler and24-rollback-check evidence"
+        ]
+      },
+      "migration_version": "20261021010050",
+      "migration_sha256": "8dc92c2effdf67573eecf8c5311cbc315be3d26f4c12ec2847696ef3be8a11ba",
+      "ledger_readback_http": 201,
+      "real_model_or_provider_calls": 0,
+      "real_authenticated_customer_execution": false,
+      "proposal_only": true,
+      "unknown_model_dispatch_never_repeated": true,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false
+    }
+  },
+  "api15_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2447,
+        "api15_evidence_rows": 2390,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T04:12:08.820132+00:00",
+      "source_commit": "b8a9e8f",
+      "gateway": {
+        "version": 15,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "readback_sha256": "fc5a82e6a805f32e6d92945698f09c4dc5afc8e0c8fdf2b37b55b83222e38c76"
+      },
+      "tenant_backend": {
+        "version": 2,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "readback_sha256": "4ead286ea5cada5fde9a149ba6822d6dbfe61761a9ccb18332461857a852009a"
+      },
+      "canonical_mcp": {
+        "version": 7,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "readback_sha256": "42f8f1d455c08e61ce7f47aebc23568ebb50423b0e329cbe4f14c4943f697f84"
+      },
+      "legacy_mcp": {
+        "version": 74,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "readback_sha256": "9f0cdb0db7760f45ca15ff826d2a3f54dcbd1cc78059eb2201953c8d5035e6c8"
+      },
+      "installed_operations": 2390,
+      "new_operations": {
+        "scalar_manifest_owner": 5,
+        "provider_supplement_owner": 28,
+        "content_artifact_owner": 3,
+        "actual_customer_content_discovery_download": 2
+      },
+      "new_operation_count": 38,
+      "gateway_mapped": true,
+      "all_live_registry_contracts_match": true,
+      "metadata_audit_sha256": "d918a0d804387b204a5f2d7a6c57b77c13c03661017f06a7c79cadc96b8aa17c",
+      "regression": {
+        "composed_deno_passed": 274,
+        "failed": 0,
+        "files": [
+          {
+            "file": "./supabase/functions/sandy-provider-supplement-api/index_test.ts",
+            "passed": 19
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/index_test.ts",
+            "passed": 21
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/download_test.ts",
+            "passed": 8
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts",
+            "passed": 2
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/protected_inventory_test.ts",
+            "passed": 12
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/scalar_contracts_test.ts",
+            "passed": 5
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/content_download_test.ts",
+            "passed": 9
+          },
+          {
+            "file": "./supabase/functions/sandy-tenant-lifecycle-api/content_available_test.ts",
+            "passed": 4
+          },
+          {
+            "file": "./supabase/functions/sandy-product-service-api/index_test.ts",
+            "passed": 13
+          },
+          {
+            "file": "./supabase/functions/sandy-product-service-api/providers_test.ts",
+            "passed": 28
+          },
+          {
+            "file": "./supabase/functions/sandy-legacy-mcp-adapter/index_test.ts",
+            "passed": 16
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/index_test.ts",
+            "passed": 91
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/registry_schema_validator_test.ts",
+            "passed": 5
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/customer_key_principal_test.ts",
+            "passed": 8
+          },
+          {
+            "file": "./supabase/functions/sandy-operation-api/api_job_routes_test.ts",
+            "passed": 7
+          },
+          {
+            "file": "./supabase/functions/sandy-api-mcp/index_test.ts",
+            "passed": 20
+          },
+          {
+            "file": "./supabase/functions/sandy-api-mcp/gateway_integration_test.ts",
+            "passed": 6
+          }
+        ],
+        "composed_log": "api15-final-composed-deno.log",
+        "node_mcp_passed": 17,
+        "node_log": "api15-node-mcp-regression.log",
+        "typecheck": "pass",
+        "format": "pass",
+        "diff_check": "pass",
+        "overlap_with_author_suites": true,
+        "real_auth_session_tested": false,
+        "real_provider_calls": 0
+      },
+      "administrative_database_full_rollback_checks": 95,
+      "independent_tenant_Deno_tests": 139,
+      "node_MCP_tests": 17,
+      "actual_customer_JWT_preserved": true,
+      "uniform_content_UTF8_digest_checked": true,
+      "new_operations_remain_closed_unverified": true,
+      "deployed_test_report": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T04:11:22.878224+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "real_authenticated_deployed_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_original_requirements_complete": 0,
+      "supplement_protocol_qualification": {
+        "bounded_adapters": 22,
+        "partial_adapters": 6,
+        "raw_private_bytes_delivery_complete": false,
+        "GitHub_signed_download_complete": false
+      },
+      "mcp_first_upload_reconciliation": {
+        "checked_at_utc": "2026-10-21T04:09:52.455009+00:00",
+        "metadata_http": 200,
+        "body_http": 200,
+        "metadata": {
+          "version": 6,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "updated_at": 1792553727837
+        },
+        "body_sha256": "495069f787c514edd1a2295800f6417a4838388f78c8cc7cb95941a9f21f5a2d",
+        "old_source_exact_in_body": false,
+        "candidate_exact_in_body": false,
+        "source_map_original_source_match": {
+          "71749f6": true,
+          "b8a9e8f": false
+        }
+      },
+      "memory_boundary": {}
+    }
+  },
+  "private_expiry_cleanup_schedule": {
+    "http": 201,
+    "read_only": true,
+    "rows": [
+      {
+        "jobname": "sandy-provider-supplement-expiry",
+        "schedule": "* * * * *",
+        "active": true,
+        "expected_cleanup_only": true
+      }
+    ],
+    "purpose": "Private opaque-custody expiration cleanup, no provider dispatch or customer operation schedule"
+  },
+  "latest_deployed_probe": {
+    "project": "zmqlyygzqoidkcwdysok",
+    "tested_at": "2026-10-21T05:09:19.127317+00:00",
+    "tests": [
+      {
+        "test": "project_endpoint_reachable_and_requires_authentication",
+        "outcome": "blocked",
+        "http_status": null,
+        "layer": "edge_authentication",
+        "blocker": "network_proxy_denied"
+      }
+    ],
+    "complete": false,
+    "deferred": [
+      "internal_handler_checks",
+      "authenticated_api_mcp_checks"
+    ]
+  },
+  "current_release_published": false,
+  "api16_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2554,
+        "api16_evidence_rows": 2521,
+        "mission_evidence_rows": 1,
+        "verified_rows": 3,
+        "verified_operations": [
+          "video.execution.preflight",
+          "video.install.preflight",
+          "video.status"
+        ]
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T04:55:51.526454+00:00",
+      "gateway": {
+        "version": 16,
+        "source_commit": "d60b8286e7b98b1dd69b6127cd23fcd205137cd9",
+        "source_files": 94,
+        "readback_sha256": "6fe98b1ec6f819e7aecc37dfcc457f6b06e029efae146cd1a9f40b6e42240cf7"
+      },
+      "tenant_backend": {
+        "version": 3,
+        "source_commit": "d60b8286e7b98b1dd69b6127cd23fcd205137cd9",
+        "source_files": 15,
+        "readback_sha256": "ced01bdcc72f4ed9e4e4722930dbe94bbb06584d5cd02c7b55dc82b01d33d67d"
+      },
+      "canonical_mcp": {
+        "version": 7,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "source_files": 1,
+        "readback_sha256": "42f8f1d455c08e61ce7f47aebc23568ebb50423b0e329cbe4f14c4943f697f84"
+      },
+      "legacy_mcp": {
+        "version": 74,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "source_files": 1,
+        "readback_sha256": "9f0cdb0db7760f45ca15ff826d2a3f54dcbd1cc78059eb2201953c8d5035e6c8"
+      },
+      "commerce_backend": {
+        "version": 1,
+        "source_commit": "05d0431202de82a0ef457b948b38d6a13ea570b3",
+        "source_files": 4,
+        "readback_sha256": "42a157bb646207ccdab38b107568395a150f54ab5641237d3ba150836f9db01d"
+      },
+      "metadata_backend": {
+        "version": 1,
+        "source_commit": "559b59ba600f78b7d073e38ca1e217f35720276f",
+        "source_files": 5,
+        "readback_sha256": "9959ca93564004eb4f3485ce478f87ab38c7516a61832a51754b3c80e486327a"
+      },
+      "provider_relationship_backend": {
+        "version": 1,
+        "source_commit": "19c55fd9734a3913904da0d608d83c4db6238bd3",
+        "source_files": 19,
+        "readback_sha256": "1281d44493d43a0eb707ef23f7af8a247c6dc7924f582eae7254fd202fd565bf"
+      },
+      "sensitive_backend": {
+        "version": 1,
+        "source_commit": "24aa4bc2511dcf81a4d2a2aafb48907ea5877b8f",
+        "source_files": 19,
+        "readback_sha256": "29dc82c05f1b9b3f23cc965d6ab46b4bce11ce9cea410d23013851068faecadc"
+      },
+      "installed_operations": 2521,
+      "new_mappings": 131,
+      "gateway_mapped": true,
+      "new_mappings_remain_closed_unverified": true,
+      "real_authenticated_deployed_execution_tested": false,
+      "certified_original_requirements_complete": 0,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "production_edge_mcp_api_only": true,
+      "cloud_run_mcp": "Source-only; machine WIF deployment requires reachable normal Auth and existing IAM.",
+      "internal_application_migration": "partial",
+      "exact_uploaded_archive_regression": {
+        "passed": 353,
+        "unconditional": 350,
+        "evidence_gated_pg_output_tests": 3,
+        "failed": 0,
+        "source_commit": "d60b8286e7b98b1dd69b6127cd23fcd205137cd9",
+        "log_sha256": "5abc93fb230d0d4af97f58baa0125096464f4b63be7bc82c8cbc330ba15ac062",
+        "conditional_log_sha256": "951cd380cb725604bd9f92d298d65f22c78a2731154d974a175e7432f33162a1",
+        "tests_overlap_earlier_component_suites": true
+      },
+      "live_catalogue_audit": {
+        "source_commit": "d60b8286e7b98b1dd69b6127cd23fcd205137cd9",
+        "gateway_version": 16,
+        "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
+        "installed_count": 2521,
+        "registry_count": 2554,
+        "mismatches": [],
+        "all_installed_contracts_match": true
+      },
+      "live_catalogue_audit_sha256": "342fb715678d98d112a5b6d0fbd4bf4bca554faa444a54239421b0685ecb84f3",
+      "registry_validator": {
+        "implementation": "bounded interpreter deployed in API16",
+        "differential": {
+          "production_candidate_only": true,
+          "fixture": "/workspace/sandy-api-deliverables/registry-validator-promotion/live-registry-schemas-final.jsonl",
+          "schemas": 5042,
+          "comparisons": 51580,
+          "valid": 5094,
+          "invalid": 46486,
+          "unavailable": 0,
+          "mismatches": [],
+          "candidate_cache": {
+            "entries": 12,
+            "schema_bytes": 12588,
+            "max_entries": 12,
+            "max_schema_bytes": 262144
+          }
+        },
+        "stream_memory": {
+          "production_candidate_only": true,
+          "old_space_limit_mib": 64,
+          "mode": "stream",
+          "exit_code": 0,
+          "deno_pid": 169403,
+          "rss_measurement": "os.wait4 rusage for exact Deno child",
+          "peak_rss_kib": 138552,
+          "parent_aggregate_children_peak_rss_kib": 138552,
+          "log": "final-promotion-gateway-stream-64.txt",
+          "gc_observed_peak_heap_used_mib": 44.2,
+          "gc_observed_peak_heap_total_mib": 68.9,
+          "measurements": {
+            "production_candidate_only": true,
+            "mode": "per_operation_stream",
+            "installed_operations": 2521,
+            "catalogue_operations": 2521,
+            "schemas_validated": 5042,
+            "input_refusals": 4559,
+            "forced_output_schema_refusals": 483,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 126058496,
+              "heapTotal": 64622592,
+              "heapUsed": 26286304,
+              "external": 1496410
+            },
+            "final": {
+              "rss": 142245888,
+              "heapTotal": 65146880,
+              "heapUsed": 22849440,
+              "external": 1490225
+            },
+            "sampled_peak_heap_bytes": 46316832,
+            "sampled_peak_rss_bytes": 142249984
+          },
+          "conservative_peak_rss_bytes": 142249984
+        },
+        "maximum_payload_memory": {
+          "production_candidate_only": true,
+          "old_space_limit_mib": 64,
+          "mode": "per-operation",
+          "exit_code": 0,
+          "deno_pid": 169416,
+          "rss_measurement": "os.wait4 rusage for exact Deno child",
+          "peak_rss_kib": 211976,
+          "parent_aggregate_children_peak_rss_kib": 445460,
+          "log": "final-promotion-maximum-payload-per-operation-64.txt",
+          "gc_observed_peak_heap_used_mib": 57.6,
+          "gc_observed_peak_heap_total_mib": 93.9,
+          "measurements": {
+            "production_candidate_only": true,
+            "mode": "per_operation_maximum_payload",
+            "installed_operations": 2521,
+            "catalogue_operations": 1,
+            "payload_binary_bytes": 1048576,
+            "payload_encoded_chars": 1398104,
+            "schemas_validated": 33,
+            "input_refusals": 1,
+            "forced_output_schema_refusals": 32,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 131280896,
+              "heapTotal": 65409024,
+              "heapUsed": 35340696,
+              "external": 5981961
+            },
+            "final": {
+              "rss": 200888320,
+              "heapTotal": 60518400,
+              "heapUsed": 23289056,
+              "external": 2822793
+            },
+            "sampled_peak_heap_bytes": 57618032,
+            "sampled_peak_rss_bytes": 213463040
+          },
+          "conservative_peak_rss_bytes": 217063424
+        },
+        "memory_boundary": "Exact Deno child os.wait4; administrative local fixtures, zero provider/RPC calls. Earlier aggregate child rusage cannot establish exact Deno peak or stress failure."
+      },
+      "deployed_endpoint_probe": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T04:53:59.711155+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "dependencies": {
+        "codex_runtime_egress": "Project hostname proxy CONNECT403 before Auth; this is not proof of Edge runtime egress failure.",
+        "controller_authentication": "Normal authorized Controller owner session unavailable; no administrative identity substitution.",
+        "custom_domain_entitlement": "Actual provider entitlement refusal retained separately; no purchase.",
+        "git_publication": "Published through 3b3491b; current write credential rejected. No new merge."
+      },
+      "remaining_implementation_qualifications": [
+        "Commerce v1 retains broad result fragments; strict revision is reviewed source only.",
+        "Provider supplement v1 has 22 bounded and six partial methods; revised download source not counted in this API16 attestation.",
+        "Private capture TTL race requires separately reviewed additive fix.",
+        "SSH/WinRM transport, tenant parent/control-copy lifecycle and legacy execution families remain engineering work."
+      ]
+    },
+    "mission_worker": {
+      "recorded_at_utc": "2026-10-21T04:55:51.526454+00:00",
+      "deployment": {
+        "version": 9,
+        "source_commit": "5e837b8527f724a632d62a5cad28230df9fec5bf",
+        "source_files": 5,
+        "readback_sha256": "c2375d1568379add41dfd0efbe42179a0489802a233c52025b9a2c79755e643b"
+      },
+      "operation": "agent.missions.work_product.prepare",
+      "test_boundary": "44 local Deno tests and 28 actual administrative PostgreSQL assertions in full rollback; all production triggers enabled, transactional pg_net outbox cleanup verified.",
+      "provider_model_test_calls": 0,
+      "actual_model_result_verified": false,
+      "deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "execution_boundary": "Dedicated existing worker identity and mission/run locks; internal draft pending review only; no public API exposure."
+    }
+  },
+  "api17_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2562,
+        "api17_evidence_rows": 2527,
+        "mission_planning_evidence_rows": 2,
+        "verified_rows": 3,
+        "verified_operations": [
+          "video.execution.preflight",
+          "video.install.preflight",
+          "video.status"
+        ]
+      }
+    ],
+    "verification_and_exposure_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T05:10:41.261545+00:00",
+      "deployments": {
+        "sandy-operation-api": {
+          "version": 17,
+          "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+          "source_files": 105,
+          "readback_sha256": "70448291750f9639dab39cb873baf0f2ceb7c2abefea58fc53b60d939d6dd6b3"
+        },
+        "sandy-tenant-lifecycle-api": {
+          "version": 4,
+          "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+          "source_files": 17,
+          "readback_sha256": "336cc7090c7bf21a776e57cabb96710e36ac64b11c6d83e7974db2b090c4bc9c"
+        },
+        "sandy-commerce-ledger-api": {
+          "version": 2,
+          "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+          "source_files": 7,
+          "readback_sha256": "2dc17d5d92a10c76bd76c044a7be37b477bd9d6d540ad8c035ee2974f46cb68d"
+        },
+        "sandy-api-mcp": {
+          "version": 7,
+          "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+          "source_files": 1,
+          "readback_sha256": "42f8f1d455c08e61ce7f47aebc23568ebb50423b0e329cbe4f14c4943f697f84"
+        },
+        "sandy-operations-mcp": {
+          "version": 74,
+          "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+          "source_files": 1,
+          "readback_sha256": "9f0cdb0db7760f45ca15ff826d2a3f54dcbd1cc78059eb2201953c8d5035e6c8"
+        },
+        "sandy-provider-supplement-api": {
+          "version": 2,
+          "source_commit": "05fa746679243491d3dbe4cde33e0e2b2f14dce1",
+          "source_files": 16,
+          "readback_sha256": "668edc3d10c98c65cbccabed0a44ee871fab2c4b4fee6a368d76e685b2cd5c55"
+        },
+        "sandy-provider-artifact-api": {
+          "version": 1,
+          "source_commit": "dadc54cd3403e22b2c83cf0ea152703068ca8627",
+          "source_files": 11,
+          "readback_sha256": "3c5c32be536026ecc415417adfb8203e1f811019b499dd80f6d4c68786f06179"
+        }
+      },
+      "gateway_mapped": true,
+      "installed_operation_count": 2527,
+      "new_mapping_count": 6,
+      "new_mapping_ids": [
+        "provider.artifacts.read_private",
+        "supabase.tenant.financial.export",
+        "supabase.tenant.financial.exports.available",
+        "supabase.tenant.financial.exports.download",
+        "supabase.tenant.financial.exports.get",
+        "supabase.tenant.financial.exports.purge"
+      ],
+      "strict_commerce_operation_count": 53,
+      "strict_commerce_contract_version": "1.1.0",
+      "financial_export_owner_operations": 3,
+      "financial_actual_customer_delivery_operations": 2,
+      "customer_consent_explicit_choices": 68,
+      "private_artifact_delivery_classes": 6,
+      "pinned_source_export": {
+        "commit": "e2d49fdfab6147783e4bbfde373d6550db906763",
+        "typed_records": 2483,
+        "internal_private_records": 21
+      },
+      "memory_boundary": {
+        "installed_operations": 2527,
+        "schemas": 5054,
+        "old_space_mib": 64,
+        "stream_peak_rss_bytes": 137097216,
+        "maximum_payload_peak_rss_bytes": 228950016,
+        "maximum_payload_sampled_heap_bytes": 62573816,
+        "measurement": "Exact Deno child os.wait4 plus sampled RSS; sequential local classification/refusals with zero provider/RPC; no concurrency/successful provider margin claim."
+      },
+      "exact_deployed_archive_regression": {
+        "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+        "passed": 379,
+        "default_tests": 374,
+        "distinct_pg_output_tests": 5,
+        "failed": 0,
+        "default_log_sha256": "c2e66bc0d2972ea2bdaeeca5ff45fc10a7e2ba5aed00bd733ce0419f9ccf16ed",
+        "pg_output_log_sha256": "3a0373b4d9cb32683da03049f9aca00d514ee4a8a8144860b5df69481e7965ef",
+        "boundary": "Local source-composed handlers, synthetic policy/provider callbacks and separately captured actual PostgreSQL rollback outputs. Earlier overlapping component suites are not summed."
+      },
+      "actual_postgres_component_evidence": {
+        "commerce": "126 checks / 81 output variants for all53 operations; full rollback, no processor/provider execution.",
+        "financial": "175 combined administrative rollback checks plus independent all20 prior content streams byte-equal differential; no real customer Auth.",
+        "artifact": "Six actual dummy Vault save/readbacks with exact TTL and actor/digest/class/expiry/replay/drift refusals; no real provider/Auth.",
+        "mission_planning": "30 checks, full rollback with all triggers enabled and pg_net outbox cleanup; no model calls."
+      },
+      "live_registry_audit": {
+        "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+        "gateway_version": 17,
+        "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
+        "installed_count": 2527,
+        "registry_count": 2562,
+        "mismatches": [],
+        "all_installed_contracts_match": true
+      },
+      "live_registry_audit_sha256": "85f0416b7b837f07ff614d2f91119cfadf6ff9b8eac300a5dda5276f94eeb2a9",
+      "deployment_packaging": {
+        "json_semantics_preserved": true,
+        "typescript_source_bytes_unchanged": true,
+        "wire_source_bytes": 3378661,
+        "original_source_bytes": 6033229,
+        "first_upload_http": 413,
+        "first_upload_retained_exact_active_v16": true,
+        "peer_review_sha256": "9976ef522505c7b8b568063e3e4028e41ffc8ae5d22394aa9fb83176871428a9"
+      },
+      "commerce_upload_reconciliation": {
+        "attempted_upload": {
+          "version": 2,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_292e6a00-bbc4-498a-b276-42d58ae45223_2/source/sandy-commerce-ledger-api/strict_entry.ts"
+        },
+        "observed_metadata": {
+          "slug": "sandy-commerce-ledger-api",
+          "version": 1,
+          "status": "ACTIVE",
+          "verify_jwt": true,
+          "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_292e6a00-bbc4-498a-b276-42d58ae45223_1/source/sandy-commerce-ledger-api/index.ts"
+        },
+        "response_metadata": {
+          "Date": "Wed, 21 Oct 2026 05:05:15 GMT",
+          "Age": null,
+          "CF-Cache-Status": "DYNAMIC",
+          "Server": "envoy"
+        },
+        "body_http": 200,
+        "body_byte_equal_attested_v1": true,
+        "body_sha256": "da549c5e12005c29f5740b09680e7f6de9fe52d9a93c5e4fb69412430f088396",
+        "outcome": "First upload returned201 and metadata2 but persistent readback retains attestedv1; newrelease not established.",
+        "retry_basis": "Read-only no-cache metadata and source prove unchanged old active state.",
+        "final_outcome": "One retry installed v2 and all seven uploaded source modules were accounted for; original failed attempt retained.",
+        "final_readback_version": 2
+      },
+      "deployed_endpoint_probe": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T05:09:19.127317+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "real_authenticated_deployed_execution_tested": false,
+      "new_fully_verified_operations": 0,
+      "new_verification_asserted": false,
+      "original_requirements_certified_complete": 0,
+      "universal_production_routing_operational": false,
+      "production_edge_mcp_api_only": true,
+      "cloud_run_node_mcp": "Source-only; normal machine Auth/WIF runtime egress dependency.",
+      "internal_application_migration": "partial",
+      "separate_dependencies": {
+        "codex_egress": "Project hostname proxy CONNECT403 before Auth; not evidence of Edge runtime egress failure.",
+        "controller_authentication": "Normal authorized Controller owner session unavailable; not substituted with administrative identity.",
+        "custom_domain_entitlement": "Actual provider entitlement refusal; no purchase or upgrade.",
+        "git_publication": "Latest confirmed remote engineering commit3b3491b, main350ede13. Current write credential rejected; no new merge.",
+        "operation_fixtures": "Real approved targets, exact provider mutations, mail/WhatsApp/payment/model/VM test actions and native database-maintenance fixtures remain operation-specific requirements."
+      },
+      "remaining_implementation": [
+        "Product98 strict resource revision still source work.",
+        "SSH/WinRM and remaining legacy execution families still source work.",
+        "Financial redaction, parent erasure/restore and retained control-copy lifecycle remain partial.",
+        "Undocumented Compute effective security policy response remains a typed semantics gap.",
+        "Larger-than1MiB governed streaming and function-source delivery require separate implementations."
+      ]
+    },
+    "mission_planning": {
+      "recorded_at_utc": "2026-10-21T05:10:41.261545+00:00",
+      "deployment": {
+        "version": 19,
+        "source_commit": "b46fc5f5e6e2c6e3c5b49bdc81571d1098d02c44",
+        "source_files": 7,
+        "readback_sha256": "07a6979829c40a5b72e0d2eb0267d9ba34afc18b74b748caa96ad32ddba58c11"
+      },
+      "operation_ids": [
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review"
+      ],
+      "focused_local_deno": 14,
+      "composed_deno": 58,
+      "actual_postgres_rollback_checks": 30,
+      "all_production_triggers_enabled": true,
+      "post_rollback_fixture_and_pg_net_outbox_cleanup_confirmed": true,
+      "actual_model_test_calls": 0,
+      "deployed_user_or_model_execution_verified": false,
+      "new_verification_asserted": false,
+      "scope": "Existing dedicated automation identity; customer/task/question/file/catalogue locking, review gates, no external actions."
+    }
+  },
+  "private_artifact_download_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "download_rows": 28,
+        "artifact_rows": 1,
+        "actual_membership_component_operations": [
+          "supabase.branches.get_config.bound"
+        ],
+        "verified_rows": 3
+      }
+    ],
+    "historical_verification_and_exposure_preserved": true,
+    "evidence_attribution_correction": "Membership-only observation moved from historical reader ID to exact invoked bound handler ID; no call repeated or new verification claimed.",
+    "download": {
+      "recorded_at_utc": "2026-10-21T05:01:27.099931+00:00",
+      "deployment": {
+        "version": 2,
+        "source_commit": "05fa746679243491d3dbe4cde33e0e2b2f14dce1",
+        "source_files": 16,
+        "source_readback_sha256": "668edc3d10c98c65cbccabed0a44ee871fab2c4b4fee6a368d76e685b2cd5c55"
+      },
+      "upgraded_methods": 5,
+      "bounded_adapters": 27,
+      "policy_schema_gap_adapters": 1,
+      "tests": {
+        "independent_deno": 24,
+        "python": 3,
+        "metadata_full_rollback_http": 201,
+        "loopback_capture_cases": 20,
+        "http_loopback_requests": 40,
+        "max_decoded_bytes": 1048576
+      },
+      "test_boundary": "Official provider documentation plus synthetic loopback HTTP and real PostgreSQL rollback; no real download/provider approval/Auth execution.",
+      "real_provider_called": false,
+      "new_verification_asserted": false,
+      "gateway_mapping": "Existing 28 API16 mappings and contract fingerprints unchanged."
+    },
+    "artifact": {
+      "recorded_at_utc": "2026-10-21T05:01:27.099931+00:00",
+      "deployment": {
+        "version": 1,
+        "source_commit": "dadc54cd3403e22b2c83cf0ea152703068ca8627",
+        "source_files": 11,
+        "source_readback_sha256": "3c5c32be536026ecc415417adfb8203e1f811019b499dd80f6d4c68786f06179"
+      },
+      "operation": "provider.artifacts.read_private",
+      "source_classes": 6,
+      "sensitive_085_classes_excluded": true,
+      "one_use_custody": true,
+      "timestamp_fix_applied": true,
+      "tests": {
+        "independent_deno": 6,
+        "python": 3,
+        "native_postgres_full_rollback_http": 201,
+        "successful_vault_byte_readbacks": 6,
+        "exact_10_minute_ttl_checked": true,
+        "synthetic_loopback_deliveries": 24,
+        "max_decoded_bytes": 1048576
+      },
+      "test_boundary": "Actual administrative PostgreSQL/Vault components with dummy bytes, synthetic local handlers; no customer Auth or real approval/provider execution.",
+      "gateway_mapping": "Pending next gateway revision",
+      "real_provider_called": false,
+      "real_authenticated_deployed_execution_tested": false,
+      "new_verification_asserted": false
+    },
+    "bound_membership": {
+      "layer": "real_readonly_provider_with_synthetic_policy_callbacks",
+      "project_ref": "zmqlyygzqoidkcwdysok",
+      "method": "GET",
+      "path": "/v1/projects/zmqlyygzqoidkcwdysok/branches",
+      "provider_http_status": 200,
+      "provider_requests": 1,
+      "branch_inventory_count": 0,
+      "handler_http_status": 403,
+      "handler_error": "branch_fixed_project_relationship_required",
+      "handler_executed": false,
+      "execution_receipt_outcome": "failed",
+      "missing_target_refused": true,
+      "policy_callbacks_synthetic": true,
+      "controller_session_tested": false,
+      "real_approval_tested": false,
+      "full_operation_verified": false,
+      "provider_mutation_performed": false,
+      "database_write_performed": false,
+      "operation": "supabase.branches.get_config.bound",
+      "evidence_scope": "Only fixed-project branch membership GET, then missing-target refusal; config request not reached."
+    }
+  },
+  "latest_source_attested_release": {
+    "recorded_at_utc": "2026-10-21T05:10:41.261545+00:00",
+    "deployments": {
+      "sandy-operation-api": {
+        "version": 17,
+        "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+        "source_files": 105,
+        "readback_sha256": "70448291750f9639dab39cb873baf0f2ceb7c2abefea58fc53b60d939d6dd6b3"
+      },
+      "sandy-tenant-lifecycle-api": {
+        "version": 4,
+        "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+        "source_files": 17,
+        "readback_sha256": "336cc7090c7bf21a776e57cabb96710e36ac64b11c6d83e7974db2b090c4bc9c"
+      },
+      "sandy-commerce-ledger-api": {
+        "version": 2,
+        "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+        "source_files": 7,
+        "readback_sha256": "2dc17d5d92a10c76bd76c044a7be37b477bd9d6d540ad8c035ee2974f46cb68d"
+      },
+      "sandy-api-mcp": {
+        "version": 7,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "source_files": 1,
+        "readback_sha256": "42f8f1d455c08e61ce7f47aebc23568ebb50423b0e329cbe4f14c4943f697f84"
+      },
+      "sandy-operations-mcp": {
+        "version": 74,
+        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+        "source_files": 1,
+        "readback_sha256": "9f0cdb0db7760f45ca15ff826d2a3f54dcbd1cc78059eb2201953c8d5035e6c8"
+      },
+      "sandy-provider-supplement-api": {
+        "version": 2,
+        "source_commit": "05fa746679243491d3dbe4cde33e0e2b2f14dce1",
+        "source_files": 16,
+        "readback_sha256": "668edc3d10c98c65cbccabed0a44ee871fab2c4b4fee6a368d76e685b2cd5c55"
+      },
+      "sandy-provider-artifact-api": {
+        "version": 1,
+        "source_commit": "dadc54cd3403e22b2c83cf0ea152703068ca8627",
+        "source_files": 11,
+        "readback_sha256": "3c5c32be536026ecc415417adfb8203e1f811019b499dd80f6d4c68786f06179"
+      }
+    },
+    "gateway_mapped": true,
+    "installed_operation_count": 2527,
+    "new_mapping_count": 6,
+    "new_mapping_ids": [
+      "provider.artifacts.read_private",
+      "supabase.tenant.financial.export",
+      "supabase.tenant.financial.exports.available",
+      "supabase.tenant.financial.exports.download",
+      "supabase.tenant.financial.exports.get",
+      "supabase.tenant.financial.exports.purge"
+    ],
+    "strict_commerce_operation_count": 53,
+    "strict_commerce_contract_version": "1.1.0",
+    "financial_export_owner_operations": 3,
+    "financial_actual_customer_delivery_operations": 2,
+    "customer_consent_explicit_choices": 68,
+    "private_artifact_delivery_classes": 6,
+    "pinned_source_export": {
+      "commit": "e2d49fdfab6147783e4bbfde373d6550db906763",
+      "typed_records": 2483,
+      "internal_private_records": 21
+    },
+    "memory_boundary": {
+      "installed_operations": 2527,
+      "schemas": 5054,
+      "old_space_mib": 64,
+      "stream_peak_rss_bytes": 137097216,
+      "maximum_payload_peak_rss_bytes": 228950016,
+      "maximum_payload_sampled_heap_bytes": 62573816,
+      "measurement": "Exact Deno child os.wait4 plus sampled RSS; sequential local classification/refusals with zero provider/RPC; no concurrency/successful provider margin claim."
+    },
+    "exact_deployed_archive_regression": {
+      "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+      "passed": 379,
+      "default_tests": 374,
+      "distinct_pg_output_tests": 5,
+      "failed": 0,
+      "default_log_sha256": "c2e66bc0d2972ea2bdaeeca5ff45fc10a7e2ba5aed00bd733ce0419f9ccf16ed",
+      "pg_output_log_sha256": "3a0373b4d9cb32683da03049f9aca00d514ee4a8a8144860b5df69481e7965ef",
+      "boundary": "Local source-composed handlers, synthetic policy/provider callbacks and separately captured actual PostgreSQL rollback outputs. Earlier overlapping component suites are not summed."
+    },
+    "actual_postgres_component_evidence": {
+      "commerce": "126 checks / 81 output variants for all53 operations; full rollback, no processor/provider execution.",
+      "financial": "175 combined administrative rollback checks plus independent all20 prior content streams byte-equal differential; no real customer Auth.",
+      "artifact": "Six actual dummy Vault save/readbacks with exact TTL and actor/digest/class/expiry/replay/drift refusals; no real provider/Auth.",
+      "mission_planning": "30 checks, full rollback with all triggers enabled and pg_net outbox cleanup; no model calls."
+    },
+    "live_registry_audit": {
+      "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+      "gateway_version": 17,
+      "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
+      "installed_count": 2527,
+      "registry_count": 2562,
+      "mismatches": [],
+      "all_installed_contracts_match": true
+    },
+    "live_registry_audit_sha256": "85f0416b7b837f07ff614d2f91119cfadf6ff9b8eac300a5dda5276f94eeb2a9",
+    "deployment_packaging": {
+      "json_semantics_preserved": true,
+      "typescript_source_bytes_unchanged": true,
+      "wire_source_bytes": 3378661,
+      "original_source_bytes": 6033229,
+      "first_upload_http": 413,
+      "first_upload_retained_exact_active_v16": true,
+      "peer_review_sha256": "9976ef522505c7b8b568063e3e4028e41ffc8ae5d22394aa9fb83176871428a9"
+    },
+    "commerce_upload_reconciliation": {
+      "attempted_upload": {
+        "version": 2,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_292e6a00-bbc4-498a-b276-42d58ae45223_2/source/sandy-commerce-ledger-api/strict_entry.ts"
+      },
+      "observed_metadata": {
+        "slug": "sandy-commerce-ledger-api",
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true,
+        "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_292e6a00-bbc4-498a-b276-42d58ae45223_1/source/sandy-commerce-ledger-api/index.ts"
+      },
+      "response_metadata": {
+        "Date": "Wed, 21 Oct 2026 05:05:15 GMT",
+        "Age": null,
+        "CF-Cache-Status": "DYNAMIC",
+        "Server": "envoy"
+      },
+      "body_http": 200,
+      "body_byte_equal_attested_v1": true,
+      "body_sha256": "da549c5e12005c29f5740b09680e7f6de9fe52d9a93c5e4fb69412430f088396",
+      "outcome": "First upload returned201 and metadata2 but persistent readback retains attestedv1; newrelease not established.",
+      "retry_basis": "Read-only no-cache metadata and source prove unchanged old active state.",
+      "final_outcome": "One retry installed v2 and all seven uploaded source modules were accounted for; original failed attempt retained.",
+      "final_readback_version": 2
+    },
+    "deployed_endpoint_probe": {
+      "project": "zmqlyygzqoidkcwdysok",
+      "tested_at": "2026-10-21T05:09:19.127317+00:00",
+      "tests": [
+        {
+          "test": "project_endpoint_reachable_and_requires_authentication",
+          "outcome": "blocked",
+          "http_status": null,
+          "layer": "edge_authentication",
+          "blocker": "network_proxy_denied"
+        }
+      ],
+      "complete": false,
+      "deferred": [
+        "internal_handler_checks",
+        "authenticated_api_mcp_checks"
+      ]
+    },
+    "real_authenticated_deployed_execution_tested": false,
+    "new_fully_verified_operations": 0,
+    "new_verification_asserted": false,
+    "original_requirements_certified_complete": 0,
+    "universal_production_routing_operational": false,
+    "production_edge_mcp_api_only": true,
+    "cloud_run_node_mcp": "Source-only; normal machine Auth/WIF runtime egress dependency.",
+    "internal_application_migration": "partial",
+    "separate_dependencies": {
+      "codex_egress": "Project hostname proxy CONNECT403 before Auth; not evidence of Edge runtime egress failure.",
+      "controller_authentication": "Normal authorized Controller owner session unavailable; not substituted with administrative identity.",
+      "custom_domain_entitlement": "Actual provider entitlement refusal; no purchase or upgrade.",
+      "git_publication": "Latest confirmed remote engineering commit3b3491b, main350ede13. Current write credential rejected; no new merge.",
+      "operation_fixtures": "Real approved targets, exact provider mutations, mail/WhatsApp/payment/model/VM test actions and native database-maintenance fixtures remain operation-specific requirements."
+    },
+    "remaining_implementation": [
+      "Product98 strict resource revision still source work.",
+      "SSH/WinRM and remaining legacy execution families still source work.",
+      "Financial redaction, parent erasure/restore and retained control-copy lifecycle remain partial.",
+      "Undocumented Compute effective security policy response remains a typed semantics gap.",
+      "Larger-than1MiB governed streaming and function-source delivery require separate implementations."
+    ]
+  },
+  "memory_measurement_correction": {
+    "historical_cumulative_RUSAGE_CHILDREN": "Earlier295/328/443MiB process-history figures cannot establish an individual Deno child peak, failure or production margin. They are superseded as capacity evidence by exact-child os.wait4 records.",
+    "current_API17": [
+      {
+        "source_commit": "74a4535",
+        "exact_git_archive": "/tmp/sandy-release-readback-74a4535",
+        "old_space_limit_mib": 64,
+        "mode": "stream",
+        "exit_code": 0,
+        "deno_pid": 180743,
+        "rss_measurement": "os.wait4 rusage for this exact Deno child",
+        "exact_child_peak_rss_bytes": 136851456,
+        "fixture_sha256": "fad5b2286d6c1cd8cc491fd463f58a9dd9a7ee61a62f08a397aea528663ea793",
+        "log": "api17-stream-64.log",
+        "gc_observed_peak_heap_used_mib": 43.5,
+        "gc_observed_peak_heap_total_mib": 64.4,
+        "measurements": {
+          "production_candidate_only": true,
+          "mode": "per_operation_stream",
+          "installed_operations": 2527,
+          "catalogue_operations": 2527,
+          "schemas_validated": 5054,
+          "input_refusals": 4571,
+          "forced_output_schema_refusals": 483,
+          "provider_calls": 0,
+          "rpc_calls": 0,
+          "initial": {
+            "rss": 125104128,
+            "heapTotal": 64884736,
+            "heapUsed": 26940288,
+            "external": 1567966
+          },
+          "final": {
+            "rss": 133058560,
+            "heapTotal": 58068992,
+            "heapUsed": 23236472,
+            "external": 1490225
+          },
+          "sampled_peak_heap_bytes": 41981544,
+          "sampled_peak_rss_bytes": 137097216
+        },
+        "peak_rss_bytes": 137097216
+      },
+      {
+        "source_commit": "74a4535",
+        "exact_git_archive": "/tmp/sandy-release-readback-74a4535",
+        "old_space_limit_mib": 64,
+        "mode": "maximum-payload",
+        "exit_code": 0,
+        "deno_pid": 181042,
+        "rss_measurement": "os.wait4 rusage for this exact Deno child",
+        "exact_child_peak_rss_bytes": 228950016,
+        "fixture_sha256": "fad5b2286d6c1cd8cc491fd463f58a9dd9a7ee61a62f08a397aea528663ea793",
+        "log": "api17-maximum-payload-64.log",
+        "gc_observed_peak_heap_used_mib": 60.7,
+        "gc_observed_peak_heap_total_mib": 92.2,
+        "measurements": {
+          "production_candidate_only": true,
+          "mode": "per_operation_maximum_payload",
+          "installed_operations": 2527,
+          "catalogue_operations": 1,
+          "payload_binary_bytes": 1048576,
+          "payload_encoded_chars": 1398104,
+          "schemas_validated": 33,
+          "input_refusals": 1,
+          "forced_output_schema_refusals": 32,
+          "provider_calls": 0,
+          "rpc_calls": 0,
+          "initial": {
+            "rss": 128638976,
+            "heapTotal": 57544704,
+            "heapUsed": 23846032,
+            "external": 3360967
+          },
+          "final": {
+            "rss": 188399616,
+            "heapTotal": 56586240,
+            "heapUsed": 23805080,
+            "external": 2822793
+          },
+          "sampled_peak_heap_bytes": 62573816,
+          "sampled_peak_rss_bytes": 228294656
+        },
+        "peak_rss_bytes": 228950016
+      }
+    ],
+    "boundary": "Local sequential per-operation classification/forced-output refusal, no provider/RPC calls, no Edge concurrency or eventual all-activation readiness claim."
+  },
+  "historical_membership_observation_correction": {
+    "layer": "real_readonly_provider_with_synthetic_policy_callbacks",
+    "project_ref": "zmqlyygzqoidkcwdysok",
+    "method": "GET",
+    "path": "/v1/projects/zmqlyygzqoidkcwdysok/branches",
+    "provider_http_status": 200,
+    "provider_requests": 1,
+    "branch_inventory_count": 0,
+    "handler_http_status": 403,
+    "handler_error": "branch_fixed_project_relationship_required",
+    "handler_executed": false,
+    "execution_receipt_outcome": "failed",
+    "missing_target_refused": true,
+    "policy_callbacks_synthetic": true,
+    "controller_session_tested": false,
+    "real_approval_tested": false,
+    "full_operation_verified": false,
+    "provider_mutation_performed": false,
+    "database_write_performed": false,
+    "operation": "supabase.branches.get_config.bound",
+    "evidence_scope": "Only fixed-project branch membership GET, then missing-target refusal; config request not reached."
+  },
+  "compute_effective_policy_documentation_dependency": {
+    "source_url": "https://raw.githubusercontent.com/googleapis/google-api-go-client/main/compute/v1/compute-api.json",
+    "http": 200,
+    "sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+    "revision": "20261007",
+    "method": {
+      "apiVersion": "2026-09-01",
+      "description": "Returns effective security policies applied to this backend service.",
+      "flatPath": "projects/{project}/global/backendServices/{backendService}/getEffectiveSecurityPolicies",
+      "httpMethod": "GET",
+      "id": "compute.backendServices.getEffectiveSecurityPolicies",
+      "parameterOrder": [
+        "project",
+        "backendService"
+      ],
+      "parameters": {
+        "backendService": {
+          "description": "Name of the Backend Service for this request.",
+          "location": "path",
+          "pattern": "[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?",
+          "required": true,
+          "type": "string"
+        },
+        "project": {
+          "description": "Project ID for this request.",
+          "location": "path",
+          "pattern": "(?:(?:[-a-z0-9]{1,63}\\.)*(?:[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?):)?(?:[0-9]{1,19}|(?:[a-z0-9](?:[-a-z0-9]{0,61}[a-z0-9])?))",
+          "required": true,
+          "type": "string"
+        }
+      },
+      "path": "projects/{project}/global/backendServices/{backendService}/getEffectiveSecurityPolicies",
+      "scopes": [
+        "https://www.googleapis.com/auth/cloud-platform",
+        "https://www.googleapis.com/auth/compute",
+        "https://www.googleapis.com/auth/compute.readonly"
+      ]
+    },
+    "referenced_response_schema": null,
+    "provider_called": false
+  },
   "latest_source_readbacks": {
+    "sandy-operation-api": {
+      "version": 17,
+      "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+      "source_files": 105,
+      "readback_sha256": "70448291750f9639dab39cb873baf0f2ceb7c2abefea58fc53b60d939d6dd6b3"
+    },
+    "sandy-tenant-lifecycle-api": {
+      "version": 4,
+      "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+      "source_files": 17,
+      "readback_sha256": "336cc7090c7bf21a776e57cabb96710e36ac64b11c6d83e7974db2b090c4bc9c"
+    },
+    "sandy-commerce-ledger-api": {
+      "version": 2,
+      "source_commit": "74a4535b4f22a095d1ac84a6eda5270778884e94",
+      "source_files": 7,
+      "readback_sha256": "2dc17d5d92a10c76bd76c044a7be37b477bd9d6d540ad8c035ee2974f46cb68d"
+    },
+    "sandy-api-mcp": {
+      "version": 7,
+      "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+      "source_files": 1,
+      "readback_sha256": "42f8f1d455c08e61ce7f47aebc23568ebb50423b0e329cbe4f14c4943f697f84"
+    },
+    "sandy-operations-mcp": {
+      "version": 74,
+      "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
+      "source_files": 1,
+      "readback_sha256": "9f0cdb0db7760f45ca15ff826d2a3f54dcbd1cc78059eb2201953c8d5035e6c8"
+    },
+    "sandy-provider-supplement-api": {
+      "version": 2,
+      "source_commit": "05fa746679243491d3dbe4cde33e0e2b2f14dce1",
+      "source_files": 16,
+      "readback_sha256": "668edc3d10c98c65cbccabed0a44ee871fab2c4b4fee6a368d76e685b2cd5c55"
+    },
+    "sandy-provider-artifact-api": {
+      "version": 1,
+      "source_commit": "dadc54cd3403e22b2c83cf0ea152703068ca8627",
+      "source_files": 11,
+      "readback_sha256": "3c5c32be536026ecc415417adfb8203e1f811019b499dd80f6d4c68786f06179"
+    }
+  },
+  "source_readbacks_before_api17": {
     "sandy-operation-api": {
       "slug": "sandy-operation-api",
       "body_http": 200,
@@ -2272,1364 +4699,5 @@
         "verify_jwt": false
       }
     }
-  },
-  "git_publication": {
-    "last_confirmed_pushed_commit": "3b3491ba3547394609e4766a891576d5db39b576",
-    "published_branch": "engineering/sandy-api-project-reads-20261020",
-    "remote_read_exit": 0,
-    "remote_refs": {
-      "refs/heads/engineering/sandy-api-project-reads-20261020": "3b3491ba3547394609e4766a891576d5db39b576",
-      "refs/heads/main": "350ede13e373fb2108d57748b20e44d57302135d"
-    },
-    "write_authenticated": false,
-    "write_failure": "Existing GitHub credential rejected; normal credential-helper attempt also rejected. Secure refresh requested; no credential value retained.",
-    "new_merge_established": false
-  },
-  "api13_and_product_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "registry_rows": 2367,
-        "gateway_evidence_rows": 2247,
-        "product_backend_evidence_rows": 98,
-        "verified_rows": 3
-      }
-    ],
-    "exposure_and_verification_fields_preserved": true,
-    "gateway_evidence": {
-      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
-      "gateway_source_commit": "4e669f1",
-      "gateway_version": 13,
-      "gateway_mapped": true,
-      "installed_operation_count": 2247,
-      "new_operation_count": 1143,
-      "provider_backend_version": 4,
-      "gateway_source_readback_sha256": "1155deaed48f5f812a27d3a27f000d8a218351461d2cd3de59ea26ac4dfb5103",
-      "all_2247_live_registry_contracts_match": true,
-      "live_metadata_audit_sha256": "d8cb36e6f3c8d74a388bd42cc2d8bd1b15dd92d422b0d6f2434791ee1d70ad6f",
-      "regression": {
-        "composed_deno_passed": 127,
-        "gateway_deno_passed": 75,
-        "typecheck": true,
-        "format": true,
-        "diff": true,
-        "backend_synthetic_compositions": 4,
-        "real_provider_called": false,
-        "actual_auth_session_tested": false
-      },
-      "memory": {
-        "whole_resident_96": {
-          "old_space_limit_mib": 96,
-          "optimize": "default",
-          "inlineRefs": false,
-          "cache_max_entries": 12,
-          "cache_max_schema_bytes": 262144,
-          "key_and_snapshot_charge_multiplier": 4,
-          "exit_code": -5,
-          "peak_rss_kib": 228112,
-          "log": "expanded-gateway-live-catalogue-memory-96.txt",
-          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
-          "gc_observed_peak_heap_used_mib": 109.6,
-          "gc_observed_peak_heap_total_mib": 148.9
-        },
-        "whole_resident_128": {
-          "old_space_limit_mib": 128,
-          "optimize": "default",
-          "inlineRefs": false,
-          "cache_max_entries": 12,
-          "cache_max_schema_bytes": 262144,
-          "key_and_snapshot_charge_multiplier": 4,
-          "exit_code": -5,
-          "peak_rss_kib": 258592,
-          "log": "expanded-gateway-live-catalogue-memory-128.txt",
-          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
-          "gc_observed_peak_heap_used_mib": 127.7,
-          "gc_observed_peak_heap_total_mib": 177.5
-        },
-        "streamed_96": {
-          "old_space_limit_mib": 96,
-          "optimize": "default",
-          "inlineRefs": false,
-          "cache_max_entries": 12,
-          "cache_max_schema_bytes": 262144,
-          "key_and_snapshot_charge_multiplier": 4,
-          "exit_code": -5,
-          "peak_rss_kib": 214368,
-          "log": "expanded-gateway-streamed-catalogue-memory-96.txt",
-          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
-          "gc_observed_peak_heap_used_mib": 107.2,
-          "gc_observed_peak_heap_total_mib": 148.3
-        },
-        "streamed_128": {
-          "old_space_limit_mib": 128,
-          "optimize": "default",
-          "inlineRefs": false,
-          "cache_max_entries": 12,
-          "cache_max_schema_bytes": 262144,
-          "key_and_snapshot_charge_multiplier": 4,
-          "exit_code": 0,
-          "peak_rss_kib": 250700,
-          "log": "expanded-gateway-streamed-catalogue-memory-128.txt",
-          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
-          "gc_observed_peak_heap_used_mib": 133.4,
-          "gc_observed_peak_heap_total_mib": 176.3,
-          "gateway_measurements": {
-            "installed_operations": 2247,
-            "catalogue_operations": 2247,
-            "schemas_validated": 4494,
-            "input_refusals": 4063,
-            "forced_output_schema_refusals": 431,
-            "provider_calls": 0,
-            "rpc_calls": 0,
-            "initial": {
-              "rss": 113610752,
-              "heapTotal": 59904000,
-              "heapUsed": 38369744,
-              "external": 1521871
-            },
-            "final": {
-              "rss": 192249856,
-              "heapTotal": 118542336,
-              "heapUsed": 105866184,
-              "external": 1565427
-            },
-            "sampled_peak_heap_bytes": 138682384,
-            "sampled_peak_rss_bytes": 251117568
-          },
-          "conservative_peak_rss_bytes": 256716800
-        },
-        "current_exposed_discovery_96": {
-          "old_space_limit_mib": 96,
-          "optimize": "default",
-          "inlineRefs": false,
-          "cache_max_entries": 12,
-          "cache_max_schema_bytes": 262144,
-          "key_and_snapshot_charge_multiplier": 4,
-          "exit_code": 0,
-          "peak_rss_kib": 132356,
-          "log": "expanded-gateway-discovery-memory-96.txt",
-          "benchmark": "expanded-gateway-discovery-memory-benchmark.ts",
-          "gc_observed_peak_heap_used_mib": 41.4,
-          "gc_observed_peak_heap_total_mib": 67.1,
-          "gateway_measurements": {
-            "installed_operations": 2247,
-            "exposed_registry_rows": 424,
-            "owner_visible_operations": 359,
-            "discovery_calls": 10,
-            "catalogue_rpc_calls": 10,
-            "response_bytes": 750018,
-            "provider_calls": 0,
-            "initial": {
-              "rss": 116633600,
-              "heapTotal": 62107648,
-              "heapUsed": 25797584,
-              "external": 1480670
-            },
-            "final": {
-              "rss": 135348224,
-              "heapTotal": 59609088,
-              "heapUsed": 23181928,
-              "external": 1631815
-            },
-            "sampled_peak_heap_bytes": 43366896,
-            "sampled_peak_rss_bytes": 135499776
-          },
-          "conservative_peak_rss_bytes": 135532544
-        },
-        "qualification": "All4494 schema streaming succeeds128MiB with244.8MiB peakRSS and narrow margin. Resident catalogue96/128 and streamed96 fail. Current exposed424-row/359-owner-operation discovery fits96MiB with129.3MiB RSS. New1143 remainclosed/unverified, blocked before validation in production. Eventual all-operations-exposed/concurrent provider-load acceptance is NOT claimed."
-      },
-      "normal_controller_session_available": false,
-      "deployed_authenticated_provider_execution_tested": false,
-      "real_new_provider_calls": 0,
-      "new_operations_remain_closed_unverified": true,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "certified_requirements_complete": 0
-    },
-    "product_backend_evidence": {
-      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
-      "source_commit": "1ae4dd7",
-      "backend_version": 1,
-      "backend_deployed": true,
-      "gateway_mapped": false,
-      "gateway_version": 13,
-      "implementation_state": "backend_deployed_gateway_pending",
-      "operation_count": 98,
-      "source_readback_sha256": "b023000072b8f6029c776c3c23ac3d5fce5521fd819e9534db21a0ab32dcf3eb",
-      "source_files": 5,
-      "regression": {
-        "deno": {
-          "exit_code": 0,
-          "passed": 41,
-          "failed": 0,
-          "utc": "2026-10-21T03:21:33.915777+00:00",
-          "real_provider_execution": false
-        },
-        "postgresql": {
-          "kind": "real_postgresql_component_full_rollback",
-          "http": 201,
-          "query_sha256": "acc9569e3572b36f536e134983838b912cefbd5e458773079e9af11a35b38dd9",
-          "evidence": [
-            {
-              "evidence": {
-                "kind": "real_postgresql_component_full_rollback",
-                "labels": [
-                  "acl.auth_cannot_finish_provider",
-                  "acl.auth_cannot_mutate_tables",
-                  "acl.helpers_private",
-                  "acl.service_cannot_admit_customer",
-                  "addresses.owned",
-                  "alerts.empty_owned_list",
-                  "approval.api_key_delegation_drift_denied",
-                  "approval.immutable_sensitive_flag_drift_denied",
-                  "approval.sensitive_owner_read_requires_exact_job",
-                  "audit.all_accepted_internal_mutations_have_before_after",
-                  "audit.hash_chain_allows_normal_sequence_gaps",
-                  "catalogue.all98_typed_private_registry_contracts_agree",
-                  "configuration.existing_provider_read",
-                  "configuration.restore",
-                  "configuration.snapshot_before_after",
-                  "configuration.versioned_update_snapshot",
-                  "delta.approved_owner_grant",
-                  "delta.concurrent_cursor_dispatch_denied",
-                  "delta.persisted_cursor_claimed",
-                  "delta.synthetic_callback_persists_private_cursor",
-                  "draft.concurrent_edit_or_send_denied",
-                  "draft.private_provider_id_and_recipients",
-                  "draft.stale_preview_version_denied_before_send",
-                  "draft.synthetic_callback_private_state",
-                  "draft.verified_owned_recipient_binding",
-                  "executor.fence",
-                  "grant.channel_fenced",
-                  "grant.consume_once",
-                  "grant.mcp_exposure_revocation_rechecked",
-                  "grant.reconsume_rejected",
-                  "grant.wrong_grant",
-                  "graph.empty_owned_list",
-                  "identity.actual_confirmation_rechecked",
-                  "identity.portal_revocation_enforced",
-                  "improvements.empty_owned_list",
-                  "inbox.acknowledge",
-                  "inbox.get",
-                  "inbox.persisted_support_events",
-                  "input.array_duplicate_categories_denied",
-                  "ledger.normal_customer_actor_never_owner_impersonation",
-                  "ledger.support_exactly_one_from_replay",
-                  "media.bind_actual_customer_grant",
-                  "media.foreign_private_binding_denied",
-                  "media.synthetic_callback_local_readback",
-                  "owner.operation_denied_to_customer",
-                  "preferences.actually_close_email_send",
-                  "preferences.actually_close_whatsapp_send",
-                  "preferences.closed_default",
-                  "preferences.explicit_optin_actually_allows",
-                  "preferences.update",
-                  "profile.get",
-                  "profile.update",
-                  "provider.callback_actor_mismatch_denied",
-                  "provider.callback_replay_never_redispatches",
-                  "provider.owned_resource_required",
-                  "quiet_hours.actually_gate_provider_sends",
-                  "quiet_hours.default",
-                  "quiet_hours.invalid_zone",
-                  "quiet_hours.update",
-                  "receipt.closed_registry_gate_enforced",
-                  "receipt.own",
-                  "receipt.preflight_failure_is_not_provider_execution",
-                  "receipt.preflight_failure_readback_stays_unexecuted",
-                  "subscriptions.actually_suppress_inbox_event",
-                  "subscriptions.readback",
-                  "subscriptions.update",
-                  "support.close",
-                  "support.comment_after_optout",
-                  "support.comment.create",
-                  "support.comments.list",
-                  "support.conflicting_reuse",
-                  "support.create",
-                  "support.get",
-                  "support.list",
-                  "support.reopen",
-                  "support.stable_replay",
-                  "support.update",
-                  "support.version_conflict",
-                  "templates.create_scoped_approval",
-                  "templates.delete",
-                  "templates.deleted_not_returned",
-                  "templates.get",
-                  "templates.stale_version_denied",
-                  "templates.versioned_update",
-                  "tenant.argument_injection_denied",
-                  "tenant.foreign_case_denied",
-                  "tenant.foreign_comment_denied",
-                  "tenant.foreign_inbox_empty",
-                  "tenant.foreign_list_empty",
-                  "whatsapp.empty_owned_list"
-                ],
-                "checks_passed": 90,
-                "auth_session_created": false,
-                "external_provider_requests": 0,
-                "all_new_operations_remain_production_disabled": true
-              }
-            }
-          ],
-          "no_HTTP_Auth_session": true,
-          "no_external_provider_calls": true,
-          "utc": "2026-10-21T03:21:40.140130+00:00"
-        },
-        "cleanup": {
-          "http": 201,
-          "utc": "2026-10-21T03:21:41.045981+00:00",
-          "data": [
-            {
-              "snapshot": {
-                "fixture_customers": 0,
-                "fixture_auth_users": 0,
-                "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
-                "product_rpc_functions": 0,
-                "registry_product_rows": 0,
-                "product_private_tables": 0,
-                "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
-              }
-            }
-          ]
-        }
-      },
-      "independent_peer_review": {
-        "reviewed_at_utc": "2026-10-21T03:23:13.957945+00:00",
-        "review": "independent_product_service_boundary_review",
-        "frozen_manifest_sha256": "f76bf91461335e4364ce83a7ef48ea0ee6dcebd4bbd03e619d0f5cdbd4f1b1b1",
-        "source_files": {
-          "supabase/functions/sandy-product-service-api/build_contracts.py": "8133f1484b949920f553ada568b38018e811e6d1da894f06dc424696946c7eb1",
-          "supabase/functions/sandy-product-service-api/contracts.json": "3631b7a8d25a087931571cc0ab90f58217a47c98008cc84a01b098d896502223",
-          "supabase/functions/sandy-product-service-api/contracts.ts": "512934c436fadf800cc22cde65dc858dedbe65d1a85412a2c96740436405db56",
-          "supabase/functions/sandy-product-service-api/gateway.ts": "9a7a5470c820f4d45df6bf51a9a8fb622d629a54b203d0330e60b37fd5330036",
-          "supabase/functions/sandy-product-service-api/index.ts": "3ed1c62294575b2651f96a65dbd3f67346de181f6a1cde3298c92f184864fc42",
-          "supabase/functions/sandy-product-service-api/index_test.ts": "8db7714bebc900c8a388070604f34e83e9a23c685bfca04ed3d0e86186c3a884",
-          "supabase/functions/sandy-product-service-api/providers.ts": "95a11ce818b3de086014433530848fea707b82a81b66c3a485f52818ab8e4c71",
-          "supabase/functions/sandy-product-service-api/providers_test.ts": "c1ddfd0d62633a0a85b79ce06b3ca0eb02778e61cec2101cc944f973d9c54016",
-          "supabase/migrations/20261021009000_sandy_product_service_boundary.sql": "46c2376f208be79d9ded4c33efac7997fb4cf85a62cbd92976bdef11e685a40b",
-          "supabase/migrations/20261021009010_sandy_product_service_contracts.sql": "4557da4ae1a6d7a718611c1ace411f5941627396d2836236fe40f147dca412b0",
-          "supabase/tests/sandy_product_services_rollback.sql": "3c08d0767349aa18ee43fbe451515f6f6c20b93fa5fb0853ff316edebf7c6546",
-          "docs/sandy-api/product-service-coverage.md": "855a09a87c3618688219eac90a28ef1f519940303c7aed695752be773db2e3c9",
-          "docs/sandy-api/product-service-handoff.md": "4726a2ddbbd0ee5a92e46898483605b6ddf4a587908bb1fe32506e877046c790"
-        },
-        "all_frozen_hashes_matched": true,
-        "blocking_findings": [],
-        "resolved_review_findings": [
-          "Graph draft confirmation now binds persisted API version and complete bounded reviewed content fingerprint; no remaining nextLink or unsupported item/reference attachments",
-          "Draft recipient preflight and preview include from/sender/replyTo/cc/bcc",
-          "Owner sensitive/mutation approval and nondelegable policy are source-required at admission/consume/contract match",
-          "WhatsApp reads use the same fixed business phone scope as dispatch"
-        ],
-        "withdrawn_finding": "Initial inferred WhatsApp bigint/string mismatch was withdrawn after reading the full existing id::text projection; explicit large-ID output regression was added.",
-        "independent_local_tests": {
-          "passed": 41,
-          "failed": 0,
-          "log": "boundary-peer-product-deno.log",
-          "overlaps_author_suites": true
-        },
-        "local_cold_start": {
-          "old_space_mib": 96,
-          "rss_bytes": 89231360,
-          "heap_used_bytes": 31895112,
-          "provider_calls": 0,
-          "production_load_attestation": false
-        },
-        "author_postgres_component_evidence": {
-          "http": 201,
-          "checks": 90,
-          "full_rollback": true,
-          "auth_session_created": false,
-          "external_provider_calls": 0,
-          "fixture_cleanup": {
-            "http": 201,
-            "utc": "2026-10-21T03:21:41.045981+00:00",
-            "data": [
-              {
-                "snapshot": {
-                  "fixture_customers": 0,
-                  "fixture_auth_users": 0,
-                  "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
-                  "product_rpc_functions": 0,
-                  "registry_product_rows": 0,
-                  "product_private_tables": 0,
-                  "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
-                }
-              }
-            ]
-          }
-        },
-        "actual_read_only_metadata_checks": {
-          "http": 201,
-          "provider_config_columns": "Six existing safe fields; no credential fields observed",
-          "profile_trigger": "Drive provision trigger only AFTER INSERT OR UPDATE OF google_drive_folder_status; display_name-only update does not fire it"
-        },
-        "remaining_limitations": [
-          "DB grant/state/evidence/result are transactional.",
-          "Provider HTTP and PostgreSQL receipt persistence are separate transactions.",
-          "Draft preview version and complete bounded content fingerprint fence API edits; an external Outlook/legacy writer can still race between Graph preflight read and send.",
-          "Provider submission/Sent Mail existence are not recipient delivery or payment execution.",
-          "Database rollback removes all fixture rows; normal PostgreSQL sequence allocations may leave harmless gaps."
-        ],
-        "new_operations_exposed_or_verified": false,
-        "real_provider_or_auth_verified": false,
-        "deployment_performed_by_reviewer": false
-      },
-      "deployed_authenticated_provider_execution_tested": false,
-      "real_provider_calls": 0,
-      "new_operations_remain_closed_unverified": true,
-      "new_verification_asserted": false,
-      "original_scope_requirements_complete": 0
-    }
-  },
-  "service_v4_followup": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "evidence_rows": 47,
-        "verified_rows": 3
-      }
-    ],
-    "exposure_and_verification_fields_preserved": true,
-    "evidence": {
-      "recorded_at_utc": "2026-10-21T03:21:05.921646+00:00",
-      "source_readbacks": {
-        "sandy-supabase-service-api": {
-          "version": 2,
-          "source_commit": "1cbba6fa36a84a2207b8d91e25da67684f150a54",
-          "source_readback_sha256": "11e49e5efcf64e0bc42ab029da1c55c076ef6575f125c34f73cc500d3853ea6b"
-        },
-        "sandy-agent-runtime-v4": {
-          "version": 14,
-          "source_commit": "d020ab1df937f823682e2abd4a802b6527d020ef",
-          "source_readback_sha256": "a21aa03ebd0f00bae55808a20d9e715c1b92070991b836627b8c5852436f5431"
-        }
-      },
-      "source_required_approval_runtime": {
-        "composed_service_and_consent_tests": 19,
-        "approval_helper_tests": 1,
-        "actual_postgres_rollback_assertions": 24,
-        "immutable_approval_negative_assertions": 6,
-        "applied_migration": "20261021007010"
-      },
-      "active_v4_conversation": {
-        "composed_regressions": 56,
-        "actual_postgres_rollback_assertions": 8,
-        "preserved_runtime_source_sections": 24,
-        "applied_migration": "20261021010010",
-        "same_broker_credentials_and_task_headers": true
-      },
-      "overlapping_tests_not_summed": true,
-      "real_model_calls": 0,
-      "deployed_authenticated_execution_tested": false,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false
-    }
-  },
-  "runtime_records_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "evidence_rows": 9,
-        "verified_rows": 3
-      }
-    ],
-    "evidence": {
-      "recorded_at_utc": "2026-10-21T03:37:40.294550+00:00",
-      "source_commit": "c90471a",
-      "backend_deployed": true,
-      "public_gateway_mapped": false,
-      "runtime_sources": {
-        "sandy-agent-runtime-v4": {
-          "version": 15,
-          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
-          "source_readback_sha256": "b529aaae3f5d45f95b15c376eb5e6fc7adae9ee0dc49ed3b7da3062502293ef7"
-        },
-        "sandy-agent-runtime-v2": {
-          "version": 17,
-          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
-          "source_readback_sha256": "c1632e5af8c43163ea2b4cf82e8d51467dcc1fd50ae4afd58406c38fb0361669"
-        },
-        "sandy-agent-runtime-v1-backup-r50": {
-          "version": 7,
-          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
-          "source_readback_sha256": "0da9b28735e28246b1b43eb77824f7badeede02cef2e58a383970bceb9f9879a"
-        }
-      },
-      "regression": {
-        "deno_passed": 64,
-        "runtime_capability_tests": 37,
-        "v4_transport_tests": 2,
-        "legacy_profile_tests": 6,
-        "existing_service_API_tests": 19,
-        "three_runtime_typechecks": "pass",
-        "preserved_source_sections": 21,
-        "exact_archived_dependencies": 3,
-        "real_provider_calls": 0,
-        "real_customer_execution_tested": false,
-        "Management_PostgreSQL_component_HTTP": 201,
-        "Management_PostgreSQL_component_checks": 16,
-        "all_database_changes_rolled_back": true
-      },
-      "applied_migration": {
-        "version": "20261021010020",
-        "exact_source_sha256": "c4d9ad620ddb427d3299a473a7207aa99f82355c639cf97318c60c431b83a440",
-        "ledger_readback_http": 201
-      },
-      "new_internal_operations": 9,
-      "real_model_or_provider_calls": 0,
-      "real_deployed_authenticated_execution_tested": false,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "scope": "Trusted runtime customer-task capability only; normal Auth users cannot invoke these routes. Shared audit claims precede writes; unknown writes cannot be redispatched with the same step."
-    }
-  },
-  "mcp_metadata_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "evidence_rows": 2247,
-        "verified_rows": 3
-      }
-    ],
-    "exposure_and_verification_fields_preserved": true,
-    "evidence": {
-      "recorded_at_utc": "2026-10-21T03:39:19.572446+00:00",
-      "source_commit": "71749f6",
-      "deployed_edge_transports": {
-        "sandy-api-mcp": {
-          "version": 6,
-          "source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
-          "source_readback_sha256": "a66e0e8e99f0aef6c7b174fc6f2f6ac28cd0a03554edd25bdb5862870d8738b6"
-        },
-        "sandy-operations-mcp": {
-          "version": 73,
-          "source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
-          "source_readback_sha256": "eae89f707bbf6e9e1d4102713d9dbb243e8e6ca36cbba6a7c131813c08ed6c1f"
-        }
-      },
-      "gateway_version": 13,
-      "transport_only_evidence": true,
-      "operation_specific_execution_verified": false,
-      "forwarded_headers": [
-        "x-sandy-approval-id",
-        "x-sandy-request-id"
-      ],
-      "validation": "Optional single UUID; malformed/empty/duplicate rejected before API call. Actor/tenant override is never forwarded. Existing caller JWT/key unchanged.",
-      "regression": {
-        "pinned_71749f6_edge_tests_passed": 38,
-        "node_tests_passed": 16,
-        "node_deployed": false,
-        "composed_actual_api_source_test_uses_synthetic_auth_and_policy": true,
-        "new_real_provider_calls": 0
-      },
-      "deployed_authentication": {
-        "project": "zmqlyygzqoidkcwdysok",
-        "tested_at": "2026-10-21T03:38:18.285208+00:00",
-        "tests": [
-          {
-            "test": "project_endpoint_reachable_and_requires_authentication",
-            "outcome": "blocked",
-            "http_status": null,
-            "layer": "edge_authentication",
-            "blocker": "network_proxy_denied"
-          }
-        ],
-        "complete": false,
-        "deferred": [
-          "internal_handler_checks",
-          "authenticated_api_mcp_checks"
-        ]
-      },
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "remaining": "Cloud Run Node transport deployment and remaining application/runtime adoption are unverified/incomplete."
-    }
-  },
-  "committed_changes_after_530007a": [
-    {
-      "commit": "b3e1a42c075a2e308bffae84b4ea2e3dc7f6a8f7",
-      "subject": "Implement durable Sandy API orchestration with scoped lease dispatch"
-    },
-    {
-      "commit": "a9489053dd06236c62864be0f2223484227d4423",
-      "subject": "Add 595 scoped provider handlers and guarded credential custody"
-    },
-    {
-      "commit": "f7eb112f76078d2d1477774944b5f0ca6185da58",
-      "subject": "Add tenant API handlers, scoped credentials and atomic customer mutations"
-    },
-    {
-      "commit": "e310a4449c92110108565eeb043ad47d951a5e43",
-      "subject": "Reduce generated provider catalogue upload size without changing contracts"
-    },
-    {
-      "commit": "043e7b4948162dda3b484ef0d6f308c192598dd3",
-      "subject": "Implement shared agent, database, guest and guarded lifecycle services"
-    },
-    {
-      "commit": "d86df5dee5b1ac12edf55bbd4b83cb8fbeb88596",
-      "subject": "Route all Sandy MCP tools through the governed 1020-operation API"
-    },
-    {
-      "commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
-      "subject": "Package provider contracts with verified gzip catalogue loader"
-    },
-    {
-      "commit": "da5d5871d4cc36169d51b5608e7d975084c7ef7f",
-      "subject": "Connect provider credential consumers to verified managed custody"
-    },
-    {
-      "commit": "b139a759489d87a1479f19776579b86d81160f5b",
-      "subject": "Resolve scoped job routes and implement guarded native database maintenance"
-    },
-    {
-      "commit": "6063a419528c82ddbf67f6a5054427baf79cb537",
-      "subject": "Record production API v9 rollout and actual operation verification evidence"
-    },
-    {
-      "commit": "7ce33be6aeb16a7b415da3ef822545d6c062a908",
-      "subject": "Add explicit tenant key principals and consumed provider credential proofs"
-    },
-    {
-      "commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
-      "subject": "Implement managed Supabase services and scoped provider gap handlers"
-    },
-    {
-      "commit": "6e0354f4368eff6fff1e7e4ba319e20ec147f82c",
-      "subject": "Consolidate fallback runtime actions through the shared governed agent service"
-    },
-    {
-      "commit": "a1dd1d4abbbc0aae884424418d235ef08b935733",
-      "subject": "Implement 1143 additional scoped provider constituent handlers with bounded lazy catalogues"
-    },
-    {
-      "commit": "270fcf5bc6edf69166cbfbd9c2600eb66546c5cb",
-      "subject": "Reconcile Supabase service consent and provider gap contract evidence"
-    },
-    {
-      "commit": "65f331be138cf5cb07ee7aa584c9dd625cabb620",
-      "subject": "Centralize task-bound fallback conversation inference with durable per-round receipts"
-    },
-    {
-      "commit": "f38fb443f8cf9dd62ccdc5df268e9c5705398a00",
-      "subject": "Require immutable scoped approvals for sensitive Supabase services"
-    },
-    {
-      "commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
-      "subject": "Route managed Supabase and provider gap operations through the bounded API gateway"
-    },
-    {
-      "commit": "d020ab1df937f823682e2abd4a802b6527d020ef",
-      "subject": "Route active runtime conversation through the shared task-bound inference service"
-    },
-    {
-      "commit": "121342aa3c756e729d422010432ad16e433b1b8e",
-      "subject": "Record API v12 deployment registry evidence and remaining 161-scope acceptance gates"
-    },
-    {
-      "commit": "1cbba6fa36a84a2207b8d91e25da67684f150a54",
-      "subject": "Enforce source-required approval flags in the managed Supabase runtime"
-    },
-    {
-      "commit": "3b3491ba3547394609e4766a891576d5db39b576",
-      "subject": "Implement consent-bound tenant export erasure and restore with encrypted snapshots"
-    },
-    {
-      "commit": "d4f24a8330bf861359dbf8b4ced6b75fd5437b8a",
-      "subject": "Implement tenant-scoped protected resource metadata without exporting credentials"
-    },
-    {
-      "commit": "1ae4dd7125a090cc40e111c6f9947bb193350ceb",
-      "subject": "Implement tenant product services with scoped provider receipts and reviewed sends"
-    },
-    {
-      "commit": "4e669f1cc73ff750d3466623656c3736579366b5",
-      "subject": "Route all reviewed provider constituent handlers through Sandy API"
-    },
-    {
-      "commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
-      "subject": "Centralize trusted runtime record actions with immutable audit claims"
-    },
-    {
-      "commit": "6fe7147742ddefabb8c2cdbc4fff75e03b2ed9e2",
-      "subject": "Include product and internal runtime contracts in scope evidence exports"
-    },
-    {
-      "commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
-      "subject": "Forward scoped approval and request identifiers through every MCP adapter"
-    },
-    {
-      "commit": "ea44e2cb084e3a59e56320210220ccc2131447a0",
-      "subject": "Centralize principal-bound runtime operational snapshots and inspection"
-    },
-    {
-      "commit": "d7e550eb6eb0770e1690671b72eebbfd5638d16c",
-      "subject": "Record API v13 MCP transport deployment and exact verification boundaries"
-    },
-    {
-      "commit": "f1e490671a0e83b63e51ab4ccfe0c191d8d622e2",
-      "subject": "Implement scoped provider supplement adapters with private cursor and media custody"
-    },
-    {
-      "commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
-      "subject": "Share task-bound runtime fact collection and model policy dependencies"
-    },
-    {
-      "commit": "2032b81cae244b55bdaa52085d41bc173917b6a6",
-      "subject": "Route tenant lifecycle and product services with actual user admission ownership"
-    },
-    {
-      "commit": "2d8bad6582c82f1764f40b6d495a71822d6cb24c",
-      "subject": "Export current tenant supplement and operational contracts for reconciliation"
-    },
-    {
-      "commit": "24aa4bc2511dcf81a4d2a2aafb48907ea5877b8f",
-      "subject": "Implement integrity-checked provider protocols with private result custody"
-    },
-    {
-      "commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
-      "subject": "Route task-bound connection preflight through governed runtime operations"
-    },
-    {
-      "commit": "2386ab947914f5d6c92e51059c3c64b6864aede1",
-      "subject": "Include private preflight and integrity checked provider protocols in source evidence"
-    },
-    {
-      "commit": "718f9a8459cf335585e16b7009714cfb34bd7774",
-      "subject": "Centralize reliability diagnosis with durable no-redispatch model claims"
-    },
-    {
-      "commit": "86c7a1474f9fac49ecdfb3063c283752c937d920",
-      "subject": "Document separate machine authentication and export the governed reliability operation"
-    },
-    {
-      "commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-      "subject": "Route typed scalar exports provider supplements and customer content through Sandy API"
-    },
-    {
-      "commit": "ad46abcc4d7129946b82d89f442b67dc5ff47a86",
-      "subject": "Record API v15 composed regression and independent tenant review"
-    },
-    {
-      "commit": "78293d1954958fd64dc57c51215ecf8f0c450703",
-      "subject": "Include actual customer content delivery contracts in scope evidence"
-    }
-  ],
-  "api14_tenant_product_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "registry_rows": 2435,
-        "gateway_evidence_rows": 2352,
-        "supplement_backend_evidence_rows": 28,
-        "runtime_operational_evidence_rows": 6,
-        "verified_rows": 3
-      }
-    ],
-    "exposure_and_verification_fields_preserved": true,
-    "gateway_evidence": {
-      "recorded_at_utc": "2026-10-21T04:03:26.341686+00:00",
-      "real_deployed_authenticated_execution_tested": false,
-      "real_new_provider_calls": 0,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "certified_original_requirements_complete": 0,
-      "gateway": {
-        "version": 14,
-        "source_commit": "2032b81cae244b55bdaa52085d41bc173917b6a6",
-        "source_readback_sha256": "716c28f4d9a1449f81a914032133067491c66692f83b9aa89e57851f9656aaf5"
-      },
-      "gateway_mapped": true,
-      "installed_operations": 2352,
-      "new_operations": 105,
-      "tenant_backend": {
-        "version": 1,
-        "source_commit": "2032b81cae244b55bdaa52085d41bc173917b6a6",
-        "source_readback_sha256": "8223a8d59f1cdd99706697eebf8fc59a78cfcd8a172884f8a81f4f57b6ddbd8c"
-      },
-      "product_backend": {
-        "version": 1,
-        "source_commit": "1ae4dd7125a090cc40e111c6f9947bb193350ceb",
-        "source_readback_sha256": "b023000072b8f6029c776c3c23ac3d5fce5521fd819e9534db21a0ab32dcf3eb"
-      },
-      "regression": {
-        "composed_deno_passed": 223,
-        "failed": 0,
-        "files": [
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/index_test.ts",
-            "passed": 19
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/download_test.ts",
-            "passed": 6
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts",
-            "passed": 2
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/protected_inventory_test.ts",
-            "passed": 12
-          },
-          {
-            "file": "./supabase/functions/sandy-product-service-api/index_test.ts",
-            "passed": 13
-          },
-          {
-            "file": "./supabase/functions/sandy-product-service-api/providers_test.ts",
-            "passed": 28
-          },
-          {
-            "file": "./supabase/functions/sandy-legacy-mcp-adapter/index_test.ts",
-            "passed": 14
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/index_test.ts",
-            "passed": 85
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/registry_schema_validator_test.ts",
-            "passed": 5
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/customer_key_principal_test.ts",
-            "passed": 8
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/api_job_routes_test.ts",
-            "passed": 7
-          },
-          {
-            "file": "./supabase/functions/sandy-api-mcp/index_test.ts",
-            "passed": 18
-          },
-          {
-            "file": "./supabase/functions/sandy-api-mcp/gateway_integration_test.ts",
-            "passed": 6
-          }
-        ],
-        "overlap_with_author_suites": true,
-        "typecheck": "pass",
-        "diff_check": "pass",
-        "real_auth_session_tested": false,
-        "real_provider_calls": 0,
-        "product_envelope_regressions": {
-          "passed": 85,
-          "failed": 0,
-          "log": "api14-product-envelope-regression.log",
-          "new_cases": [
-            "invalid_json_or_nonobject_execution_unknown",
-            "positive_output_schema_mismatch_execution_unknown",
-            "http200_refusal_execution_unknown"
-          ],
-          "composed_log": "api14-product-envelope-composed-deno.log",
-          "typecheck_log": "api14-product-envelope-typecheck.log",
-          "memory_sweeps_repeated": false
-        }
-      },
-      "administrative_database_full_rollback_checks": 53,
-      "all_live_registry_contracts_match": true,
-      "registry_metadata_audit_sha256": "1d4747adc4b85b70e7a0da5843d879616ff853b37837ed53a704cff2477a630b",
-      "new_operations_remain_closed_unverified": true,
-      "actual_customer_JWT_preserved": true,
-      "future_all_schema_memory_boundary": "Current exposed discovery remains bounded in the local96MiB heap fixture. All newly mapped105 operations remain closed. Forced all4704-schema churn is a future-activation workload boundary: first uncached CLI run exceeded256MiB whole-processRSS; cached rerun was about250MiB. No universal memory guarantee or actualEdge load attestation; compilation effects were not isolated."
-    },
-    "supplement_evidence": {
-      "recorded_at_utc": "2026-10-21T04:03:26.341686+00:00",
-      "real_deployed_authenticated_execution_tested": false,
-      "real_new_provider_calls": 0,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "certified_original_requirements_complete": 0,
-      "backend": {
-        "version": 1,
-        "source_commit": "f1e490671a0e83b63e51ab4ccfe0c191d8d622e2",
-        "source_readback_sha256": "6f5845dd91f2d2dd78cbb0a0b01668f76b59480bc86e2be06baad68eca25e5b0"
-      },
-      "backend_deployed": true,
-      "gateway_mapped": false,
-      "gateway_version": 14,
-      "operations": 28,
-      "bounded_adapters": 22,
-      "explicitly_partial_protocols": 6,
-      "validation": {
-        "source_ready_operations": 28,
-        "fully_implemented_bounded_adapters": 22,
-        "explicitly_partial_adapters": 6,
-        "deno_tests_passed": 19,
-        "python_tests_passed": 3,
-        "sql_http_status": 201,
-        "sql_checks": 18,
-        "sql_all_rolled_back": true,
-        "runtime_memory": {
-          "passed": true,
-          "layer": "local_synthetic_provider_http",
-          "contract_schemas": 56,
-          "one_mib_actual_handler_transfers": 32,
-          "peak_rss": 212385792,
-          "peak_heap_used": 21788264,
-          "final_memory": {
-            "rss": 212385792,
-            "heapTotal": 85774336,
-            "heapUsed": 16121824,
-            "external": 12620937
-          },
-          "external_provider_called": false,
-          "auth_session_tested": false,
-          "explicit_gc": false
-        },
-        "deno_test_driver_64mib_failed_during_typecheck": true,
-        "real_provider_verified_operations": 0,
-        "all_161_completed": false,
-        "existing_provider_v4_edits": false,
-        "migration_sha256": "69f11b68b4f31d0e4ccae2ad535e48ae271cc9add5cc2e7138f835571dd9153a"
-      },
-      "private_result_byte_retrieval_complete": false,
-      "signed_GitHub_download_complete": false,
-      "new_operations_remain_closed_unverified": true
-    },
-    "runtime_evidence": {
-      "recorded_at_utc": "2026-10-21T04:03:26.341686+00:00",
-      "real_deployed_authenticated_execution_tested": false,
-      "real_new_provider_calls": 0,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "certified_original_requirements_complete": 0,
-      "runtime_sources": {
-        "sandy-agent-runtime-v4": {
-          "version": 16,
-          "source_commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
-          "source_readback_sha256": "ed1faecf25def123ee849e325760a3762b8b8de8c01208b8de7ecd4d95d1387c"
-        },
-        "sandy-agent-runtime-v2": {
-          "version": 18,
-          "source_commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
-          "source_readback_sha256": "01a9d8b6ec56cfa9c9f1da3a51f1efda652358eaabd2aa4e933d9da8ace0d711"
-        },
-        "sandy-agent-runtime-v1-backup-r50": {
-          "version": 8,
-          "source_commit": "6876c9927bcda56b79cb0a9323b74f6307b610fa",
-          "source_readback_sha256": "7e79d5031827e16b624c2be6503b2246885abde7edb60e35709ee09c807dfbad"
-        }
-      },
-      "backend_deployed": true,
-      "public_gateway_mapped": false,
-      "internal_operations": 6,
-      "shared_runtime_fact_and_model_policy": true,
-      "regression": {
-        "deno_passed": 73,
-        "runtime_capability_tests": 46,
-        "v4_transport_tests": 2,
-        "legacy_profile_tests": 6,
-        "existing_service_API_tests": 19,
-        "three_runtime_typechecks": "pass",
-        "preserved_runtime_sections": 18,
-        "shared_original_sections": 2,
-        "exact_archived_dependencies": 3,
-        "real_provider_calls": 0,
-        "real_customer_execution_tested": false
-      },
-      "administrative_database_component": {
-        "deno_passed": 70,
-        "runtime_capability_tests": 43,
-        "v4_transport_tests": 2,
-        "legacy_profile_tests": 6,
-        "existing_service_API_tests": 19,
-        "three_runtime_typechecks": "pass",
-        "preserved_source_sections": 18,
-        "exact_archived_dependencies": 3,
-        "real_provider_calls": 0,
-        "real_customer_execution_tested": false,
-        "Management_PostgreSQL_component_HTTP": 201,
-        "Management_PostgreSQL_component_checks": 12,
-        "all_database_changes_rolled_back": true
-      },
-      "private_task_capability_required": true
-    }
-  },
-  "sensitive_and_preflight_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "sensitive_evidence_rows": 18,
-        "preflight_evidence_rows": 1,
-        "verified_rows": 3
-      }
-    ],
-    "exposure_and_verification_fields_preserved": true,
-    "sensitive_evidence": {
-      "recorded_at_utc": "2026-10-21T04:05:54.515966+00:00",
-      "real_provider_calls": 0,
-      "real_model_calls": 0,
-      "real_deployed_authenticated_execution_tested": false,
-      "new_verification_asserted": false,
-      "certified_original_requirements_complete": 0,
-      "universal_routing_operational": false,
-      "backend": {
-        "version": 1,
-        "source_commit": "24aa4bc2511dcf81a4d2a2aafb48907ea5877b8f",
-        "source_readback_sha256": "29dc82c05f1b9b3f23cc965d6ab46b4bce11ce9cea410d23013851068faecadc"
-      },
-      "backend_deployed": true,
-      "gateway_mapped": false,
-      "gateway_version": 14,
-      "operation_count": 18,
-      "source_commit": "24aa4bc",
-      "migration_version": "20261021008500",
-      "migration_source_sha256": "884c9e88562148a80005976f752562a3509e70a02e6ef5fe136b82d50c07b812",
-      "ledger_readback_http": 201,
-      "deno_tests": 8,
-      "python_tests": 3,
-      "local_synthetic_HTTP_private_captures": 32,
-      "administrative_PostgreSQL_full_rollback_checks": 18,
-      "peer_review": {
-        "reviewer": "gateway_release",
-        "status": "clear_after_missing_public_key_integrity_fixed",
-        "manifest_sha256": "4939e7d3b2b0a518aca8f3d482b13178128a302d8478b4b5ff4f7d93d8fdd914",
-        "files_checked": 19,
-        "mismatches": [],
-        "finding_fixed": "getPublicKey required a nonempty encoded key plus checksum or nonempty PEM instead of accepting publicKey:{}",
-        "scope": [
-          "normal current owner and exact grant/admission/args/scope/registry revision",
-          "fixed provider hosts/resources and no followed redirects",
-          "server-request CRC32C and required provider integrity booleans",
-          "response key identity/CRC32C before private Vault capture",
-          "existing service-only custody extension with exact prior-function guards and no public bytes or credential activation"
-        ],
-        "validation_reviewed": {
-          "author_tests": 8,
-          "author_sql": "18 full-rollback target/foreign/capture/non-cursor checks HTTP201; SQL unchanged by final TS fix",
-          "author_localhost_protocols": 32,
-          "author_memory_old_space_mib": 64,
-          "author_peak_rss_bytes": 116158464
-        },
-        "limits": [
-          "No real Auth/provider execution or activation verified",
-          "Private protocol captures only; no raw public bytes retrieval",
-          "No independent repeated test run claimed; reviewed source/frozen hashes and author evidence"
-        ]
-      },
-      "private_raw_result_delivery_complete": false,
-      "new_operations_remain_closed_unverified": true
-    },
-    "preflight_evidence": {
-      "recorded_at_utc": "2026-10-21T04:05:54.515966+00:00",
-      "real_provider_calls": 0,
-      "real_model_calls": 0,
-      "real_deployed_authenticated_execution_tested": false,
-      "new_verification_asserted": false,
-      "certified_original_requirements_complete": 0,
-      "universal_routing_operational": false,
-      "runtime_sources": {
-        "sandy-agent-runtime-v4": {
-          "version": 17,
-          "source_commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
-          "source_readback_sha256": "8c7b68229d8b8ff4e116233b1e6c1d00be37880630ddb07e934da6facc40588f"
-        },
-        "sandy-agent-runtime-v2": {
-          "version": 19,
-          "source_commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
-          "source_readback_sha256": "94bbd4a6fb77ed53ff1eaeb98dbca48da9398d8fe41655298cfb733ae58c37df"
-        },
-        "sandy-agent-runtime-v1-backup-r50": {
-          "version": 9,
-          "source_commit": "771e9bbc361622707f59d1430e4e67dbf022c9f8",
-          "source_readback_sha256": "395b8e5c0590580d9a4fce5850dd9e9389fb0e509289aacd9fe10289f7ff8df6"
-        }
-      },
-      "source_commit": "771e9bb",
-      "backend_deployed": true,
-      "public_gateway_mapped": false,
-      "private_task_capability_required": true,
-      "frozen_validation": {
-        "composed_deno_pass": 82,
-        "runtime_type_checks": 3,
-        "source_guard_preserved_sections": 18,
-        "shared_original_sections": 2,
-        "archived_dependencies": 3
-      },
-      "administrative_PostgreSQL_full_rollback_checks": 8,
-      "independent_root_targeted_Deno_tests": 4,
-      "migration_version": "20261021010040",
-      "migration_source_sha256": "1d5594c791d02557c2a85ecb0b6458bceebc0431ffd147f2a77a7c33efbcea08",
-      "ledger_readback_http": 201,
-      "diagnosis_scheduled_is_not_completed": true
-    }
-  },
-  "worker_diagnosis_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "worker_evidence_rows": 1,
-        "verified_rows": 3
-      }
-    ],
-    "evidence": {
-      "recorded_at_utc": "2026-10-21T04:09:10.058168+00:00",
-      "source_commit": "718f9a8",
-      "backend_deployed": true,
-      "backend_version": 13,
-      "runtime": "sandy-auto-improve",
-      "public_gateway_mapped": false,
-      "dedicated_internal_automation_identity": true,
-      "source_readback_sha256": "59abb0a0192ffbcba7258dfc6bf01d129785a8f77ad47247c9a0a7f9632fd0a3",
-      "regression": {
-        "deno_pass": 8,
-        "entrypoint_type_checks": 1,
-        "real_postgresql_rollback_checks": 24
-      },
-      "peer_review": {
-        "reviewer": "gateway_release",
-        "status": "no_blocking_findings",
-        "source_manifest_sha256": "a631c4a4f3e62918f6fbeaa1bb61cd78a4b771ea07e962024de29bb15cf44b48",
-        "checked_files": 10,
-        "mismatches": [],
-        "review_scope": [
-          "Dedicated configured automation secret and process-local proof; customer/owner/service tokens alone cannot mint worker capability",
-          "Stored queued job source/ref/problem binding; private one-use atomic row-locked DB claim before fixed paid model request",
-          "Fixed policy/model/transport/proposal-only JSON output; source declaration cannot select tools or model",
-          "Only saved proposal and actual QA approval handoff permit success receipt; no proposed code/provider deployment executes",
-          "Unique job audit, immutable hashes, terminal receipt guards and historical failed/analysing refusal prevent automatic redispatch after uncertainty"
-        ],
-        "limits": [
-          "No real model/provider call or customer Auth claim",
-          "Preserves legacy authenticated body coercion/truncation; full untrusted-body parser hardening is separate",
-          "No independent test rerun claimed; reviewed author8-handler and24-rollback-check evidence"
-        ]
-      },
-      "migration_version": "20261021010050",
-      "migration_sha256": "8dc92c2effdf67573eecf8c5311cbc315be3d26f4c12ec2847696ef3be8a11ba",
-      "ledger_readback_http": 201,
-      "real_model_or_provider_calls": 0,
-      "real_authenticated_customer_execution": false,
-      "proposal_only": true,
-      "unknown_model_dispatch_never_repeated": true,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false
-    }
-  },
-  "api15_release": {
-    "write_http": 201,
-    "readback_http": 201,
-    "readback": [
-      {
-        "registry_rows": 2447,
-        "api15_evidence_rows": 2390,
-        "verified_rows": 3
-      }
-    ],
-    "exposure_and_verification_fields_preserved": true,
-    "evidence": {
-      "recorded_at_utc": "2026-10-21T04:12:08.820132+00:00",
-      "source_commit": "b8a9e8f",
-      "gateway": {
-        "version": 15,
-        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-        "readback_sha256": "fc5a82e6a805f32e6d92945698f09c4dc5afc8e0c8fdf2b37b55b83222e38c76"
-      },
-      "tenant_backend": {
-        "version": 2,
-        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-        "readback_sha256": "4ead286ea5cada5fde9a149ba6822d6dbfe61761a9ccb18332461857a852009a"
-      },
-      "canonical_mcp": {
-        "version": 7,
-        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-        "readback_sha256": "42f8f1d455c08e61ce7f47aebc23568ebb50423b0e329cbe4f14c4943f697f84"
-      },
-      "legacy_mcp": {
-        "version": 74,
-        "source_commit": "b8a9e8fdc99f3b94b9b0c8d13cfde4ec9de1d5fc",
-        "readback_sha256": "9f0cdb0db7760f45ca15ff826d2a3f54dcbd1cc78059eb2201953c8d5035e6c8"
-      },
-      "installed_operations": 2390,
-      "new_operations": {
-        "scalar_manifest_owner": 5,
-        "provider_supplement_owner": 28,
-        "content_artifact_owner": 3,
-        "actual_customer_content_discovery_download": 2
-      },
-      "new_operation_count": 38,
-      "gateway_mapped": true,
-      "all_live_registry_contracts_match": true,
-      "metadata_audit_sha256": "d918a0d804387b204a5f2d7a6c57b77c13c03661017f06a7c79cadc96b8aa17c",
-      "regression": {
-        "composed_deno_passed": 274,
-        "failed": 0,
-        "files": [
-          {
-            "file": "./supabase/functions/sandy-provider-supplement-api/index_test.ts",
-            "passed": 19
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/index_test.ts",
-            "passed": 21
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/download_test.ts",
-            "passed": 8
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts",
-            "passed": 2
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/protected_inventory_test.ts",
-            "passed": 12
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/scalar_contracts_test.ts",
-            "passed": 5
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/content_download_test.ts",
-            "passed": 9
-          },
-          {
-            "file": "./supabase/functions/sandy-tenant-lifecycle-api/content_available_test.ts",
-            "passed": 4
-          },
-          {
-            "file": "./supabase/functions/sandy-product-service-api/index_test.ts",
-            "passed": 13
-          },
-          {
-            "file": "./supabase/functions/sandy-product-service-api/providers_test.ts",
-            "passed": 28
-          },
-          {
-            "file": "./supabase/functions/sandy-legacy-mcp-adapter/index_test.ts",
-            "passed": 16
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/index_test.ts",
-            "passed": 91
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/registry_schema_validator_test.ts",
-            "passed": 5
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/customer_key_principal_test.ts",
-            "passed": 8
-          },
-          {
-            "file": "./supabase/functions/sandy-operation-api/api_job_routes_test.ts",
-            "passed": 7
-          },
-          {
-            "file": "./supabase/functions/sandy-api-mcp/index_test.ts",
-            "passed": 20
-          },
-          {
-            "file": "./supabase/functions/sandy-api-mcp/gateway_integration_test.ts",
-            "passed": 6
-          }
-        ],
-        "composed_log": "api15-final-composed-deno.log",
-        "node_mcp_passed": 17,
-        "node_log": "api15-node-mcp-regression.log",
-        "typecheck": "pass",
-        "format": "pass",
-        "diff_check": "pass",
-        "overlap_with_author_suites": true,
-        "real_auth_session_tested": false,
-        "real_provider_calls": 0
-      },
-      "administrative_database_full_rollback_checks": 95,
-      "independent_tenant_Deno_tests": 139,
-      "node_MCP_tests": 17,
-      "actual_customer_JWT_preserved": true,
-      "uniform_content_UTF8_digest_checked": true,
-      "new_operations_remain_closed_unverified": true,
-      "deployed_test_report": {
-        "project": "zmqlyygzqoidkcwdysok",
-        "tested_at": "2026-10-21T04:11:22.878224+00:00",
-        "tests": [
-          {
-            "test": "project_endpoint_reachable_and_requires_authentication",
-            "outcome": "blocked",
-            "http_status": null,
-            "layer": "edge_authentication",
-            "blocker": "network_proxy_denied"
-          }
-        ],
-        "complete": false,
-        "deferred": [
-          "internal_handler_checks",
-          "authenticated_api_mcp_checks"
-        ]
-      },
-      "real_authenticated_deployed_execution_tested": false,
-      "real_new_provider_calls": 0,
-      "new_verification_asserted": false,
-      "universal_routing_operational": false,
-      "certified_original_requirements_complete": 0,
-      "supplement_protocol_qualification": {
-        "bounded_adapters": 22,
-        "partial_adapters": 6,
-        "raw_private_bytes_delivery_complete": false,
-        "GitHub_signed_download_complete": false
-      },
-      "mcp_first_upload_reconciliation": {
-        "checked_at_utc": "2026-10-21T04:09:52.455009+00:00",
-        "metadata_http": 200,
-        "body_http": 200,
-        "metadata": {
-          "version": 6,
-          "status": "ACTIVE",
-          "verify_jwt": true,
-          "updated_at": 1792553727837
-        },
-        "body_sha256": "495069f787c514edd1a2295800f6417a4838388f78c8cc7cb95941a9f21f5a2d",
-        "old_source_exact_in_body": false,
-        "candidate_exact_in_body": false,
-        "source_map_original_source_match": {
-          "71749f6": true,
-          "b8a9e8f": false
-        }
-      },
-      "memory_boundary": {}
-    }
-  },
-  "private_expiry_cleanup_schedule": {
-    "http": 201,
-    "read_only": true,
-    "rows": [
-      {
-        "jobname": "sandy-provider-supplement-expiry",
-        "schedule": "* * * * *",
-        "active": true,
-        "expected_cleanup_only": true
-      }
-    ],
-    "purpose": "Private opaque-custody expiration cleanup, no provider dispatch or customer operation schedule"
-  },
-  "latest_deployed_probe": {
-    "project": "zmqlyygzqoidkcwdysok",
-    "tested_at": "2026-10-21T04:11:22.878224+00:00",
-    "tests": [
-      {
-        "test": "project_endpoint_reachable_and_requires_authentication",
-        "outcome": "blocked",
-        "http_status": null,
-        "layer": "edge_authentication",
-        "blocker": "network_proxy_denied"
-      }
-    ],
-    "complete": false,
-    "deferred": [
-      "internal_handler_checks",
-      "authenticated_api_mcp_checks"
-    ]
   }
 }

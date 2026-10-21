@@ -8,24 +8,28 @@ the 21 October release changes are recorded separately here and in
 
 ## Current 21 October release
 
-The current source-attested gateway is **v15**, from `b8a9e8f`, with **2,390**
-installed operation IDs. Canonical Edge MCP **v7** and legacy Edge MCP **v74**
-execute only through Sandy API, preserving caller identity and scoped request and
-approval metadata. Forty-two regressions passed against the exact deployed MCP
-source. A real authenticated request remains blocked by the Codex machine's
-project-host proxy denial, before Auth; source attestation is not that test.
+The source-attested gateway is **v17**, from `74a4535`, with **2,527 installed
+operation IDs**. Canonical Edge MCP **v7** and legacy Edge MCP **v74** execute
+through Sandy API with the actual caller and scoped approval/request metadata.
+All live mapped contracts match; exact API17 regression passed 379 tests.
+Authenticated project-host requests remain proxy-blocked before Auth; deployment
+and source readback do not establish that integration test.
 
-Active runtime **v4 v17**, fallback **v2 v19** and backup **v9** share the eight
-application actions, task-bound inference, nine record operations, six operational
-reads and connection preflight. The router remains byte-identical at **v56**.
-The dedicated reliability worker **v13** shares a versioned proposal service with
-durable one-use model claims and approval handoff. Broader worker/UI migration
-continues. The five passive Workspace UI reads now use API contracts in local
-commit `7cecf00`; they have not been published or browser-tested. The Node Cloud
-Run MCP replacement is also source-only. **Universal production routing remains
-incomplete.** See [current release evidence](release-validation-20261021.json)
-and [implementation status](implementation-status.md) for deployment and test
-boundaries. The sections below retain their dated initial-source findings.
+Active v4 v17, fallback v2 v19 and backup v9 share actions, task-bound inference,
+records, operational policy and preflight; the release router remains v56.
+Reliability v13, mission work-product v9 and mission planner v19 use distinct
+process-local actual-worker capabilities, fixed model profiles and durable
+one-use receipts. They create proposals/client-review drafts and do not prove
+external actions. Recorded Controller metadata 7, commerce 53 and financial
+export/one-use provider delivery are mapped in API17 but remain unverified.
+
+The Node Cloud Run replacement and remaining internal/UI callers still need
+production migration. **Universal production routing remains incomplete.**
+The [release record](release-validation-20261021.json) and
+[implementation status](implementation-status.md) distinguish local commits,
+Git publication, deployment versions and real-provider/Auth evidence. Published
+Git remains `3b3491b`, main `350ede13`; no new merge is established. The dated
+initial-source findings below remain historical.
 
 ## Initial 21 October release, historical
 

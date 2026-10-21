@@ -1,21 +1,14 @@
 {
   "specification_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
   "scope_requirements": 161,
-  "runtime_registry_rows": 2447,
+  "runtime_registry_rows": 2562,
   "provider_schema_candidates": 3793,
-  "schema_and_runtime_candidates": 6240,
+  "schema_and_runtime_candidates": 6355,
   "requirements_with_candidate_evidence": 161,
   "completed_requirements": 0,
-  "installed_gateway_operation_mappings": 2390,
+  "installed_gateway_operation_mappings": 2527,
   "unmapped_registered_operation_ids": [
-    "cloud.vm.exec",
-    "system.capabilities",
-    "system.catalog",
-    "system.connections",
-    "system.coverage",
-    "system.operation_catalog",
-    "system.operation_status",
-    "system.runtime"
+    "cloud.vm.exec"
   ],
   "unavailable_schema_sources": [
     {
@@ -166,7 +159,7 @@
         "gcp.quotas.preferences.update",
         "gcp.quotas.request"
       ],
-      "alternative_contract_source_handler_state": "working_tree_source_not_deployed_or_functionally_verified"
+      "alternative_contract_source_handler_state": "source_attested_gateway_mapping_not_functional_verification"
     }
   ],
   "requirements": [
@@ -239,7 +232,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Synchronous typed dispatch exists for installed reads; durable orchestration, uniform envelopes, quotas and all scoped executors remain incomplete.",
+      "remaining_capability": "Typed synchronous dispatch and durable orchestration/job handlers exist. General durable execution, all scoped executors and uniform production acceptance remain incomplete.",
       "source_contract_operation_ids": [
         "deployment.jobs.approve_read",
         "deployment.jobs.execute",
@@ -251,7 +244,8 @@
         "deployment.jobs.request",
         "orchestration.operations.enqueue"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Synchronous typed dispatch exists for installed reads; durable orchestration, uniform envelopes, quotas and all scoped executors remain incomplete."
     },
     {
       "requirement_id": 4,
@@ -526,7 +520,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.organizations.list/get. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.organizations.get",
         "gcp.organizations.list",
@@ -537,7 +531,8 @@
         "gcp.organizations.list",
         "gcp.organizations.search_filtered"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.organizations.list/get. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 13,
@@ -565,7 +560,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.folders.list/create/move/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.folders.create",
         "gcp.folders.delete",
@@ -586,7 +581,8 @@
         "gcp.folders.search_filtered",
         "gcp.folders.undelete"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.folders.list/create/move/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 14,
@@ -616,7 +612,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.projects.list/get/create/update/move/delete/undelete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.projects.create",
         "gcp.projects.delete",
@@ -639,7 +635,8 @@
         "gcp.projects.search_filtered",
         "gcp.projects.undelete"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.projects.list/get/create/update/move/delete/undelete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 15,
@@ -665,7 +662,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.services.list/enable/disable. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.services.batch_enable",
         "gcp.services.batch_get",
@@ -684,7 +681,8 @@
         "gcp.services.list",
         "video.osconfig.enable"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.services.list/enable/disable. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 16,
@@ -708,7 +706,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.quotas.get/request. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.quotas.get",
         "gcp.quotas.list",
@@ -725,7 +723,8 @@
         "gcp.quotas.preferences.update",
         "gcp.quotas.request"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.quotas.get/request. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 17,
@@ -771,7 +770,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.iam.policy.get/set. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.folders.iam_permissions.test",
         "gcp.folders.iam_policy.get",
@@ -810,7 +809,8 @@
         "video.osconfig.access",
         "video.osconfig.permissions"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.iam.policy.get/set. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 18,
@@ -834,7 +834,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.iam.roles.list/create/update/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.iam.roles.create",
         "gcp.iam.roles.delete",
@@ -851,7 +851,8 @@
         "gcp.iam.roles.patch",
         "gcp.iam.roles.undelete"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.iam.roles.list/create/update/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 19,
@@ -891,7 +892,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.serviceAccounts.list/create/update/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.service_accounts.create",
         "gcp.service_accounts.delete",
@@ -924,7 +925,8 @@
         "google_cloud.iam.runtime_create",
         "google_cloud.iam.runtime_prepare"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.serviceAccounts.list/create/update/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 20,
@@ -950,7 +952,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.serviceAccounts.keys.rotate. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.service_accounts.keys.delete",
         "gcp.service_accounts.keys.disable",
@@ -969,7 +971,8 @@
         "gcp.service_accounts.keys.rotate",
         "system.credentials.provider.revoke"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.serviceAccounts.keys.rotate. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 21,
@@ -1196,7 +1199,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.osLogin.grant/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.os_login.profiles.get_login_profile",
         "gcp.os_login.profiles.import_ssh_public_key",
@@ -1215,7 +1218,8 @@
         "gcp.os_login.public_keys.patch",
         "video.ssh.iam_grant"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.osLogin.grant/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 23,
@@ -1249,7 +1253,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.billing.accounts.list. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.billing.accounts.create",
         "gcp.billing.accounts.get",
@@ -1276,7 +1280,8 @@
         "gcp.billing.services.list",
         "gcp.billing.skus.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.billing.accounts.list. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 24,
@@ -1294,7 +1299,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.billing.projects.link/unlink. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.billing.project.get_billing_info",
         "gcp.billing.projects.link",
@@ -1305,7 +1310,8 @@
         "gcp.billing.projects.link",
         "gcp.billing.projects.unlink"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.billing.projects.link/unlink. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 25,
@@ -1327,7 +1333,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.budgets.manage. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.budgets.create",
         "gcp.budgets.delete",
@@ -1342,7 +1348,8 @@
         "gcp.budgets.list",
         "gcp.budgets.patch"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.budgets.manage. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 26,
@@ -1406,6 +1413,9 @@
         "gcp.compute.instances.delete_network_interface",
         "gcp.compute.instances.get",
         "gcp.compute.instances.get_effective_firewalls",
+        "gcp.compute.instances.get_guest_attributes.capture",
+        "gcp.compute.instances.get_screenshot.capture",
+        "gcp.compute.instances.get_shielded_instance_identity.capture",
         "gcp.compute.instances.iam_permissions.test",
         "gcp.compute.instances.iam_policy.get",
         "gcp.compute.instances.iam_policy.set",
@@ -1496,6 +1506,9 @@
         "gcp.compute.instances.delete_network_interface",
         "gcp.compute.instances.get",
         "gcp.compute.instances.get_effective_firewalls",
+        "gcp.compute.instances.get_guest_attributes.capture",
+        "gcp.compute.instances.get_screenshot.capture",
+        "gcp.compute.instances.get_shielded_instance_identity.capture",
         "gcp.compute.instances.iam_permissions.test",
         "gcp.compute.instances.iam_policy.get",
         "gcp.compute.instances.iam_policy.set",
@@ -1615,7 +1628,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.instances.attachDisk/detachDisk. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.compute.instances.attach_disk",
         "gcp.compute.instances.detach_disk"
@@ -1624,7 +1637,8 @@
         "gcp.compute.instances.attach_disk",
         "gcp.compute.instances.detach_disk"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.compute.instances.attachDisk/detachDisk. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 30,
@@ -1712,7 +1726,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.disks.create/resize/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.disks.add_resource_policies",
         "gcp.disks.bulk_insert",
@@ -1793,7 +1807,8 @@
         "gcp.region_disks.update",
         "gcp.region_disks.update_kms_key"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.disks.create/resize/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 31,
@@ -1849,7 +1864,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.images.create/list/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.compute.images.create",
         "gcp.compute.images.delete",
@@ -1898,7 +1913,8 @@
         "gcp.machine_images.list",
         "gcp.machine_images.set_labels"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.compute.images.create/list/delete. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 32,
@@ -2141,14 +2157,15 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.instances.serialOutput. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.compute.instances.serial_output"
       ],
       "source_gateway_operation_ids": [
         "gcp.compute.instances.serial_output"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.compute.instances.serialOutput. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 34,
@@ -2204,7 +2221,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.operations.get/wait. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.cloud_run.operations.delete",
         "gcp.cloud_run.operations.get",
@@ -2253,7 +2270,8 @@
         "gcp.region_operations.wait",
         "system.lifecycle.poll"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.compute.operations.get/wait. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 35,
@@ -2277,7 +2295,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.access.bootstrap/rotate/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.access.bootstrap",
         "gcp.vm.access.revoke",
@@ -2294,7 +2312,8 @@
         "video.ssh.iam_grant",
         "video.ssh.preflight"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.access.bootstrap/rotate/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 36,
@@ -2310,7 +2329,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.ssh.exec. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.ssh.exec",
         "video.ssh.preflight"
@@ -2319,7 +2338,8 @@
         "gcp.vm.ssh.exec",
         "video.ssh.preflight"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.ssh.exec. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 37,
@@ -2333,14 +2353,15 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.winrm.exec. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.winrm.exec"
       ],
       "source_gateway_operation_ids": [
         "gcp.vm.winrm.exec"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.winrm.exec. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 38,
@@ -2356,7 +2377,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.files.upload/download. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.files.download",
         "gcp.vm.files.upload"
@@ -2365,7 +2386,8 @@
         "gcp.vm.files.download",
         "gcp.vm.files.upload"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.files.upload/download. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 39,
@@ -2422,7 +2444,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.services.start/stop/restart/status. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.services.restart",
         "gcp.vm.services.start",
@@ -2439,7 +2461,8 @@
         "gcp.vm.tasks.get",
         "google_cloud.vm.service_status"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.services.start/stop/restart/status. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 41,
@@ -2453,14 +2476,15 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.reboot. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.reboot"
       ],
       "source_gateway_operation_ids": [
         "gcp.vm.reboot"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.reboot. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 42,
@@ -2474,14 +2498,15 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.firewallGuest.manage. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.firewall_guest.manage"
       ],
       "source_gateway_operation_ids": [
         "gcp.vm.firewall_guest.manage"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.firewallGuest.manage. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 43,
@@ -2550,7 +2575,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vm.bootstrap.getLogs. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vm.bootstrap.get_logs",
         "google_cloud.vm.bootstrap_status"
@@ -2559,7 +2584,8 @@
         "gcp.vm.bootstrap.get_logs",
         "google_cloud.vm.bootstrap_status"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vm.bootstrap.getLogs. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 45,
@@ -2745,7 +2771,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.instanceGroups.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.autoscalers.create",
         "gcp.autoscalers.delete",
@@ -2924,7 +2950,8 @@
         "gcp.region_instance_groups.list_instances",
         "gcp.region_instance_groups.set_named_ports"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.compute.instanceGroups.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 46,
@@ -2960,7 +2987,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.compute.templates.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.compute.templates.create",
         "gcp.compute.templates.delete",
@@ -2989,7 +3016,8 @@
         "gcp.region_instance_templates.get",
         "gcp.region_instance_templates.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.compute.templates.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 47,
@@ -3051,7 +3079,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vpc.networks.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.network_attachments.create",
         "gcp.network_attachments.delete",
@@ -3106,7 +3134,8 @@
         "gcp.vpc.networks.update_peering",
         "video.network.preflight"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vpc.networks.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 48,
@@ -3142,7 +3171,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vpc.subnets.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vpc.subnets.create",
         "gcp.vpc.subnets.delete",
@@ -3171,7 +3200,8 @@
         "gcp.vpc.subnets.patch",
         "gcp.vpc.subnets.set_private_ip_google_access"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vpc.subnets.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 49,
@@ -3193,7 +3223,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vpc.routes.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.vpc.routes.create",
         "gcp.vpc.routes.delete",
@@ -3208,7 +3238,8 @@
         "gcp.vpc.routes.iam_permissions.test",
         "gcp.vpc.routes.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vpc.routes.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 50,
@@ -3236,7 +3267,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.firewalls.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.firewalls.create",
         "gcp.firewalls.delete",
@@ -3257,16 +3288,32 @@
         "gcp.firewalls.update",
         "video.network.preflight"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.firewalls.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 51,
       "requirement": "gcp.networkPolicies.*",
       "provider_schema_candidate_count": 16,
       "registered_operation_ids": [
+        "gcp.firewall_policies.add_association.bound",
+        "gcp.firewall_policies.add_rule.bound",
+        "gcp.firewall_policies.clone_rules.bound",
+        "gcp.firewall_policies.create.bound",
+        "gcp.firewall_policies.delete.bound",
+        "gcp.firewall_policies.get.bound",
+        "gcp.firewall_policies.get_association.bound",
+        "gcp.firewall_policies.get_rule.bound",
         "gcp.firewall_policies.iam_permissions.test",
         "gcp.firewall_policies.iam_policy.get",
         "gcp.firewall_policies.iam_policy.set",
+        "gcp.firewall_policies.list.bound",
+        "gcp.firewall_policies.list_associations.bound",
+        "gcp.firewall_policies.move.bound",
+        "gcp.firewall_policies.patch.bound",
+        "gcp.firewall_policies.patch_rule.bound",
+        "gcp.firewall_policies.remove_association.bound",
+        "gcp.firewall_policies.remove_rule.bound",
         "gcp.managed_rulesets.get",
         "gcp.managed_rulesets.list",
         "gcp.network_edge_security_services.create",
@@ -3337,9 +3384,24 @@
         "gcp.security_policies.set_labels"
       ],
       "installed_gateway_operation_ids": [
+        "gcp.firewall_policies.add_association.bound",
+        "gcp.firewall_policies.add_rule.bound",
+        "gcp.firewall_policies.clone_rules.bound",
+        "gcp.firewall_policies.create.bound",
+        "gcp.firewall_policies.delete.bound",
+        "gcp.firewall_policies.get.bound",
+        "gcp.firewall_policies.get_association.bound",
+        "gcp.firewall_policies.get_rule.bound",
         "gcp.firewall_policies.iam_permissions.test",
         "gcp.firewall_policies.iam_policy.get",
         "gcp.firewall_policies.iam_policy.set",
+        "gcp.firewall_policies.list.bound",
+        "gcp.firewall_policies.list_associations.bound",
+        "gcp.firewall_policies.move.bound",
+        "gcp.firewall_policies.patch.bound",
+        "gcp.firewall_policies.patch_rule.bound",
+        "gcp.firewall_policies.remove_association.bound",
+        "gcp.firewall_policies.remove_rule.bound",
         "gcp.managed_rulesets.get",
         "gcp.managed_rulesets.list",
         "gcp.network_edge_security_services.create",
@@ -3411,11 +3473,26 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.networkPolicies.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
+        "gcp.firewall_policies.add_association.bound",
+        "gcp.firewall_policies.add_rule.bound",
+        "gcp.firewall_policies.clone_rules.bound",
+        "gcp.firewall_policies.create.bound",
+        "gcp.firewall_policies.delete.bound",
+        "gcp.firewall_policies.get.bound",
+        "gcp.firewall_policies.get_association.bound",
+        "gcp.firewall_policies.get_rule.bound",
         "gcp.firewall_policies.iam_permissions.test",
         "gcp.firewall_policies.iam_policy.get",
         "gcp.firewall_policies.iam_policy.set",
+        "gcp.firewall_policies.list.bound",
+        "gcp.firewall_policies.list_associations.bound",
+        "gcp.firewall_policies.move.bound",
+        "gcp.firewall_policies.patch.bound",
+        "gcp.firewall_policies.patch_rule.bound",
+        "gcp.firewall_policies.remove_association.bound",
+        "gcp.firewall_policies.remove_rule.bound",
         "gcp.managed_rulesets.get",
         "gcp.managed_rulesets.list",
         "gcp.network_edge_security_services.create",
@@ -3486,9 +3563,24 @@
         "gcp.security_policies.set_labels"
       ],
       "source_gateway_operation_ids": [
+        "gcp.firewall_policies.add_association.bound",
+        "gcp.firewall_policies.add_rule.bound",
+        "gcp.firewall_policies.clone_rules.bound",
+        "gcp.firewall_policies.create.bound",
+        "gcp.firewall_policies.delete.bound",
+        "gcp.firewall_policies.get.bound",
+        "gcp.firewall_policies.get_association.bound",
+        "gcp.firewall_policies.get_rule.bound",
         "gcp.firewall_policies.iam_permissions.test",
         "gcp.firewall_policies.iam_policy.get",
         "gcp.firewall_policies.iam_policy.set",
+        "gcp.firewall_policies.list.bound",
+        "gcp.firewall_policies.list_associations.bound",
+        "gcp.firewall_policies.move.bound",
+        "gcp.firewall_policies.patch.bound",
+        "gcp.firewall_policies.patch_rule.bound",
+        "gcp.firewall_policies.remove_association.bound",
+        "gcp.firewall_policies.remove_rule.bound",
         "gcp.managed_rulesets.get",
         "gcp.managed_rulesets.list",
         "gcp.network_edge_security_services.create",
@@ -3558,7 +3650,8 @@
         "gcp.security_policies.remove_rule",
         "gcp.security_policies.set_labels"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.networkPolicies.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 52,
@@ -3614,7 +3707,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.nat.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.nat.routers.create",
         "gcp.nat.routers.delete",
@@ -3663,7 +3756,8 @@
         "gcp.nat.routers.update_named_set",
         "gcp.nat.routers.update_route_policy"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.nat.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 53,
@@ -3727,7 +3821,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.vpn.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.external_vpn_gateways.create",
         "gcp.external_vpn_gateways.delete",
@@ -3784,7 +3878,8 @@
         "gcp.vpn.tunnels.list_aggregated",
         "gcp.vpn.tunnels.set_labels"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.vpn.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 54,
@@ -3826,7 +3921,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.addresses.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.addresses.global.create",
         "gcp.addresses.global.delete",
@@ -3861,7 +3956,8 @@
         "gcp.addresses.regional.move",
         "gcp.addresses.regional.set_labels"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.addresses.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 55,
@@ -3933,7 +4029,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.dns.zones.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.dns.dns_keys.get",
         "gcp.dns.dns_keys.list",
@@ -3998,7 +4094,8 @@
         "gcp.dns.zones.patch",
         "gcp.dns.zones.update"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.dns.zones.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 56,
@@ -4038,7 +4135,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.dns.records.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.dns.changes.create",
         "gcp.dns.changes.get",
@@ -4071,7 +4168,8 @@
         "gcp.dns.response_policy_rules.patch",
         "gcp.dns.response_policy_rules.update"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.dns.records.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 57,
@@ -4455,7 +4553,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.loadBalancers.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.backend_buckets.add_signed_url_key",
         "gcp.backend_buckets.create",
@@ -4832,7 +4930,8 @@
         "gcp.url_maps.update",
         "gcp.url_maps.validate"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.loadBalancers.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 58,
@@ -4888,7 +4987,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.certificates.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.certificates.create",
         "gcp.certificates.delete",
@@ -4937,7 +5036,8 @@
         "gcp.ssl_policies.list_available_features",
         "gcp.ssl_policies.patch"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.certificates.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 59,
@@ -5079,7 +5179,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.healthChecks.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.health_checks.create",
         "gcp.health_checks.delete",
@@ -5214,7 +5314,8 @@
         "gcp.region_notification_endpoints.list",
         "gcp.region_notification_endpoints.list_aggregated"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.healthChecks.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 60,
@@ -5339,7 +5440,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.cloudRun.jobs.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.cloud_run.jobs.create",
         "gcp.cloud_run.jobs.delete",
@@ -5376,7 +5477,8 @@
         "gcp.cloud_run.jobs.patch",
         "gcp.cloud_run.jobs.run"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.cloudRun.jobs.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 62,
@@ -5428,6 +5530,7 @@
         "gcp.kubernetes.clusters.delete",
         "gcp.kubernetes.clusters.fetch_cluster_upgrade_info",
         "gcp.kubernetes.clusters.get",
+        "gcp.kubernetes.clusters.get_jwks.capture",
         "gcp.kubernetes.clusters.list",
         "gcp.kubernetes.clusters.set_addons",
         "gcp.kubernetes.clusters.set_legacy_abac",
@@ -5459,7 +5562,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.gke.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.kubernetes.clusters.check_autopilot_compatibility",
         "gcp.kubernetes.clusters.complete_control_plane_upgrade",
@@ -5506,6 +5609,7 @@
         "gcp.kubernetes.clusters.delete",
         "gcp.kubernetes.clusters.fetch_cluster_upgrade_info",
         "gcp.kubernetes.clusters.get",
+        "gcp.kubernetes.clusters.get_jwks.capture",
         "gcp.kubernetes.clusters.list",
         "gcp.kubernetes.clusters.set_addons",
         "gcp.kubernetes.clusters.set_legacy_abac",
@@ -5535,7 +5639,8 @@
         "gcp.kubernetes.operations.get",
         "gcp.kubernetes.operations.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.gke.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 63,
@@ -5549,6 +5654,7 @@
         "gcp.artifacts.repositories.attachments.delete",
         "gcp.artifacts.repositories.attachments.get",
         "gcp.artifacts.repositories.attachments.list",
+        "gcp.artifacts.repositories.check_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.create",
         "gcp.artifacts.repositories.delete",
         "gcp.artifacts.repositories.docker_images.get",
@@ -5588,9 +5694,11 @@
         "gcp.artifacts.repositories.packages.versions.list",
         "gcp.artifacts.repositories.packages.versions.patch",
         "gcp.artifacts.repositories.patch",
+        "gcp.artifacts.repositories.prewarm_artifact.bound",
         "gcp.artifacts.repositories.prewarmed_artifacts.list",
         "gcp.artifacts.repositories.python_packages.get",
         "gcp.artifacts.repositories.python_packages.list",
+        "gcp.artifacts.repositories.remove_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.rules.create",
         "gcp.artifacts.repositories.rules.delete",
         "gcp.artifacts.repositories.rules.get",
@@ -5599,7 +5707,8 @@
         "gcp.artifacts.repositories.yum.upload.media",
         "gcp.artifacts.repositories.yum_artifacts.import",
         "google_cloud.mcp.container_build",
-        "google_cloud.mcp.registry_writer_grant"
+        "google_cloud.mcp.registry_writer_grant",
+        "provider.artifacts.read_private"
       ],
       "installed_gateway_operation_ids": [
         "gcp.artifacts.files.download.capture",
@@ -5609,6 +5718,7 @@
         "gcp.artifacts.repositories.attachments.delete",
         "gcp.artifacts.repositories.attachments.get",
         "gcp.artifacts.repositories.attachments.list",
+        "gcp.artifacts.repositories.check_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.create",
         "gcp.artifacts.repositories.delete",
         "gcp.artifacts.repositories.docker_images.get",
@@ -5648,9 +5758,11 @@
         "gcp.artifacts.repositories.packages.versions.list",
         "gcp.artifacts.repositories.packages.versions.patch",
         "gcp.artifacts.repositories.patch",
+        "gcp.artifacts.repositories.prewarm_artifact.bound",
         "gcp.artifacts.repositories.prewarmed_artifacts.list",
         "gcp.artifacts.repositories.python_packages.get",
         "gcp.artifacts.repositories.python_packages.list",
+        "gcp.artifacts.repositories.remove_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.rules.create",
         "gcp.artifacts.repositories.rules.delete",
         "gcp.artifacts.repositories.rules.get",
@@ -5659,11 +5771,12 @@
         "gcp.artifacts.repositories.yum.upload.media",
         "gcp.artifacts.repositories.yum_artifacts.import",
         "google_cloud.mcp.container_build",
-        "google_cloud.mcp.registry_writer_grant"
+        "google_cloud.mcp.registry_writer_grant",
+        "provider.artifacts.read_private"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.artifacts.repositories.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded Artifact Registry JSON/media handlers and one-use private file delivery exist. Full wildcard coverage, large transfers and real authorized provider/approval verification remain incomplete.",
       "source_contract_operation_ids": [
         "gcp.artifacts.files.download.capture",
         "gcp.artifacts.repositories.apt.upload.media",
@@ -5672,6 +5785,7 @@
         "gcp.artifacts.repositories.attachments.delete",
         "gcp.artifacts.repositories.attachments.get",
         "gcp.artifacts.repositories.attachments.list",
+        "gcp.artifacts.repositories.check_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.create",
         "gcp.artifacts.repositories.delete",
         "gcp.artifacts.repositories.docker_images.get",
@@ -5711,9 +5825,11 @@
         "gcp.artifacts.repositories.packages.versions.list",
         "gcp.artifacts.repositories.packages.versions.patch",
         "gcp.artifacts.repositories.patch",
+        "gcp.artifacts.repositories.prewarm_artifact.bound",
         "gcp.artifacts.repositories.prewarmed_artifacts.list",
         "gcp.artifacts.repositories.python_packages.get",
         "gcp.artifacts.repositories.python_packages.list",
+        "gcp.artifacts.repositories.remove_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.rules.create",
         "gcp.artifacts.repositories.rules.delete",
         "gcp.artifacts.repositories.rules.get",
@@ -5722,7 +5838,8 @@
         "gcp.artifacts.repositories.yum.upload.media",
         "gcp.artifacts.repositories.yum_artifacts.import",
         "google_cloud.mcp.container_build",
-        "google_cloud.mcp.registry_writer_grant"
+        "google_cloud.mcp.registry_writer_grant",
+        "provider.artifacts.read_private"
       ],
       "source_gateway_operation_ids": [
         "gcp.artifacts.files.download.capture",
@@ -5732,6 +5849,7 @@
         "gcp.artifacts.repositories.attachments.delete",
         "gcp.artifacts.repositories.attachments.get",
         "gcp.artifacts.repositories.attachments.list",
+        "gcp.artifacts.repositories.check_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.create",
         "gcp.artifacts.repositories.delete",
         "gcp.artifacts.repositories.docker_images.get",
@@ -5771,9 +5889,11 @@
         "gcp.artifacts.repositories.packages.versions.list",
         "gcp.artifacts.repositories.packages.versions.patch",
         "gcp.artifacts.repositories.patch",
+        "gcp.artifacts.repositories.prewarm_artifact.bound",
         "gcp.artifacts.repositories.prewarmed_artifacts.list",
         "gcp.artifacts.repositories.python_packages.get",
         "gcp.artifacts.repositories.python_packages.list",
+        "gcp.artifacts.repositories.remove_prewarmed_artifact.bound",
         "gcp.artifacts.repositories.rules.create",
         "gcp.artifacts.repositories.rules.delete",
         "gcp.artifacts.repositories.rules.get",
@@ -5782,9 +5902,11 @@
         "gcp.artifacts.repositories.yum.upload.media",
         "gcp.artifacts.repositories.yum_artifacts.import",
         "google_cloud.mcp.container_build",
-        "google_cloud.mcp.registry_writer_grant"
+        "google_cloud.mcp.registry_writer_grant",
+        "provider.artifacts.read_private"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.artifacts.repositories.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 64,
@@ -5799,7 +5921,11 @@
         "gcp.storage.buckets.iam_policy.get",
         "gcp.storage.buckets.iam_policy.set",
         "gcp.storage.buckets.list",
+        "gcp.storage.buckets.lock_retention_policy.bound",
         "gcp.storage.buckets.patch",
+        "gcp.storage.buckets.relocate.bound",
+        "gcp.storage.buckets.restore.bound",
+        "gcp.storage.buckets.update.bound",
         "gcp.storage.notifications.create",
         "gcp.storage.notifications.delete",
         "gcp.storage.notifications.get",
@@ -5814,7 +5940,11 @@
         "gcp.storage.buckets.iam_policy.get",
         "gcp.storage.buckets.iam_policy.set",
         "gcp.storage.buckets.list",
+        "gcp.storage.buckets.lock_retention_policy.bound",
         "gcp.storage.buckets.patch",
+        "gcp.storage.buckets.relocate.bound",
+        "gcp.storage.buckets.restore.bound",
+        "gcp.storage.buckets.update.bound",
         "gcp.storage.notifications.create",
         "gcp.storage.notifications.delete",
         "gcp.storage.notifications.get",
@@ -5822,7 +5952,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.storage.buckets.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.storage.buckets.create",
         "gcp.storage.buckets.delete",
@@ -5832,7 +5962,11 @@
         "gcp.storage.buckets.iam_policy.get",
         "gcp.storage.buckets.iam_policy.set",
         "gcp.storage.buckets.list",
+        "gcp.storage.buckets.lock_retention_policy.bound",
         "gcp.storage.buckets.patch",
+        "gcp.storage.buckets.relocate.bound",
+        "gcp.storage.buckets.restore.bound",
+        "gcp.storage.buckets.update.bound",
         "gcp.storage.notifications.create",
         "gcp.storage.notifications.delete",
         "gcp.storage.notifications.get",
@@ -5847,13 +5981,18 @@
         "gcp.storage.buckets.iam_policy.get",
         "gcp.storage.buckets.iam_policy.set",
         "gcp.storage.buckets.list",
+        "gcp.storage.buckets.lock_retention_policy.bound",
         "gcp.storage.buckets.patch",
+        "gcp.storage.buckets.relocate.bound",
+        "gcp.storage.buckets.restore.bound",
+        "gcp.storage.buckets.update.bound",
         "gcp.storage.notifications.create",
         "gcp.storage.notifications.delete",
         "gcp.storage.notifications.get",
         "gcp.storage.notifications.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.storage.buckets.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 65,
@@ -5862,6 +6001,7 @@
       "registered_operation_ids": [
         "gcp.storage.folders.create",
         "gcp.storage.folders.delete",
+        "gcp.storage.folders.delete_recursive.bound",
         "gcp.storage.folders.get",
         "gcp.storage.folders.list",
         "gcp.storage.folders.rename",
@@ -5872,16 +6012,28 @@
         "gcp.storage.managed_folders.iam_policy.get",
         "gcp.storage.managed_folders.iam_policy.set",
         "gcp.storage.managed_folders.list",
+        "gcp.storage.managed_folders.update.bound",
+        "gcp.storage.objects.bulk_restore.bound",
+        "gcp.storage.objects.compose.bound",
+        "gcp.storage.objects.copy.bound",
         "gcp.storage.objects.delete",
         "gcp.storage.objects.get",
+        "gcp.storage.objects.iam_permissions.test.bound",
+        "gcp.storage.objects.iam_policy.get.bound",
+        "gcp.storage.objects.iam_policy.set.bound",
         "gcp.storage.objects.list",
+        "gcp.storage.objects.move.bound",
         "gcp.storage.objects.patch",
         "gcp.storage.objects.restore",
-        "gcp.storage.objects.upload.media"
+        "gcp.storage.objects.rewrite.bound",
+        "gcp.storage.objects.update.bound",
+        "gcp.storage.objects.upload.media",
+        "gcp.storage.objects.view_full_context.bound"
       ],
       "installed_gateway_operation_ids": [
         "gcp.storage.folders.create",
         "gcp.storage.folders.delete",
+        "gcp.storage.folders.delete_recursive.bound",
         "gcp.storage.folders.get",
         "gcp.storage.folders.list",
         "gcp.storage.folders.rename",
@@ -5892,19 +6044,31 @@
         "gcp.storage.managed_folders.iam_policy.get",
         "gcp.storage.managed_folders.iam_policy.set",
         "gcp.storage.managed_folders.list",
+        "gcp.storage.managed_folders.update.bound",
+        "gcp.storage.objects.bulk_restore.bound",
+        "gcp.storage.objects.compose.bound",
+        "gcp.storage.objects.copy.bound",
         "gcp.storage.objects.delete",
         "gcp.storage.objects.get",
+        "gcp.storage.objects.iam_permissions.test.bound",
+        "gcp.storage.objects.iam_policy.get.bound",
+        "gcp.storage.objects.iam_policy.set.bound",
         "gcp.storage.objects.list",
+        "gcp.storage.objects.move.bound",
         "gcp.storage.objects.patch",
         "gcp.storage.objects.restore",
-        "gcp.storage.objects.upload.media"
+        "gcp.storage.objects.rewrite.bound",
+        "gcp.storage.objects.update.bound",
+        "gcp.storage.objects.upload.media",
+        "gcp.storage.objects.view_full_context.bound"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.storage.objects.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.storage.folders.create",
         "gcp.storage.folders.delete",
+        "gcp.storage.folders.delete_recursive.bound",
         "gcp.storage.folders.get",
         "gcp.storage.folders.list",
         "gcp.storage.folders.rename",
@@ -5915,16 +6079,28 @@
         "gcp.storage.managed_folders.iam_policy.get",
         "gcp.storage.managed_folders.iam_policy.set",
         "gcp.storage.managed_folders.list",
+        "gcp.storage.managed_folders.update.bound",
+        "gcp.storage.objects.bulk_restore.bound",
+        "gcp.storage.objects.compose.bound",
+        "gcp.storage.objects.copy.bound",
         "gcp.storage.objects.delete",
         "gcp.storage.objects.get",
+        "gcp.storage.objects.iam_permissions.test.bound",
+        "gcp.storage.objects.iam_policy.get.bound",
+        "gcp.storage.objects.iam_policy.set.bound",
         "gcp.storage.objects.list",
+        "gcp.storage.objects.move.bound",
         "gcp.storage.objects.patch",
         "gcp.storage.objects.restore",
-        "gcp.storage.objects.upload.media"
+        "gcp.storage.objects.rewrite.bound",
+        "gcp.storage.objects.update.bound",
+        "gcp.storage.objects.upload.media",
+        "gcp.storage.objects.view_full_context.bound"
       ],
       "source_gateway_operation_ids": [
         "gcp.storage.folders.create",
         "gcp.storage.folders.delete",
+        "gcp.storage.folders.delete_recursive.bound",
         "gcp.storage.folders.get",
         "gcp.storage.folders.list",
         "gcp.storage.folders.rename",
@@ -5935,14 +6111,26 @@
         "gcp.storage.managed_folders.iam_policy.get",
         "gcp.storage.managed_folders.iam_policy.set",
         "gcp.storage.managed_folders.list",
+        "gcp.storage.managed_folders.update.bound",
+        "gcp.storage.objects.bulk_restore.bound",
+        "gcp.storage.objects.compose.bound",
+        "gcp.storage.objects.copy.bound",
         "gcp.storage.objects.delete",
         "gcp.storage.objects.get",
+        "gcp.storage.objects.iam_permissions.test.bound",
+        "gcp.storage.objects.iam_policy.get.bound",
+        "gcp.storage.objects.iam_policy.set.bound",
         "gcp.storage.objects.list",
+        "gcp.storage.objects.move.bound",
         "gcp.storage.objects.patch",
         "gcp.storage.objects.restore",
-        "gcp.storage.objects.upload.media"
+        "gcp.storage.objects.rewrite.bound",
+        "gcp.storage.objects.update.bound",
+        "gcp.storage.objects.upload.media",
+        "gcp.storage.objects.view_full_context.bound"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.storage.objects.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 66,
@@ -5988,7 +6176,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.secrets.createVersion/access/rotate/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.secrets.access",
         "gcp.secrets.create",
@@ -6027,7 +6215,8 @@
         "gcp.secrets.versions.get",
         "gcp.secrets.versions.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.secrets.createVersion/access/rotate/revoke. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 67,
@@ -6063,6 +6252,7 @@
         "gcp.logging.sinks.get",
         "gcp.logging.sinks.list",
         "gcp.logging.sinks.patch",
+        "gcp.logging.sinks.update.bound",
         "gcp.logging.views.create",
         "gcp.logging.views.delete",
         "gcp.logging.views.get",
@@ -6103,6 +6293,7 @@
         "gcp.logging.sinks.get",
         "gcp.logging.sinks.list",
         "gcp.logging.sinks.patch",
+        "gcp.logging.sinks.update.bound",
         "gcp.logging.views.create",
         "gcp.logging.views.delete",
         "gcp.logging.views.get",
@@ -6146,6 +6337,7 @@
         "gcp.logging.sinks.get",
         "gcp.logging.sinks.list",
         "gcp.logging.sinks.patch",
+        "gcp.logging.sinks.update.bound",
         "gcp.logging.views.create",
         "gcp.logging.views.delete",
         "gcp.logging.views.get",
@@ -6186,6 +6378,7 @@
         "gcp.logging.sinks.get",
         "gcp.logging.sinks.list",
         "gcp.logging.sinks.patch",
+        "gcp.logging.sinks.update.bound",
         "gcp.logging.views.create",
         "gcp.logging.views.delete",
         "gcp.logging.views.get",
@@ -6261,6 +6454,7 @@
         "gcp.monitoring.notification_channels.create",
         "gcp.monitoring.notification_channels.delete",
         "gcp.monitoring.notification_channels.get",
+        "gcp.monitoring.notification_channels.get_verification_code.capture",
         "gcp.monitoring.notification_channels.list",
         "gcp.monitoring.notification_channels.patch",
         "gcp.monitoring.notification_channels.send_verification_code",
@@ -6279,7 +6473,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.monitoring.metrics/alerts.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.monitoring.alert_policies.create",
         "gcp.monitoring.alert_policies.delete",
@@ -6339,6 +6533,7 @@
         "gcp.monitoring.notification_channels.create",
         "gcp.monitoring.notification_channels.delete",
         "gcp.monitoring.notification_channels.get",
+        "gcp.monitoring.notification_channels.get_verification_code.capture",
         "gcp.monitoring.notification_channels.list",
         "gcp.monitoring.notification_channels.patch",
         "gcp.monitoring.notification_channels.send_verification_code",
@@ -6355,7 +6550,8 @@
         "gcp.monitoring.uptime_checks.list",
         "gcp.monitoring.uptime_checks.patch"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.monitoring.metrics/alerts.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 69,
@@ -6383,7 +6579,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.scheduler.jobs.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.scheduler.jobs.create",
         "gcp.scheduler.jobs.delete",
@@ -6404,7 +6600,8 @@
         "gcp.scheduler.jobs.resume",
         "gcp.scheduler.jobs.run"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.scheduler.jobs.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 70,
@@ -6430,6 +6627,7 @@
         "gcp.pubsub.snapshots.iam_permissions.test",
         "gcp.pubsub.snapshots.iam_policy.get",
         "gcp.pubsub.snapshots.iam_policy.set",
+        "gcp.pubsub.snapshots.list.bound",
         "gcp.pubsub.snapshots.patch",
         "gcp.pubsub.subscriptions.acknowledge",
         "gcp.pubsub.subscriptions.create",
@@ -6477,6 +6675,7 @@
         "gcp.pubsub.snapshots.iam_permissions.test",
         "gcp.pubsub.snapshots.iam_policy.get",
         "gcp.pubsub.snapshots.iam_policy.set",
+        "gcp.pubsub.snapshots.list.bound",
         "gcp.pubsub.snapshots.patch",
         "gcp.pubsub.subscriptions.acknowledge",
         "gcp.pubsub.subscriptions.create",
@@ -6506,7 +6705,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.pubsub.topics/subscriptions.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.pubsub.schemas.commit",
         "gcp.pubsub.schemas.create",
@@ -6527,6 +6726,7 @@
         "gcp.pubsub.snapshots.iam_permissions.test",
         "gcp.pubsub.snapshots.iam_policy.get",
         "gcp.pubsub.snapshots.iam_policy.set",
+        "gcp.pubsub.snapshots.list.bound",
         "gcp.pubsub.snapshots.patch",
         "gcp.pubsub.subscriptions.acknowledge",
         "gcp.pubsub.subscriptions.create",
@@ -6574,6 +6774,7 @@
         "gcp.pubsub.snapshots.iam_permissions.test",
         "gcp.pubsub.snapshots.iam_policy.get",
         "gcp.pubsub.snapshots.iam_policy.set",
+        "gcp.pubsub.snapshots.list.bound",
         "gcp.pubsub.snapshots.patch",
         "gcp.pubsub.subscriptions.acknowledge",
         "gcp.pubsub.subscriptions.create",
@@ -6601,7 +6802,8 @@
         "gcp.pubsub.topics.snapshots.list",
         "gcp.pubsub.topics.subscriptions.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.pubsub.topics/subscriptions.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 71,
@@ -6651,7 +6853,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.tasks.queues.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.tasks.queues.create",
         "gcp.tasks.queues.delete",
@@ -6694,7 +6896,8 @@
         "gcp.tasks.queues.tasks.list",
         "gcp.tasks.queues.tasks.run"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.tasks.queues.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 72,
@@ -6758,7 +6961,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.security.findings.list. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.security.assets.group",
         "gcp.security.assets.list",
@@ -6815,7 +7018,8 @@
         "gcp.security.notification_configs.patch",
         "gcp.security.sources.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.security.findings.list. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 73,
@@ -6878,6 +7082,18 @@
         "gcp.kms.operations.get"
       ],
       "installed_gateway_operation_ids": [
+        "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
+        "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
+        "gcp.kms.crypto_key_versions.decapsulate.capture",
+        "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture",
+        "gcp.kms.crypto_key_versions.get_public_key.capture",
+        "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture",
+        "gcp.kms.crypto_key_versions.mac_sign.capture",
+        "gcp.kms.crypto_key_versions.mac_verify.capture",
+        "gcp.kms.crypto_key_versions.raw_decrypt.capture",
+        "gcp.kms.crypto_key_versions.raw_encrypt.capture",
+        "gcp.kms.crypto_keys.decrypt.capture",
+        "gcp.kms.crypto_keys.encrypt.capture",
         "gcp.kms.ekm_config.iam_permissions.test",
         "gcp.kms.ekm_config.iam_policy.get",
         "gcp.kms.ekm_config.iam_policy.set",
@@ -6923,7 +7139,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.kms.keys.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
         "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
@@ -6981,6 +7197,18 @@
         "gcp.kms.operations.get"
       ],
       "source_gateway_operation_ids": [
+        "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
+        "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
+        "gcp.kms.crypto_key_versions.decapsulate.capture",
+        "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture",
+        "gcp.kms.crypto_key_versions.get_public_key.capture",
+        "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture",
+        "gcp.kms.crypto_key_versions.mac_sign.capture",
+        "gcp.kms.crypto_key_versions.mac_verify.capture",
+        "gcp.kms.crypto_key_versions.raw_decrypt.capture",
+        "gcp.kms.crypto_key_versions.raw_encrypt.capture",
+        "gcp.kms.crypto_keys.decrypt.capture",
+        "gcp.kms.crypto_keys.encrypt.capture",
         "gcp.kms.ekm_config.iam_permissions.test",
         "gcp.kms.ekm_config.iam_policy.get",
         "gcp.kms.ekm_config.iam_policy.set",
@@ -7024,7 +7252,8 @@
         "gcp.kms.keys.update_primary_version",
         "gcp.kms.operations.get"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.kms.keys.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 74,
@@ -7058,10 +7287,14 @@
         "gcp.backups.backups.list",
         "gcp.backups.backups.patch",
         "gcp.backups.backups.restore",
+        "gcp.backups.data_sources.abandon_backup.bound",
+        "gcp.backups.data_sources.finalize_backup.bound",
         "gcp.backups.data_sources.get",
+        "gcp.backups.data_sources.initiate_backup.bound",
         "gcp.backups.data_sources.list",
         "gcp.backups.data_sources.patch",
         "gcp.backups.data_sources.remove",
+        "gcp.backups.data_sources.set_internal_status.bound",
         "gcp.backups.operations.cancel",
         "gcp.backups.operations.delete",
         "gcp.backups.operations.get",
@@ -7082,6 +7315,7 @@
         "gcp.backups.vaults.patch"
       ],
       "installed_gateway_operation_ids": [
+        "gcp.backup.data_sources.fetch_access_token.capture",
         "gcp.backupdr.data_source_references.fetch_for_resource_type",
         "gcp.backupdr.data_source_references.get",
         "gcp.backupdr.data_source_references.list",
@@ -7108,10 +7342,14 @@
         "gcp.backups.backups.list",
         "gcp.backups.backups.patch",
         "gcp.backups.backups.restore",
+        "gcp.backups.data_sources.abandon_backup.bound",
+        "gcp.backups.data_sources.finalize_backup.bound",
         "gcp.backups.data_sources.get",
+        "gcp.backups.data_sources.initiate_backup.bound",
         "gcp.backups.data_sources.list",
         "gcp.backups.data_sources.patch",
         "gcp.backups.data_sources.remove",
+        "gcp.backups.data_sources.set_internal_status.bound",
         "gcp.backups.operations.cancel",
         "gcp.backups.operations.delete",
         "gcp.backups.operations.get",
@@ -7133,7 +7371,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "No equivalent executable operation established locally for gcp.backups.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members.",
+      "remaining_capability": "Bounded typed source contracts now map to this requirement. Full wildcard constituent coverage, authorized provider execution and platform acceptance remain incomplete; mapped/closed handlers do not establish completion.",
       "source_contract_operation_ids": [
         "gcp.backup.data_sources.fetch_access_token.capture",
         "gcp.backupdr.data_source_references.fetch_for_resource_type",
@@ -7162,10 +7400,14 @@
         "gcp.backups.backups.list",
         "gcp.backups.backups.patch",
         "gcp.backups.backups.restore",
+        "gcp.backups.data_sources.abandon_backup.bound",
+        "gcp.backups.data_sources.finalize_backup.bound",
         "gcp.backups.data_sources.get",
+        "gcp.backups.data_sources.initiate_backup.bound",
         "gcp.backups.data_sources.list",
         "gcp.backups.data_sources.patch",
         "gcp.backups.data_sources.remove",
+        "gcp.backups.data_sources.set_internal_status.bound",
         "gcp.backups.operations.cancel",
         "gcp.backups.operations.delete",
         "gcp.backups.operations.get",
@@ -7186,6 +7428,7 @@
         "gcp.backups.vaults.patch"
       ],
       "source_gateway_operation_ids": [
+        "gcp.backup.data_sources.fetch_access_token.capture",
         "gcp.backupdr.data_source_references.fetch_for_resource_type",
         "gcp.backupdr.data_source_references.get",
         "gcp.backupdr.data_source_references.list",
@@ -7212,10 +7455,14 @@
         "gcp.backups.backups.list",
         "gcp.backups.backups.patch",
         "gcp.backups.backups.restore",
+        "gcp.backups.data_sources.abandon_backup.bound",
+        "gcp.backups.data_sources.finalize_backup.bound",
         "gcp.backups.data_sources.get",
+        "gcp.backups.data_sources.initiate_backup.bound",
         "gcp.backups.data_sources.list",
         "gcp.backups.data_sources.patch",
         "gcp.backups.data_sources.remove",
+        "gcp.backups.data_sources.set_internal_status.bound",
         "gcp.backups.operations.cancel",
         "gcp.backups.operations.delete",
         "gcp.backups.operations.get",
@@ -7235,7 +7482,8 @@
         "gcp.backups.vaults.list",
         "gcp.backups.vaults.patch"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "No equivalent executable operation established locally for gcp.backups.*. The live registry is now inspected; reconcile any remaining deployed executor and implement unfulfilled scope members."
     },
     {
       "requirement_id": 75,
@@ -7476,14 +7724,30 @@
       "provider_schema_candidate_count": 11,
       "registered_operation_ids": [
         "supabase.branches.create",
+        "supabase.branches.delete.bound",
+        "supabase.branches.diff.bound",
         "supabase.branches.get",
+        "supabase.branches.get_config.bound",
         "supabase.branches.list",
+        "supabase.branches.merge.bound",
+        "supabase.branches.push.bound",
+        "supabase.branches.reset.bound",
+        "supabase.branches.restore.bound",
+        "supabase.branches.update_config.bound",
         "supabase.v1_disable_preview_branching"
       ],
       "installed_gateway_operation_ids": [
         "supabase.branches.create",
+        "supabase.branches.delete.bound",
+        "supabase.branches.diff.bound",
         "supabase.branches.get",
+        "supabase.branches.get_config.bound",
         "supabase.branches.list",
+        "supabase.branches.merge.bound",
+        "supabase.branches.push.bound",
+        "supabase.branches.reset.bound",
+        "supabase.branches.restore.bound",
+        "supabase.branches.update_config.bound",
         "supabase.v1_disable_preview_branching"
       ],
       "historical_registry_verified_operation_ids": [],
@@ -7491,12 +7755,28 @@
       "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
       "source_contract_operation_ids": [
         "supabase.branches.create",
+        "supabase.branches.delete.bound",
+        "supabase.branches.diff.bound",
+        "supabase.branches.get_config.bound",
+        "supabase.branches.merge.bound",
+        "supabase.branches.push.bound",
+        "supabase.branches.reset.bound",
+        "supabase.branches.restore.bound",
+        "supabase.branches.update_config.bound",
         "supabase.v1_disable_preview_branching"
       ],
       "source_gateway_operation_ids": [
         "supabase.branches.create",
+        "supabase.branches.delete.bound",
+        "supabase.branches.diff.bound",
         "supabase.branches.get",
+        "supabase.branches.get_config.bound",
         "supabase.branches.list",
+        "supabase.branches.merge.bound",
+        "supabase.branches.push.bound",
+        "supabase.branches.reset.bound",
+        "supabase.branches.restore.bound",
+        "supabase.branches.update_config.bound",
         "supabase.v1_disable_preview_branching"
       ],
       "acceptance_state": "not_complete"
@@ -8836,13 +9116,23 @@
         "supabase.tenant.exports.download",
         "supabase.tenant.exports.get",
         "supabase.tenant.exports.purge",
+        "supabase.tenant.financial.export",
+        "supabase.tenant.financial.exports.available",
+        "supabase.tenant.financial.exports.download",
+        "supabase.tenant.financial.exports.get",
+        "supabase.tenant.financial.exports.purge",
         "supabase.tenant.manifests.erase",
         "supabase.tenant.manifests.export",
         "supabase.tenant.manifests.exports.get",
         "supabase.tenant.manifests.exports.purge",
         "supabase.tenant.manifests.restore",
         "supabase.tenant.protected_resources.inventory",
-        "supabase.tenant.restore"
+        "supabase.tenant.restore",
+        "supabase.tenant.support.erase",
+        "supabase.tenant.support.restore",
+        "supabase.tenant.support.snapshot",
+        "supabase.tenant.support.snapshots.get",
+        "supabase.tenant.support.snapshots.purge"
       ],
       "installed_gateway_operation_ids": [
         "supabase.tenant.consent.get",
@@ -8857,17 +9147,27 @@
         "supabase.tenant.exports.download",
         "supabase.tenant.exports.get",
         "supabase.tenant.exports.purge",
+        "supabase.tenant.financial.export",
+        "supabase.tenant.financial.exports.available",
+        "supabase.tenant.financial.exports.download",
+        "supabase.tenant.financial.exports.get",
+        "supabase.tenant.financial.exports.purge",
         "supabase.tenant.manifests.erase",
         "supabase.tenant.manifests.export",
         "supabase.tenant.manifests.exports.get",
         "supabase.tenant.manifests.exports.purge",
         "supabase.tenant.manifests.restore",
         "supabase.tenant.protected_resources.inventory",
-        "supabase.tenant.restore"
+        "supabase.tenant.restore",
+        "supabase.tenant.support.erase",
+        "supabase.tenant.support.restore",
+        "supabase.tenant.support.snapshot",
+        "supabase.tenant.support.snapshots.get",
+        "supabase.tenant.support.snapshots.purge"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Consented tenant export/erase/restore orchestration, retention/legal holds and recovery tests.",
+      "remaining_capability": "Six-table leaf and four-table scalar recovery, guarded support-case recovery, 20 content projections and 10 financial export-only projections exist. Full tenant/parent/control-copy coverage and operation-specific erase/restore/retention acceptance remain incomplete; financial history erasure/restore is unsupported.",
       "source_contract_operation_ids": [
         "supabase.tenant.consent.get",
         "supabase.tenant.consent.set",
@@ -8881,13 +9181,23 @@
         "supabase.tenant.exports.download",
         "supabase.tenant.exports.get",
         "supabase.tenant.exports.purge",
+        "supabase.tenant.financial.export",
+        "supabase.tenant.financial.exports.available",
+        "supabase.tenant.financial.exports.download",
+        "supabase.tenant.financial.exports.get",
+        "supabase.tenant.financial.exports.purge",
         "supabase.tenant.manifests.erase",
         "supabase.tenant.manifests.export",
         "supabase.tenant.manifests.exports.get",
         "supabase.tenant.manifests.exports.purge",
         "supabase.tenant.manifests.restore",
         "supabase.tenant.protected_resources.inventory",
-        "supabase.tenant.restore"
+        "supabase.tenant.restore",
+        "supabase.tenant.support.erase",
+        "supabase.tenant.support.restore",
+        "supabase.tenant.support.snapshot",
+        "supabase.tenant.support.snapshots.get",
+        "supabase.tenant.support.snapshots.purge"
       ],
       "source_gateway_operation_ids": [
         "supabase.tenant.consent.get",
@@ -8902,15 +9212,26 @@
         "supabase.tenant.exports.download",
         "supabase.tenant.exports.get",
         "supabase.tenant.exports.purge",
+        "supabase.tenant.financial.export",
+        "supabase.tenant.financial.exports.available",
+        "supabase.tenant.financial.exports.download",
+        "supabase.tenant.financial.exports.get",
+        "supabase.tenant.financial.exports.purge",
         "supabase.tenant.manifests.erase",
         "supabase.tenant.manifests.export",
         "supabase.tenant.manifests.exports.get",
         "supabase.tenant.manifests.exports.purge",
         "supabase.tenant.manifests.restore",
         "supabase.tenant.protected_resources.inventory",
-        "supabase.tenant.restore"
+        "supabase.tenant.restore",
+        "supabase.tenant.support.erase",
+        "supabase.tenant.support.restore",
+        "supabase.tenant.support.snapshot",
+        "supabase.tenant.support.snapshots.get",
+        "supabase.tenant.support.snapshots.purge"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Consented tenant export/erase/restore orchestration, retention/legal holds and recovery tests."
     },
     {
       "requirement_id": 112,
@@ -8932,7 +9253,7 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Compliance collection with tenant scope, immutable evidence and policy checks.",
+      "remaining_capability": "Scoped consent, hold/retention controls, audit and tenant recovery evidence exist. Full compliance collection, all retained copies and genuine authenticated production policy/retention acceptance remain incomplete.",
       "source_contract_operation_ids": [
         "supabase.compliance.audit",
         "supabase.compliance.hold.create",
@@ -8947,7 +9268,8 @@
         "supabase.tenant.consent.get",
         "supabase.tenant.consent.set"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Compliance collection with tenant scope, immutable evidence and policy checks."
     },
     {
       "requirement_id": 113,
@@ -10119,7 +10441,8 @@
         "github.actions.runs.list",
         "github.actions.runs.logs.capture",
         "github.actions.runs.rerun",
-        "github.job.reconcile"
+        "github.job.reconcile",
+        "provider.artifacts.read_private"
       ],
       "installed_gateway_operation_ids": [
         "github.actions.approve_workflow_run",
@@ -10147,11 +10470,12 @@
         "github.actions.runs.list",
         "github.actions.runs.logs.capture",
         "github.actions.runs.rerun",
-        "github.job.reconcile"
+        "github.job.reconcile",
+        "provider.artifacts.read_private"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Full run get/cancel/rerun family with idempotency and verified terminal state.",
+      "remaining_capability": "Bounded Actions JSON handlers and five fixed-route private log/artifact captures exist. Full run get/cancel/rerun coverage, idempotent provider terminal-state verification and genuine owner/approval integration remain incomplete.",
       "source_contract_operation_ids": [
         "github.actions.approve_workflow_run",
         "github.actions.delete_workflow_run",
@@ -10178,7 +10502,8 @@
         "github.actions.runs.list",
         "github.actions.runs.logs.capture",
         "github.actions.runs.rerun",
-        "github.job.reconcile"
+        "github.job.reconcile",
+        "provider.artifacts.read_private"
       ],
       "source_gateway_operation_ids": [
         "github.actions.approve_workflow_run",
@@ -10206,9 +10531,11 @@
         "github.actions.runs.list",
         "github.actions.runs.logs.capture",
         "github.actions.runs.rerun",
-        "github.job.reconcile"
+        "github.job.reconcile",
+        "provider.artifacts.read_private"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Full run get/cancel/rerun family with idempotency and verified terminal state."
     },
     {
       "requirement_id": 129,
@@ -10218,30 +10545,35 @@
         "github.actions.artifacts.delete",
         "github.actions.artifacts.download.capture",
         "github.actions.artifacts.get",
-        "github.actions.artifacts.list"
+        "github.actions.artifacts.list",
+        "provider.artifacts.read_private"
       ],
       "installed_gateway_operation_ids": [
         "github.actions.artifacts.delete",
         "github.actions.artifacts.download.capture",
         "github.actions.artifacts.get",
-        "github.actions.artifacts.list"
+        "github.actions.artifacts.list",
+        "provider.artifacts.read_private"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "General artifact lifecycle adapter, bounded downloads and retention verification.",
+      "remaining_capability": "Bounded Actions artifact lifecycle contracts, private download captures and approved one-use byte delivery exist. Larger transfers, all retention/lifecycle constituents and real authorized provider verification remain incomplete.",
       "source_contract_operation_ids": [
         "github.actions.artifacts.delete",
         "github.actions.artifacts.download.capture",
         "github.actions.artifacts.get",
-        "github.actions.artifacts.list"
+        "github.actions.artifacts.list",
+        "provider.artifacts.read_private"
       ],
       "source_gateway_operation_ids": [
         "github.actions.artifacts.delete",
         "github.actions.artifacts.download.capture",
         "github.actions.artifacts.get",
-        "github.actions.artifacts.list"
+        "github.actions.artifacts.list",
+        "provider.artifacts.read_private"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "General artifact lifecycle adapter, bounded downloads and retention verification."
     },
     {
       "requirement_id": 130,
@@ -12374,6 +12706,9 @@
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
         "agent.execution_plan.draft",
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review",
+        "agent.missions.work_product.prepare",
         "agent.runtime.images.request_approval",
         "agent.runtime.tasks.request_client_action",
         "workspace.chat.ask",
@@ -12408,9 +12743,12 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Full pause/cancel/retry and durable autonomous provider execution, lease recovery, acceptance verification and central registry mappings; planning/awaiting approval is not execution completion.",
+      "remaining_capability": "Task-bound durable planning, question review and draft work-product services exist with one-use claims and atomic records. Pause/cancel/retry, autonomous provider execution, recovery and acceptance verification remain incomplete; plans/client-review drafts are not completed actions.",
       "source_contract_operation_ids": [
         "agent.execution_plan.draft",
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review",
+        "agent.missions.work_product.prepare",
         "agent.runtime.images.request_approval",
         "agent.runtime.tasks.request_client_action",
         "workspace.chat.ask",
@@ -12443,7 +12781,8 @@
         "workspace.missions.resume",
         "workspace.missions.review"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Full pause/cancel/retry and durable autonomous provider execution, lease recovery, acceptance verification and central registry mappings; planning/awaiting approval is not execution completion."
     },
     {
       "requirement_id": 155,
@@ -12451,6 +12790,9 @@
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
         "agent.evaluations.list",
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review",
+        "agent.missions.work_product.prepare",
         "agent.reliability.diagnosis.propose",
         "agent.runtime.connections.preflight",
         "agent.runtime.operational.capabilities",
@@ -12532,7 +12874,14 @@
         "google_cloud.mcp.public_ingress",
         "google_cloud.mcp.registry_writer_grant",
         "google_cloud.mcp.release_temp_iam",
-        "supabase.management.verify"
+        "supabase.management.verify",
+        "system.capabilities",
+        "system.catalog",
+        "system.connections",
+        "system.coverage",
+        "system.operation_catalog",
+        "system.operation_status",
+        "system.runtime"
       ],
       "installed_gateway_operation_ids": [
         "agent.evaluations.list",
@@ -12614,13 +12963,23 @@
         "google_cloud.mcp.public_ingress",
         "google_cloud.mcp.registry_writer_grant",
         "google_cloud.mcp.release_temp_iam",
-        "supabase.management.verify"
+        "supabase.management.verify",
+        "system.capabilities",
+        "system.catalog",
+        "system.connections",
+        "system.coverage",
+        "system.operation_catalog",
+        "system.operation_status",
+        "system.runtime"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
+      "remaining_capability": "Seven recorded Controller metadata handlers and shared QA/worker boundaries exist. Remaining wildcard functions, current-user end-to-end verification and independent live provider/core capability aggregation remain incomplete.",
       "source_contract_operation_ids": [
         "agent.evaluations.list",
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review",
+        "agent.missions.work_product.prepare",
         "agent.reliability.diagnosis.propose",
         "agent.runtime.connections.preflight",
         "agent.runtime.operational.capabilities",
@@ -12693,7 +13052,14 @@
         "google_cloud.mcp.public_ingress",
         "google_cloud.mcp.registry_writer_grant",
         "google_cloud.mcp.release_temp_iam",
-        "supabase.management.verify"
+        "supabase.management.verify",
+        "system.capabilities",
+        "system.catalog",
+        "system.connections",
+        "system.coverage",
+        "system.operation_catalog",
+        "system.operation_status",
+        "system.runtime"
       ],
       "source_gateway_operation_ids": [
         "agent.evaluations.list",
@@ -12775,9 +13141,17 @@
         "google_cloud.mcp.public_ingress",
         "google_cloud.mcp.registry_writer_grant",
         "google_cloud.mcp.release_temp_iam",
-        "supabase.management.verify"
+        "supabase.management.verify",
+        "system.capabilities",
+        "system.catalog",
+        "system.connections",
+        "system.coverage",
+        "system.operation_catalog",
+        "system.operation_status",
+        "system.runtime"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete."
     },
     {
       "requirement_id": 156,
@@ -13073,31 +13447,235 @@
       "requirement": "sandy.payments_and_commerce.*",
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
+        "commerce.accounts.close",
+        "commerce.accounts.create",
+        "commerce.accounts.get",
+        "commerce.accounts.list",
+        "commerce.accounts.update",
+        "commerce.audit.list",
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entries.create",
+        "commerce.entries.delete",
+        "commerce.entries.get",
+        "commerce.entries.list",
+        "commerce.entries.post",
+        "commerce.entries.reverse",
+        "commerce.entries.update",
+        "commerce.executions.get",
         "commerce.invoice_forward.receipt",
-        "commerce.invoice_forward.request"
+        "commerce.invoice_forward.request",
+        "commerce.invoices.create",
+        "commerce.invoices.forwarding_status.get",
+        "commerce.invoices.get",
+        "commerce.invoices.issue",
+        "commerce.invoices.list",
+        "commerce.invoices.reconcile_forwarding_status",
+        "commerce.invoices.update",
+        "commerce.invoices.void",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
+        "commerce.processor.capabilities",
+        "commerce.reconciliation.get",
+        "commerce.reconciliation.list",
+        "commerce.reconciliation.preview",
+        "commerce.reconciliation.review",
+        "commerce.reconciliation.run",
+        "commerce.reports.account_ledger",
+        "commerce.reports.income_expense",
+        "commerce.reports.trial_balance",
+        "commerce.statements.delete",
+        "commerce.statements.get",
+        "commerce.statements.import",
+        "commerce.statements.list"
       ],
       "installed_gateway_operation_ids": [
+        "commerce.accounts.close",
+        "commerce.accounts.create",
+        "commerce.accounts.get",
+        "commerce.accounts.list",
+        "commerce.accounts.update",
+        "commerce.audit.list",
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entries.create",
+        "commerce.entries.delete",
+        "commerce.entries.get",
+        "commerce.entries.list",
+        "commerce.entries.post",
+        "commerce.entries.reverse",
+        "commerce.entries.update",
+        "commerce.executions.get",
         "commerce.invoice_forward.receipt",
-        "commerce.invoice_forward.request"
+        "commerce.invoice_forward.request",
+        "commerce.invoices.create",
+        "commerce.invoices.forwarding_status.get",
+        "commerce.invoices.get",
+        "commerce.invoices.issue",
+        "commerce.invoices.list",
+        "commerce.invoices.reconcile_forwarding_status",
+        "commerce.invoices.update",
+        "commerce.invoices.void",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
+        "commerce.processor.capabilities",
+        "commerce.reconciliation.get",
+        "commerce.reconciliation.list",
+        "commerce.reconciliation.preview",
+        "commerce.reconciliation.review",
+        "commerce.reconciliation.run",
+        "commerce.reports.account_ledger",
+        "commerce.reports.income_expense",
+        "commerce.reports.trial_balance",
+        "commerce.statements.delete",
+        "commerce.statements.get",
+        "commerce.statements.import",
+        "commerce.statements.list"
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Plans/prices, invoice/payment-intent/refund/payout/tax APIs, entitlement reconciliation, financial audit and PCI provider boundaries.",
+      "remaining_capability": "53 internal commerce handlers now have strict required result contracts for records, plans/prices, invoices, manual reconciliation and entitlements. Processor payments, intents, refunds, payouts, tax/settlement and provider-backed entitlement acceptance remain incomplete; no processor is configured.",
       "source_contract_operation_ids": [
+        "commerce.accounts.close",
+        "commerce.accounts.create",
+        "commerce.accounts.get",
+        "commerce.accounts.list",
+        "commerce.accounts.update",
+        "commerce.audit.list",
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entries.create",
+        "commerce.entries.delete",
+        "commerce.entries.get",
+        "commerce.entries.list",
+        "commerce.entries.post",
+        "commerce.entries.reverse",
+        "commerce.entries.update",
+        "commerce.executions.get",
         "commerce.invoice_forward.receipt",
-        "commerce.invoice_forward.request"
+        "commerce.invoice_forward.request",
+        "commerce.invoices.create",
+        "commerce.invoices.forwarding_status.get",
+        "commerce.invoices.get",
+        "commerce.invoices.issue",
+        "commerce.invoices.list",
+        "commerce.invoices.reconcile_forwarding_status",
+        "commerce.invoices.update",
+        "commerce.invoices.void",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
+        "commerce.processor.capabilities",
+        "commerce.reconciliation.get",
+        "commerce.reconciliation.list",
+        "commerce.reconciliation.preview",
+        "commerce.reconciliation.review",
+        "commerce.reconciliation.run",
+        "commerce.reports.account_ledger",
+        "commerce.reports.income_expense",
+        "commerce.reports.trial_balance",
+        "commerce.statements.delete",
+        "commerce.statements.get",
+        "commerce.statements.import",
+        "commerce.statements.list"
       ],
       "source_gateway_operation_ids": [
+        "commerce.accounts.close",
+        "commerce.accounts.create",
+        "commerce.accounts.get",
+        "commerce.accounts.list",
+        "commerce.accounts.update",
+        "commerce.audit.list",
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entries.create",
+        "commerce.entries.delete",
+        "commerce.entries.get",
+        "commerce.entries.list",
+        "commerce.entries.post",
+        "commerce.entries.reverse",
+        "commerce.entries.update",
+        "commerce.executions.get",
         "commerce.invoice_forward.receipt",
-        "commerce.invoice_forward.request"
+        "commerce.invoice_forward.request",
+        "commerce.invoices.create",
+        "commerce.invoices.forwarding_status.get",
+        "commerce.invoices.get",
+        "commerce.invoices.issue",
+        "commerce.invoices.list",
+        "commerce.invoices.reconcile_forwarding_status",
+        "commerce.invoices.update",
+        "commerce.invoices.void",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
+        "commerce.processor.capabilities",
+        "commerce.reconciliation.get",
+        "commerce.reconciliation.list",
+        "commerce.reconciliation.preview",
+        "commerce.reconciliation.review",
+        "commerce.reconciliation.run",
+        "commerce.reports.account_ledger",
+        "commerce.reports.income_expense",
+        "commerce.reports.trial_balance",
+        "commerce.statements.delete",
+        "commerce.statements.get",
+        "commerce.statements.import",
+        "commerce.statements.list"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Plans/prices, invoice/payment-intent/refund/payout/tax APIs, entitlement reconciliation, financial audit and PCI provider boundaries."
     },
     {
       "requirement_id": 159,
       "requirement": "sandy.customer_lifecycle_and_support.*",
       "provider_schema_candidate_count": 0,
       "registered_operation_ids": [
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
         "customer.addresses.list",
         "customer.profile.get",
         "customer.profile.update",
@@ -13112,6 +13690,13 @@
         "support.comments.list"
       ],
       "installed_gateway_operation_ids": [
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
         "customer.addresses.list",
         "customer.profile.get",
         "customer.profile.update",
@@ -13129,6 +13714,13 @@
       "complete": false,
       "remaining_capability": "CRM/support ticketing/SLAs/churn, customer consent lifecycle, offboarding/deletion/export and data-subject-request APIs with retention/legal-hold enforcement.",
       "source_contract_operation_ids": [
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
         "customer.addresses.list",
         "customer.profile.get",
         "customer.profile.update",
@@ -13143,6 +13735,13 @@
         "support.comments.list"
       ],
       "source_gateway_operation_ids": [
+        "commerce.consent.get",
+        "commerce.consent.revoke",
+        "commerce.consent.set",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
         "customer.addresses.list",
         "customer.profile.get",
         "customer.profile.update",
@@ -13166,6 +13765,9 @@
         "agent.documents.search",
         "agent.evaluations.list",
         "agent.execution_plan.draft",
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review",
+        "agent.missions.work_product.prepare",
         "agent.reliability.diagnosis.propose",
         "agent.runtime.connections.preflight",
         "agent.runtime.conversation.respond",
@@ -13237,11 +13839,14 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Complete model/prompt version administration, authoritative tool-catalogue mapping, per-tenant quotas/cost accounting, evaluation/guardrail lifecycle and production integration evidence.",
+      "remaining_capability": "Shared fixed model profiles, internal records/policy and guarded proposal workers exist. Full model/prompt administration, tool/evaluation lifecycle, tenant cost/quotas and real production integration remain incomplete.",
       "source_contract_operation_ids": [
         "agent.documents.search",
         "agent.evaluations.list",
         "agent.execution_plan.draft",
+        "agent.missions.plan.prepare",
+        "agent.missions.questions.review",
+        "agent.missions.work_product.prepare",
         "agent.reliability.diagnosis.propose",
         "agent.runtime.connections.preflight",
         "agent.runtime.conversation.respond",
@@ -13311,7 +13916,8 @@
         "workspace.search",
         "workspace.topics.refresh"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Complete model/prompt version administration, authoritative tool-catalogue mapping, per-tenant quotas/cost accounting, evaluation/guardrail lifecycle and production integration evidence."
     },
     {
       "requirement_id": 161,
@@ -13321,6 +13927,22 @@
         "agent.runtime.operational.capabilities",
         "agent.runtime.operational.environment",
         "agent.runtime.operational.versions",
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
+        "commerce.executions.get",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
         "notifications.preferences.get",
         "notifications.preferences.update",
         "notifications.templates.create",
@@ -13337,6 +13959,22 @@
         "product.executions.get"
       ],
       "installed_gateway_operation_ids": [
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
+        "commerce.executions.get",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
         "notifications.preferences.get",
         "notifications.preferences.update",
         "notifications.templates.create",
@@ -13354,11 +13992,27 @@
       ],
       "historical_registry_verified_operation_ids": [],
       "complete": false,
-      "remaining_capability": "Tenant-authorized branding/pages/templates/locales/currencies/feature/settings APIs, frontend build/deploy and configuration rollback with provider-verified receipts.",
+      "remaining_capability": "Typed product configuration handlers exist. Complete frontend/configuration deployment and provider-verified rollback/acceptance remain incomplete.",
       "source_contract_operation_ids": [
         "agent.runtime.operational.capabilities",
         "agent.runtime.operational.environment",
         "agent.runtime.operational.versions",
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
+        "commerce.executions.get",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
         "notifications.preferences.get",
         "notifications.preferences.update",
         "notifications.templates.create",
@@ -13375,6 +14029,22 @@
         "product.executions.get"
       ],
       "source_gateway_operation_ids": [
+        "commerce.configuration.get",
+        "commerce.configuration.update",
+        "commerce.entitlements.check",
+        "commerce.entitlements.grant",
+        "commerce.entitlements.list",
+        "commerce.entitlements.revoke",
+        "commerce.executions.get",
+        "commerce.plans.archive",
+        "commerce.plans.create",
+        "commerce.plans.get",
+        "commerce.plans.list",
+        "commerce.plans.update",
+        "commerce.prices.archive",
+        "commerce.prices.create",
+        "commerce.prices.get",
+        "commerce.prices.list",
         "notifications.preferences.get",
         "notifications.preferences.update",
         "notifications.templates.create",
@@ -13390,7 +14060,8 @@
         "product.configuration.snapshots.list",
         "product.executions.get"
       ],
-      "acceptance_state": "not_complete"
+      "acceptance_state": "not_complete",
+      "remaining_capability_prior_source_baseline": "Tenant-authorized branding/pages/templates/locales/currencies/feature/settings APIs, frontend build/deploy and configuration rollback with provider-verified receipts."
     }
   ],
   "baseline_deployed_gateway_operation_ids": [
@@ -13460,8 +14131,8 @@
     "video.status"
   ],
   "requirements_with_typed_source_contracts": 160,
-  "source_gateway_operation_mappings": 2390,
-  "typed_source_contract_count": 2361,
+  "source_gateway_operation_mappings": 2527,
+  "typed_source_contract_count": 2483,
   "source_contract_groups": [
     {
       "name": "legacy_application",
@@ -13611,6 +14282,20 @@
       "count": 98
     },
     {
+      "name": "commerce_internal",
+      "source_path": "supabase/functions/sandy-commerce-ledger-api/strict_contracts.json",
+      "handler_source_path": "supabase/functions/sandy-commerce-ledger-api/strict_entry.ts",
+      "handler": "sandy-commerce-ledger-api",
+      "count": 53
+    },
+    {
+      "name": "system_metadata",
+      "source_path": "supabase/functions/sandy-system-metadata-api/contracts.json",
+      "handler_source_path": "supabase/functions/sandy-system-metadata-api/index.ts",
+      "handler": "sandy-system-metadata-api",
+      "count": 7
+    },
+    {
       "name": "internal_runtime_records",
       "source_path": "supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts",
       "handler_source_path": "supabase/functions/_shared/sandy-agent-operations/runtime_records.ts",
@@ -13629,7 +14314,7 @@
       "source_path": "supabase/functions/sandy-tenant-lifecycle-api/gateway.ts",
       "handler_source_path": "supabase/functions/sandy-tenant-lifecycle-api/index.ts",
       "handler": "sandy-tenant-lifecycle-api",
-      "count": 14
+      "count": 22
     },
     {
       "name": "tenant_export_download",
@@ -13674,6 +14359,27 @@
       "count": 18
     },
     {
+      "name": "provider_resource_relationships",
+      "source_path": "supabase/functions/sandy-provider-bound-api/gateway_manifest.json",
+      "handler_source_path": "supabase/functions/sandy-provider-bound-api/index.ts",
+      "handler": "sandy-provider-bound-api",
+      "count": 48
+    },
+    {
+      "name": "provider_artifact_delivery",
+      "source_path": "supabase/functions/sandy-provider-artifact-api/contracts.json",
+      "handler_source_path": "supabase/functions/sandy-provider-artifact-api/index.ts",
+      "handler": "sandy-provider-artifact-api",
+      "count": 1
+    },
+    {
+      "name": "tenant_financial_delivery",
+      "source_path": "supabase/functions/sandy-tenant-lifecycle-api/financial_user.ts",
+      "handler_source_path": "supabase/functions/sandy-tenant-lifecycle-api/financial_user.ts",
+      "handler": "sandy-operation-api",
+      "count": 2
+    },
+    {
       "name": "internal_runtime_connection_preflight",
       "source_path": "supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts",
       "handler_source_path": "supabase/functions/_shared/sandy-agent-operations/runtime_connection_preflight.ts",
@@ -13686,9 +14392,26 @@
       "handler_source_path": "supabase/functions/_shared/sandy-agent-operations/worker_diagnosis.ts",
       "handler": "internal:agent.reliability.diagnosis.propose@1.0.0",
       "count": 1
+    },
+    {
+      "name": "internal_mission_work_product",
+      "source_path": "supabase/functions/_shared/sandy-agent-operations/worker_mission_contract.ts",
+      "handler_source_path": "supabase/functions/_shared/sandy-agent-operations/worker_mission.ts",
+      "handler": "internal:agent.missions.work_product.prepare@1.0.0",
+      "count": 1
+    },
+    {
+      "name": "internal_mission_planning",
+      "source_path": "supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_contract.ts",
+      "handler_source_path": "supabase/functions/_shared/sandy-agent-operations/worker_mission_planning.ts",
+      "handler": "",
+      "count": 2
     }
   ],
   "source_contracts_not_in_deployed_gateway": [
+    "agent.missions.plan.prepare",
+    "agent.missions.questions.review",
+    "agent.missions.work_product.prepare",
     "agent.reliability.diagnosis.propose",
     "agent.runtime.connections.list",
     "agent.runtime.connections.preflight",
@@ -13706,25 +14429,7 @@
     "agent.runtime.operational.environment",
     "agent.runtime.operational.versions",
     "agent.runtime.tasks.list",
-    "agent.runtime.tasks.request_client_action",
-    "gcp.backup.data_sources.fetch_access_token.capture",
-    "gcp.compute.instances.get_guest_attributes.capture",
-    "gcp.compute.instances.get_screenshot.capture",
-    "gcp.compute.instances.get_shielded_instance_identity.capture",
-    "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
-    "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
-    "gcp.kms.crypto_key_versions.decapsulate.capture",
-    "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture",
-    "gcp.kms.crypto_key_versions.get_public_key.capture",
-    "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture",
-    "gcp.kms.crypto_key_versions.mac_sign.capture",
-    "gcp.kms.crypto_key_versions.mac_verify.capture",
-    "gcp.kms.crypto_key_versions.raw_decrypt.capture",
-    "gcp.kms.crypto_key_versions.raw_encrypt.capture",
-    "gcp.kms.crypto_keys.decrypt.capture",
-    "gcp.kms.crypto_keys.encrypt.capture",
-    "gcp.kubernetes.clusters.get_jwks.capture",
-    "gcp.monitoring.notification_channels.get_verification_code.capture"
+    "agent.runtime.tasks.request_client_action"
   ],
   "unmapped_source_gateway_operation_ids": [],
   "historically_verified_registry_operations": [
@@ -13732,15 +14437,18 @@
     "video.install.preflight",
     "video.status"
   ],
-  "live_evidence_captured_at_utc": "2026-10-21T04:12:50.674507+00:00",
-  "live_evidence_source_head": "78293d1954958fd64dc57c51215ecf8f0c450703",
+  "live_evidence_captured_at_utc": "2026-10-21T05:12:36.378686+00:00",
+  "live_evidence_source_head": "e2d49fdfab6147783e4bbfde373d6550db906763",
   "evidence_semantics": {
-    "typed_source_contract_count": "Working-tree typed records, including disabled and dependency-blocked operations; not a count of functional implementations or deployments.",
+    "typed_source_contract_count": "Pinned e2d49fd typed source records, including closed/dependency-blocked and private internal operations; not completed requirements or fully verified operations.",
     "installed_gateway_operation_mappings": "IDs installed in the source-attested deployed gateway, including closed mutations; not completed requirements.",
-    "source_gateway_operation_mappings": "IDs in the current composed working-tree gateway; null means not yet captured.",
+    "source_gateway_operation_mappings": "IDs in the pinned source-export gateway; exact2527 set equals the source-attested API17 runtime.",
     "historically_verified_registry_operations": "Existing registry flags preserved; no fresh deployed-user-path attestation is inferred.",
     "completion": "All161 platform-wide acceptance gates remain unmet; source/registry/deployment evidence alone cannot set complete=true.",
-    "pinned_source_commit": "78293d1954958fd64dc57c51215ecf8f0c450703"
+    "controller_metadata": "Seven reviewed recorded-Controller metadata handlers map only to requirement155; no independent core/platform/provider execution is inferred.",
+    "provider_artifact_delivery": "The single bounded private-delivery contract maps to its explicit Artifact Registry/Actions source-family requirements63/128/129; it neither completes those families nor verifies a live download.",
+    "private_planning_registry_addendum": "Two reviewed10070 private worker contracts map to requirements154/155/160. An explicit pinned export may include them in typed source records; registry-only fallback never adds them to that count or to public gateway IDs.",
+    "pinned_source_commit": "e2d49fdfab6147783e4bbfde373d6550db906763"
   },
   "source_mapping_basis": {
     "agenda.access.revoke": "explicit_contract_requirement_metadata",
@@ -13771,6 +14479,9 @@
     "agent.documents.search": "explicit_contract_requirement_metadata",
     "agent.evaluations.list": "explicit_contract_requirement_metadata",
     "agent.execution_plan.draft": "explicit_contract_requirement_metadata",
+    "agent.missions.plan.prepare": "explicit_contract_requirement_metadata",
+    "agent.missions.questions.review": "explicit_contract_requirement_metadata",
+    "agent.missions.work_product.prepare": "explicit_contract_requirement_metadata",
     "agent.reliability.diagnosis.propose": "explicit_contract_requirement_metadata",
     "agent.runtime.connections.list": "explicit_contract_requirement_metadata",
     "agent.runtime.connections.preflight": "explicit_contract_requirement_metadata",
@@ -13811,8 +14522,61 @@
     "calendar.update": "reviewed_domain_contract",
     "cloud.targets.list": "reviewed_fixed_compatibility_contract",
     "cloud.video.target_status": "reviewed_fixed_compatibility_contract",
+    "commerce.accounts.close": "explicit_contract_requirement_metadata",
+    "commerce.accounts.create": "explicit_contract_requirement_metadata",
+    "commerce.accounts.get": "explicit_contract_requirement_metadata",
+    "commerce.accounts.list": "explicit_contract_requirement_metadata",
+    "commerce.accounts.update": "explicit_contract_requirement_metadata",
+    "commerce.audit.list": "explicit_contract_requirement_metadata",
+    "commerce.configuration.get": "explicit_contract_requirement_metadata",
+    "commerce.configuration.update": "explicit_contract_requirement_metadata",
+    "commerce.consent.get": "explicit_contract_requirement_metadata",
+    "commerce.consent.revoke": "explicit_contract_requirement_metadata",
+    "commerce.consent.set": "explicit_contract_requirement_metadata",
+    "commerce.entitlements.check": "explicit_contract_requirement_metadata",
+    "commerce.entitlements.grant": "explicit_contract_requirement_metadata",
+    "commerce.entitlements.list": "explicit_contract_requirement_metadata",
+    "commerce.entitlements.revoke": "explicit_contract_requirement_metadata",
+    "commerce.entries.create": "explicit_contract_requirement_metadata",
+    "commerce.entries.delete": "explicit_contract_requirement_metadata",
+    "commerce.entries.get": "explicit_contract_requirement_metadata",
+    "commerce.entries.list": "explicit_contract_requirement_metadata",
+    "commerce.entries.post": "explicit_contract_requirement_metadata",
+    "commerce.entries.reverse": "explicit_contract_requirement_metadata",
+    "commerce.entries.update": "explicit_contract_requirement_metadata",
+    "commerce.executions.get": "explicit_contract_requirement_metadata",
     "commerce.invoice_forward.receipt": "explicit_contract_requirement_metadata",
     "commerce.invoice_forward.request": "explicit_contract_requirement_metadata",
+    "commerce.invoices.create": "explicit_contract_requirement_metadata",
+    "commerce.invoices.forwarding_status.get": "explicit_contract_requirement_metadata",
+    "commerce.invoices.get": "explicit_contract_requirement_metadata",
+    "commerce.invoices.issue": "explicit_contract_requirement_metadata",
+    "commerce.invoices.list": "explicit_contract_requirement_metadata",
+    "commerce.invoices.reconcile_forwarding_status": "explicit_contract_requirement_metadata",
+    "commerce.invoices.update": "explicit_contract_requirement_metadata",
+    "commerce.invoices.void": "explicit_contract_requirement_metadata",
+    "commerce.plans.archive": "explicit_contract_requirement_metadata",
+    "commerce.plans.create": "explicit_contract_requirement_metadata",
+    "commerce.plans.get": "explicit_contract_requirement_metadata",
+    "commerce.plans.list": "explicit_contract_requirement_metadata",
+    "commerce.plans.update": "explicit_contract_requirement_metadata",
+    "commerce.prices.archive": "explicit_contract_requirement_metadata",
+    "commerce.prices.create": "explicit_contract_requirement_metadata",
+    "commerce.prices.get": "explicit_contract_requirement_metadata",
+    "commerce.prices.list": "explicit_contract_requirement_metadata",
+    "commerce.processor.capabilities": "explicit_contract_requirement_metadata",
+    "commerce.reconciliation.get": "explicit_contract_requirement_metadata",
+    "commerce.reconciliation.list": "explicit_contract_requirement_metadata",
+    "commerce.reconciliation.preview": "explicit_contract_requirement_metadata",
+    "commerce.reconciliation.review": "explicit_contract_requirement_metadata",
+    "commerce.reconciliation.run": "explicit_contract_requirement_metadata",
+    "commerce.reports.account_ledger": "explicit_contract_requirement_metadata",
+    "commerce.reports.income_expense": "explicit_contract_requirement_metadata",
+    "commerce.reports.trial_balance": "explicit_contract_requirement_metadata",
+    "commerce.statements.delete": "explicit_contract_requirement_metadata",
+    "commerce.statements.get": "explicit_contract_requirement_metadata",
+    "commerce.statements.import": "explicit_contract_requirement_metadata",
+    "commerce.statements.list": "explicit_contract_requirement_metadata",
     "composio.auth_configs.initialize": "explicit_contract_requirement_metadata",
     "composio.auth_configs.list": "explicit_contract_requirement_metadata",
     "composio.auth_configs.provision": "explicit_contract_requirement_metadata",
@@ -13920,6 +14684,7 @@
     "gcp.artifacts.repositories.attachments.delete": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.attachments.get": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.attachments.list": "explicit_contract_requirement_metadata",
+    "gcp.artifacts.repositories.check_prewarmed_artifact.bound": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.create": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.delete": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.docker_images.get": "explicit_contract_requirement_metadata",
@@ -13959,9 +14724,11 @@
     "gcp.artifacts.repositories.packages.versions.list": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.packages.versions.patch": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.patch": "explicit_contract_requirement_metadata",
+    "gcp.artifacts.repositories.prewarm_artifact.bound": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.prewarmed_artifacts.list": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.python_packages.get": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.python_packages.list": "explicit_contract_requirement_metadata",
+    "gcp.artifacts.repositories.remove_prewarmed_artifact.bound": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.rules.create": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.rules.delete": "explicit_contract_requirement_metadata",
     "gcp.artifacts.repositories.rules.get": "explicit_contract_requirement_metadata",
@@ -14018,10 +14785,14 @@
     "gcp.backups.backups.list": "explicit_contract_requirement_metadata",
     "gcp.backups.backups.patch": "explicit_contract_requirement_metadata",
     "gcp.backups.backups.restore": "explicit_contract_requirement_metadata",
+    "gcp.backups.data_sources.abandon_backup.bound": "explicit_contract_requirement_metadata",
+    "gcp.backups.data_sources.finalize_backup.bound": "explicit_contract_requirement_metadata",
     "gcp.backups.data_sources.get": "explicit_contract_requirement_metadata",
+    "gcp.backups.data_sources.initiate_backup.bound": "explicit_contract_requirement_metadata",
     "gcp.backups.data_sources.list": "explicit_contract_requirement_metadata",
     "gcp.backups.data_sources.patch": "explicit_contract_requirement_metadata",
     "gcp.backups.data_sources.remove": "explicit_contract_requirement_metadata",
+    "gcp.backups.data_sources.set_internal_status.bound": "explicit_contract_requirement_metadata",
     "gcp.backups.operations.cancel": "explicit_contract_requirement_metadata",
     "gcp.backups.operations.delete": "explicit_contract_requirement_metadata",
     "gcp.backups.operations.get": "explicit_contract_requirement_metadata",
@@ -14259,9 +15030,24 @@
     "gcp.external_vpn_gateways.iam_permissions.test": "explicit_contract_requirement_metadata",
     "gcp.external_vpn_gateways.list": "explicit_contract_requirement_metadata",
     "gcp.external_vpn_gateways.set_labels": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.add_association.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.add_rule.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.clone_rules.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.create.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.delete.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.get_association.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.get_rule.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.get.bound": "explicit_contract_requirement_metadata",
     "gcp.firewall_policies.iam_permissions.test": "explicit_contract_requirement_metadata",
     "gcp.firewall_policies.iam_policy.get": "explicit_contract_requirement_metadata",
     "gcp.firewall_policies.iam_policy.set": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.list_associations.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.list.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.move.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.patch_rule.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.patch.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.remove_association.bound": "explicit_contract_requirement_metadata",
+    "gcp.firewall_policies.remove_rule.bound": "explicit_contract_requirement_metadata",
     "gcp.firewalls.create": "explicit_contract_requirement_metadata",
     "gcp.firewalls.delete": "explicit_contract_requirement_metadata",
     "gcp.firewalls.get": "explicit_contract_requirement_metadata",
@@ -14514,6 +15300,7 @@
     "gcp.logging.sinks.get": "explicit_contract_requirement_metadata",
     "gcp.logging.sinks.list": "explicit_contract_requirement_metadata",
     "gcp.logging.sinks.patch": "explicit_contract_requirement_metadata",
+    "gcp.logging.sinks.update.bound": "explicit_contract_requirement_metadata",
     "gcp.logging.views.create": "explicit_contract_requirement_metadata",
     "gcp.logging.views.delete": "explicit_contract_requirement_metadata",
     "gcp.logging.views.get": "explicit_contract_requirement_metadata",
@@ -14680,6 +15467,7 @@
     "gcp.pubsub.snapshots.iam_permissions.test": "explicit_contract_requirement_metadata",
     "gcp.pubsub.snapshots.iam_policy.get": "explicit_contract_requirement_metadata",
     "gcp.pubsub.snapshots.iam_policy.set": "explicit_contract_requirement_metadata",
+    "gcp.pubsub.snapshots.list.bound": "explicit_contract_requirement_metadata",
     "gcp.pubsub.snapshots.patch": "explicit_contract_requirement_metadata",
     "gcp.pubsub.subscriptions.acknowledge": "explicit_contract_requirement_metadata",
     "gcp.pubsub.subscriptions.create": "explicit_contract_requirement_metadata",
@@ -15059,9 +15847,14 @@
     "gcp.storage.buckets.iam_policy.get": "explicit_contract_requirement_metadata",
     "gcp.storage.buckets.iam_policy.set": "explicit_contract_requirement_metadata",
     "gcp.storage.buckets.list": "explicit_contract_requirement_metadata",
+    "gcp.storage.buckets.lock_retention_policy.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.buckets.patch": "explicit_contract_requirement_metadata",
+    "gcp.storage.buckets.relocate.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.buckets.restore.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.buckets.update.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.folders.create": "explicit_contract_requirement_metadata",
     "gcp.storage.folders.delete": "explicit_contract_requirement_metadata",
+    "gcp.storage.folders.delete_recursive.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.folders.get": "explicit_contract_requirement_metadata",
     "gcp.storage.folders.list": "explicit_contract_requirement_metadata",
     "gcp.storage.folders.rename": "explicit_contract_requirement_metadata",
@@ -15072,16 +15865,27 @@
     "gcp.storage.managed_folders.iam_policy.get": "explicit_contract_requirement_metadata",
     "gcp.storage.managed_folders.iam_policy.set": "explicit_contract_requirement_metadata",
     "gcp.storage.managed_folders.list": "explicit_contract_requirement_metadata",
+    "gcp.storage.managed_folders.update.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.notifications.create": "explicit_contract_requirement_metadata",
     "gcp.storage.notifications.delete": "explicit_contract_requirement_metadata",
     "gcp.storage.notifications.get": "explicit_contract_requirement_metadata",
     "gcp.storage.notifications.list": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.bulk_restore.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.compose.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.copy.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.objects.delete": "explicit_contract_requirement_metadata",
     "gcp.storage.objects.get": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.iam_permissions.test.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.iam_policy.get.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.iam_policy.set.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.objects.list": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.move.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.objects.patch": "explicit_contract_requirement_metadata",
     "gcp.storage.objects.restore": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.rewrite.bound": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.update.bound": "explicit_contract_requirement_metadata",
     "gcp.storage.objects.upload.media": "explicit_contract_requirement_metadata",
+    "gcp.storage.objects.view_full_context.bound": "explicit_contract_requirement_metadata",
     "gcp.target_grpc_proxies.create": "explicit_contract_requirement_metadata",
     "gcp.target_grpc_proxies.delete": "explicit_contract_requirement_metadata",
     "gcp.target_grpc_proxies.get": "explicit_contract_requirement_metadata",
@@ -15784,6 +16588,7 @@
     "product.configuration.snapshots.get": "explicit_contract_requirement_metadata",
     "product.configuration.snapshots.list": "explicit_contract_requirement_metadata",
     "product.executions.get": "explicit_contract_requirement_metadata",
+    "provider.artifacts.read_private": "reviewed_six_class_private_delivery_not_live_provider_verification",
     "social.people.create": "explicit_contract_requirement_metadata",
     "social.people.list": "explicit_contract_requirement_metadata",
     "social.people.update": "explicit_contract_requirement_metadata",
@@ -15805,6 +16610,14 @@
     "supabase.backups.schedule.get": "explicit_contract_requirement_metadata",
     "supabase.backups.schedule.set": "explicit_contract_requirement_metadata",
     "supabase.branches.create": "explicit_contract_requirement_metadata",
+    "supabase.branches.delete.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.diff.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.get_config.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.merge.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.push.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.reset.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.restore.bound": "explicit_contract_requirement_metadata",
+    "supabase.branches.update_config.bound": "explicit_contract_requirement_metadata",
     "supabase.compliance.audit": "explicit_contract_requirement_metadata",
     "supabase.compliance.hold.create": "explicit_contract_requirement_metadata",
     "supabase.compliance.retention.extend": "explicit_contract_requirement_metadata",
@@ -15977,6 +16790,11 @@
     "supabase.tenant.exports.download": "explicit_contract_requirement_metadata",
     "supabase.tenant.exports.get": "explicit_contract_requirement_metadata",
     "supabase.tenant.exports.purge": "explicit_contract_requirement_metadata",
+    "supabase.tenant.financial.export": "explicit_contract_requirement_metadata",
+    "supabase.tenant.financial.exports.available": "explicit_contract_requirement_metadata",
+    "supabase.tenant.financial.exports.download": "explicit_contract_requirement_metadata",
+    "supabase.tenant.financial.exports.get": "explicit_contract_requirement_metadata",
+    "supabase.tenant.financial.exports.purge": "explicit_contract_requirement_metadata",
     "supabase.tenant.manifests.erase": "explicit_contract_requirement_metadata",
     "supabase.tenant.manifests.export": "explicit_contract_requirement_metadata",
     "supabase.tenant.manifests.exports.get": "explicit_contract_requirement_metadata",
@@ -15984,6 +16802,11 @@
     "supabase.tenant.manifests.restore": "explicit_contract_requirement_metadata",
     "supabase.tenant.protected_resources.inventory": "explicit_contract_requirement_metadata",
     "supabase.tenant.restore": "explicit_contract_requirement_metadata",
+    "supabase.tenant.support.erase": "explicit_contract_requirement_metadata",
+    "supabase.tenant.support.restore": "explicit_contract_requirement_metadata",
+    "supabase.tenant.support.snapshot": "explicit_contract_requirement_metadata",
+    "supabase.tenant.support.snapshots.get": "explicit_contract_requirement_metadata",
+    "supabase.tenant.support.snapshots.purge": "explicit_contract_requirement_metadata",
     "supabase.v1_bulk_update_functions": "explicit_contract_requirement_metadata",
     "supabase.v1_cancel_a_project_restoration": "explicit_contract_requirement_metadata",
     "supabase.v1_create_a_function": "explicit_contract_requirement_metadata",
@@ -16032,6 +16855,10 @@
     "system.audit.checkpoint": "reviewed_policy_contract",
     "system.audit.list": "reviewed_policy_contract",
     "system.audit.verify": "reviewed_policy_contract",
+    "system.capabilities": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
+    "system.catalog": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
+    "system.connections": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
+    "system.coverage": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
     "system.credentials.issue": "reviewed_policy_contract",
     "system.credentials.provider.activate": "explicit_contract_requirement_metadata",
     "system.credentials.provider.adopt": "explicit_contract_requirement_metadata",
@@ -16045,6 +16872,9 @@
     "system.lifecycle.get": "reviewed_provider_lifecycle_contract",
     "system.lifecycle.poll": "reviewed_provider_lifecycle_contract",
     "system.lifecycle.verify": "reviewed_provider_lifecycle_contract",
+    "system.operation_catalog": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
+    "system.operation_status": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
+    "system.runtime": "reviewed_recorded_controller_metadata_not_core_or_provider_verification",
     "task_files.confirm": "explicit_contract_requirement_metadata",
     "task_files.counts": "explicit_contract_requirement_metadata",
     "task_files.delete": "explicit_contract_requirement_metadata",
@@ -16106,5 +16936,5 @@
     "workspace.topics.thread": "explicit_contract_requirement_metadata"
   },
   "requirements_with_typed_source_or_deployed_gateway_contracts": 161,
-  "pinned_source_commit": "78293d1954958fd64dc57c51215ecf8f0c450703"
+  "pinned_source_commit": "e2d49fdfab6147783e4bbfde373d6550db906763"
 }
