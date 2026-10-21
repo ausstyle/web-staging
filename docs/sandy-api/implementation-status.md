@@ -12,57 +12,74 @@ API/MCP tests remain deferred.
 [Release validation](release-validation-20261021.json) records the confirmed
 commits, runtime source readbacks, regression results and registry evidence.
 [Session evidence](session-release-evidence.json) retains the live snapshot and
-all 1,104 source-attested deployed gateway IDs.
+all 2,247 source-attested deployed gateway IDs.
 
-The release and its validated follow-ups are committed and published on
-`engineering/sandy-api-project-reads-20261020` through
-`feada3e22c8439f3b1289ad0d483750a53a5b837`. Commits after `530007a` are:
+All changes below are committed locally. GitHub publication is confirmed through
+`3b3491ba3547394609e4766a891576d5db39b576` on
+`engineering/sandy-api-project-reads-20261020`. Subsequent pushes were rejected by
+the existing GitHub credential; a standard credential-helper retry also failed.
+Read-only remote inspection at 03:40 UTC still confirmed branch `3b3491b` and main
+`350ede13e373fb2108d57748b20e44d57302135d`. **No new merge is established.**
+Supabase deployments remain available independently of Git publishing.
+
+Committed changes after `530007a`, through this report's source snapshot:
 
 | Commit | Change |
 | --- | --- |
-| `b3e1a42` | Durable orchestration, scoped lease dispatch and protocol/component tests |
-| `a948905` | 595 scoped provider handlers and guarded credential custody |
-| `f7eb112` | Tenant API handlers, scoped credentials and atomic customer mutations |
-| `e310a44` | Compact provider catalogue upload |
-| `043e7b4` | Shared agent, database, guest and guarded lifecycle services |
-| `d86df5d` | Governed 1,020-operation gateway and API-only MCP adapters |
-| `02279e4` | Verified gzip catalogue packaging |
-| `da5d587` | Managed credential consumers and exact private resolver cutover |
-| `b139a75` | Unified job REST routing and guarded database maintenance |
-| `6063a41` | Production rollout and verification evidence |
-| `7ce33be` | Explicit customer-key principal and consumed provider-read/guest credential proofs |
-| `1b25fc7` | Managed Supabase services and scoped provider-gap handlers |
-| `6e0354f` | Shared governed fallback runtime actions |
-| `a1dd1d4` | 1,143 additional provider constituent handlers and bounded lazy catalogues |
-| `270fcf5` | New service and gap contract evidence export |
-| `65f331b` | Task-bound fallback conversation inference and durable round receipts |
-| `f38fb44` | Immutable approval proof for sensitive Supabase services |
-| `feada3e` | 1,104-operation gateway with bounded schema validation |
+| `b3e1a42` | Implement durable Sandy API orchestration with scoped lease dispatch |
+| `a948905` | Add 595 scoped provider handlers and guarded credential custody |
+| `f7eb112` | Add tenant API handlers, scoped credentials and atomic customer mutations |
+| `e310a44` | Reduce generated provider catalogue upload size without changing contracts |
+| `043e7b4` | Implement shared agent, database, guest and guarded lifecycle services |
+| `d86df5d` | Route all Sandy MCP tools through the governed 1020-operation API |
+| `02279e4` | Package provider contracts with verified gzip catalogue loader |
+| `da5d587` | Connect provider credential consumers to verified managed custody |
+| `b139a75` | Resolve scoped job routes and implement guarded native database maintenance |
+| `6063a41` | Record production API v9 rollout and actual operation verification evidence |
+| `7ce33be` | Add explicit tenant key principals and consumed provider credential proofs |
+| `1b25fc7` | Implement managed Supabase services and scoped provider gap handlers |
+| `6e0354f` | Consolidate fallback runtime actions through the shared governed agent service |
+| `a1dd1d4` | Implement 1143 additional scoped provider constituent handlers with bounded lazy catalogues |
+| `270fcf5` | Reconcile Supabase service consent and provider gap contract evidence |
+| `65f331b` | Centralize task-bound fallback conversation inference with durable per-round receipts |
+| `f38fb44` | Require immutable scoped approvals for sensitive Supabase services |
+| `feada3e` | Route managed Supabase and provider gap operations through the bounded API gateway |
+| `d020ab1` | Route active runtime conversation through the shared task-bound inference service |
+| `121342a` | Record API v12 deployment registry evidence and remaining 161-scope acceptance gates |
+| `1cbba6f` | Enforce source-required approval flags in the managed Supabase runtime |
+| `3b3491b` | Implement consent-bound tenant export erasure and restore with encrypted snapshots |
+| `d4f24a8` | Implement tenant-scoped protected resource metadata without exporting credentials |
+| `1ae4dd7` | Implement tenant product services with scoped provider receipts and reviewed sends |
+| `4e669f1` | Route all reviewed provider constituent handlers through Sandy API |
+| `c90471a` | Centralize trusted runtime record actions with immutable audit claims |
+| `6fe7147` | Include product and internal runtime contracts in scope evidence exports |
+| `71749f6` | Forward scoped approval and request identifiers through every MCP adapter |
+| `ea44e2c` | Centralize principal-bound runtime operational snapshots and inspection |
 
-Main remains `350ede13e373fb2108d57748b20e44d57302135d`; **no new merge is
-established**. The latest live metadata snapshot was captured at 03:13 UTC
-(05:13 CEST). Initial and follow-up validation boundaries remain separate.
+The live production snapshot was captured at **03:40 UTC on 21 October 2026**.
+Function versions are platform deployment numbers, distinct from candidate labels.
 
 | Production function | Confirmed version | Result |
 | --- | --- | --- |
-| `sandy-operation-api` | **12** | ACTIVE; 1,104 mappings and unified durable/legacy job REST routes |
-| `sandy-api-mcp` | **5** | ACTIVE; canonical API-only MCP adapter |
-| `sandy-operations-mcp` | **72** | ACTIVE; replaces legacy direct execution with API routing |
-| `sandy-orchestration-api` | **3** | ACTIVE; durable dispatch and reviewed provider-read DAG support |
-| `sandy-provider-operation-api` | **4** | ACTIVE; 595 original and 1,143 additional provider handlers; additions closed |
-| `sandy-guest-operation-api` | **3** | ACTIVE; signer configured; approved agent enrollment and installation still required |
-| `sandy-agent-operation-api` | **2** | ACTIVE; shared customer/runtime services |
-| `sandy-database-operation-api` | **3** | ACTIVE; 79 database contracts including guarded maintenance |
-| `sandy-credential-lifecycle-api` | **3** | ACTIVE; custody v1 release plus consumer follow-up |
-| `sandy-credential-probe-api` | **2** | ACTIVE; guarded test-probe implementation |
-| `sandy-controller-api` | **36** | ACTIVE; fixes the missing UUID helper against the exact v34 source |
-| `sandy-agent-runtime-v4` | **13** | ACTIVE; shared eight-operation execution service |
-| `sandy-agent-runtime` | **56** | Existing release router unchanged |
-| `sandy-provider-read-api` | **6** | ACTIVE; consumed, argument-bound admission required |
-| `sandy-supabase-service-api` | **1** | ACTIVE; 46 managed Auth/Storage/Realtime/Vault/compliance operations, closed |
+| `sandy-operation-api` | **13** | ACTIVE; 2,247 installed mappings; all reviewed provider constituents routed |
+| `sandy-api-mcp` | **6** | ACTIVE; Canonical API-only MCP; scoped approval/request headers forwarded |
+| `sandy-operations-mcp` | **73** | ACTIVE; Legacy aliases route to API; scoped approval/request headers forwarded |
+| `sandy-provider-operation-api` | **4** | ACTIVE; 1,738 provider contracts; additions closed and unverified |
+| `sandy-supabase-service-api` | **2** | ACTIVE; 46 managed Supabase services; immutable approval guards |
 | `sandy-provider-gap-api` | **1** | ACTIVE; 35 fixed project/repository gap adapters |
-| `sandy-agent-runtime-v2` | **16** | ACTIVE; shared actions and private task-bound conversation inference |
-| `sandy-agent-runtime-v1-backup-r50` | **6** | ACTIVE; shared actions and private task-bound conversation inference |
+| `sandy-product-service-api` | **1** | ACTIVE; 98 product handlers; gateway integration pending |
+| `sandy-provider-read-api` | **6** | ACTIVE; Consumed, argument-bound admission required |
+| `sandy-orchestration-api` | **3** | ACTIVE; Durable dispatch and provider-read DAG support |
+| `sandy-guest-operation-api` | **3** | ACTIVE; Signer configured; approved enrollment/install still needed |
+| `sandy-agent-operation-api` | **2** | ACTIVE; Public eight-operation shared service |
+| `sandy-database-operation-api` | **3** | ACTIVE; 79 database contracts including guarded maintenance |
+| `sandy-credential-lifecycle-api` | **3** | ACTIVE; Credential custody and managed consumers |
+| `sandy-credential-probe-api` | **2** | ACTIVE; Guarded test-probe boundary |
+| `sandy-controller-api` | **36** | ACTIVE; Exact-source UUID-helper fix; legacy auth preserved |
+| `sandy-agent-runtime-v4` | **15** | ACTIVE; Shared actions, conversation and nine private record operations |
+| `sandy-agent-runtime-v2` | **17** | ACTIVE; Shared actions, conversation and nine private record operations |
+| `sandy-agent-runtime-v1-backup-r50` | **7** | ACTIVE; Shared actions, conversation and nine private record operations |
+| `sandy-agent-runtime` | **56** | ACTIVE; Release router source unchanged |
 
 Existing JWT verification settings were preserved, including the independent
 legacy authentication of the Controller/runtime functions. Downloaded runtime
@@ -123,33 +140,60 @@ was made by validation. The conversation operation remains internal and closed.
 Migration `07010` separately hardens immutable owner-approval proofs, with six
 real PostgreSQL rollback checks and exact applied-source readback.
 
+The latest gateway is **v13**, from `4e669f1`, with **2,247 mappings**. All mapped
+contracts matched the live registry, with zero mismatches. The 1,143 added provider
+operations are now gateway-mapped and remain closed/unverified. Evidence write and
+readback returned HTTP 201 for all 2,247 operations. The closed candidate passed
+127 composed regressions and all 4,494 schema checks. Current exposed catalogue
+discovery passed at 129.3 MiB local peak RSS. A forced streamed full-catalogue sweep
+needed 128 MiB old-space and peaked at 244.8 MiB RSS; whole-resident and 96 MiB
+runs failed. Future broad activation/concurrent load remains unverified.
+
+MCP **v6/v73**, from `71749f6`, forwards validated approval/request UUIDs while
+retaining the original caller identity. All runtime source files match. Thirty-eight
+Edge regressions passed again from the exact pinned commit; 16 Node tests passed.
+The Node Cloud Run image remains undeployed. The newest deployed probe was blocked
+by proxy before Auth, so no real-session success is inferred.
+
+The active runtime **v4 v15**, fallback **v2 v17** and **backup v7**, from `c90471a`,
+also share nine internal record operations. Sixty-four regressions and 16 real
+PostgreSQL rollback checks passed; all three bundles were source-attested. New
+private operations are not public API readiness. Supabase service **v2** carries
+the source-required approval guard. Product service **v1** has 98 handlers and
+41 local/90 real PostgreSQL rollback checks; its gateway integration is pending.
+
+The tenant lifecycle foundation `3b3491b` and protected metadata `d4f24a8` are
+committed. Their migrations and gateway integration are being validated together
+because consent schema/hash must change coherently. The six private operational
+inspection contracts in `ea44e2c` are committed and awaiting the combined runtime
+snapshot rollout. Full tenant erasure/restore and other constituent gaps remain
+implementation work, separately from unavailable credentials or entitlements.
+
 ## Requirements and operation status
 
 [The committed original PDF](Sandy_Autonomous_Control_API_Specification.pdf) and
 [161-item scope](api-scope-161.md) remain the acceptance sources.
 [scope-reconciliation.json](scope-reconciliation.json) retains every requirement.
 
-- The deployed v12 gateway has **1,104 installed IDs**, including closed mutations,
-  prerequisite-blocked handlers and explicitly unsupported transport contracts.
-  An installed mapping is not proof of successful execution.
-- **1,039 distinct typed records** support the newer installed mappings, beyond
-  the earlier 64 mappings and the SQL-defined `deployment.jobs.request` mapping.
-  A further **1,143 typed provider contracts** have deployed backend handlers and
-  pending gateway registration: **2,182** typed source records in this snapshot.
-  The internal conversation operation is tracked separately.
-- Typed source records touch **154 of 161 requirements**; including prior gateway
-  contracts, **155 of 161** have some mapped source. All remain partial under the
-  original acceptance gates. **Certified complete: 0/161.**
-- The live registry has **2,269 rows**, with 437 API and 422 AI exposure flags.
-  These flags do not establish executability or override authorization,
-  verification or provider prerequisites.
-- Current v12 evidence covers **1,104 gateway operations**. Separate backend
-  evidence covers the 1,143 pending provider additions. Deployment, component and
-  local-provider evidence are labelled independently.
-- Exactly **three historical `verified=true` flags** remain: `video.status`,
-  `video.install.preflight`, `video.execution.preflight`. No new operation has a
-  successful deployed authenticated-session test. Historical flags are not a
-  fresh end-to-end attestation.
+- Production API v13 has **2,247 installed IDs**: 2,182 newer typed records,
+  64 earlier mappings and the SQL-defined job-request mapping. Closed mutations,
+  dependency-blocked and unsupported transport contracts are included.
+- The pinned `6fe7147` source export contains **2,290 typed records**: 2,182 mapped
+  records, 98 product-backend contracts awaiting gateway integration, and ten
+  private runtime contracts. Later pending work is excluded from this count.
+- Typed records touch **160 requirements**. Including the prior gateway handlers,
+  **all 161 have some source-mapped coverage**. Every broad requirement still has
+  an unmet acceptance gate or constituent: **certified complete: 0/161**.
+- The live registry contains **2,376 rows** and **2,357 evidence-bearing rows**.
+  Its 437 API and 422 AI exposure flags do not prove executable/verified behavior.
+- Current gateway evidence covers **2,247 operations**; separate product-backend,
+  internal runtime, provider and MCP transport evidence states its actual boundary.
+  Test suites overlap and are not added together into a unique test total.
+- Exactly **three historical verification flags** remain: `video.status`,
+  `video.install.preflight`, `video.execution.preflight`. **New fully verified
+  deployed authenticated operations: 0.** Source-complete bounded handlers with
+  pending integration tests are distinguished from genuinely missing/partial
+  protocols in the constituent inventories.
 
 The official-schema inventory still contains 3,793 review candidates separately
 from callable contracts. Cloud Quotas has six deployed typed handler contracts
@@ -158,17 +202,18 @@ checks remain distinct dependencies.
 
 ## Routing and authorization
 
-The production Edge MCP servers v5/v72 use Sandy API for discovery, schemas and
-execution. The v72 adapter preserves its 16 legacy aliases and sends canonical
+The production Edge MCP servers v6/v73 use Sandy API for discovery, schemas and
+execution. The legacy adapter preserves its 16 legacy aliases and sends canonical
 execution with `channel:"mcp"`; it has no direct provider fallback. The Node
-Engineering MCP source preserves its five aliases and passes 13 tests, but its
+Engineering MCP source preserves its five aliases and passes 16 tests, but its
 Cloud Run deployment has not been attested. Thus **universal Sandy MCP → Sandy
 API routing is not yet operational across every production transport**.
 
 The shared active v4 runtime and the public agent API now call the same extracted
 application service for the eight reviewed actions. The exact release router,
-feature flags and existing worker/QA authentication are preserved. The fallback conversation paths are also shared. The active v4 conversation
-path, other runtime branches, UI clients and additional workers still need migration. The [routing audit](universal-routing-source-audit.md)
+feature flags and existing worker/QA authentication are preserved. The fallback conversation paths are also shared. All three runtime conversation paths and nine record operations now share
+central services. Other runtime branches, UI clients and additional workers
+still need migration. The [routing audit](universal-routing-source-audit.md)
 records those source-based gaps.
 
 Normal user sessions, scoped API keys, portal grants, Agenda grants, Controller
@@ -243,7 +288,11 @@ observed provider reads; its full authenticated end-to-end verification is parti
    remain prerequisites. No VM enrollment, installation or operation was enabled.
    SSH and WinRM transports remain unsupported. VM-reported completion is
    distinct from independent provider readback.
-5. **Specific provider scopes and fixtures:** verified organization/folder/billing
+5. **Git publishing:** writes reject the current GitHub credential. The last
+   confirmed pushed commit is `3b3491b`; later commits remain local. Read-only
+   remote inspection still works. Refreshing this credential is needed only for
+   publishing, not source engineering, Supabase deployment or database tests.
+6. **Specific provider scopes and fixtures:** verified organization/folder/billing
    bindings, exact mutation approvals, disposable targets and credential rotation
    fixtures remain operation-specific prerequisites. Unassessed IAM is not
    described as unavailable permission. Names-only Management readback confirmed
@@ -257,7 +306,7 @@ provider constituents and broader shared-service adoption.
 Those changes are reported separately until committed release validation,
 guarded deployment, source readback and registry evidence are complete. Broad
 wildcard completion, all application routing, full pagination and verified
-compensation are not inferred from the 1,104 mappings.
+compensation are not inferred from the 2,247 mappings.
 
 ## Reproduction
 

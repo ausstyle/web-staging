@@ -1,5 +1,5 @@
 {
-  "recorded_at_utc": "2026-10-21T03:17:13.509712+00:00",
+  "recorded_at_utc": "2026-10-21T03:42:52.731021+00:00",
   "release_commit": "02279e4c97b24c4add1b96adbe0b834e917f01ed",
   "release_published": true,
   "published_branch": "b139a759489d87a1479f19776579b86d81160f5b",
@@ -68,7 +68,7 @@
   },
   "deployed_authentication": {
     "project": "zmqlyygzqoidkcwdysok",
-    "tested_at": "2026-10-21T02:03:14.542702+00:00",
+    "tested_at": "2026-10-21T03:38:18.285208+00:00",
     "tests": [
       {
         "test": "project_endpoint_reachable_and_requires_authentication",
@@ -218,10 +218,11 @@
   "completion": {
     "original_scope": 161,
     "certified_complete": 0,
-    "typed_source_requirements_partial": 154,
-    "typed_source_or_prior_gateway_requirements_partial": 155,
-    "typed_source_records": 2182,
-    "installed_gateway_ids": 1104,
+    "typed_source_requirements_partial": 160,
+    "typed_source_or_prior_gateway_requirements_partial": 161,
+    "typed_source_records": 2290,
+    "pinned_source_export_commit": "6fe7147",
+    "installed_gateway_ids": 2247,
     "historical_registry_verified_count": 3,
     "fresh_authenticated_end_to_end_verified_count": 0
   },
@@ -286,7 +287,7 @@
     },
     "actual_provider_rotation_or_auth_attested": false
   },
-  "current_deployed_release_commit": "7ce33be6aeb16a7b415da3ef822545d6c062a908",
+  "current_deployed_release_commit": "4e669f1cc73ff750d3466623656c3736579366b5",
   "release_commit_semantics": "release_commit pins initial full regression; current_deployed_release_commit includes separately validated follow-ups",
   "latest_functions": [
     {
@@ -303,37 +304,37 @@
     },
     {
       "slug": "sandy-agent-runtime-v2",
-      "version": 16,
+      "version": 17,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     {
       "slug": "sandy-agent-runtime-v1-backup-r50",
-      "version": 6,
+      "version": 7,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     {
       "slug": "sandy-agent-runtime-v4",
-      "version": 13,
+      "version": 15,
       "status": "ACTIVE",
       "verify_jwt": false
     },
     {
       "slug": "sandy-operations-mcp",
-      "version": 72,
+      "version": 73,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-operation-api",
-      "version": 12,
+      "version": 13,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-api-mcp",
-      "version": 5,
+      "version": 6,
       "status": "ACTIVE",
       "verify_jwt": true
     },
@@ -387,12 +388,18 @@
     },
     {
       "slug": "sandy-supabase-service-api",
-      "version": 1,
+      "version": 2,
       "status": "ACTIVE",
       "verify_jwt": true
     },
     {
       "slug": "sandy-provider-gap-api",
+      "version": 1,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-product-service-api",
       "version": 1,
       "status": "ACTIVE",
       "verify_jwt": true
@@ -403,37 +410,116 @@
     "readback_http": 201,
     "readback": [
       {
-        "registry_rows": 2269,
-        "evidence_rows": 1104,
+        "registry_rows": 2367,
+        "gateway_evidence_rows": 2247,
+        "product_backend_evidence_rows": 98,
         "verified_rows": 3
       }
     ],
     "exposure_and_verification_fields_preserved": true,
-    "new_gateway_operations": 83,
-    "gateway_version": 12,
-    "evidence": {
-      "recorded_at_utc": "2026-10-21T03:14:18.762494+00:00",
-      "gateway_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
-      "gateway_version": 12,
+    "gateway_evidence": {
+      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
+      "gateway_source_commit": "4e669f1",
+      "gateway_version": 13,
       "gateway_mapped": true,
-      "installed_operation_count": 1104,
-      "new_operation_count": 83,
-      "backend_versions": {
-        "sandy-supabase-service-api": 1,
-        "sandy-provider-gap-api": 1,
-        "sandy-provider-operation-api": 4
-      },
-      "gateway_source_readback_sha256": "20029c163a05184cc3bb5ce8d62a08afd256f5cbdf5593276ed5b93bf4457a73",
-      "all_1104_live_registry_contracts_match": true,
-      "live_metadata_audit_sha256": "f5f802482ce9ea78180a2ae9196ac385a0c1f2df701f0485916bb704a90699ee",
+      "installed_operation_count": 2247,
+      "new_operation_count": 1143,
+      "provider_backend_version": 4,
+      "gateway_source_readback_sha256": "1155deaed48f5f812a27d3a27f000d8a218351461d2cd3de59ea26ac4dfb5103",
+      "all_2247_live_registry_contracts_match": true,
+      "live_metadata_audit_sha256": "d8cb36e6f3c8d74a388bd42cc2d8bd1b15dd92d422b0d6f2434791ee1d70ad6f",
       "regression": {
-        "composed_passed": 155,
+        "composed_deno_passed": 127,
+        "gateway_deno_passed": 75,
         "typecheck": true,
-        "source_only": true,
-        "overlapping_suites_not_summed": true
+        "format": true,
+        "diff": true,
+        "backend_synthetic_compositions": 4,
+        "real_provider_called": false,
+        "actual_auth_session_tested": false
       },
-      "local_memory": {
-        "actual_catalogue": {
+      "memory": {
+        "whole_resident_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 228112,
+          "log": "expanded-gateway-live-catalogue-memory-96.txt",
+          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 109.6,
+          "gc_observed_peak_heap_total_mib": 148.9
+        },
+        "whole_resident_128": {
+          "old_space_limit_mib": 128,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 258592,
+          "log": "expanded-gateway-live-catalogue-memory-128.txt",
+          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 127.7,
+          "gc_observed_peak_heap_total_mib": 177.5
+        },
+        "streamed_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 214368,
+          "log": "expanded-gateway-streamed-catalogue-memory-96.txt",
+          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 107.2,
+          "gc_observed_peak_heap_total_mib": 148.3
+        },
+        "streamed_128": {
+          "old_space_limit_mib": 128,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 250700,
+          "log": "expanded-gateway-streamed-catalogue-memory-128.txt",
+          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 133.4,
+          "gc_observed_peak_heap_total_mib": 176.3,
+          "gateway_measurements": {
+            "installed_operations": 2247,
+            "catalogue_operations": 2247,
+            "schemas_validated": 4494,
+            "input_refusals": 4063,
+            "forced_output_schema_refusals": 431,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 113610752,
+              "heapTotal": 59904000,
+              "heapUsed": 38369744,
+              "external": 1521871
+            },
+            "final": {
+              "rss": 192249856,
+              "heapTotal": 118542336,
+              "heapUsed": 105866184,
+              "external": 1565427
+            },
+            "sampled_peak_heap_bytes": 138682384,
+            "sampled_peak_rss_bytes": 251117568
+          },
+          "conservative_peak_rss_bytes": 256716800
+        },
+        "current_exposed_discovery_96": {
           "old_space_limit_mib": 96,
           "optimize": "default",
           "inlineRefs": false,
@@ -441,124 +527,288 @@
           "cache_max_schema_bytes": 262144,
           "key_and_snapshot_charge_multiplier": 4,
           "exit_code": 0,
-          "peak_rss_kib": 200636,
-          "log": "gateway-bounded-live-catalogue-memory-96.txt",
-          "benchmark": "gateway-live-catalogue-memory-benchmark.ts",
-          "gc_observed_peak_heap_used_mib": 95.8,
-          "gc_observed_peak_heap_total_mib": 133.6,
+          "peak_rss_kib": 132356,
+          "log": "expanded-gateway-discovery-memory-96.txt",
+          "benchmark": "expanded-gateway-discovery-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 41.4,
+          "gc_observed_peak_heap_total_mib": 67.1,
           "gateway_measurements": {
-            "installed_operations": 1104,
-            "catalogue_operations": 1104,
-            "schemas_validated": 2208,
-            "input_refusals": 1922,
-            "forced_output_schema_refusals": 286,
+            "installed_operations": 2247,
+            "exposed_registry_rows": 424,
+            "owner_visible_operations": 359,
+            "discovery_calls": 10,
+            "catalogue_rpc_calls": 10,
+            "response_bytes": 750018,
             "provider_calls": 0,
-            "rpc_calls": 0,
             "initial": {
-              "rss": 116289536,
-              "heapTotal": 64503808,
-              "heapUsed": 30371048,
-              "external": 1519097
+              "rss": 116633600,
+              "heapTotal": 62107648,
+              "heapUsed": 25797584,
+              "external": 1480670
             },
             "final": {
-              "rss": 203534336,
-              "heapTotal": 137580544,
-              "heapUsed": 63790760,
-              "external": 1424689
+              "rss": 135348224,
+              "heapTotal": 59609088,
+              "heapUsed": 23181928,
+              "external": 1631815
             },
-            "sampled_peak_heap_bytes": 99899688,
-            "sampled_peak_rss_bytes": 205987840
+            "sampled_peak_heap_bytes": 43366896,
+            "sampled_peak_rss_bytes": 135499776
           },
-          "conservative_peak_rss_bytes": 205987840
+          "conservative_peak_rss_bytes": 135532544
         },
-        "actual_catalogue_schema_validity": {
-          "schemas_checked": 2208,
-          "unavailable_schemas": [],
-          "cache_stats": {
-            "entries": 12,
-            "schema_bytes": 12588,
-            "max_entries": 12,
-            "max_schema_bytes": 262144
-          }
-        },
-        "actual_catalogue_read_only_fetch": {
-          "http_status": 201,
-          "registry_rows": 1104,
-          "source_installed_ids": 1104,
-          "read_only": true
-        },
-        "actual_catalogue_sha256": "49dfd4f1e7e0cfbf74dc1f225c119ffe3a84d765ab06a857448f505c99753381",
-        "installed_ids_sha256": "73259a0722cc1a953780ba36c132c0cb0c7ca8f66ece0802ee0e5f128b7998c7",
-        "benchmark_sha256": "5e0288d6f503c48b69f32f8861d573c1823ed083955f871d9e325c8bde39c0a3",
-        "synthetic_unique_schema_stress_attempts": [
-          {
-            "old_space_limit_mib": 128,
-            "optimize": false,
-            "inlineRefs": false,
-            "cache_max_entries": 12,
-            "cache_max_schema_bytes": 262144,
-            "exit_code": -5,
-            "peak_rss_kib": 246048,
-            "log": "gateway-bounded-noopt-source-memory-128.txt",
-            "fixture": "source-only actual gateway,2056 unique51-field schemas,zero provider/RPC calls"
-          },
-          {
-            "old_space_limit_mib": 128,
-            "optimize": "default",
-            "inlineRefs": false,
-            "cache_max_entries": 12,
-            "cache_max_schema_bytes": 262144,
-            "key_and_snapshot_charge_multiplier": 4,
-            "exit_code": -5,
-            "peak_rss_kib": 247824,
-            "log": "gateway-bounded-default-source-memory-128.txt",
-            "fixture": "source-only actual gateway,2056 unique51-field schemas,zero provider/RPC calls"
-          }
-        ],
-        "synthetic_full_fixture_256_result": {
-          "passed": true,
-          "changing_revisions": 2048,
-          "retained_after_gc_bytes": 156598232,
-          "retained_limit_bytes": 209715200,
-          "provider_calls": 0,
-          "rpc_calls": 0,
-          "log": "gateway-bounded-validator-256.txt"
-        },
-        "conclusion": "Actual1104-operation/2208-schema catalogue passes96MiB old-space with196.4MiB conservative peakRSS and allschemas available. Artificial2056 unique51-field schemas fail128MiB for default and disabled optimization. This is a local source-only validation boundary, not an Edge production concurrency or full provider-load guarantee."
-      },
-      "owner_service_postgres_rollback_checks": 24,
-      "provider_gap_postgres_rollback_checks": 17,
-      "approval_hardening_postgres_rollback_checks": 6,
-      "deployed_authentication": {
-        "project": "zmqlyygzqoidkcwdysok",
-        "tested_at": "2026-10-21T03:13:17.839346+00:00",
-        "tests": [
-          {
-            "test": "project_endpoint_reachable_and_requires_authentication",
-            "outcome": "blocked",
-            "http_status": null,
-            "layer": "edge_authentication",
-            "blocker": "network_proxy_denied"
-          }
-        ],
-        "complete": false,
-        "deferred": [
-          "internal_handler_checks",
-          "authenticated_api_mcp_checks"
-        ]
+        "qualification": "All4494 schema streaming succeeds128MiB with244.8MiB peakRSS and narrow margin. Resident catalogue96/128 and streamed96 fail. Current exposed424-row/359-owner-operation discovery fits96MiB with129.3MiB RSS. New1143 remainclosed/unverified, blocked before validation in production. Eventual all-operations-exposed/concurrent provider-load acceptance is NOT claimed."
       },
       "normal_controller_session_available": false,
+      "deployed_authenticated_provider_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_operations_remain_closed_unverified": true,
       "new_verification_asserted": false,
       "universal_routing_operational": false,
       "certified_requirements_complete": 0
+    },
+    "product_backend_evidence": {
+      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
+      "source_commit": "1ae4dd7",
+      "backend_version": 1,
+      "backend_deployed": true,
+      "gateway_mapped": false,
+      "gateway_version": 13,
+      "implementation_state": "backend_deployed_gateway_pending",
+      "operation_count": 98,
+      "source_readback_sha256": "b023000072b8f6029c776c3c23ac3d5fce5521fd819e9534db21a0ab32dcf3eb",
+      "source_files": 5,
+      "regression": {
+        "deno": {
+          "exit_code": 0,
+          "passed": 41,
+          "failed": 0,
+          "utc": "2026-10-21T03:21:33.915777+00:00",
+          "real_provider_execution": false
+        },
+        "postgresql": {
+          "kind": "real_postgresql_component_full_rollback",
+          "http": 201,
+          "query_sha256": "acc9569e3572b36f536e134983838b912cefbd5e458773079e9af11a35b38dd9",
+          "evidence": [
+            {
+              "evidence": {
+                "kind": "real_postgresql_component_full_rollback",
+                "labels": [
+                  "acl.auth_cannot_finish_provider",
+                  "acl.auth_cannot_mutate_tables",
+                  "acl.helpers_private",
+                  "acl.service_cannot_admit_customer",
+                  "addresses.owned",
+                  "alerts.empty_owned_list",
+                  "approval.api_key_delegation_drift_denied",
+                  "approval.immutable_sensitive_flag_drift_denied",
+                  "approval.sensitive_owner_read_requires_exact_job",
+                  "audit.all_accepted_internal_mutations_have_before_after",
+                  "audit.hash_chain_allows_normal_sequence_gaps",
+                  "catalogue.all98_typed_private_registry_contracts_agree",
+                  "configuration.existing_provider_read",
+                  "configuration.restore",
+                  "configuration.snapshot_before_after",
+                  "configuration.versioned_update_snapshot",
+                  "delta.approved_owner_grant",
+                  "delta.concurrent_cursor_dispatch_denied",
+                  "delta.persisted_cursor_claimed",
+                  "delta.synthetic_callback_persists_private_cursor",
+                  "draft.concurrent_edit_or_send_denied",
+                  "draft.private_provider_id_and_recipients",
+                  "draft.stale_preview_version_denied_before_send",
+                  "draft.synthetic_callback_private_state",
+                  "draft.verified_owned_recipient_binding",
+                  "executor.fence",
+                  "grant.channel_fenced",
+                  "grant.consume_once",
+                  "grant.mcp_exposure_revocation_rechecked",
+                  "grant.reconsume_rejected",
+                  "grant.wrong_grant",
+                  "graph.empty_owned_list",
+                  "identity.actual_confirmation_rechecked",
+                  "identity.portal_revocation_enforced",
+                  "improvements.empty_owned_list",
+                  "inbox.acknowledge",
+                  "inbox.get",
+                  "inbox.persisted_support_events",
+                  "input.array_duplicate_categories_denied",
+                  "ledger.normal_customer_actor_never_owner_impersonation",
+                  "ledger.support_exactly_one_from_replay",
+                  "media.bind_actual_customer_grant",
+                  "media.foreign_private_binding_denied",
+                  "media.synthetic_callback_local_readback",
+                  "owner.operation_denied_to_customer",
+                  "preferences.actually_close_email_send",
+                  "preferences.actually_close_whatsapp_send",
+                  "preferences.closed_default",
+                  "preferences.explicit_optin_actually_allows",
+                  "preferences.update",
+                  "profile.get",
+                  "profile.update",
+                  "provider.callback_actor_mismatch_denied",
+                  "provider.callback_replay_never_redispatches",
+                  "provider.owned_resource_required",
+                  "quiet_hours.actually_gate_provider_sends",
+                  "quiet_hours.default",
+                  "quiet_hours.invalid_zone",
+                  "quiet_hours.update",
+                  "receipt.closed_registry_gate_enforced",
+                  "receipt.own",
+                  "receipt.preflight_failure_is_not_provider_execution",
+                  "receipt.preflight_failure_readback_stays_unexecuted",
+                  "subscriptions.actually_suppress_inbox_event",
+                  "subscriptions.readback",
+                  "subscriptions.update",
+                  "support.close",
+                  "support.comment_after_optout",
+                  "support.comment.create",
+                  "support.comments.list",
+                  "support.conflicting_reuse",
+                  "support.create",
+                  "support.get",
+                  "support.list",
+                  "support.reopen",
+                  "support.stable_replay",
+                  "support.update",
+                  "support.version_conflict",
+                  "templates.create_scoped_approval",
+                  "templates.delete",
+                  "templates.deleted_not_returned",
+                  "templates.get",
+                  "templates.stale_version_denied",
+                  "templates.versioned_update",
+                  "tenant.argument_injection_denied",
+                  "tenant.foreign_case_denied",
+                  "tenant.foreign_comment_denied",
+                  "tenant.foreign_inbox_empty",
+                  "tenant.foreign_list_empty",
+                  "whatsapp.empty_owned_list"
+                ],
+                "checks_passed": 90,
+                "auth_session_created": false,
+                "external_provider_requests": 0,
+                "all_new_operations_remain_production_disabled": true
+              }
+            }
+          ],
+          "no_HTTP_Auth_session": true,
+          "no_external_provider_calls": true,
+          "utc": "2026-10-21T03:21:40.140130+00:00"
+        },
+        "cleanup": {
+          "http": 201,
+          "utc": "2026-10-21T03:21:41.045981+00:00",
+          "data": [
+            {
+              "snapshot": {
+                "fixture_customers": 0,
+                "fixture_auth_users": 0,
+                "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
+                "product_rpc_functions": 0,
+                "registry_product_rows": 0,
+                "product_private_tables": 0,
+                "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
+              }
+            }
+          ]
+        }
+      },
+      "independent_peer_review": {
+        "reviewed_at_utc": "2026-10-21T03:23:13.957945+00:00",
+        "review": "independent_product_service_boundary_review",
+        "frozen_manifest_sha256": "f76bf91461335e4364ce83a7ef48ea0ee6dcebd4bbd03e619d0f5cdbd4f1b1b1",
+        "source_files": {
+          "supabase/functions/sandy-product-service-api/build_contracts.py": "8133f1484b949920f553ada568b38018e811e6d1da894f06dc424696946c7eb1",
+          "supabase/functions/sandy-product-service-api/contracts.json": "3631b7a8d25a087931571cc0ab90f58217a47c98008cc84a01b098d896502223",
+          "supabase/functions/sandy-product-service-api/contracts.ts": "512934c436fadf800cc22cde65dc858dedbe65d1a85412a2c96740436405db56",
+          "supabase/functions/sandy-product-service-api/gateway.ts": "9a7a5470c820f4d45df6bf51a9a8fb622d629a54b203d0330e60b37fd5330036",
+          "supabase/functions/sandy-product-service-api/index.ts": "3ed1c62294575b2651f96a65dbd3f67346de181f6a1cde3298c92f184864fc42",
+          "supabase/functions/sandy-product-service-api/index_test.ts": "8db7714bebc900c8a388070604f34e83e9a23c685bfca04ed3d0e86186c3a884",
+          "supabase/functions/sandy-product-service-api/providers.ts": "95a11ce818b3de086014433530848fea707b82a81b66c3a485f52818ab8e4c71",
+          "supabase/functions/sandy-product-service-api/providers_test.ts": "c1ddfd0d62633a0a85b79ce06b3ca0eb02778e61cec2101cc944f973d9c54016",
+          "supabase/migrations/20261021009000_sandy_product_service_boundary.sql": "46c2376f208be79d9ded4c33efac7997fb4cf85a62cbd92976bdef11e685a40b",
+          "supabase/migrations/20261021009010_sandy_product_service_contracts.sql": "4557da4ae1a6d7a718611c1ace411f5941627396d2836236fe40f147dca412b0",
+          "supabase/tests/sandy_product_services_rollback.sql": "3c08d0767349aa18ee43fbe451515f6f6c20b93fa5fb0853ff316edebf7c6546",
+          "docs/sandy-api/product-service-coverage.md": "855a09a87c3618688219eac90a28ef1f519940303c7aed695752be773db2e3c9",
+          "docs/sandy-api/product-service-handoff.md": "4726a2ddbbd0ee5a92e46898483605b6ddf4a587908bb1fe32506e877046c790"
+        },
+        "all_frozen_hashes_matched": true,
+        "blocking_findings": [],
+        "resolved_review_findings": [
+          "Graph draft confirmation now binds persisted API version and complete bounded reviewed content fingerprint; no remaining nextLink or unsupported item/reference attachments",
+          "Draft recipient preflight and preview include from/sender/replyTo/cc/bcc",
+          "Owner sensitive/mutation approval and nondelegable policy are source-required at admission/consume/contract match",
+          "WhatsApp reads use the same fixed business phone scope as dispatch"
+        ],
+        "withdrawn_finding": "Initial inferred WhatsApp bigint/string mismatch was withdrawn after reading the full existing id::text projection; explicit large-ID output regression was added.",
+        "independent_local_tests": {
+          "passed": 41,
+          "failed": 0,
+          "log": "boundary-peer-product-deno.log",
+          "overlaps_author_suites": true
+        },
+        "local_cold_start": {
+          "old_space_mib": 96,
+          "rss_bytes": 89231360,
+          "heap_used_bytes": 31895112,
+          "provider_calls": 0,
+          "production_load_attestation": false
+        },
+        "author_postgres_component_evidence": {
+          "http": 201,
+          "checks": 90,
+          "full_rollback": true,
+          "auth_session_created": false,
+          "external_provider_calls": 0,
+          "fixture_cleanup": {
+            "http": 201,
+            "utc": "2026-10-21T03:21:41.045981+00:00",
+            "data": [
+              {
+                "snapshot": {
+                  "fixture_customers": 0,
+                  "fixture_auth_users": 0,
+                  "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
+                  "product_rpc_functions": 0,
+                  "registry_product_rows": 0,
+                  "product_private_tables": 0,
+                  "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
+                }
+              }
+            ]
+          }
+        },
+        "actual_read_only_metadata_checks": {
+          "http": 201,
+          "provider_config_columns": "Six existing safe fields; no credential fields observed",
+          "profile_trigger": "Drive provision trigger only AFTER INSERT OR UPDATE OF google_drive_folder_status; display_name-only update does not fire it"
+        },
+        "remaining_limitations": [
+          "DB grant/state/evidence/result are transactional.",
+          "Provider HTTP and PostgreSQL receipt persistence are separate transactions.",
+          "Draft preview version and complete bounded content fingerprint fence API edits; an external Outlook/legacy writer can still race between Graph preflight read and send.",
+          "Provider submission/Sent Mail existence are not recipient delivery or payment execution.",
+          "Database rollback removes all fixture rows; normal PostgreSQL sequence allocations may leave harmless gaps."
+        ],
+        "new_operations_exposed_or_verified": false,
+        "real_provider_or_auth_verified": false,
+        "deployment_performed_by_reviewer": false
+      },
+      "deployed_authenticated_provider_execution_tested": false,
+      "real_provider_calls": 0,
+      "new_operations_remain_closed_unverified": true,
+      "new_verification_asserted": false,
+      "original_scope_requirements_complete": 0
     }
   },
   "live_catalogue_audit": {
-    "source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
-    "gateway_version": 12,
+    "source_commit": "4e669f1cc73ff750d3466623656c3736579366b5",
+    "gateway_version": 13,
     "layer": "real registry metadata against exact deployed gateway predicate; no Auth/provider invocation",
-    "installed_count": 1104,
-    "registry_count": 2269,
+    "installed_count": 2247,
+    "registry_count": 2367,
     "mismatches": [],
     "all_installed_contracts_match": true
   },
@@ -930,7 +1180,7 @@
       }
     ]
   },
-  "current_gateway_release_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+  "current_gateway_release_commit": "4e669f1cc73ff750d3466623656c3736579366b5",
   "api12_release": {
     "write_http": 201,
     "readback_http": 201,
@@ -1370,7 +1620,7 @@
       "sources": [
         {
           "path": "sandy-operation-api/index.ts",
-          "expected_sha256": "e927a049c89a919fee25047d174c194cd2044c0f73fc9733da0a584cbe24db4c",
+          "expected_sha256": "fd560c16352e15a4461e885252abd8d31b4498ac9b0d11bcd8482861c0c44124",
           "exact_original_source_match": true
         },
         {
@@ -1453,6 +1703,23 @@
         {
           "path": "sandy-provider-operation-api/configured_scopes.ts",
           "expected_sha256": "881f592b66b11f7b0edb9ba332fb3a8521a25a2d8fc1b5e02acbf6c95bc1c672",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_gateway.ts",
+          "expected_sha256": "0b69c0a53dd8335aa95b8f299dd602099db3213f01070e236cd62fe684c9f86a",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/expansion_gateway_manifest.json",
+          "expected_sha256": "8536d686590184ea443039ca86a7584aef192a3aa7aa4b225bbfa90309cc4445",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/scope_from_descriptor.ts",
+          "expected_sha256": "826373709ec8b8f63a91be6185b1a5f560ab69794476ad89b67888676cbeeb4a",
           "exact_original_source_match": true
         },
         {
@@ -1643,11 +1910,11 @@
       ],
       "all_uploaded_sources_verified": false,
       "all_uploaded_sources_accounted_for": true,
-      "compiler_runtime_graph": "sandy-operation-api-v12-deno-info.json",
-      "current_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
-      "uploaded_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
+      "compiler_runtime_graph": "sandy-operation-api-v13-deno-info.json",
+      "current_source_commit": "4e669f1cc73ff750d3466623656c3736579366b5",
+      "uploaded_source_commit": "4e669f1cc73ff750d3466623656c3736579366b5",
       "current_runtime_metadata": {
-        "version": 12,
+        "version": 13,
         "status": "ACTIVE",
         "verify_jwt": true
       }
@@ -1921,7 +2188,12 @@
       "sources": [
         {
           "path": "sandy-supabase-service-api/index.ts",
-          "expected_sha256": "adae3d71db6219ceddccdc30e6a5d360ef2459f3e71941b785d00a2a1cad1818",
+          "expected_sha256": "7adf34e6ad792cf6da51b30b4f5b786b9d9ce11fd52c835126e4217d5efbbf74",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_approval_contract.ts",
+          "expected_sha256": "30b10b4b032120b1878cff16428ac3b7cf5805646dfdd98643b1f07dc4092290",
           "exact_original_source_match": true
         },
         {
@@ -1944,11 +2216,11 @@
       ],
       "all_uploaded_sources_verified": true,
       "all_uploaded_sources_accounted_for": true,
-      "compiler_runtime_graph": "sandy-supabase-service-api-v1-deno-info.json",
-      "current_source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
-      "uploaded_source_commit": "1b25fc7434050b370b56cc5350a5ebcd0487b6e7",
+      "compiler_runtime_graph": "sandy-supabase-service-api-v2-deno-info.json",
+      "current_source_commit": "3b3491ba3547394609e4766a891576d5db39b576",
+      "uploaded_source_commit": "1cbba6fa36a84a2207b8d91e25da67684f150a54",
       "current_runtime_metadata": {
-        "version": 1,
+        "version": 2,
         "status": "ACTIVE",
         "verify_jwt": true
       }
@@ -2030,7 +2302,7 @@
       "sources": [
         {
           "path": "sandy-agent-runtime-v2/index.ts",
-          "expected_sha256": "f82cf263a54c57bf77cb3ed31fa6e2268dcb021e535f8148994d47ba4c374b12",
+          "expected_sha256": "db4c9b0c2f949bad218927003d189c8c0b857107f3eceed82794dbfc4af994a6",
           "exact_original_source_match": true
         },
         {
@@ -2045,7 +2317,7 @@
         },
         {
           "path": "_shared/sandy-agent-operations/runtime_conversation.ts",
-          "expected_sha256": "6a7d0af020c93c37491234fe4ae893c59873e6e6be053794f6c47b9760e88deb",
+          "expected_sha256": "7aea8453ce9c0b4fe04e6015c6945f2cba49d983fe96f7c8dfc53ccfa33c206a",
           "exact_original_source_match": true
         },
         {
@@ -2059,8 +2331,13 @@
           "exact_original_source_match": true
         },
         {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts",
+          "expected_sha256": "a61c9c726abb96b4afa52198c5d1b550dd2502ea41f85d74318fd771503c33dd",
+          "exact_original_source_match": true
+        },
+        {
           "path": "_shared/sandy-agent-operations/service.ts",
-          "expected_sha256": "77583481b6565041075c34d88d5626e6ed6c847a9b9ffa2badf626c6e4fcfc0b",
+          "expected_sha256": "55d6cf27a0fb3236b700e8ad74105a2657c33187c0e3a5c1fd1269c8bff766df",
           "exact_original_source_match": true
         },
         {
@@ -2071,6 +2348,16 @@
         {
           "path": "_shared/sandy-agent-operations/runtime_profiles.ts",
           "expected_sha256": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_record_contracts.ts",
+          "expected_sha256": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_records.ts",
+          "expected_sha256": "657571bfa08fb9c90b257cbd27148333ef7ef303ea666dc5ea366d88b4531a57",
           "exact_original_source_match": true
         },
         {
@@ -2082,11 +2369,11 @@
       ],
       "all_uploaded_sources_verified": true,
       "all_uploaded_sources_accounted_for": true,
-      "compiler_runtime_graph": "sandy-agent-runtime-v2-v16-deno-info.json",
-      "current_source_commit": "f38fb443f8cf9dd62ccdc5df268e9c5705398a00",
-      "uploaded_source_commit": "65f331be138cf5cb07ee7aa584c9dd625cabb620",
+      "compiler_runtime_graph": "sandy-agent-runtime-v2-v17-deno-info.json",
+      "current_source_commit": "6fe7147742ddefabb8c2cdbc4fff75e03b2ed9e2",
+      "uploaded_source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
       "current_runtime_metadata": {
-        "version": 16,
+        "version": 17,
         "status": "ACTIVE",
         "verify_jwt": false
       }
@@ -2097,7 +2384,7 @@
       "sources": [
         {
           "path": "sandy-agent-runtime-v1-backup-r50/index.ts",
-          "expected_sha256": "1bceeeb50b2b3b33b798f9c9b20f628a9bd4738ae9c86a93b8fde115601ebc25",
+          "expected_sha256": "5412f6571f92ba981d4cfc37ad45a96005f862bc66b61330e405accb52d90283",
           "exact_original_source_match": true
         },
         {
@@ -2112,7 +2399,7 @@
         },
         {
           "path": "_shared/sandy-agent-operations/runtime_conversation.ts",
-          "expected_sha256": "6a7d0af020c93c37491234fe4ae893c59873e6e6be053794f6c47b9760e88deb",
+          "expected_sha256": "7aea8453ce9c0b4fe04e6015c6945f2cba49d983fe96f7c8dfc53ccfa33c206a",
           "exact_original_source_match": true
         },
         {
@@ -2126,8 +2413,13 @@
           "exact_original_source_match": true
         },
         {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts",
+          "expected_sha256": "a61c9c726abb96b4afa52198c5d1b550dd2502ea41f85d74318fd771503c33dd",
+          "exact_original_source_match": true
+        },
+        {
           "path": "_shared/sandy-agent-operations/service.ts",
-          "expected_sha256": "77583481b6565041075c34d88d5626e6ed6c847a9b9ffa2badf626c6e4fcfc0b",
+          "expected_sha256": "55d6cf27a0fb3236b700e8ad74105a2657c33187c0e3a5c1fd1269c8bff766df",
           "exact_original_source_match": true
         },
         {
@@ -2139,18 +2431,928 @@
           "path": "_shared/sandy-agent-operations/runtime_profiles.ts",
           "expected_sha256": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
           "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_record_contracts.ts",
+          "expected_sha256": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_records.ts",
+          "expected_sha256": "657571bfa08fb9c90b257cbd27148333ef7ef303ea666dc5ea366d88b4531a57",
+          "exact_original_source_match": true
         }
       ],
       "all_uploaded_sources_verified": true,
       "all_uploaded_sources_accounted_for": true,
-      "compiler_runtime_graph": "sandy-agent-runtime-v1-backup-r50-v6-deno-info.json",
-      "current_source_commit": "feada3e22c8439f3b1289ad0d483750a53a5b837",
-      "uploaded_source_commit": "65f331be138cf5cb07ee7aa584c9dd625cabb620",
+      "compiler_runtime_graph": "sandy-agent-runtime-v1-backup-r50-v7-deno-info.json",
+      "current_source_commit": "6fe7147742ddefabb8c2cdbc4fff75e03b2ed9e2",
+      "uploaded_source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+      "current_runtime_metadata": {
+        "version": 7,
+        "status": "ACTIVE",
+        "verify_jwt": false
+      }
+    },
+    "sandy-api-mcp": {
+      "slug": "sandy-api-mcp",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-api-mcp/index.ts",
+          "expected_sha256": "7cac40e3fee100411ce23200b5f9ab6bc0f88f8f0f20363678d1023c9fe68aca",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-api-mcp-v6-deno-info.json",
+      "current_source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+      "uploaded_source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
       "current_runtime_metadata": {
         "version": 6,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-operations-mcp": {
+      "slug": "sandy-operations-mcp",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-legacy-mcp-adapter/index.ts",
+          "expected_sha256": "998468469a25bc5c75e723369c38a18fa0e0c3a8955d3efea208d8161521fd2e",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-operations-mcp-v73-deno-info.json",
+      "current_source_commit": "ea44e2cb084e3a59e56320210220ccc2131447a0",
+      "uploaded_source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+      "current_runtime_metadata": {
+        "version": 73,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-product-service-api": {
+      "slug": "sandy-product-service-api",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-product-service-api/index.ts",
+          "expected_sha256": "3ed1c62294575b2651f96a65dbd3f67346de181f6a1cde3298c92f184864fc42",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "expected_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-product-service-api/contracts.ts",
+          "expected_sha256": "512934c436fadf800cc22cde65dc858dedbe65d1a85412a2c96740436405db56",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-product-service-api/contracts.json",
+          "expected_sha256": "3631b7a8d25a087931571cc0ab90f58217a47c98008cc84a01b098d896502223",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true,
+          "json_semantic_match": true
+        },
+        {
+          "path": "sandy-product-service-api/providers.ts",
+          "expected_sha256": "95a11ce818b3de086014433530848fea707b82a81b66c3a485f52818ab8e4c71",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-product-service-api-v1-deno-info.json",
+      "current_source_commit": "4e669f1cc73ff750d3466623656c3736579366b5",
+      "uploaded_source_commit": "1ae4dd7125a090cc40e111c6f9947bb193350ceb",
+      "current_runtime_metadata": {
+        "version": 1,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      }
+    },
+    "sandy-agent-runtime-v4": {
+      "slug": "sandy-agent-runtime-v4",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-agent-runtime-v4/index.ts",
+          "expected_sha256": "292f8bb73158f06424d26cc8946fa5e1c749ea6b9fbc6a643c772282fef331ae",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/connected-gmail.ts",
+          "expected_sha256": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/identity.ts",
+          "expected_sha256": "9213e6417a0f204c16b753a89f68e7fefb2182dc7f5cf0bec6a43ecafe8d7def",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation.ts",
+          "expected_sha256": "7aea8453ce9c0b4fe04e6015c6945f2cba49d983fe96f7c8dfc53ccfa33c206a",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_contract.ts",
+          "expected_sha256": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_responses_transport.ts",
+          "expected_sha256": "fa511472a2d1e4dbdb579b47ac39ac6cacbee2410f013217ed5478948c874f9b",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts",
+          "expected_sha256": "a61c9c726abb96b4afa52198c5d1b550dd2502ea41f85d74318fd771503c33dd",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/service.ts",
+          "expected_sha256": "55d6cf27a0fb3236b700e8ad74105a2657c33187c0e3a5c1fd1269c8bff766df",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/contracts.ts",
+          "expected_sha256": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_profiles.ts",
+          "expected_sha256": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_record_contracts.ts",
+          "expected_sha256": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_records.ts",
+          "expected_sha256": "657571bfa08fb9c90b257cbd27148333ef7ef303ea666dc5ea366d88b4531a57",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-agent-runtime-v4/version-awareness.js",
+          "expected_sha256": "f7c344fb99f2760e2bac13b09f173549f240ba917912cc0f9f4cb6320c6834a2",
+          "exact_original_source_match": false,
+          "exact_module_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-agent-runtime-v4-v15-deno-info.json",
+      "current_source_commit": "ca2195c3de4cef60c106a40fca7391a34466b996",
+      "uploaded_source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+      "current_runtime_metadata": {
+        "version": 15,
         "status": "ACTIVE",
         "verify_jwt": false
       }
     }
-  }
+  },
+  "git_publication": {
+    "recorded_at_utc": "2026-10-21T03:33:55.876449+00:00",
+    "current_local_head": "6fe7147742ddefabb8c2cdbc4fff75e03b2ed9e2",
+    "last_confirmed_pushed_commit": "3b3491ba3547394609e4766a891576d5db39b576",
+    "last_observed_main": "350ede13e373fb2108d57748b20e44d57302135d",
+    "current_remote_read_succeeded": true,
+    "current_push_succeeded": false,
+    "observed_failures": [
+      "default Git credential helper unavailable",
+      "existing GH_TOKEN rejected via standard gh credential helper"
+    ],
+    "credentials_exposed": false,
+    "supabase_deployments_blocked": false,
+    "implementation_blocked": false,
+    "replacement_credential_requested_securely": true,
+    "latest_remote_refs": {
+      "refs/heads/engineering/sandy-api-project-reads-20261020": "3b3491ba3547394609e4766a891576d5db39b576",
+      "refs/heads/main": "350ede13e373fb2108d57748b20e44d57302135d"
+    },
+    "last_remote_read_at_utc": "2026-10-21T03:40:30.547924+00:00"
+  },
+  "api13_and_product_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "registry_rows": 2367,
+        "gateway_evidence_rows": 2247,
+        "product_backend_evidence_rows": 98,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "gateway_evidence": {
+      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
+      "gateway_source_commit": "4e669f1",
+      "gateway_version": 13,
+      "gateway_mapped": true,
+      "installed_operation_count": 2247,
+      "new_operation_count": 1143,
+      "provider_backend_version": 4,
+      "gateway_source_readback_sha256": "1155deaed48f5f812a27d3a27f000d8a218351461d2cd3de59ea26ac4dfb5103",
+      "all_2247_live_registry_contracts_match": true,
+      "live_metadata_audit_sha256": "d8cb36e6f3c8d74a388bd42cc2d8bd1b15dd92d422b0d6f2434791ee1d70ad6f",
+      "regression": {
+        "composed_deno_passed": 127,
+        "gateway_deno_passed": 75,
+        "typecheck": true,
+        "format": true,
+        "diff": true,
+        "backend_synthetic_compositions": 4,
+        "real_provider_called": false,
+        "actual_auth_session_tested": false
+      },
+      "memory": {
+        "whole_resident_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 228112,
+          "log": "expanded-gateway-live-catalogue-memory-96.txt",
+          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 109.6,
+          "gc_observed_peak_heap_total_mib": 148.9
+        },
+        "whole_resident_128": {
+          "old_space_limit_mib": 128,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 258592,
+          "log": "expanded-gateway-live-catalogue-memory-128.txt",
+          "benchmark": "expanded-gateway-live-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 127.7,
+          "gc_observed_peak_heap_total_mib": 177.5
+        },
+        "streamed_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": -5,
+          "peak_rss_kib": 214368,
+          "log": "expanded-gateway-streamed-catalogue-memory-96.txt",
+          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 107.2,
+          "gc_observed_peak_heap_total_mib": 148.3
+        },
+        "streamed_128": {
+          "old_space_limit_mib": 128,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 250700,
+          "log": "expanded-gateway-streamed-catalogue-memory-128.txt",
+          "benchmark": "expanded-gateway-streamed-catalogue-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 133.4,
+          "gc_observed_peak_heap_total_mib": 176.3,
+          "gateway_measurements": {
+            "installed_operations": 2247,
+            "catalogue_operations": 2247,
+            "schemas_validated": 4494,
+            "input_refusals": 4063,
+            "forced_output_schema_refusals": 431,
+            "provider_calls": 0,
+            "rpc_calls": 0,
+            "initial": {
+              "rss": 113610752,
+              "heapTotal": 59904000,
+              "heapUsed": 38369744,
+              "external": 1521871
+            },
+            "final": {
+              "rss": 192249856,
+              "heapTotal": 118542336,
+              "heapUsed": 105866184,
+              "external": 1565427
+            },
+            "sampled_peak_heap_bytes": 138682384,
+            "sampled_peak_rss_bytes": 251117568
+          },
+          "conservative_peak_rss_bytes": 256716800
+        },
+        "current_exposed_discovery_96": {
+          "old_space_limit_mib": 96,
+          "optimize": "default",
+          "inlineRefs": false,
+          "cache_max_entries": 12,
+          "cache_max_schema_bytes": 262144,
+          "key_and_snapshot_charge_multiplier": 4,
+          "exit_code": 0,
+          "peak_rss_kib": 132356,
+          "log": "expanded-gateway-discovery-memory-96.txt",
+          "benchmark": "expanded-gateway-discovery-memory-benchmark.ts",
+          "gc_observed_peak_heap_used_mib": 41.4,
+          "gc_observed_peak_heap_total_mib": 67.1,
+          "gateway_measurements": {
+            "installed_operations": 2247,
+            "exposed_registry_rows": 424,
+            "owner_visible_operations": 359,
+            "discovery_calls": 10,
+            "catalogue_rpc_calls": 10,
+            "response_bytes": 750018,
+            "provider_calls": 0,
+            "initial": {
+              "rss": 116633600,
+              "heapTotal": 62107648,
+              "heapUsed": 25797584,
+              "external": 1480670
+            },
+            "final": {
+              "rss": 135348224,
+              "heapTotal": 59609088,
+              "heapUsed": 23181928,
+              "external": 1631815
+            },
+            "sampled_peak_heap_bytes": 43366896,
+            "sampled_peak_rss_bytes": 135499776
+          },
+          "conservative_peak_rss_bytes": 135532544
+        },
+        "qualification": "All4494 schema streaming succeeds128MiB with244.8MiB peakRSS and narrow margin. Resident catalogue96/128 and streamed96 fail. Current exposed424-row/359-owner-operation discovery fits96MiB with129.3MiB RSS. New1143 remainclosed/unverified, blocked before validation in production. Eventual all-operations-exposed/concurrent provider-load acceptance is NOT claimed."
+      },
+      "normal_controller_session_available": false,
+      "deployed_authenticated_provider_execution_tested": false,
+      "real_new_provider_calls": 0,
+      "new_operations_remain_closed_unverified": true,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "certified_requirements_complete": 0
+    },
+    "product_backend_evidence": {
+      "recorded_at_utc": "2026-10-21T03:27:39.137331+00:00",
+      "source_commit": "1ae4dd7",
+      "backend_version": 1,
+      "backend_deployed": true,
+      "gateway_mapped": false,
+      "gateway_version": 13,
+      "implementation_state": "backend_deployed_gateway_pending",
+      "operation_count": 98,
+      "source_readback_sha256": "b023000072b8f6029c776c3c23ac3d5fce5521fd819e9534db21a0ab32dcf3eb",
+      "source_files": 5,
+      "regression": {
+        "deno": {
+          "exit_code": 0,
+          "passed": 41,
+          "failed": 0,
+          "utc": "2026-10-21T03:21:33.915777+00:00",
+          "real_provider_execution": false
+        },
+        "postgresql": {
+          "kind": "real_postgresql_component_full_rollback",
+          "http": 201,
+          "query_sha256": "acc9569e3572b36f536e134983838b912cefbd5e458773079e9af11a35b38dd9",
+          "evidence": [
+            {
+              "evidence": {
+                "kind": "real_postgresql_component_full_rollback",
+                "labels": [
+                  "acl.auth_cannot_finish_provider",
+                  "acl.auth_cannot_mutate_tables",
+                  "acl.helpers_private",
+                  "acl.service_cannot_admit_customer",
+                  "addresses.owned",
+                  "alerts.empty_owned_list",
+                  "approval.api_key_delegation_drift_denied",
+                  "approval.immutable_sensitive_flag_drift_denied",
+                  "approval.sensitive_owner_read_requires_exact_job",
+                  "audit.all_accepted_internal_mutations_have_before_after",
+                  "audit.hash_chain_allows_normal_sequence_gaps",
+                  "catalogue.all98_typed_private_registry_contracts_agree",
+                  "configuration.existing_provider_read",
+                  "configuration.restore",
+                  "configuration.snapshot_before_after",
+                  "configuration.versioned_update_snapshot",
+                  "delta.approved_owner_grant",
+                  "delta.concurrent_cursor_dispatch_denied",
+                  "delta.persisted_cursor_claimed",
+                  "delta.synthetic_callback_persists_private_cursor",
+                  "draft.concurrent_edit_or_send_denied",
+                  "draft.private_provider_id_and_recipients",
+                  "draft.stale_preview_version_denied_before_send",
+                  "draft.synthetic_callback_private_state",
+                  "draft.verified_owned_recipient_binding",
+                  "executor.fence",
+                  "grant.channel_fenced",
+                  "grant.consume_once",
+                  "grant.mcp_exposure_revocation_rechecked",
+                  "grant.reconsume_rejected",
+                  "grant.wrong_grant",
+                  "graph.empty_owned_list",
+                  "identity.actual_confirmation_rechecked",
+                  "identity.portal_revocation_enforced",
+                  "improvements.empty_owned_list",
+                  "inbox.acknowledge",
+                  "inbox.get",
+                  "inbox.persisted_support_events",
+                  "input.array_duplicate_categories_denied",
+                  "ledger.normal_customer_actor_never_owner_impersonation",
+                  "ledger.support_exactly_one_from_replay",
+                  "media.bind_actual_customer_grant",
+                  "media.foreign_private_binding_denied",
+                  "media.synthetic_callback_local_readback",
+                  "owner.operation_denied_to_customer",
+                  "preferences.actually_close_email_send",
+                  "preferences.actually_close_whatsapp_send",
+                  "preferences.closed_default",
+                  "preferences.explicit_optin_actually_allows",
+                  "preferences.update",
+                  "profile.get",
+                  "profile.update",
+                  "provider.callback_actor_mismatch_denied",
+                  "provider.callback_replay_never_redispatches",
+                  "provider.owned_resource_required",
+                  "quiet_hours.actually_gate_provider_sends",
+                  "quiet_hours.default",
+                  "quiet_hours.invalid_zone",
+                  "quiet_hours.update",
+                  "receipt.closed_registry_gate_enforced",
+                  "receipt.own",
+                  "receipt.preflight_failure_is_not_provider_execution",
+                  "receipt.preflight_failure_readback_stays_unexecuted",
+                  "subscriptions.actually_suppress_inbox_event",
+                  "subscriptions.readback",
+                  "subscriptions.update",
+                  "support.close",
+                  "support.comment_after_optout",
+                  "support.comment.create",
+                  "support.comments.list",
+                  "support.conflicting_reuse",
+                  "support.create",
+                  "support.get",
+                  "support.list",
+                  "support.reopen",
+                  "support.stable_replay",
+                  "support.update",
+                  "support.version_conflict",
+                  "templates.create_scoped_approval",
+                  "templates.delete",
+                  "templates.deleted_not_returned",
+                  "templates.get",
+                  "templates.stale_version_denied",
+                  "templates.versioned_update",
+                  "tenant.argument_injection_denied",
+                  "tenant.foreign_case_denied",
+                  "tenant.foreign_comment_denied",
+                  "tenant.foreign_inbox_empty",
+                  "tenant.foreign_list_empty",
+                  "whatsapp.empty_owned_list"
+                ],
+                "checks_passed": 90,
+                "auth_session_created": false,
+                "external_provider_requests": 0,
+                "all_new_operations_remain_production_disabled": true
+              }
+            }
+          ],
+          "no_HTTP_Auth_session": true,
+          "no_external_provider_calls": true,
+          "utc": "2026-10-21T03:21:40.140130+00:00"
+        },
+        "cleanup": {
+          "http": 201,
+          "utc": "2026-10-21T03:21:41.045981+00:00",
+          "data": [
+            {
+              "snapshot": {
+                "fixture_customers": 0,
+                "fixture_auth_users": 0,
+                "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
+                "product_rpc_functions": 0,
+                "registry_product_rows": 0,
+                "product_private_tables": 0,
+                "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
+              }
+            }
+          ]
+        }
+      },
+      "independent_peer_review": {
+        "reviewed_at_utc": "2026-10-21T03:23:13.957945+00:00",
+        "review": "independent_product_service_boundary_review",
+        "frozen_manifest_sha256": "f76bf91461335e4364ce83a7ef48ea0ee6dcebd4bbd03e619d0f5cdbd4f1b1b1",
+        "source_files": {
+          "supabase/functions/sandy-product-service-api/build_contracts.py": "8133f1484b949920f553ada568b38018e811e6d1da894f06dc424696946c7eb1",
+          "supabase/functions/sandy-product-service-api/contracts.json": "3631b7a8d25a087931571cc0ab90f58217a47c98008cc84a01b098d896502223",
+          "supabase/functions/sandy-product-service-api/contracts.ts": "512934c436fadf800cc22cde65dc858dedbe65d1a85412a2c96740436405db56",
+          "supabase/functions/sandy-product-service-api/gateway.ts": "9a7a5470c820f4d45df6bf51a9a8fb622d629a54b203d0330e60b37fd5330036",
+          "supabase/functions/sandy-product-service-api/index.ts": "3ed1c62294575b2651f96a65dbd3f67346de181f6a1cde3298c92f184864fc42",
+          "supabase/functions/sandy-product-service-api/index_test.ts": "8db7714bebc900c8a388070604f34e83e9a23c685bfca04ed3d0e86186c3a884",
+          "supabase/functions/sandy-product-service-api/providers.ts": "95a11ce818b3de086014433530848fea707b82a81b66c3a485f52818ab8e4c71",
+          "supabase/functions/sandy-product-service-api/providers_test.ts": "c1ddfd0d62633a0a85b79ce06b3ca0eb02778e61cec2101cc944f973d9c54016",
+          "supabase/migrations/20261021009000_sandy_product_service_boundary.sql": "46c2376f208be79d9ded4c33efac7997fb4cf85a62cbd92976bdef11e685a40b",
+          "supabase/migrations/20261021009010_sandy_product_service_contracts.sql": "4557da4ae1a6d7a718611c1ace411f5941627396d2836236fe40f147dca412b0",
+          "supabase/tests/sandy_product_services_rollback.sql": "3c08d0767349aa18ee43fbe451515f6f6c20b93fa5fb0853ff316edebf7c6546",
+          "docs/sandy-api/product-service-coverage.md": "855a09a87c3618688219eac90a28ef1f519940303c7aed695752be773db2e3c9",
+          "docs/sandy-api/product-service-handoff.md": "4726a2ddbbd0ee5a92e46898483605b6ddf4a587908bb1fe32506e877046c790"
+        },
+        "all_frozen_hashes_matched": true,
+        "blocking_findings": [],
+        "resolved_review_findings": [
+          "Graph draft confirmation now binds persisted API version and complete bounded reviewed content fingerprint; no remaining nextLink or unsupported item/reference attachments",
+          "Draft recipient preflight and preview include from/sender/replyTo/cc/bcc",
+          "Owner sensitive/mutation approval and nondelegable policy are source-required at admission/consume/contract match",
+          "WhatsApp reads use the same fixed business phone scope as dispatch"
+        ],
+        "withdrawn_finding": "Initial inferred WhatsApp bigint/string mismatch was withdrawn after reading the full existing id::text projection; explicit large-ID output regression was added.",
+        "independent_local_tests": {
+          "passed": 41,
+          "failed": 0,
+          "log": "boundary-peer-product-deno.log",
+          "overlaps_author_suites": true
+        },
+        "local_cold_start": {
+          "old_space_mib": 96,
+          "rss_bytes": 89231360,
+          "heap_used_bytes": 31895112,
+          "provider_calls": 0,
+          "production_load_attestation": false
+        },
+        "author_postgres_component_evidence": {
+          "http": 201,
+          "checks": 90,
+          "full_rollback": true,
+          "auth_session_created": false,
+          "external_provider_calls": 0,
+          "fixture_cleanup": {
+            "http": 201,
+            "utc": "2026-10-21T03:21:41.045981+00:00",
+            "data": [
+              {
+                "snapshot": {
+                  "fixture_customers": 0,
+                  "fixture_auth_users": 0,
+                  "provider_config_md5": "da3dacb372e5b257ef744df42cf40663",
+                  "product_rpc_functions": 0,
+                  "registry_product_rows": 0,
+                  "product_private_tables": 0,
+                  "audit_verifier_source_md5": "c22463ceb645d4a455f96deded2a8ce2"
+                }
+              }
+            ]
+          }
+        },
+        "actual_read_only_metadata_checks": {
+          "http": 201,
+          "provider_config_columns": "Six existing safe fields; no credential fields observed",
+          "profile_trigger": "Drive provision trigger only AFTER INSERT OR UPDATE OF google_drive_folder_status; display_name-only update does not fire it"
+        },
+        "remaining_limitations": [
+          "DB grant/state/evidence/result are transactional.",
+          "Provider HTTP and PostgreSQL receipt persistence are separate transactions.",
+          "Draft preview version and complete bounded content fingerprint fence API edits; an external Outlook/legacy writer can still race between Graph preflight read and send.",
+          "Provider submission/Sent Mail existence are not recipient delivery or payment execution.",
+          "Database rollback removes all fixture rows; normal PostgreSQL sequence allocations may leave harmless gaps."
+        ],
+        "new_operations_exposed_or_verified": false,
+        "real_provider_or_auth_verified": false,
+        "deployment_performed_by_reviewer": false
+      },
+      "deployed_authenticated_provider_execution_tested": false,
+      "real_provider_calls": 0,
+      "new_operations_remain_closed_unverified": true,
+      "new_verification_asserted": false,
+      "original_scope_requirements_complete": 0
+    }
+  },
+  "service_v4_followup": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "evidence_rows": 47,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:21:05.921646+00:00",
+      "source_readbacks": {
+        "sandy-supabase-service-api": {
+          "version": 2,
+          "source_commit": "1cbba6fa36a84a2207b8d91e25da67684f150a54",
+          "source_readback_sha256": "11e49e5efcf64e0bc42ab029da1c55c076ef6575f125c34f73cc500d3853ea6b"
+        },
+        "sandy-agent-runtime-v4": {
+          "version": 14,
+          "source_commit": "d020ab1df937f823682e2abd4a802b6527d020ef",
+          "source_readback_sha256": "a21aa03ebd0f00bae55808a20d9e715c1b92070991b836627b8c5852436f5431"
+        }
+      },
+      "source_required_approval_runtime": {
+        "composed_service_and_consent_tests": 19,
+        "approval_helper_tests": 1,
+        "actual_postgres_rollback_assertions": 24,
+        "immutable_approval_negative_assertions": 6,
+        "applied_migration": "20261021007010"
+      },
+      "active_v4_conversation": {
+        "composed_regressions": 56,
+        "actual_postgres_rollback_assertions": 8,
+        "preserved_runtime_source_sections": 24,
+        "applied_migration": "20261021010010",
+        "same_broker_credentials_and_task_headers": true
+      },
+      "overlapping_tests_not_summed": true,
+      "real_model_calls": 0,
+      "deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false
+    }
+  },
+  "runtime_records_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "evidence_rows": 9,
+        "verified_rows": 3
+      }
+    ],
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:37:40.294550+00:00",
+      "source_commit": "c90471a",
+      "backend_deployed": true,
+      "public_gateway_mapped": false,
+      "runtime_sources": {
+        "sandy-agent-runtime-v4": {
+          "version": 15,
+          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+          "source_readback_sha256": "b529aaae3f5d45f95b15c376eb5e6fc7adae9ee0dc49ed3b7da3062502293ef7"
+        },
+        "sandy-agent-runtime-v2": {
+          "version": 17,
+          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+          "source_readback_sha256": "c1632e5af8c43163ea2b4cf82e8d51467dcc1fd50ae4afd58406c38fb0361669"
+        },
+        "sandy-agent-runtime-v1-backup-r50": {
+          "version": 7,
+          "source_commit": "c90471a67c18b63ba3f3831d6ada48cc379cee8e",
+          "source_readback_sha256": "0da9b28735e28246b1b43eb77824f7badeede02cef2e58a383970bceb9f9879a"
+        }
+      },
+      "regression": {
+        "deno_passed": 64,
+        "runtime_capability_tests": 37,
+        "v4_transport_tests": 2,
+        "legacy_profile_tests": 6,
+        "existing_service_API_tests": 19,
+        "three_runtime_typechecks": "pass",
+        "preserved_source_sections": 21,
+        "exact_archived_dependencies": 3,
+        "real_provider_calls": 0,
+        "real_customer_execution_tested": false,
+        "Management_PostgreSQL_component_HTTP": 201,
+        "Management_PostgreSQL_component_checks": 16,
+        "all_database_changes_rolled_back": true
+      },
+      "applied_migration": {
+        "version": "20261021010020",
+        "exact_source_sha256": "c4d9ad620ddb427d3299a473a7207aa99f82355c639cf97318c60c431b83a440",
+        "ledger_readback_http": 201
+      },
+      "new_internal_operations": 9,
+      "real_model_or_provider_calls": 0,
+      "real_deployed_authenticated_execution_tested": false,
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "scope": "Trusted runtime customer-task capability only; normal Auth users cannot invoke these routes. Shared audit claims precede writes; unknown writes cannot be redispatched with the same step."
+    }
+  },
+  "mcp_metadata_release": {
+    "write_http": 201,
+    "readback_http": 201,
+    "readback": [
+      {
+        "evidence_rows": 2247,
+        "verified_rows": 3
+      }
+    ],
+    "exposure_and_verification_fields_preserved": true,
+    "evidence": {
+      "recorded_at_utc": "2026-10-21T03:39:19.572446+00:00",
+      "source_commit": "71749f6",
+      "deployed_edge_transports": {
+        "sandy-api-mcp": {
+          "version": 6,
+          "source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+          "source_readback_sha256": "a66e0e8e99f0aef6c7b174fc6f2f6ac28cd0a03554edd25bdb5862870d8738b6"
+        },
+        "sandy-operations-mcp": {
+          "version": 73,
+          "source_commit": "71749f6795195e15e04eab82fe8779fb6e6c8a7d",
+          "source_readback_sha256": "eae89f707bbf6e9e1d4102713d9dbb243e8e6ca36cbba6a7c131813c08ed6c1f"
+        }
+      },
+      "gateway_version": 13,
+      "transport_only_evidence": true,
+      "operation_specific_execution_verified": false,
+      "forwarded_headers": [
+        "x-sandy-approval-id",
+        "x-sandy-request-id"
+      ],
+      "validation": "Optional single UUID; malformed/empty/duplicate rejected before API call. Actor/tenant override is never forwarded. Existing caller JWT/key unchanged.",
+      "regression": {
+        "pinned_71749f6_edge_tests_passed": 38,
+        "node_tests_passed": 16,
+        "node_deployed": false,
+        "composed_actual_api_source_test_uses_synthetic_auth_and_policy": true,
+        "new_real_provider_calls": 0
+      },
+      "deployed_authentication": {
+        "project": "zmqlyygzqoidkcwdysok",
+        "tested_at": "2026-10-21T03:38:18.285208+00:00",
+        "tests": [
+          {
+            "test": "project_endpoint_reachable_and_requires_authentication",
+            "outcome": "blocked",
+            "http_status": null,
+            "layer": "edge_authentication",
+            "blocker": "network_proxy_denied"
+          }
+        ],
+        "complete": false,
+        "deferred": [
+          "internal_handler_checks",
+          "authenticated_api_mcp_checks"
+        ]
+      },
+      "new_verification_asserted": false,
+      "universal_routing_operational": false,
+      "remaining": "Cloud Run Node transport deployment and remaining application/runtime adoption are unverified/incomplete."
+    }
+  },
+  "committed_changes_after_530007a": [
+    {
+      "commit": "b3e1a42",
+      "subject": "Implement durable Sandy API orchestration with scoped lease dispatch",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "a948905",
+      "subject": "Add 595 scoped provider handlers and guarded credential custody",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "f7eb112",
+      "subject": "Add tenant API handlers, scoped credentials and atomic customer mutations",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "e310a44",
+      "subject": "Reduce generated provider catalogue upload size without changing contracts",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "043e7b4",
+      "subject": "Implement shared agent, database, guest and guarded lifecycle services",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "d86df5d",
+      "subject": "Route all Sandy MCP tools through the governed 1020-operation API",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "02279e4",
+      "subject": "Package provider contracts with verified gzip catalogue loader",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "da5d587",
+      "subject": "Connect provider credential consumers to verified managed custody",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "b139a75",
+      "subject": "Resolve scoped job routes and implement guarded native database maintenance",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "6063a41",
+      "subject": "Record production API v9 rollout and actual operation verification evidence",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "7ce33be",
+      "subject": "Add explicit tenant key principals and consumed provider credential proofs",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "1b25fc7",
+      "subject": "Implement managed Supabase services and scoped provider gap handlers",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "6e0354f",
+      "subject": "Consolidate fallback runtime actions through the shared governed agent service",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "a1dd1d4",
+      "subject": "Implement 1143 additional scoped provider constituent handlers with bounded lazy catalogues",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "270fcf5",
+      "subject": "Reconcile Supabase service consent and provider gap contract evidence",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "65f331b",
+      "subject": "Centralize task-bound fallback conversation inference with durable per-round receipts",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "f38fb44",
+      "subject": "Require immutable scoped approvals for sensitive Supabase services",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "feada3e",
+      "subject": "Route managed Supabase and provider gap operations through the bounded API gateway",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "d020ab1",
+      "subject": "Route active runtime conversation through the shared task-bound inference service",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "121342a",
+      "subject": "Record API v12 deployment registry evidence and remaining 161-scope acceptance gates",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "1cbba6f",
+      "subject": "Enforce source-required approval flags in the managed Supabase runtime",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "3b3491b",
+      "subject": "Implement consent-bound tenant export erasure and restore with encrypted snapshots",
+      "confirmed_pushed": true
+    },
+    {
+      "commit": "d4f24a8",
+      "subject": "Implement tenant-scoped protected resource metadata without exporting credentials",
+      "confirmed_pushed": false
+    },
+    {
+      "commit": "1ae4dd7",
+      "subject": "Implement tenant product services with scoped provider receipts and reviewed sends",
+      "confirmed_pushed": false
+    },
+    {
+      "commit": "4e669f1",
+      "subject": "Route all reviewed provider constituent handlers through Sandy API",
+      "confirmed_pushed": false
+    },
+    {
+      "commit": "c90471a",
+      "subject": "Centralize trusted runtime record actions with immutable audit claims",
+      "confirmed_pushed": false
+    },
+    {
+      "commit": "6fe7147",
+      "subject": "Include product and internal runtime contracts in scope evidence exports",
+      "confirmed_pushed": false
+    },
+    {
+      "commit": "71749f6",
+      "subject": "Forward scoped approval and request identifiers through every MCP adapter",
+      "confirmed_pushed": false
+    },
+    {
+      "commit": "ea44e2c",
+      "subject": "Centralize principal-bound runtime operational snapshots and inspection",
+      "confirmed_pushed": false
+    }
+  ]
 }
