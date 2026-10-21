@@ -600,6 +600,14 @@ html,body{max-width:100%;overflow-x:clip}body{font-size:14px}#app.shell{padding:
 .sandyDependencyMenu button:hover,.sandyDependencyMenu button:focus-visible{background:#edf3ec}
 .sandyDependencyMenu button.danger{color:#ad4742}
 .timelineDependencySelected{stroke:#17794e!important;stroke-width:3!important;opacity:1!important}
+</style><style>
+.timelineInlineConfirm{position:fixed;z-index:10050;width:max-content;max-width:min(320px,calc(100vw - 16px));padding:12px 13px;background:#fff;border:1px solid #cfdecf;border-radius:12px;box-shadow:0 8px 26px #233a2c25;color:#293b30}
+.timelineInlineConfirmTitle{font-size:13px;font-weight:700;line-height:1.35}
+.timelineInlineConfirmDetail{font-size:12px;line-height:1.45;color:#5b7462;margin:5px 0 11px;overflow-wrap:anywhere;max-width:280px}
+.timelineInlineConfirmActions{display:flex;justify-content:flex-end;gap:6px}
+.timelineInlineConfirmActions button{border:1px solid #d7e3d8;background:#fff;color:#3c624a;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:650}
+.timelineInlineConfirmActions button.confirm{background:#356f55;color:#fff;border-color:#356f55}
+.timelineInlineConfirmActions button:hover{filter:brightness(.96)}
 </style></head><body>
 <div id="loginScreen" class="loginscreen hidden"><div class="loginbox"><div class="logo"><div class="mark">✳</div>sandy.</div><h2>Everything on your mind.<br>In one place.</h2><p>Your private agenda. Sign in with the email address you use with Sandy.</p><form id="loginForm"><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email" required><button class="btn primary" type="submit">Email me a sign-in code</button></form><form id="codeForm" class="hidden"><input id="loginCode" type="text" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" placeholder="6-digit code" autocomplete="one-time-code" required><button class="btn primary" type="submit">Open my agenda</button><button type="button" id="retryLogin" class="btn plain" style="margin-top:8px">Use a different email</button></form><div id="loginMessage" class="message" aria-live="polite"></div></div></div>
 <div id="app" class="shell hidden"><nav class="agendaMobileBottom" aria-label="Mobile primary navigation"><a href="../app/"><span class="navSymbol" aria-hidden="true">⌂</span>Home</a><a href="../agenda/" class="current" aria-current="page"><span class="navSymbol" aria-hidden="true">☑</span>Tasks</a><a href="../calendar/"><span class="navSymbol" aria-hidden="true">▦</span>Calendar</a><a href="../app/?channel=email"><span class="navSymbol" aria-hidden="true">✉</span>Email</a><button type="button" aria-label="Open full navigation" onclick="document.body.classList.add('agendaNavOpen')"><span class="navSymbol" aria-hidden="true">☰</span>Menu</button></nav><nav class="agendaSide" aria-label="Sandy navigation"><button class="sideClose" type="button" aria-label="Close navigation" onclick="document.body.classList.remove('agendaNavOpen')">×</button><a class="sideBrand" href="../v3/">sandy.</a><div class="sideHeading">WORKSPACE</div><a class="sideNav" href="../app/"><span class="sideSymbol">▦</span>Overview</a><a class="sideNav" href="../app/"><span class="sideSymbol">☰</span>All conversations</a><a class="sideNav current" href="../agenda/" aria-current="page"><span class="sideSymbol">☑</span>Tasks</a><a class="sideNav" href="../calendar/"><span class="sideSymbol">▦</span>Calendar</a><a class="sideNav" href="../memory/"><span class="sideSymbol">◇</span>Memory Centre</a><a class="sideNav" href="../files/"><span class="sideSymbol">▤</span>Files</a><div class="sideHeading">CHANNELS</div><a class="sideNav" href="../app/"><span class="sideSymbol">✉</span>Email</a><a class="sideNav" href="../app/"><span class="sideSymbol">◉</span>WhatsApp</a><a class="sideNav" href="../app/"><span class="sideSymbol">♫</span>Voice transcripts</a></nav>
@@ -2001,6 +2009,33 @@ function timelinePreviewSuccessors(rootId,delta,monday,range){
   }
  }
 }
+let timelineLinkConfirmation=null;
+function timelineConfirmLink(source,target,x,y){
+ if(timelineLinkConfirmation){timelineLinkConfirmation.cancel()}
+ return new Promise(resolve=>{
+  const pop=document.createElement("div");pop.className="timelineInlineConfirm";pop.setAttribute("role","dialog");pop.setAttribute("aria-label","Confirm dependency");
+  const title=document.createElement("div");title.className="timelineInlineConfirmTitle";title.textContent="Link these tasks?";
+  const detail=document.createElement("div");detail.className="timelineInlineConfirmDetail";
+  detail.textContent=target.title+" starts after "+source.title;
+  const controls=document.createElement("div");controls.className="timelineInlineConfirmActions";
+  const no=document.createElement("button");no.type="button";no.textContent="Cancel";
+  const yes=document.createElement("button");yes.type="button";yes.className="confirm";yes.textContent="Link tasks";
+  controls.append(no,yes);pop.append(title,detail,controls);document.body.append(pop);
+  const bounds=pop.getBoundingClientRect();
+  pop.style.left=Math.max(8,Math.min(window.innerWidth-bounds.width-8,x+12))+"px";
+  pop.style.top=Math.max(8,Math.min(window.innerHeight-bounds.height-8,y+12))+"px";
+  let finished=false;
+  const done=value=>{if(finished)return;finished=true;document.removeEventListener("pointerdown",outside,true);document.removeEventListener("keydown",key,true);pop.remove();if(timelineLinkConfirmation?.pop===pop)timelineLinkConfirmation=null;resolve(value)};
+  const outside=e=>{if(!pop.contains(e.target))done(false)};
+  const key=e=>{if(e.key==="Escape"){e.preventDefault();done(false)}};
+  timelineLinkConfirmation={pop,cancel:()=>done(false)};
+  no.onclick=()=>done(false);yes.onclick=()=>done(true);
+  // Defer outside handling so the pointerup that initiated the confirmation cannot dismiss it.
+  document.addEventListener("pointerdown",outside,true);
+  document.addEventListener("keydown",key,true);
+  yes.focus({preventScroll:true});
+ });
+}
 function timelineConnectFrom(source,e,handle){
  const box=$("timeline");let active=false;
  const rect=box.getBoundingClientRect(),line=document.createElementNS("http://www.w3.org/2000/svg","svg");
@@ -2018,7 +2053,7 @@ function timelineConnectFrom(source,e,handle){
   const target=document.elementFromPoint(ev.clientX,ev.clientY)?.closest(".timelineRow[data-timeline-id]");
   const task=target&&state.tasks.find(t=>t.id===target.dataset.timelineId);
   if(!task||task.id===source.id||task.shared)return;
-  if(!confirm("Make “"+task.title+"” start after “"+source.title+"” finishes?"))return;
+  if(!await timelineConfirmLink(source,task,ev.clientX,ev.clientY))return;
   try{
    await api("dependency",{task_id:task.id,depends_on_id:source.id});
    if(!state.dependencies.some(d=>d.task_id===task.id&&d.depends_on_id===source.id))state.dependencies.push({task_id:task.id,depends_on_id:source.id});
