@@ -2,14 +2,14 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#fff"><title>Meetings — Sandy</title>
 <style>
-:root{font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111}*{box-sizing:border-box}body{margin:0;background:white}a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:#fafafa;border-right:1px solid #eee;padding:26px 14px}.brand{font-size:27px;font-weight:800;letter-spacing:-1.7px;margin:0 14px 35px}.nav{display:block;padding:12px 14px;border-radius:10px;font-size:13px;color:#555;font-weight:600;margin:3px 0}.nav:hover,.nav.current{background:#eaeaea;color:#111}.main{padding:50px min(6vw,80px);max-width:1240px;width:100%;margin:auto}.eyebrow{font-size:11px;color:#777;letter-spacing:.14em;font-weight:750}.heading{display:flex;justify-content:space-between;align-items:end;gap:16px}.heading h1{font-size:clamp(34px,4vw,56px);letter-spacing:-.065em;margin:5px 0}.muted{color:#666}.btn{border:1px solid #ddd;background:white;padding:11px 17px;border-radius:10px;font-weight:650}.btn.primary{background:#111;color:white;border-color:#111}.btn:disabled{opacity:.55}.panel{border:1px solid #e5e5e5;border-radius:18px;padding:22px;margin-top:24px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.item{padding:17px 0;border-top:1px solid #eee}.item:first-child{border-top:0}input{border:1px solid #ddd;padding:11px;border-radius:10px;min-width:220px}.status{min-height:22px;color:#555;margin-top:12px}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:20px 0}.tile{background:#171717;border-radius:15px;min-height:230px;overflow:hidden;position:relative}.tile video{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}.tile label{position:absolute;bottom:10px;left:12px;background:#111a;color:white;border-radius:8px;padding:4px 9px;font-size:12px}.controls{display:flex;gap:10px;flex-wrap:wrap}.hide{display:none!important}@media(max-width:750px){.layout{display:block}.side{padding:12px;display:flex;gap:8px;overflow:auto}.brand{margin:0 8px}.nav{white-space:nowrap}.main{padding:25px 18px}} 
+:root{font:15px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#111}*{box-sizing:border-box}body{margin:0;background:white}a{color:inherit;text-decoration:none}button,input{font:inherit}button{cursor:pointer}.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh}.side{background:#fafafa;border-right:1px solid #eee;padding:26px 14px}.brand{font-size:27px;font-weight:800;letter-spacing:-1.7px;margin:0 14px 35px}.nav{display:block;padding:12px 14px;border-radius:10px;font-size:13px;color:#555;font-weight:600;margin:3px 0}.nav:hover,.nav.current{background:#eaeaea;color:#111}.main{padding:50px min(6vw,80px);max-width:1240px;width:100%;margin:auto}.eyebrow{font-size:11px;color:#777;letter-spacing:.14em;font-weight:750}.heading{display:flex;justify-content:space-between;align-items:end;gap:16px}.heading h1{font-size:clamp(34px,4vw,56px);letter-spacing:-.065em;margin:5px 0}.muted{color:#666}.btn{border:1px solid #ddd;background:white;padding:11px 17px;border-radius:10px;font-weight:650}.btn.primary{background:#111;color:white;border-color:#111}.btn:disabled{opacity:.55}.panel{border:1px solid #e5e5e5;border-radius:18px;padding:22px;margin-top:24px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.item{padding:17px 0;border-top:1px solid #eee}.item:first-child{border-top:0}input{border:1px solid #ddd;padding:11px;border-radius:10px;min-width:220px}.status{min-height:22px;color:#555;margin-top:12px}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin:20px 0}.tile{background:#171717;border-radius:15px;min-height:230px;overflow:hidden;position:relative}.tile video{width:100%;height:100%;object-fit:cover;aspect-ratio:4/3}.tile label{position:absolute;bottom:10px;left:12px;background:#111a;color:white;border-radius:8px;padding:4px 9px;font-size:12px}.controls{display:flex;gap:10px;flex-wrap:wrap}.hide{display:none!important}.conference{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:16px}.rightpanel{border:1px solid #e6e6e6;border-radius:14px;padding:16px;min-width:0}.messages{min-height:120px;max-height:320px;overflow:auto;display:flex;flex-direction:column;gap:9px;margin:12px 0}.message{border-radius:9px;background:#f4f4f4;padding:8px 11px;overflow-wrap:anywhere;font-size:13px}.message.mine{background:#e9eee9}.chatrow{display:flex;gap:6px}.chatrow input{min-width:0;flex:1;width:100%}.roster{font-size:13px;color:#555;line-height:1.9}.chatrow button{white-space:nowrap}@media(max-width:880px){.conference{grid-template-columns:1fr}}@media(max-width:750px){.layout{display:block}.side{padding:12px;display:flex;gap:8px;overflow:auto}.brand{margin:0 8px}.nav{white-space:nowrap}.main{padding:25px 18px}} 
 </style></head><body>
 <div class="layout"><aside class="side"><a href="../app/" class="brand">sandy.</a><a class="nav" href="../app/">Overview</a><a class="nav" href="../chat/">Chat</a><a class="nav" href="../agenda/">Tasks</a><a class="nav" href="../calendar/">Calendar</a><a class="nav current" href="./">Meetings</a></aside>
 <main class="main"><div class="eyebrow">SANDY VIDEO</div><div class="heading"><div><h1>Meetings</h1><div class="muted">Secure video calls, hosted by Sandy.</div></div><button id="create" class="btn primary">+ New meeting</button></div>
 <div id="status" class="status" role="status" aria-live="polite"></div><section id="loginPanel" class="panel hide"><h2>Sign in to Sandy</h2><p class="muted">Use your existing Sandy account to create or join a meeting.</p><form id="signInForm"><input id="signInEmail" type="email" autocomplete="email" placeholder="Your Sandy email" required><button id="sendSignIn" class="btn primary" type="submit">Send sign-in link</button></form><p id="signInMessage" class="muted" role="status"></p></section>
 <section id="listing" class="panel"><div class="row"><strong>Your meetings</strong><button id="reload" class="btn">Refresh</button></div><div id="meetings"></div></section>
 <section id="call" class="hide"><div class="row"><h2 id="calltitle"></h2><button id="exit" class="btn">Leave meeting</button></div>
-<div id="tiles" class="tiles"></div><div class="controls"><button id="mic" class="btn">Mute microphone</button><button id="camera" class="btn">Turn camera off</button><button id="share" class="btn">Share screen</button><button id="invite" class="btn">Copy invitation link</button><button id="end" class="btn">End meeting</button></div>
+<div class="conference"><div id="tiles" class="tiles"></div><aside class="rightpanel"><div class="row"><strong>Participants</strong><span id="participantCount">0</span></div><div id="roster" class="roster"></div><hr style="border:0;border-top:1px solid #eee;margin:15px 0"><strong>Meeting chat</strong><div id="messages" class="messages" aria-live="polite"></div><form id="chatForm" class="chatrow"><input id="chatText" maxlength="1000" placeholder="Message everyone" aria-label="Meeting chat message"><button class="btn" type="submit">Send</button></form></aside></div><div class="controls"><button id="mic" class="btn">Mute microphone</button><button id="camera" class="btn">Turn camera off</button><button id="share" class="btn">Share screen</button><button id="invite" class="btn">Copy invitation link</button><button id="end" class="btn">End meeting</button></div>
 <div id="callStatus" class="status" role="status"></div></section>
 <section id="guest" class="panel hide"><h2>Join a Sandy meeting</h2><p class="muted">Enter a name to appear to the other participants.</p><input id="guestName" maxlength="60" placeholder="Your name"><button class="btn primary" id="joinGuest">Join meeting</button></section>
 </main></div>
@@ -21,7 +21,7 @@ const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable
 const idle=installSandyIdleLock(db.auth,{redirect:"../app/?locked=1"});
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-video-api";
 const $=id=>document.getElementById(id);
-let room=null,meetingId=null,owner=false,inviteToken=null;
+let room=null,meetingId=null,owner=false,inviteToken=null;const decoder=new TextDecoder();
 const hash=new URLSearchParams(location.hash.replace(/^#/,""));
 const guestMeeting=hash.get("meeting"),guestInvite=hash.get("invite");
 function notice(v){$("status").textContent=v;}
@@ -44,6 +44,15 @@ async function createInvite(id){
  await navigator.clipboard.writeText(url);
  notice("Invitation copied. Anyone with this link can join until it expires in 7 days.");
 }
+function roster(){
+ const peers=room?[room.localParticipant,...room.remoteParticipants.values()]:[];
+ $("participantCount").textContent=String(peers.length);
+ $("roster").replaceChildren();
+ for(const p of peers){const d=document.createElement("div");d.textContent=(p.name||"Participant")+(p===room.localParticipant?" (You)":"");$("roster").append(d);}
+}
+function message(name,value,mine=false){
+ const el=document.createElement("div");el.className="message"+(mine?" mine":"");el.textContent=name+": "+value;$("messages").append(el);$("messages").scrollTop=$("messages").scrollHeight;
+}
 function attachParticipant(participant){
  for(const publication of participant.trackPublications.values()){if(publication.track)attachTrack(publication.track,participant.identity);}
 }
@@ -60,19 +69,19 @@ async function join(id,isOwner,invite,display_name){
  room=new Room({adaptiveStream:true,dynacast:true});
  room.on(RoomEvent.TrackSubscribed,(track,publication,participant)=>attachTrack(track,participant.identity));
  room.on(RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
- room.on(RoomEvent.ParticipantConnected,p=>attachParticipant(p));
+ room.on(RoomEvent.ParticipantConnected,p=>{attachParticipant(p);roster()});\n room.on(RoomEvent.ParticipantDisconnected,()=>roster());\n room.on(RoomEvent.DataReceived,(payload,participant)=>{try{const m=JSON.parse(decoder.decode(payload));if(m.type==="chat"&&typeof m.text==="string"&&m.text.length<=1000)message(participant?.name||"Participant",m.text)}catch{}});
  room.on(RoomEvent.Disconnected,()=>{$("callStatus").textContent="Disconnected from meeting"});
  try{
  await room.connect(response.server_url,response.token);
  await room.localParticipant.enableCameraAndMicrophone();
  room.remoteParticipants.forEach(attachParticipant);
- room.localParticipant.trackPublications.forEach(pub=>{if(pub.track)attachTrack(pub.track,room.localParticipant.identity)});
+ room.localParticipant.trackPublications.forEach(pub=>{if(pub.track)attachTrack(pub.track,room.localParticipant.identity)});\n roster();
  $("callStatus").textContent="Connected to Sandy Video";
  }catch(e){$("callStatus").textContent="Connection failed: "+e.message;await leave();throw e;}
 }
 async function leave(){
  if(room){await room.disconnect();room=null;}
- $("tiles").replaceChildren();$("call").classList.add("hide");$("create").classList.remove("hide");$("listing").classList.remove("hide");if(!guestMeeting)await reload();else $("guest").classList.remove("hide");
+ $("tiles").replaceChildren();$("messages").replaceChildren();$("roster").replaceChildren();$("call").classList.add("hide");$("create").classList.remove("hide");$("listing").classList.remove("hide");if(!guestMeeting)await reload();else $("guest").classList.remove("hide");
 }
 $("create").onclick=async()=>{const title=prompt("Meeting name","Sandy video meeting");if(title===null)return;try{const m=await api("create",{title});await reload();await join(m.meeting.id,true)}catch(e){notice(e.message)}};
 $("reload").onclick=()=>reload().catch(e=>notice(e.message));
@@ -81,6 +90,7 @@ $("end").onclick=async()=>{if(!owner)return;await api("end",{meeting_id:meetingI
 $("invite").onclick=()=>createInvite(meetingId).catch(e=>notice(e.message));
 $("mic").onclick=async()=>{if(!room)return;const enabled=!room.localParticipant.isMicrophoneEnabled;await room.localParticipant.setMicrophoneEnabled(enabled);$("mic").textContent=enabled?"Mute microphone":"Unmute microphone"};
 $("camera").onclick=async()=>{if(!room)return;const enabled=!room.localParticipant.isCameraEnabled;await room.localParticipant.setCameraEnabled(enabled);$("camera").textContent=enabled?"Turn camera off":"Turn camera on"};
+$("chatForm").onsubmit=async e=>{e.preventDefault();if(!room)return;const input=$("chatText");const content=input.value.trim();if(!content||content.length>1000)return;try{await room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"chat",text:content})),{reliable:true});message("You",content,true);input.value="";}catch(err){$("callStatus").textContent="Message failed: "+err.message;}};
 $("share").onclick=async()=>{if(!room)return;await room.localParticipant.setScreenShareEnabled(!room.localParticipant.isScreenShareEnabled)};
 $("joinGuest").onclick=()=>join(guestMeeting,false,guestInvite,$("guestName").value).catch(e=>notice(e.message));
 $("signInForm").onsubmit=async e=>{e.preventDefault();const email=$("signInEmail").value.trim();const b=$("sendSignIn");b.disabled=true;try{const {error}=await db.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});if(error)throw error;$("signInMessage").textContent="Check your email for a secure Sandy sign-in link.";}catch(err){$("signInMessage").textContent=err.message||"Unable to send sign-in link";}finally{b.disabled=false}};
