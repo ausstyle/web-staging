@@ -266,6 +266,16 @@ function harness(options: Options = {}) {
     fetch: ((input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
       calls.push({ url, init });
+      const headers = new Headers(init?.headers);
+      if (
+        headers.get("authorization") === "Bearer test-service-credential" &&
+        headers.get("apikey") !== "test-service-credential"
+      ) {
+        return Promise.resolve(Response.json(
+          { message: "Conflicting API keys" },
+          { status: 401 },
+        ));
+      }
       return Promise.resolve(
         options.backend
           ? options.backend(url, init)

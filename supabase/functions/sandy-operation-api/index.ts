@@ -1548,7 +1548,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                 redirect: "error",
                 headers: {
                   authorization: `Bearer ${service}`,
-                  apikey: anon,
+                  apikey: service,
                   "content-type": "application/json",
                 },
                 body: JSON.stringify({
@@ -1630,7 +1630,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               redirect: "error",
               headers: {
                 authorization: `Bearer ${service}`,
-                apikey: anon,
+                apikey: service,
                 "content-type": "application/json",
               },
               body: JSON.stringify({
@@ -2007,7 +2007,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               method: "POST",
               headers: {
                 authorization: `Bearer ${service}`,
-                apikey: anon,
+                apikey: service,
                 "content-type": "application/json",
               },
               body: JSON.stringify({
@@ -2093,7 +2093,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               method: "POST",
               headers: {
                 authorization: `Bearer ${service}`,
-                apikey: anon,
+                apikey: service,
                 "content-type": "application/json",
               },
               body: JSON.stringify({ action: videoReadActions[operation] }),
@@ -2138,7 +2138,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               method: "POST",
               headers: {
                 authorization: `Bearer ${service}`,
-                apikey: anon,
+                apikey: service,
                 "content-type": "application/json",
               },
               body: JSON.stringify({ action: handler.action, ...args }),
