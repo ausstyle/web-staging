@@ -17003,18 +17003,18 @@
     "registered_operations": 2585,
     "api_exposed_flags": 447,
     "ai_exposed_flags": 430,
-    "verified_flags": 33,
+    "verified_flags": 37,
     "new_customer_operations": [
       "customer.onboarding.ensure",
       "customer.onboarding.update",
       "customer.identity.get"
     ],
     "engineering_provider_operations_verified": 6,
-    "distinct_engineering_and_onboarding_mcp_operations_verified": 26,
+    "distinct_engineering_and_onboarding_mcp_operations_verified": 14,
     "completed_requirements": 0,
     "wildcard_completion": "incomplete until every constituent works",
     "note": "Historical source/candidate inventory above is preserved; counts here are actual latest production registry flags, not executable or global MCP counts.",
-    "gateway_source_commit": "a4b3aa09ca3bb52f41436daeb0f2b7abe6447aa9",
+    "gateway_source_commit": "c480e3b35cd1d098ee03162d44f53fe153cc14b0",
     "customer_handler_source_commit": "e46fe92f91e24cd7763d4a9a542f27f96c1e30a2",
     "new_customer_provisioning_operations": [
       "customer.provisioning.features.list",
@@ -17033,6 +17033,9 @@
     "customer_provisioning_evidence": "customer-provisioning-evidence-20261021.json",
     "actual_resources_in_completed_acceptance_run": 2,
     "actual_resources_retained_after_tests": 0,
-    "complete_original_requirement_families": 0
+    "complete_original_requirement_families": 0,
+    "distinct_session_mcp_e2e_verified_operations": 33,
+    "vm_diagnostic_operations_verified": 7,
+    "vm_diagnostic_evidence": "sandy-video-diagnostic-evidence-20261021.json"
   }
 }

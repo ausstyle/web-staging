@@ -1,14 +1,14 @@
 # Sandy API implementation status
 
-Updated 21 October 2026 after real customer provisioning acceptance. The original 161 requirement families and the customer-onboarding extension remain incomplete. Registry rows and exposure flags are not completion evidence.
+Updated 21 October 2026 after real customer provisioning acceptance and repaired VM diagnostic acceptance. The original 161 requirement families and the customer-onboarding extension remain incomplete. Registry rows and exposure flags are not completion evidence.
 
 ## Published source and production
 
-GitHub write authorization works. The engineering branch has been pushed through `ca8992a`; later evidence/test commits are published as the work continues. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
+GitHub write authorization works. The engineering branch has been pushed through `c480e3b`. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
 
-The current gateway is **29 ACTIVE**, from source `a4b3aa0`. The customer provisioning handler is **3 ACTIVE**, from `e46fe92`. Both preserve `verify_jwt=true`; every uploaded source was accounted for in production readback. Four gateway modules use reproducible type erasure/whitespace compaction with original Git source and artifact digests preserved. The initial larger gateway upload returned HTTP 413, leaving gateway 28 and its source unchanged; the compact candidate then deployed with HTTP 201.
+The current gateway is **31 ACTIVE**, from source `c480e3b`. The customer provisioning handler is **3 ACTIVE**, from `e46fe92`. Both preserve `verify_jwt=true`; every uploaded source was accounted for in production readback. Five gateway modules use reproducible type erasure/whitespace compaction with original Git source and artifact digests preserved. The initial larger gateway upload returned HTTP 413, leaving gateway 28 and its source unchanged; the compact candidate then deployed with HTTP 201.
 
-Other last observed metadata versions: MCP **14**, private engineering runtime **3**, engineering control **43**, provider operation API **12**, provider gap API **7**, isolated engineering Edge Function fixture **9**. Prior test secret creation/removal advanced these metadata versions without changing their deployed sources. Gateway, MCP and provider JWT verification remain enabled. The private engineering runtime authenticates its revocable Vault bootstrap before obtaining a genuine normal Auth workload session; it returns no credentials.
+Other last observed metadata versions: MCP **14**, private engineering runtime **4**, engineering control **43**, provider operation API **12**, provider gap API **7**, isolated engineering Edge Function fixture **9**. Prior test secret creation/removal advanced these metadata versions without changing their deployed sources. Gateway, MCP and provider JWT verification remain enabled. The private engineering runtime authenticates its revocable Vault bootstrap before obtaining a genuine normal Auth workload session; it returns no credentials.
 
 ## Dedicated engineering identity and verified execution
 
@@ -56,17 +56,24 @@ Reconciliation records actual drift and blocks access to a drifted resource. Rec
 
 Source regressions passed **192/192**; the exact compact artifacts passed **211/211**, including schema validation. Strict PostgreSQL rollback checks passed **47/47** for provisioning and **31/31** for onboarding. Existing normal-customer regressions passed **23/23**, engineering nonowner denials **8/8**, and authenticated engineering discovery/log regression passed after deployment. These overlapping suites are not operation counts.
 
+## Fixed VM diagnostic verification
+
+The existing provisioning backend is **59 ACTIVE**, from `c480e3b`; its original production source was preserved before changes. Gateway 31 fixes service authentication headers and safe propagation of upstream errors. The backend repairs OS Config policy discovery to the official v1 zonal endpoint and inspects Private Google Access without changing networks. Exact deployed source readback passed for both. Source regressions passed **213/213** and exact compact artifacts **232/232**.
+
+[Actual diagnostic evidence](sandy-video-diagnostic-evidence-20261021.json) verifies seven of nine existing diagnostic operations through fresh workload Auth → MCP → Sandy API → Google. Optional scope revocation removes the tools and denies execution with HTTP 403. The fixed VM is running with OS Login and blocked project SSH keys; it has no external IP, Cloud NAT or Private Google Access. Google denied inventory reads with `osconfig.inventories.get` and denied project IAM-policy reads. The latter does not establish that IAP/OS Login execution permissions are absent. OS Config policy listing now succeeds. These checks do not demonstrate remote shell execution, LiveKit installation or conferencing.
+
 ## Database changes
 
 Applied and ledger-read back against exact committed sources:
 
 - `20261021120000`, `20261021121000`: dedicated Auth workload policy, sessions, revocable Vault bootstrap delivery, scoped execution authorization and audit.
 - `20261021130000`, `20261021130010`, `20261021131000`: canonical onboarding, provisional contacts, receipts/audit and typed API/MCP contracts; truthful execution metadata correction.
+- `20261021150000`: separately revocable, fixed-target read-only VM delegation, credential-epoch binding and audit; no shell, IAM, network or installation writes.
 - `20261021140000`, `20261021140010`: provisioning features/templates, customer policies, immutable plans, owned resource registry, persisted jobs/receipts/audit, transactional workspace adapter and typed contracts.
 
 ## Actual coverage and remaining work
 
-Latest production registry: **2,585 registered**, **447 API exposure flags**, **430 AI exposure flags**, **33 verified flags**. This session has genuine MCP end-to-end evidence for **26 distinct operations**: eleven engineering/provider/control operations, three onboarding operations and twelve workspace/lifecycle operations. The dedicated engineering identity discovers six. These figures do not certify global executable/discoverable coverage or complete wildcard families. **Zero complete original requirement families are newly certified**; every incomplete constituent remains outstanding.
+Latest production registry: **2,585 registered**, **447 API exposure flags**, **430 AI exposure flags**, **37 verified flags**. This session has genuine MCP end-to-end evidence for **33 distinct operations**: eleven engineering/provider/control operations, three onboarding operations, twelve workspace/lifecycle operations and seven read-only VM diagnostics. The dedicated engineering identity discovers fifteen while its separately revocable, 24-hour VM diagnostic scope is active; its base fixture scope remains six. These figures do not certify global executable/discoverable coverage or complete wildcard families. **Zero complete original requirement families are newly certified**; every incomplete constituent remains outstanding.
 
 Google Cloud VM/disk provisioning, authenticated remote guest administration, Google Drive folder/permission/file provisioning, integration authorization/initialization, verified new channel linking, organisation membership and the broader asynchronous provisioning worker remain unfinished. Existing provider/identity services are being inspected for reuse. Remote administration of `sandy-video`, LiveKit installation and an actual two-participant conference remain unverified; no overall completion is claimed.
 
