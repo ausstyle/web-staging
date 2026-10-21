@@ -763,7 +763,10 @@ def main():
     args = parser.parse_args()
     result = build(args.schemas, json.loads(args.manifest.read_text()))
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\n")
+    # This generated catalogue is deployed as an Edge Function dependency.
+    # Compact JSON preserves every schema/contract hash while avoiding oversized
+    # Management API multipart uploads; human review uses the compiler/tests.
+    args.output.write_text(json.dumps(result, separators=(",", ":"), ensure_ascii=False) + "\n")
     gateway = args.gateway_output or args.output.with_name("gateway_manifest.json")
     gateway.write_text(json.dumps(compact_manifest(result), separators=(",", ":"), ensure_ascii=False) + "\n")
     if args.migration:
