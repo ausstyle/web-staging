@@ -2,7 +2,7 @@
 
 Generated from production metadata and recorded execution evidence. Flags and active functions do not prove execution. Shared-adapter coverage is reused; expanded rows are not separate implementation projects.
 
-**0/161 families fully accepted**; **12 families have partial required-operation MCP evidence**. **34 distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.
+**0/161 families fully accepted**; **19 families have partial required-operation MCP evidence**. **51 distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.
 
 **33 explicit families have reviewed code awaiting real family acceptance**; **128 need software, integration or constituent reconciliation**. **6 have documented external dependencies**, including **5 with permission denials**. External dependencies overlap the implementation counts; they do not certify completion or explain every missing function.
 
@@ -154,20 +154,20 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 140 | github.audit.list | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 141 | github.security.alerts/list | 18 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 142 | github.codeScanning.* | 22 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 143 | sandy.tenancy_and_subscription.* | 41 | 16/16 | 12 | implementation_or_constituent_reconciliation_required | none established |
-| 144 | sandy.authentication_and_security.* | 32 | 4/4 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 143 | sandy.tenancy_and_subscription.* | 41 | 16/16 | 14 | implementation_or_constituent_reconciliation_required | none established |
+| 144 | sandy.authentication_and_security.* | 32 | 4/4 | 2 | implementation_or_constituent_reconciliation_required | none established |
 | 145 | sandy.connections_composio.* | 21 | 9/9 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 146 | sandy.email_and_microsoft_graph.* | 41 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 147 | sandy.google_gmail.* | 4 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 148 | sandy.calendar_and_scheduling.* | 22 | 10/10 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 148 | sandy.calendar_and_scheduling.* | 22 | 10/10 | 4 | implementation_or_constituent_reconciliation_required | none established |
 | 149 | sandy.whatsapp.* | 19 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 150 | sandy.voice_sip_and_video.* | 6 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 151 | sandy.web_chat_and_conversations.* | 15 | 7/7 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 152 | sandy.memory_and_social_graph.* | 35 | 11/11 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 153 | sandy.agenda_tasks_and_projects.* | 82 | 23/23 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 154 | sandy.missions_and_autonomous_work.* | 19 | 4/4 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 151 | sandy.web_chat_and_conversations.* | 15 | 7/7 | 2 | implementation_or_constituent_reconciliation_required | none established |
+| 152 | sandy.memory_and_social_graph.* | 35 | 11/11 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 153 | sandy.agenda_tasks_and_projects.* | 82 | 23/23 | 9 | implementation_or_constituent_reconciliation_required | none established |
+| 154 | sandy.missions_and_autonomous_work.* | 19 | 4/4 | 2 | implementation_or_constituent_reconciliation_required | none established |
 | 155 | sandy.controller_and_qa.* | 94 | 58/53 | 5 | implementation_or_constituent_reconciliation_required | none established |
-| 156 | sandy.files_and_documents.* | 45 | 17/17 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 156 | sandy.files_and_documents.* | 45 | 17/17 | 6 | implementation_or_constituent_reconciliation_required | none established |
 | 157 | sandy.notifications_and_alerts.* | 20 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 158 | sandy.payments_and_commerce.* | 51 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 159 | sandy.customer_lifecycle_and_support.* | 37 | 16/16 | 15 | implementation_or_constituent_reconciliation_required | none established |

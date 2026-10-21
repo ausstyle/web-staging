@@ -86,6 +86,26 @@ def execution_evidence(docs=DOCS):
                 for test in report.get("tests", [])):
             denied["gcp.compute.instances.get"].append({"file": filename,
                 "level": "normal_Auth_MCP_wrong_target_and_revoked_delegation_denied"})
+    filename = "customer-service-MCP-evidence-20261022.json"
+    path = docs / filename
+    if path.exists():
+        report = load(path)
+        if report.get("independent_readback_matches") is True:
+            for operation, proof in report.get("operation_evidence", {}).items():
+                calls = proof.get("successful_calls", [])
+                if (proof.get("all_fixtures_cleaned") is True and len(calls) == 2
+                        and all(call.get("passed") is True and call.get("discovered") is True
+                                and call.get("http_status") == 200 and call.get("api_status") == 200
+                                and call.get("is_error") is False and call.get("executed") is True for call in calls)):
+                    positive[operation].append({"file": filename,
+                        "level": "normal_customer_MCP_read_nonempty_fixture_asserted" if proof.get("nonempty_fixture_assertion_performed")
+                            else "normal_customer_MCP_read_without_nonempty_resource_assertion",
+                        "durable_admission_receipt_present": False})
+                for call in proof.get("negative_calls", []):
+                    if call.get("negative") is True and call.get("passed") is True and call.get("is_error") is True:
+                        value = {"file": filename, "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"}
+                        if value not in denied[call["operation"]]:
+                            denied[call["operation"]].append(value)
     return dict(positive), dict(denied)
 
 
@@ -197,6 +217,18 @@ def build(registry, functions, owner_evidence, readback_dir, output, provenance=
         owner_target.write_text(json.dumps(load(owner_evidence), indent=2) + "\n")
     positive, denied = execution_evidence()
     matrix = reconcile(baseline["requirements"], registry, functions, disposition, positive, denied)
+    interface_proof = DOCS / "REST-log-MCP-evidence-20261022.json"
+    if interface_proof.exists():
+        proof = load(interface_proof).get("proof", {}).get("live_acceptance", {})
+        if proof.get("passed") is True:
+            for index in (0, 1):
+                matrix[index]["interface_execution_evidence"] = {
+                    "file": interface_proof.name, "API_REST_pages": proof.get("API_REST_discovery_pages"),
+                    "API_REST_description_verified": proof.get("API_REST_description_verified"),
+                    "normal_Auth_MCP_tools_discovered": proof.get("tools_discovered"),
+                    "canonical_named_metadata_tool_invocation_not_inferred": True,
+                    "family_acceptance_not_inferred": True,
+                }
     live = {row.get("slug") or row.get("name"): row for row in functions}
     groups = defaultdict(list)
     for row in registry:

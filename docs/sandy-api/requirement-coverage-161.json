@@ -1,16 +1,16 @@
 {
-  "generated_at_utc": "2026-10-21T21:46:08.649486+00:00",
+  "generated_at_utc": "2026-10-21T23:10:27.209563+00:00",
   "snapshot_provenance": {
     "registry": {
-      "sha256": "d972744b42d65da995a4104deb75cc4482dcfa3d0bd0b8834078047bff30e3ed",
-      "captured_at_utc": "2026-10-21T21:43:49.358473+00:00"
+      "sha256": "7b07785a9c5e418cb03b9b9d98f1db4a5199998d767803ae6a8911fb0513cb5c",
+      "captured_at_utc": "2026-10-21T23:09:31.151752+00:00"
     },
     "functions": {
-      "sha256": "a7ff13ee797482ef5fb77065a13e5f3ac45b808d7137d661f0ae8aac08bdd5d9",
-      "captured_at_utc": "2026-10-21T21:42:02.964661+00:00"
+      "sha256": "b29aff57ce1c928b3cf771b6b3d1d71062e7e9a9836934f343400de6fa285cfc",
+      "captured_at_utc": "2026-10-21T23:09:31.400198+00:00"
     }
   },
-  "source_head": "4e0a0c5367e3b9b6cf8023b25db2457765b98773",
+  "source_head": "855538854b422f4173434d48f77eb98665119ce4",
   "original_pdf_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
   "semantics": {
@@ -28,13 +28,13 @@
     "families_with_external_dependencies": 6,
     "families_with_external_permission_dependencies": 5,
     "families_requiring_software_or_constituent_reconciliation": 128,
-    "families_with_partial_required_operation_MCP_evidence": 12,
-    "documented_distinct_MCP_success_operations": 34,
-    "documented_distinct_MCP_denial_operations": 14,
+    "families_with_partial_required_operation_MCP_evidence": 19,
+    "documented_distinct_MCP_success_operations": 51,
+    "documented_distinct_MCP_denial_operations": 17,
     "registry_rows": 2585,
     "api_flags": 447,
     "ai_flags": 430,
-    "verified_flags": 38,
+    "verified_flags": 46,
     "missing_required_registry_operation_ids": [
       "supabase.functions.invoke",
       "supabase.projects.create",
@@ -61,12 +61,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -139,7 +139,15 @@
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Caller-filtered dynamic API catalogue and digest are deployed and exercised through MCP discovery. Canonical requirement-to-operation mapping and provider readiness/health aggregation remain incomplete; passive registry summaries are not executable discovery.",
       "remaining_capability_basis": "current_review",
-      "wildcard_constituent_review": "explicit_scope"
+      "wildcard_constituent_review": "explicit_scope",
+      "interface_execution_evidence": {
+        "file": "REST-log-MCP-evidence-20261022.json",
+        "API_REST_pages": 4,
+        "API_REST_description_verified": true,
+        "normal_Auth_MCP_tools_discovered": 16,
+        "canonical_named_metadata_tool_invocation_not_inferred": true,
+        "family_acceptance_not_inferred": true
+      }
     },
     {
       "requirement_id": 2,
@@ -152,12 +160,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -215,7 +223,15 @@
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Typed describe and discovery schemas exist. Uniform versions, examples, grants, readiness and corresponding canonical registry operation mapping still need reconciliation.",
       "remaining_capability_basis": "current_review",
-      "wildcard_constituent_review": "explicit_scope"
+      "wildcard_constituent_review": "explicit_scope",
+      "interface_execution_evidence": {
+        "file": "REST-log-MCP-evidence-20261022.json",
+        "API_REST_pages": 4,
+        "API_REST_description_verified": true,
+        "normal_Auth_MCP_tools_discovered": 16,
+        "canonical_named_metadata_tool_invocation_not_inferred": true,
+        "family_acceptance_not_inferred": true
+      }
     },
     {
       "requirement_id": 3,
@@ -228,12 +244,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deployment-api": {
-          "version": 40,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -334,17 +350,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -476,12 +492,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -552,12 +568,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -628,12 +644,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -704,12 +720,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-engineering-control": {
-          "version": 45,
+          "version": 49,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -885,12 +901,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -991,12 +1007,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deployment-api": {
-          "version": 40,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1082,12 +1098,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deployment-api": {
-          "version": 40,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-orchestration-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1193,7 +1209,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1270,7 +1286,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1375,12 +1391,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1561,7 +1577,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1651,7 +1667,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1798,12 +1814,12 @@
       ],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2080,7 +2096,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2188,7 +2204,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2299,12 +2315,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-credential-lifecycle-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2450,7 +2466,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3180,12 +3196,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3336,7 +3352,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3407,7 +3423,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3479,7 +3495,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3599,7 +3615,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3762,7 +3778,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3882,7 +3898,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3989,7 +4005,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4064,7 +4080,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4190,7 +4206,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4295,7 +4311,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5135,7 +5151,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5195,7 +5211,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5359,12 +5375,12 @@
       ],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5511,7 +5527,7 @@
       ],
       "production_handler_versions": {
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5585,7 +5601,7 @@
       ],
       "production_handler_versions": {
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5640,7 +5656,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5710,7 +5726,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5799,12 +5815,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5935,7 +5951,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5990,7 +6006,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -6045,12 +6061,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -6175,12 +6191,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-guest-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -6251,7 +6267,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -7596,7 +7612,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -7816,7 +7832,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8234,7 +8250,7 @@
       ],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8458,7 +8474,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8573,7 +8589,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8722,12 +8738,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -10058,7 +10074,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -10428,7 +10444,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -10858,7 +10874,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -11123,7 +11139,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -11613,7 +11629,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -11863,12 +11879,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -14699,7 +14715,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -15069,7 +15085,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -16084,12 +16100,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -16370,7 +16386,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -16650,12 +16666,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-sensitive-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -17236,27 +17252,27 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-provider-artifact-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -18230,12 +18246,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -18531,17 +18547,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -19033,12 +19049,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-credential-lifecycle-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -19334,12 +19350,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -19965,12 +19981,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-sensitive-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -20551,7 +20567,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -20711,12 +20727,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -21447,7 +21463,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -21777,7 +21793,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -21858,12 +21874,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-sensitive-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -22714,17 +22730,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-sensitive-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -23566,7 +23582,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -23623,12 +23639,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -23781,7 +23797,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24001,12 +24017,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24186,12 +24202,12 @@
       ],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24309,17 +24325,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-bound-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24541,7 +24557,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24596,17 +24612,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
-          "status": "ACTIVE",
-          "verify_jwt": true
-        },
-        "sandy-provider-operation-api": {
           "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
+        "sandy-provider-operation-api": {
+          "version": 16,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24745,22 +24761,22 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-legacy-compatibility-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24933,17 +24949,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-credential-lifecycle-api": {
-          "version": 8,
-          "status": "ACTIVE",
-          "verify_jwt": true
-        },
-        "sandy-provider-operation-api": {
           "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
+        "sandy-provider-operation-api": {
+          "version": 16,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25064,7 +25080,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25140,7 +25156,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25197,12 +25213,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25338,7 +25354,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25398,7 +25414,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25460,7 +25476,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25515,17 +25531,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
-          "status": "ACTIVE",
-          "verify_jwt": true
-        },
-        "sandy-provider-operation-api": {
           "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
+        "sandy-provider-operation-api": {
+          "version": 16,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -25807,12 +25823,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -26048,12 +26064,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -26334,12 +26350,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -26530,12 +26546,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -26666,7 +26682,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -26766,7 +26782,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -26896,17 +26912,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
-          "status": "ACTIVE",
-          "verify_jwt": true
-        },
-        "sandy-provider-operation-api": {
           "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
+        "sandy-provider-operation-api": {
+          "version": 16,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27083,17 +27099,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
-          "status": "ACTIVE",
-          "verify_jwt": true
-        },
-        "sandy-provider-operation-api": {
           "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
+        "sandy-provider-operation-api": {
+          "version": 16,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27270,7 +27286,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27340,12 +27356,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-read-api": {
-          "version": 11,
+          "version": 15,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27446,12 +27462,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-database-operation-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27527,7 +27543,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27657,12 +27673,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27988,12 +28004,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -28139,7 +28155,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -28314,7 +28330,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -28414,7 +28430,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -28604,12 +28620,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-credential-lifecycle-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -28835,7 +28851,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -28906,12 +28922,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-tenant-lifecycle-api": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29457,17 +29473,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-supabase-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-tenant-lifecycle-api": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29659,7 +29675,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29731,12 +29747,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deployment-api": {
-          "version": 40,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29872,7 +29888,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29979,7 +29995,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30084,12 +30100,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-legacy-compatibility-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30276,12 +30292,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-legacy-compatibility-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30445,7 +30461,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30591,12 +30607,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -31582,7 +31598,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -31697,7 +31713,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -31827,7 +31843,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32107,7 +32123,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32197,7 +32213,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32296,7 +32312,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32461,7 +32477,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32570,7 +32586,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32680,17 +32696,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-artifact-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32794,7 +32810,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33014,7 +33030,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33099,7 +33115,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33244,7 +33260,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33494,12 +33510,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-credential-lifecycle-api": {
-          "version": 8,
+          "version": 12,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33630,7 +33646,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33820,7 +33836,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33935,7 +33951,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34155,12 +34171,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34336,7 +34352,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34526,7 +34542,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-gap-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34581,12 +34597,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-supplement-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34897,7 +34913,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -35267,27 +35283,27 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agenda": {
-          "version": 80,
+          "version": 84,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-customer-provisioning-api": {
-          "version": 3,
+          "version": 7,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operations-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -35459,12 +35475,18 @@
           "operation": "agenda.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -35472,12 +35494,18 @@
           "operation": "agenda.pins.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -35974,6 +36002,8 @@
       "api_exposure_flags": 16,
       "ai_exposure_flags": 16,
       "actual_MCP_success_operation_ids": [
+        "agenda.overview",
+        "agenda.pins.list",
         "customer.provisioning.execute",
         "customer.provisioning.features.list",
         "customer.provisioning.jobs.get",
@@ -36004,28 +36034,28 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agenda": {
-          "version": 80,
+          "version": 84,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operations-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "agenda.access.revoke",
         "agenda.categories.create",
@@ -36182,12 +36212,18 @@
           "operation": "agenda.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -36195,12 +36231,18 @@
           "operation": "agenda.pins.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -36524,7 +36566,10 @@
       "active_handler_metadata_count": 32,
       "api_exposure_flags": 4,
       "ai_exposure_flags": 4,
-      "actual_MCP_success_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "agenda.overview",
+        "agenda.pins.list"
+      ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Complete account/session revocation, passkey/MFA/recovery, devices, OAuth consent lifecycle, access logs and tenant policy administration; browser locking does not establish API coverage.",
@@ -36542,12 +36587,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-composio-gateway": {
-          "version": 38,
+          "version": 42,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-composio-read-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -36901,7 +36946,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -37556,7 +37601,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agent-operation-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -37656,18 +37701,18 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-calendar-api": {
-          "version": 27,
+          "version": 31,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-operations-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": false
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "calendar.cancel",
         "calendar.client.attachments.confirm",
@@ -37801,12 +37846,18 @@
           "operation": "calendar.client.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -37879,12 +37930,18 @@
           "operation": "calendar.client.timezone.get",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -37944,25 +38001,42 @@
           "operation": "calendar.get",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
-          "denied_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
+          "denied_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"
+            }
+          ],
           "existing_target_only_not_universal_authority": true
         },
         {
           "operation": "calendar.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -38014,8 +38088,15 @@
       "active_handler_metadata_count": 22,
       "api_exposure_flags": 10,
       "ai_exposure_flags": 10,
-      "actual_MCP_success_operation_ids": [],
-      "actual_MCP_denial_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "calendar.client.overview",
+        "calendar.client.timezone.get",
+        "calendar.get",
+        "calendar.list"
+      ],
+      "actual_MCP_denial_operation_ids": [
+        "calendar.get"
+      ],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
       "remaining_capability_basis": "historical_source_reconciliation_pending_current_constituent_review",
@@ -38032,7 +38113,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -38357,12 +38438,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-deploy-provision": {
-          "version": 66,
+          "version": 70,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-deployment-api": {
-          "version": 40,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -38515,13 +38596,13 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-workspace": {
-          "version": 39,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": false
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "agent.runtime.conversation.respond",
         "agent.runtime.history.search",
@@ -38661,12 +38742,18 @@
           "operation": "workspace.history",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -38674,12 +38761,18 @@
           "operation": "workspace.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -38762,7 +38855,10 @@
       "active_handler_metadata_count": 10,
       "api_exposure_flags": 7,
       "ai_exposure_flags": 7,
-      "actual_MCP_success_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "workspace.history",
+        "workspace.overview"
+      ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Conversation archive/message edit, streaming, complete attachments/channel-link/thread management and centralized API/MCP exposure; local conversation subset remains production-unverified.",
@@ -38780,23 +38876,23 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-memory-centre": {
-          "version": 34,
+          "version": 38,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-social-graph-api": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-workspace": {
-          "version": 39,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": false
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "agent.runtime.context.memory.search",
         "agent.runtime.history.search",
@@ -39216,12 +39312,18 @@
           "operation": "social.people.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -39339,7 +39441,9 @@
       "active_handler_metadata_count": 33,
       "api_exposure_flags": 11,
       "ai_exposure_flags": 11,
-      "actual_MCP_success_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "social.people.list"
+      ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
@@ -39357,43 +39461,43 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agenda": {
-          "version": 80,
+          "version": 84,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-calendar-api": {
-          "version": 27,
+          "version": 31,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-memory-centre": {
-          "version": 34,
+          "version": 38,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operations-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-task-files": {
-          "version": 9,
+          "version": 13,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-workspace": {
-          "version": 39,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": false
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "agenda.access.revoke",
         "agenda.categories.create",
@@ -39600,12 +39704,18 @@
           "operation": "agenda.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -39613,12 +39723,18 @@
           "operation": "agenda.pins.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -39964,12 +40080,18 @@
           "operation": "calendar.client.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40042,12 +40164,18 @@
           "operation": "calendar.client.timezone.get",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40367,12 +40495,18 @@
           "operation": "task_files.counts",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40471,26 +40605,48 @@
           "operation": "tasks.get",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
-          "denied_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
+          "denied_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"
+            }
+          ],
           "existing_target_only_not_universal_authority": true
         },
         {
           "operation": "tasks.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
-          "denied_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
+          "denied_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"
+            }
+          ],
           "existing_target_only_not_universal_authority": true
         },
         {
@@ -40510,12 +40666,18 @@
           "operation": "workspace.command_centre",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40523,12 +40685,18 @@
           "operation": "workspace.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40645,8 +40813,21 @@
       "active_handler_metadata_count": 77,
       "api_exposure_flags": 23,
       "ai_exposure_flags": 23,
-      "actual_MCP_success_operation_ids": [],
-      "actual_MCP_denial_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "agenda.overview",
+        "agenda.pins.list",
+        "calendar.client.overview",
+        "calendar.client.timezone.get",
+        "task_files.counts",
+        "tasks.get",
+        "tasks.list",
+        "workspace.command_centre",
+        "workspace.overview"
+      ],
+      "actual_MCP_denial_operation_ids": [
+        "tasks.get",
+        "tasks.list"
+      ],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
       "remaining_capability_basis": "historical_source_reconciliation_pending_current_constituent_review",
@@ -40663,18 +40844,18 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agent-operation-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-workspace": {
-          "version": 39,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": false
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "agent.execution_plan.draft",
         "agent.missions.plan.prepare",
@@ -40792,12 +40973,18 @@
           "operation": "workspace.command_centre",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40883,12 +41070,18 @@
           "operation": "workspace.missions.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -40976,7 +41169,10 @@
       "active_handler_metadata_count": 14,
       "api_exposure_flags": 4,
       "ai_exposure_flags": 4,
-      "actual_MCP_success_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "workspace.command_centre",
+        "workspace.missions.list"
+      ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Task-bound durable planning, question review and draft work-product services exist with one-use claims and atomic records. Pause/cancel/retry, autonomous provider execution, recovery and acceptance verification remain incomplete; plans/client-review drafts are not completed actions.",
@@ -40994,47 +41190,47 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agent-operation-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-controller-api": {
-          "version": 41,
-          "status": "ACTIVE",
-          "verify_jwt": false
-        },
-        "sandy-deploy-provision": {
-          "version": 66,
-          "status": "ACTIVE",
-          "verify_jwt": false
-        },
-        "sandy-deployment-api": {
-          "version": 40,
-          "status": "ACTIVE",
-          "verify_jwt": true
-        },
-        "sandy-engineering-control": {
           "version": 45,
           "status": "ACTIVE",
           "verify_jwt": false
         },
+        "sandy-deploy-provision": {
+          "version": 70,
+          "status": "ACTIVE",
+          "verify_jwt": false
+        },
+        "sandy-deployment-api": {
+          "version": 44,
+          "status": "ACTIVE",
+          "verify_jwt": true
+        },
+        "sandy-engineering-control": {
+          "version": 49,
+          "status": "ACTIVE",
+          "verify_jwt": false
+        },
         "sandy-engineering-test-api": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-infrastructure-read": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 33,
+          "version": 40,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-system-metadata-api": {
-          "version": 6,
+          "version": 10,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -42554,43 +42750,43 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agent-operation-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-calendar-api": {
-          "version": 27,
+          "version": 31,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-files": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-operations-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-task-files": {
-          "version": 9,
+          "version": 13,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-workspace": {
-          "version": 39,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": false
         }
       },
       "MCP_exposure_assessment": "one_or_more_required_operations_not_API_and_MCP_exposed",
-      "state": "not_yet_accepted",
+      "state": "partial_MCP_evidence",
       "required_operation_ids": [
         "agent.documents.search",
         "agent.runtime.context.files.find",
@@ -42760,12 +42956,18 @@
           "operation": "calendar.client.overview",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -42838,12 +43040,18 @@
           "operation": "calendar.client.timezone.get",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -42942,12 +43150,18 @@
           "operation": "files.library.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -42968,12 +43182,18 @@
           "operation": "files.list",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -42994,12 +43214,18 @@
           "operation": "files.search",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -43124,12 +43350,18 @@
           "operation": "task_files.counts",
           "registered": true,
           "source_contract_candidate_present": true,
-          "code_assessment": "current_code_review_incomplete",
+          "code_assessment": "real_execution_at_recorded_release",
           "API_exposed_flag": true,
           "MCP_exposed_flag": true,
           "MCP_discovery_observation": "not_independently_inferred_from_flags_or_call_success",
-          "authorized_MCP_execution_verified_for_recorded_scope": false,
-          "authorized_execution_evidence": [],
+          "authorized_MCP_execution_verified_for_recorded_scope": true,
+          "authorized_execution_evidence": [
+            {
+              "file": "customer-service-MCP-evidence-20261022.json",
+              "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+              "durable_admission_receipt_present": false
+            }
+          ],
           "denied_execution_evidence": [],
           "existing_target_only_not_universal_authority": true
         },
@@ -43287,7 +43519,14 @@
       "active_handler_metadata_count": 44,
       "api_exposure_flags": 17,
       "ai_exposure_flags": 17,
-      "actual_MCP_success_operation_ids": [],
+      "actual_MCP_success_operation_ids": [
+        "calendar.client.overview",
+        "calendar.client.timezone.get",
+        "files.library.list",
+        "files.list",
+        "files.search",
+        "task_files.counts"
+      ],
       "actual_MCP_denial_operation_ids": [],
       "supporting_MCP_success_operation_ids": [],
       "remaining_capability": "Partial read handling is implemented; remaining wildcard members, writes, pagination where required, tenant/provider acceptance tests and full end-to-end verification remain incomplete.",
@@ -43305,7 +43544,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -43645,12 +43884,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-commerce-ledger-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -44456,22 +44695,22 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-commerce-ledger-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-customer-provisioning-api": {
-          "version": 3,
+          "version": 7,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-operations-api": {
-          "version": 12,
+          "version": 16,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -45149,22 +45388,22 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-agent-operation-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-engineering-test-api": {
-          "version": 10,
+          "version": 14,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-memory-centre": {
-          "version": 34,
+          "version": 38,
           "status": "ACTIVE",
           "verify_jwt": false
         },
         "sandy-workspace": {
-          "version": 39,
+          "version": 44,
           "status": "ACTIVE",
           "verify_jwt": false
         }
@@ -45822,17 +46061,17 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-commerce-ledger-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-customer-provisioning-api": {
-          "version": 3,
+          "version": 7,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-product-service-api": {
-          "version": 7,
+          "version": 11,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -46617,7 +46856,7 @@
         "slug": "sandy-agenda",
         "name": "sandy-agenda",
         "status": "ACTIVE",
-        "version": 80,
+        "version": 84,
         "created_at": 1792119407231,
         "updated_at": 1792614171930,
         "verify_jwt": false,
@@ -46626,8 +46865,11 @@
         "ezbr_sha256": "adc47a53bc6b8ca9ea391d49e7a2e295c232d52e400079ef69828886cfdeba73"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "agenda.overview",
+        "agenda.pins.list"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "sandy-agent-operation-api",
@@ -46637,7 +46879,7 @@
         "slug": "sandy-agent-operation-api",
         "name": "sandy-agent-operation-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792548043448,
         "updated_at": 1792548043448,
         "verify_jwt": true,
@@ -46657,7 +46899,7 @@
         "slug": "sandy-calendar-api",
         "name": "sandy-calendar-api",
         "status": "ACTIVE",
-        "version": 27,
+        "version": 31,
         "created_at": 1792180159211,
         "updated_at": 1792503382125,
         "verify_jwt": false,
@@ -46666,8 +46908,11 @@
         "ezbr_sha256": "ecf30157d07c1d287569c8f6d27ea3844ca2f4f93cc541a1897620305d65e97b"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "calendar.client.overview",
+        "calendar.client.timezone.get"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "sandy-commerce-ledger-api",
@@ -46677,7 +46922,7 @@
         "slug": "sandy-commerce-ledger-api",
         "name": "sandy-commerce-ledger-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792556273560,
         "updated_at": 1792559119262,
         "verify_jwt": true,
@@ -46697,7 +46942,7 @@
         "slug": "sandy-composio-gateway",
         "name": "sandy-composio-gateway",
         "status": "ACTIVE",
-        "version": 38,
+        "version": 42,
         "created_at": 1792246854352,
         "updated_at": 1792459363565,
         "verify_jwt": false,
@@ -46717,7 +46962,7 @@
         "slug": "sandy-composio-read-api",
         "name": "sandy-composio-read-api",
         "status": "ACTIVE",
-        "version": 6,
+        "version": 10,
         "created_at": 1792562195430,
         "updated_at": 1792562195430,
         "verify_jwt": true,
@@ -46737,7 +46982,7 @@
         "slug": "sandy-controller-api",
         "name": "sandy-controller-api",
         "status": "ACTIVE",
-        "version": 41,
+        "version": 45,
         "created_at": 1792167476246,
         "updated_at": 1792548291486,
         "verify_jwt": false,
@@ -46757,7 +47002,7 @@
         "slug": "sandy-credential-lifecycle-api",
         "name": "sandy-credential-lifecycle-api",
         "status": "ACTIVE",
-        "version": 8,
+        "version": 12,
         "created_at": 1792548074206,
         "updated_at": 1792548756587,
         "verify_jwt": true,
@@ -46777,7 +47022,7 @@
         "slug": "sandy-customer-provisioning-api",
         "name": "sandy-customer-provisioning-api",
         "status": "ACTIVE",
-        "version": 3,
+        "version": 7,
         "created_at": 1792588988774,
         "updated_at": 1792591873391,
         "verify_jwt": true,
@@ -46785,10 +47030,7 @@
         "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_b4e387b4-2d3f-47d6-b9d9-1f5afe1009bf_3/source/sandy-customer-provisioning-api/index.ts",
         "ezbr_sha256": "da928eeabca32420e5c50a9363f7746ec618f364ad0a6236fb3504732cfa6284"
       },
-      "attested_source": {
-        "source_commit": "e46fe92f91e24cd7763d4a9a542f27f96c1e30a2",
-        "readback_sha256": "344d7d6428c203e092732c2f1997fd5dfb188efc38a6d25fd8250f2faf56a232"
-      },
+      "attested_source": null,
       "actual_MCP_success_operations": [
         "customer.identity.get",
         "customer.onboarding.ensure",
@@ -46816,7 +47058,7 @@
         "slug": "sandy-database-operation-api",
         "name": "sandy-database-operation-api",
         "status": "ACTIVE",
-        "version": 8,
+        "version": 12,
         "created_at": 1792548059512,
         "updated_at": 1792548895049,
         "verify_jwt": true,
@@ -46836,7 +47078,7 @@
         "slug": "sandy-deploy-provision",
         "name": "sandy-deploy-provision",
         "status": "ACTIVE",
-        "version": 66,
+        "version": 70,
         "created_at": 1792419912917,
         "updated_at": 1792609653239,
         "verify_jwt": false,
@@ -46844,10 +47086,7 @@
         "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_92524e32-a953-4eda-bbc6-5dce13030adf_66/source/sandy-deploy-provision/index.ts",
         "ezbr_sha256": "794ee797c1ac0dac06a246a3305e02678dc28019d303875ab76528eb380602c1"
       },
-      "attested_source": {
-        "source_commit": "1999fe267bac5e8dad5c1d33fb7f243c23756bff",
-        "readback_sha256": "06fb2f3869f20df7d43b1b0d2a23fd70194c1c461ff6b89bfa3dcb9bf8605d36"
-      },
+      "attested_source": null,
       "actual_MCP_success_operations": [
         "video.execution.preflight",
         "video.install.preflight",
@@ -46867,7 +47106,7 @@
         "slug": "sandy-deployment-api",
         "name": "sandy-deployment-api",
         "status": "ACTIVE",
-        "version": 40,
+        "version": 44,
         "created_at": 1792419628842,
         "updated_at": 1792508294999,
         "verify_jwt": true,
@@ -46888,7 +47127,7 @@
         "slug": "sandy-engineering-control",
         "name": "sandy-engineering-control",
         "status": "ACTIVE",
-        "version": 45,
+        "version": 49,
         "created_at": 1792433446541,
         "updated_at": 1792613848189,
         "verify_jwt": false,
@@ -46914,7 +47153,7 @@
         "slug": "sandy-engineering-scope-api",
         "name": "sandy-engineering-scope-api",
         "status": "ACTIVE",
-        "version": 4,
+        "version": 8,
         "created_at": 1792582537139,
         "updated_at": 1792582537139,
         "verify_jwt": false,
@@ -46934,7 +47173,7 @@
         "slug": "sandy-engineering-test-api",
         "name": "sandy-engineering-test-api",
         "status": "ACTIVE",
-        "version": 10,
+        "version": 14,
         "created_at": 1792449861096,
         "updated_at": 1792492103174,
         "verify_jwt": true,
@@ -46954,7 +47193,7 @@
         "slug": "sandy-files",
         "name": "sandy-files",
         "status": "ACTIVE",
-        "version": 18,
+        "version": 22,
         "created_at": 1792342173377,
         "updated_at": 1792353189703,
         "verify_jwt": false,
@@ -46963,8 +47202,10 @@
         "ezbr_sha256": "878e3fdd1184bfbe287d37e9e4eec92f54126f63d9d1494871fe2de1db6bb9bb"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "files.library.list"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "sandy-guest-operation-api",
@@ -46974,7 +47215,7 @@
         "slug": "sandy-guest-operation-api",
         "name": "sandy-guest-operation-api",
         "status": "ACTIVE",
-        "version": 8,
+        "version": 12,
         "created_at": 1792547636723,
         "updated_at": 1792550086188,
         "verify_jwt": true,
@@ -46994,7 +47235,7 @@
         "slug": "sandy-infrastructure-read",
         "name": "sandy-infrastructure-read",
         "status": "ACTIVE",
-        "version": 10,
+        "version": 14,
         "created_at": 1792508476749,
         "updated_at": 1792509030119,
         "verify_jwt": true,
@@ -47014,7 +47255,7 @@
         "slug": "sandy-legacy-compatibility-api",
         "name": "sandy-legacy-compatibility-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792560572005,
         "updated_at": 1792561043712,
         "verify_jwt": true,
@@ -47037,7 +47278,7 @@
         "slug": "sandy-memory-centre",
         "name": "sandy-memory-centre",
         "status": "ACTIVE",
-        "version": 34,
+        "version": 38,
         "created_at": 1792119365586,
         "updated_at": 1792184252844,
         "verify_jwt": false,
@@ -47057,18 +47298,15 @@
         "slug": "sandy-operation-api",
         "name": "sandy-operation-api",
         "status": "ACTIVE",
-        "version": 33,
+        "version": 40,
         "created_at": 1792507924909,
-        "updated_at": 1792612560727,
+        "updated_at": 1792623096368,
         "verify_jwt": true,
         "import_map": false,
-        "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_33/source/sandy-operation-api/index.ts",
-        "ezbr_sha256": "2473437ea0fbcf699f0c2053686779f66a66bd064bb432f73fa9544b3284f174"
+        "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_39/source/sandy-operation-api/index.ts",
+        "ezbr_sha256": "28c7d4d5cfbaa11d516d10a97c2d2321b39f2001e03b2050a4d9d9c9f01ef0c2"
       },
-      "attested_source": {
-        "source_commit": "373989ee7841173b55107392fcfd72ad3eae923e",
-        "readback_sha256": "db145babc94513d2a2033d661b1fb3f7a7154ef87f9d6ac2723858eca0cf7abd"
-      },
+      "attested_source": null,
       "actual_MCP_success_operations": [],
       "state": "unverified_by_this_evidence_set"
     },
@@ -47080,7 +47318,7 @@
         "slug": "sandy-operations-api",
         "name": "sandy-operations-api",
         "status": "ACTIVE",
-        "version": 12,
+        "version": 16,
         "created_at": 1792411113727,
         "updated_at": 1792507202112,
         "verify_jwt": false,
@@ -47089,8 +47327,15 @@
         "ezbr_sha256": "29812696d6503e6bfc390a751fc8173c8b21fcaad005943266472dbd5e0ef778"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "calendar.get",
+        "calendar.list",
+        "files.list",
+        "files.search",
+        "tasks.get",
+        "tasks.list"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "sandy-orchestration-api",
@@ -47100,7 +47345,7 @@
         "slug": "sandy-orchestration-api",
         "name": "sandy-orchestration-api",
         "status": "ACTIVE",
-        "version": 8,
+        "version": 12,
         "created_at": 1792522387840,
         "updated_at": 1792548086293,
         "verify_jwt": true,
@@ -47120,7 +47365,7 @@
         "slug": "sandy-product-service-api",
         "name": "sandy-product-service-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792553106301,
         "updated_at": 1792562177667,
         "verify_jwt": true,
@@ -47140,7 +47385,7 @@
         "slug": "sandy-provider-artifact-api",
         "name": "sandy-provider-artifact-api",
         "status": "ACTIVE",
-        "version": 6,
+        "version": 10,
         "created_at": 1792558644478,
         "updated_at": 1792558644478,
         "verify_jwt": true,
@@ -47160,7 +47405,7 @@
         "slug": "sandy-provider-bound-api",
         "name": "sandy-provider-bound-api",
         "status": "ACTIVE",
-        "version": 6,
+        "version": 10,
         "created_at": 1792557279235,
         "updated_at": 1792557279235,
         "verify_jwt": true,
@@ -47180,7 +47425,7 @@
         "slug": "sandy-provider-gap-api",
         "name": "sandy-provider-gap-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792550737292,
         "updated_at": 1792582419204,
         "verify_jwt": true,
@@ -47202,7 +47447,7 @@
         "slug": "sandy-provider-operation-api",
         "name": "sandy-provider-operation-api",
         "status": "ACTIVE",
-        "version": 12,
+        "version": 16,
         "created_at": 1792547531034,
         "updated_at": 1792582415825,
         "verify_jwt": true,
@@ -47210,10 +47455,7 @@
         "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_a621f69e-89a4-453d-8a96-903764b4c99b_8/source/sandy-provider-operation-api/index.ts",
         "ezbr_sha256": "e7b80d8493bacd16ff0d484b5d9256e367c01fe1011bbbbc0f7b530475ce5ae8"
       },
-      "attested_source": {
-        "source_commit": "0334a878406663b8a683b519bc79c9c4d5e2abb6",
-        "readback_sha256": "00de01bea6d11e250e8ad3d1a4629d6ea2aa685533fde4eb25e0a2845ce29080"
-      },
+      "attested_source": null,
       "actual_MCP_success_operations": [
         "gcp.compute.instances.get",
         "github.files.update",
@@ -47230,7 +47472,7 @@
         "slug": "sandy-provider-read-api",
         "name": "sandy-provider-read-api",
         "status": "ACTIVE",
-        "version": 11,
+        "version": 15,
         "created_at": 1792514574139,
         "updated_at": 1792550028954,
         "verify_jwt": true,
@@ -47250,7 +47492,7 @@
         "slug": "sandy-provider-sensitive-api",
         "name": "sandy-provider-sensitive-api",
         "status": "ACTIVE",
-        "version": 6,
+        "version": 10,
         "created_at": 1792555414929,
         "updated_at": 1792555414929,
         "verify_jwt": true,
@@ -47270,7 +47512,7 @@
         "slug": "sandy-provider-supplement-api",
         "name": "sandy-provider-supplement-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792554580199,
         "updated_at": 1792558509381,
         "verify_jwt": true,
@@ -47290,7 +47532,7 @@
         "slug": "sandy-social-graph-api",
         "name": "sandy-social-graph-api",
         "status": "ACTIVE",
-        "version": 10,
+        "version": 14,
         "created_at": 1792188370131,
         "updated_at": 1792188370131,
         "verify_jwt": false,
@@ -47299,8 +47541,10 @@
         "ezbr_sha256": "e167231b773db53b632c7c27deef8b1e258c920b1984931f9aedff405f8361f3"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "social.people.list"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "sandy-supabase-service-api",
@@ -47310,7 +47554,7 @@
         "slug": "sandy-supabase-service-api",
         "name": "sandy-supabase-service-api",
         "status": "ACTIVE",
-        "version": 7,
+        "version": 11,
         "created_at": 1792550611100,
         "updated_at": 1792552747231,
         "verify_jwt": true,
@@ -47330,7 +47574,7 @@
         "slug": "sandy-system-metadata-api",
         "name": "sandy-system-metadata-api",
         "status": "ACTIVE",
-        "version": 6,
+        "version": 10,
         "created_at": 1792556953417,
         "updated_at": 1792556953417,
         "verify_jwt": true,
@@ -47350,7 +47594,7 @@
         "slug": "sandy-task-files",
         "name": "sandy-task-files",
         "status": "ACTIVE",
-        "version": 9,
+        "version": 13,
         "created_at": 1792341657869,
         "updated_at": 1792341657869,
         "verify_jwt": false,
@@ -47359,8 +47603,10 @@
         "ezbr_sha256": "23072d6f10f38e39b14d9c34ad29f854adccc489d05403afebe8c9f505dddc46"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "task_files.counts"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "sandy-tenant-lifecycle-api",
@@ -47370,7 +47616,7 @@
         "slug": "sandy-tenant-lifecycle-api",
         "name": "sandy-tenant-lifecycle-api",
         "status": "ACTIVE",
-        "version": 10,
+        "version": 14,
         "created_at": 1792554609277,
         "updated_at": 1792562091068,
         "verify_jwt": true,
@@ -47422,17 +47668,22 @@
         "slug": "sandy-workspace",
         "name": "sandy-workspace",
         "status": "ACTIVE",
-        "version": 39,
+        "version": 44,
         "created_at": 1792153106747,
-        "updated_at": 1792423615798,
+        "updated_at": 1792620032008,
         "verify_jwt": false,
         "import_map": false,
-        "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_3c5615c9-e8c3-42ef-a2e1-5c1d991cd119_31/source/index.ts",
-        "ezbr_sha256": "166e1f5b46bf85cedd1f92797ac2627aa236b9a3d9dc5703c4aaa173e99a07fe"
+        "entrypoint_path": "file:///tmp/user_fn_zmqlyygzqoidkcwdysok_3c5615c9-e8c3-42ef-a2e1-5c1d991cd119_40/source/sandy-workspace/index.ts",
+        "ezbr_sha256": "49c1593c7ad1c79d8b6dea59dfb549611427a564188b8a4bd3c159b3abdee716"
       },
       "attested_source": null,
-      "actual_MCP_success_operations": [],
-      "state": "unverified_by_this_evidence_set"
+      "actual_MCP_success_operations": [
+        "workspace.command_centre",
+        "workspace.history",
+        "workspace.missions.list",
+        "workspace.overview"
+      ],
+      "state": "partially_MCP_verified"
     },
     {
       "handler": "unassigned",
@@ -47846,6 +48097,125 @@
         "level": "normal_Auth_owner_delegated_MCP_canonical_Google_provider_read",
         "admission_id": "9cc15888-c779-4677-be38-02d2626203ad"
       }
+    ],
+    "agenda.overview": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "agenda.pins.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "calendar.client.overview": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "calendar.client.timezone.get": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "calendar.get": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "calendar.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "files.library.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "files.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "files.search": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "social.people.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "task_files.counts": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "tasks.get": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "tasks.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_nonempty_fixture_asserted",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "workspace.command_centre": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "workspace.history": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "workspace.missions.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
+    ],
+    "workspace.overview": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_MCP_read_without_nonempty_resource_assertion",
+        "durable_admission_receipt_present": false
+      }
     ]
   },
   "MCP_denial_evidence": {
@@ -47931,6 +48301,24 @@
       {
         "file": "canonical-vm-read-denial-evidence-20261021.json",
         "level": "normal_Auth_MCP_wrong_target_and_revoked_delegation_denied"
+      }
+    ],
+    "tasks.get": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"
+      }
+    ],
+    "calendar.get": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"
+      }
+    ],
+    "tasks.list": [
+      {
+        "file": "customer-service-MCP-evidence-20261022.json",
+        "level": "normal_customer_foreign_resource_hidden_or_identity_override_rejected"
       }
     ]
   },
@@ -48204,8 +48592,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:34:58.687858+00",
       "requirement_ids": [
         143,
         144,
@@ -48222,6 +48610,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -48233,8 +48622,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:34:59.874421+00",
       "requirement_ids": [
         143,
         144,
@@ -48251,6 +48640,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -49429,8 +49819,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:35:01.000407+00",
       "requirement_ids": [
         148,
         153,
@@ -49447,6 +49837,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -49603,8 +49994,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:35:02.020447+00",
       "requirement_ids": [
         148,
         153,
@@ -49621,6 +50012,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -49740,8 +50132,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:35:03.097451+00",
       "requirement_ids": [],
       "contract_sha256": null,
       "evidence_keys": [
@@ -49754,6 +50146,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -49765,8 +50158,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:35:04.154619+00",
       "requirement_ids": [],
       "contract_sha256": null,
       "evidence_keys": [
@@ -49779,6 +50172,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -53990,6 +54384,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -54042,6 +54437,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -54092,6 +54488,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -91733,13 +92130,14 @@
       "api_exposed": true,
       "ai_exposed": true,
       "verified": true,
-      "last_verified_at": "2026-10-21 13:11:03.475988+00",
+      "last_verified_at": "2026-10-21 23:05:48.851706+00",
       "requirement_ids": [],
       "contract_sha256": "05efc808b048a28c45458d4c83028d3d813dab898a72b881d26686a974cab9ae",
       "evidence_keys": [
         "engineering_workload_20261021",
         "legacy_owner_backend_v2_20261021",
         "engineering_mcp_execution_20261021",
+        "engineering_write_regression_20261022",
         "shared_MCP_edge15_acceptance_20261021",
         "engineering_provider_component_20261021"
       ]
@@ -92623,7 +93021,7 @@
       "api_exposed": true,
       "ai_exposed": true,
       "verified": true,
-      "last_verified_at": "2026-10-21 13:11:03.475988+00",
+      "last_verified_at": "2026-10-21 23:05:46.387224+00",
       "requirement_ids": [
         117
       ],
@@ -92641,6 +93039,7 @@
         "mcp_transport_release_20261021",
         "engineering_mcp_execution_20261021",
         "engineering_session_20261021_followup",
+        "engineering_write_regression_20261022",
         "engineering_provider_component_20261021"
       ]
     },
@@ -102109,6 +102508,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -104334,7 +104734,7 @@
       "api_exposed": true,
       "ai_exposed": true,
       "verified": true,
-      "last_verified_at": "2026-10-21 13:11:03.475988+00",
+      "last_verified_at": "2026-10-21 23:05:51.261339+00",
       "requirement_ids": [
         82
       ],
@@ -104352,6 +104752,7 @@
         "mcp_transport_release_20261021",
         "engineering_mcp_execution_20261021",
         "engineering_session_20261021_followup",
+        "engineering_write_regression_20261022",
         "engineering_provider_component_20261021"
       ]
     },
@@ -105006,7 +105407,7 @@
       "api_exposed": true,
       "ai_exposed": true,
       "verified": true,
-      "last_verified_at": "2026-10-21 13:11:03.475988+00",
+      "last_verified_at": "2026-10-21 23:05:44.039487+00",
       "requirement_ids": [
         85,
         110
@@ -105025,6 +105426,7 @@
         "engineering_mcp_pending_20261021",
         "provider_binding_release_20261021",
         "engineering_real_log_component_20261021",
+        "MCP_strict_log_schema_acceptance_20261022",
         "post_IAP_diagnostic_MCP_regression_20261021"
       ]
     },
@@ -110332,6 +110734,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -110530,8 +110933,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:35:13.24722+00",
       "requirement_ids": [],
       "contract_sha256": null,
       "evidence_keys": [
@@ -110544,6 +110947,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -110555,8 +110959,8 @@
       "is_mutation": false,
       "api_exposed": true,
       "ai_exposed": true,
-      "verified": false,
-      "last_verified_at": null,
+      "verified": true,
+      "last_verified_at": "2026-10-21 22:35:14.543466+00",
       "requirement_ids": [],
       "contract_sha256": null,
       "evidence_keys": [
@@ -110569,6 +110973,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "engineering_session_20261021_followup"
       ]
     },
@@ -111435,6 +111840,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "workspace_ui_routing_source_20261021",
         "engineering_session_20261021_followup",
         "workspace_ui_public_key_followup_20261021"
@@ -111545,6 +111951,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "workspace_ui_routing_source_20261021",
         "engineering_session_20261021_followup",
         "workspace_ui_public_key_followup_20261021"
@@ -111739,6 +112146,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "workspace_ui_routing_source_20261021",
         "engineering_session_20261021_followup",
         "workspace_ui_public_key_followup_20261021"
@@ -111877,6 +112285,7 @@
         "identity_release_20261021",
         "engineering_session_20261021",
         "mcp_transport_release_20261021",
+        "customer_service_acceptance_20261022",
         "workspace_ui_routing_source_20261021",
         "engineering_session_20261021_followup",
         "workspace_ui_public_key_followup_20261021"

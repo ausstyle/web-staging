@@ -1,0 +1,302 @@
+{
+  "observed_at": "2026-10-21T22:31:47.779667+00:00",
+  "complete": true,
+  "calls": [
+    {
+      "operation": "tasks.list",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "50897e100ab1fbce8644205d7fc37ffced3f57b47be0a9ea10e51e0921bee3da",
+      "discovered": true,
+      "fixture_state_observed": true,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "agenda.pins.list",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "a4371feb1dc0b38d12638710dc4d34ea7216180126d7a84457201c964c1c1e74",
+      "discovered": true,
+      "fixture_state_observed": true,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "calendar.client.timezone.get",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "dc9801c39af6dd2592338d359221b465145063dca2eeb3e22f420f7963005c3c",
+      "discovered": true,
+      "fixture_state_observed": true,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "workspace.overview",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "5a7fcca4c3a59d2c521ca8d2abf6068212ac2930d27ee18a5ef697372dc9742a",
+      "discovered": true,
+      "fixture_state_observed": null,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "tasks.get",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 404,
+      "is_error": true,
+      "executed": true,
+      "error": "upstream_operation_failed",
+      "admission_id": null,
+      "response_sha256": "98b610608bf6a2eef5ad692ae5fdfd13a4d8d0ccf82c38d8a55b7c75f35d5bb9",
+      "negative": true,
+      "passed": true
+    },
+    {
+      "operation": "calendar.get",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 404,
+      "is_error": true,
+      "executed": true,
+      "error": "upstream_operation_failed",
+      "admission_id": null,
+      "response_sha256": "f3851e68b2adac5910d86ed05280180b4102aa04e42064545f7e361226acb024",
+      "negative": true,
+      "passed": true
+    },
+    {
+      "operation": "tasks.list",
+      "fixture_index": 0,
+      "http_status": 200,
+      "api_status": 400,
+      "is_error": true,
+      "executed": false,
+      "error": "invalid_operation_arguments",
+      "admission_id": null,
+      "response_sha256": "77e5ed6061e08229b2dd85c9e52e80564bf48d1de3b6600a6e4987e62493dca2",
+      "negative": true,
+      "passed": true
+    },
+    {
+      "operation": "tasks.list",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "1dde804d5af612007096c6c043ac598ec7a5bbe7c2081c676394c813989b4ba3",
+      "discovered": true,
+      "fixture_state_observed": true,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "agenda.pins.list",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "3db51d18f3816153ce447d089a77985a12f451d41be8cd43c59ddcd1e5569dde",
+      "discovered": true,
+      "fixture_state_observed": true,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "calendar.client.timezone.get",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "c642c11f24ec0eca48a26a1b1ed03c4642764be68088013166649ff6cf8d79af",
+      "discovered": true,
+      "fixture_state_observed": true,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "workspace.overview",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "admission_id": null,
+      "response_sha256": "042227e3b149efffd2ed3bc7684c5a5cba6a9a42445fbcce3264cc855e3126f4",
+      "discovered": true,
+      "fixture_state_observed": null,
+      "foreign_fixture_absent": true,
+      "passed": true
+    },
+    {
+      "operation": "tasks.get",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 404,
+      "is_error": true,
+      "executed": true,
+      "error": "upstream_operation_failed",
+      "admission_id": null,
+      "response_sha256": "fcf00810bcdc6f009230ad88c161c060f074d56e0e2a19939633cc11b6983a9b",
+      "negative": true,
+      "passed": true
+    },
+    {
+      "operation": "calendar.get",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 404,
+      "is_error": true,
+      "executed": true,
+      "error": "upstream_operation_failed",
+      "admission_id": null,
+      "response_sha256": "0c0f57ce19392bde08603ab8b9f3c3dd43e4dfd8bc4a7e49fff9aaf76a8674a0",
+      "negative": true,
+      "passed": true
+    },
+    {
+      "operation": "tasks.list",
+      "fixture_index": 1,
+      "http_status": 200,
+      "api_status": 400,
+      "is_error": true,
+      "executed": false,
+      "error": "invalid_operation_arguments",
+      "admission_id": null,
+      "response_sha256": "88fdc400bf9e8dd6b4b3cfa4f0c4c623303bafd3aea345eeb7b579d183947f37",
+      "negative": true,
+      "passed": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "reviewed_fixture_triggers_unchanged",
+      "passed": true
+    },
+    {
+      "name": "normal_customer_login_1",
+      "passed": true
+    },
+    {
+      "name": "fixture_onboarding_1",
+      "passed": true
+    },
+    {
+      "name": "normal_customer_login_2",
+      "passed": true
+    },
+    {
+      "name": "fixture_onboarding_2",
+      "passed": true
+    },
+    {
+      "name": "no_Controller_memberships",
+      "passed": true
+    },
+    {
+      "name": "only_seeded_records_and_no_external_work_queued",
+      "passed": true
+    },
+    {
+      "name": "discovery_page_7",
+      "passed": true
+    },
+    {
+      "name": "discovery_no_duplicates_8",
+      "passed": true
+    },
+    {
+      "name": "discovery_completed_63",
+      "passed": true
+    },
+    {
+      "name": "discovery_page_10",
+      "passed": true
+    },
+    {
+      "name": "discovery_no_duplicates_11",
+      "passed": true
+    },
+    {
+      "name": "discovery_completed_63",
+      "passed": true
+    }
+  ],
+  "cleanup": {
+    "logout_statuses": [
+      204,
+      204
+    ],
+    "remaining": {
+      "users": 0,
+      "sessions": 0,
+      "portal_accounts": 0
+    },
+    "complete": true,
+    "independent_remaining": {
+      "customers": 0,
+      "tasks": 0,
+      "calendar_events": 0,
+      "pins": 0,
+      "timezones": 0,
+      "analysis_queue": 0,
+      "mission_runs": 0,
+      "calendar_outbox": 0,
+      "memory_settings": 0,
+      "agenda_grants": 0
+    }
+  },
+  "credentials_recorded": false,
+  "service_key_as_customer": false,
+  "Controller_memberships_added": false,
+  "registry_flags_changed": false,
+  "model_or_connected_provider_work_requested": false,
+  "fixture_user_ids": [
+    "470255e3-66c8-4187-a223-4aefcb09d482",
+    "c8a53ec7-0c7e-4b4c-a662-4a65d4e21dba"
+  ],
+  "fixture_customer_ids": [
+    "ce8571de-2c80-4a92-8ebc-81099a28037f",
+    "22fa86f7-11a4-44b7-b8f4-3f4a7d8414e1"
+  ],
+  "independent_fixture_state": {
+    "tasks": 2,
+    "calendar_events": 2,
+    "analysis_queue": 0,
+    "calendar_outbox": 0,
+    "mission_runs": 0
+  }
+}
