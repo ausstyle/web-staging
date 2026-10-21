@@ -3,6 +3,9 @@ import { Ajv, type ValidateFunction } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import rawCatalogue from "./catalogue.ts";
+import { loadExpandedProviderOperation } from "./expansion.ts";
+import { descriptorExecutionScope } from "./scope_from_descriptor.ts";
+import { createBoundedValidatorCache } from "./validator_cache.ts";
 import {
   argumentDigest,
   JsonRequestError,
@@ -143,36 +146,44 @@ const object = (v: unknown): v is JsonObject =>
   v !== null && typeof v === "object" && !Array.isArray(v);
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-const ajv = new Ajv({
-  strict: true,
-  strictTypes: false,
-  strictRequired: false,
-  allowUnionTypes: true,
-  allErrors: false,
-  validateFormats: true,
-});
-for (const [name, format] of Object.entries(fullFormats)) {
-  ajv.addFormat(name, format);
-}
-const validators = new Map<string, ValidateFunction>();
-function validator(key: string, schema: Schema): ValidateFunction {
-  let fn = validators.get(key);
-  if (!fn) {
-    fn = ajv.compile(schema);
-    validators.set(key, fn);
+function createProviderValidatorEngine() {
+  const engine = new Ajv({
+    strict: true,
+    strictTypes: false,
+    strictRequired: false,
+    allowUnionTypes: true,
+    allErrors: false,
+    validateFormats: true,
+    inlineRefs: false,
+    // Schemas are trusted, compiled source. Disable per-engine metaschema
+    // compilation; request and provider data validation remains strict.
+    meta: false,
+    validateSchema: false,
+  });
+  for (const [name, format] of Object.entries(fullFormats)) {
+    engine.addFormat(name, format);
   }
-  return fn;
+  return engine;
+}
+const validators = createBoundedValidatorCache(createProviderValidatorEngine);
+export const providerValidatorStats = validators.stats;
+export const clearProviderValidators = validators.clear;
+function validator(key: string, schema: Schema): ValidateFunction {
+  return validators.get(key, schema);
+}
+export function validateProviderContract(op: ProviderOperation): void {
+  validator(op.operation + ":in", op.input_schema);
+  validator(op.operation + ":out", {
+    ...op.result_schema,
+    $defs: op.public_defs,
+  });
+  for (const [status, schema] of Object.entries(op.response_schemas)) {
+    validator(op.operation + ":" + status, { ...schema, $defs: op.$defs });
+  }
 }
 export function validateAllContracts(): number {
   for (const op of catalogue.operations) {
-    validator(op.operation + ":in", op.input_schema);
-    validator(op.operation + ":out", {
-      ...op.result_schema,
-      $defs: op.public_defs,
-    });
-    for (const [status, schema] of Object.entries(op.response_schemas)) {
-      validator(op.operation + ":" + status, { ...schema, $defs: op.$defs });
-    }
+    validateProviderContract(op);
   }
   return catalogue.operations.length;
 }
@@ -193,7 +204,7 @@ function refusal(
   return response(status, { ok: false, error, executed: false, ...extra });
 }
 const SENSITIVE =
-  /(password|passwd|secret|credential|private.?key|access.?token|refresh.?token|authorization|connection.?string|encrypted.?value|cookie)/i;
+  /(password|passwd|secret|credential|private.?key|api.?key|service.?role|signed.?url|access.?token|refresh.?token|authorization|connection.?string|encrypted.?value|cookie)/i;
 /** Apply only the published projection, including nested provider maps. */
 export function projectValue(
   raw: unknown,
@@ -215,7 +226,7 @@ export function projectValue(
       try {
         const projected = projectValue(raw, branch, defs, depth + 1);
         if (
-          ajv.validate({ ...branch, $defs: defs }, projected)
+          validators.get(branch, { ...branch, $defs: defs })(projected)
         ) return projected;
       } catch { /* next typed alternative */ }
     }
@@ -546,9 +557,17 @@ export function createProviderOperationHandler(
         ].includes(k)
       )
     ) return refusal(400, "invalid_request");
-    const op = typeof body.operation === "string"
-      ? providerOperations[body.operation]
-      : undefined;
+    let op: ProviderOperation | undefined;
+    try {
+      op = typeof body.operation === "string"
+        ? providerOperations[body.operation] ??
+          await loadExpandedProviderOperation(body.operation) as
+            | ProviderOperation
+            | undefined
+        : undefined;
+    } catch {
+      return refusal(503, "provider_catalogue_integrity_failed");
+    }
     if (!op) return refusal(404, "operation_not_implemented");
     const args = body.arguments ?? {};
     if (
@@ -571,7 +590,9 @@ export function createProviderOperationHandler(
     let url: URL;
     let scope: JsonObject;
     try {
-      scope = providerExecutionScope(op.operation, deps);
+      scope = providerOperations[op.operation]
+        ? providerExecutionScope(op.operation, deps)
+        : descriptorExecutionScope(op, deps);
       url = bindProviderRequest(op, args, deps);
     } catch (error) {
       return refusal(

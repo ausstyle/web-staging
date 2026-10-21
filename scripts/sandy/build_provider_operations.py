@@ -352,8 +352,9 @@ FORMATS = {"date", "date-time", "time", "email", "hostname", "ipv4", "ipv6", "ur
 
 
 class Schemas:
-    def __init__(self, document, public_fields=None):
+    def __init__(self, document, public_fields=None, strict_metadata=False):
         self.public_fields = public_fields
+        self.strict_metadata = strict_metadata
         self.document = document
         self.defs = {}
 
@@ -419,6 +420,7 @@ def object_schema(properties, required=()):
 
 
 SENSITIVE = re.compile(r"(?:password|passwd|secret|credential|private.?key|client.?key|master.?auth|environment.?variables|^env$|^envVars$|^headers$|push.?endpoint|access.?token|refresh.?token|authorization|connection.?string|encrypted.?value|cookie|^value$|^content$|^payload$|^command$|^body$|^text$|^output$)", re.I)
+EXPANSION_SENSITIVE = re.compile(r"(?:download|upload|signed|plaintext|ciphertext|signature|certificate|token|key$|private.?key|public.?key|^data$|url$|uri$|urlTemplate$)", re.I)
 
 
 def public_schema(value, schemas, definitions):
@@ -429,13 +431,17 @@ def public_schema(value, schemas, definitions):
             definitions[name] = {}
             definitions[name] = public_schema(schemas.resolve(value), schemas, definitions)
         return {"$ref": "#/$defs/" + name}
+    if schemas.strict_metadata and value.get("allOf") and response_properties(value, schemas):
+        # Metadata projection is one closed object. Keeping several closed
+        # allOf fragments would make their sibling properties contradict.
+        value = {"type": "object", "properties": response_properties(value, schemas)}
     normalized = schemas.normalize(value)
     # A schema with no structure is opaque provider data, deliberately omitted.
     if not normalized:
         return {"type": "null"}
     result = {key: child for key, child in normalized.items() if key not in {"properties", "items", "additionalProperties", "required", "allOf", "anyOf", "oneOf"}}
     if "properties" in value:
-        result["properties"] = {key: public_schema(child, schemas, definitions) for key, child in value["properties"].items() if not SENSITIVE.search(key) and (schemas.public_fields is None or key in schemas.public_fields)}
+        result["properties"] = {key: public_schema(child, schemas, definitions) for key, child in value["properties"].items() if not SENSITIVE.search(key) and not (schemas.strict_metadata and EXPANSION_SENSITIVE.search(key)) and (schemas.public_fields is None or key in schemas.public_fields)}
         result["required"] = [key for key in value.get("required", []) if key in result["properties"]]
         result["additionalProperties"] = False
     elif isinstance(value.get("additionalProperties"), dict):
@@ -464,7 +470,14 @@ def response_properties(value, schemas):
 
 def projected_result(spec, raw, schemas):
     definitions = {}
-    if spec["kind"] == "domain":
+    if spec["kind"] == "typed_projection":
+        if not raw:
+            raise ValueError("Expansion response needs a documented JSON schema: " + spec["operation"])
+        result = public_schema(raw, schemas, definitions)
+        resolved = schemas.resolve(raw)
+        if resolved.get("type") == "object" and not response_properties(resolved, schemas):
+            raise ValueError("Expansion response has no documented properties: " + spec["operation"])
+    elif spec["kind"] == "domain":
         result = object_schema({"status": {"type": "string"}, "custom_hostname": {"type": ["string", "null"]},
             "ownership_verification": {"type": ["object", "null"], "properties": {key: {"type": "string"} for key in ["type", "name", "value"]}, "additionalProperties": False},
             "ssl_validation_records": {"type": "array", "maxItems": 100, "items": object_schema({"txt_name": {"type": "string"}, "txt_value": {"type": "string"}})},
@@ -607,7 +620,7 @@ def compile_route(spec, document, source):
                 raw_response = raw
     # Request and response refs share a closed, pinned definition set.
     input_schema["$defs"] = schema.defs
-    result_schema, public_defs = projected_result(spec, raw_response, Schemas(document, set(GCP_FIELDS + ["type", "severity", "category", "resource", "resourceName", "resourceType", "reason", "code", "message", "lastTransitionTime", "email", "uniqueId", "role", "members", "condition", "expression", "title", "disabled", "retentionPeriod", "retentionPolicy", "count", "valueType", "metricKind", "unit", "priority", "direction", "action", "sourceRanges", "destinationRanges", "IPProtocol", "ports", "ttl", "rrdatas", "recordType", "backup", "backupType", "resourceProperties"]) if spec["provider"] == "gcp" else None))
+    result_schema, public_defs = projected_result(spec, raw_response, Schemas(document, None if spec.get("strict_metadata_projection") else set(GCP_FIELDS + ["type", "severity", "category", "resource", "resourceName", "resourceType", "reason", "code", "message", "lastTransitionTime", "email", "uniqueId", "role", "members", "condition", "expression", "title", "disabled", "retentionPeriod", "retentionPolicy", "count", "valueType", "metricKind", "unit", "priority", "direction", "action", "sourceRanges", "destinationRanges", "IPProtocol", "ports", "ttl", "rrdatas", "recordType", "backup", "backupType", "resourceProperties"]) if spec["provider"] == "gcp" else None, strict_metadata=spec.get("strict_metadata_projection", False)))
     mutation = spec["method"] not in {"GET", "HEAD"} and spec["operation"] != "supabase.network.bans.list" and not spec.get("semantic_read")
     # Variable values can contain secrets; they require approval even though GET.
     needs_grant = mutation or spec["sensitive"] or spec["requires_cost_approval"]
@@ -684,7 +697,7 @@ def quota_contracts(schemas, source):
     return results
 
 
-def build(schemas, manifest):
+def build(schemas, manifest, include_expansion=False):
     sources = {row["provider"]: row for row in manifest}
     documents = {}
     for provider in {route["provider"] for route in REVIEWED}:
@@ -701,6 +714,10 @@ def build(schemas, manifest):
         document, specs = discovery_document(json.loads(raw), [item for item in GCP_REVIEWED if item[0] == service])
         contracts.extend(compile_route(spec, document, sources[provider]) for spec in specs)
     contracts.extend(quota_contracts(schemas, sources["gcp-cloudquotas"]))
+    if include_expansion:
+        from provider_scope_expansion import compile_expansion
+        additions, _ = compile_expansion(schemas, manifest, contracts)
+        contracts.extend(additions)
     if len({item["operation"] for item in contracts}) != len(contracts):
         raise ValueError("Duplicate reviewed operation")
     return {"contract_version": "1.0.0", "project_ref": PROJECT, "repository": REPOSITORY,
@@ -800,20 +817,34 @@ def main():
     parser.add_argument("--migration", type=Path)
     parser.add_argument("--gateway-output", type=Path)
     parser.add_argument("--loader-output", type=Path)
+    parser.add_argument("--include-expansion", action="store_true", help="Include reviewed constituent actions from provider_scope_expansion.py")
     args = parser.parse_args()
-    result = build(args.schemas, json.loads(args.manifest.read_text()))
+    manifest = json.loads(args.manifest.read_text())
+    baseline = build(args.schemas, manifest)
+    result = baseline
+    additions = None
+    if args.include_expansion:
+        from provider_scope_expansion import compile_expansion, expansion_shards
+        extra, _ = compile_expansion(args.schemas, manifest, baseline["operations"])
+        additions = {**baseline, "operations": extra}
+        result = {**baseline, "operations": [*baseline["operations"], *extra]}
     args.output.parent.mkdir(parents=True, exist_ok=True)
     # This generated catalogue is deployed as an Edge Function dependency.
     # Compact JSON preserves every schema/contract hash while avoiding oversized
     # Management API multipart uploads; human review uses the compiler/tests.
-    source = (json.dumps(result, separators=(",", ":"), ensure_ascii=False) + "\n").encode()
+    source = (json.dumps(baseline, separators=(",", ":"), ensure_ascii=False) + "\n").encode()
     args.output.write_bytes(source)
     loader = args.loader_output or args.output.with_name("catalogue.ts")
     loader.write_text(catalogue_loader(source))
     gateway = args.gateway_output or args.output.with_name("gateway_manifest.json")
-    gateway.write_text(json.dumps(compact_manifest(result), separators=(",", ":"), ensure_ascii=False) + "\n")
+    gateway.write_text(json.dumps(compact_manifest(baseline), separators=(",", ":"), ensure_ascii=False) + "\n")
+    if additions is not None:
+        args.output.with_name("expansion_gateway_manifest.json").write_text(json.dumps(compact_manifest(additions), separators=(",", ":"), ensure_ascii=False) + "\n")
+        args.output.with_name("expansion_contracts.json").write_text(json.dumps(additions, separators=(",", ":"), ensure_ascii=False) + "\n")
+        shards = expansion_shards(additions["operations"], args.output.parent / "expansion_shards")
+        args.output.with_name("expansion_shard_manifest.json").write_text(json.dumps(shards, indent=2) + "\n")
     if args.migration:
-        args.migration.write_text(migration(result))
+        args.migration.write_text(migration(additions if additions is not None else result))
     print(json.dumps({"reviewed_operations": len(result["operations"]), "safe_reads": sum(not item["requires_grant"] for item in result["operations"]), "unverified_grant_operations": sum(item["requires_grant"] for item in result["operations"]), "runtime_verified": False}))
 
 

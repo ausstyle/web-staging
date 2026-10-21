@@ -71,13 +71,12 @@ export function allowedConfiguredReference(
   bindings: VerifiedProviderBindings | undefined,
 ): boolean {
   const match = value.match(
-    /^(organizations|folders|billingAccounts|users)\/[^/]+/,
+    /(?:^|\/)((?:organizations|folders|billingAccounts|users)\/[^/]+)/,
   );
   if (!match) return true;
   return (Object.keys(patterns) as BindingKind[]).some((kind) => {
     try {
-      return value === requireBinding(kind, bindings) ||
-        value.startsWith(requireBinding(kind, bindings) + "/");
+      return match[1] === requireBinding(kind, bindings);
     } catch {
       return false;
     }
