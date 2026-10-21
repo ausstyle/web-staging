@@ -49,6 +49,7 @@ import {
   missionWorkProductContract,
   missionWorkProductOperation,
 } from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_contract.ts";
+import { internalMissionPlanningContracts } from "../../supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_contract.ts";
 import { tenantLifecycleOperations } from "../../supabase/functions/sandy-tenant-lifecycle-api/gateway.ts";
 import { tenantExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/download.ts";
 import { contentExportDownloadOperation } from "../../supabase/functions/sandy-tenant-lifecycle-api/content_download.ts";
@@ -366,6 +367,17 @@ add(
   { [missionWorkProductOperation]: missionWorkProductContract },
   `internal:${missionWorkProductOperation}@1.0.0`,
   "_shared/sandy-agent-operations/worker_mission.ts",
+);
+add(
+  "internal_mission_planning",
+  "_shared/sandy-agent-operations/worker_mission_planning_contract.ts",
+  Object.fromEntries(
+    Object.entries(internalMissionPlanningContracts).map((
+      [operation, contract],
+    ) => [operation, { ...contract, handler: `internal:${operation}@1.0.0` }]),
+  ),
+  "",
+  "_shared/sandy-agent-operations/worker_mission_planning.ts",
 );
 for (const group of groups) {
   for (const [operation, value] of Object.entries(group.contracts)) {
