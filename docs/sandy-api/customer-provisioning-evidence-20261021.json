@@ -1,0 +1,744 @@
+{
+  "source_test_commit": "08b0a6dd4ff55b268c2969d4a7af8511d73b9c6f",
+  "deployed_source_commit": "e46fe92f91e24cd7763d4a9a542f27f96c1e30a2",
+  "gateway_source_commit": "a4b3aa09ca3bb52f41436daeb0f2b7abe6447aa9",
+  "normal_password_sessions": true,
+  "service_role_substituted_for_user": false,
+  "tests": [
+    {
+      "name": "reviewed_deployment_active.sandy-operation-api",
+      "passed": true
+    },
+    {
+      "name": "reviewed_deployment_active.sandy-customer-provisioning-api",
+      "passed": true
+    },
+    {
+      "name": "existing_customer_triggers_reviewed",
+      "passed": true
+    },
+    {
+      "name": "test_features_initially_disabled",
+      "passed": true
+    },
+    {
+      "name": "normal_password_session_1",
+      "passed": true
+    },
+    {
+      "name": "api.customer.onboarding.ensure",
+      "passed": true
+    },
+    {
+      "name": "normal_password_session_2",
+      "passed": true
+    },
+    {
+      "name": "api.customer.onboarding.ensure",
+      "passed": true
+    },
+    {
+      "name": "no_controller_memberships",
+      "passed": true
+    },
+    {
+      "name": "disabled_template_denied",
+      "passed": true
+    },
+    {
+      "name": "missing_feature_entitlement_denied",
+      "passed": true
+    },
+    {
+      "name": "api.customer.provisioning.features.list",
+      "passed": true
+    },
+    {
+      "name": "api.customer.provisioning.templates.list",
+      "passed": true
+    },
+    {
+      "name": "api.customer.provisioning.plan",
+      "passed": true
+    },
+    {
+      "name": "api.customer.provisioning.execute",
+      "passed": true
+    },
+    {
+      "name": "direct_job_truthfully_completed",
+      "passed": true
+    },
+    {
+      "name": "independent_provider_resource_and_acl_readback",
+      "passed": true
+    },
+    {
+      "name": "api.customer.provisioning.jobs.get",
+      "passed": true
+    },
+    {
+      "name": "api.customer.resources.list",
+      "passed": true
+    },
+    {
+      "name": "api.customer.workspace.records.upsert",
+      "passed": true
+    },
+    {
+      "name": "api.customer.workspace.records.get",
+      "passed": true
+    },
+    {
+      "name": "actual_stored_json_result",
+      "passed": true
+    },
+    {
+      "name": "api.customer.resources.reconcile",
+      "passed": true
+    },
+    {
+      "name": "api.customer.resources.reconcile",
+      "passed": true
+    },
+    {
+      "name": "actual_drift_detected",
+      "passed": true
+    },
+    {
+      "name": "api.customer.resources.recover",
+      "passed": true
+    },
+    {
+      "name": "api.customer.workspace.records.delete",
+      "passed": true
+    },
+    {
+      "name": "independent_provider_resource_and_acl_readback",
+      "passed": true
+    },
+    {
+      "name": "api.customer.resources.decommission",
+      "passed": true
+    },
+    {
+      "name": "direct_provider_decommission_confirmed",
+      "passed": true
+    },
+    {
+      "name": "all_twelve_mcp_tools_discovered_with_schemas",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.features.list",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.templates.list",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.plan",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.execute",
+      "passed": true
+    },
+    {
+      "name": "independent_provider_resource_and_acl_readback",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.execute",
+      "passed": true
+    },
+    {
+      "name": "mcp_provision_idempotency",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.jobs.get",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.resources.list",
+      "passed": true
+    },
+    {
+      "name": "owned_resource_in_registry",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.workspace.records.upsert",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.workspace.records.get",
+      "passed": true
+    },
+    {
+      "name": "mcp_actual_record_result",
+      "passed": true
+    },
+    {
+      "name": "cross_customer_record_denied",
+      "passed": true
+    },
+    {
+      "name": "cross_customer_job_denied",
+      "passed": true
+    },
+    {
+      "name": "current_storage_quota_enforced",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.resources.reconcile",
+      "passed": true
+    },
+    {
+      "name": "mcp_actual_drift_truthful",
+      "passed": true
+    },
+    {
+      "name": "drifted_resource_access_denied",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.resources.recover",
+      "passed": true
+    },
+    {
+      "name": "independent_provider_resource_and_acl_readback",
+      "passed": true
+    },
+    {
+      "name": "mcp_actual_recovery_verified",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.workspace.records.delete",
+      "passed": true
+    },
+    {
+      "name": "independent_provider_resource_and_acl_readback",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.resources.decommission",
+      "passed": true
+    },
+    {
+      "name": "mcp_provider_decommission_confirmed",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.plan",
+      "passed": true
+    },
+    {
+      "name": "mcp_failed_transaction_is_error_with_real_job",
+      "passed": true
+    },
+    {
+      "name": "mcp.customer.provisioning.jobs.get",
+      "passed": true
+    },
+    {
+      "name": "actual_failed_job_status",
+      "passed": true
+    },
+    {
+      "name": "failed_transaction_no_orphan",
+      "passed": true
+    },
+    {
+      "name": "all_fixture_provider_resources_absent",
+      "passed": true
+    },
+    {
+      "name": "fixture_sessions_and_receipts_cleaned",
+      "passed": true
+    }
+  ],
+  "calls": [
+    {
+      "operation": "customer.onboarding.ensure",
+      "request_id": "ae4a3aa7-fd40-420e-a4b5-553dc55a38b8",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.onboarding.ensure",
+      "request_id": "0e3e539f-0832-45ab-82ed-4b3e20202f49",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.plan",
+      "request_id": "bd25bdf0-7276-4ef4-803a-dd1fe7f1ff22",
+      "channel": "api",
+      "http_status": 403,
+      "executed": false,
+      "error": "provisioning_template_unavailable",
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.plan",
+      "request_id": "b44b9f8a-9450-47f9-8071-49f85c6b5774",
+      "channel": "api",
+      "http_status": 403,
+      "executed": false,
+      "error": "provisioning_feature_not_entitled",
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.features.list",
+      "request_id": "268c093b-52d3-4772-b91e-07cb6db23e8f",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.templates.list",
+      "request_id": "22dbf351-f015-46cb-9f4b-8647c05b6fbc",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.plan",
+      "request_id": "a70aeed9-ee31-46d0-adab-8c24b867efe5",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.execute",
+      "request_id": "adb94b85-6f49-4958-b940-50df2714049c",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.jobs.get",
+      "request_id": "93cd3ed4-4a1d-49a3-8dea-c85469cde549",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.list",
+      "request_id": "edc57469-8e38-45a6-9769-44c4ddd60095",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.upsert",
+      "request_id": "f8724919-f516-4c86-b847-54cfc4ed3a8a",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.get",
+      "request_id": "5373abca-1aee-42a6-b80e-1021d1492ecf",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.reconcile",
+      "request_id": "ae28a214-9bcb-4be0-bd10-bd91d823d731",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.reconcile",
+      "request_id": "fc0772d4-a6f6-4dea-9ce7-ce1298a94018",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.recover",
+      "request_id": "930554bb-b81a-48ef-9da8-8b0879707c6b",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.delete",
+      "request_id": "92fab4fb-138c-4b89-b115-03fa7dcce5e2",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.decommission",
+      "request_id": "cb54ccaf-42ad-4dd3-9857-3e9a9bc64e58",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.features.list",
+      "request_id": "b3169355-7501-483d-ae78-f7a01254b0e4",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.templates.list",
+      "request_id": "fb6d7aad-517b-4344-be53-34df206af94c",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.plan",
+      "request_id": "e9f5659f-0907-4c87-9f12-7b42965728c6",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.execute",
+      "request_id": "9ef97c77-33f1-4be8-bdca-f98c09cfe9ed",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.execute",
+      "request_id": "9ef97c77-33f1-4be8-bdca-f98c09cfe9ed",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.jobs.get",
+      "request_id": "94a34a93-607f-4a7c-811a-9ec0855fb596",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.list",
+      "request_id": "7bb99de4-3520-496b-a0bc-21b723e4de83",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.upsert",
+      "request_id": "59c8a85b-d793-4248-9d12-f77737edd7a0",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.get",
+      "request_id": "3c58ed72-23f2-4de9-adfe-6a2164b1c079",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.get",
+      "request_id": "b98a97d3-299e-4bf4-a997-cb67e55ebef9",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 404,
+      "is_error": true,
+      "executed": false,
+      "error": "customer_resource_not_found",
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.jobs.get",
+      "request_id": "3f694397-bf6e-4e71-800e-0bea0d617d2b",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 404,
+      "is_error": true,
+      "executed": false,
+      "error": "provisioning_job_not_found",
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.upsert",
+      "request_id": "3c9c4818-d614-444f-9914-d17abb282972",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 429,
+      "is_error": true,
+      "executed": false,
+      "error": "workspace_storage_quota_exceeded",
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.reconcile",
+      "request_id": "c9c93830-f1c8-488b-85e8-54b8f9b73fb5",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.get",
+      "request_id": "c2c83b17-e795-4de0-91c1-55a31cb5e8fa",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 409,
+      "is_error": true,
+      "executed": false,
+      "error": "resource_reconciliation_required",
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.recover",
+      "request_id": "adbe95c5-182e-4070-9ed1-5b062d901fb4",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.workspace.records.delete",
+      "request_id": "9b8bac07-5246-42a6-831b-ab63acd29f31",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.resources.decommission",
+      "request_id": "8b655eec-af0a-421d-8f01-de13ed8495f7",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.plan",
+      "request_id": "32d43790-0f80-48b9-aa3c-d980b1bc2e29",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    },
+    {
+      "operation": "customer.provisioning.execute",
+      "request_id": "809ecc44-4a0e-4698-bf71-d43442cf6947",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 503,
+      "is_error": true,
+      "executed": false,
+      "error": "provisioning_transaction_failed",
+      "job_id": "d1143da2-e0d9-48e0-9b46-c34b60aa3caf"
+    },
+    {
+      "operation": "customer.provisioning.jobs.get",
+      "request_id": "d7f9e092-57f7-4997-b8c3-d6c8a4ee80b8",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "executed": true,
+      "error": null,
+      "job_id": null
+    }
+  ],
+  "resources": [
+    "949278aa-e7c5-487e-af0a-fef516cf84b8",
+    "e42c8e28-f61b-407a-8899-c58042f2e2b8"
+  ],
+  "cleanup": {
+    "logout_statuses": [
+      204,
+      204
+    ],
+    "configuration_readback": {
+      "feature_enabled": false,
+      "template_enabled": false
+    },
+    "remaining": {
+      "auth_users": 0,
+      "portal_accounts": 0,
+      "receipts": 0
+    }
+  },
+  "complete": true,
+  "customers": [
+    "eceaf656-e723-4ac8-9238-f29715a47983",
+    "b23f04d2-6519-4aba-9f06-953fffa7e423"
+  ],
+  "enabled_configuration_versions": {
+    "feature_version": 6,
+    "template_version": 6
+  },
+  "resource_readbacks": [
+    {
+      "id": "949278aa-e7c5-487e-af0a-fef516cf84b8",
+      "customer_id": "eceaf656-e723-4ac8-9238-f29715a47983",
+      "provider_resource_id": "public.sandy_workspace_949278aae7c5487eaf0afef516cf84b8",
+      "state": "ready",
+      "version": 1,
+      "provider_exists": true,
+      "provider_acl_verified": true,
+      "actual_cost_microusd": null
+    },
+    {
+      "id": "949278aa-e7c5-487e-af0a-fef516cf84b8",
+      "customer_id": "eceaf656-e723-4ac8-9238-f29715a47983",
+      "provider_resource_id": "public.sandy_workspace_949278aae7c5487eaf0afef516cf84b8",
+      "state": "ready",
+      "version": 6,
+      "provider_exists": true,
+      "provider_acl_verified": true,
+      "actual_cost_microusd": null
+    },
+    {
+      "id": "e42c8e28-f61b-407a-8899-c58042f2e2b8",
+      "customer_id": "eceaf656-e723-4ac8-9238-f29715a47983",
+      "provider_resource_id": "public.sandy_workspace_e42c8e28f61b407a8899c58042f2e2b8",
+      "state": "ready",
+      "version": 1,
+      "provider_exists": true,
+      "provider_acl_verified": true,
+      "actual_cost_microusd": null
+    },
+    {
+      "id": "e42c8e28-f61b-407a-8899-c58042f2e2b8",
+      "customer_id": "eceaf656-e723-4ac8-9238-f29715a47983",
+      "provider_resource_id": "public.sandy_workspace_e42c8e28f61b407a8899c58042f2e2b8",
+      "state": "ready",
+      "version": 4,
+      "provider_exists": true,
+      "provider_acl_verified": true,
+      "actual_cost_microusd": null
+    },
+    {
+      "id": "e42c8e28-f61b-407a-8899-c58042f2e2b8",
+      "customer_id": "eceaf656-e723-4ac8-9238-f29715a47983",
+      "provider_resource_id": "public.sandy_workspace_e42c8e28f61b407a8899c58042f2e2b8",
+      "state": "ready",
+      "version": 5,
+      "provider_exists": true,
+      "provider_acl_verified": true,
+      "actual_cost_microusd": null
+    }
+  ],
+  "passed": 64,
+  "failed": 0,
+  "independent_cleanup_readback": {
+    "customers": 0,
+    "resources": 0,
+    "jobs": 0,
+    "plans": 0,
+    "policies": 0,
+    "entitlements": 0,
+    "provider_tables": 0
+  },
+  "registry_counts": {
+    "registered": 2585,
+    "api_exposed_flags": 447,
+    "ai_exposed_flags": 430,
+    "verified_flags": 33,
+    "distinct_session_mcp_e2e_verified": 26
+  },
+  "source_regressions_passed": 192,
+  "compiled_artifact_regressions_passed": 211,
+  "strict_postgres_rollback_checks_passed": 47,
+  "api_gateway_version": 29,
+  "handler_version": 3,
+  "global_original_161_completed_requirements": 0
+}

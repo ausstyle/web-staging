@@ -11441,6 +11441,13 @@
         "evidence": "customer-onboarding-evidence-20261021.json",
         "scope_complete": false,
         "limitations": "Verified email/web/API canonical identity; projection of existing verified WhatsApp links. No new channel-link verification or identity merge; provisioning and organisation entitlements remain separate work."
+      },
+      "customer_provisioning_extension_evidence": {
+        "evidence": "customer-provisioning-evidence-20261021.json",
+        "verified_adapter": "supabase.workspace",
+        "mcp_operations_verified": 12,
+        "scope_complete": false,
+        "remaining": "Other provider adapters, organisation/subscription integration, asynchronous provisioning and unimplemented wildcard constituents."
       }
     },
     {
@@ -13795,6 +13802,13 @@
         "evidence": "customer-onboarding-evidence-20261021.json",
         "scope_complete": false,
         "limitations": "Verified email/web/API canonical identity; projection of existing verified WhatsApp links. No new channel-link verification or identity merge; provisioning and organisation entitlements remain separate work."
+      },
+      "customer_provisioning_extension_evidence": {
+        "evidence": "customer-provisioning-evidence-20261021.json",
+        "verified_adapter": "supabase.workspace",
+        "mcp_operations_verified": 12,
+        "scope_complete": false,
+        "remaining": "Other provider adapters, organisation/subscription integration, asynchronous provisioning and unimplemented wildcard constituents."
       }
     },
     {
@@ -14101,7 +14115,14 @@
         "product.executions.get"
       ],
       "acceptance_state": "not_complete",
-      "remaining_capability_prior_source_baseline": "Tenant-authorized branding/pages/templates/locales/currencies/feature/settings APIs, frontend build/deploy and configuration rollback with provider-verified receipts."
+      "remaining_capability_prior_source_baseline": "Tenant-authorized branding/pages/templates/locales/currencies/feature/settings APIs, frontend build/deploy and configuration rollback with provider-verified receipts.",
+      "customer_provisioning_extension_evidence": {
+        "evidence": "customer-provisioning-evidence-20261021.json",
+        "verified_adapter": "supabase.workspace",
+        "mcp_operations_verified": 12,
+        "scope_complete": false,
+        "remaining": "Other provider adapters, organisation/subscription integration, asynchronous provisioning and unimplemented wildcard constituents."
+      }
     }
   ],
   "baseline_deployed_gateway_operation_ids": [
@@ -16979,19 +17000,39 @@
   "pinned_source_commit": "e2d49fdfab6147783e4bbfde373d6550db906763",
   "production_extension_evidence_20261021": {
     "source_commit": "dd824bfa3a2eb3a513c072fdaf68553cda24d4ae",
-    "registered_operations": 2573,
-    "api_exposed_flags": 435,
-    "ai_exposed_flags": 418,
-    "verified_flags": 21,
+    "registered_operations": 2585,
+    "api_exposed_flags": 447,
+    "ai_exposed_flags": 430,
+    "verified_flags": 33,
     "new_customer_operations": [
       "customer.onboarding.ensure",
       "customer.onboarding.update",
       "customer.identity.get"
     ],
     "engineering_provider_operations_verified": 6,
-    "distinct_engineering_and_onboarding_mcp_operations_verified": 14,
+    "distinct_engineering_and_onboarding_mcp_operations_verified": 26,
     "completed_requirements": 0,
     "wildcard_completion": "incomplete until every constituent works",
-    "note": "Historical source/candidate inventory above is preserved; counts here are actual latest production registry flags, not executable or global MCP counts."
+    "note": "Historical source/candidate inventory above is preserved; counts here are actual latest production registry flags, not executable or global MCP counts.",
+    "gateway_source_commit": "a4b3aa09ca3bb52f41436daeb0f2b7abe6447aa9",
+    "customer_handler_source_commit": "e46fe92f91e24cd7763d4a9a542f27f96c1e30a2",
+    "new_customer_provisioning_operations": [
+      "customer.provisioning.features.list",
+      "customer.provisioning.templates.list",
+      "customer.provisioning.plan",
+      "customer.provisioning.execute",
+      "customer.provisioning.jobs.get",
+      "customer.resources.list",
+      "customer.resources.reconcile",
+      "customer.resources.recover",
+      "customer.resources.decommission",
+      "customer.workspace.records.get",
+      "customer.workspace.records.upsert",
+      "customer.workspace.records.delete"
+    ],
+    "customer_provisioning_evidence": "customer-provisioning-evidence-20261021.json",
+    "actual_resources_in_completed_acceptance_run": 2,
+    "actual_resources_retained_after_tests": 0,
+    "complete_original_requirement_families": 0
   }
 }
