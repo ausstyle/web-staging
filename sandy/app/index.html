@@ -166,10 +166,12 @@
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {installSandyIdleLock} from "../security-lock.js";
+import {createWorkspaceReadClient} from "../workspace-api-reads.mjs";
 const $=id=>document.getElementById(id);
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{detectSessionInUrl:true,persistSession:true,storage:localStorage,autoRefreshToken:true,experimental:{passkey:true}}});
 const idle=installSandyIdleLock(sb.auth);
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-workspace";
+const apiReads=createWorkspaceReadClient(sb.auth,{onSessionExpired:message=>showLogin(message)});
 let passkeysEnabled=false;let profile=null,view="home",filter="all",whatsappView="topics",search="",cursor=null,items=[],selected=null,busy=false,historyGeneration=0;
 function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=String(text);return n}
 function add(parent,...nodes){nodes.forEach(n=>parent.appendChild(n));return parent}
@@ -177,6 +179,7 @@ function btn(text,fn,cls="btn"){const b=el("button",cls,text);b.type="button";b.
 function fmt(t){if(!t)return "";try{return new Intl.DateTimeFormat("en-AU",{day:"numeric",month:"short",year:"numeric",hour:"numeric",minute:"2-digit"}).format(new Date(t))}catch{return ""}}
 function safeText(t){return String(t||"").replace(/\s+/g," ").trim()}
 async function call(action,payload={}){
+ if(apiReads.handles(action))return apiReads.call(action,payload);
  const {data}=await sb.auth.getSession();
  let session=data?.session;
  if(!session?.access_token){showLogin("Your session has expired. Sign in again to continue.");throw Error("Sign in required")}
