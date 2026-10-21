@@ -143,6 +143,22 @@ export interface ProviderDependencies extends ProviderConfig {
   consumeGrant: (request: GrantRequest) => Promise<PolicyResult>;
   finishExecution: (request: FinishRequest) => Promise<PolicyResult>;
 }
+/** Signing in the dedicated machine must never replace the service client's
+ * session used to authorize owners and persist execution receipts. */
+export function createProviderMachineCredential(
+  base: string,
+  service: string,
+  request: typeof fetch = fetch,
+) {
+  const machine = createClient(base, service, {
+    auth: { persistSession: false, autoRefreshToken: false },
+    global: { fetch: request },
+  });
+  return createMachineAccessToken(
+    machine.auth as unknown as MachineAuth,
+    request,
+  );
+}
 const object = (v: unknown): v is JsonObject =>
   v !== null && typeof v === "object" && !Array.isArray(v);
 const UUID =
@@ -1089,8 +1105,9 @@ if (import.meta.main) {
     github_api: () =>
       Deno.env.get("SANDY_GITHUB_APP_INSTALLATION_TOKEN") ??
         Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN") ?? "",
-    gcp_access_token: createMachineAccessToken(
-      db.auth as unknown as MachineAuth,
+    gcp_access_token: createProviderMachineCredential(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      service,
     ),
   };
   const withCredential = createCredentialConsumer({ db, legacy });
