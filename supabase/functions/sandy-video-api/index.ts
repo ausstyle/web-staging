@@ -4,7 +4,7 @@ const SERVICE=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
 const LIVEKIT_URL="wss://207-175-104-71.sslip.io";
 const ALLOWED=new Set(["https://ausstyle.github.io"]);
 const enc=new TextEncoder();
-const b64=(data:Uint8Array)=>btoa(String.fromCharCode(...data)).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/g,"");
+const b64=(data:Uint8Array)=>btoa(String.fromCharCode(...data)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
 const jsonB64=(o:unknown)=>b64(enc.encode(JSON.stringify(o)));
 const sha=async(s:string)=>Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",enc.encode(s)))).map(x=>x.toString(16).padStart(2,"0")).join("");
 const reply=(status:number,data:unknown,origin:string)=>Response.json(data,{status,headers:{"cache-control":"no-store","access-control-allow-origin":origin,"vary":"Origin","access-control-allow-headers":"authorization,content-type","access-control-allow-methods":"POST, OPTIONS"}});
