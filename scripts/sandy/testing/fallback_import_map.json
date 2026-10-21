@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "npm:@supabase/supabase-js@2": "./fallback_client.ts",
+    "jsr:@supabase/functions-js/edge-runtime.d.ts": "./fallback_edge.ts"
+  }
+}

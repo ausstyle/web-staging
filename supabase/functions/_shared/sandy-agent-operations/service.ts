@@ -1,6 +1,7 @@
 import { prepareConnectedGmail, confirmConnectedGmail } from "./connected-gmail.ts";
 import { agentOperationContracts, validAgentInput, validAgentOutput } from "./contracts.ts";
 import { AgentDb, AgentPrincipal, isAgentPrincipal } from "./identity.ts";
+import { isBoundLegacyRuntimeProfile, legacyRuntimeResponses, type LegacyRuntimeProfile } from "./runtime_profiles.ts";
 
 type Obj = Record<string, any>;
 export type AgentServices = {
@@ -10,6 +11,7 @@ export type AgentServices = {
   openaiKey: string;
   integrationToken: string;
   fetch?: typeof fetch;
+  legacyRuntimeProfile?: LegacyRuntimeProfile;
 };
 export type AgentOutcome = { status: number; body: Obj; legacy: Obj };
 const object = (x: unknown): x is Obj => x !== null && typeof x === "object" && !Array.isArray(x);
@@ -173,11 +175,13 @@ async function rawOperation(ctx: AgentPrincipal, operation: string, args: Obj, d
   }
   if (operation === "agent.execution_plan.draft")
     body.instructions = "Return a concise plan, dependencies and verification steps. This is planning only; never claim any action was performed.";
-  if (!deps.integrationToken || !/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(deps.base))
+  if (!deps.legacyRuntimeProfile && (!deps.integrationToken || !/^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(deps.base)))
     return failure("agent_broker_not_configured");
   try {
     // This is the existing broker integration credential, never an auth-user JWT.
-    const response = await (deps.fetch ?? fetch)(deps.base.replace(/\/$/, "") + "/functions/v1/sandy-openai-gateway-v4", {
+    const response = deps.legacyRuntimeProfile
+      ? await legacyRuntimeResponses(deps.legacyRuntimeProfile, ctx, operation as "agent.web.research" | "agent.documents.search" | "agent.execution_plan.draft", body, deps.openaiKey, deps.fetch ?? fetch)
+      : await (deps.fetch ?? fetch)(deps.base.replace(/\/$/, "") + "/functions/v1/sandy-openai-gateway-v4", {
       method: "POST", redirect: "error", headers: { "x-sandy-integration-token": deps.integrationToken,
         "x-sandy-purpose": "web", "x-sandy-task": (ctx.requestText || String(args.query ?? args.goal ?? "")).replace(/[^\x20-\x7E]/g, " ").slice(0, 240),
         authorization: "Bearer " + deps.openaiKey, "content-type": "application/json" },
@@ -210,6 +214,8 @@ export async function executeAgentOperation(
   const refused = (status: number, error: string, extra: Obj = {}): AgentOutcome => ({ status,
     body: { ok: false, operation, error, executed: false, ...extra }, legacy: { error, ...extra } });
   if (!isAgentPrincipal(context)) return refused(403, "agent_principal_required");
+  if (deps.legacyRuntimeProfile && !isBoundLegacyRuntimeProfile(deps.legacyRuntimeProfile, context))
+    return refused(403, "runtime_transport_profile_denied");
   const contract = agentOperationContracts[operation];
   if (!contract) return refused(404, "agent_operation_not_supported");
   if (!validAgentInput(operation, args)) return refused(400, "invalid_agent_arguments");
