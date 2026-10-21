@@ -42,6 +42,7 @@ const empty = () => ({
 });
 export function createCommerceHandler(
   deps: CommerceDependencies,
+  operations: typeof commerceOperations = commerceOperations,
 ): (request: Request) => Promise<Response> {
   const ajv = new Ajv({
     strict: false,
@@ -49,12 +50,12 @@ export function createCommerceHandler(
     formats: fullFormats,
   });
   const inputs = new Map(
-    Object.values(commerceOperations).map(
+    Object.values(operations).map(
       (o) => [o.operation, ajv.compile(o.input_schema)],
     ),
   );
   const outputs = new Map(
-    Object.values(commerceOperations).map(
+    Object.values(operations).map(
       (o) => [o.operation, ajv.compile(o.output_schema)],
     ),
   );
@@ -148,7 +149,7 @@ export function createCommerceHandler(
         return reply(400, { ok: false, error: "invalid_commerce_request" });
       }
       operation = body.operation;
-      const op = commerceOperations[operation];
+      const op = operations[operation];
       if (!op) {
         return reply(404, {
           ok: false,
