@@ -176,7 +176,7 @@ jobs:
           path = pathlib.Path(os.environ['RUNNER_TEMP']) / 'sandy-acceptance/authenticated-acceptance.json'
           if path.exists():
               report = json.loads(path.read_text())
-              keys = ['passed', 'error', 'acceptance_stage', 'cleanup_error', 'management_requests', 'management_credential_binding', 'management_credential_assessments', 'candidate_source_commit', 'normal_Auth_user_verified',
+              keys = ['passed', 'error', 'acceptance_stage', 'cleanup_error', 'failure_kind', 'failure_request', 'management_requests', 'management_credential_binding', 'management_credential_assessments', 'candidate_source_commit', 'normal_Auth_user_verified',
                       'controller_memberships', 'normal_Auth_session_retired', 'tools_discovered', 'operation',
                       'provider_log_query_verified', 'provider_http_status', 'admission_id',
                       'matching_fixture_markers', 'log_event_delivery_verified', 'wrong_log_source_API_status',

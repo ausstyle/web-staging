@@ -13,9 +13,49 @@ const base = `https://${policy.project_ref}.supabase.co`, management = `https://
 // not introduce a relay or change the destination allowlist.
 const proxy = import.meta.main ? Deno.env.get("HTTPS_PROXY") : undefined;
 const client = proxy ? Deno.createHttpClient({ proxy: { url: proxy }, http2: false }) : undefined;
-const request: typeof fetch = (input, init = {}) => fetch(input, {
+const transport: typeof fetch = (input, init = {}) => fetch(input, {
   ...init, ...(client ? { client } : {}), signal: init.signal ?? AbortSignal.timeout(30000),
 });
+export function failureKind(error: unknown): string {
+  const name = error instanceof Error ? error.name : "";
+  return name === "TimeoutError" ? "timeout" : name === "AbortError" ? "aborted"
+    : name === "TypeError" ? "transport_or_type_error" : "unclassified";
+}
+/** Diagnostics only: never retain headers, bodies, query values or exception text.
+ * Endpoint receipts use fixed labels, including for Auth paths containing IDs. */
+export function acceptanceRequestEvidence(send: typeof fetch) {
+  let last: { endpoint: string; method: string; http_status: number | null; outcome: string } | undefined;
+  const endpoint = (input: string | URL | Request) => {
+    let url: URL;
+    try { url = new URL(input instanceof Request ? input.url : String(input)); } catch { return "redacted_endpoint"; }
+    if (url.protocol !== "https:" || url.username || url.password || url.port) return "redacted_endpoint";
+    if (url.origin === base) {
+      if (url.pathname === "/functions/v1/sandy-api-mcp") return "edge_mcp";
+      const catalogue = "/functions/v1/sandy-operation-api/v1/capabilities";
+      if ([catalogue, catalogue + "/supabase.logs.query", catalogue + "/engineering.job.approve"].includes(url.pathname))
+        return "API_REST_catalogue";
+      if (url.pathname.startsWith("/auth/v1/")) return "project_auth";
+      if (url.pathname.startsWith("/rest/v1/rpc/")) return "project_session_rpc";
+    }
+    if (url.origin === "https://api.supabase.com") return "supabase_management";
+    if (/^sandy-api-review---sandy-engineering-mcp-[a-z0-9-]+(?:\.[a-z0-9-]+)?\.run\.app$/.test(url.hostname) && url.pathname === "/mcp")
+      return "candidate_mcp";
+    return "redacted_endpoint";
+  };
+  const request: typeof fetch = async (input, init) => {
+    const method = (init?.method ?? (input instanceof Request ? input.method : "GET")).toUpperCase();
+    const receipt = { endpoint: endpoint(input), method: ["GET", "POST"].includes(method) ? method : "OTHER",
+      http_status: null as number | null, outcome: "pending" };
+    last = receipt;
+    try {
+      const response = await send(input, init);
+      receipt.http_status = response.status; receipt.outcome = "response_received";
+      return response;
+    } catch (error) { receipt.outcome = failureKind(error); throw error; }
+  };
+  return { request, snapshot: () => last ? { ...last } : null };
+}
+const requestEvidence = acceptanceRequestEvidence(transport), request = requestEvidence.request;
 class Failure extends Error { constructor(readonly code: string) { super(code); } }
 function requireThat(ok: unknown, code: string): asserts ok { if (!ok) throw new Failure(code); }
 
@@ -245,6 +285,7 @@ if (import.meta.main) {
   const report: Obj = { observed_at: new Date().toISOString(), passed: false, credentials_recorded: false,
     personal_Controller_token_used: false, service_key_used_as_customer_session: false };
   const privateValues: string[] = []; let issued: IssuedSession | undefined, sessions: ReturnType<typeof createEngineeringSessionClient> | undefined;
+  report.acceptance_stage = "candidate_source";
   try {
     let target = `${base}/functions/v1/sandy-api-mcp`;
     if (!edge) {
@@ -257,6 +298,7 @@ if (import.meta.main) {
       report.candidate_source_commit = source ?? null;
     }
     report.target = target;
+    report.acceptance_stage = "management_configuration";
     const primaryName = Deno.env.get("SANDY_ACCEPTANCE_PRIMARY_BINDING") ?? "SANDY_SUPABASE_MANAGEMENT_TOKEN";
     requireThat(["SUPABASE_ACCESS_TOKEN", "SANDY_SUPABASE_MANAGEMENT_TOKEN"].includes(primaryName), "engineering_management_binding_invalid");
     const bindings: Binding[] = [
@@ -278,6 +320,7 @@ if (import.meta.main) {
     const rows = await administration("/database/query", { read_only: true, query: engineeringIdentityQuery });
     requireThat(Array.isArray(rows) && rows.length === 1 && rows[0].controller_memberships === 0, "engineering_nonowner_identity_required");
     const workload = { userId: rows[0].user_id, epoch: rows[0].credential_epoch, bootstrapGeneration: rows[0].bootstrap_generation };
+    report.acceptance_stage = "engineering_session";
     sessions = createEngineeringSessionClient(base, service, request); issued = await sessions.get(workload); privateValues.push(issued.token);
     report.normal_Auth_user_verified = true; report.controller_memberships = 0;
     report.token_expiry_utc = new Date(issued.expiresAt).toISOString(); report.session_id = issued.sessionId;
@@ -287,6 +330,9 @@ if (import.meta.main) {
     Object.assign(report, await verify(target, issued.token, anon));
     report.acceptance_stage = "complete"; report.passed = true;
   } catch (error) {
+    // Copy before retirement sends its own requests and overwrites the tracker.
+    report.failure_kind = failureKind(error);
+    report.failure_request = requestEvidence.snapshot();
     report.error = error instanceof Failure ? error.code : error instanceof Error && /^engineering_(auth|workload|credential)_[a-z_]+$/.test(error.message)
       ? error.message : "candidate_verification_failed";
   } finally {
