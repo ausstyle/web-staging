@@ -1,0 +1,17 @@
+{
+  "source_commit": "5b56701aa4da95241e8b18ec4b0f2cafe2e0b9da",
+  "function": "sandy-examiner-full-cycle",
+  "expected_prior_version": 19,
+  "prior_bundle_sha256": "ff1b86cd7f515fccf1bb54f503a7377b9261d22ee0928c9ad9f816494ec41c8f",
+  "verify_jwt": false,
+  "files": {
+    "sandy-examiner-full-cycle/index.ts": "c5bb39dbeee06d53b8a14e87693bcfcfdaf0d786d32ceac629b6c1ac204c4a2d",
+    "sandy-examiner-full-cycle/judge.ts": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab",
+    "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26",
+    "sandy-examiner-full-cycle/evidence.ts": "3a0022cf9bf9a9ae6151d56b139f3310fb6c6318f6fa75d1d1bbbdc43e73b453",
+    "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+    "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+  },
+  "scope": "Existing fixed-pilot independent Examiner receipt context only; preserve OIDC/customer/owner boundaries, pilot, gateway/model/budget and all historical results.",
+  "rollback": "Restore the exact captured original modules under a fresh component lease and version/source guard; never erase or relabel historical judgments."
+}
