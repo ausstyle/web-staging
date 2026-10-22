@@ -426,7 +426,7 @@ Deno.test("deployed lifecycle recovery routing preserves downstream scope denial
     const h = await fixture({ mcp: async (token, message) => {
       calls++;
       assert.equal(token, TOKEN);
-      assert.equal(message.params.name, name);
+      assert.equal((message.params as { name: string }).name, name);
       return { status: 403, body: { error: "engineering_operation_scope_denied", executed: false } };
     }});
     const result = await h.handler(request({ ...message, params: { name, arguments: {} } }));
