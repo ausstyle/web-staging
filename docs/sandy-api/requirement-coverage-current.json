@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-22T18:13:29.907063+00:00",
+  "generated_at_utc": "2026-10-22T19:11:01.129083+00:00",
   "summary": {
     "original_families": 161,
     "fully_accepted_families": 0,
@@ -32,7 +32,7 @@
   "parts": [
     {
       "file": "requirement-coverage-current-part-1.json",
-      "sha256": "dadcfd8eb27a1c7f84031e737dfa460a2ba56cc92929dfe9f89b3439d5d4f7ac",
+      "sha256": "55ab7812a2391a1b9096d81452ccee165517e02d3fac1ac1c26e524c9c3f1fc2",
       "rows": 54
     },
     {
@@ -42,13 +42,13 @@
     },
     {
       "file": "requirement-coverage-current-part-3.json",
-      "sha256": "b1de71cdd1d9545a12db4c45a44ca2cf8788a769e7baf664cf24a3e1fa2bbc80",
+      "sha256": "91c6f69d0183730ae2b0c523859b50d6871a0d56114a0752508d2a6f4678b745",
       "rows": 53
     }
   ],
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
-  "scope_disposition_sha256": "871ef5c08e6657a333457fef6ff21a40d543fb7fa1f87c6da97e6a88faa4e530",
-  "full_reconciliation_snapshot_sha256": "1cf635610478db31a86cb0b9299c0735694050b5b8a12ac3504049407d6c466f",
+  "scope_disposition_sha256": "aeeace7ec668398d9d02031eaec3b51117c5bc231b83e1ca9fcfb390a2c4a2b7",
+  "full_reconciliation_snapshot_sha256": "52981d3fa1ed5a46ee68aaf0ec5b4856e4daeb76ca2adb7eb5b3b4f17e83d15d",
   "original_required_mapping_archive": "requirement-coverage-161.json",
   "required_mapping_archive_is_historical_metadata": true,
   "current_MCP_evidence_files": [
@@ -117,11 +117,13 @@
     }
   ],
   "latest_control_release_evidence": {
-    "file": "approved-computer-canary-execution-evidence-20261022.json",
-    "provider_or_OS_acceptance_inferred": false,
-    "source_commit": "3553daaeb091536cc25c65ea134fa98db7ab7bae",
-    "guest_API_version": 18,
+    "file": "native-transport-foundation-evidence-20261022.json",
+    "sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+    "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+    "gateway_version": 57,
+    "native_version": 1,
+    "guest_version": 18,
     "delegation_version": 6,
-    "sha256": "d08a9f82e0fbfef5d0882ce2f3eb76da9b017385312558d5c5b6667a909261f9"
+    "native_OS_acceptance_inferred": false
   }
 }

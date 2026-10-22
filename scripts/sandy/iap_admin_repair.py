@@ -10,7 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
-import subprocess
+import ssl
 import urllib.error
 import urllib.request
 
@@ -85,28 +85,43 @@ class Admin:
             raise RepairError("configured_GCP_administrator_connection_required")
         env = connection_env(alias, json.loads(Path(manifest).read_text()))
         self.alias = alias
-        # stdout is held only in memory; no token or raw CLI error is printed.
+        # Use the configured ADC selector through Google's supported SDK.
+        # Credentials stay inside the SDK; no gcloud installation, login,
+        # fallback account or ad-hoc impersonation is required.
         try:
-            account = subprocess.run(["gcloud", "auth", "list", "--filter=status:ACTIVE", "--format=json"], env=env, capture_output=True, timeout=30)
-            if account.returncode:
-                raise RepairError("GCP_administrator_identity_unavailable")
-            users = json.loads(account.stdout)
-            if len(users) != 1 or not isinstance(users[0].get("account"), str):
-                raise RepairError("single_GCP_administrator_identity_required")
-            self.principal = users[0]["account"]
+            import google.auth
+            from google.auth.transport.requests import Request
+            import requests
+            for key in ("CLOUDSDK_CONFIG", "CLOUDSDK_ACTIVE_CONFIG_NAME", "GOOGLE_APPLICATION_CREDENTIALS"):
+                os.environ[key] = env[key]
+            session = requests.Session()
+            trust = ssl.get_default_verify_paths().cafile
+            if trust:
+                session.verify = trust
+            self._auth_request = Request(session=session)
+            self._credentials, _ = google.auth.load_credentials_from_file(
+                env["GOOGLE_APPLICATION_CREDENTIALS"],
+                scopes=["https://www.googleapis.com/auth/cloud-platform"],
+                request=self._auth_request)
+            self.principal = getattr(self._credentials, "service_account_email", None) or getattr(self._credentials, "account", None)
+            if not isinstance(self.principal, str) or "@" not in self.principal or len(self.principal) > 320:
+                raise RepairError("GCP_administrator_principal_unavailable")
             if self.principal == MEMBER.split(":", 1)[1]:
                 raise RepairError("separate_GCP_administrator_identity_required")
-            token = subprocess.run(["gcloud", "auth", "print-access-token"], env=env, capture_output=True, timeout=30)
-            if token.returncode or not token.stdout.strip():
-                raise RepairError("GCP_administrator_token_unavailable")
-            self._token = token.stdout.decode().strip()
-        except (OSError, subprocess.TimeoutExpired, ValueError):
-            raise RepairError("GCP_administrator_setup_unavailable") from None
+        except RepairError:
+            raise
+        except Exception:
+            raise RepairError("GCP_administrator_SDK_setup_unavailable") from None
 
     def request(self, method, url, body=None):
         # Every URL is constructed from fixed constants in this module.
+        headers = {"Content-Type": "application/json"}
+        try:
+            self._credentials.before_request(self._auth_request, method, url, headers)
+        except Exception:
+            raise RepairError("GCP_administrator_token_renewal_unavailable") from None
         request = urllib.request.Request(url, method=method,
-            headers={"Authorization": "Bearer " + self._token, "Content-Type": "application/json"},
+            headers=headers,
             data=None if body is None else json.dumps(body).encode())
         class NoRedirect(urllib.request.HTTPRedirectHandler):
             def redirect_request(self, *args, **kwargs):
