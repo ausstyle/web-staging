@@ -1,5 +1,9 @@
+import copy
+import hashlib
+import json
+from pathlib import Path
 import unittest
-from build_requirement_coverage import reconcile, standing_execution_evidence
+from build_requirement_coverage import reconcile, standing_execution_evidence, guest_status_execution_evidence
 
 
 def requirements():
@@ -13,6 +17,24 @@ def operation(name):
 
 
 class RequirementCoverageTests(unittest.TestCase):
+    def test_guest_status_requires_actual_matching_receipts_and_never_certifies_VM_execution(self):
+        docs = Path(__file__).resolve().parents[2] / "docs/sandy-api"
+        path = docs / "guest-status-MCP-evidence-20261022.json"
+        report = json.loads(path.read_text())
+        verification = json.loads((docs / "guest-status-registry-verification-20261022.json").read_text())
+        sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        positive, _ = guest_status_execution_evidence(report, verification, sha)
+        self.assertIn("gcp.vm.agent.status", positive)
+        self.assertIs(positive["gcp.vm.agent.status"][0]["independent_VM_execution"], False)
+        for field, value in [("state", "accepted"), ("result_sha256", "0" * 64)]:
+            altered = copy.deepcopy(report)
+            altered["verified_status_observations"][0]["admission"][field] = value
+            self.assertEqual(guest_status_execution_evidence(altered, verification, sha), ({}, {}))
+        altered = copy.deepcopy(report)
+        altered["verified_status_observations"][0]["audit"][0]["hash_valid"] = False
+        self.assertEqual(guest_status_execution_evidence(altered, verification, sha), ({}, {}))
+        self.assertEqual(guest_status_execution_evidence(report, verification, "0" * 64), ({}, {}))
+
     def test_flags_active_handler_and_claimed_certificate_cannot_replace_mcp_execution(self):
         families = requirements()
         families[0]["registered_operation_ids"] = ["fixture.read"]

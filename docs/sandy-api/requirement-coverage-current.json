@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-22T13:08:39.081817+00:00",
+  "generated_at_utc": "2026-10-22T15:59:08.624649+00:00",
   "summary": {
     "original_families": 161,
     "fully_accepted_families": 0,
@@ -7,13 +7,13 @@
     "families_with_external_dependencies": 7,
     "families_with_external_permission_dependencies": 6,
     "families_requiring_software_or_constituent_reconciliation": 128,
-    "families_with_partial_required_operation_MCP_evidence": 37,
-    "documented_distinct_MCP_success_operations": 83,
-    "documented_distinct_MCP_denial_operations": 23,
+    "families_with_partial_required_operation_MCP_evidence": 38,
+    "documented_distinct_MCP_success_operations": 84,
+    "documented_distinct_MCP_denial_operations": 24,
     "registry_rows": 2585,
-    "api_flags": 459,
-    "ai_flags": 442,
-    "verified_flags": 78,
+    "api_flags": 460,
+    "ai_flags": 443,
+    "verified_flags": 79,
     "missing_required_registry_operation_ids": [
       "supabase.functions.invoke",
       "supabase.projects.create",
@@ -32,7 +32,7 @@
   "parts": [
     {
       "file": "requirement-coverage-current-part-1.json",
-      "sha256": "6c9ec19e5d05318e0f1d2c1fcd4b77525a7c4a8cd4992226c0e7cb3a4bd3abde",
+      "sha256": "8dc5c46a93b974e516e66a7cef24640d5d50b6150360834389325ca0ddc06470",
       "rows": 54
     },
     {
@@ -47,8 +47,8 @@
     }
   ],
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
-  "scope_disposition_sha256": "595ceaf2c84d9b1ddcf15a7a13c26e0fd8ba9f532a15bc24f765d252e949baaf",
-  "full_reconciliation_snapshot_sha256": "6cd24cf8441b71a735ac19c65b57dbd7ac0cb4f9b2c2fcbbd25d497876affbd8",
+  "scope_disposition_sha256": "f0b4607612262bf9cad60c1e8510a05403b7d76da9386eebfa8ad8b3650e1500",
+  "full_reconciliation_snapshot_sha256": "265ffb065ffa2b97f6ddb832694777f4189c994dda12166ec094b21a5e198cd0",
   "original_required_mapping_archive": "requirement-coverage-161.json",
   "required_mapping_archive_is_historical_metadata": true,
   "current_MCP_evidence_files": [
@@ -61,6 +61,7 @@
     "engineering-workload-evidence-20261021.json",
     "github-platform-MCP-evidence-20261022.json",
     "github-standing-broad-MCP-evidence-20261022.json",
+    "guest-status-MCP-evidence-20261022.json",
     "sandy-video-diagnostic-evidence-20261021.json",
     "standing-engineering-GitHub-MCP-evidence-20261022.json"
   ],

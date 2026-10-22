@@ -1,0 +1,318 @@
+{
+  "complete": true,
+  "source_commit": "353e87bd275648798923d6a2036e7f4a6c98c285",
+  "deployment": {
+    "observed_at": "2026-10-22T15:49:30.566767+00:00",
+    "source_commit": "353e87bd275648798923d6a2036e7f4a6c98c285",
+    "merge_commit": "be57b3e8fe55b4d22b768de5a0d8f52cf2d6063c",
+    "function": "sandy-guest-operation-api",
+    "version": 16,
+    "JWT_preserved": true,
+    "all_uploaded_sources_accounted_for": true,
+    "readback_evidence_sha256": "fe43e4a6a63b06f0fe758bb6420446c620bfe702e25410ea579b06527007c717",
+    "migration": "20261022160000",
+    "migration_sha256": "8b11b7b1e21afad966d74b661c5d93855d33a98da689e2f4173bd42433a90a06",
+    "change_id": "440fcc05-0b26-48a8-a703-6cd0bfdde0a4",
+    "registry": {
+      "operation": "gcp.vm.agent.status",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "verified": false
+    },
+    "new_registry_operations": 0,
+    "standing_policy_bounds_changed": false,
+    "VM_enrollment_or_networking_changed": false,
+    "real_MCP_test": "pending"
+  },
+  "MCP_discovery": {
+    "tools": 233,
+    "pages": 3,
+    "status_tool": {
+      "name": "gcp.vm.agent.status",
+      "description": "Sandy API operation: gcp.vm.agent.status",
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "vm_name"
+        ],
+        "properties": {
+          "vm_name": {
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ],
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "outputSchema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "required": [
+              "ok",
+              "vm_name",
+              "enabled",
+              "generation",
+              "instance_id",
+              "project_id",
+              "platform",
+              "last_seen_at",
+              "agent_version",
+              "agent_connected",
+              "installed_software_attested",
+              "ssh_transport_available",
+              "winrm_transport_available"
+            ],
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "vm_name": {
+                "enum": [
+                  "sandy-windows",
+                  "sandy-video"
+                ],
+                "type": "string"
+              },
+              "platform": {
+                "enum": [
+                  "linux",
+                  "win32"
+                ]
+              },
+              "generation": {
+                "type": "integer"
+              },
+              "project_id": {
+                "const": "elaborate-haven-511518-a5"
+              },
+              "instance_id": {
+                "type": "string"
+              },
+              "last_seen_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "agent_version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "agent_connected": {
+                "type": "boolean"
+              },
+              "ssh_transport_available": {
+                "const": false
+              },
+              "winrm_transport_available": {
+                "const": false
+              },
+              "installed_software_attested": {
+                "const": false
+              }
+            },
+            "additionalProperties": false
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "operation": {
+            "const": "gcp.vm.agent.status"
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "unapproved_guest_mutations_discovered": false
+  },
+  "normal_Auth_nonowner_initiator": true,
+  "global_Controller_memberships": 0,
+  "policy_jobs": [
+    {
+      "id": "144ba791-9413-4cea-ad54-4845e62176bf",
+      "status": "succeeded",
+      "requested_by": "7a519da9-2ee3-4edf-adec-42697da5a560",
+      "approved_by": null,
+      "approved_at": null,
+      "authorization_mode": "authorized_by_policy",
+      "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+      "delegation_version": 5
+    },
+    {
+      "id": "8663da05-1916-4e1f-9f5c-455c9ec5373e",
+      "status": "succeeded",
+      "requested_by": "7a519da9-2ee3-4edf-adec-42697da5a560",
+      "approved_by": null,
+      "approved_at": null,
+      "authorization_mode": "authorized_by_policy",
+      "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+      "delegation_version": 5
+    }
+  ],
+  "verified_status_observations": [
+    {
+      "vm_name": "sandy-video",
+      "api_status": 200,
+      "MCP_isError": false,
+      "executed": true,
+      "error": null,
+      "admission_id": "8663da05-1916-4e1f-9f5c-455c9ec5373e",
+      "API_request_id": "3cc7e155-94a0-4da6-85d4-2ef99d232b0c",
+      "data": {
+        "ok": true,
+        "enabled": false,
+        "vm_name": "sandy-video",
+        "platform": "linux",
+        "generation": 0,
+        "project_id": "elaborate-haven-511518-a5",
+        "instance_id": "6831598645020395570",
+        "last_seen_at": null,
+        "agent_version": null,
+        "agent_connected": false,
+        "ssh_transport_available": false,
+        "winrm_transport_available": false,
+        "installed_software_attested": false
+      },
+      "remote_command_executed": false,
+      "observation_source": "Sandy managed-agent enrollment and last authenticated heartbeat, not live Google VM execution",
+      "admission": {
+        "id": "8663da05-1916-4e1f-9f5c-455c9ec5373e",
+        "actor_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+        "principal_kind": "auth_user",
+        "operation": "gcp.vm.agent.status",
+        "state": "succeeded",
+        "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+        "provider_http_status": 200,
+        "approval_id": "5053c633-af8e-49fc-9c8d-1803b0564c50"
+      },
+      "audit": [
+        {
+          "id": "dd4bc9b0-100e-4000-9d5b-af1d71d941ff",
+          "phase": "admission",
+          "outcome": "admitted",
+          "hash_valid": true
+        },
+        {
+          "id": "e456acaf-6b86-42ca-b689-cf696467459d",
+          "phase": "grant",
+          "outcome": "consumed",
+          "hash_valid": true
+        },
+        {
+          "id": "20cc852d-b72f-4fae-948d-a1d7d340457a",
+          "phase": "execution",
+          "outcome": "succeeded",
+          "hash_valid": true
+        }
+      ],
+      "observed_result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+      "independent_enrollment_match": true
+    },
+    {
+      "vm_name": "sandy-windows",
+      "api_status": 200,
+      "MCP_isError": false,
+      "executed": true,
+      "error": null,
+      "admission_id": "144ba791-9413-4cea-ad54-4845e62176bf",
+      "API_request_id": "3e975edf-d91c-40cc-85e6-da6c85a90568",
+      "data": {
+        "ok": true,
+        "enabled": false,
+        "vm_name": "sandy-windows",
+        "platform": "win32",
+        "generation": 0,
+        "project_id": "elaborate-haven-511518-a5",
+        "instance_id": "8120150462304566315",
+        "last_seen_at": null,
+        "agent_version": null,
+        "agent_connected": false,
+        "ssh_transport_available": false,
+        "winrm_transport_available": false,
+        "installed_software_attested": false
+      },
+      "remote_command_executed": false,
+      "observation_source": "Sandy managed-agent enrollment and last authenticated heartbeat, not live Google VM execution",
+      "admission": {
+        "id": "144ba791-9413-4cea-ad54-4845e62176bf",
+        "actor_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+        "principal_kind": "auth_user",
+        "operation": "gcp.vm.agent.status",
+        "state": "succeeded",
+        "result_sha256": "3dfa17ffe8405ece938a5af12b4f0c152561c4dc7264b3eb7661276efe7f7005",
+        "provider_http_status": 200,
+        "approval_id": "437a9e57-4593-4314-8cca-366d5069d77d"
+      },
+      "audit": [
+        {
+          "id": "5b575c11-351d-4113-8044-ca7b20afbb03",
+          "phase": "admission",
+          "outcome": "admitted",
+          "hash_valid": true
+        },
+        {
+          "id": "79496066-64e2-4418-9c1c-47a2f860e9f2",
+          "phase": "grant",
+          "outcome": "consumed",
+          "hash_valid": true
+        },
+        {
+          "id": "52617510-7d81-431b-af71-9681e35bf7a5",
+          "phase": "execution",
+          "outcome": "succeeded",
+          "hash_valid": true
+        }
+      ],
+      "observed_result_sha256": "3dfa17ffe8405ece938a5af12b4f0c152561c4dc7264b3eb7661276efe7f7005",
+      "independent_enrollment_match": true
+    }
+  ],
+  "denial": {
+    "api_status": 403,
+    "error": "engineering_operation_scope_denied",
+    "executed": false,
+    "request_id": "e2274709-dfc4-4614-bf58-b553807eaade",
+    "execution_admissions": 0,
+    "http_status": 200,
+    "MCP_isError": true
+  },
+  "VM_commands_executed": 0,
+  "Google_provider_execution_verified": false,
+  "whole_requirement_family_accepted": false,
+  "VM_execution_acceptance": "0/3",
+  "evidence_basis": "Authenticated MCP \u2192 Sandy API \u2192 enrollment/heartbeat database with independent receipt, hash and stored-state readback. This is agent-readiness verification, not remote OS execution."
+}
