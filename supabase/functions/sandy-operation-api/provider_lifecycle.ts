@@ -13,6 +13,8 @@ export type LifecycleContext = {
   requestId: string;
   originalChannel: "api" | "mcp";
   scope?: { approvalId?: string };
+  /** Set only from the gateway's verified engineering WeakMap proof. */
+  engineering?: { userId: string; sessionId: string; epoch: number };
 };
 export type LifecycleDependencies = {
   db: PolicyDb;
@@ -50,7 +52,10 @@ const resourceSchema = {
     schema({
       provider: { const: "github" },
       repository: { const: "ausstyle/web-staging" },
-      branch: { const: "main" },
+      branch: {
+        type: "string",
+        pattern: "^(main|engineering/[A-Za-z0-9_./-]+)$",
+      },
       path: { type: "string", minLength: 1, maxLength: 1024 },
     }),
     schema({
@@ -104,6 +109,9 @@ export const providerLifecycleContracts: Record<
       source_operation: {
         enum: [
           "github.files.upsert",
+          "github.files.create",
+          "github.files.update",
+          "github.update_file",
           "gcp.compute.instances.start",
           "gcp.compute.instances.stop",
         ],
@@ -114,6 +122,7 @@ export const providerLifecycleContracts: Record<
       compensation_operation: {
         enum: [
           "github.files.upsert",
+          "github.files.update",
           "github.files.delete",
           "gcp.compute.instances.start",
           "gcp.compute.instances.stop",
@@ -172,11 +181,11 @@ export const providerLifecycleContracts: Record<
     is_mutation: true,
     permission_scope: "system:write",
     description:
-      "Execute one separately approved inverse from a private immutable provider preimage, after immediate exact-resource readback. GitHub requires the current file SHA; GCP binds numeric VM identity and approved state-race acknowledgement. Ambiguous dispatch is never replayed. Disabled until real attestation. Contract v1.0.0.",
+      "Execute one authorized inverse from an immutable provider preimage after exact-resource readback. Standing engineering recovery derives its baseline from verified Git history and reauthorizes the inverse under the current resource policy. Other callers retain separately approved compensation. Ambiguous dispatch is never replayed. Contract v1.0.0.",
     input_schema: schema({
       ...sourceInput,
       compensation_approval_id: uuidSchema,
-    }),
+    }, ["source_request_id"]),
     output_schema: compensationSchema,
   },
 };
@@ -230,6 +239,13 @@ const failure = (status: number, error: string, unknown = false) =>
   });
 const errors = new Map([
   ["owner_required", 403],
+  ["recovery_source_not_owned", 404],
+  ["verified_github_recovery_source_required", 424],
+  ["immutable_recovery_proof_invalid", 409],
+  ["compensation_resource_changed", 409],
+  ["engineering_policy_blocked", 403],
+  ["standing_delegation_inactive", 403],
+  ["engineering_rate_limited", 429],
   ["verified_approved_preimage_scope_required", 424],
   ["invalid_preimage_record", 400],
   ["preimage_admission_proof_invalid", 409],
@@ -296,7 +312,12 @@ async function readProvider(
       operation,
       args,
     );
-    const body: unknown = await reply.json();
+    const envelope: unknown = await reply.json();
+    const body: unknown = object(envelope) && object(envelope.result) &&
+        envelope.result.operation === operation &&
+        envelope.result.admission_id === envelope.admission_id
+      ? envelope.result
+      : envelope;
     if (
       !object(body) || body.operation !== operation ||
       !uuid(body.admission_id) || body.executed !== true
@@ -671,15 +692,17 @@ async function loadSnapshot(
     typeof r.compensation_operation !== "string" ||
     typeof r.verify_operation !== "string"
   ) return failure(503, "lifecycle_snapshot_invalid");
-  if (s.source_operation === "github.files.upsert") {
+  if (githubFileSource(s.source_operation)) {
     const path = object(r.verify_arguments.path)
       ? r.verify_arguments.path.path
       : undefined;
     if (
-      !filePath(path) || r.verify_operation !== "github.files.metadata.get" ||
-      !["github.files.upsert", "github.files.delete"].includes(
-        r.compensation_operation,
-      )
+      !(context.engineering ? safeRepositoryPath(path) : filePath(path)) ||
+      r.verify_operation !== "github.files.metadata.get" ||
+      !["github.files.upsert", "github.files.update", "github.files.delete"]
+        .includes(
+          r.compensation_operation,
+        )
     ) return failure(503, "lifecycle_snapshot_invalid");
   } else if (
     !["gcp.compute.instances.start", "gcp.compute.instances.stop"].includes(
@@ -698,7 +721,7 @@ function effectMatches(
 ): boolean {
   const expected = snapshot
     .record[phase === "source" ? "expected_effect" : "baseline"] as ObjectValue;
-  if (snapshot.source_operation === "github.files.upsert") {
+  if (githubFileSource(snapshot.source_operation)) {
     if (expected.exists === false) return observation.absent;
     const path = (snapshot.record.resource as ObjectValue).path;
     return !observation.absent && observation.result.path === path &&
@@ -805,6 +828,19 @@ export async function executeProviderLifecycle(
       automatic_retry: false,
     };
   } else {
+    if (context.engineering) {
+      const prepared = await prepareStandingGithubRecovery(
+        deps,
+        context,
+        String(args.source_request_id),
+      );
+      if (prepared instanceof Response) return prepared;
+    } else if (
+      operation === "system.lifecycle.compensate" &&
+      !uuid(args.compensation_approval_id)
+    ) {
+      return failure(424, "verified_scoped_compensation_approval_required");
+    }
     const loaded = await loadSnapshot(
       deps,
       context,
@@ -819,7 +855,7 @@ export async function executeProviderLifecycle(
           object(v) && v.phase === "source"
         ) as ObjectValue[]
         : [];
-      const vm = snapshot.source_operation !== "github.files.upsert";
+      const vm = !githubFileSource(snapshot.source_operation);
       value = {
         ok: true,
         contract_version: "1.0.0",
@@ -870,13 +906,23 @@ export async function executeProviderLifecycle(
         }
         const reserved = await rpc(
           deps,
-          "sandy_lifecycle_reserve_compensation",
-          {
-            p_actor_id: context.actorId,
-            p_snapshot_id: snapshot.id,
-            p_approval_id: args.compensation_approval_id,
-            p_observation_id: observed.observation_id,
-          },
+          context.engineering
+            ? "sandy_engineering_reserve_compensation"
+            : "sandy_lifecycle_reserve_compensation",
+          context.engineering
+            ? {
+              p_user_id: context.engineering.userId,
+              p_session_id: context.engineering.sessionId,
+              p_epoch: context.engineering.epoch,
+              p_snapshot_id: snapshot.id,
+              p_observation_id: observed.observation_id,
+            }
+            : {
+              p_actor_id: context.actorId,
+              p_snapshot_id: snapshot.id,
+              p_approval_id: args.compensation_approval_id,
+              p_observation_id: observed.observation_id,
+            },
           true,
         );
         if (reserved instanceof Response) return reserved;
@@ -890,7 +936,13 @@ export async function executeProviderLifecycle(
               {
                 ...context,
                 requestId: reserved.request_id,
-                scope: { approvalId: String(args.compensation_approval_id) },
+                scope: {
+                  approvalId: String(
+                    context.engineering
+                      ? reserved.authorization_id
+                      : args.compensation_approval_id,
+                  ),
+                },
               },
               String(snapshot.record.compensation_operation),
               snapshot.record.compensation_arguments as ObjectValue,
@@ -914,6 +966,21 @@ export async function executeProviderLifecycle(
           finished.request_id !== reserved.request_id ||
           finished.redispatch_permitted !== false
         ) return failure(503, "compensation_receipt_outcome_unknown", true);
+        if (
+          context.engineering &&
+          ["accepted", "unknown"].includes(String(finished.state))
+        ) {
+          const verified = await observe(
+            deps,
+            context,
+            snapshot,
+            "compensation",
+          );
+          if (
+            !(verified instanceof Response) &&
+            verified.effect_confirmed === true
+          ) finished.state = "verified";
+        }
         value = compensationReceipt(
           snapshot.source_request_id,
           finished.request_id,
@@ -954,4 +1021,138 @@ function compensationReceipt(
     redispatch_permitted: false,
     admission_id: admissionId ?? null,
   };
+}
+
+function githubFileSource(operation: string): boolean {
+  return [
+    "github.files.upsert",
+    "github.files.create",
+    "github.files.update",
+    "github.update_file",
+  ].includes(operation);
+}
+function safeRepositoryPath(value: unknown): value is string {
+  return typeof value === "string" && value.length <= 1024 &&
+    /^(?!\.)(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*\/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*$/
+      .test(value) &&
+    !/(^|\/)(\.env[^/]*|\.git|\.github)(\/|$)|\.(pem|key|p12|pfx)$/i.test(
+      value,
+    );
+}
+async function prepareStandingGithubRecovery(
+  deps: LifecycleDependencies,
+  context: LifecycleContext,
+  sourceRequestId: string,
+): Promise<void | Response> {
+  const engineering = context.engineering!;
+  const identity = {
+    p_user_id: engineering.userId,
+    p_session_id: engineering.sessionId,
+    p_epoch: engineering.epoch,
+  };
+  const source = await rpc(deps, "sandy_engineering_recovery_context", {
+    ...identity,
+    p_request_id: sourceRequestId,
+  });
+  if (source instanceof Response) return source;
+  if (source.snapshot_exists === true) return;
+  if (
+    !sha(source.commit_sha) || !sha(source.blob_sha) ||
+    !safeRepositoryPath(source.path) ||
+    typeof source.branch !== "string" ||
+    !source.branch.startsWith("engineering/") || !uuid(source.admission_id)
+  ) {
+    return failure(424, "verified_github_recovery_source_required");
+  }
+  const commitArgs = { path: { commit_sha: source.commit_sha } };
+  const commit = await readProvider(
+    deps,
+    context,
+    "github.git.commits.get",
+    commitArgs,
+  );
+  if (commit instanceof Response) return commit;
+  const parents = commit.result.parents;
+  if (
+    commit.absent || commit.result.sha !== source.commit_sha ||
+    !Array.isArray(parents) ||
+    !object(parents[0]) || !sha(parents[0].sha)
+  ) return failure(424, "immutable_recovery_parent_unavailable");
+  const readArgs = {
+    path: { path: source.path },
+    query: { ref: parents[0].sha },
+  };
+  const baseline = await readProvider(
+    deps,
+    context,
+    "github.files.content.get",
+    readArgs,
+  );
+  if (baseline instanceof Response) return baseline;
+  const expectedOld = source.expected_blob_sha;
+  if (
+    baseline.absent
+      ? expectedOld !== null
+      : !sha(expectedOld) || baseline.result.sha !== expectedOld ||
+        typeof baseline.result.content !== "string" ||
+        await gitBlobSha(baseline.result.content) !== expectedOld
+  ) {
+    return failure(409, "immutable_recovery_baseline_mismatch");
+  }
+  const compensationOperation = baseline.absent
+    ? "github.files.delete"
+    : "github.files.update";
+  const compensationArguments = {
+    path: { path: source.path },
+    body: {
+      branch: source.branch,
+      sha: source.blob_sha,
+      message: `Sandy compensation for ${sourceRequestId}`,
+      ...(baseline.absent ? {} : { content: baseline.result.content }),
+    },
+  };
+  const verifyArguments = {
+    path: { path: source.path },
+    query: { ref: source.branch },
+  };
+  const record = {
+    proof_version: 2,
+    commit_read_admission_id: commit.admissionId,
+    commit_read_result: commit.result,
+    commit_read_result_canonical: commit.canonical,
+    commit_read_arguments_canonical: canonicalJson(commitArgs),
+    read_admission_id: baseline.admissionId,
+    read_operation: "github.files.content.get",
+    read_arguments: readArgs,
+    read_arguments_canonical: canonicalJson(readArgs),
+    read_result: baseline.result,
+    read_result_canonical: baseline.canonical,
+    baseline: baseline.absent
+      ? { exists: false }
+      : { exists: true, sha: expectedOld },
+    expected_effect: { exists: true, sha: source.blob_sha },
+    resource: {
+      provider: "github",
+      repository: "ausstyle/web-staging",
+      branch: source.branch,
+      path: source.path,
+    },
+    verify_operation: "github.files.metadata.get",
+    verify_arguments: verifyArguments,
+    verify_arguments_canonical: canonicalJson(verifyArguments),
+    verify_input_sha256: await argumentDigest(verifyArguments),
+    compensation_operation: compensationOperation,
+    compensation_arguments: compensationArguments,
+    compensation_arguments_canonical: canonicalJson(compensationArguments),
+    compensation_input_sha256: await argumentDigest(compensationArguments),
+  };
+  const stored = await rpc(deps, "sandy_engineering_capture_recovery", {
+    ...identity,
+    p_request_id: sourceRequestId,
+    p_record: record,
+  }, true);
+  if (stored instanceof Response) return stored;
+  if (!uuid(stored.snapshot_id)) {
+    return failure(503, "immutable_recovery_capture_unknown", true);
+  }
 }

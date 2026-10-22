@@ -303,7 +303,12 @@ Deno.test("credential administration, Controller approval and unrelated provider
   ) {
     const h = await harness();
     assert.equal((await h.call(req(msg(operation, {})))).status, 403);
-    assert.equal(h.state.rpc.length, 1);
+    assert.equal(
+      h.state.rpc.filter((c) =>
+        c.name !== "sandy_engineering_record_policy_denial"
+      ).length,
+      1,
+    );
     assert.equal(h.state.delegated, 0);
   }
 });
@@ -383,7 +388,12 @@ Deno.test("fixed reversible migration, reviewed deploy sources and noncredential
 Deno.test("invalid schema, paid declarations and API-key substitution do not prepare or execute a mutation", async () => {
   const h = await harness({ argumentsValid: () => false });
   assert.equal((await h.call()).status, 403);
-  assert.equal(h.state.rpc.length, 1);
+  assert.equal(
+    h.state.rpc.filter((c) =>
+      c.name !== "sandy_engineering_record_policy_denial"
+    ).length,
+    1,
+  );
   for (
     const headers of [{ "x-sandy-declared-units": "1" }, {
       "x-sandy-api-key": "opaque",
@@ -479,7 +489,12 @@ Deno.test("discovery delegates only the bounded catalogue and never prepares a p
     (await h.call(req({ action: "list", channel: "mcp" }))).status,
     200,
   );
-  assert.equal(h.state.rpc.length, 1);
+  assert.equal(
+    h.state.rpc.filter((c) =>
+      c.name !== "sandy_engineering_record_policy_denial"
+    ).length,
+    1,
+  );
   assert.equal(h.state.delegated, 1);
 });
 
@@ -544,7 +559,12 @@ Deno.test("canonical shared VM read is restricted to the existing approved VM wi
       403,
     );
     assert.equal(denied.state.delegated, 0);
-    assert.equal(denied.state.rpc.length, 1);
+    assert.equal(
+      denied.state.rpc.filter((c) =>
+        c.name !== "sandy_engineering_record_policy_denial"
+      ).length,
+      1,
+    );
   }
 });
 Deno.test("optional VM scope never authorizes install, IAM grants, provider writes or arbitrary arguments", async () => {
@@ -558,7 +578,12 @@ Deno.test("optional VM scope never authorizes install, IAM grants, provider writ
     const h = await vmHarness();
     assert.equal((await h.call(req(msg(operation, {})))).status, 403);
     assert.equal(h.state.delegated, 0);
-    assert.equal(h.state.rpc.length, 1);
+    assert.equal(
+      h.state.rpc.filter((c) =>
+        c.name !== "sandy_engineering_record_policy_denial"
+      ).length,
+      1,
+    );
   }
   for (
     const args of [
@@ -572,7 +597,12 @@ Deno.test("optional VM scope never authorizes install, IAM grants, provider writ
     const h = await vmHarness();
     assert.equal((await h.call(req(msg("video.status", args)))).status, 403);
     assert.equal(h.state.delegated, 0);
-    assert.equal(h.state.rpc.length, 1);
+    assert.equal(
+      h.state.rpc.filter((c) =>
+        c.name !== "sandy_engineering_record_policy_denial"
+      ).length,
+      1,
+    );
   }
 });
 Deno.test("expired, foreign-owner, forged-policy and expanded optional scope cannot create a VM delegation", async () => {
@@ -721,4 +751,24 @@ Deno.test("standing receipt access is limited to the authenticated workload's ow
     );
     if (owns) assert.equal(h.state.headers.has("x-sandy-approval-id"), false);
   }
+});
+
+Deno.test("policy denials retain hash-only audit evidence without preparing provider work", async () => {
+  const h = await harness();
+  const args = {
+    body: { content: "private caller text must never be logged" },
+  };
+  const r = await h.call(
+    req(msg("github.repos.delete", args), { "x-sandy-request-id": APPROVAL }),
+  );
+  assert.equal(r.status, 403);
+  const audit = h.state.rpc.find((c) =>
+    c.name === "sandy_engineering_record_policy_denial"
+  )!;
+  assert.ok(audit);
+  assert.equal(audit.args.p_request_id, APPROVAL);
+  assert.equal(audit.args.p_input_sha256, await argumentDigest(args));
+  assert.equal(audit.args.p_error, "engineering_operation_scope_denied");
+  assert.equal(JSON.stringify(audit).includes("private caller text"), false);
+  assert.equal(h.state.delegated, 0);
 });

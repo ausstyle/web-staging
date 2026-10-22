@@ -172,6 +172,25 @@ export async function engineeringRequest(
     !["list", "describe", "execute"].includes(String(body.action))
   ) return fail(400, "invalid_engineering_request");
   const operation = body.operation;
+  const deny = async (status: number, error: string): Promise<Response> => {
+    if (
+      [400, 403, 404, 409, 424, 429].includes(status) &&
+      typeof operation === "string"
+    ) {
+      const headerId = request.headers.get("x-sandy-request-id");
+      await rpc(deps.db, "sandy_engineering_record_policy_denial", {
+        p_user_id: user.id,
+        p_session_id: jwt.session_id,
+        p_epoch: metadata.sandy_engineering_epoch,
+        p_request_id: uuid(headerId) ? headerId : crypto.randomUUID(),
+        p_operation: operation,
+        p_input_sha256: await argumentDigest(body.arguments ?? {}),
+        p_error: error,
+      });
+    }
+    return fail(status, error);
+  };
+
   // The separate administrative policy is read only after ordinary Auth and
   // workload/session verification. Missing policy preserves the legacy grant.
   const standing = deps.executionScope
@@ -192,7 +211,8 @@ export async function engineeringRequest(
     standing.operations.every((op) =>
       typeof op === "string" &&
       (/^(github|gcp|supabase)\.[a-z0-9_.]+$/.test(op) ||
-        op === "system.execution.get")
+        op === "system.execution.get" ||
+        /^system\.lifecycle\.(get|verify|compensate)$/.test(op))
     );
   const vmScope = resolved.vm_read_scope;
   const vmAuthorized = object(vmScope) &&
@@ -212,7 +232,7 @@ export async function engineeringRequest(
   if (
     body.action !== "list" &&
     (typeof operation !== "string" || !allowedOperations.includes(operation))
-  ) return fail(403, "engineering_operation_scope_denied");
+  ) return deny(403, "engineering_operation_scope_denied");
   const headers = new Headers(request.headers);
   let boundExecution: Obj | undefined;
   if (body.action === "execute") {
@@ -222,25 +242,36 @@ export async function engineeringRequest(
       vmReadPolicy.operations.includes(operation);
     const standingExecution = standingAuthorized &&
       (standing!.operations as string[]).includes(String(operation));
-    if (standingExecution && operation === "system.execution.get") {
+    if (
+      standingExecution &&
+      (operation === "system.execution.get" ||
+        /^system\.lifecycle\.(get|verify|compensate)$/.test(String(operation)))
+    ) {
       if (
         !entry || !deps.contractMatches(entry) || entry.api_exposed !== true ||
         entry.ai_exposed !== true ||
         !object(args) || !deps.argumentsValid(entry.input_schema, args) ||
-        !uuid(args.request_id)
-      ) return fail(400, "invalid_execution_receipt_request");
+        !uuid(
+          operation === "system.execution.get"
+            ? args.request_id
+            : args.source_request_id,
+        ) ||
+        args.compensation_approval_id !== undefined
+      ) return deny(400, "invalid_execution_receipt_request");
       const owned = await rpc(deps.db, "sandy_engineering_owns_execution", {
         p_user_id: user.id,
         p_session_id: jwt.session_id,
         p_epoch: metadata.sandy_engineering_epoch,
-        p_request_id: args.request_id,
+        p_request_id: operation === "system.execution.get"
+          ? args.request_id
+          : args.source_request_id,
       });
       if (owned?.ok !== true || owned.owned !== true) {
-        return fail(404, "execution_receipt_not_found");
+        return deny(404, "execution_receipt_not_found");
       }
       const requestId = headers.get("x-sandy-request-id") ??
         crypto.randomUUID();
-      if (!uuid(requestId)) return fail(400, "invalid_execution_request_id");
+      if (!uuid(requestId)) return deny(400, "invalid_execution_request_id");
       headers.delete("x-sandy-approval-id");
       boundExecution = {
         operation,
@@ -257,10 +288,10 @@ export async function engineeringRequest(
         !object(entry.error_contract) ||
         typeof entry.error_contract.contract_sha256 !== "string"
       ) {
-        return fail(424, "engineering_execution_contract_unavailable");
+        return deny(424, "engineering_execution_contract_unavailable");
       }
       if (!object(args) || !deps.argumentsValid(entry.input_schema, args)) {
-        return fail(400, "invalid_operation_arguments");
+        return deny(400, "invalid_operation_arguments");
       }
       if (String(operation).startsWith("github.")) {
         try {
@@ -279,21 +310,21 @@ export async function engineeringRequest(
             );
           }
         } catch {
-          return fail(403, "repository_source_material_refused");
+          return deny(403, "repository_source_material_refused");
         }
       }
       if (
         request.headers.has("x-sandy-declared-units") &&
         request.headers.get("x-sandy-declared-units") !== "0"
-      ) return fail(403, "engineering_cost_scope_denied");
+      ) return deny(403, "engineering_cost_scope_denied");
       const requestId = headers.get("x-sandy-request-id") ??
         crypto.randomUUID();
-      if (!uuid(requestId)) return fail(400, "invalid_execution_request_id");
+      if (!uuid(requestId)) return deny(400, "invalid_execution_request_id");
       let scope: Obj;
       try {
         scope = await deps.executionScope!(String(operation), args);
       } catch {
-        return fail(424, "provider_scope_configuration_required");
+        return deny(424, "provider_scope_configuration_required");
       }
       const prepared = await rpc(
         deps.db,
@@ -309,12 +340,12 @@ export async function engineeringRequest(
           p_canonical_scope: canonicalJson(scope),
         },
       );
-      if (!prepared) return fail(503, "engineering_policy_unavailable");
+      if (!prepared) return deny(503, "engineering_policy_unavailable");
       if (
         prepared.ok !== true || !uuid(prepared.authorization_id) ||
         prepared.authorization_state !== "authorized_by_policy"
       ) {
-        return fail(
+        return deny(
           [400, 403, 409, 424, 429].includes(Number(prepared.http_status))
             ? Number(prepared.http_status)
             : 403,
@@ -342,7 +373,7 @@ export async function engineeringRequest(
         entry.ai_exposed !== true || entry.is_mutation !== false ||
         object(entry.error_contract) &&
           entry.error_contract.requires_approval === true
-      ) return fail(424, "engineering_vm_read_contract_unavailable");
+      ) return deny(424, "engineering_vm_read_contract_unavailable");
       // The canonical provider read reuses its reviewed handler and grant path.
       // Its path cannot widen the existing diagnostic delegation to another VM,
       // project, zone or caller-selected query. Legacy diagnostics stay compatible.
@@ -354,15 +385,15 @@ export async function engineeringRequest(
           (args.target === undefined ||
             args.target === vmReadPolicy.instance_name);
       if (!exactTarget || !deps.argumentsValid(entry.input_schema, args)) {
-        return fail(403, "engineering_vm_read_target_denied");
+        return deny(403, "engineering_vm_read_target_denied");
       }
       if (
         request.headers.has("x-sandy-declared-units") &&
         request.headers.get("x-sandy-declared-units") !== "0"
-      ) return fail(403, "engineering_cost_scope_denied");
+      ) return deny(403, "engineering_cost_scope_denied");
       const requestId = headers.get("x-sandy-request-id") ??
         crypto.randomUUID();
-      if (!uuid(requestId)) return fail(400, "invalid_execution_request_id");
+      if (!uuid(requestId)) return deny(400, "invalid_execution_request_id");
       const recorded = await rpc(deps.db, "sandy_engineering_record_vm_read", {
         p_user_id: user.id,
         p_session_id: jwt.session_id,
@@ -371,10 +402,10 @@ export async function engineeringRequest(
         p_request_id: requestId,
       });
       if (!recorded) {
-        return fail(503, "engineering_vm_read_authorization_unavailable");
+        return deny(503, "engineering_vm_read_authorization_unavailable");
       }
       if (recorded.ok !== true) {
-        return fail(
+        return deny(
           recorded.http_status === 429 ? 429 : 403,
           "engineering_vm_read_not_authorized",
         );
@@ -394,18 +425,18 @@ export async function engineeringRequest(
         entry.ai_exposed !== true || entry.verified !== true ||
         !object(entry.error_contract) ||
         typeof entry.error_contract.contract_sha256 !== "string"
-      ) return fail(424, "engineering_execution_contract_unavailable");
+      ) return deny(424, "engineering_execution_contract_unavailable");
       if (
         !deps.argumentsValid(entry.input_schema, args) ||
         !engineeringFixtureArguments(String(operation), args)
-      ) return fail(403, "engineering_fixture_scope_denied");
+      ) return deny(403, "engineering_fixture_scope_denied");
       if (
         request.headers.has("x-sandy-declared-units") &&
         request.headers.get("x-sandy-declared-units") !== "0"
-      ) return fail(403, "engineering_cost_scope_denied");
+      ) return deny(403, "engineering_cost_scope_denied");
       const requestId = headers.get("x-sandy-request-id") ??
         crypto.randomUUID();
-      if (!uuid(requestId)) return fail(400, "invalid_execution_request_id");
+      if (!uuid(requestId)) return deny(400, "invalid_execution_request_id");
       const inputDigest = await argumentDigest(args),
         scope = String(operation).startsWith("github.")
           ? { provider: "github", repository: policy.repository }
@@ -424,9 +455,9 @@ export async function engineeringRequest(
           p_scope_sha256: await argumentDigest(scope),
         },
       );
-      if (!prepared) return fail(503, "engineering_approval_unavailable");
+      if (!prepared) return deny(503, "engineering_approval_unavailable");
       if (prepared.ok !== true || !uuid(prepared.approval_id)) {
-        return fail(
+        return deny(
           [403, 409, 424, 429].includes(Number(prepared.http_status))
             ? Number(prepared.http_status)
             : 403,
@@ -478,7 +509,7 @@ export async function engineeringRequest(
   if (operation === "video.install.preflight" && vmAuthorized && response.ok) {
     const value: unknown = await response.json().catch(() => null);
     if (!object(value) || !object(value.result)) {
-      return fail(502, "engineering_vm_read_projection_invalid");
+      return deny(502, "engineering_vm_read_projection_invalid");
     }
     const reporting = value.result.guest_reporting;
     value.result.guest_reporting = {
@@ -504,7 +535,7 @@ export async function engineeringRequest(
     !object(output) || !object(output.result) ||
     !object(output.result.result) ||
     !Array.isArray(output.result.result.entries)
-  ) return fail(502, "engineering_log_projection_invalid");
+  ) return deny(502, "engineering_log_projection_invalid");
   const result = output.result.result;
   result.entries = (result.entries as unknown[]).filter((value: unknown) =>
     object(value) && typeof value.message === "string" &&

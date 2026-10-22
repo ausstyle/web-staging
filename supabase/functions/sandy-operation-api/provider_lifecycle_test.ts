@@ -701,3 +701,190 @@ Deno.test("missing historical snapshots and untrusted identities/arguments fail 
   assert.equal(h.dbCalls.length, count);
   assert.equal(h.canonicalCalls.length, 0);
 });
+async function standingRecoveryHarness(
+  options: {
+    wrongBaseline?: boolean;
+    changedResource?: boolean;
+    reserveLost?: boolean;
+  } = {},
+) {
+  const branch = "engineering/recovery-canary",
+    file = "engineering-smoke/recovery.txt";
+  const baselineSha = (await gitBlobSha(before))!,
+    effectSha = (await gitBlobSha(after))!;
+  const commitSha = "a".repeat(40), parentSha = "b".repeat(40);
+  let record: ObjectValue | undefined, compensation: ObjectValue | null = null;
+  let currentSha = options.changedResource ? "c".repeat(40) : effectSha;
+  let writes = 0;
+  const calls: { operation: string; args: ObjectValue }[] = [];
+  const engineering = {
+    userId: "40000000-0000-4000-8000-000000000001",
+    sessionId: "40000000-0000-4000-8000-000000000002",
+    epoch: 1,
+  };
+  const deps = {
+    db: {
+      async rpc(name: string, args: ObjectValue) {
+        if (name.startsWith("sandy_engineering_")) {
+          assert.equal(args.p_user_id, engineering.userId);
+        }
+        let data: ObjectValue;
+        if (name === "sandy_engineering_recovery_context") {
+          data = {
+            ok: true,
+            snapshot_exists: !!record,
+            admission_id: sourceAdmission,
+            commit_sha: commitSha,
+            blob_sha: effectSha,
+            path: file,
+            branch,
+            expected_blob_sha: baselineSha,
+          };
+        } else if (name === "sandy_engineering_capture_recovery") {
+          record = args.p_record as ObjectValue;
+          assert.equal(
+            (record.compensation_arguments as ObjectValue).body &&
+              ((record.compensation_arguments as ObjectValue)
+                .body as ObjectValue).sha,
+            effectSha,
+          );
+          assert.equal(record.compensation_operation, "github.files.update");
+          data = { ok: true, snapshot_id: snapshotId, reused: false };
+        } else if (name === "sandy_lifecycle_context") {
+          data = {
+            ok: true,
+            source_state: "succeeded",
+            snapshot: {
+              id: snapshotId,
+              actor_id: actor,
+              source_request_id: sourceRequest,
+              source_operation: "github.files.update",
+              captured_at: "2026-10-22T00:00:00Z",
+              record,
+            },
+            compensation,
+            observations: [],
+          };
+        } else if (name === "sandy_lifecycle_observe") {
+          if (args.p_phase === "compensation" && args.p_matched === true) {
+            compensation = { ...compensation, state: "verified" };
+          }
+          data = {
+            ok: true,
+            observation_id: observationId,
+            phase: args.p_phase,
+            read_admission_id: args.p_read_admission_id,
+            effect_confirmed: args.p_matched,
+          };
+        } else if (name === "sandy_engineering_reserve_compensation") {
+          if (options.reserveLost) return { data: null, error: true };
+          data = {
+            ok: true,
+            request_id: inverseRequest,
+            authorization_id: inverseApproval,
+            reused: false,
+            redispatch_permitted: true,
+          };
+        } else if (name === "sandy_lifecycle_finish_compensation") {
+          compensation = {
+            request_id: inverseRequest,
+            state: "accepted",
+            admission_id: inverseAdmission,
+          };
+          data = { ok: true, ...compensation, redispatch_permitted: false };
+        } else throw Error("Unexpected private RPC " + name);
+        return { data, error: null };
+      },
+    },
+    async executeCanonical(
+      childContext: LifecycleContext,
+      operation: string,
+      args: ObjectValue,
+    ) {
+      assert.deepEqual(childContext.engineering, engineering);
+      calls.push({ operation, args });
+      let result: ObjectValue;
+      if (operation === "github.git.commits.get") {
+        result = { sha: commitSha, parents: [{ sha: parentSha }] };
+      } else if (operation === "github.files.content.get") {
+        assert.deepEqual(args, {
+          path: { path: file },
+          query: { ref: parentSha },
+        });
+        result = {
+          path: file,
+          sha: baselineSha,
+          type: "file",
+          encoding: "base64",
+          content: options.wrongBaseline ? after : before,
+        };
+      } else if (operation === "github.files.metadata.get") {
+        result = { path: file, type: "file", sha: currentSha };
+      } else if (operation === "github.files.update") {
+        writes++;
+        assert.equal(childContext.scope?.approvalId, inverseApproval);
+        assert.deepEqual(args, record!.compensation_arguments);
+        currentSha = baselineSha;
+        return Response.json({
+          ok: true,
+          executed: true,
+          operation,
+          admission_id: inverseAdmission,
+        });
+      } else throw Error("Unexpected provider operation " + operation);
+      // The production gateway wraps its validated provider result.
+      return Response.json({
+        ok: true,
+        executed: true,
+        operation,
+        admission_id: readAdmission,
+        result: {
+          ok: true,
+          operation,
+          admission_id: readAdmission,
+          executed: true,
+          request_state: "observed",
+          result,
+        },
+      });
+    },
+  };
+  return {
+    calls,
+    writes: () => writes,
+    run: (operation: string) =>
+      executeProviderLifecycle(deps, { ...context, engineering }, operation, {
+        source_request_id: sourceRequest,
+      }),
+  };
+}
+Deno.test("standing recovery derives its immutable baseline through canonical source reads and executes one reauthorized conditional inverse", async () => {
+  const h = await standingRecoveryHarness();
+  const result = await h.run("system.lifecycle.compensate");
+  assert.equal(result.status, 200, await result.clone().text());
+  const value = await result.json();
+  assert.equal(value.effect_confirmed, true);
+  assert.equal(value.request_state, "verified");
+  assert.equal(value.redispatch_permitted, false);
+  assert.equal(h.writes(), 1);
+  const second = await h.run("system.lifecycle.compensate");
+  assert.equal(second.status, 200);
+  assert.equal((await second.json()).effect_confirmed, true);
+  assert.equal(h.writes(), 1);
+});
+Deno.test("standing recovery refuses an altered baseline, changed current file and uncertain reservation before any inverse dispatch", async () => {
+  for (
+    const options of [{ wrongBaseline: true }, { changedResource: true }, {
+      reserveLost: true,
+    }]
+  ) {
+    const h = await standingRecoveryHarness(options);
+    const result = await h.run("system.lifecycle.compensate");
+    assert.equal(
+      result.status,
+      options.reserveLost ? 503 : 409,
+      await result.clone().text(),
+    );
+    assert.equal(h.writes(), 0);
+  }
+});

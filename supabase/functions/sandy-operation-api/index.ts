@@ -84,6 +84,7 @@ import {
 import {
   captureLifecyclePreimage,
   executeProviderLifecycle,
+  isProviderLifecycleOperation,
   type LifecycleContext,
 } from "./provider_lifecycle.ts";
 import {
@@ -1475,9 +1476,22 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     }
     const dispatchUser = user;
     const originalChannel = body.channel === "mcp" ? "mcp" : "api";
+    const lifecycleEngineeringProof = engineeringProofFor(delegation);
+    const lifecycleKind = lifecycleEngineeringProof
+      ? "user"
+      : delegation?.kind ?? "user";
     const lifecycleContext = (requestId: string): LifecycleContext => ({
       actorId: dispatchUser.id,
-      kind: delegation?.kind ?? "user",
+      kind: lifecycleKind,
+      ...(lifecycleEngineeringProof
+        ? {
+          engineering: {
+            userId: lifecycleEngineeringProof.machineUserId,
+            sessionId: lifecycleEngineeringProof.sessionId,
+            epoch: lifecycleEngineeringProof.epoch,
+          },
+        }
+        : {}),
       requestId,
       originalChannel,
       ...(request.headers.get("x-sandy-approval-id")
@@ -1491,7 +1505,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     ): Promise<Response> => {
       if (
         context.actorId !== dispatchUser.id ||
-        context.kind !== (delegation?.kind ?? "user") ||
+        context.kind !== lifecycleKind ||
         context.originalChannel !== originalChannel ||
         !validOperation(childOperation)
       ) {
@@ -2384,7 +2398,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       !extensionOwnsUserAdmission(operation) &&
       (entry.is_mutation === false || !!providerOperations[operation] ||
         extensionOwnsGrant(operation)) &&
-      !isPolicyOperation(operation)
+      !isPolicyOperation(operation) &&
+      !(lifecycleEngineeringProof && isProviderLifecycleOperation(operation))
     ) {
       const contractSha256 = await executionContractDigest(entry);
       let scope: unknown;
