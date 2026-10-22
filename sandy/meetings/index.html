@@ -259,7 +259,7 @@ async function startSandyAI(){
     }
   };
   sandyEvents.onopen=()=>{$("callStatus").textContent="Sandy connected · live transcript starting";
-    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{speed:1.2}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
+    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{voice:"shimmer",speed:1.2}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
   };
   for(const track of sandyMixDestination.stream.getAudioTracks())peer.addTrack(track,sandyMixDestination.stream);
   await syncRoomAiTerms();
