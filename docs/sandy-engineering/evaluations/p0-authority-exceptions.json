@@ -1,39 +1,43 @@
 {
-  "status": "observed_exceptions_only_not_a_claim_of_system_wide_completion",
+  "status": "Observed external/security exceptions only; not a claim of a complete system-wide audit",
   "exceptions": [
     {
-      "id": "github_environment_integration_permission",
-      "source": "GitHub sandy-production required-reviewers policy; legitimate environment-update and pending-deployment review APIs returned HTTP 403 Resource not accessible by integration.",
-      "kind": "external_integration_permission_boundary",
-      "intrinsically_mandatory_manual_approval": false,
-      "minimise_intervention": "Fix the existing integration permission or legitimately remove the repository-owned optional review gate once; retain CI, exact-source checks, audit and rollback.",
-      "current_workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801"
+      "id": "provider_administrator_boundary",
+      "source": "GitHub sandy-production environment currently requires its configured reviewer; this integration receives HTTP 403 for pending deployment review and environment/secret administration. Corrected repair run 39786424522 is waiting.",
+      "mandatory_reason": "The runner cannot bypass or administratively change provider protections with a credential lacking those permissions.",
+      "per_release_manual_review_intrinsically_required": false,
+      "minimise_intervention": "A legitimate repository administrator can enable authorized automation or remove the optional duplicate reviewer gate while retaining CI, exact source, audit and rollback. Current normal environment review can release the already Controller-approved repair.",
+      "new_controller_approval_required_for_repair": false
     },
     {
-      "id": "missing_recorded_security_delegation_authority",
-      "source": "The current engineering grant cannot establish or expand its own security authority. Actual Amendment B db40cccd-e0c6-4394-a14b-99011a2d3ddd is proposed with owner registration event 100 and zero owner approval events.",
-      "kind": "security_authority_boundary",
-      "owner_reports_approval": true,
-      "repeat_approval_requested": false,
-      "minimise_intervention": "Reconcile the authenticated Controller recording failure. Preserve its exact source, manifest and declaration; never manufacture an owner audit or use a workload session as the owner."
+      "id": "establish_or_expand_security_authority",
+      "source": "An executing engineering identity cannot grant itself additional scopes or create a genuine owner authorization. Actual Examiner/email/voice registrations return 403 engineering_registration_scope_denied; existing primary approved program covers V4/workspace/WhatsApp.",
+      "mandatory_reason": "Separate authorization and execution identities, least privilege and revocation; never manufacture an owner audit or reuse a different exact-source approval.",
+      "minimise_intervention": "Establish applicable bounded standing authority once through legitimate administration; future eligible routine releases should use it automatically. Initial frozen Amendment B declaration remains V4/workspace only and is not silently widened.",
+      "genuine_record_observation": "Original Amendment B db40cccd-e0c6-4394-a14b-99011a2d3ddd is proposed with no genuine owner approval event; original and reconciled immutable artifacts are retained."
     },
     {
       "id": "customer_identity_and_provider_consent",
-      "source": "Customer/tenant identity binding and actual consent are required for cross-channel private context and actions. The web/Gmail pilot has zero verified WhatsApp bindings, zero private voice sessions and no recorded memory-learning consent. A different customer WhatsApp identity cannot supply the same-customer handoff.",
-      "kind": "customer_and_provider_security_boundary",
-      "minimise_intervention": "Reuse existing valid account permissions and verified channel links. Only genuinely missing account-specific linkage/consent remains; do not request exported customer tokens or impersonate customers."
+      "source": "Authenticated tenant ownership and applicable channel/provider consent; the named pilot currently has no verified WhatsApp binding, no private voice session and no recorded memory consent.",
+      "mandatory_reason": "Engineering authority cannot impersonate a customer, prove phone ownership, grant OAuth scopes, consent to microphone/voice access, merge two customers or manufacture memory-learning permission.",
+      "minimise_intervention": "Reuse existing verified accounts, durable customer grants and automatic service renewal. Only absent account-specific permissions need legitimate customer/provider action. Do not request exported personal secrets.",
+      "gmail_confirmation": "Current Gmail confirmation is explicitly preserved by owner instruction and the customer send-authority boundary. It is not asserted to be a universal Gmail provider requirement; applicable customer standing send authority would require its own legitimate policy."
     }
   ],
   "automatic_checks_retained": [
     "authentication",
-    "scope and tenant binding",
-    "revocation and any configured expiry",
-    "short-lived Auth sessions and release admissions",
-    "CI and exact source",
+    "tenant and source binding",
+    "operation-specific scope",
+    "revocation and configured expiry",
+    "short-lived renewable sessions",
+    "independent CI",
+    "exact source and version guard",
+    "component lease",
     "budget",
     "idempotency",
     "independent effect verification",
     "rollback"
   ],
-  "implementation_or_ci_defects_are_not_owner_permission_exceptions": true
+  "implementation_defects_are_not_owner_permission_exceptions": true,
+  "frozen_60_case_and_cross_channel_engineering_remaining": true
 }
