@@ -2,7 +2,7 @@
   "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
   "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
   "standing_declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
-  "status": "prepared_for_one_owner_action_not_deployed",
+  "status": "blocked_by_unpersisted_owner_approval_and_production_drift",
   "tests": {
     "composed": 214,
     "isolated_postgresql_assertions": 31,
@@ -42,10 +42,17 @@
     "environment_update_api_http": 403
   },
   "actual_current_versions": {
-    "sandy-engineering-control": 51,
-    "sandy-engineering-runtime": 14,
     "sandy-agent-runtime-v4": 30,
-    "sandy-workspace": 46
+    "sandy-workspace": 46,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 15,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-examiner-thread-review": 23,
+    "email-ai-generate-draft": 106,
+    "sandy-email-runtime-canary": 17,
+    "sandy-whatsapp-webhook": 162,
+    "sandy-voice-account-context": 19,
+    "sandy-voice-call": 38
   },
   "v4_test_repeated": false,
   "customer_records_modified": false,
@@ -58,21 +65,19 @@
     "Remaining SANDY-ENG-0001 four-channel customer acceptance"
   ],
   "preserved_newer_runtime": {
-    "version": 14,
-    "bundle_sha256": "392f7feca414f0e19ccc4d17989bcce4ef5ae68f7dffbb002a80c775bd52ed59",
-    "production_index_preserved_byte_for_byte": true,
-    "production_shared_session_client_preserved_byte_for_byte": true,
-    "published_git_source_commit_not_established": true,
-    "all_7_original_module_hashes_captured_privately": true
+    "version": 15,
+    "bundle_sha256": "f7fafb9b17bf2bf5110cca3ddb3ca04d1af02944b1646e6db8f98ee227c92709",
+    "newer_lifecycle_recovery_routing_merged_without_deployment": true,
+    "source_reconciliation_captured_privately": true
   },
   "controller_publication": {
     "commit": "54d6d262c9709c33adad139c917241392a68f585",
     "pages_build_status": "built",
     "pages_build_checked_at": "2026-10-22T02:35:58Z",
     "url": "https://ausstyle.github.io/web-staging/sandy/controller/#changes",
-    "actual_owner_registration_observed": false,
+    "actual_owner_registration_observed": true,
     "registration_occurs_in_real_owner_session_when_panel_opens": true,
-    "normal_owner_click_not_yet_exercised": true,
+    "normal_owner_click_not_yet_exercised": "Owner reports approval; database contains registration only, not a matching approval event.",
     "direct_asset_http_from_runner": "blocked by runner network policy; GitHub Pages build independently verified"
   },
   "independent_ci": {
@@ -82,13 +87,58 @@
     "conclusion": "success",
     "deployment": "skipped in ci_only mode"
   },
-  "github_mergeability_inconsistency": {
-    "reported_base": "81bb9c7dd8fa3e7df1d05c4718af314a6c00dbde",
-    "local_and_github_compare_behind_by": 0,
-    "github_compare_status": "ahead",
-    "mergeability": "dirty",
-    "normal_update_branch_response": 422,
-    "normal_update_branch_message": "merge conflict between base and head",
-    "no_force_push_or_provider_protection_bypass": true
+  "latest_production_evidence": "p0-production-verification-20261022.json",
+  "actual_owner_registration_event": 100,
+  "actual_change_id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+  "owner_approval_events": 0,
+  "read_only_production_preflight": {
+    "change_id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+    "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+    "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+    "read_only": true,
+    "ready": false,
+    "blockers": [
+      {
+        "kind": "genuine_pinned_owner_approval_not_recorded"
+      },
+      {
+        "kind": "migration_version_occupied_by_other_source",
+        "version": "20261022010000",
+        "existing_name": "sandy_customer_read_projections",
+        "expected_sql_sha256": "a17103757651e9c541867f224c04baab1e8db75bce00ebc75e262bd4350f1d49"
+      },
+      {
+        "kind": "migration_version_occupied_by_other_source",
+        "version": "20261022020000",
+        "existing_name": "sandy_customer_read_admissions",
+        "expected_sql_sha256": "d01ad5f297ca894f2892b5a21dff3b13a391b7426294d38010f9d1f5f58cfd17"
+      },
+      {
+        "kind": "migration_version_occupied_by_other_source",
+        "version": "20261022030000",
+        "existing_name": "sandy_github_verified_receipts",
+        "expected_sql_sha256": "c92f1ea27a40cd892561f42bfaf602d7151cef8b7c278708cce5fbe74571ef70"
+      },
+      {
+        "kind": "source_prerequisite_requires_reconciliation",
+        "function": "sandy-engineering-control",
+        "expected_version": 52,
+        "actual_version": 51
+      },
+      {
+        "kind": "source_prerequisite_requires_reconciliation",
+        "function": "sandy-engineering-runtime",
+        "expected_version": 14,
+        "actual_version": 15
+      }
+    ],
+    "deployment_started": false,
+    "approval_written": false
+  },
+  "github_mergeability": {
+    "base": "bc672937eb2230e1076e2bc35b93bf8415177ddf",
+    "source_conflicts_resolved": true,
+    "force_push": false,
+    "ci_results": "See latest PR checks; historical failed checks retained."
   }
 }

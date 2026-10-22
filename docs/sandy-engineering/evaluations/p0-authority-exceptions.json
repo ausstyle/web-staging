@@ -3,23 +3,25 @@
   "exceptions": [
     {
       "id": "github_environment_integration_permission",
-      "source": "GitHub sandy-production required-reviewers protection; environment-update and review-pending-deployments APIs both returned HTTP 403 Resource not accessible by integration",
-      "kind": "current_external_permission_boundary",
+      "source": "GitHub sandy-production required-reviewers policy; legitimate environment-update and pending-deployment review APIs returned HTTP 403 Resource not accessible by integration.",
+      "kind": "external_integration_permission_boundary",
       "intrinsically_mandatory_manual_approval": false,
-      "minimise_intervention": "One legitimate repository-administrator change to the integration permissions or environment policy; preserve CI, source, audit and rollback. No per-sub-step Controller approval is needed.",
+      "minimise_intervention": "Fix the existing integration permission or legitimately remove the repository-owned optional review gate once; retain CI, exact-source checks, audit and rollback.",
       "current_workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801"
     },
     {
-      "id": "initial_security_delegation",
-      "source": "Acting workload has no authority to establish or expand its own grant. Owner approval of exact security source, manifest and standing declaration is required.",
+      "id": "missing_recorded_security_delegation_authority",
+      "source": "The current engineering grant cannot establish or expand its own security authority. Actual Amendment B db40cccd-e0c6-4394-a14b-99011a2d3ddd is proposed with owner registration event 100 and zero owner approval events.",
       "kind": "security_authority_boundary",
-      "minimise_intervention": "One Approve Amendment B action in the authenticated Controller. The protected installer then applies the approved declaration; routine work uses durable revocable delegation without a browser dependency."
+      "owner_reports_approval": true,
+      "repeat_approval_requested": false,
+      "minimise_intervention": "Reconcile the authenticated Controller recording failure. Preserve its exact source, manifest and declaration; never manufacture an owner audit or use a workload session as the owner."
     },
     {
       "id": "customer_identity_and_provider_consent",
-      "source": "Authenticated customer/account/tenant grants and provider OAuth scopes; platform-owner authority does not impersonate customers or grant missing provider permissions.",
+      "source": "Customer/tenant identity binding and actual consent are required for cross-channel private context and actions. The web/Gmail pilot has zero verified WhatsApp bindings, zero private voice sessions and no recorded memory-learning consent. A different customer WhatsApp identity cannot supply the same-customer handoff.",
       "kind": "customer_and_provider_security_boundary",
-      "minimise_intervention": "Reuse existing valid customer permissions and legitimately renewable identities. Obtain only genuinely missing account-specific consent or scope, never repeated confirmation merely because a historical workflow used it."
+      "minimise_intervention": "Reuse existing valid account permissions and verified channel links. Only genuinely missing account-specific linkage/consent remains; do not request exported customer tokens or impersonate customers."
     }
   ],
   "automatic_checks_retained": [
@@ -32,5 +34,6 @@
     "idempotency",
     "independent effect verification",
     "rollback"
-  ]
+  ],
+  "implementation_or_ci_defects_are_not_owner_permission_exceptions": true
 }
