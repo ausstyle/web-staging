@@ -124,6 +124,54 @@ Deno.test("GitHub detached commit verification binds message, tree and ordered p
     }
   }
 });
+Deno.test("GitHub immutable readback retries transient visibility, never permission failures or mutations", async () => {
+  for (const status of [404, 503, 403]) {
+    let calls = 0;
+    const result = await verifyGithubReadback(
+      "github.files.update",
+      args,
+      raw,
+      "PRIVATE",
+      (async (_url, init) => {
+        calls++;
+        assert.equal(init?.method, "GET");
+        return calls === 1 ? Response.json({}, { status }) : Response.json({
+          path,
+          sha: blob,
+          size: 8,
+          type: "file",
+          encoding: "base64",
+          content,
+        });
+      }) as typeof fetch,
+    );
+    assert.equal(calls, status === 403 ? 1 : 2);
+    assert.equal(result.verified, status !== 403);
+    if (!result.verified) {
+      assert.equal(result.reason, "github_readback_http_403");
+    }
+  }
+});
+Deno.test("GitHub exhausted transient readbacks report the actual bounded error without exposing response bodies", async () => {
+  let calls = 0;
+  const result = await verifyGithubReadback(
+    "github.commit",
+    { body: { tree, parents: [parent], message: "fixture" } },
+    { sha: commit },
+    "PRIVATE",
+    (async () => {
+      calls++;
+      return Response.json({ message: "PRIVATE upstream detail" }, {
+        status: 404,
+      });
+    }) as typeof fetch,
+  );
+  assert.equal(calls, 3);
+  assert.deepEqual(result, {
+    verified: false,
+    reason: "github_readback_http_404",
+  });
+});
 Deno.test("verified receipt metadata binds admission and operation; pending verification remains explicit", () => {
   const id = "10000000-0000-4000-8000-000000000001";
   const proof = {

@@ -1098,7 +1098,7 @@ export function createProviderOperationHandler(
         reconciliation_required: true,
         verification_error: checked.verified
           ? "github_verification_receipt_unavailable"
-          : "github_readback_not_confirmed",
+          : checked.reason,
       });
       if (checked.verified) {
         try {

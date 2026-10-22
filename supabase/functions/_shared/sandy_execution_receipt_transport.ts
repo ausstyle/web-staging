@@ -1,6 +1,7 @@
 /** Metadata around a validated provider response, not a replacement output
  * contract. Only fixed authenticated backend responses supply this header. */
 export const verifiedExecutionHeader = "x-sandy-verified-execution";
+import type { GithubReadbackReason } from "./sandy_github_readback.ts";
 export type VerifiedExecution = {
   admission_id: string;
   state: "succeeded";
@@ -12,7 +13,7 @@ export type VerifiedExecution = {
   effect_verified: false;
   reconciliation_required: true;
   verification_error:
-    | "github_readback_not_confirmed"
+    | GithubReadbackReason
     | "github_verification_receipt_unavailable";
 };
 const uuid = (v: unknown) =>
@@ -51,7 +52,15 @@ export function readVerifiedExecution(
       v.reconciliation_required === true &&
       [
         "github_readback_not_confirmed",
+        "github_readback_unsupported",
+        "github_readback_transport_unavailable",
+        "github_readback_response_limit",
+        "github_readback_invalid_json",
+        "github_readback_http_error",
         "github_verification_receipt_unavailable",
+        ...[400, 401, 403, 404, 408, 409, 422, 429, 500, 502, 503, 504].map((
+          status,
+        ) => `github_readback_http_${status}`),
       ].includes(v.verification_error)
     ) return v;
     return null;

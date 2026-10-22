@@ -11,10 +11,35 @@ export const githubReadbackOperations = new Set([
   "github.files.update",
   "github.commit",
 ]);
+export type GithubReadbackReason =
+  | "github_readback_unsupported"
+  | "github_readback_not_confirmed"
+  | "github_readback_transport_unavailable"
+  | "github_readback_response_limit"
+  | "github_readback_invalid_json"
+  | "github_readback_http_error"
+  | `github_readback_http_${
+    | 400
+    | 401
+    | 403
+    | 404
+    | 408
+    | 409
+    | 422
+    | 429
+    | 500
+    | 502
+    | 503
+    | 504}`;
 export type GithubReadback = { verified: true; proof: Obj } | {
   verified: false;
-  reason: string;
+  reason: GithubReadbackReason;
 };
+class ReadbackError extends Error {
+  constructor(readonly reason: GithubReadbackReason) {
+    super(reason);
+  }
+}
 function bytes(value: unknown): Uint8Array | null {
   if (
     typeof value !== "string" || value.length > 100000 ||
@@ -32,7 +57,9 @@ function bytes(value: unknown): Uint8Array | null {
 }
 const digest = async (b: Uint8Array) =>
   Array.from(
-    new Uint8Array(await crypto.subtle.digest("SHA-256", new Uint8Array(b).buffer)),
+    new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new Uint8Array(b).buffer),
+    ),
     (v) => v.toString(16).padStart(2, "0"),
   ).join("");
 async function read(
@@ -40,19 +67,59 @@ async function read(
   url: string,
   token: string,
 ): Promise<unknown> {
-  const response = await request(url, {
-    method: "GET",
-    redirect: "error",
-    headers: {
-      authorization: `Bearer ${token}`,
-      accept: "application/vnd.github+json",
-      "x-github-api-version": "2022-11-28",
-    },
-    signal: AbortSignal.timeout(15000),
-  });
+  let response: Response | undefined;
+  // Retry only immutable GETs. A new commit can be briefly unavailable on a
+  // different provider replica; a failed verification must never replay PUT/POST.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      response = await request(url, {
+        method: "GET",
+        redirect: "error",
+        headers: {
+          authorization: `Bearer ${token}`,
+          accept: "application/vnd.github+json",
+          "x-github-api-version": "2022-11-28",
+        },
+        signal: AbortSignal.timeout(5000),
+      });
+    } catch {
+      if (attempt === 2) {
+        throw new ReadbackError("github_readback_transport_unavailable");
+      }
+    }
+    const retryable = !response ||
+      [404, 408, 429, 500, 502, 503, 504].includes(response.status);
+    if (!retryable || attempt === 2) break;
+    await response?.body?.cancel();
+    response = undefined;
+    await new Promise((resolve) =>
+      setTimeout(resolve, attempt === 0 ? 250 : 750)
+    );
+  }
+  if (!response) {
+    throw new ReadbackError("github_readback_transport_unavailable");
+  }
   if (response.status !== 200 || !response.body) {
     await response.body?.cancel();
-    throw Error();
+    const classified = [
+      400,
+      401,
+      403,
+      404,
+      408,
+      409,
+      422,
+      429,
+      500,
+      502,
+      503,
+      504,
+    ].includes(response.status);
+    throw new ReadbackError(
+      classified
+        ? `github_readback_http_${response.status}` as GithubReadbackReason
+        : "github_readback_http_error",
+    );
   }
   const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -64,7 +131,7 @@ async function read(
       size += part.value.byteLength;
       if (size > 200000) {
         await reader.cancel();
-        throw Error();
+        throw new ReadbackError("github_readback_response_limit");
       }
       chunks.push(part.value);
     }
@@ -77,7 +144,11 @@ async function read(
     body.set(chunk, offset);
     offset += chunk.length;
   }
-  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body));
+  try {
+    return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body));
+  } catch {
+    throw new ReadbackError("github_readback_invalid_json");
+  }
 }
 export async function verifyGithubReadback(
   operation: string,
@@ -167,7 +238,12 @@ export async function verifyGithubReadback(
         read_http_status: 200,
       },
     };
-  } catch {
-    return { verified: false, reason: "github_readback_not_confirmed" };
+  } catch (error) {
+    return {
+      verified: false,
+      reason: error instanceof ReadbackError
+        ? error.reason
+        : "github_readback_not_confirmed",
+    };
   }
 }
