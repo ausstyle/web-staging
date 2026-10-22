@@ -1,0 +1,110 @@
+{
+  "source_merge": {
+    "pull_request": 136,
+    "merge_commit": "f7855132272b170e5ed387895967097e88f3402e",
+    "verified_CI_checks": 6,
+    "admin_override": false
+  },
+  "guest_release": {
+    "observed_at": "2026-10-22T15:33:33.280029+00:00",
+    "source_commit": "37f128f2d0315a44c7f38e93769f4eb82905940e",
+    "component": "sandy-guest-operation-api",
+    "version": 15,
+    "verify_jwt": true,
+    "change_id": "4f06c84a-5a79-4d63-a61f-975c14f7af49",
+    "source_publication_MCP_verified": true,
+    "all_uploaded_sources_accounted_for": true,
+    "readback_evidence_sha256": "3501382145558d03a870d1d5177f8c5e96c87a15ce115285eba32c09bf8b9d89",
+    "regression": {
+      "handler_installer": 23,
+      "worker": 10,
+      "API_python": 38,
+      "VM_provider_execution": false
+    },
+    "anonymous_dispatch_denial": {
+      "http_status": 403,
+      "error": "service_or_enrolled_vm_required",
+      "request_id": "0490545a-e40e-4072-a078-69096b089cec",
+      "execution_admissions": 0
+    },
+    "VM_enrollment_changed": false,
+    "VM_installed_or_restarted": false,
+    "new_registry_operations": 0,
+    "VM_acceptance": "0/3",
+    "rollback": "Re-upload the exact preserved version14 artifact/sources with verify_jwt=true. Preserve all enrollment generations, journals, jobs, signing bindings and registry exposure flags; do not replay unknown guest jobs. No VM restart or agent installation is part of this Edge release."
+  },
+  "scope_sync": {
+    "catalogue": [
+      {
+        "scope_id": "SANDY-ENG-0001",
+        "repository_path": "docs/sandy-engineering/tasks/SANDY-ENG-0001-runtime-reasoning-reliability.md",
+        "source_version": "1.2",
+        "source_commit_sha": "f7855132272b170e5ed387895967097e88f3402e",
+        "content_sha256": "e7338204b58fb35a134331c87b9aa34982c848bc90e5d4f81905c058d7eac76d",
+        "last_synced_at": "2026-10-22 15:33:12.849+00"
+      },
+      {
+        "scope_id": "SANDY-ENG-0005",
+        "repository_path": "docs/sandy-engineering/tasks/SANDY-ENG-0005-api-mcp-engineering-delivery.md",
+        "source_version": "1.2",
+        "source_commit_sha": "f7855132272b170e5ed387895967097e88f3402e",
+        "content_sha256": "8fea638421ab1b187467da18e074cd5de189ae17a7f73f5d22c4aced74139954",
+        "last_synced_at": "2026-10-22 15:33:13.188+00"
+      }
+    ],
+    "latest_sync": [
+      {
+        "source_commit_sha": "f7855132272b170e5ed387895967097e88f3402e",
+        "status": "succeeded",
+        "synced_count": 13,
+        "finished_at": "2026-10-22 15:33:17.943+00"
+      }
+    ]
+  },
+  "authorization_baseline": {
+    "observed_at": "2026-10-22T15:22:43.146511+00:00",
+    "administrator_transport": "authorized Supabase Management database administration; never engineering runtime",
+    "reason": "Reconcile source-preserving publication with the independently CI-verified runtime integration already merged into PR136 via PR158. No operation/resource/risk/budget/expiry expansion.",
+    "previous_source_commit": "bc672937eb2230e1076e2bc35b93bf8415177ddf",
+    "reviewed_source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+    "CI_admission_id": "4a390bd4-804c-4d17-b5a2-f48a4406c16b",
+    "protected_changes": [
+      {
+        "path": ".github/workflows/sandy-amendment-b-release.yml",
+        "before_git_blob": "1956cba9c75f5cf932e00e067208d1a2aa1f3785",
+        "after_git_blob": "38853ab6ccc61cfad50718dc7a2c62ae833895ea"
+      },
+      {
+        "path": ".github/workflows/sandy-api-contract-check.yml",
+        "before_git_blob": "d98d1749d67ecae8fb048fa67ded546b03a84bd5",
+        "after_git_blob": "94c2be838d3da5103a1eda6e1c2e712456d32fe0"
+      },
+      {
+        "path": ".github/workflows/sandy-engineering-control-repair.yml",
+        "before_git_blob": "9b113e3238528cad0bba43885d875e9b6416b1ab",
+        "after_git_blob": "707ae0ccc7b23754b90d8a3a2a773d9e78a9b9bd"
+      },
+      {
+        "path": ".github/workflows/sandy-regression-checks.yml",
+        "before_git_blob": "0c2b862049ef8d22d70e93ee655c70fb78773a3a",
+        "after_git_blob": "e76611ceb80781fd1251f69f6acc9adc469687c5"
+      },
+      {
+        "path": ".github/workflows/sandy-runtime-release-checks.yml",
+        "before_git_blob": "a322d94c899148e02a979056600cc66419e2cbfe",
+        "after_git_blob": "cd0927e344bdd9e838da9af93425e27b061751b7"
+      }
+    ],
+    "result": {
+      "version": 5,
+      "source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+      "authority_bounds_unchanged": true,
+      "expiry_not_extended": true,
+      "established_by": "postgres"
+    }
+  },
+  "acceptance": {
+    "Linux_Windows_graphical": "0/3",
+    "INF_01_to_07": "Not fully accepted; provider execution and recovery remain outstanding."
+  }
+}
