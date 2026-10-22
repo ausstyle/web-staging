@@ -104,7 +104,12 @@ async function harness(patch: Partial<EngineeringDependencies> = {}) {
       engineeringRequest(deps, request, user, claims),
   };
 }
-async function standingHarness(active = true, refuse = false, owns = true) {
+async function standingHarness(
+  active = true,
+  refuse = false,
+  owns = true,
+  inactiveReason?: string,
+) {
   const calls: { name: string; args: Record<string, unknown> }[] = [];
   const h = await harness({
     executionScope: () => ({
@@ -137,6 +142,9 @@ async function standingHarness(active = true, refuse = false, owns = true) {
             : name === "sandy_engineering_resolve_standing"
             ? {
               ok: active,
+              ...(inactiveReason
+                ? { policy_present: true, error: inactiveReason }
+                : {}),
               identity_user_id: MACHINE,
               owner_authority_id: OWNER,
               session_id: SESSION,
@@ -771,4 +779,23 @@ Deno.test("policy denials retain hash-only audit evidence without preparing prov
   assert.equal(audit.args.p_error, "engineering_operation_scope_denied");
   assert.equal(JSON.stringify(audit).includes("private caller text"), false);
   assert.equal(h.state.delegated, 0);
+});
+
+Deno.test("expired and revoked standing policy cannot fall back to a historical fixture grant", async () => {
+  for (
+    const error of [
+      "standing_delegation_expired",
+      "standing_delegation_revoked",
+    ]
+  ) {
+    const h = await standingHarness(false, false, true, error);
+    const r = await h.call();
+    assert.equal(r.status, 403);
+    assert.equal((await r.json()).error, error);
+    assert.equal(h.state.delegated, 0);
+    assert.equal(
+      h.calls.some((c) => c.name === "sandy_engineering_prepare_execution"),
+      false,
+    );
+  }
 });
