@@ -8,6 +8,7 @@ export const workloadControlActions = [
   "list",
   "test",
   "artifact",
+  "authorize_release",
 ] as const;
 const uuid = (v: unknown): v is string =>
   typeof v === "string" &&

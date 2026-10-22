@@ -958,3 +958,19 @@ Implement a versioned matrix with: feature ID, public capability/source/date, Sa
 ## 22.6 Architectural invariants
 
 The Sandy API remains the internal execution contract; Sandy MCP is only the external adapter. The Master Scope governs safety and tenant permissions. Never claim completion from a source commit, registered operation, green mocked test or HTTP 200 alone. New customer features require their own numbered subtask scope, documented acceptance evidence and rollback strategy.
+
+
+---
+
+## Amendment B — Autonomous engineering authorization model (v1.2, 22 October 2026)
+
+**Product-owner decision:** Sandy's normal software-engineering workflow shall not require a human to approve each change, deployment, or retry. Replace change-by-change owner approval queues with **standing, revocable engineering delegation** established through legitimate authentication and an explicit resource-and-operation policy. The historical v1.0/v1.1 approval descriptions remain archival context; this amendment governs where they conflict for authorized routine engineering.
+
+- For operations inside the active delegation envelope, the engine may register, test, commit, deploy, verify, retry and revert automatically. Persist every action and independent result; do not fabricate an owner approval event or call the resulting admission an interactive approval.
+- Standing delegation defines actor, tenant, project/repository/resource, operation family, risk ceiling, costs, allowed environments, expiry, revocation and verified prerequisites. Existing session and identity checks, least privilege, policy evaluation, source verification, isolation, audit, idempotency and rollback remain mandatory.
+- Operations outside that envelope must **fail closed as not authorized**, with a clear path to amend the standing policy through a legitimate administrator identity. They must not be silently elevated, approved by the acting workload itself, or executed under a shared service-role bypass.
+- High-impact or irreversible actions (including destructive production data changes, security/IAM policy expansion, unbounded spending, secret export or financial transfers) are **not automatically included** in routine delegation. They require a separately established restricted policy or are rejected; the design does not rely on recurring ad hoc owner-approval popups.
+- Replace user-facing statuses `pending_manual_approval` and `approved_by_owner` for new routine work with `authorized_by_policy`, `policy_blocked`, `executing`, `verified`, `unknown_outcome` and `failed`. Preserve legacy records without rewriting their history.
+- Engineering Control is a policy, release, provenance, test and audit service—not a manual approval bottleneck. Existing owner-approved change records remain valid evidence; do not rewrite or backdate them. Migrate compatible active jobs with explicit state mapping, test a rejected unauthorized request and a successful delegated routine release, and retain a kill switch and rollback path.
+
+**Acceptance:** two separate authorized engineering tasks complete a bounded source-to-release cycle without an individual approval click; unauthorized, revoked, expired, wrong-target and high-risk requests fail closed; every resulting deployment is source-attested and independently verified. A written design change is not itself an authorization grant or software deployment.

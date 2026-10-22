@@ -4,11 +4,11 @@
   "scopes": [
     {
       "scope_id": "SANDY-MASTER-1",
-      "title": "Sandy AI Master Software Scope v1.1",
+      "title": "Sandy AI Master Software Scope v1.2",
       "scope_kind": "master",
       "parent_scope_id": null,
       "path": "docs/sandy-engineering/master-scope-v1.md",
-      "source_version": "1.1",
+      "source_version": "1.2",
       "status": "DRAFT",
       "priority": "P0"
     },
@@ -68,7 +68,7 @@
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0005-api-mcp-engineering-delivery.md",
-      "source_version": "1.0",
+      "source_version": "1.1",
       "status": "DRAFT",
       "priority": "P1"
     },

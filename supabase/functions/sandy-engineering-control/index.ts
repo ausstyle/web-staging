@@ -1,4 +1,4 @@
-import {handleStandingDelegation} from "./routine_delegation.ts";
+import {handleAutonomousRelease} from "./autonomous_release.ts";
 import { isCanonicalEngineeringOperation, prepareCanonicalEngineeringRequest, sameCanonicalRequest } from "./canonical_request.ts";
 import {authorizeWorkloadControl,workloadRegistrationAllowed} from "./workload.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -31,10 +31,23 @@ Deno.serve(async req=>{
    if(lookup.error||!lookup.data)return respond({error:"Sandy Controller administrator required"},403);
    admin=lookup.data;
   }
+  if(["set_autonomous_policy","authorize_release"].includes(action)){
+   try{return respond(await handleAutonomousRelease(db,user,admin,b,async path=>{
+    const token=Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN");
+    if(!token)throw Error("existing_source_transport_unavailable");
+    const res=await fetch("https://api.github.com"+path,{headers:{authorization:"Bearer "+token,accept:"application/vnd.github+json","x-github-api-version":"2022-11-28"},redirect:"error",signal:AbortSignal.timeout(15000)});
+    if(!res.ok){await res.body?.cancel();throw Error("source_verification_unavailable")}
+    return res.json();
+   }))}catch(e){return respond({state:"policy_blocked",error:e instanceof Error?e.message:"policy_evaluation_failed",executed:false},403)}
+  }
+  if(action==="get_autonomous_policy"){
+   if(admin.role!=="owner"||workloadGrant)return respond({error:"Policy administrator required"},403);
+   const grants=await db.from("sandy_engineering_control_grants").select("identity_user_id,authorized_by,allowed_actions,scope_prefixes,allowed_risks,enabled,expires_at,revoked_at,autonomous_revision,autonomous_config");
+   if(grants.error)return respond({error:"Policy unavailable"},503);
+   return respond({grants:grants.data,per_release_owner_approval_required:false});
+  }
   if(["delegation_policy","set_delegation_policy","auto_approve"].includes(action)){
-   if(action==="auto_approve"&&!uuid(b.change_id))return respond({error:"Valid change_id required"},400);
-   try{return respond(await handleStandingDelegation(db,user,admin,b,Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||""))}
-   catch(e){return respond({error:e instanceof Error?e.message:"standing_delegation_failed",executed:false},403)}
+   return respond({state:"policy_blocked",error:"legacy_browser_approval_scheduler_retired_use_autonomous_policy",executed:false},410);
   }
   if(action==="preflight"){
    const [changes,rollbackRequests,pendingJobs]=await Promise.all([
@@ -43,7 +56,7 @@ Deno.serve(async req=>{
      db.from("sandy_deployment_jobs").select("id",{count:"exact",head:true}).eq("status","pending_approval").not("engineering_change_id","is",null)
    ]);
    if(changes.error||rollbackRequests.error||pendingJobs.error)return respond({error:"engineering_preflight_database_unavailable"},503);
-   return respond({ok:true,engineering_control_version:11,standing_routine_policy_implemented:true,standing_routine_requires_authenticated_owner_session:true,change_registration_required:true,write_requires_engineering_change:true,
+   return respond({ok:true,engineering_control_version:12,standing_routine_policy_implemented:true,standing_routine_requires_authenticated_owner_session:false,standing_routine_activation_requires_separate_policy_administrator:true,change_registration_required:true,write_requires_engineering_change:true,
      github_smoke_executor_implemented:true,github_credential_present:Boolean(Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")),
      supabase_write_executor_implemented:false,supabase_deployment_dispatch_implemented:true,supabase_deployment_dispatch_scope:"three allowlisted functions, approved job, protected GitHub workflow; unverified until deployment receipt",rollback_request_implemented:true,rollback_executor_implemented:false,
      registered_change_count:changes.count,rollback_request_count:rollbackRequests.count,pending_engineering_jobs:pendingJobs.count});
@@ -59,7 +72,7 @@ Deno.serve(async req=>{
    const policyRead=await db.from("sandy_engineering_delegation_policy").select("enabled,allowed_risks,allowed_operations,require_authenticated_admin,require_change_record,require_test_evidence,require_rollback_plan").eq("id",1).maybeSingle();
    if(policyRead.error)return respond({error:"Delegation policy unavailable"},503);
    const routineScope=scope.length>0&&scope.every((x:unknown)=>typeof x==="string"&&(/^(github:ausstyle\/web-staging:)/.test(x)||/^(sandy-[a-z0-9-]+)$/.test(x)))&&!scope.some((x:unknown)=>/voice-sip|security|auth|billing|delete|secret|production-database/i.test(String(x)));
-   const delegated=false; // Approval requires a later explicit owner action or the reviewed standing-policy gate.
+   const delegated=false; // Routine proposals use authorize_release after source/test evidence, without an owner click.
    const {data,error}=await db.from("sandy_engineering_changes").insert({title,problem,expected_behavior:expected,change_purpose:purpose,feature_improvement:improvement,scope,regression_rules:regressions,acceptance_criteria:criteria,risk,requested_by:user.id,idempotency_key:keyValue,status:delegated?"approved":"proposed"}).select("*").single();
    if(error)throw error;
    await db.from("sandy_engineering_change_events").insert({change_id:data.id,event_type:delegated?"delegated_auto_approved":"registered",actor:user.id,detail:{source:"engineering_api",approval_mode:delegated?"automatic_owner_delegation":"manual",test_required_before_execution:true}});
@@ -78,7 +91,9 @@ Deno.serve(async req=>{
     db.from("sandy_engineering_tests").select("*").eq("change_id",id),
     db.from("sandy_engineering_rollback_requests").select("*").eq("change_id",id)]);
    if([events,artifacts,tests,rollbacks].some(x=>x.error))throw Error("Unable to read change history");
-   return respond({change,events:events.data,artifacts:artifacts.data,tests:tests.data,rollbacks:rollbacks.data});
+   const authorizations=await db.from("sandy_engineering_release_authorizations").select("id,state,grant_revision,source_commit,manifest_sha256,created_at,expires_at").eq("change_id",id).order("created_at",{ascending:false});
+   if(authorizations.error)throw Error("Unable to read policy authorization");
+   return respond({change,events:events.data,artifacts:artifacts.data,tests:tests.data,rollbacks:rollbacks.data,authorizations:authorizations.data});
   }
   if(action==="status"){
    const next=string(b.status,40);
@@ -100,7 +115,7 @@ Deno.serve(async req=>{
    return respond({change:data});
   }
   if(action==="artifact"){
-   if(!["approved","implementing","committed","deployed","verified","failed"].includes(change.status))return respond({error:"Change is not approved"},409);
+   if(!["approved","authorized_by_policy","executing","implementing","committed","deployed","verified","failed"].includes(change.status))return respond({error:"Change is not authorized"},409);
    const type=string(b.artifact_type,50),target=string(b.target,500);
    if(!["github_commit","github_file","supabase_migration","edge_function","deployment_job","configuration","other"].includes(type)||!target)return respond({error:"Valid artifact_type and target required"},400);
    const strategies=["git_revert","redeploy_prior","forward_migration","manual_review"];

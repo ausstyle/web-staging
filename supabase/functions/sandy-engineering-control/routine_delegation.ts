@@ -54,10 +54,12 @@ export async function verifyRoutineReview(candidate: Obj, read: (path: string) =
   }
   if (!Array.isArray(reviews) || reviews.length >= 100) throw Error("routine_review_unavailable");
   const latest = new Map<string, Obj>();
-  for (const review of reviews) if (candidate.config.reviewers.includes(review.user?.login) && review.commit_id === head &&
+  for (const review of reviews) if ((candidate.autonomous || candidate.config.reviewers.includes(review.user?.login)) && review.commit_id === head &&
     ["APPROVED", "CHANGES_REQUESTED", "DISMISSED"].includes(review.state)) latest.set(review.user.login, review);
   const accepted = [...latest.values()].filter(r => r.state === "APPROVED" && r.user.login !== pr.user?.login);
-  if (!accepted.length || [...latest.values()].some(r => r.state === "CHANGES_REQUESTED")) throw Error("independent_review_required");
+  // Amendment B's separate workload gate supplies this server-derived flag.
+  // External branch/environment protection remains authoritative at delivery.
+  if ((!candidate.autonomous && !accepted.length) || [...latest.values()].some(r => r.state === "CHANGES_REQUESTED")) throw Error("independent_review_required");
   const checks = await read(`${root}/commits/${head}/check-runs?per_page=100`);
   const runs = checks?.check_runs;
   if (!Array.isArray(runs) || checks.total_count > 100) throw Error("routine_checks_unavailable");
@@ -83,7 +85,15 @@ export async function verifyRoutineReview(candidate: Obj, read: (path: string) =
   for (const f of diff.files) for (const name of [f.filename, f.previous_filename].filter(Boolean)) {
     if (/^docs\/sandy-engineering\/evaluations\/[a-z0-9-]+\.(json|md)$/.test(name)) continue;
     if (!name.startsWith(`supabase/functions/${candidate.target}/`) && !name.startsWith("supabase/functions/_shared/sandy-executive/")) throw Error("protected_or_unreviewed_scope_change");
-    if (/(?:auth|identity|credential|permission|secret|billing|migration|delegation|security)/i.test(name)) throw Error("higher_risk_manual_owner_action_required");
+    if (/(?:auth|identity|credential|permission|secret|billing|migration|delegation|security)/i.test(name)) throw Error(candidate.autonomous?"restricted_security_policy_required":"higher_risk_manual_owner_action_required");
+    if (candidate.autonomous) {
+      // A self-declared normal risk cannot authorize edits to credential,
+      // customer-isolation, consent, pilot or confirmation enforcement.
+      // Missing/truncated patch evidence requires a restricted policy instead.
+      if (typeof f.patch !== "string" || !f.patch.length || f.patch.length > 100000) throw Error("bounded_source_patch_required");
+      const changed = f.patch.split("\n").filter((line: string) => /^[+-](?![+-])/.test(line)).join("\n");
+      if (/(?:auth|credential|permission|secret|service.role|customer_id|tenant_id|consent|canary|allowlist|confirmation|memory_settings|Deno\.env)/i.test(changed)) throw Error("restricted_security_policy_required");
+    }
   }
   return { repository: "ausstyle/web-staging", pull_request: pr.number, source_commit: candidate.source,
     review_head: head, manifest_sha256: manifestDigest, review_ids: accepted.map(r => r.id), check_run_id: required.id, workflow_sha256: hash,
