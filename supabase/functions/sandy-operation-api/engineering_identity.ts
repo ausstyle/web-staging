@@ -322,6 +322,7 @@ export async function engineeringRequest(
                   inputBody.encoding === undefined
                 ? "utf-8"
                 : "base64",
+              String(operation).includes(".blobs.") ? 512 * 1024 : 65536,
             );
           }
           if (Array.isArray(inputBody.tree)) {

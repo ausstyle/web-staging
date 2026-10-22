@@ -27,6 +27,9 @@ class SourcePublicationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'requires_receipt_reconciliation'):
                 SourcePublisher(runtime, file, 'a' * 40, 'engineering/test').call(
                     'source-tree', 'github.git.trees.create', {'body': {'tree': []}})
+            with self.assertRaisesRegex(ValueError, 'checkpoint_operation_or_input_mismatch'):
+                SourcePublisher(runtime, file, 'a' * 40, 'engineering/test').call(
+                    'source-tree', 'github.git.trees.create', {'body': {'tree': ['changed']}})
             self.assertEqual(runtime.calls, 1)
             with self.assertRaisesRegex(ValueError, 'checkpoint_source_mismatch'):
                 SourcePublisher(runtime, file, 'b' * 40, 'engineering/test')
@@ -67,3 +70,12 @@ class SourcePublicationTests(unittest.TestCase):
             self.assertTrue(expected.endswith("\n"))
             self.assertEqual(arguments["body"]["message"], expected)
             self.assertEqual(files[0]["bytes"], len("reviewed source\n"))
+            git("rm", "-q", "source.txt")
+            git("commit", "-qm", "source removal retains immutable parent")
+            removal = git("rev-parse", "HEAD").decode().strip()
+            with patch.object(publish_source_mcp, "git", side_effect=git):
+                parent, _, tree_args, _, removed = source_candidate(removal, "engineering/source-test")
+            self.assertEqual(parent, commit)
+            self.assertIsNone(tree_args["body"]["tree"][0]["sha"])
+            self.assertTrue(removed[0]["removed"])
+            self.assertRegex(removed[0]["previous_blob_sha"], r"^[a-f0-9]{40}$")

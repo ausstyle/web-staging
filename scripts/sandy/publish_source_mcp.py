@@ -5,12 +5,15 @@ engine remain mandatory. No authority, credentials or direct provider requests a
 implemented here. Checkpoints refuse uncertain mutation replay. Only an exact
 provider Git commit hash may advance the non-forced engineering branch.
 
-Limitations: one parent, regular UTF-8 files, no deletions, <=120 KiB tree input.
+Limitations: one parent, regular UTF-8 files <=512 KiB, <=256 changes.
+Large changes use existing bounded Git blobs and an atomic tree; removals retain
+the immutable parent source. Tree/blob acceptance is distinct from verified commit/ref receipts.
 CI/security-file writes remain subject to the standing policy. Arbitrary binaries,
 large bundles, protected branches and merges require their reviewed delivery path.
 """
 from __future__ import annotations
 import argparse
+import base64
 import hashlib
 import json
 from pathlib import Path
@@ -40,12 +43,21 @@ def source_candidate(commit, branch):
         if not line:
             continue
         columns = line.decode().split()
-        if columns[-1] == 'D' or columns[1] not in ('100644', '100755'):
+        if columns[-1] != 'D' and columns[1] not in ('100644', '100755'):
             raise ValueError('source_deletion_or_nonregular_file_not_supported')
     names = git('diff-tree', '--no-commit-id', '--name-only', '-r', '-z', commit).split(b'\0')
     for encoded in filter(None, names):
         name = encoded.decode('utf-8', errors='strict')
+        if not git('ls-tree', commit, '--', name).strip():
+            previous = git('ls-tree', parent, '--', name).decode().split()
+            if not previous or previous[0] not in ('100644', '100755'):
+                raise ValueError('nonregular_source_removal_not_supported')
+            entries.append({'path': name, 'mode': previous[0], 'type': 'blob', 'sha': None})
+            files.append({'path': name, 'removed': True, 'previous_blob_sha': previous[2]})
+            continue
         source = git('show', commit + ':' + name)
+        if len(source) > 512 * 1024:
+            raise ValueError('source_file_exceeds_reviewed_text_bound')
         text = source.decode('utf-8', errors='strict')
         if any(ord(c) < 32 and c not in '\n\r\t' for c in text):
             raise ValueError('binary_source_not_supported')
@@ -53,7 +65,7 @@ def source_candidate(commit, branch):
         entries.append({'path': name, 'type': 'blob', 'mode': mode, 'content': text})
         files.append({'path': name, 'bytes': len(source), 'sha256': hashlib.sha256(source).hexdigest()})
     tree_args = {'body': {'base_tree': git('rev-parse', parent + '^{tree}').decode().strip(), 'tree': entries}}
-    if not entries or len(json.dumps(tree_args).encode()) > 120 * 1024:
+    if not entries or len(entries) > 256:
         raise ValueError('bounded_source_tree_required')
     fields = git('show', '-s', '--format=%an%n%ae%n%aI%n%cn%n%ce%n%cI', commit).decode().splitlines()
     # Preserve the exact Git message bytes. The provider readback verifier handles
@@ -78,14 +90,17 @@ class SourcePublisher:
         self.checkpoint.chmod(0o600)
 
     def call(self, label, operation, arguments):
+        input_sha256 = hashlib.sha256(json.dumps(arguments, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
         prior = self.report['calls'].get(label)
         if prior:
+            if prior.get('operation') != operation or prior.get('input_sha256') != input_sha256:
+                raise ValueError('checkpoint_operation_or_input_mismatch')
             if not prior.get('complete'):
                 raise RuntimeError('uncertain_checkpoint_requires_receipt_reconciliation:' + label)
             return prior
         rid = str(uuid.uuid4())
         record = {'operation': operation, 'request_id': rid, 'complete': False,
-                  'input_sha256': hashlib.sha256(json.dumps(arguments, sort_keys=True, separators=(',', ':')).encode()).hexdigest()}
+                  'input_sha256': input_sha256}
         self.report['calls'][label] = record
         self.save()  # Persist nonce before dispatch. Never automatically replay a mutation.
         status, response = self.runtime.invoke({'jsonrpc': '2.0', 'id': rid, 'method': 'tools/call',
@@ -111,6 +126,25 @@ class SourcePublisher:
         before = self.call('head-before', 'github.refs.get', {'path': {'ref': 'heads/' + branch}})
         if before['result']['object']['sha'] != parent:
             raise RuntimeError('source_parent_not_current_remote_head')
+        if len(json.dumps(tree_args).encode()) > 120 * 1024 or any(f.get('bytes', 0) > 65536 for f in files):
+            expected = []
+            uploads = []
+            for number, entry in enumerate(tree_args['body']['tree']):
+                if 'content' not in entry:
+                    expected.append(entry)
+                    continue
+                content = entry['content'].encode()
+                sha = hashlib.sha1(b'blob ' + str(len(content)).encode() + b'\0' + content).hexdigest()
+                expected.append({k: v for k, v in entry.items() if k != 'content'} | {'sha': sha})
+                uploads.append((number, sha, {'body': {'encoding': 'base64', 'content': base64.b64encode(content).decode()}}))
+            planned = {'body': {'base_tree': tree_args['body']['base_tree'], 'tree': expected}}
+            if len(json.dumps(planned).encode()) > 120 * 1024:
+                raise ValueError('bounded_tree_reference_input_required')
+            for number, expected_sha, arguments in uploads:
+                blob = self.call('source-blob-' + str(number), 'github.git.blobs.create', arguments)
+                if blob['result']['sha'] != expected_sha:
+                    raise RuntimeError('provider_source_blob_mismatch')
+            tree_args = planned
         created = self.call('source-tree', 'github.git.trees.create', tree_args)
         if created['result']['sha'] != tree:
             raise RuntimeError('provider_source_tree_mismatch')

@@ -223,6 +223,35 @@ def execution_evidence(docs=DOCS):
             positive[operation].extend(evidence)
         for operation, evidence in refusals.items():
             denied[operation].extend(evidence)
+    filename = "github-standing-broad-MCP-evidence-20261022.json"
+    readback = docs / "github-standing-broad-registry-verification-20261022.json"
+    if (docs / filename).exists() and readback.exists():
+        report, verification = load(docs / filename), load(readback)
+        sha = digest(docs / filename)
+        if report.get("complete") is True and verification.get("evidence_sha256") == sha:
+            durable = {r["id"]: r for r in report.get("independent_admissions", [])}
+            registered = {r["operation"]: r for r in verification.get("operations", [])}
+            for operation, proof in report.get("operation_evidence", {}).items():
+                row = registered.get(operation, {})
+                if (proof.get("MCP_end_to_end_verified") is not True or row.get("verified") is not True
+                        or row.get("evidence", {}).get("evidence_sha256") != sha):
+                    continue
+                for call in proof.get("calls", []):
+                    admission = durable.get(call.get("admission_id"), {})
+                    if (call.get("http_status") == 200 and call.get("API_status") == 200
+                            and call.get("MCP_isError") is False and call.get("executed") is True
+                            and admission.get("state") == admission.get("job_status") == "succeeded"
+                            and admission.get("audit") and all(e.get("hash_valid") is True for e in admission["audit"])):
+                        positive[operation].append({"file": filename,
+                            "level": "standing_Auth_MCP_typed_GitHub_metadata_or_source_read",
+                            "durable_admission_receipt_present": True, "whole_family_acceptance": False})
+                        break
+            for call in report.get("negative_or_repaired_calls", []):
+                if (call.get("API_status") == 403 and call.get("MCP_isError") is True
+                        and call.get("executed") is False and not call.get("admission_id")):
+                    value = {"file": filename, "level": "standing_Auth_source_or_workflow_write_denied_before_provider"}
+                    if value not in denied[call["operation"]]:
+                        denied[call["operation"]].append(value)
     return dict(positive), dict(denied)
 
 
