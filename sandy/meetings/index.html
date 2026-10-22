@@ -213,16 +213,16 @@ async function startSandyAI(){
     const callId=String(call.call_id||"");
     if(!callId||!sandyEvents||sandyEvents.readyState!=="open")return;
     let result;
-    if(call.name!=="sandy_workspace_overview"||!sandyWorkspaceAllowed)result={error:"operation_not_authorized"};
+    if(!["sandy_workspace_overview","sandy_tasks_read"].includes(call.name)||!sandyWorkspaceAllowed)result={error:"operation_not_authorized"};
     else {
       try{
         const auth=await db.auth.getSession();
         if(!auth.data.session?.access_token)throw Error("Sandy sign-in required");
-        const res=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-workspace?action=overview",{method:"POST",headers:{"authorization":"Bearer "+auth.data.session.access_token,"content-type":"application/json"},body:"{}",cache:"no-store"});
+        const workspaceAction=call.name==="sandy_tasks_read"?"command_centre":"overview";
+        const res=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-workspace?action="+workspaceAction,{method:"POST",headers:{"authorization":"Bearer "+auth.data.session.access_token,"content-type":"application/json"},body:"{}",cache:"no-store"});
         const data=await res.json();
         if(!res.ok)throw Error("Workspace access denied");
-        const overview={tasks:Array.isArray(data.tasks)?data.tasks.slice(0,25):[],attention:Array.isArray(data.attention)?data.attention.slice(0,12):[],suggestions:Array.isArray(data.suggestions)?data.suggestions.slice(0,10):[],display_name:data.display_name||null};
-        result={ok:true,overview};
+        result=workspaceAction==="command_centre"?{ok:true,task_summary:data.counts||{},approvals:(data.approvals||[]).slice(0,12),due_soon:(data.alerts||[]).slice(0,12),in_progress:(data.working||[]).slice(0,12),note:"This is a read-only task snapshot; it does not include every task."}:{ok:true,overview:data};
       }catch(e){result={error:String(e instanceof Error?e.message:e)}}
     }
     if(sandyEvents?.readyState==="open"){
@@ -259,7 +259,7 @@ async function startSandyAI(){
     }
   };
   sandyEvents.onopen=()=>{$("callStatus").textContent="Sandy connected · live transcript starting";
-    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{voice:"shimmer",speed:1.2}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
+    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{voice:"coral",speed:1}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}},{type:"function",name:"sandy_tasks_read",description:"Read the signed-in host’s Sandy Tasks: counts, approvals, tasks due soon and tasks in progress. Use this tool when asked about tasks, agenda, deadlines, outstanding items, or assignments. Read-only; do not claim that you can edit tasks.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
   };
   for(const track of sandyMixDestination.stream.getAudioTracks())peer.addTrack(track,sandyMixDestination.stream);
   await syncRoomAiTerms();
