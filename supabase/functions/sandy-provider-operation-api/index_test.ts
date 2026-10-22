@@ -97,7 +97,7 @@ function harness(overrides: Partial<ProviderDependencies> = {}) {
         }),
       }),
     );
-  return { call, handler, finishes, requests, consumes: () => consumes };
+  return { call, handler, finishes, requests, deps, consumes: () => consumes };
 }
 Deno.test("all reviewed input/provider-response/public schemas compile", () =>
   assertEquals(validateAllContracts(), 595));
@@ -796,4 +796,49 @@ Deno.test("protected-source refusal settles the admission without dispatching th
   assertEquals(body.mutation_dispatched, false);
   assertEquals(h.requests.length, 0);
   assertEquals(h.finishes[0].outcome, "failed");
+});
+
+Deno.test("reference-publication security is descriptor based rather than a canonical-name bypass", async () => {
+  let observed: unknown;
+  const h = harness({
+    verifyGithubPublication: (request) => {
+      observed = [request.operation, request.method];
+      return Promise.resolve({
+        allowed: false,
+        error: "engineering_protected_source_denied",
+        http_status: 403,
+      });
+    },
+  });
+  const original = providerOperations["github.refs.update"];
+  const alias = { ...original, operation: "github.reviewed_reference_alias" };
+  const handler = createProviderOperationHandler(
+    h.deps,
+    Object.freeze({
+      [alias.operation]: alias,
+    }),
+  );
+  const response = await handler(
+    new Request("https://sandy.test", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer internal",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        operation: alias.operation,
+        arguments: {
+          path: { ref: "heads/engineering/alias" },
+          body: { sha: "a".repeat(40), force: false },
+        },
+        actor_id: ACTOR,
+        tenant_id: null,
+        request_id: REQUEST,
+        grant_id: GRANT,
+      }),
+    }),
+  );
+  assertEquals(response.status, 403);
+  assertEquals(observed, [alias.operation, "PATCH"]);
+  assertEquals(h.requests.length, 0);
 });

@@ -14,6 +14,7 @@ const protectedPath = (p: string) =>
 export type GithubPublicationRequest = {
   admission_id: string;
   operation: string;
+  method: "POST" | "PATCH";
   arguments: Obj;
   token: string;
 };
@@ -111,20 +112,19 @@ export function createGithubPublicationBoundary(
       if (
         data.mode !== "standing_engineering" || !sha(data.baseline_commit) ||
         data.repository !== "ausstyle/web-staging" ||
+        data.operation !== input.operation || data.method !== input.method ||
         typeof data.delegation_id !== "string" ||
         !/^[a-f0-9-]{36}$/.test(data.delegation_id) ||
         !Number.isSafeInteger(data.version) || Number(data.version) < 1 ||
         !object(input.arguments.body) || !sha(input.arguments.body.sha)
       ) throw Error();
-      const ref = input.operation === "github.refs.create"
+      const ref = input.method === "POST"
         ? input.arguments.body.ref
         : object(input.arguments.path)
         ? input.arguments.path.ref
         : null;
       if (
-        !["github.refs.create", "github.refs.update"].includes(
-          input.operation,
-        ) || typeof ref !== "string" ||
+        !["POST", "PATCH"].includes(input.method) || typeof ref !== "string" ||
         !/^(refs\/)?heads\/engineering\/[A-Za-z0-9_./-]+$/.test(ref) ||
         /(^|\/)\.{1,2}(\/|$)/.test(ref) || input.arguments.body.force === true
       ) throw Error();

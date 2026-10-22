@@ -918,14 +918,15 @@ export function createProviderOperationHandler(
       }
     }
     if (
-      op.operation === "github.refs.create" ||
-      op.operation === "github.refs.update"
+      op.provider === "github" && ["POST", "PATCH"].includes(op.method) &&
+      /^\/repos\/\{owner\}\/\{repo\}\/git\/refs(?:\/\{ref\})?$/.test(op.path)
     ) {
       let boundary: GithubPublicationResult;
       try {
         boundary = await deps.verifyGithubPublication?.({
           admission_id,
           operation: op.operation,
+          method: op.method as "POST" | "PATCH",
           arguments: args,
           token,
         }) ??

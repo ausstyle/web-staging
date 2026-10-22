@@ -19,18 +19,26 @@ const workflow = entry(".github/workflows/release.yml", "1"),
 function fixture(
   candidate: unknown[],
   mode = "standing_engineering",
-  options: { truncated?: boolean; unavailable?: boolean } = {},
+  options: {
+    truncated?: boolean;
+    unavailable?: boolean;
+    operation?: string;
+    revokedAfterRead?: boolean;
+  } = {},
 ) {
   const calls: string[] = [];
+  let metadataCalls = 0;
   const db = {
     rpc: (name: string) => {
       assert.equal(name, "sandy_engineering_github_publication_context");
       return Promise.resolve({
         data: {
-          ok: true,
+          ok: !(options.revokedAfterRead && ++metadataCalls > 1),
           mode,
           repository: "ausstyle/web-staging",
           baseline_commit: anchor,
+          operation: options.operation ?? "github.refs.update",
+          method: "PATCH",
           delegation_id: "10000000-0000-4000-8000-000000000001",
           version: 4,
         },
@@ -77,6 +85,7 @@ function fixture(
 const request = {
   admission_id: "admitted",
   operation: "github.refs.update",
+  method: "PATCH" as const,
   arguments: {
     path: { ref: "heads/engineering/source" },
     body: { sha: desired, force: false },
@@ -154,4 +163,26 @@ Deno.test("standing source boundaries reject protected references and forced upd
     );
     assert.equal(f.calls.length, 0);
   }
+});
+
+Deno.test("reviewed aliases use the same source boundary and authority is revalidated after observations", async () => {
+  const alias = "github.reviewed_reference_alias";
+  const f = fixture(
+    [workflow, credential, newWorkflow],
+    "standing_engineering",
+    { operation: alias },
+  );
+  assert.deepEqual(await f.boundary({ ...request, operation: alias }), {
+    allowed: true,
+  });
+  const revoked = fixture(
+    [workflow, credential, newWorkflow],
+    "standing_engineering",
+    { revokedAfterRead: true },
+  );
+  assert.deepEqual(await revoked.boundary(request), {
+    allowed: false,
+    error: "engineering_source_authority_denied",
+    http_status: 403,
+  });
 });
