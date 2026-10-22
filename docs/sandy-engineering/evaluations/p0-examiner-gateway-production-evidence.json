@@ -1,0 +1,237 @@
+{
+  "scope": "SANDY-ENG-0001",
+  "scope_complete": false,
+  "captured_at_utc": "2026-10-21T23:28:01.182595+00:00",
+  "release": {
+    "change_id": "0bef5a45-bdb8-4279-867b-49507c852317",
+    "source_commit": "5eb1f2c84086db4a067b484cd3de7c5ce6cec182",
+    "manifest_sha256": "52e99810ee1d610c794bc9628b89fd3d19240739045ae12f59b63dec0bd512d4",
+    "reviewed_prior_version": 13,
+    "prior_version": 18,
+    "deployed_version": 19,
+    "prior_source_unchanged_after_metadata_refresh": true,
+    "all_three_original_modules_verified": true,
+    "local_tests_passed": 18,
+    "sdk_typecheck": "offline fallback; SDK usage unchanged",
+    "normal_gateway_service_auth_reused": true,
+    "new_secret_added": false,
+    "gateway_or_controller_auth_policy_changed": false,
+    "pilot_enrollment_changed": false,
+    "quality_acceptance_passed": false,
+    "rollback_source_captured": true,
+    "production_source_restore_exercised": false
+  },
+  "owner_approval_source": "Independently verified current enabled Controller owner event, approved change, component scope, source commit and manifest. No owner impersonation.",
+  "deployed_versions": {
+    "email-ai-generate-draft": 106,
+    "sandy-whatsapp-webhook": 162,
+    "sandy-voice-call": 38,
+    "sandy-voice-account-context": 19,
+    "sandy-email-runtime-canary": 17,
+    "sandy-workspace": 46,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-examiner-thread-review": 23,
+    "sandy-agent-runtime-v4": 29,
+    "sandy-openai-gateway-v4": 16,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 13
+  },
+  "source_preservation": {
+    "sandy-engineering-runtime": {
+      "version": 13,
+      "bundle_unchanged": true,
+      "bundle_sha256": "80765269aae5affd9e6817b81a46597a202b9115f11ad7ca89336e9f984538d2"
+    },
+    "sandy-engineering-control": {
+      "version": 51,
+      "bundle_unchanged": true,
+      "bundle_sha256": "3e5aea745fbc701c9543620a83c13b8b18a7a8f0bbfa8ff692494b99978ae44d"
+    },
+    "sandy-whatsapp-webhook": {
+      "version": 162,
+      "bundle_unchanged": true,
+      "bundle_sha256": "d99f754b2e6210f8c86601b038c47d4043e73fe318801246ad48dccf7f1a2f56"
+    },
+    "email-ai-generate-draft": {
+      "version": 106,
+      "bundle_unchanged": true,
+      "bundle_sha256": "a55100916f14bb0b4971175cc4897df64748645c80c0d73ce830460d7165fb07"
+    },
+    "sandy-email-runtime-canary": {
+      "version": 17,
+      "bundle_unchanged": true,
+      "bundle_sha256": "edb4403951438f0737ed92efee55a3655082782205d3cbbde641d4d3a444f0db"
+    },
+    "sandy-voice-account-context": {
+      "version": 19,
+      "bundle_unchanged": true,
+      "bundle_sha256": "4e789d8f128641466185bb2b6cae7df23ed38f7d17ac421b398c4b7dcdba2dd6"
+    },
+    "sandy-openai-gateway-v4": {
+      "version": 16,
+      "bundle_unchanged": true,
+      "bundle_sha256": "e7744a4f984be5895f8246866e6c3bcf3db2eab395eeddc544130ef681b3c32e"
+    },
+    "sandy-examiner-thread-review": {
+      "version": 23,
+      "bundle_unchanged": true,
+      "bundle_sha256": "0fa2174c046336c773aa21ad5070a9df9522b641520efc07a1e19f8aaf0ee59b"
+    },
+    "sandy-agent-runtime-v4": {
+      "version": 29,
+      "approved_modules_match": true,
+      "module_count": 26,
+      "bundle_sha256": "bce5209688d6977bcd45cfae96c4ea1cdb6acd95671af343461407cc7a571c93"
+    },
+    "sandy-workspace": {
+      "version": 46,
+      "approved_modules_match": true,
+      "module_count": 2,
+      "bundle_sha256": "cc58531ab14b5e9d4ed964b91af9ad7dcc3a088d5469f1d0c3921f26dd4930d9"
+    }
+  },
+  "single_pilot_allowlist_hash_verified": true,
+  "actual_examiner": {
+    "workflow_url": "https://github.com/ausstyle/web-staging/actions/runs/39693113668",
+    "run": {
+      "failed": 9,
+      "passed": 1,
+      "status": "complete",
+      "reviews": 2,
+      "run_key": "production:4678cfe3-9f5e-49c6-b787-37e9e64d6fa1",
+      "attempted": 12,
+      "completed_at": "2026-10-21T23:27:56.01+00:00"
+    },
+    "functional_totals": {
+      "http_200": 12,
+      "auth_errors": 0,
+      "tasks_completed": 12,
+      "scored_judgments": 12
+    },
+    "model_audit": {
+      "models": [
+        "gpt-4.1-mini",
+        "gpt-5.4-mini"
+      ],
+      "model_turns": 10,
+      "source_runtimes": [
+        "sandy-agent-runtime-v4"
+      ],
+      "successful_rounds": 18
+    },
+    "mutating_tools": 0,
+    "judgments": [
+      {
+        "case_key": "current_time",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "connected_apps",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "gmail_capabilities",
+        "verdict": "needs_review",
+        "score": 3,
+        "http_status": 200
+      },
+      {
+        "case_key": "drive_capabilities",
+        "verdict": "needs_review",
+        "score": 3,
+        "http_status": 200
+      },
+      {
+        "case_key": "calendar_capabilities",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "task_overview",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "memory_recall",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "service_awareness",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "privacy_authority",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "failure_handling",
+        "verdict": "pass",
+        "score": 4,
+        "http_status": 200
+      },
+      {
+        "case_key": "email_search",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      },
+      {
+        "case_key": "tool_evidence",
+        "verdict": "fail",
+        "score": 2,
+        "http_status": 200
+      }
+    ],
+    "gateway_audit_window": [
+      {
+        "count": 12,
+        "model": "gpt-6-astra",
+        "decision": "allowed",
+        "execution_status": null,
+        "verified_success": false
+      }
+    ],
+    "gateway_audit_limit": "Audit rows record allowed admission but execution_status is null and verified_success false. Twelve actual scored worker results independently establish judgment execution; these audit flags do not establish provider verification.",
+    "judge_input_limit": "The unchanged judge receives question and answer only, without task/tool/source receipts. Its unsupported-evidence findings do not independently disprove otherwise verified records. Frozen-cohort quality acceptance is not established.",
+    "thread_review_limit": "Historical thread-review caller remains unchanged and retains its separate legacy gateway-authentication defect. One historical web thread review is not new four-channel acceptance.",
+    "quality_acceptance_passed": false
+  },
+  "rollback": {
+    "reviewed_prior_version": 13,
+    "actual_prior_version": 18,
+    "prior_bundle_sha256": "1a3bbf8cac5de9d96e89c4fa4579c3ff5edc57427b8869839c25e5b8154090dc",
+    "published_revision_drift_reconciled_by_exact_source_identity": true,
+    "private_before_source_and_metadata_captured": true,
+    "all_three_candidate_modules_readback_verified": true,
+    "component_lease_released": true,
+    "restore_source_under_fresh_version_and_digest_guard": true,
+    "production_restore_exercised": false,
+    "replay_customer_effects": false
+  },
+  "authentication": {
+    "old_personal_controller_token_retried": false,
+    "optional_pilot_secret_requested": false,
+    "unrelated_credentials_substituted": false,
+    "new_secret_added": false,
+    "customer_or_owner_session_minted": false,
+    "normal_engineering_registration_after_token_expiry": {
+      "http_status": 201,
+      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+      "status": "proposed",
+      "transport": "existing scoped renewable engineering identity"
+    },
+    "controller_token_blocking_current_release": false
+  }
+}

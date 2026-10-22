@@ -1,0 +1,129 @@
+{
+  "checked_at": "2026-10-22T00:58:33.781949+00:00",
+  "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+  "source_commit": "3734254e872fcb2f0b5270aac43f8540b40726a2",
+  "manifest_sha256": "1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017",
+  "versions": {
+    "sandy-agent-runtime-v4": 30,
+    "sandy-workspace": 46,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 13,
+    "sandy-examiner-full-cycle": 19
+  },
+  "run": {
+    "failed": 9,
+    "passed": 0,
+    "status": "complete",
+    "reviews": 3,
+    "run_key": "production:2e06ff74-387f-4481-bcd9-8562d8bf2c3d",
+    "attempted": 12,
+    "started_at": "2026-10-22T00:52:21.877686+00:00",
+    "completed_at": "2026-10-22T00:55:49.249+00:00"
+  },
+  "http_status": 200,
+  "actual_overdue": 1,
+  "reported_overdue": 1,
+  "deadline_evidence": {
+    "as_of": "2026-10-22T00:53:40.312Z",
+    "coverage": "complete",
+    "definition": "An outstanding task is overdue when its recorded due_at instant is strictly earlier than as_of.",
+    "total_overdue": 1,
+    "assessed_records": 1,
+    "unknown_deadlines": 0,
+    "overdue_in_returned_records": 1
+  },
+  "reply_correctly_identifies_one_outstanding_overdue_task": true,
+  "task_records_unchanged_since_baseline": true,
+  "workspace_source_unchanged": true,
+  "all_27_deployed_modules_verified": true,
+  "judge_verdict": "fail",
+  "judge_receives_tool_receipts": false,
+  "signed_in_web_followup_repeated": false,
+  "full_web_acceptance_passed": false,
+  "all_four_channels_accepted": false,
+  "rollback_bundle_captured": true,
+  "production_restore_exercised": false,
+  "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39702287862",
+  "test_class": "real_authenticated_fixed_pilot_API_plus_independent_database_and_source_readback",
+  "controller_test_id": "2375ec4b-d6d7-4e5d-9cbd-cccbeb08fe4b",
+  "governance": {
+    "actual_database_status_before_release": "approved",
+    "legacy_approval_provenance": "owner_directive_manual_db_approval, actor null, owner_session_verified false",
+    "latest_owner_instruction": "Verify existing approved state and proceed with the pinned release; preserve history and do not manufacture owner signoff.",
+    "owner_auth_event_fabricated": false,
+    "approval_status_written_by_this_release": false,
+    "standing_policy_grant_created": false,
+    "component_lease_held_and_released": true,
+    "provider_upload_attempts": 1,
+    "credential_substituted": false
+  },
+  "channel_versions": {
+    "sandy-agent-runtime-v4": {
+      "version": 30,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-workspace": {
+      "version": 46,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-engineering-control": {
+      "version": 51,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-engineering-runtime": {
+      "version": 13,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-examiner-full-cycle": {
+      "version": 19,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-examiner-thread-review": {
+      "version": 23,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "email-ai-generate-draft": {
+      "version": 106,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-email-runtime-canary": {
+      "version": 17,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-whatsapp-webhook": {
+      "version": 162,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-voice-account-context": {
+      "version": 19,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-voice-call": {
+      "version": 38,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    "sandy-openai-gateway-v4": {
+      "version": 16,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    }
+  },
+  "rollback": {
+    "before_version": 29,
+    "prior_bundle_sha256": "bce5209688d6977bcd45cfae96c4ea1cdb6acd95671af343461407cc7a571c93",
+    "captured_outside_repository": true,
+    "all_original_modules_recoverable": true,
+    "live_restore_exercised": false
+  }
+}

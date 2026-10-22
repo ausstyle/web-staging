@@ -1,0 +1,168 @@
+{
+  "kind": "live_baseline_only",
+  "observed_at": "2026-10-21",
+  "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39676846622",
+  "deployed_versions": {
+    "sandy-engineering-oidc-ingest": 85,
+    "sandy-agent-runtime": 61,
+    "sandy-agent-runtime-v4": 22,
+    "sandy-workspace": 39
+  },
+  "receipt": {
+    "run_key": "github:39676846622",
+    "provider_verified": true,
+    "gmail_read_ok": true,
+    "drive_read_ok": true,
+    "calendar_read_ok": true,
+    "runtime_checks": [
+      {
+        "test": "connections",
+        "verdict": "pass",
+        "http_status": 200,
+        "required_tool": "v2_connection_preflight",
+        "task_completed": true,
+        "tool_confirmed": true,
+        "no_mutating_tools": true,
+        "provider_count_matches": null,
+        "provider_subjects_match": null,
+        "provider_count_comparable": false,
+        "provider_subjects_comparable": false
+      },
+      {
+        "test": "gmail",
+        "verdict": "pass",
+        "http_status": 200,
+        "required_tool": "gmail_verified_recent",
+        "task_completed": true,
+        "tool_confirmed": true,
+        "no_mutating_tools": true,
+        "provider_count_matches": true,
+        "provider_subjects_match": true,
+        "provider_count_comparable": true,
+        "provider_subjects_comparable": true
+      }
+    ],
+    "overall_status": "passed"
+  },
+  "customer_payloads_published": false,
+  "browser_auth_tested": false,
+  "whatsapp_delivery_tested": false,
+  "voice_tested": false,
+  "full_quality_gate_run": false,
+  "candidate_deployed": false,
+  "rejected_external_api_attempts": {
+    "legacy_service_router": 403,
+    "legacy_service_direct_v4": 403,
+    "current_secret_key_router": 401,
+    "no_accepted_task_observed": true
+  },
+  "general_api_qa": {
+    "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39676173204",
+    "workflow_conclusion": "failure",
+    "stored_run_status": "running",
+    "stored_attempted": 0,
+    "execution_receipts": 6,
+    "outcome": "partial_receipts_only_not_an_accepted_run",
+    "receipt_verdicts": {
+      "pass": 1,
+      "needs_review": 5
+    },
+    "summary_consistent_with_receipts": false,
+    "receipts": [
+      {
+        "case_key": "dynamic_clock",
+        "verdict": "needs_review",
+        "reason": "clock_inaccurate_or_not_parseable",
+        "edge_status": 200,
+        "duration_ms": 16917,
+        "tools": [
+          {
+            "tool": "v2_operational_read",
+            "success": true
+          },
+          {
+            "tool": "research_web",
+            "success": false
+          }
+        ]
+      },
+      {
+        "case_key": "dynamic_connections",
+        "verdict": "needs_review",
+        "reason": "connection_status_requires_review",
+        "edge_status": 200,
+        "duration_ms": 18346,
+        "tools": [
+          {
+            "tool": "v2_operational_read",
+            "success": true
+          },
+          {
+            "tool": "inspect_sandy_operational_state",
+            "success": true
+          }
+        ]
+      },
+      {
+        "case_key": "dynamic_web_history",
+        "verdict": "needs_review",
+        "reason": "oracle_question_mismatch",
+        "edge_status": 200,
+        "duration_ms": 17690,
+        "tools": [
+          {
+            "tool": "v2_operational_read",
+            "success": true
+          }
+        ]
+      },
+      {
+        "case_key": "dynamic_cross_channel",
+        "verdict": "needs_review",
+        "reason": "all_channels_described_independent_semantic_review_needed",
+        "edge_status": 200,
+        "duration_ms": 17471,
+        "tools": [
+          {
+            "tool": "v2_operational_read",
+            "success": true
+          }
+        ]
+      },
+      {
+        "case_key": "dynamic_location",
+        "verdict": "pass",
+        "reason": "location_not_inferred",
+        "edge_status": 200,
+        "duration_ms": 17264,
+        "tools": [
+          {
+            "tool": "v2_operational_read",
+            "success": true
+          }
+        ]
+      },
+      {
+        "case_key": "dynamic_task_count",
+        "verdict": "needs_review",
+        "reason": "task_count_not_unambiguously_extracted",
+        "edge_status": 200,
+        "duration_ms": 15185,
+        "tools": [
+          {
+            "tool": "v2_operational_read",
+            "success": true
+          },
+          {
+            "tool": "list_tasks",
+            "success": true
+          }
+        ]
+      }
+    ]
+  },
+  "workspace_original_entry_sha256": "614227b2b531097a9dbae220051029921ced3d6156806b495f9a2fcd5a0645b8",
+  "workspace_temporal_ingestion_preserved": true,
+  "local_outcome_tests": 18,
+  "local_executive_regressions": 49
+}

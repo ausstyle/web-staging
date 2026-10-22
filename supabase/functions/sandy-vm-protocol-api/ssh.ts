@@ -224,8 +224,18 @@ export async function sshExecute(
 
 /** Ephemeral technical identity for an approved OS Login execution, never a user session. */
 export function ephemeralSshKey() {
-  const pair = ssh2.utils.generateKeyPairSync("ed25519");
-  return { publicKey: pair.public, privateKey: pair.private };
+  // ssh2 1.17 trims all leading zero bytes from the Ed25519 BIT STRING,
+  // occasionally producing a malformed key. Reject locally before any OS Login
+  // enrollment. Regeneration has no remote effect and is strictly bounded.
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const pair = ssh2.utils.generateKeyPairSync("ed25519");
+    const parsed = ssh2.utils.parseKey(pair.private);
+    if (!(parsed instanceof Error) && !Array.isArray(parsed) &&
+        pair.public === parsed.type + " " + parsed.getPublicSSH().toString("base64")) {
+      return { publicKey: pair.public, privateKey: pair.private };
+    }
+  }
+  throw new ProtocolRefusal("ephemeral_ssh_key_generation_invalid");
 }
 
 /** Prove possession of the already owner-pinned host key, stopping before user authentication. */

@@ -1,0 +1,50 @@
+{
+  "source_commit": "addfc2ac5b933567c003466a8668a7b864330797",
+  "deployed": false,
+  "functions": [
+    {
+      "slug": "sandy-agent-runtime-v4",
+      "expected_prior_version": 22,
+      "prior_bundle_sha256": "79671f7485e40232f79d8e6be2722c88dffe260be9ef5c0dc6a99a3f0dc2d43e",
+      "files": {
+        "sandy-agent-runtime-v4/index.ts": "02e2af6c729690fbc470a73a945a674c5a00c3528efb6bd328c190e019d0de05",
+        "_shared/sandy-agent-operations/connected-gmail.ts": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
+        "_shared/sandy-agent-operations/identity.ts": "9213e6417a0f204c16b753a89f68e7fefb2182dc7f5cf0bec6a43ecafe8d7def",
+        "_shared/sandy-agent-operations/runtime_conversation.ts": "7aea8453ce9c0b4fe04e6015c6945f2cba49d983fe96f7c8dfc53ccfa33c206a",
+        "_shared/sandy-agent-operations/runtime_conversation_contract.ts": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b",
+        "_shared/sandy-agent-operations/runtime_responses_transport.ts": "917741bf8b92ef5a7f03dcdfea81ad0f03ad8fc645862147b47def6c345143be",
+        "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts": "a61c9c726abb96b4afa52198c5d1b550dd2502ea41f85d74318fd771503c33dd",
+        "_shared/sandy-agent-operations/service.ts": "a857893c1ef97d218372644fdcd8d70b421abde8a82e0f0363ac322b9408b360",
+        "_shared/sandy-agent-operations/contracts.ts": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
+        "_shared/sandy-agent-operations/runtime_profiles.ts": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
+        "_shared/sandy-agent-operations/runtime_record_contracts.ts": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
+        "_shared/sandy-agent-operations/runtime_records.ts": "657571bfa08fb9c90b257cbd27148333ef7ef303ea666dc5ea366d88b4531a57",
+        "_shared/sandy-agent-operations/runtime_operational_contracts.ts": "ed66b477c252fcc4ecc4a182520c25bd582d28ab8a3e1ceed1d2953b7c8a3b83",
+        "_shared/sandy-agent-operations/runtime_operational.ts": "f5389d50afb4d98e57f448ee9bd8598f413bb2a3de9648cfdb50df37fef9e7f8",
+        "_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts": "05f42ca459e747435aa67669c11af0a2e9e222694e283b40311d9c8afae8f7eb",
+        "_shared/sandy-agent-operations/runtime_connection_preflight.ts": "31b85e1ffdeb2894a1e76bea4388e9e0295144f5db95afed23581f90e7d6f198",
+        "_shared/sandy-agent-operations/runtime_snapshot.ts": "22e5aa73fd0f9112d960b029f0cb2b0d097fa606fc77a0f186fb5f7ed0664da3",
+        "_shared/sandy-agent-operations/runtime_model_policy.ts": "326baf0e2197f292c6c7138ce1d21c2df1c990a1529f99a39bf35c18a45f0e10",
+        "_shared/sandy-executive/turn.ts": "6e7f4d95b5c58f5c3cb74830972452fd8853628cb9d7d89292a4ef77f6658b7c",
+        "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "_shared/sandy-executive/pending_reply.ts": "e4aa16d79fd18224a15387ad952e2c008b8003a43328e2d65c7cf69bce320887",
+        "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+        "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+        "_shared/sandy-executive/temporal_context.ts": "4799f324b8869c6b01e3ede239308d03a9556dfa559e0000cbdb52be5eace99e",
+        "sandy-agent-runtime-v4/version-awareness.js": "f7c344fb99f2760e2bac13b09f173549f240ba917912cc0f9f4cb6320c6834a2"
+      }
+    },
+    {
+      "slug": "sandy-workspace",
+      "expected_prior_version": 39,
+      "prior_bundle_sha256": "861b31a42499d97e93981442bc4399c06aad83b1134e659f37a6ba50711de15c",
+      "files": {
+        "sandy-workspace/index.ts": "c7edb4c1d563a0daff0b9445eefd6fd719595db1896259132c9485eb64b7a2dc",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+      }
+    }
+  ],
+  "pilot_allowlist": "single consenting web pilot; identifier retained privately",
+  "migration_required": false
+}

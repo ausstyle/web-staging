@@ -1,0 +1,39 @@
+{
+  "status": "observed_exceptions_only_not_a_claim_of_system_wide_completion",
+  "exceptions": [
+    {
+      "id": "github_environment_integration_permission",
+      "source": "GitHub sandy-production required-reviewers policy; legitimate environment-update and pending-deployment review APIs returned HTTP 403 Resource not accessible by integration.",
+      "kind": "external_integration_permission_boundary",
+      "intrinsically_mandatory_manual_approval": false,
+      "minimise_intervention": "Fix the existing integration permission or legitimately remove the repository-owned optional review gate once; retain CI, exact-source checks, audit and rollback.",
+      "current_workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801"
+    },
+    {
+      "id": "missing_recorded_security_delegation_authority",
+      "source": "The current engineering grant cannot establish or expand its own security authority. Actual Amendment B db40cccd-e0c6-4394-a14b-99011a2d3ddd is proposed with owner registration event 100 and zero owner approval events.",
+      "kind": "security_authority_boundary",
+      "owner_reports_approval": true,
+      "repeat_approval_requested": false,
+      "minimise_intervention": "Reconcile the authenticated Controller recording failure. Preserve its exact source, manifest and declaration; never manufacture an owner audit or use a workload session as the owner."
+    },
+    {
+      "id": "customer_identity_and_provider_consent",
+      "source": "Customer/tenant identity binding and actual consent are required for cross-channel private context and actions. The web/Gmail pilot has zero verified WhatsApp bindings, zero private voice sessions and no recorded memory-learning consent. A different customer WhatsApp identity cannot supply the same-customer handoff.",
+      "kind": "customer_and_provider_security_boundary",
+      "minimise_intervention": "Reuse existing valid account permissions and verified channel links. Only genuinely missing account-specific linkage/consent remains; do not request exported customer tokens or impersonate customers."
+    }
+  ],
+  "automatic_checks_retained": [
+    "authentication",
+    "scope and tenant binding",
+    "revocation and any configured expiry",
+    "short-lived Auth sessions and release admissions",
+    "CI and exact source",
+    "budget",
+    "idempotency",
+    "independent effect verification",
+    "rollback"
+  ],
+  "implementation_or_ci_defects_are_not_owner_permission_exceptions": true
+}

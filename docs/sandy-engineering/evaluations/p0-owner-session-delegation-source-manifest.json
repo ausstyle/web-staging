@@ -1,0 +1,32 @@
+{
+  "source_commit": "f9958d50b4fd4ebd82f97c8e3be76ad49250a192",
+  "separate_from_deadline_change": "07894248-0808-4ae0-a271-2fb850ec054d",
+  "risk": "high",
+  "function": {
+    "slug": "sandy-engineering-control",
+    "expected_prior_version": 51,
+    "prior_bundle_sha256": "3e5aea745fbc701c9543620a83c13b8b18a7a8f0bbfa8ff692494b99978ae44d",
+    "files": {
+      "sandy-engineering-control/index.ts": "17b4303cf36a38779466e09eb18fa4b5aca0d31c1ee0a97933d47051f36200a6",
+      "sandy-engineering-control/routine_delegation.ts": "6f780a39c2f8ceda1a8fac65bccaa26f2fb5fa90bba53ef0a3cc2a13290c4725",
+      "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+      "sandy-engineering-control/canonical_request.ts": "ab5ff8342026e4511c27b521ec661ef236326518d914a8716bc1563ad45815aa",
+      "sandy-operation-api/registry_schema_validator.ts": "21f60f0dd14de49e38b8fc021346fc35b9eca5a0a6fbc97736447f8bfe557cfe",
+      "sandy-operation-api/registry_schema_interpreter.ts": "b6e47ffddec8b45ab466e1a4843e9d2d3d56934673da1e7d4c03a0e1719414bd",
+      "sandy-engineering-control/workload.ts": "9bc3f2889bbadd8a8414ced9d28772981b24b1c98091f8cd79b6b13a24470f7b"
+    }
+  },
+  "frontend": {
+    "sandy/controller/index.html": "2841708441ebe2ef888081b992503fd53f2fdbc889ca8377cb0bf4b0ec71189a",
+    "sandy/controller/session-transport.mjs": "c107a9063c2c65fe59d18707fac54a77d28c66131434d4fb79ba11056b9f7a66",
+    "sandy/controller/engineering-releases.mjs": "b3254acb21210a291d53da8f77975d5f70ee22c003f93647aca1b534876105cc"
+  },
+  "migration": {
+    "supabase/migrations/20261022010000_sandy_owner_routine_delegation.sql": "a17103757651e9c541867f224c04baab1e8db75bce00ebc75e262bd4350f1d49"
+  },
+  "trusted_ci": {
+    ".github/workflows/sandy-runtime-release-checks.yml": "48c3f5614eeca2cea89263f9cc34dfd50bb4efbacabf6d1140ac94fae24f0fb6"
+  },
+  "activation": "Not deployed or applied. Requires the existing authenticated owner workflow and governed release; do not use the non-owner workload to authorize this security-sensitive change.",
+  "rollback": "Stop the browser policy processor and revoke standing authority through the actual owner workflow. Preserve approval and delegation audit rows; prefer forward repair retaining higher-risk gates. Captured Controller51 source is retained for controlled recovery, not an automatic restoration of legacy broad auto-approval."
+}

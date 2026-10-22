@@ -2,13 +2,13 @@
 
 ## Start here
 
-The governing target is **Master Software Scope v1.1**: the original v1.0 baseline plus section 22, Amendment A. The stable filename remains `master-scope-v1.md`.
+The governing target is **Master Software Scope v1.2**: the original baseline, Amendment A and Amendment B. Routine engineering uses standing, revocable policy authorization without a per-release owner click. The amendment itself does not provision a grant. The stable filename remains `master-scope-v1.md`.
 
 Read the [implementation program and eleven-scope index](implementation-program.md), then [shared architecture contracts](architecture-contracts.md) and the relevant numbered task. The [Sandy Learn browser skills scope](tasks/SANDY-ENG-0011-browser-workflow-learning.md) adds opt-in passive, explicit active and execution-based learning. **P0 is Sandy chat reasoning and runtime reliability**, not growing the API operation count. Eight detailed implementation scopes, 0003–0010, now complement 0001 and 0002 with explicit ownership, dependencies, API contracts, tests and recovery requirements.
 
 ## Sources of truth
 
-1. **Master Software Scope** — [full searchable text with v1.1 amendment](master-scope-v1.md), governing mission, architecture, safety and acceptance. The original owner-supplied `Sandy_AI_Master_Software_Scope_v1(1).docx` is the archival v1.0 source; it is not a regenerated v1.1 Word file. See [section index](master-scope-reference.md).
+1. **Master Software Scope** — [full searchable text with v1.2 amendments](master-scope-v1.md), governing mission, architecture, safety and acceptance. The original owner-supplied `Sandy_AI_Master_Software_Scope_v1(1).docx` is the archival v1.0 source; it is not a regenerated v1.1 Word file. See [section index](master-scope-reference.md).
 2. **API specification** — [161 requirement families](../sandy-api/api-scope-161.md), subordinate to the Master Scope. Families expand into concrete actions; registry totals are not requirement completion counts.
 3. **Engineering implementation program** — [program/dependencies](implementation-program.md), [shared contracts](architecture-contracts.md) and one numbered [task scope](tasks/) per objective. Supporting files refine the Master Scope; they do not silently override it.
 4. **Live implementation and evidence** — Supabase project `zmqlyygzqoidkcwdysok`, `public.sandy_operation_registry`, release records and real provider/customer acceptance evidence.

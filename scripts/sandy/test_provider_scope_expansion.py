@@ -27,6 +27,10 @@ class ExpansionContractsTest(unittest.TestCase):
   unchanged=hashlib.sha256(json.dumps(data,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
   self.assertEqual(unchanged,reviewed['unchanged_catalogue_without_revisions_sha256'])
   self.assertEqual(unchanged,'fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e')
+  # Also verify the reviewed operation's embedded digest independently.
+  ranged=next(o for o in self.baseline if o['operation']=='github.files.content.get')
+  unsigned={k:v for k,v in ranged.items() if k!='contract_sha256'}
+  self.assertEqual(hashlib.sha256(json.dumps(unsigned,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest(),ranged['contract_sha256'])
   self.assertEqual(len(self.baseline),595)
  def test_additions_are_unique_closed_and_do_not_duplicate_installed_provider_reads(self):
   ids={o['operation'] for o in self.baseline};providers={o['provider_operation_id'] for o in self.baseline}

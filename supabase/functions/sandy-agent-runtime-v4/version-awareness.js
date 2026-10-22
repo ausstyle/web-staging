@@ -2,6 +2,7 @@
 const IDs=Object.freeze({
  'sandy-agent-runtime':'9f544d4a-8ca5-40a9-8fe1-471884efa54a',
  'sandy-agent-runtime-v2':'aab7521f-a1c2-4149-bb7d-47bae124004f',
+ 'sandy-agent-runtime-v4':'00ff46a9-a42a-4ff5-8c59-b47fad941b60',
  'email-ai-generate-draft':'71877153-ae55-4e4e-8e00-5241249c7229',
  'sandy-whatsapp-webhook':'c09e85c9-bfac-45c6-8584-c0b862414857',
  'sandy-voice-call':'fb4eb3c2-040b-4b32-8b69-a6c15f887d74',
@@ -12,7 +13,7 @@ const IDs=Object.freeze({
 const seen=new Map();
 export function executingBuild(component,deploymentId){
  const m=/^zmqlyygzqoidkcwdysok_([a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12})_([1-9][0-9]{0,8})$/.exec(deploymentId||'');
- const generation=component==='sandy-agent-runtime'?'v1':component==='sandy-agent-runtime-v2'?'v2':null;
+ const generation=component==='sandy-agent-runtime'?'v1':component==='sandy-agent-runtime-v2'?'v2':component==='sandy-agent-runtime-v4'?'v4':null;
  if(!m||!IDs[component]||m[1]!==IDs[component])return {component,generation,revision:null,build_id:null,verified:false,reason:'runtime_identity_unavailable'};
  return {component,generation,revision:Number(m[2]),build_id:deploymentId,verified:true,source:'Supabase executing environment'};
 }

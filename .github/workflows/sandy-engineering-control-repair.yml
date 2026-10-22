@@ -46,7 +46,7 @@ jobs:
           fetch-depth: 0
       - name: Release only the genuinely approved repair
         env:
-          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_ACCESS_TOKEN }}
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: |
           test -n "$SANDY_SUPABASE_MANAGEMENT_TOKEN" || { echo 'Missing existing deployment credential'; exit 1; }
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 scripts/sandy/release_owner_session_repair.py --deploy --evidence-dir "$RUNNER_TEMP/sandy-approved-owner-repair"

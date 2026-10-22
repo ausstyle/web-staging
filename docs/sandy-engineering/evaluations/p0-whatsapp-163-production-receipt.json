@@ -1,0 +1,26 @@
+{
+  "change_id": "7edbee5b-4185-4f6b-b7b1-b41899d4dfc8",
+  "function": "sandy-whatsapp-webhook",
+  "authorization_basis": "existing_genuine_owner_approved_runtime_scope",
+  "source_commit": "be851722e37c352ecaa0f86f258fe3ebf89bd1c7",
+  "manifest_sha256": "a904478b3a11f4a6222c89f200b6efc8d529a9d3c34e05215b20dfccd5aceb8d",
+  "ci_commit": "6976598b9f97e703033bf24fa8f0546fa86e55e9",
+  "deployed_version": 163,
+  "bundle_sha256": "2467efb90df11f00fc2ddaa3f7bfed0d7f2efb3f5c13c026c21b4b20e274036f",
+  "original_modules_verified": 8,
+  "rollback_captured": true,
+  "rollback_exercised": false,
+  "approval_created": false,
+  "standing_policy_changed": false,
+  "customer_records_edited": false,
+  "functional_acceptance_passed": false,
+  "post_deployment_signature_boundary": {
+    "http_status": 403,
+    "invalid_signature_rejected": true,
+    "message_records_created": 0,
+    "provider_messages_sent": 0
+  },
+  "real_customer_message_acceptance": false,
+  "canary_enrollment_expanded": false,
+  "scope": "Existing verified canary history handoff only; full WhatsApp central orchestration, tool/Mission parity and real handoff acceptance remain incomplete."
+}

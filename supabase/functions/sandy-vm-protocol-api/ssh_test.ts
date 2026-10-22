@@ -335,3 +335,16 @@ Deno.test("SSH: exact combined64KiB output cap is accepted in a real identity-pi
     await f.close();
   }
 });
+
+Deno.test("SSH: invalid generated keys are rejected locally before a bounded replacement is returned",()=>{
+ const generate=ssh2.utils.generateKeyPairSync;
+ const valid=ephemeralSshKey();let calls=0;
+ try {
+  ssh2.utils.generateKeyPairSync=(()=>{calls++;return calls===1?{public:"invalid",private:"invalid"}:{public:valid.publicKey,private:valid.privateKey};}) as typeof generate;
+  assert.deepEqual(ephemeralSshKey(),valid);assert.equal(calls,2);
+  calls=0;
+  ssh2.utils.generateKeyPairSync=(()=>{calls++;return {public:"invalid",private:"invalid"};}) as typeof generate;
+  assert.throws(()=>ephemeralSshKey(),(e)=>e instanceof ProtocolRefusal&&e.code==="ephemeral_ssh_key_generation_invalid"&&!e.mayHaveExecuted);
+  assert.equal(calls,8);
+ } finally {ssh2.utils.generateKeyPairSync=generate;}
+});
