@@ -1,0 +1,183 @@
+{
+  "scope": "SANDY-ENG-0001",
+  "scope_complete": false,
+  "captured_at_utc": "2026-10-22T09:58:12.773938+00:00",
+  "owner_priority_directive": "https://github.com/ausstyle/web-staging/pull/158#issuecomment-6337471240",
+  "implementation": {
+    "examiner_receipt_context_commit": "c096415de3a37a8ca5041fb03a15f7a5a8f6409b",
+    "deployed": false,
+    "fix": "Pass bounded persisted customer/request task receipts to the independent judge; omit private content, identifiers and credentials; preserve unknown/pending/failure dispositions and do not infer provider effects.",
+    "examiner_tests_passed": 22,
+    "composed_deno_tests_passed": 239,
+    "python_offline_tests_passed": 322,
+    "postgresql_assertions_passed": 31,
+    "release_transport_tests_passed": 5
+  },
+  "production_changes_this_session": {
+    "edge_uploads": 0,
+    "customer_data_migrations": 0,
+    "new_test_and_audit_records_created": true,
+    "existing_customer_records_edited": false,
+    "pilot_allowlist_changed": false,
+    "memory_consent_changed": false,
+    "gmail_confirmation_changed": false
+  },
+  "actual_deployed_versions": {
+    "sandy-agent-runtime-v4": 30,
+    "sandy-workspace": 46,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 15,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-examiner-thread-review": 23,
+    "email-ai-generate-draft": 106,
+    "sandy-email-runtime-canary": 17,
+    "sandy-whatsapp-webhook": 162,
+    "sandy-voice-account-context": 19,
+    "sandy-voice-call": 38
+  },
+  "successful_live_provider_runtime_verification": {
+    "workflow": "https://github.com/ausstyle/web-staging/actions/runs/39756918962",
+    "database_receipt": "github:39756918962",
+    "provider_verified": true,
+    "gmail_read_ok": true,
+    "drive_read_ok": true,
+    "calendar_read_ok": true,
+    "runtime_probes": [
+      {
+        "test": "connections",
+        "http": 200,
+        "task_completed": true,
+        "required_tool_confirmed": true,
+        "no_mutating_tools": true
+      },
+      {
+        "test": "gmail",
+        "http": 200,
+        "task_completed": true,
+        "required_tool_confirmed": true,
+        "provider_count_matches": true,
+        "provider_subjects_match": true,
+        "no_mutating_tools": true
+      }
+    ],
+    "control_test_id": "d1a6fe15-8a5c-4e74-ae0d-6a5ab5d6f720",
+    "customer_browser_acceptance": false,
+    "four_channel_acceptance": false
+  },
+  "actual_production_examiner": {
+    "workflow": "https://github.com/ausstyle/web-staging/actions/runs/39756204283",
+    "run_key": "production:1ae28ce8-92be-4df5-9d1b-2a3ffeb184e1",
+    "status": "complete",
+    "http_200": 12,
+    "passed": 1,
+    "failed": 7,
+    "needs_review": 4,
+    "historical_threads_reviewed": 1,
+    "historical_thread_counts": {
+      "web": 0,
+      "email": 0,
+      "whatsapp": 1,
+      "voice": 0
+    },
+    "control_test_id": "f1d26a9f-d299-4cfa-8e0e-018be47ceabc",
+    "judge_receives_persisted_tool_receipts": false,
+    "quality_accepted": false,
+    "frozen_60_case_cohort_accepted": false,
+    "is_four_channel_handoff_test": false,
+    "built_in_overdue_overview_repeated": true,
+    "repeated_overdue_case_counted_as_new_acceptance": false
+  },
+  "current_authority": {
+    "renewable_engineering_control_get_http": 200,
+    "production_test_records_http": 201,
+    "personal_token_replacement_required": false,
+    "existing_standing_delegation_active": true,
+    "existing_policy_source": "618e6ce0d13afecfcc94e763ab5e98540fc5afd7",
+    "existing_policy_expires_at": "2026-11-21T02:24:07.612429Z",
+    "github_routine_classes": [
+      "metadata_read",
+      "source_read",
+      "code_write",
+      "git_write",
+      "pull_request_write"
+    ],
+    "supabase_classes": [
+      "metadata_read"
+    ],
+    "edge_deployment_or_control_policy_activation_granted": false,
+    "amendment_b_activated": false
+  },
+  "amendment_b": {
+    "change_id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+    "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+    "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+    "declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
+    "actual_status": "proposed",
+    "genuine_owner_registration_event": 100,
+    "owner_approval_events": 0,
+    "read_only_preflight": {
+      "change_id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+      "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+      "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+      "read_only": true,
+      "ready": false,
+      "blockers": [
+        {
+          "kind": "genuine_pinned_owner_approval_not_recorded"
+        },
+        {
+          "kind": "migration_version_occupied_by_other_source",
+          "version": "20261022010000",
+          "existing_name": "sandy_customer_read_projections",
+          "expected_sql_sha256": "a17103757651e9c541867f224c04baab1e8db75bce00ebc75e262bd4350f1d49"
+        },
+        {
+          "kind": "migration_version_occupied_by_other_source",
+          "version": "20261022020000",
+          "existing_name": "sandy_customer_read_admissions",
+          "expected_sql_sha256": "d01ad5f297ca894f2892b5a21dff3b13a391b7426294d38010f9d1f5f58cfd17"
+        },
+        {
+          "kind": "migration_version_occupied_by_other_source",
+          "version": "20261022030000",
+          "existing_name": "sandy_github_verified_receipts",
+          "expected_sql_sha256": "c92f1ea27a40cd892561f42bfaf602d7151cef8b7c278708cce5fbe74571ef70"
+        },
+        {
+          "kind": "source_prerequisite_requires_reconciliation",
+          "function": "sandy-engineering-control",
+          "expected_version": 52,
+          "actual_version": 51
+        },
+        {
+          "kind": "source_prerequisite_requires_reconciliation",
+          "function": "sandy-engineering-runtime",
+          "expected_version": 14,
+          "actual_version": 15
+        }
+      ],
+      "deployment_started": false,
+      "approval_written": false
+    },
+    "owner_approval_repeated": false,
+    "approval_written_by_runner": false
+  },
+  "acceptance_remaining": {
+    "web": "Provider/runtime probes passed. Signed-in same-conversation acceptance remains unverified; completed overdue probe was not manually rerun.",
+    "email": "Existing generator and shadow preserved. Shared authoritative delivery, deduplication, Mission and handoff acceptance not established.",
+    "whatsapp": "Existing webhook and separate verified alternative account preserved. Same-pilot verified binding count is zero; real same-customer handoff and replay acceptance not established.",
+    "voice": "Existing private-auth boundary preserved. Pilot has zero voice sessions; shared media/tool loop and interruption recovery not accepted.",
+    "memory": "Pilot enabled=true, learning_enabled=false, consent absent. Do not enable or claim persistence.",
+    "unattended_releases": "Two source-to-production release cycles remain unproven."
+  },
+  "dedicated_v4_overdue_probe_rerun": false,
+  "latest_verified_ci": {
+    "source_commit": "1d2dcf3c989c09b30276793de0baba5413758703",
+    "regression": "https://github.com/ausstyle/web-staging/actions/runs/39759643452",
+    "runtime_release_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643565",
+    "immutable_artifact_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759646579",
+    "api_contract_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643659",
+    "all_completed_successfully": true,
+    "deployment": "skipped_ci_only"
+  }
+}

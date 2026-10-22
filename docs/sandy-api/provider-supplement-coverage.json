@@ -1,0 +1,294 @@
+{
+  "schema_version": "1.0.0",
+  "immutable_baseline": "a1dd1d4",
+  "original_inventory_methods": 1860,
+  "dedicated_adapters": 28,
+  "fully_implemented_bounded_adapters": 22,
+  "partial_adapters": 6,
+  "provider_execution_performed": false,
+  "auth_session_tested": false,
+  "provider_verified_operations": 0,
+  "all_161_requirements_completed": false,
+  "operations": [
+    {
+      "operation": "gcp.artifacts.files.download.capture",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.files.download",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "0fb722ac705e3d7b37f5ff873e85a1c100dacb3a2770e430c9ad6922ad32987f"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.apt.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.aptArtifacts.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "21530fb502f34aa6629fe40a1fad936f4a0b94c7e7d98337be227c759da3f031"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.export.bound",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.exportArtifact",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "88abe4baf8a7012fa9b6196542e73506497ebdb82db59e920bb4f51da693d385"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.files.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.files.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "07410ed5b13d94e94c366deebc6e233462eefb55495c648a16102b049f2df3dd"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.generic.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.genericArtifacts.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "217eafb858d3ab667ea64f2f593cb4ba4cb7ede245200d7b478a9a9676220f08"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.go.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.goModules.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "07fac0bddecb606271f1d9c1c7364569c807c49aef01a1197f0f9fda870e2569"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.googet.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.googetArtifacts.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "dbf6818c4a770b3ba38bcf0d2cf811909ddeac3f6b454ac15d924435d9529d94"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.kfp.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.kfpArtifacts.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "09ed41fc5837f3113bbc53ef3d9f8b567e209a393799a127e65a8a777cfe05b8"
+    },
+    {
+      "operation": "gcp.artifacts.repositories.yum.upload.media",
+      "provider_operation_id": "artifactregistry.projects.locations.repositories.yumArtifacts.upload",
+      "requirement": 63,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "207fa668679d5d84590d6911b544271632eeb38f0ce6e030b77e98ffced61c25"
+    },
+    {
+      "operation": "gcp.billing.accounts.list_filtered",
+      "provider_operation_id": "cloudbilling.billingAccounts.list",
+      "requirement": 23,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "abb8b0a0a0444e78c8a3ccaa0c2715c9b9ede67bd8df7ade99dcdcfec2131077"
+    },
+    {
+      "operation": "gcp.folders.search_filtered",
+      "provider_operation_id": "cloudresourcemanager.folders.search",
+      "requirement": 13,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "eb80f0a07587a7bcdfae18c319ebbf25e6f11cf1f8d1b7668eb0e54b801ce8fc"
+    },
+    {
+      "operation": "gcp.load_balancers.backends.effective_security_policies.capture",
+      "provider_operation_id": "compute.backendServices.getEffectiveSecurityPolicies",
+      "requirement": 57,
+      "implementation": "partial_transport_capture_or_initiation",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "1cfe6ba1efcd3fc80331d9fd4e063b73a55cda626f4def6ad8b99fda69520018"
+    },
+    {
+      "operation": "gcp.organizations.search_filtered",
+      "provider_operation_id": "cloudresourcemanager.organizations.search",
+      "requirement": 12,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "67ac0c5c7876c696c1a72b8a7b981113a7399dc9745f1973223bfb959b62485e"
+    },
+    {
+      "operation": "gcp.projects.list_filtered",
+      "provider_operation_id": "cloudresourcemanager.projects.list",
+      "requirement": 14,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "801182a75dc7c7e1dfd8fec8e174c75fc9021014107f8afb9769e74376c63dde"
+    },
+    {
+      "operation": "gcp.projects.search_filtered",
+      "provider_operation_id": "cloudresourcemanager.projects.search",
+      "requirement": 14,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "ef06465127626fc855bfb7d37dc85d58091b6dfcd719df938f9495039663846c"
+    },
+    {
+      "operation": "gcp.storage.objects.upload.media",
+      "provider_operation_id": "storage.objects.insert",
+      "requirement": 65,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "98cc63f5b548ce9a0ea3510af932542d64fbeb32294d9da913df400e2706be2d"
+    },
+    {
+      "operation": "github.actions.artifacts.download.capture",
+      "provider_operation_id": "actions/download-artifact",
+      "requirement": 129,
+      "implementation": "partial_transport_capture_or_initiation",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "f545b7dba950737d1735f99c6621cb70ce5b1527f0793005d1615b07f1e790fe"
+    },
+    {
+      "operation": "github.actions.jobs.logs.capture",
+      "provider_operation_id": "actions/download-job-logs-for-workflow-run",
+      "requirement": 128,
+      "implementation": "partial_transport_capture_or_initiation",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "ad7725d944a8d8e40a48005bf607df81c5a131b8adab505a52c68a2422f13b7a"
+    },
+    {
+      "operation": "github.actions.jobs.steps.logs.capture",
+      "provider_operation_id": "actions/download-step-logs-for-workflow-run-job",
+      "requirement": 128,
+      "implementation": "partial_transport_capture_or_initiation",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "16d6bd4d22294d3963e0c652b618cc1a98535b47d9e28122d4781a74dedd99bb"
+    },
+    {
+      "operation": "github.actions.runs.attempts.logs.capture",
+      "provider_operation_id": "actions/download-workflow-run-attempt-logs",
+      "requirement": 128,
+      "implementation": "partial_transport_capture_or_initiation",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "441e7f5918997671e1424b9841332833ea66b2327b8c30baab1a104f461d74db"
+    },
+    {
+      "operation": "github.actions.runs.logs.capture",
+      "provider_operation_id": "actions/download-workflow-run-logs",
+      "requirement": 128,
+      "implementation": "partial_transport_capture_or_initiation",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "ea7fea836eb47d787049352301dbcaadb448a1345689a7269ebab60421cc0e83"
+    },
+    {
+      "operation": "github.collaborators.check",
+      "provider_operation_id": "repos/check-collaborator",
+      "requirement": 138,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "1782ab362127f198e3362ec750f14b079ce97bcb097f33b14bafebe73d4cf82e"
+    },
+    {
+      "operation": "github.issues.assignee.check",
+      "provider_operation_id": "issues/check-user-can-be-assigned",
+      "requirement": 120,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "fcfccb43e9976095d8be3b331db24b3f39617c4f5605bc31f5b74d0a66d96287"
+    },
+    {
+      "operation": "github.issues.assignee_on_issue.check",
+      "provider_operation_id": "issues/check-user-can-be-assigned-to-issue",
+      "requirement": 120,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "9d2dafe9c8f645fd14970f1c4b345c56a03f4d4499b32e6732573470e4f3e738"
+    },
+    {
+      "operation": "github.pulls.merged.check",
+      "provider_operation_id": "pulls/check-if-merged",
+      "requirement": 119,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "eae8622bf3bcc49ea9a7c17d3b684449b246e89dd56b7da97f59189aaa3deb57"
+    },
+    {
+      "operation": "github.security.vulnerability_alerts.check",
+      "provider_operation_id": "repos/check-vulnerability-alerts",
+      "requirement": 141,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "966ebfc5a762be6d7985a8dfbf45e221940a6d4e1bcfff0ad4e09461a4022089"
+    },
+    {
+      "operation": "supabase.functions.body.capture",
+      "provider_operation_id": "v1-get-a-function-body",
+      "requirement": 83,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "407e65cd12cc374f6675d8bdb009c978328fe6947cba8d73f1d4bc5a5c247b40"
+    },
+    {
+      "operation": "supabase.functions.deploy.multipart",
+      "provider_operation_id": "v1-deploy-a-function",
+      "requirement": 83,
+      "implementation": "bounded_dedicated_source_ready",
+      "api_exposed": false,
+      "verified": false,
+      "provider_tested": false,
+      "contract_sha256": "8b12c366acff52b8b6e877ada540f4f927a857c980a061319f2f31c447c9cc22"
+    }
+  ]
+}

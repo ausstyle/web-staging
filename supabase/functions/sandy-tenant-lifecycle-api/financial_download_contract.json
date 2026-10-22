@@ -1,0 +1,165 @@
+{
+  "operation": "supabase.tenant.financial.exports.download",
+  "handler": "sandy-operation-api",
+  "permission_scope": "customer:read",
+  "is_mutation": false,
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "snapshot_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      }
+    },
+    "required": [
+      "snapshot_id",
+      "sequence"
+    ],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "const": true
+      },
+      "snapshot_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      },
+      "artifact_sha256": {
+        "type": "string",
+        "pattern": "^[a-f0-9]{64}$"
+      },
+      "artifact_json": {
+        "type": "string",
+        "maxLength": 1048576
+      }
+    },
+    "required": [
+      "ok",
+      "snapshot_id",
+      "sequence",
+      "artifact_sha256",
+      "artifact_json"
+    ],
+    "additionalProperties": false
+  },
+  "requires_real_user_session": true,
+  "api_key_delegable": false,
+  "requirement_ids": [
+    111
+  ],
+  "complete_tenant_coverage": false,
+  "artifact_digest_encoding": "sha256_of_decoded_artifact_json_utf8",
+  "artifact_schema": {
+    "type": "object",
+    "properties": {
+      "manifest": {
+        "const": "customer_financial_fragments_v1"
+      },
+      "manifest_sha256": {
+        "const": "ccac4b06066c1f9ed0613d47e00e6abc85075063a29ce26f9b82f11fe43eaeb1"
+      },
+      "tenant_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "table": {
+        "enum": [
+          "sandy_commerce_configuration",
+          "sandy_commerce_consents",
+          "sandy_commerce_accounts",
+          "sandy_commerce_entries",
+          "sandy_commerce_entry_lines",
+          "sandy_commerce_statements",
+          "sandy_commerce_statement_lines",
+          "sandy_commerce_reconciliations",
+          "sandy_commerce_invoices",
+          "sandy_commerce_entitlements"
+        ]
+      },
+      "sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      },
+      "table_sequence": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2047
+      },
+      "table_complete": {
+        "type": "boolean"
+      },
+      "table_row_count": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "table_row_chain_sha256": {
+        "anyOf": [
+          {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "json_fragment": {
+        "type": "string",
+        "maxLength": 65536
+      },
+      "snapshot_id": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "schema_sha256": {
+        "const": "ac5691a58acaf456d1490c0ea45f0f1bd8ce1ae37592f8574da1388cac336380"
+      },
+      "complete_tenant_coverage": {
+        "const": false
+      },
+      "external_provider_assets_included": {
+        "const": false
+      }
+    },
+    "required": [
+      "manifest",
+      "manifest_sha256",
+      "tenant_id",
+      "table",
+      "sequence",
+      "table_sequence",
+      "table_complete",
+      "table_row_count",
+      "table_row_chain_sha256",
+      "json_fragment",
+      "snapshot_id",
+      "schema_sha256",
+      "complete_tenant_coverage",
+      "external_provider_assets_included"
+    ],
+    "additionalProperties": false
+  },
+  "contract_sha256": "e23689e3a6200dfaffc82fd485a43fc8be2b0afd17b1906ab2ce3c67ecab52da"
+}

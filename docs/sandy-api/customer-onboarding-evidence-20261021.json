@@ -1,0 +1,233 @@
+{
+  "normal_auth_sessions": true,
+  "service_role_substituted_for_user": false,
+  "tests": [
+    {
+      "name": "existing_customer_triggers_match_reviewed_safe_fixtures",
+      "passed": true
+    },
+    {
+      "name": "normal_password_auth_1",
+      "passed": true
+    },
+    {
+      "name": "normal_password_auth_2",
+      "passed": true
+    },
+    {
+      "name": "no_controller_memberships",
+      "passed": true
+    },
+    {
+      "name": "direct_verified_enrollment",
+      "passed": true
+    },
+    {
+      "name": "direct_progressive_onboarding",
+      "passed": true
+    },
+    {
+      "name": "direct_canonical_identity",
+      "passed": true
+    },
+    {
+      "name": "mcp_preportal_discovery_and_schemas",
+      "passed": true
+    },
+    {
+      "name": "second_customer_cannot_read_first_before_enrollment",
+      "passed": true
+    },
+    {
+      "name": "mcp_verified_enrollment",
+      "passed": true
+    },
+    {
+      "name": "different_customers_remain_isolated",
+      "passed": true
+    },
+    {
+      "name": "mcp_idempotent_enrollment",
+      "passed": true
+    },
+    {
+      "name": "mcp_idempotency_conflict",
+      "passed": true
+    },
+    {
+      "name": "mcp_identity_propagation",
+      "passed": true
+    },
+    {
+      "name": "mcp_progressive_update",
+      "passed": true
+    },
+    {
+      "name": "mcp_stale_version_denial",
+      "passed": true
+    },
+    {
+      "name": "mcp_cross_customer_selector_denied",
+      "passed": true
+    },
+    {
+      "name": "mcp_revoked_receipt_replay_denied",
+      "passed": true
+    },
+    {
+      "name": "no_automatic_drive_or_learning",
+      "passed": true
+    },
+    {
+      "name": "fixture_auth_portal_and_receipts_cleaned",
+      "passed": true
+    }
+  ],
+  "customers": [
+    "6b9edc72-c838-4ae5-8a1c-06b680c18da7",
+    "3f0628cc-b902-46d8-aeeb-ed9c543f296f"
+  ],
+  "cleanup": {
+    "logout_statuses": [
+      204,
+      204
+    ],
+    "remaining": {
+      "auth_users": 0,
+      "portal_accounts": 0,
+      "receipts": 0
+    }
+  },
+  "complete": true,
+  "calls": [
+    {
+      "operation": "customer.onboarding.ensure",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "request_id": "64793ba5-67ca-49a4-bc0b-812cf8952990",
+      "error": null
+    },
+    {
+      "operation": "customer.onboarding.update",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "request_id": "1fc5266d-9d8c-4dd4-a17c-7c84e38bdfe5",
+      "error": null
+    },
+    {
+      "operation": "customer.identity.get",
+      "channel": "api",
+      "http_status": 200,
+      "executed": true,
+      "request_id": "5481ecbc-1d3e-4824-8925-26cf17fe8d8a",
+      "error": null
+    },
+    {
+      "operation": "customer.identity.get",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 409,
+      "is_error": true,
+      "request_id": "5569414e-b846-4449-9a28-9fcc0519e20d",
+      "error": "onboarding_required",
+      "executed": false
+    },
+    {
+      "operation": "customer.onboarding.ensure",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "request_id": "169f6665-e4c0-4c34-ae63-ab82ba02d383",
+      "error": null,
+      "executed": true
+    },
+    {
+      "operation": "customer.onboarding.ensure",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "request_id": "169f6665-e4c0-4c34-ae63-ab82ba02d383",
+      "error": null,
+      "executed": true
+    },
+    {
+      "operation": "customer.onboarding.ensure",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 409,
+      "is_error": true,
+      "request_id": "169f6665-e4c0-4c34-ae63-ab82ba02d383",
+      "error": "request_id_conflict",
+      "executed": false
+    },
+    {
+      "operation": "customer.identity.get",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "request_id": "fb7b6534-094d-49d5-a971-d674e87ea582",
+      "error": null,
+      "executed": true
+    },
+    {
+      "operation": "customer.onboarding.update",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 200,
+      "is_error": false,
+      "request_id": "41e13a88-2a51-490a-bd8a-507d56457c71",
+      "error": null,
+      "executed": true
+    },
+    {
+      "operation": "customer.onboarding.update",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 409,
+      "is_error": true,
+      "request_id": "a2ab0fe3-fd21-42e5-a259-432465c8dde8",
+      "error": "onboarding_version_conflict",
+      "executed": false
+    },
+    {
+      "operation": "customer.identity.get",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 400,
+      "is_error": true,
+      "request_id": "cf790218-bc55-46e4-96f5-f869a17beb87",
+      "error": "invalid_operation_arguments",
+      "executed": false
+    },
+    {
+      "operation": "customer.onboarding.ensure",
+      "channel": "mcp",
+      "http_status": 200,
+      "api_status": 403,
+      "is_error": true,
+      "request_id": "169f6665-e4c0-4c34-ae63-ab82ba02d383",
+      "error": "customer_access_revoked",
+      "executed": false
+    }
+  ],
+  "passed": 20,
+  "failed": 0,
+  "deployed_source_commit": "dd824bfa3a2eb3a513c072fdaf68553cda24d4ae",
+  "active_versions": {
+    "sandy-operation-api": 28,
+    "sandy-customer-provisioning-api": 2,
+    "sandy-api-mcp": 14
+  },
+  "frozen_tests_passed": 175,
+  "compiled_gateway_tests_passed": 113,
+  "postgres_rollback_checks_passed": 31,
+  "existing_customer_regressions_passed": 23,
+  "nonowner_engineering_denials_passed": 8,
+  "actual_external_resources_provisioned": 0,
+  "scope_requirements_fully_completed": 0
+}

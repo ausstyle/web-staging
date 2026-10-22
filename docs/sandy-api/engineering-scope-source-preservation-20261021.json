@@ -1,0 +1,8 @@
+{
+  "active_deployment_version": 4,
+  "source_sha256": "d9eeac8a81ae4c3d69ecd372c3b2f4572142658f2e0b501e1cb0b8d1bb127c0d",
+  "source_preserved_from_actual_production": true,
+  "changed_or_redeployed": false,
+  "canonical_gateway_MCP_routing_verified": false,
+  "note": "Existing scope-document catalogue service, not a replacement requirement-to-operation coverage system."
+}

@@ -1,0 +1,1120 @@
+{
+  "registry_evidence_readback_matches": true,
+  "verified_flags_unchanged": true,
+  "no_catalogue_rows_added": true,
+  "normal_Auth_test": {
+    "observed_at": "2026-10-21T23:26:56.095419+00:00",
+    "complete": true,
+    "calls": [
+      {
+        "operation": "tasks.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "83c4adae-1555-44e9-83a6-4f79bb72c015",
+        "request_id": "0b3919cb-49ca-4b9f-bcaf-0e979319b93e",
+        "response_sha256": "91e56a7589fbc3e17f53b6eab65cfbcd6a080504cac632f40c5c9219bf30515d",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.get",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "b88b5310-f134-4bc8-910e-2c5dcd3eb8b1",
+        "request_id": "33be5b60-27b9-40e7-8c6a-3bbdced4043a",
+        "response_sha256": "9fcb7a31e9a37c2feb6619b6087358210e3b66e620f75e6fd24ea7816bd0eafe",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "e9957a67-8e2a-45c3-8776-aac4f26d76c1",
+        "request_id": "1bfb3c1a-c95b-4744-97eb-76863e40a197",
+        "response_sha256": "d674e7edf318f50c6867abe6bdea3822ee62a977d40a91963c0a882939a364f6",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.get",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "551b67f8-6ed2-428e-96a3-7e24c2ffb71f",
+        "request_id": "b6780b35-500e-44bc-aa95-c7c68f4d4273",
+        "response_sha256": "3ab5f10cc300a27f169d605b3ba970c92184a355830af7a455523ccfea66c516",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "agenda.overview",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "0ac3e1f5-9974-47b0-919a-1878393d7dc6",
+        "request_id": "6ed68a1a-d8ec-4f94-b1a8-a1b5f261f410",
+        "response_sha256": "ae6a6c9caed2bd6fbb6f0390dfe506a80d145afd81815f78d75dcc2c1cecceec",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "agenda.pins.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "f6cec8d8-d830-4633-b4a9-3ad74d2ba352",
+        "request_id": "4363ad00-d900-41d7-b945-06e64686dce0",
+        "response_sha256": "9358bc882a1b7ea3156cca343d916395517e51f139dd88e06585dc00446bca99",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.client.overview",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "749881d6-f969-4ade-877d-a42815c2c5b1",
+        "request_id": "5a7a4cd2-69ea-496f-9715-7f577ec032d1",
+        "response_sha256": "e2209f030b9b27935b453308ac502656828abdcb4b9d5aca86be31524090242b",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.client.timezone.get",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "853b2329-9c35-4766-8f2d-a3bee7b62363",
+        "request_id": "8ef16d6a-7f98-4210-bd74-ba5a2c304313",
+        "response_sha256": "ccd65f1c2c08891b076d55bdaab48c1f95ef73a5e7613f7021569997fbb4bc3e",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.get",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 404,
+        "is_error": true,
+        "executed": true,
+        "error": "upstream_operation_failed",
+        "admission_id": "3880fe34-d9e5-4452-835e-cbd9a6e90136",
+        "request_id": "72739ddc-438a-473c-9473-ee7c240e5ef9",
+        "response_sha256": "0541b97f1e4a599fa6304ba88b1601c5705d0e8eaae11feb58a11f1d542dc9bc",
+        "negative": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.get",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 404,
+        "is_error": true,
+        "executed": true,
+        "error": "upstream_operation_failed",
+        "admission_id": "ca3ed3a2-4809-47c7-af0e-a8d0f977bfaa",
+        "request_id": "f872afe5-f9ef-430e-a639-f8f6a286573e",
+        "response_sha256": "0bb5c35212260240a595521e36a875b02dc274010ee0696b6b436131e693f629",
+        "negative": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 400,
+        "is_error": true,
+        "executed": false,
+        "error": "invalid_operation_arguments",
+        "admission_id": null,
+        "request_id": null,
+        "response_sha256": "55250df399b9e4c8494dc428af51c135746203299c10a8b29bdb3f54ca1c8a95",
+        "negative": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "4fa1ac22-51c2-41b7-8740-9c60a8956980",
+        "request_id": "5c5d12d2-0b13-4311-978a-022c93dc7eda",
+        "response_sha256": "802797e267613b7709c43966ff5da43c34ac5b84ddc35ed73ad9eadc383cbb92",
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 409,
+        "is_error": true,
+        "executed": false,
+        "error": "admission_already_recorded",
+        "admission_id": null,
+        "request_id": "5c5d12d2-0b13-4311-978a-022c93dc7eda",
+        "response_sha256": "3fa62be69b43b83a8e2da7b5060256bd90dae1de65c1e935450cadeb1fd7ecda",
+        "negative": true,
+        "request_replay": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.list",
+        "fixture_index": 0,
+        "http_status": 200,
+        "api_status": 409,
+        "is_error": true,
+        "executed": false,
+        "error": "request_id_conflict",
+        "admission_id": null,
+        "request_id": "5c5d12d2-0b13-4311-978a-022c93dc7eda",
+        "response_sha256": "baa2fcfe193ddefe2c051ac5028ebcb79eacba7b4e86f0300e6e700de82ba3d6",
+        "negative": true,
+        "request_replay": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "cd763b48-e06a-403e-998d-41e050eeed13",
+        "request_id": "1d20ab0b-f690-4673-90a8-69f981e15837",
+        "response_sha256": "2f8c55d702837c8a575a554eada0db5ee71dcd47c7f3df8f12cd8c68e9c24840",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.get",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "832353e1-7966-407c-a9d9-7c759c4f7c8f",
+        "request_id": "1379e9b9-1409-47ea-88a3-a5f0f42cbfba",
+        "response_sha256": "df37af6349edac090f33b8f3602fc48b4d7722ed7690294cf24d12f292fba77b",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "09aa31d6-4016-416a-aa68-7e80028a41c4",
+        "request_id": "5dbd8bc2-b06f-412c-a54c-2b0e168bf277",
+        "response_sha256": "242e027b2d7c6e5765045b326cb4e521b891859d9a5bb398a88e79ab48d3973b",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.get",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "08a1d982-3326-4d0c-817f-3048b4a46be2",
+        "request_id": "7da695b4-bd50-4c35-beb9-9f277367b029",
+        "response_sha256": "8cd4e306bdbe0670510d684565f1c7b9c404f9f916f2022230e1b3c2da4ff712",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "agenda.overview",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "65b1f33d-888d-4faa-972b-0f9aad090990",
+        "request_id": "6ca3fcd7-4392-4304-899b-f14d3dff658d",
+        "response_sha256": "344403c55e250603cc57269953020b3c23dd224893d337bb4cdd9edb589f8b33",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "agenda.pins.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "4336d0c0-195c-401a-a34f-00b96c0d6f4b",
+        "request_id": "d4a1a32c-45e8-4d19-b304-f8c7d3dccf68",
+        "response_sha256": "f290e6db22da77055311124b9afbf449839d287b861ddc058496696a0089d9fe",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.client.overview",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "14545057-5680-4b64-bee6-82e51ccbe582",
+        "request_id": "aa078b61-663d-4855-b6b5-cb0241a756df",
+        "response_sha256": "38fba289d8393eda67389041ff433831a34e760dcbce07898761042c7e75ebda",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.client.timezone.get",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "09b0891a-3569-4d0f-b95f-c106cd1eb341",
+        "request_id": "d94ec57a-7702-4e59-bc25-2c875b9bc403",
+        "response_sha256": "a3d65013e701e8cc1211027498d8a2d5688d7643a8814d09a5cfd4f477477dc1",
+        "discovered": true,
+        "fixture_state_observed": true,
+        "foreign_fixture_absent": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.get",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 404,
+        "is_error": true,
+        "executed": true,
+        "error": "upstream_operation_failed",
+        "admission_id": "8c49e84e-f195-43f7-800c-198841704621",
+        "request_id": "8fafa775-0069-41f9-a7aa-2bf76421f0e2",
+        "response_sha256": "2d57ff61d38c939ec93048042160fa0a850ecbcd2588ebf6789970d5423a67b2",
+        "negative": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.get",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 404,
+        "is_error": true,
+        "executed": true,
+        "error": "upstream_operation_failed",
+        "admission_id": "174d8ae6-0822-4fd5-ac76-bcf88fa39821",
+        "request_id": "4ab7697a-d951-4d88-8539-9f07c993af5c",
+        "response_sha256": "bebd7da3e4ae828aa782b799bf3fc384f9173068c408e02e902c1b2871c36329",
+        "negative": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 400,
+        "is_error": true,
+        "executed": false,
+        "error": "invalid_operation_arguments",
+        "admission_id": null,
+        "request_id": null,
+        "response_sha256": "2878ff1a694c0b45e214cef539e5ac9ddf62809eb8086571ffdb756fbbe5854c",
+        "negative": true,
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 200,
+        "is_error": false,
+        "executed": true,
+        "error": null,
+        "admission_id": "67646450-af38-4cfb-b85a-4fb26a568cca",
+        "request_id": "5c4bb0a1-7cf3-459a-87da-35fbfbfd3664",
+        "response_sha256": "389f42ff082d4da4993ef1a7641fea78317a50c9b0228f3ab3414b108778ab11",
+        "passed": true
+      },
+      {
+        "operation": "tasks.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 409,
+        "is_error": true,
+        "executed": false,
+        "error": "admission_already_recorded",
+        "admission_id": null,
+        "request_id": "5c4bb0a1-7cf3-459a-87da-35fbfbfd3664",
+        "response_sha256": "8086d560b56cfca39a408411d83f84728c96f83c1d984974cf1f24e3d1db4d70",
+        "negative": true,
+        "request_replay": true,
+        "passed": true
+      },
+      {
+        "operation": "calendar.list",
+        "fixture_index": 1,
+        "http_status": 200,
+        "api_status": 409,
+        "is_error": true,
+        "executed": false,
+        "error": "request_id_conflict",
+        "admission_id": null,
+        "request_id": "5c4bb0a1-7cf3-459a-87da-35fbfbfd3664",
+        "response_sha256": "867401521a4488ba5b1b00f1cd705edef39cee3f79fdc05fb7f5af4af78d2675",
+        "negative": true,
+        "request_replay": true,
+        "passed": true
+      }
+    ],
+    "checks": [
+      {
+        "name": "reviewed_fixture_triggers_unchanged",
+        "passed": true
+      },
+      {
+        "name": "normal_customer_login_1",
+        "passed": true
+      },
+      {
+        "name": "fixture_onboarding_1",
+        "passed": true
+      },
+      {
+        "name": "normal_customer_login_2",
+        "passed": true
+      },
+      {
+        "name": "fixture_onboarding_2",
+        "passed": true
+      },
+      {
+        "name": "no_Controller_memberships",
+        "passed": true
+      },
+      {
+        "name": "only_seeded_records_and_no_external_work_queued",
+        "passed": true
+      },
+      {
+        "name": "discovery_page_7",
+        "passed": true
+      },
+      {
+        "name": "discovery_no_duplicates_8",
+        "passed": true
+      },
+      {
+        "name": "discovery_completed_63",
+        "passed": true
+      },
+      {
+        "name": "discovery_page_10",
+        "passed": true
+      },
+      {
+        "name": "discovery_no_duplicates_11",
+        "passed": true
+      },
+      {
+        "name": "discovery_completed_63",
+        "passed": true
+      },
+      {
+        "name": "all_selected_reads_have_durable_admission",
+        "passed": true
+      },
+      {
+        "name": "real_shared_ledger_and_audit_settlement",
+        "passed": true
+      }
+    ],
+    "cleanup": {
+      "logout_statuses": [
+        204,
+        204
+      ],
+      "remaining": {
+        "users": 0,
+        "sessions": 0,
+        "portal_accounts": 0
+      },
+      "complete": true,
+      "independent_business_fixture_counts": {
+        "customers": 0,
+        "tasks": 0,
+        "calendar_events": 0,
+        "pins": 0,
+        "timezones": 0,
+        "analysis_queue": 0,
+        "mission_runs": 0,
+        "calendar_outbox": 0,
+        "memory_settings": 0,
+        "agenda_grants": 0
+      },
+      "independent_temporal_fixture_counts": {
+        "facts": 0,
+        "links": 0
+      },
+      "temporal_cleanup_evidence": "customer-service-temporal-cleanup-20261022.json"
+    },
+    "credentials_recorded": false,
+    "service_key_as_customer": false,
+    "Controller_memberships_added": false,
+    "registry_flags_changed": false,
+    "model_or_connected_provider_work_requested": false,
+    "fixture_user_ids": [
+      "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+      "c77045eb-b6be-45ea-a520-1b778eb04f8c"
+    ],
+    "fixture_customer_ids": [
+      "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+      "677702cc-a796-48e2-b849-043713e68e2d"
+    ],
+    "independent_fixture_state": {
+      "tasks": 2,
+      "calendar_events": 2,
+      "analysis_queue": 0,
+      "calendar_outbox": 0,
+      "mission_runs": 0
+    },
+    "independent_read_receipts": [
+      {
+        "id": "551b67f8-6ed2-428e-96a3-7e24c2ffb71f",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "calendar.get",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "c6c269f8a1c41bd3a1289f645f43db330c585fd8adb175bcb1285bfe23434e69",
+        "audit_events": 3
+      },
+      {
+        "id": "83c4adae-1555-44e9-83a6-4f79bb72c015",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "tasks.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "a826b9cbe6625ef481ff405079564f43128dc9e91128b1c5643297dc9bc8e1dd",
+        "audit_events": 3
+      },
+      {
+        "id": "0ac3e1f5-9974-47b0-919a-1878393d7dc6",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "agenda.overview",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "8872ceedc22afe4b2d86fe56354b21287af61b6aee7612633bc8aa4245f8754a",
+        "audit_events": 3
+      },
+      {
+        "id": "853b2329-9c35-4766-8f2d-a3bee7b62363",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "calendar.client.timezone.get",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "73a5c514e9fb4a1fc4db0a5881dc6dd1d0db2498c762a3015af8b3ecb977c5df",
+        "audit_events": 3
+      },
+      {
+        "id": "b88b5310-f134-4bc8-910e-2c5dcd3eb8b1",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "tasks.get",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "c45dc54131fedd7b9ba3a16b2564eae284ed8cdebb59ee26dd4faec4f222b848",
+        "audit_events": 3
+      },
+      {
+        "id": "f6cec8d8-d830-4633-b4a9-3ad74d2ba352",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "agenda.pins.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "8806feb97f94689577e892bfcda7821cd474ff0692bbae9b83ea7a073b0feae1",
+        "audit_events": 3
+      },
+      {
+        "id": "3880fe34-d9e5-4452-835e-cbd9a6e90136",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "tasks.get",
+        "state": "failed",
+        "provider_http_status": 404,
+        "result_sha256": "cdc1a2cc8564b794713fa82d8a4c1143c61108905bf09effbd9fcdff95f04a7d",
+        "audit_events": 3
+      },
+      {
+        "id": "4fa1ac22-51c2-41b7-8740-9c60a8956980",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "tasks.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "a826b9cbe6625ef481ff405079564f43128dc9e91128b1c5643297dc9bc8e1dd",
+        "audit_events": 3
+      },
+      {
+        "id": "cd763b48-e06a-403e-998d-41e050eeed13",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "tasks.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "765cbdea8afa0213df558785b741a906a95102a04f64c2b259ada3c70be5c3f1",
+        "audit_events": 3
+      },
+      {
+        "id": "09aa31d6-4016-416a-aa68-7e80028a41c4",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "calendar.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "6a80b9c6ddcbc1cb15a477e3b6cbabfce8043c217471c11cac43c3beaa5f5984",
+        "audit_events": 3
+      },
+      {
+        "id": "08a1d982-3326-4d0c-817f-3048b4a46be2",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "calendar.get",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "2836c46529930aeeaf61e9e59e7587b49122822bcd8d34a0eed3bb41b0766872",
+        "audit_events": 3
+      },
+      {
+        "id": "65b1f33d-888d-4faa-972b-0f9aad090990",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "agenda.overview",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "96335c62276ee3a262fdccd51860f6252e8463026413fd3d6091886adf026776",
+        "audit_events": 3
+      },
+      {
+        "id": "4336d0c0-195c-401a-a34f-00b96c0d6f4b",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "agenda.pins.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "eb3a163c9943c3f334119c86afc433ae19e0c4f4aa07cde846986d817398e3fe",
+        "audit_events": 3
+      },
+      {
+        "id": "e9957a67-8e2a-45c3-8776-aac4f26d76c1",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "calendar.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "3524c9b7a32a342591f72a36dcb46de7af2c1467efd1b3ebce2fc1b1add7e54f",
+        "audit_events": 3
+      },
+      {
+        "id": "749881d6-f969-4ade-877d-a42815c2c5b1",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "calendar.client.overview",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "6cbf238ceb57826bde4bec44b3e149146567fe28a179a6e13f9ef41c5bb19833",
+        "audit_events": 3
+      },
+      {
+        "id": "ca3ed3a2-4809-47c7-af0e-a8d0f977bfaa",
+        "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+        "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+        "operation": "calendar.get",
+        "state": "failed",
+        "provider_http_status": 404,
+        "result_sha256": "f85b11324fbcda56a36f49c3055d45027251224131891271833e9916d175e7a3",
+        "audit_events": 3
+      },
+      {
+        "id": "832353e1-7966-407c-a9d9-7c759c4f7c8f",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "tasks.get",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "9b8673f2a948527c86c342c868818f50be751441752f155c72f08510b7023e95",
+        "audit_events": 3
+      },
+      {
+        "id": "14545057-5680-4b64-bee6-82e51ccbe582",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "calendar.client.overview",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "e616d7e8f5311389a2ff4a3d85b8a5618b53a432eb1a99352fd6441ff96c6b60",
+        "audit_events": 3
+      },
+      {
+        "id": "09b0891a-3569-4d0f-b95f-c106cd1eb341",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "calendar.client.timezone.get",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "51524db89018b7cd3878bda26c1aca7d442ab5b0c33e766a458cf09fbe108428",
+        "audit_events": 3
+      },
+      {
+        "id": "8c49e84e-f195-43f7-800c-198841704621",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "tasks.get",
+        "state": "failed",
+        "provider_http_status": 404,
+        "result_sha256": "cdc1a2cc8564b794713fa82d8a4c1143c61108905bf09effbd9fcdff95f04a7d",
+        "audit_events": 3
+      },
+      {
+        "id": "174d8ae6-0822-4fd5-ac76-bcf88fa39821",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "calendar.get",
+        "state": "failed",
+        "provider_http_status": 404,
+        "result_sha256": "f85b11324fbcda56a36f49c3055d45027251224131891271833e9916d175e7a3",
+        "audit_events": 3
+      },
+      {
+        "id": "67646450-af38-4cfb-b85a-4fb26a568cca",
+        "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+        "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+        "operation": "tasks.list",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "result_sha256": "765cbdea8afa0213df558785b741a906a95102a04f64c2b259ada3c70be5c3f1",
+        "audit_events": 3
+      }
+    ]
+  },
+  "operation_proofs": {
+    "tasks.list": {
+      "observed_at": "2026-10-21T23:34:43.100969+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "83c4adae-1555-44e9-83a6-4f79bb72c015",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "tasks.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "a826b9cbe6625ef481ff405079564f43128dc9e91128b1c5643297dc9bc8e1dd",
+          "audit_events": 3
+        },
+        {
+          "id": "4fa1ac22-51c2-41b7-8740-9c60a8956980",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "tasks.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "a826b9cbe6625ef481ff405079564f43128dc9e91128b1c5643297dc9bc8e1dd",
+          "audit_events": 3
+        },
+        {
+          "id": "cd763b48-e06a-403e-998d-41e050eeed13",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "tasks.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "765cbdea8afa0213df558785b741a906a95102a04f64c2b259ada3c70be5c3f1",
+          "audit_events": 3
+        },
+        {
+          "id": "67646450-af38-4cfb-b85a-4fb26a568cca",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "tasks.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "765cbdea8afa0213df558785b741a906a95102a04f64c2b259ada3c70be5c3f1",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "tasks.get": {
+      "observed_at": "2026-10-21T23:34:43.100986+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "b88b5310-f134-4bc8-910e-2c5dcd3eb8b1",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "tasks.get",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "c45dc54131fedd7b9ba3a16b2564eae284ed8cdebb59ee26dd4faec4f222b848",
+          "audit_events": 3
+        },
+        {
+          "id": "3880fe34-d9e5-4452-835e-cbd9a6e90136",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "tasks.get",
+          "state": "failed",
+          "provider_http_status": 404,
+          "result_sha256": "cdc1a2cc8564b794713fa82d8a4c1143c61108905bf09effbd9fcdff95f04a7d",
+          "audit_events": 3
+        },
+        {
+          "id": "832353e1-7966-407c-a9d9-7c759c4f7c8f",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "tasks.get",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "9b8673f2a948527c86c342c868818f50be751441752f155c72f08510b7023e95",
+          "audit_events": 3
+        },
+        {
+          "id": "8c49e84e-f195-43f7-800c-198841704621",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "tasks.get",
+          "state": "failed",
+          "provider_http_status": 404,
+          "result_sha256": "cdc1a2cc8564b794713fa82d8a4c1143c61108905bf09effbd9fcdff95f04a7d",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "calendar.list": {
+      "observed_at": "2026-10-21T23:34:43.100992+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "09aa31d6-4016-416a-aa68-7e80028a41c4",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "calendar.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "6a80b9c6ddcbc1cb15a477e3b6cbabfce8043c217471c11cac43c3beaa5f5984",
+          "audit_events": 3
+        },
+        {
+          "id": "e9957a67-8e2a-45c3-8776-aac4f26d76c1",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "calendar.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "3524c9b7a32a342591f72a36dcb46de7af2c1467efd1b3ebce2fc1b1add7e54f",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "calendar.get": {
+      "observed_at": "2026-10-21T23:34:43.100998+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "551b67f8-6ed2-428e-96a3-7e24c2ffb71f",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "calendar.get",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "c6c269f8a1c41bd3a1289f645f43db330c585fd8adb175bcb1285bfe23434e69",
+          "audit_events": 3
+        },
+        {
+          "id": "08a1d982-3326-4d0c-817f-3048b4a46be2",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "calendar.get",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "2836c46529930aeeaf61e9e59e7587b49122822bcd8d34a0eed3bb41b0766872",
+          "audit_events": 3
+        },
+        {
+          "id": "ca3ed3a2-4809-47c7-af0e-a8d0f977bfaa",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "calendar.get",
+          "state": "failed",
+          "provider_http_status": 404,
+          "result_sha256": "f85b11324fbcda56a36f49c3055d45027251224131891271833e9916d175e7a3",
+          "audit_events": 3
+        },
+        {
+          "id": "174d8ae6-0822-4fd5-ac76-bcf88fa39821",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "calendar.get",
+          "state": "failed",
+          "provider_http_status": 404,
+          "result_sha256": "f85b11324fbcda56a36f49c3055d45027251224131891271833e9916d175e7a3",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "agenda.overview": {
+      "observed_at": "2026-10-21T23:34:43.101002+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "0ac3e1f5-9974-47b0-919a-1878393d7dc6",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "agenda.overview",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "8872ceedc22afe4b2d86fe56354b21287af61b6aee7612633bc8aa4245f8754a",
+          "audit_events": 3
+        },
+        {
+          "id": "65b1f33d-888d-4faa-972b-0f9aad090990",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "agenda.overview",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "96335c62276ee3a262fdccd51860f6252e8463026413fd3d6091886adf026776",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "calendar.client.overview": {
+      "observed_at": "2026-10-21T23:34:43.101008+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "749881d6-f969-4ade-877d-a42815c2c5b1",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "calendar.client.overview",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "6cbf238ceb57826bde4bec44b3e149146567fe28a179a6e13f9ef41c5bb19833",
+          "audit_events": 3
+        },
+        {
+          "id": "14545057-5680-4b64-bee6-82e51ccbe582",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "calendar.client.overview",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "e616d7e8f5311389a2ff4a3d85b8a5618b53a432eb1a99352fd6441ff96c6b60",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "agenda.pins.list": {
+      "observed_at": "2026-10-21T23:34:43.101012+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "f6cec8d8-d830-4633-b4a9-3ad74d2ba352",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "agenda.pins.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "8806feb97f94689577e892bfcda7821cd474ff0692bbae9b83ea7a073b0feae1",
+          "audit_events": 3
+        },
+        {
+          "id": "4336d0c0-195c-401a-a34f-00b96c0d6f4b",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "agenda.pins.list",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "eb3a163c9943c3f334119c86afc433ae19e0c4f4aa07cde846986d817398e3fe",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    },
+    "calendar.client.timezone.get": {
+      "observed_at": "2026-10-21T23:34:43.101016+00:00",
+      "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+      "gateway_deploy_version": 43,
+      "normal_Auth_MCP_customer_read": true,
+      "Controller_memberships": 0,
+      "discovered_and_called": true,
+      "nonempty_owned_resource_assertion": true,
+      "durable_admission_receipt_present": true,
+      "independent_receipts": [
+        {
+          "id": "853b2329-9c35-4766-8f2d-a3bee7b62363",
+          "actor_id": "2fce9dd5-544a-48bc-a747-2a19b0a9393f",
+          "tenant_id": "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+          "operation": "calendar.client.timezone.get",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "73a5c514e9fb4a1fc4db0a5881dc6dd1d0db2498c762a3015af8b3ecb977c5df",
+          "audit_events": 3
+        },
+        {
+          "id": "09b0891a-3569-4d0f-b95f-c106cd1eb341",
+          "actor_id": "c77045eb-b6be-45ea-a520-1b778eb04f8c",
+          "tenant_id": "677702cc-a796-48e2-b849-043713e68e2d",
+          "operation": "calendar.client.timezone.get",
+          "state": "succeeded",
+          "provider_http_status": 200,
+          "result_sha256": "51524db89018b7cd3878bda26c1aca7d442ab5b0c33e766a458cf09fbe108428",
+          "audit_events": 3
+        }
+      ],
+      "same_request_replay_refused": true,
+      "changed_operation_same_request_refused": true,
+      "synthetic_users_sessions_and_business_fixtures_cleaned": true,
+      "no_provider_models_or_VM_work_requested": true
+    }
+  }
+}

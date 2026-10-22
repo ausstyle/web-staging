@@ -1,0 +1,338 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-21T03:06:59.623344+00:00",
+  "mode": "cached_exact_source_and_repository_review_no_network_no_provider_execution",
+  "historical_snapshot": "2026-10-20T18:36:33.784802+00:00",
+  "current_numeric_versions_not_attested_by_this_report": true,
+  "universal_production_routing_operational": false,
+  "remaining_runtime_branches": [],
+  "functions": [
+    {
+      "slug": "sandy-controller-api",
+      "archived_numeric_version": 34,
+      "source_sha256": "24c8a473d50531b5baae6122e2b136d951c4ac658eef6bb66ff95b07a50041bf",
+      "source_lines": 400,
+      "observed_matches": {
+        "direct_edge_dispatch": [
+          113,
+          131
+        ]
+      },
+      "identity": "Actual Auth user checked against enabled Controller admin role; viewer denied mutations. No worker credential may substitute for the owner/session.",
+      "remaining": "Direct examiner worker dispatch at archived lines 113/131 after admin, lab-account and running-run checks; no source extraction in this branch.",
+      "boundaries_to_preserve": [
+        "admin role",
+        "lab customer/target checks",
+        "production identity binding",
+        "unique running run reservation",
+        "202 acknowledgement versus completed review"
+      ]
+    },
+    {
+      "slug": "sandy-workspace",
+      "archived_numeric_version": 33,
+      "source_sha256": "614227b2b531097a9dbae220051029921ced3d6156806b495f9a2fcd5a0645b8",
+      "source_lines": 388,
+      "observed_matches": {
+        "direct_edge_dispatch": [
+          359,
+          375
+        ]
+      },
+      "identity": "Confirmed portal user and primary customer address; sends server-bound customer/channel to runtime.",
+      "remaining": "Legacy app/chat endpoint still dispatches runtime and private application APIs; no UI universal routing attestation.",
+      "boundaries_to_preserve": [
+        "actual Auth user",
+        "portal customer association",
+        "bounded channel/history",
+        "conversation ownership"
+      ]
+    },
+    {
+      "slug": "sandy-agenda",
+      "archived_numeric_version": 67,
+      "source_sha256": "c173bfd6cb5593f43844d48ae48c1286b3acddf394a755be15294a15dd7faa8d",
+      "source_lines": 840,
+      "observed_matches": {
+        "direct_edge_dispatch": [
+          63,
+          170,
+          277,
+          420
+        ]
+      },
+      "identity": "Existing portal/customer ownership checks must survive any new application adapter.",
+      "remaining": "Inline task/mission mutations and downstream worker dispatch remain in archived source. New product work is reviewed by its owner, not inferred from endpoint matches.",
+      "boundaries_to_preserve": [
+        "tenant-owned task",
+        "mission metadata",
+        "client approval",
+        "event audit",
+        "no duplicated plan/mission execution"
+      ]
+    },
+    {
+      "slug": "sandy-mission-runner",
+      "archived_numeric_version": 17,
+      "source_sha256": "f4a852845706e11bec633808c3374501b17989923b48c7662bb0e1df789a46d1",
+      "source_lines": 90,
+      "observed_matches": {
+        "openai_responses": [
+          31,
+          56
+        ]
+      },
+      "identity": "Existing renewal-key worker credential plus claimed persistent mission-run row; no customer/owner Auth session.",
+      "remaining": "Parent committed b46fc5f, applied exact10070 and deployed ACTIVE19 with all seven uploaded sources matched. Both operations remain private/unverified; no real model execution test.",
+      "boundaries_to_preserve": [
+        "atomic queued-to-running claim",
+        "persisted customer/mission match",
+        "current task/dependency context",
+        "3-7 bounded milestones",
+        "no external execution",
+        "prior answers/deduplication",
+        "client-owned active tasks",
+        "draft/client review gates"
+      ],
+      "inspected_live_version": 18,
+      "inspected_status": "ACTIVE",
+      "candidate_contracts": [
+        "agent.missions.plan.prepare@1.0.0",
+        "agent.missions.questions.review@1.0.0"
+      ],
+      "candidate_deployed": true,
+      "scope_strengthening": "Actual queued run/customer/mission capability; immutable recorded proposal-derived reviewer; atomic plan/questions/decisions; changed authoritative context refuses completion; unknown logical mission cannot repeat through another run ID.",
+      "candidate_commit": "b46fc5f",
+      "migration_applied": true,
+      "parent_attested_deployed_version": 19,
+      "parent_attested_source_readback_files": 7
+    },
+    {
+      "slug": "sandy-mission-executor",
+      "archived_numeric_version": 7,
+      "source_sha256": "6f6b7ce3d1bca03d9637c46a3535c4f288efef4c3a5532cc8a6ef5a6de3b0dc4",
+      "source_lines": 57,
+      "observed_matches": {
+        "openai_responses": [
+          39
+        ]
+      },
+      "identity": "Existing renewal-key worker credential plus claimed execute-stage mission run.",
+      "remaining": "Shared application source committed 5e837b8 and final migration10060 permanently applied by parent; pinned executor9 deployment was in flight at the latest parent receipt. Final live source readback is parent-owned. No actual model execution test.",
+      "boundaries_to_preserve": [
+        "approved/provisional plan state",
+        "ready prerequisite milestones",
+        "no external provider actions",
+        "draft content only",
+        "client review task",
+        "tenant-owned work product",
+        "event audit"
+      ],
+      "inspected_live_version": 8,
+      "inspected_status": "ACTIVE",
+      "candidate_contract": "agent.missions.work_product.prepare@1.0.0",
+      "candidate_deployed": false,
+      "scope_strengthening": "Actual completed same-tenant plan run; context change/cancellation refusal; unknown milestone cannot repeat through another run ID.",
+      "candidate_commit": "5e837b8",
+      "migration_applied": true
+    },
+    {
+      "slug": "sandy-computer-worker",
+      "archived_numeric_version": 45,
+      "source_sha256": "07c52143be403fed7073a6bd05362a2f47cdbbe704498bdd87862c624782628d",
+      "source_lines": 130,
+      "observed_matches": {
+        "openai_responses": [
+          81
+        ],
+        "direct_edge_dispatch": [
+          14
+        ]
+      },
+      "identity": "Database-verified worker token and claimed computer task/session, separate from a customer session.",
+      "remaining": "Direct Daytona execution and model-guided browser loop. Archived catch block can requeue up to three attempts after an uncertain provider result; unknown-outcome reconciliation is an implementation gap, not egress/auth/entitlement.",
+      "boundaries_to_preserve": [
+        "claimed task/session",
+        "internal origin allowlist",
+        "agent control mode and human takeover",
+        "fixed provider hosts",
+        "download URL allowlist",
+        "bounded read-only browser actions",
+        "no sending/purchase/delete/credential entry",
+        "independent exit/result proof"
+      ]
+    },
+    {
+      "slug": "sandy-examiner-live-review",
+      "archived_numeric_version": 7,
+      "source_sha256": "7d19d3ec92fb2a8951d540db5f9684e150069f1371a86c1b139aeed3f24db933",
+      "source_lines": 130,
+      "observed_matches": {
+        "openai_responses": [
+          90
+        ]
+      },
+      "identity": "Service automation bound to stored customer turn and review-run row.",
+      "remaining": "Actual-record context, fixed quality model profile and atomic review/investigation writes extracted to a closed shared application source candidate. Commit, migration, deployment and readback pending; no real model execution test.",
+      "boundaries_to_preserve": [
+        "actual persisted turn",
+        "customer scope",
+        "review run",
+        "no model assertion as provider action evidence"
+      ],
+      "inspected_live_version": 8,
+      "inspected_status": "ACTIVE",
+      "candidate_contract": "agent.reliability.interaction.review@1.0.0",
+      "candidate_deployed": false,
+      "scope_strengthening": "Separate service-automation capability; real customer or NULL unmapped channel; one-use source claim across runs; actual saved review reuse after cursor loss; changed primary source refusal; qualitative pass never proves external execution.",
+      "checked_in_stale_source_sha256": "a49c0c028953546671b4dd2086d8eaf34d4e2985ce57da1762c2d552a2183e21",
+      "live_quality_score_behavior_preserved": true
+    },
+    {
+      "slug": "sandy-gmail-send-verification",
+      "archived_numeric_version": 6,
+      "source_sha256": "42b10743708ea6dd0d7c7e3a1d26ee4217af07842f55655e130cb34ca65bc340",
+      "source_lines": 80,
+      "observed_matches": {
+        "gmail_tool_execution": [
+          46,
+          60
+        ],
+        "composio_execution": [
+          37
+        ],
+        "direct_edge_dispatch": [
+          76
+        ]
+      },
+      "identity": "Existing internal receipt workflow; separate from customer-confirmed immutable draft workflow.",
+      "remaining": "Direct Composio send/readback helper at archived lines 37/46/60; cannot replace with draft service without preserving its source receipt ownership.",
+      "boundaries_to_preserve": [
+        "existing receipt scope",
+        "single send admission",
+        "actual message ID",
+        "independent Sent Mail To/Subject/label readback",
+        "no uncertain resend"
+      ]
+    },
+    {
+      "slug": "sandy-auto-improve",
+      "archived_numeric_version": 11,
+      "inspected_live_version": 12,
+      "inspected_status": "ACTIVE",
+      "source_sha256": "7b66252c752cfd9fb4e74c6e44f325ec83aea29a3eecaaf04250b4d120080c74",
+      "source_lines": 64,
+      "observed_matches": {
+        "openai_responses": [
+          36
+        ]
+      },
+      "identity": "Existing dedicated automation secret; service credential is only DB transport. Private proof binds actual source/reference/problem and reserved job, with no customer/Auth/owner identity.",
+      "remaining": "Committed and source-accounted deployed private shared diagnosis service; no actual model/customer execution test or verification claim.",
+      "candidate_contract": "agent.reliability.diagnosis.propose@1.0.0",
+      "candidate_deployed": true,
+      "boundaries_to_preserve": [
+        "dedicated existing automation key",
+        "actual stored job/source/problem",
+        "fixed gpt-5.2 high-reasoning 65-second Responses transport",
+        "proposal-only output and separate approval",
+        "actual QA issue foreign key and unverified handoff",
+        "no unknown paid redispatch"
+      ],
+      "source_commit": "718f9a8",
+      "deployed_version": 13
+    }
+  ],
+  "UI": [
+    {
+      "path": "sandy/controller/index.html",
+      "sha256": "710c53395d6059a9e64cc88919cb648144a9354cfde9b2ebe33288ea0cf96aa0",
+      "endpoint_references": [
+        {
+          "line": 74,
+          "endpoint": "functions/v1/sandy-controller-api"
+        }
+      ],
+      "meaning": "Compatibility endpoint references; source matches do not prove whether every backend branch shares canonical execution."
+    },
+    {
+      "path": "sandy/chat/index.html",
+      "sha256": "c8d7aa5a1276ce386371369b1101fdaa330dd7749a4a280ad84f03aafafe7f73",
+      "endpoint_references": [
+        {
+          "line": 6,
+          "endpoint": "functions/v1/sandy-workspace"
+        }
+      ],
+      "meaning": "Compatibility endpoint references; source matches do not prove whether every backend branch shares canonical execution."
+    },
+    {
+      "path": "sandy/app/index.html",
+      "sha256": "a5165984d3e883c5d82719dfae2ad8dc0254220c1aec554483b0d11baa437cb5",
+      "endpoint_references": [
+        {
+          "line": 172,
+          "endpoint": "functions/v1/sandy-workspace"
+        },
+        {
+          "line": 452,
+          "endpoint": "functions/v1/sandy-calendar-api"
+        }
+      ],
+      "meaning": "Compatibility endpoint references; source matches do not prove whether every backend branch shares canonical execution."
+    },
+    {
+      "path": "sandy/agenda/index.html",
+      "sha256": "7d9fca76b5a7b24aad0ea4026ced703e5a0fdecbc85300a1fb566904302aab6f",
+      "endpoint_references": [
+        {
+          "line": 637,
+          "endpoint": "functions/v1/sandy-agenda"
+        },
+        {
+          "line": 1655,
+          "endpoint": "functions/v1/sandy-promote-mission"
+        },
+        {
+          "line": 1693,
+          "endpoint": "functions/v1/sandy-promote-mission"
+        },
+        {
+          "line": 2469,
+          "endpoint": "functions/v1/sandy-activity-ledger"
+        }
+      ],
+      "meaning": "Compatibility endpoint references; source matches do not prove whether every backend branch shares canonical execution."
+    }
+  ],
+  "external_dependencies": [
+    "runtime egress",
+    "actual Controller/customer session for exact authenticated tests",
+    "Custom Domain provider entitlement"
+  ],
+  "implementation_gaps_are_separate_from_external_dependencies": true,
+  "real_provider_or_model_calls": 0,
+  "runtime_follow_on_source_status": {
+    "closed_named_record_contracts": 9,
+    "public_agent_catalogue_unchanged": 8,
+    "real_customer_execution_tested": false,
+    "remaining_inline_runtime_logic": [
+      "operational inspection and its customer/channel/context fact reads",
+      "connected-account provider preflight/status reconciliation and auto-improve dispatch"
+    ],
+    "closed_operational_contracts": 6,
+    "shared_snapshot_and_model_policy_dependencies": true
+  },
+  "runtime_preflight_candidate": {
+    "operation": "agent.runtime.connections.preflight",
+    "version": "1.0.0",
+    "deployed": false,
+    "private_capability_only": true,
+    "actual_provider_execution_tested": false,
+    "mutation": true,
+    "consumes_model_resources": true,
+    "legacy_auto_improve_worker_not_yet_extracted": true,
+    "source_commit": "771e9bb",
+    "status": "committed_pending_parent_deployment_readback"
+  }
+}

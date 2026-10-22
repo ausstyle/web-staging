@@ -1,19 +1,93 @@
-# Sandy Engineering MCP (staged source)
+# Sandy Engineering MCP
 
-This isolated MCP HTTP service exposes only existing Sandy engineering backend operations.
+Version 0.3.0 is a thin, stateless adapter to canonical Sandy API. Discovery asks
+for a bounded, caller-filtered API catalogue page and forwards `nextCursor`.
+Clients continue `tools/list` with that cursor; a changed catalogue requires a
+restart. A tool call describes its one canonical operation, including tools from
+later pages, rather than downloading the entire catalogue. Input/output schemas
+come from API; discovery includes `sandy_catalogue_version` in result metadata.
+Execution calls only `sandy-operation-api` with `channel:"mcp"`; API owns permissions,
+schema validation, installed handlers and provider execution.
 
-## Tools
-- `sandy_model_route_readiness` — read routing diagnostics and delegation policy.
-- `sandy_run_model_canary` — invoke a predefined model test; requires a valid Engineering Control change ID.
-- `sandy_engineering_change_details` — inspect change evidence and status.
+## Compatibility tools
 
-## Security
-Clients supply a Sandy Supabase user access token in the `Authorization: Bearer <token>` header. The service forwards that bearer token directly to Sandy's existing backend, where user identity and Sandy Controller administrator membership are independently verified. Do not send Supabase service-role keys from clients. No tokens are persisted or logged by this process. All endpoints are read-only except the bounded test-canary operation, which has a recorded provider cost but does not modify routing or send communications.
+| Existing name | Canonical operation |
+| --- | --- |
+| `sandy_model_route_readiness` | `engineering.models.readiness` |
+| `sandy_run_model_canary` | `engineering.models.canary` |
+| `sandy_video_install_preflight` | `video.install.preflight` |
+| `sandy_video_execution_preflight` | `video.execution.preflight` |
+| `sandy_engineering_change_details` | `engineering.change.get` |
 
-## Deployment
-From this directory: `npm ci` (after generating and committing a lockfile), `npm run check`, then `npm start`. Expose HTTPS `POST /mcp` behind a trusted reverse proxy with TLS, rate limits and origin policy. `GET /healthz` is a public liveness endpoint. Configure `SANDY_SUPABASE_PROJECT_REF` and `PORT`. Do not assume a GitHub commit deploys an MCP service.
+These aliases appear when their API operation is executable and exposed to MCP for
+the caller. Other exposed canonical operations are discovered dynamically. The
+alias table translates names; it supplies no separate schemas or executor policy.
+Unavailable aliases are listed explicitly in `_meta.sandy_unavailable_aliases`.
+Calling an unavailable alias or operation returns `canonical_operation_unavailable`
+with its operation ID and `executed:false`. There is no legacy or provider fallback.
 
-This is a proposed new service, not a replacement for the currently connected Sandy Operations V2 server. Release only after dependency installation, authentication negative tests, backend smoke tests, and MCP client discovery checks pass. Configure the new HTTPS URL and authenticated connection in ChatGPT after deployment.
+Successful calls retain the MCP text-content envelope and `http_status` compatibility
+field. The two video aliases retain their former nested JSON-RPC text envelope as
+formatting. They no longer invoke a second MCP. `structuredContent` contains the
+API-owned handler payload, and `_meta.sandy_api` preserves the canonical execution
+envelope. Domain failures remain errors even when HTTP is 200. A typed `202` receipt
+can represent successful admission with a recorded retry or existing job identity,
+current state and `executed:false`; it never becomes a completed provider operation. A lost response
+reports `executed:null` and requires reconciliation.
 
-## Known constraints
-The existing model canary performs limited deterministic content checks. It does not establish full model quality or eligibility for production routing changes. Google Cloud IAM repair and backup/restore verification are separate, still-unimplemented workstreams.
+## Authentication and runtime
+
+Clients supply a real Supabase user access token in `Authorization: Bearer <token>`.
+The adapter forwards it only to Sandy API, which independently authenticates and
+authorizes the user. An incoming `x-sandy-api-key` also travels unchanged on discovery
+and execution; API must validate all supplied context. The adapter does not derive
+a principal or permissions from the key.
+
+Optional `x-sandy-approval-id` and `x-sandy-request-id` UUID headers travel unchanged
+with those credentials through discovery and execution. Empty, malformed or
+duplicate values are refused before API calls. Use a new request ID for each
+distinct execution and retain it for retries. Sandy API independently binds an
+existing approval to the actual caller, operation, arguments and scope; these
+headers add no permission and do not change the API-derived tool schemas.
+
+Clients can also provide `arguments: {"__sandy_execution":{"approval_id":"UUID",
+"request_id":"UUID"},"arguments":{...API arguments...}}` for an individual call.
+Mutation and grant-requiring tool schemas advertise this envelope alongside
+ordinary arguments. Metadata travels as headers to API; the nested arguments
+remain unchanged. Malformed or conflicting envelope/header IDs fail before
+execution. Local schema references are relocated when wrapping the input. Edge
+MCP and Cloud Run use the same canonical transport module; the isolated Docker
+context receives an exact generated copy checked in CI.
+
+For clients that send a `sandyop_...` or issued `sandy_api_...` key in the bearer header, configure the public
+project anon JWT. The adapter then sends that public JWT as gateway authorization
+and the original opaque key in `x-sandy-api-key`. This transport translation does
+not create a user session or authenticate the key. Missing public JWT configuration
+and conflicting opaque keys fail explicitly. A service-role JWT is rejected for
+this configuration. No service-role credential is used as a customer session. No
+tokens, catalogue bodies or provider payloads are persisted or logged. Redirects
+are rejected and API responses have an explicit size limit.
+
+`SANDY_SUPABASE_PROJECT_REF` defaults to `zmqlyygzqoidkcwdysok`; `PORT` defaults to
+8787. `SANDY_SUPABASE_ANON_KEY` (fallback `SUPABASE_ANON_KEY`) supplies optional
+public project-key configuration; a public anon JWT is required for opaque bearer
+translation. Supabase JWT verification remains enabled at the API gateway. Serve
+HTTPS `POST /mcp` behind the production reverse proxy. `GET /healthz` is liveness
+only and does not attest API or provider access.
+
+From this directory run `npm ci --ignore-scripts`, `npm run check`, `npm test`,
+and `npm start`. CI and Docker use the committed lockfile. Run
+`python3 ../../scripts/sandy/sync_mcp_transport.py --check` to verify the generated
+transport artifact. Local tests exercise real HTTP/MCP transport against an injected
+canonical API fixture, including every alias. They are not deployed user-session
+or provider integration evidence.
+
+Source/test success does not deploy or verify Cloud Run. The authorized release
+workflow preserves the existing resolved traffic/revision without recording
+environment values and deploys a `sandy-api-review` candidate with no production
+traffic or invoker-IAM change. It records a rollback command and checks that
+existing traffic remains identical. Authenticated candidate MCP/provider tests
+are required before promotion. Missing model readiness or
+canary contracts are explicit compatibility gaps; the adapter does not replace
+them with direct backend calls. The model canary's existing bounded content checks
+do not establish general model quality or authorize routing changes.

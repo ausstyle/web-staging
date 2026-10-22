@@ -1,0 +1,1638 @@
+{
+  "operations": [
+    {
+      "operation": "github.read",
+      "provider": "github",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "github.files.content.get",
+      "permission_scope": "engineering:read",
+      "is_mutation": false,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "219353a9c1e4ad4af5d6ae874ce4fa19b42f297e88ff08379a615b41636bb4d1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024,
+                "pattern": "^docs/sandy-api/compensation-fixtures/[A-Za-z0-9_./-]+$"
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          },
+          "query": {
+            "type": "object",
+            "properties": {
+              "ref": {
+                "type": "string",
+                "maxLength": 4096
+              }
+            },
+            "required": [],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "github.read"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "github"
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer"
+          },
+          "provider_request_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "pattern": "^docs/sandy-api/compensation-fixtures/"
+              },
+              "sha": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "size": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 65536
+              },
+              "encoding": {
+                "const": "base64"
+              },
+              "content": {
+                "type": "string",
+                "maxLength": 87384,
+                "pattern": "^[A-Za-z0-9+/]*={0,2}$"
+              },
+              "type": {
+                "const": "file"
+              }
+            },
+            "required": [
+              "path",
+              "sha",
+              "size",
+              "encoding",
+              "content",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          "possibly_truncated": {
+            "type": "boolean"
+          },
+          "result_limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "next_page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result",
+          "possibly_truncated",
+          "result_limit",
+          "next_page"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      }
+    },
+    {
+      "operation": "github.update_file",
+      "provider": "github",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "github.files.upsert",
+      "permission_scope": "engineering:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "a5a62081c41392ea687d8a747962f1a66f43e9025efa198a5d0b89a9fa38b44b",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 1024
+              }
+            },
+            "required": [
+              "path"
+            ],
+            "additionalProperties": false
+          },
+          "body": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "content": {
+                "type": "string",
+                "maxLength": 87384,
+                "minLength": 4,
+                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+              },
+              "sha": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$",
+                "minLength": 40,
+                "maxLength": 40
+              },
+              "branch": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "committer": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "date": {
+                    "type": "string",
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "additionalProperties": false
+              },
+              "author": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "date": {
+                    "type": "string",
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "message",
+              "content",
+              "sha",
+              "branch"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "path",
+          "body"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "github.update_file"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "github"
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer"
+          },
+          "provider_request_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "accepted": {
+                "const": true
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "id": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "number": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "ref": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "content_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "commit_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "path": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          },
+          "possibly_truncated": {
+            "type": "boolean"
+          },
+          "result_limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "next_page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result",
+          "possibly_truncated",
+          "result_limit",
+          "next_page"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      }
+    },
+    {
+      "operation": "github.commit",
+      "provider": "github",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "github.git.commits.create",
+      "permission_scope": "engineering:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "05efc808b048a28c45458d4c83028d3d813dab898a72b881d26686a974cab9ae",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "tree": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$",
+                "minLength": 40,
+                "maxLength": 40
+              },
+              "parents": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{40}$",
+                  "minLength": 40,
+                  "maxLength": 40
+                },
+                "maxItems": 8,
+                "minItems": 1
+              },
+              "author": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "maxLength": 10000
+                  }
+                },
+                "required": [
+                  "name",
+                  "email"
+                ],
+                "additionalProperties": false
+              },
+              "committer": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 10000
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "maxLength": 10000
+                  }
+                },
+                "additionalProperties": false
+              },
+              "signature": {
+                "type": "string",
+                "maxLength": 10000
+              }
+            },
+            "required": [
+              "message",
+              "tree",
+              "parents"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "body"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "github.commit"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "github"
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer"
+          },
+          "provider_request_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "accepted": {
+                "const": true
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "id": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "number": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "ref": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "content_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "commit_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "path": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          },
+          "possibly_truncated": {
+            "type": "boolean"
+          },
+          "result_limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "next_page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result",
+          "possibly_truncated",
+          "result_limit",
+          "next_page"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      }
+    },
+    {
+      "operation": "github.merge",
+      "provider": "github",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "github.pull_requests.merge",
+      "permission_scope": "engineering:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "dbafdcb86736ebb59d51a50d273d3a9ad1dee48a849a120004bcd2c295eac0e1",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "object",
+            "properties": {
+              "pull_number": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              }
+            },
+            "required": [
+              "pull_number"
+            ],
+            "additionalProperties": false
+          },
+          "body": {
+            "type": "object",
+            "properties": {
+              "commit_title": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "commit_message": {
+                "type": "string",
+                "maxLength": 10000
+              },
+              "sha": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{40}$",
+                "minLength": 40,
+                "maxLength": 40
+              },
+              "merge_method": {
+                "type": "string",
+                "enum": [
+                  "merge",
+                  "squash",
+                  "rebase"
+                ],
+                "maxLength": 10000
+              }
+            },
+            "additionalProperties": false,
+            "required": [
+              "sha",
+              "merge_method"
+            ]
+          }
+        },
+        "required": [
+          "path",
+          "body"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "github.merge"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "github"
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer"
+          },
+          "provider_request_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "accepted": {
+                "const": true
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "id": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "number": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "ref": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "content_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "commit_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "path": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          },
+          "possibly_truncated": {
+            "type": "boolean"
+          },
+          "result_limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "next_page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result",
+          "possibly_truncated",
+          "result_limit",
+          "next_page"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      }
+    },
+    {
+      "operation": "supabase.apply_migration",
+      "provider": "supabase",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "supabase.db.migrations.apply",
+      "permission_scope": "database:deploy",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "762f9de8a14c76c96e8a10efc0b60c0c2883b0b302bc0d8a174967e585ac1e03",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "$ref": "#/$defs/V1CreateMigrationBody"
+          },
+          "project_id": {
+            "const": "zmqlyygzqoidkcwdysok"
+          },
+          "migration_ref": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "minLength": 64,
+            "maxLength": 64
+          }
+        },
+        "required": [
+          "body",
+          "project_id",
+          "migration_ref"
+        ],
+        "additionalProperties": false,
+        "$defs": {
+          "V1CreateMigrationBody": {
+            "type": "object",
+            "properties": {
+              "query": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100000
+              },
+              "name": {
+                "type": "string",
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_-]+$"
+              }
+            },
+            "required": [
+              "query",
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.apply_migration"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "supabase"
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer"
+          },
+          "provider_request_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "accepted": {
+                "const": true
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "id": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "number": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "ref": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "state": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "url": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "content_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "commit_sha": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "path": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          },
+          "possibly_truncated": {
+            "type": "boolean"
+          },
+          "result_limit": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "next_page": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result",
+          "possibly_truncated",
+          "result_limit",
+          "next_page"
+        ],
+        "additionalProperties": false,
+        "$defs": {}
+      }
+    },
+    {
+      "operation": "supabase.deploy_edge_function",
+      "provider": "supabase",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "supabase.functions.deploy.multipart",
+      "permission_scope": "infrastructure:deploy",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "c1aa2d3e0c2bf975292c1277f5e8458749afee842a5eb00a7611d07c2bf5ea18",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63,
+            "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+          },
+          "entrypoint_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./@+ -]*$"
+          },
+          "import_map_path": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 240,
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./@+ -]*$"
+          },
+          "verify_jwt": {
+            "const": true
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 63,
+            "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 240,
+                  "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./@+ -]*$"
+                },
+                "content_base64": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 1398104,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "content_base64",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32
+          },
+          "project_id": {
+            "const": "zmqlyygzqoidkcwdysok"
+          },
+          "artifact_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "slug",
+          "entrypoint_path",
+          "verify_jwt",
+          "files",
+          "project_id",
+          "artifact_ref",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.deploy_edge_function"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "supabase"
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 36,
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 599
+          },
+          "provider_request_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "slug": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 63,
+                "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 100
+              },
+              "status": {
+                "enum": [
+                  "ACTIVE",
+                  "REMOVED",
+                  "THROTTLED"
+                ]
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2147483647
+              },
+              "verify_jwt": {
+                "const": true
+              },
+              "source_sha256": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "readback_matched": {
+                "type": "boolean"
+              },
+              "transfer_state": {
+                "const": "accepted"
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "name",
+              "status",
+              "version",
+              "verify_jwt",
+              "source_sha256",
+              "readback_matched",
+              "transfer_state"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    },
+    {
+      "operation": "github.push_files",
+      "provider": "github",
+      "handler": "sandy-legacy-compatibility-api",
+      "canonical_target": "GitHub.GraphQL.createCommitOnBranch",
+      "permission_scope": "engineering:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "api_key_delegable": false,
+      "owner_only": true,
+      "contract_sha256": "b46b39b3a75941493ad226dd067fc05d025e3d70dafbb144ec20fdbc85f3137a",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "repository": {
+            "const": "ausstyle/web-staging"
+          },
+          "branch": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]{0,199}$"
+          },
+          "expected_head_oid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40,
+            "pattern": "^[a-f0-9]{40}$"
+          },
+          "headline": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "message_body": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 10000
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 240,
+                  "pattern": "^[A-Za-z0-9_.@+-]+(?:/[A-Za-z0-9_.@+-]+)*$"
+                },
+                "content_base64": {
+                  "type": "string",
+                  "minLength": 0,
+                  "maxLength": 87384,
+                  "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 64,
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              },
+              "required": [
+                "path",
+                "content_base64",
+                "sha256"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 32,
+            "minItems": 1
+          },
+          "files_sha256": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "repository",
+          "branch",
+          "expected_head_oid",
+          "headline",
+          "files",
+          "files_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "github.push_files"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "provider": {
+            "const": "github"
+          },
+          "request_state": {
+            "const": "accepted"
+          },
+          "executed": {
+            "const": true
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider_http_status": {
+            "type": "integer",
+            "minimum": 200,
+            "maximum": 299
+          },
+          "provider_request_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "repository": {
+                "const": "ausstyle/web-staging"
+              },
+              "branch": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "previous_head_oid": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40,
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "commit_oid": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40,
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "tree_oid": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 40,
+                "pattern": "^[a-f0-9]{40}$"
+              },
+              "files_changed": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 32
+              },
+              "native_precondition": {
+                "const": "expectedHeadOid"
+              },
+              "branch_head_observed_match": {
+                "const": true
+              },
+              "transfer_state": {
+                "const": "accepted"
+              },
+              "effect_confirmed": {
+                "const": false
+              }
+            },
+            "required": [
+              "repository",
+              "branch",
+              "previous_head_oid",
+              "commit_oid",
+              "tree_oid",
+              "files_changed",
+              "native_precondition",
+              "branch_head_observed_match",
+              "transfer_state",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "provider",
+          "request_state",
+          "executed",
+          "admission_id",
+          "provider_http_status",
+          "provider_request_id",
+          "result"
+        ],
+        "additionalProperties": false
+      }
+    }
+  ]
+}

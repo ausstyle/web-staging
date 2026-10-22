@@ -1,0 +1,17 @@
+{
+  "source_commit": "1c1a21b67c68993c2637cefe97134befa091fdac",
+  "function": "sandy-voice-account-context",
+  "expected_prior_version": 19,
+  "prior_bundle_sha256": "4e789d8f128641466185bb2b6cae7df23ed38f7d17ac421b398c4b7dcdba2dd6",
+  "verify_jwt": false,
+  "files": {
+    "sandy-voice-account-context/index.ts": "50bac1c61806cac4b2bff4783d74363e15a91aa06141a591ba0686acdd47c91d",
+    "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+    "sandy-voice-account-context/executive.ts": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee",
+    "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+    "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+    "_shared/sandy-agent-operations/voice_source.ts": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04"
+  },
+  "purpose": "Add a canary-only source-bound Executive turn using existing private voice link/session authentication and stored transcript turns. Recheck revocation and preserve partial/unknown outcomes; do not claim speech delivery or migrate the media host.",
+  "rollback": "Capture and restore all prior original modules under a fresh function lease and exact source/version guards; retain existing customer records, consent, delivery receipts and pilot allowlist. Never replay an uncertain effect."
+}

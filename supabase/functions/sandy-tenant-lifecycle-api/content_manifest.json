@@ -1,0 +1,1069 @@
+{
+  "id": "customer_content_fragments_v1",
+  "format_version": "1.0.0",
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "complete_tenant_coverage": false,
+  "external_provider_assets_included": false,
+  "erasure_supported": false,
+  "restore_supported": false,
+  "fragment_encoding": "ndjson_contiguous_unicode_parts_with_per_row_sha256_chain",
+  "fragment_characters": 65536,
+  "maximum_row_bytes": 16777216,
+  "maximum_total_plaintext_bytes": 134217728,
+  "maximum_fragments": 2048,
+  "maximum_rows_per_table": 50000,
+  "tables": [
+    {
+      "table": "email_customers",
+      "owner_column": "id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "google_drive_folder_id",
+        "google_drive_folder_url",
+        "google_drive_folder_status",
+        "google_drive_folder_verified_at",
+        "google_drive_local_relative_path"
+      ]
+    },
+    {
+      "table": "email_customer_addresses",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "email_address",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "normalized_email",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "is_primary",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "verified_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_people",
+      "owner_column": "owner_customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "owner_customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "nickname",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "relationship_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "relationship_notes",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_social_people",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "display_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "relationship_group",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "source_fact_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "verification_status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_tasks",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "parent_task_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "details",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "priority",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "next_review_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "waiting_on",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "archived_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "start_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "contact_name",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "company_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "category_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "schedule_locked",
+          "type": "boolean",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "source_kind",
+        "source_key",
+        "updated_by",
+        "metadata",
+        "responsible_customer_id"
+      ]
+    },
+    {
+      "table": "sandy_agenda_companies",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_life_spaces",
+      "owner_column": "owner_customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "owner_customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "space_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "space_kind",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "access_mode",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_life_goals",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "space_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "area_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "target_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_knowledge_documents",
+      "owner_column": "owner_customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "owner_customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "source_kind",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "mime_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "extracted_text",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "revision",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "indexed_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "external_id",
+        "storage_bucket",
+        "storage_path",
+        "source_ref",
+        "metadata",
+        "last_error"
+      ]
+    },
+    {
+      "table": "sandy_knowledge_entities",
+      "owner_column": "owner_customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "owner_customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "entity_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "canonical_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "normalized_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "attributes"
+      ]
+    },
+    {
+      "table": "email_conversations",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "provider_thread_id"
+      ]
+    },
+    {
+      "table": "email_messages",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "conversation_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "sender_address",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "recipient_addresses",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "direction",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "body_text",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "body_html",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "received_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "sent_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "delivery_status",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "thread_relation",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "matter_relation",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "message_intent",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "related_matter_id",
+          "type": "uuid",
+          "nullable": true
+        }
+      ],
+      "excluded_columns": [
+        "provider_message_id",
+        "internet_message_id",
+        "in_reply_to",
+        "references_header",
+        "provider_thread_id",
+        "classification_confidence"
+      ]
+    },
+    {
+      "table": "sandy_product_support_cases",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "details",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_product_support_comments",
+      "owner_column": "case_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "case_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "actor_id"
+      ],
+      "ownership_adapter": "support_case_customer"
+    },
+    {
+      "table": "sandy_product_notification_preferences",
+      "owner_column": "customer_id",
+      "order": [
+        "customer_id"
+      ],
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "email_enabled",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "whatsapp_enabled",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "file_alerts_enabled",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_product_notification_quiet_hours",
+      "owner_column": "customer_id",
+      "order": [
+        "customer_id"
+      ],
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "timezone",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "start_minute",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "end_minute",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_product_notification_subscriptions",
+      "owner_column": "customer_id",
+      "order": [
+        "customer_id",
+        "topic"
+      ],
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "topic",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_product_notification_inbox",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "topic",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "event",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "resource_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "acknowledged_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": []
+    },
+    {
+      "table": "sandy_product_whatsapp_media",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "filename",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "content_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "provider_id"
+      ]
+    },
+    {
+      "table": "sandy_product_graph_drafts",
+      "owner_column": "customer_id",
+      "order": [
+        "id"
+      ],
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "source_message_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "recipient",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "recipients",
+          "type": "jsonb",
+          "nullable": false,
+          "encoding": "email_string_array"
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "excluded_columns": [
+        "provider_id"
+      ],
+      "additional_parent_check": "source_message_customer_if_present"
+    }
+  ],
+  "schema_sha256": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e",
+  "manifest_sha256": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+}

@@ -1,6 +1,7 @@
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
+import {runtimeReplyOutcome} from "../_shared/sandy-executive/outcome.ts";
 const url=Deno.env.get("SUPABASE_URL")||"";
 const secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
 const db=createClient(url,secret,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -340,7 +341,7 @@ Deno.serve(async(req:Request)=>{
     conversationId=existing?.[0]?.id||null;
     if(!conversationId){const {data:created,error:ce}=await db.from("sandy_web_conversations").insert({customer_id:owner.customer}).select("id").single();if(ce||!created)return err("Could not create conversation",503);conversationId=created.id;}
    }
-   const {data:prior,error:pe}=await db.from("sandy_web_turns").select("question,response").eq("customer_id",owner.customer).eq("conversation_id",conversationId).eq("status","completed").order("created_at",{ascending:false}).limit(12);
+   const {data:prior,error:pe}=await db.from("sandy_web_turns").select("question,response").eq("customer_id",owner.customer).eq("conversation_id",conversationId).in("status",["completed","failed"]).not("response","is",null).order("created_at",{ascending:false}).limit(12);
    if(pe)return err("Conversation history unavailable",503);
    const {error:we}=await db.from("sandy_web_turns").insert({conversation_id:conversationId,customer_id:owner.customer,request_id:requestId,question,status:"pending"});
    if(we)return err(we.code==="23505"?"Question already submitted":"Could not save question",we.code==="23505"?409:503);
@@ -368,10 +369,17 @@ Deno.serve(async(req:Request)=>{
      }else data.response="I could not verify that the improvement was saved. I will not claim it was added.";
     }
    }
-   await db.from("sandy_web_turns").update({status:result.ok?"completed":"failed",response:result.ok?data.response:null}).eq("request_id",requestId).eq("customer_id",owner.customer);
+   const outcome=runtimeReplyOutcome(result.ok,data);
+   await db.from("sandy_web_turns").update({status:outcome.recordStatus,response:outcome.response}).eq("request_id",requestId).eq("customer_id",owner.customer);
+   EdgeRuntime.waitUntil((async()=>{
+     const {data:turn}=await db.from("sandy_web_turns").select("id").eq("request_id",requestId).eq("customer_id",owner.customer).maybeSingle();
+     if(!turn)return;
+     const response=await fetch(url+"/functions/v1/sandy-temporal-ingest",{method:"POST",headers:{"Authorization":"Bearer "+secret,"Content-Type":"application/json"},body:JSON.stringify({source_channel:"web",source_ref:turn.id,customer_id:owner.customer,limit:3}),signal:AbortSignal.timeout(25000)});
+     if(!response.ok)console.warn("web_temporal_ingest_http",response.status);
+   })().catch(e=>console.warn("web_temporal_ingest_error",String(e).slice(0,150))));
    await db.from("sandy_web_conversations").update({updated_at:new Date().toISOString()}).eq("id",conversationId).eq("customer_id",owner.customer);
-   if(!result.ok)return reply(result.status===409?409:502,{error:"Sandy could not complete your question",conversation_id:conversationId,task_id:data.task_id||null});
-   return reply(200,{ok:true,response:data.response,task_id:data.task_id,model:data.model,channel:"web",conversation_id:conversationId});
+   if(!outcome.delivered)return reply(result.status===409?409:502,{error:"Sandy could not complete your question",conversation_id:conversationId,task_id:data.task_id||null});
+   return reply(200,{ok:true,response:outcome.response,task_id:data.task_id,model:data.model,channel:"web",conversation_id:conversationId,...outcome.metadata});
   }
   if(action==="history"){
    const data=await history(owner.customer,ids,input);

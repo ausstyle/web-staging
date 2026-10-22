@@ -1,81 +1,83 @@
 import express from "express";
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { pathToFileURL } from "node:url";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { z } from "zod";
+import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { callTool, createApiInvoker, discover, describeTool, DiscoveryFailure, executionMetadataHeaders, isPublicAnonJwt } from "./api-adapter.mjs";
 
-const projectRef = process.env.SANDY_SUPABASE_PROJECT_REF || "zmqlyygzqoidkcwdysok";
-if (!/^[a-z0-9]{20}$/.test(projectRef)) throw new Error("Invalid Supabase project reference");
-const root = "https://" + projectRef + ".supabase.co/functions/v1/";
-const timeoutMs = 35_000;
-const app = express();
-app.disable("x-powered-by");
-app.use(express.json({ limit: "24kb" }));
-
-function suppliedBearer(req) {
-  const h = req.headers.authorization || "";
-  if (!/^Bearer [A-Za-z0-9._~-]+$/.test(h)) return null;
-  return h;
-}
-async function invoke(endpoint, bearer, body) {
-  const response = await fetch(root + endpoint, {
-    method: "POST",
-    headers: { authorization: bearer, "content-type": "application/json" },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(timeoutMs)
+export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
+  api = createApiInvoker(
+  process.env.SANDY_SUPABASE_PROJECT_REF || "zmqlyygzqoidkcwdysok",
+  fetch,
+  publicAnon
+) } = {}) {
+  const app = express();
+  app.disable("x-powered-by");
+  app.use(express.json({ limit: 1550000 }));
+  app.use((_req, res, next) => {
+    res.set("cache-control", "no-store");
+    res.set("x-content-type-options", "nosniff");
+    next();
   });
-  let payload;
-  try { payload = await response.json(); } catch { payload = { error: "invalid_backend_response" }; }
-  return { http_status: response.status, ...payload };
+  app.post("/mcp", async (req, res) => {
+    let userToken = (req.headers.authorization || "").match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
+    if (!userToken) return res.status(401).json({ error: "bearer_token_required" });
+    let apiKey = req.get("x-sandy-api-key");
+    if (apiKey === "") return res.status(401).json({ error: "api_key_context_required" });
+    if (userToken.startsWith("sandyop_") || userToken.startsWith("sandy_api_")) {
+      if (!isPublicAnonJwt(publicAnon)) return res.status(503).json({ error: "public_anon_jwt_required" });
+      if (apiKey !== undefined && apiKey !== userToken) return res.status(400).json({ error: "ambiguous_api_key_context" });
+      apiKey = userToken;
+      userToken = publicAnon;
+    }
+    const metadata = {
+      ...(req.get("x-sandy-approval-id") === undefined ? {} : { approvalId: req.get("x-sandy-approval-id") }),
+      ...(req.get("x-sandy-request-id") === undefined ? {} : { requestId: req.get("x-sandy-request-id") })
+    };
+    if (!executionMetadataHeaders(metadata)) return res.status(400).json({ error: "invalid_execution_metadata" });
+    // API discovery authenticates and authorizes the actual caller on every
+    // request. No user-specific catalogue or token survives this request.
+    let catalogue;
+    try {
+      catalogue = req.body?.method === "tools/call" && typeof req.body?.params?.name === "string"
+        ? await describeTool(api, userToken, req.body.params.name, apiKey, metadata)
+        : await discover(api, userToken, apiKey, metadata,
+          req.body?.method === "tools/list" ? req.body?.params?.cursor : undefined);
+    }
+    catch (error) {
+      const known = error instanceof DiscoveryFailure;
+      return res.status(known ? error.status : 503).json({
+        error: known ? error.code : "sandy_api_discovery_unavailable"
+      });
+    }
+    const server = new Server({ name: "sandy-engineering-mcp", version: "0.3.0" }, {
+      capabilities: { tools: {} }
+    });
+    server.setRequestHandler(ListToolsRequestSchema, request => {
+      return { tools: catalogue.tools, ...(catalogue.nextCursor ? { nextCursor: catalogue.nextCursor } : {}), _meta: catalogue.metadata };
+    });
+    server.setRequestHandler(CallToolRequestSchema, request =>
+      callTool(api, userToken, catalogue, request.params.name, request.params.arguments ?? {}, apiKey, metadata));
+    const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
+    try {
+      await server.connect(transport);
+      await transport.handleRequest(req, res, req.body);
+    } catch {
+      if (!res.headersSent) res.status(502).json({ error: "mcp_request_failed" });
+    } finally {
+      await transport.close().catch(() => {});
+      await server.close().catch(() => {});
+    }
+  });
+  app.get("/healthz", (_req, res) => res.status(200).json({ ok: true, service: "sandy-engineering-mcp" }));
+  app.get("/mcp", (_req, res) => res.status(405).json({ error: "post_required" }));
+  app.delete("/mcp", (_req, res) => res.status(405).json({ error: "stateless_session" }));
+  app.use((error, _req, res, _next) => res.status(error?.type === "entity.too.large" ? 413 : 400)
+    .json({ error: "invalid_request_body" }));
+  return app;
 }
-function outcome(result) {
-  return { isError: result.http_status >= 400 || result.error != null,
-    content: [{ type: "text", text: JSON.stringify(result) }] };
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const port = Number(process.env.PORT || 8787);
+  createApp().listen(port, "0.0.0.0", () => console.log("Sandy engineering MCP listening on " + port));
 }
-function registerTools(server, bearer) {
-  server.tool("sandy_model_route_readiness",
-    "Read model-route readiness and delegation policy. No routing changes.",
-    {}, async () => outcome(await invoke("sandy-engineering-test-api", bearer, {action:"readiness"})));
-  server.tool("sandy_run_model_canary",
-    "Run a bounded registered model canary with an existing Engineering Control change. No model promotion.",
-    {change_id:z.string().uuid(),model_id:z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]{1,90}$/),
-     case_key:z.enum(["simple_reasoning","research_uncertainty","document_summary","tool_call","routine_email"])},
-    async (args) => outcome(await invoke("sandy-engineering-test-api", bearer, {...args,action:"model_canary"})));
-  server.tool("sandy_video_install_preflight",
-    "Inspect the existing Sandy Video VM and installation prerequisites. Read-only; never installs software.",
-    {}, async () => outcome(await invoke("sandy-operations-mcp",bearer,{jsonrpc:"2.0",id:"video-preflight",method:"tools/call",params:{name:"operations_execute",arguments:{operation:"video.install.preflight",arguments:{}}}})));
-  server.tool("sandy_video_execution_preflight",
-    "Inspect OS Config execution readiness for Sandy Video. Read-only; does not approve or execute installation.",
-    {}, async () => outcome(await invoke("sandy-operations-mcp",bearer,{jsonrpc:"2.0",id:"video-execution-preflight",method:"tools/call",params:{name:"operations_execute",arguments:{operation:"video.execution.preflight",arguments:{}}}})));
-  server.tool("sandy_engineering_change_details",
-    "Read registered Engineering Control change and its tests, events, artifacts, and rollback requests.",
-    {change_id:z.string().uuid()},
-    async ({change_id}) => outcome(await invoke("sandy-engineering-control", bearer, {action:"get",change_id})));
-}
-app.post("/mcp", async (req,res) => {
-  const bearer=suppliedBearer(req);
-  if (!bearer) return res.status(401).json({error:"bearer_token_required"});
-  // Authenticate with Sandy before exposing any MCP tool definitions.
-  let preflight;
-  try { preflight = await invoke("sandy-engineering-test-api",bearer,{action:"readiness"}); }
-  catch { return res.status(503).json({error:"authorization_service_unavailable"}); }
-  if (preflight.http_status===401) return res.status(401).json({error:"invalid_identity"});
-  if (preflight.http_status!==200) return res.status(403).json({error:"engineering_admin_required"});
-  // Stateless transport: a fresh server/tool set per authenticated HTTP call.
-  const server = new McpServer({name:"sandy-engineering-mcp",version:"0.1.0"});
-  registerTools(server,bearer);
-  const transport=new StreamableHTTPServerTransport({sessionIdGenerator:undefined,enableJsonResponse:true});
-  try {
-    await server.connect(transport);
-    await transport.handleRequest(req,res,req.body);
-  } catch {
-    if(!res.headersSent) res.status(502).json({error:"mcp_request_failed"});
-  } finally {
-    await transport.close().catch(()=>{});
-    await server.close().catch(()=>{});
-  }
-});
-app.get("/healthz",(_req,res)=>res.status(200).json({ok:true,service:"sandy-engineering-mcp"}));
-app.get("/mcp",(_req,res)=>res.status(405).json({error:"post_required"}));
-app.delete("/mcp",(_req,res)=>res.status(405).json({error:"stateless_session"}));
-const port=Number(process.env.PORT||8787);
-app.listen(port,"0.0.0.0",()=>console.log("Sandy engineering MCP listening on "+port));

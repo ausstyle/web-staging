@@ -1,0 +1,1483 @@
+{
+  "scope": {
+    "provider": "supabase",
+    "project_ref": "zmqlyygzqoidkcwdysok",
+    "manifest": "customer_content_fragments_v1",
+    "complete_tenant_coverage": false,
+    "lifecycle": "content_export_only"
+  },
+  "scope_sha256": "f03c397e8c2ba3276d669cab643832a891899f6529274da2de1d6b52fd99c1ad",
+  "operations": [
+    {
+      "operation": "supabase.tenant.content.export",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "infrastructure:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "customer_content_fragments_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "customer_content_fragments_v1"
+          },
+          "manifest_sha256": {
+            "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+          },
+          "schema_sha256": {
+            "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+          },
+          "fragment_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "email_customers": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_customer_addresses": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_people": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_social_people": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_tasks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_agenda_companies": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_life_spaces": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_life_goals": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_knowledge_documents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_knowledge_entities": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_conversations": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_messages": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_preferences": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_quiet_hours": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_subscriptions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_inbox": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_whatsapp_media": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_graph_drafts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              }
+            },
+            "required": [
+              "email_customers",
+              "email_customer_addresses",
+              "sandy_people",
+              "sandy_social_people",
+              "sandy_tasks",
+              "sandy_agenda_companies",
+              "sandy_life_spaces",
+              "sandy_life_goals",
+              "sandy_knowledge_documents",
+              "sandy_knowledge_entities",
+              "email_conversations",
+              "email_messages",
+              "sandy_product_support_cases",
+              "sandy_product_support_comments",
+              "sandy_product_notification_preferences",
+              "sandy_product_notification_quiet_hours",
+              "sandy_product_notification_subscriptions",
+              "sandy_product_notification_inbox",
+              "sandy_product_whatsapp_media",
+              "sandy_product_graph_drafts"
+            ],
+            "additionalProperties": false
+          },
+          "total_plaintext_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 134217728
+          },
+          "artifact_index_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "erasure_supported": {
+            "const": false
+          },
+          "restore_supported": {
+            "const": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "fragment_count",
+          "row_counts",
+          "total_plaintext_bytes",
+          "artifact_index_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "erasure_supported",
+          "restore_supported"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "customer_content_fragments_v1",
+      "manifest_sha256": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99",
+      "schema_sha256": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e",
+      "complete_tenant_coverage": false,
+      "description": "Typed read-only parent/customer-content export fragments; private governed artifact lifecycle only, no customer record erasure or restore.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.content.export"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "customer_content_fragments_v1"
+              },
+              "manifest_sha256": {
+                "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+              },
+              "schema_sha256": {
+                "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+              },
+              "fragment_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2048
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "email_customers": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_customer_addresses": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_people": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_social_people": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_tasks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_agenda_companies": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_life_spaces": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_life_goals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_knowledge_documents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_knowledge_entities": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_conversations": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_messages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_preferences": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_quiet_hours": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_subscriptions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_inbox": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_whatsapp_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_graph_drafts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  }
+                },
+                "required": [
+                  "email_customers",
+                  "email_customer_addresses",
+                  "sandy_people",
+                  "sandy_social_people",
+                  "sandy_tasks",
+                  "sandy_agenda_companies",
+                  "sandy_life_spaces",
+                  "sandy_life_goals",
+                  "sandy_knowledge_documents",
+                  "sandy_knowledge_entities",
+                  "email_conversations",
+                  "email_messages",
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments",
+                  "sandy_product_notification_preferences",
+                  "sandy_product_notification_quiet_hours",
+                  "sandy_product_notification_subscriptions",
+                  "sandy_product_notification_inbox",
+                  "sandy_product_whatsapp_media",
+                  "sandy_product_graph_drafts"
+                ],
+                "additionalProperties": false
+              },
+              "total_plaintext_bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 134217728
+              },
+              "artifact_index_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "erasure_supported": {
+                "const": false
+              },
+              "restore_supported": {
+                "const": false
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "fragment_count",
+              "row_counts",
+              "total_plaintext_bytes",
+              "artifact_index_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "erasure_supported",
+              "restore_supported"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "cb194328885e9a6b0d84270234b4c03ec0417940d586887e76116e61283b1bc5"
+    },
+    {
+      "operation": "supabase.tenant.content.exports.get",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "infrastructure:read",
+      "is_mutation": false,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "snapshot_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "customer_content_fragments_v1"
+          },
+          "manifest_sha256": {
+            "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+          },
+          "schema_sha256": {
+            "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+          },
+          "fragment_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "email_customers": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_customer_addresses": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_people": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_social_people": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_tasks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_agenda_companies": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_life_spaces": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_life_goals": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_knowledge_documents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_knowledge_entities": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_conversations": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_messages": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_preferences": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_quiet_hours": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_subscriptions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_inbox": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_whatsapp_media": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_graph_drafts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              }
+            },
+            "required": [
+              "email_customers",
+              "email_customer_addresses",
+              "sandy_people",
+              "sandy_social_people",
+              "sandy_tasks",
+              "sandy_agenda_companies",
+              "sandy_life_spaces",
+              "sandy_life_goals",
+              "sandy_knowledge_documents",
+              "sandy_knowledge_entities",
+              "email_conversations",
+              "email_messages",
+              "sandy_product_support_cases",
+              "sandy_product_support_comments",
+              "sandy_product_notification_preferences",
+              "sandy_product_notification_quiet_hours",
+              "sandy_product_notification_subscriptions",
+              "sandy_product_notification_inbox",
+              "sandy_product_whatsapp_media",
+              "sandy_product_graph_drafts"
+            ],
+            "additionalProperties": false
+          },
+          "total_plaintext_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 134217728
+          },
+          "artifact_index_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "erasure_supported": {
+            "const": false
+          },
+          "restore_supported": {
+            "const": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "fragment_count",
+          "row_counts",
+          "total_plaintext_bytes",
+          "artifact_index_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "erasure_supported",
+          "restore_supported"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "customer_content_fragments_v1",
+      "manifest_sha256": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99",
+      "schema_sha256": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e",
+      "complete_tenant_coverage": false,
+      "description": "Typed read-only parent/customer-content export fragments; private governed artifact lifecycle only, no customer record erasure or restore.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.content.exports.get"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "customer_content_fragments_v1"
+              },
+              "manifest_sha256": {
+                "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+              },
+              "schema_sha256": {
+                "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+              },
+              "fragment_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2048
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "email_customers": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_customer_addresses": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_people": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_social_people": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_tasks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_agenda_companies": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_life_spaces": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_life_goals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_knowledge_documents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_knowledge_entities": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_conversations": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_messages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_preferences": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_quiet_hours": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_subscriptions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_inbox": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_whatsapp_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_graph_drafts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  }
+                },
+                "required": [
+                  "email_customers",
+                  "email_customer_addresses",
+                  "sandy_people",
+                  "sandy_social_people",
+                  "sandy_tasks",
+                  "sandy_agenda_companies",
+                  "sandy_life_spaces",
+                  "sandy_life_goals",
+                  "sandy_knowledge_documents",
+                  "sandy_knowledge_entities",
+                  "email_conversations",
+                  "email_messages",
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments",
+                  "sandy_product_notification_preferences",
+                  "sandy_product_notification_quiet_hours",
+                  "sandy_product_notification_subscriptions",
+                  "sandy_product_notification_inbox",
+                  "sandy_product_whatsapp_media",
+                  "sandy_product_graph_drafts"
+                ],
+                "additionalProperties": false
+              },
+              "total_plaintext_bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 134217728
+              },
+              "artifact_index_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "erasure_supported": {
+                "const": false
+              },
+              "restore_supported": {
+                "const": false
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "fragment_count",
+              "row_counts",
+              "total_plaintext_bytes",
+              "artifact_index_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "erasure_supported",
+              "restore_supported"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "5139820a40d35dc2dd383a4a64e86e13f6da651675a5415417b36d3203a68558"
+    },
+    {
+      "operation": "supabase.tenant.content.exports.purge",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "infrastructure:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirm_artifact_purge": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "snapshot_id",
+          "confirm_artifact_purge"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "snapshot_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "customer_content_fragments_v1"
+          },
+          "manifest_sha256": {
+            "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+          },
+          "schema_sha256": {
+            "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+          },
+          "fragment_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 2048
+          },
+          "row_counts": {
+            "type": "object",
+            "properties": {
+              "email_customers": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_customer_addresses": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_people": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_social_people": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_tasks": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_agenda_companies": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_life_spaces": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_life_goals": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_knowledge_documents": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_knowledge_entities": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_conversations": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "email_messages": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_support_cases": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_support_comments": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_preferences": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_quiet_hours": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_subscriptions": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_notification_inbox": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_whatsapp_media": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              },
+              "sandy_product_graph_drafts": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 50000
+              }
+            },
+            "required": [
+              "email_customers",
+              "email_customer_addresses",
+              "sandy_people",
+              "sandy_social_people",
+              "sandy_tasks",
+              "sandy_agenda_companies",
+              "sandy_life_spaces",
+              "sandy_life_goals",
+              "sandy_knowledge_documents",
+              "sandy_knowledge_entities",
+              "email_conversations",
+              "email_messages",
+              "sandy_product_support_cases",
+              "sandy_product_support_comments",
+              "sandy_product_notification_preferences",
+              "sandy_product_notification_quiet_hours",
+              "sandy_product_notification_subscriptions",
+              "sandy_product_notification_inbox",
+              "sandy_product_whatsapp_media",
+              "sandy_product_graph_drafts"
+            ],
+            "additionalProperties": false
+          },
+          "total_plaintext_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 134217728
+          },
+          "artifact_index_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "state": {
+            "enum": [
+              "exported",
+              "purged"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "erasure_supported": {
+            "const": false
+          },
+          "restore_supported": {
+            "const": false
+          }
+        },
+        "required": [
+          "snapshot_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "fragment_count",
+          "row_counts",
+          "total_plaintext_bytes",
+          "artifact_index_sha256",
+          "state",
+          "created_at",
+          "expires_at",
+          "complete_tenant_coverage",
+          "external_provider_assets_included",
+          "erasure_supported",
+          "restore_supported"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "customer_content_fragments_v1",
+      "manifest_sha256": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99",
+      "schema_sha256": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e",
+      "complete_tenant_coverage": false,
+      "description": "Typed read-only parent/customer-content export fragments; private governed artifact lifecycle only, no customer record erasure or restore.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.content.exports.purge"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "snapshot_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "customer_content_fragments_v1"
+              },
+              "manifest_sha256": {
+                "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+              },
+              "schema_sha256": {
+                "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+              },
+              "fragment_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2048
+              },
+              "row_counts": {
+                "type": "object",
+                "properties": {
+                  "email_customers": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_customer_addresses": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_people": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_social_people": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_tasks": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_agenda_companies": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_life_spaces": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_life_goals": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_knowledge_documents": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_knowledge_entities": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_conversations": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "email_messages": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_support_cases": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_support_comments": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_preferences": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_quiet_hours": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_subscriptions": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_notification_inbox": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_whatsapp_media": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  },
+                  "sandy_product_graph_drafts": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 50000
+                  }
+                },
+                "required": [
+                  "email_customers",
+                  "email_customer_addresses",
+                  "sandy_people",
+                  "sandy_social_people",
+                  "sandy_tasks",
+                  "sandy_agenda_companies",
+                  "sandy_life_spaces",
+                  "sandy_life_goals",
+                  "sandy_knowledge_documents",
+                  "sandy_knowledge_entities",
+                  "email_conversations",
+                  "email_messages",
+                  "sandy_product_support_cases",
+                  "sandy_product_support_comments",
+                  "sandy_product_notification_preferences",
+                  "sandy_product_notification_quiet_hours",
+                  "sandy_product_notification_subscriptions",
+                  "sandy_product_notification_inbox",
+                  "sandy_product_whatsapp_media",
+                  "sandy_product_graph_drafts"
+                ],
+                "additionalProperties": false
+              },
+              "total_plaintext_bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 134217728
+              },
+              "artifact_index_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "state": {
+                "enum": [
+                  "exported",
+                  "purged"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "erasure_supported": {
+                "const": false
+              },
+              "restore_supported": {
+                "const": false
+              }
+            },
+            "required": [
+              "snapshot_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "fragment_count",
+              "row_counts",
+              "total_plaintext_bytes",
+              "artifact_index_sha256",
+              "state",
+              "created_at",
+              "expires_at",
+              "complete_tenant_coverage",
+              "external_provider_assets_included",
+              "erasure_supported",
+              "restore_supported"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "0d22d6188401caa2477cbbb6409302bdb576d05089ce59ed1b58f735fa91d736"
+    }
+  ]
+}

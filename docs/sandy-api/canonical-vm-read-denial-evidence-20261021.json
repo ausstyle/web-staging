@@ -1,0 +1,61 @@
+{
+  "at_utc": "2026-10-21T19:59:16.960670+00:00",
+  "tests": [
+    {
+      "test": "different_VM",
+      "http_status": 200,
+      "MCP_is_error": true,
+      "API_status": 403,
+      "error": "engineering_vm_read_target_denied",
+      "executed": false,
+      "admission_id": null,
+      "passed": true
+    },
+    {
+      "test": "foreign_project",
+      "http_status": 200,
+      "MCP_is_error": true,
+      "API_status": 403,
+      "error": "engineering_vm_read_target_denied",
+      "executed": false,
+      "admission_id": null,
+      "passed": true
+    },
+    {
+      "test": "command_injection",
+      "http_status": 200,
+      "MCP_is_error": true,
+      "API_status": 403,
+      "error": "engineering_vm_read_target_denied",
+      "executed": false,
+      "admission_id": null,
+      "passed": true
+    },
+    {
+      "test": "optional_scope_revoked",
+      "http_status": 200,
+      "MCP_is_error": true,
+      "API_status": 403,
+      "error": "engineering_operation_scope_denied",
+      "executed": false,
+      "admission_id": null,
+      "passed": true
+    },
+    {
+      "test": "revocation_preserves_original_six_tools",
+      "http_status": 200,
+      "tool_count": 6,
+      "passed": true
+    },
+    {
+      "test": "exact_optional_scope_restored",
+      "http_status": 200,
+      "tool_count": 16,
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "provider_requests_from_denied_calls": 0,
+  "provider_request_count_basis": "All denied calls fail before admission; no provider executor invoked.",
+  "standing_fixture_operations_changed": false
+}

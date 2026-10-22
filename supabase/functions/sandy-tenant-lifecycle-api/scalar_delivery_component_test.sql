@@ -1,0 +1,9 @@
+-- Exact metadata/ACL assertions only; always rolled back by the composed fixture.
+BEGIN;
+DO $test$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='supabase.tenant.consent.set' AND error_contract->>'contract_sha256'='b0da54180431c24649bcca1e135bc22e05cf5cd96c9f589cf8505b4b60a7a202' AND jsonb_array_length(input_schema#>'{properties,operations,items,enum}')=57 AND input_schema#>'{properties,operations,items,enum}' ? 'supabase.tenant.manifests.export' AND NOT api_exposed AND NOT ai_exposed AND NOT verified) THEN RAISE EXCEPTION 'scalar_consent_revision_invalid';END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='supabase.tenant.exports.download' AND error_contract->>'contract_sha256'='4c0e4b39c528fd070031269036968d6f1481233655cce47f8d6d7750b6fb9f8f' AND jsonb_array_length(output_schema#>'{properties,export,oneOf}')=2 AND output_schema#>>'{properties,export,oneOf,0,properties,manifest,const}'='application_leaf_links_v1' AND output_schema#>>'{properties,export,oneOf,1,properties,manifest,const}'='application_scalar_links_v1' AND error_contract->>'requires_real_user_session'='true' AND error_contract->>'api_key_delegable'='false' AND NOT api_exposed AND NOT ai_exposed AND NOT verified) THEN RAISE EXCEPTION 'scalar_download_revision_invalid';END IF;
+ IF NOT has_function_privilege('authenticated','public.sandy_tenant_export_download(uuid)','EXECUTE') OR has_function_privilege('service_role','public.sandy_tenant_export_download(uuid)','EXECUTE') THEN RAISE EXCEPTION 'scalar_delivery_acl_changed';END IF;
+END $test$;
+SELECT jsonb_build_object('passed',true,'layer','administrative_database_component','real_auth_session_tested',false,'provider_calls',0,'checks',jsonb_build_array('exact57_operation_consent_revision','legacy_and_scalar_typed_download_union','closed_flags_preserved','actual_user_download_acl_preserved')) AS evidence;
+ROLLBACK;

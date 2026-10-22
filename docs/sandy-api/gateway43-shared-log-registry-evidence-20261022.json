@@ -1,0 +1,56 @@
+{
+  "registry_readback_matches": true,
+  "verified_flags_unchanged": true,
+  "proof": {
+    "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
+    "gateway_deploy_version": 43,
+    "actual_MCP_acceptance": {
+      "observed_at": "2026-10-21T23:29:09.159Z",
+      "passed": true,
+      "credentials_recorded": false,
+      "personal_Controller_token_used": false,
+      "service_key_used_as_customer_session": false,
+      "target": "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-api-mcp",
+      "normal_Auth_user_verified": true,
+      "controller_memberships": 0,
+      "token_expiry_utc": "2026-10-22T00:29:11.000Z",
+      "session_id": "0c125514-e7af-407f-b848-5e3823460600",
+      "API_REST_discovery_pages": 4,
+      "API_REST_operations_observed": 16,
+      "API_REST_description_verified": true,
+      "duplicate_page_parameter_status": 400,
+      "out_of_scope_description_status": 403,
+      "server_info": {
+        "name": "sandy-api-mcp",
+        "version": "0.3.0"
+      },
+      "tools_discovered": 16,
+      "operation": "supabase.logs.query",
+      "provider_log_query_verified": true,
+      "provider_http_status": 200,
+      "admission_id": "bedbfd10-ac95-40aa-8451-6fd86bcaf3f7",
+      "matching_fixture_markers": 0,
+      "log_event_delivery_verified": false,
+      "wrong_log_source_API_status": 403,
+      "wrong_source_denied_before_admission": true,
+      "VM_diagnostics_performed": false,
+      "remote_command_executed": false,
+      "normal_Auth_session_retired": true
+    },
+    "independent_admission": [
+      {
+        "id": "bedbfd10-ac95-40aa-8451-6fd86bcaf3f7",
+        "operation": "supabase.logs.query",
+        "state": "succeeded",
+        "provider_http_status": 200
+      }
+    ],
+    "independent_session_retirement": [
+      {
+        "revoked": true,
+        "auth_session_removed": true
+      }
+    ],
+    "no_VM_diagnostics_performed": true
+  }
+}

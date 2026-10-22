@@ -1,0 +1,147 @@
+{
+  "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+  "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+  "standing_declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
+  "status": "blocked_by_unpersisted_owner_approval_and_production_drift",
+  "tests": {
+    "composed": 214,
+    "isolated_postgresql_assertions": 31,
+    "release_transport": 5
+  },
+  "approval_recorded": false,
+  "grant_active": false,
+  "owner_browser_required_after_approval": false,
+  "owner_approval_event_manufactured": false,
+  "workload_self_grant_allowed": false,
+  "initial_grant": {
+    "version": "amendment-b-standing-v1",
+    "identity_authorization_ref": "engineering_change:ca1e72bb-b604-4f5e-b259-acf30ca830d8",
+    "repository": "ausstyle/web-staging",
+    "project": "zmqlyygzqoidkcwdysok",
+    "environment": "canary",
+    "branch": "engineering/sandy-unified-intelligence-20261021",
+    "targets": [
+      "sandy-agent-runtime-v4",
+      "sandy-workspace"
+    ],
+    "risk_ceiling": "normal",
+    "max_releases_per_day": 10,
+    "maximum_cost_units": 0,
+    "baseline": "approved_source_commit",
+    "workflow": "approved_workflow_sha256",
+    "expiry_mode": "until_revoked",
+    "identity_binding_sha256": "8f864a36dfdfdadebe1817ede42d2f26792d600737ff0405217c655583aeeede"
+  },
+  "protected_owner_repair": {
+    "change_id": "e6c9fb87-db2c-4ed7-ac63-bbdb60aad127",
+    "genuine_enabled_owner_audit_verified": true,
+    "workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801",
+    "independent_ci": "passed",
+    "deployment": "waiting_at_existing_environment_protection",
+    "review_api_http": 403,
+    "environment_update_api_http": 403
+  },
+  "actual_current_versions": {
+    "sandy-agent-runtime-v4": 30,
+    "sandy-workspace": 46,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 15,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-examiner-thread-review": 23,
+    "email-ai-generate-draft": 106,
+    "sandy-email-runtime-canary": 17,
+    "sandy-whatsapp-webhook": 162,
+    "sandy-voice-account-context": 19,
+    "sandy-voice-call": 38
+  },
+  "v4_test_repeated": true,
+  "customer_records_modified": false,
+  "standing_policy_provisioning": "The protected Management installer verifies the real owner approval over source, manifest and declaration, applies only that declaration, and records its actual administrative actor separately. It neither mints an owner session nor creates an owner approval event.",
+  "remaining_production_acceptance": [
+    "Genuine owner approval of this separate exact Amendment B change through the existing Controller button",
+    "Existing GitHub integration permission to satisfy or legitimately remove the repository-owned environment gate",
+    "Pinned prerequisite repair, Amendment B deployment, actual grant and normal-session renewal verification",
+    "Two real unattended routine releases and mandatory denial/rollback tests",
+    "Remaining SANDY-ENG-0001 four-channel customer acceptance"
+  ],
+  "preserved_newer_runtime": {
+    "version": 15,
+    "bundle_sha256": "f7fafb9b17bf2bf5110cca3ddb3ca04d1af02944b1646e6db8f98ee227c92709",
+    "newer_lifecycle_recovery_routing_merged_without_deployment": true,
+    "source_reconciliation_captured_privately": true
+  },
+  "controller_publication": {
+    "commit": "54d6d262c9709c33adad139c917241392a68f585",
+    "pages_build_status": "built",
+    "pages_build_checked_at": "2026-10-22T02:35:58Z",
+    "url": "https://ausstyle.github.io/web-staging/sandy/controller/#changes",
+    "actual_owner_registration_observed": true,
+    "registration_occurs_in_real_owner_session_when_panel_opens": true,
+    "normal_owner_click_not_yet_exercised": "Owner reports approval; database contains registration only, not a matching approval event.",
+    "direct_asset_http_from_runner": "blocked by runner network policy; GitHub Pages build independently verified"
+  },
+  "independent_ci": {
+    "source_commit": "1d2dcf3c989c09b30276793de0baba5413758703",
+    "regression": "https://github.com/ausstyle/web-staging/actions/runs/39759643452",
+    "runtime_release_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643565",
+    "immutable_artifact_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759646579",
+    "api_contract_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643659",
+    "all_completed_successfully": true,
+    "deployment": "skipped_ci_only"
+  },
+  "latest_production_evidence": "p0-production-verification-20261022.json",
+  "actual_owner_registration_event": 100,
+  "actual_change_id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+  "owner_approval_events": 0,
+  "read_only_production_preflight": {
+    "change_id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+    "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+    "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+    "read_only": true,
+    "ready": false,
+    "blockers": [
+      {
+        "kind": "genuine_pinned_owner_approval_not_recorded"
+      },
+      {
+        "kind": "migration_version_occupied_by_other_source",
+        "version": "20261022010000",
+        "existing_name": "sandy_customer_read_projections",
+        "expected_sql_sha256": "a17103757651e9c541867f224c04baab1e8db75bce00ebc75e262bd4350f1d49"
+      },
+      {
+        "kind": "migration_version_occupied_by_other_source",
+        "version": "20261022020000",
+        "existing_name": "sandy_customer_read_admissions",
+        "expected_sql_sha256": "d01ad5f297ca894f2892b5a21dff3b13a391b7426294d38010f9d1f5f58cfd17"
+      },
+      {
+        "kind": "migration_version_occupied_by_other_source",
+        "version": "20261022030000",
+        "existing_name": "sandy_github_verified_receipts",
+        "expected_sql_sha256": "c92f1ea27a40cd892561f42bfaf602d7151cef8b7c278708cce5fbe74571ef70"
+      },
+      {
+        "kind": "source_prerequisite_requires_reconciliation",
+        "function": "sandy-engineering-control",
+        "expected_version": 52,
+        "actual_version": 51
+      },
+      {
+        "kind": "source_prerequisite_requires_reconciliation",
+        "function": "sandy-engineering-runtime",
+        "expected_version": 14,
+        "actual_version": 15
+      }
+    ],
+    "deployment_started": false,
+    "approval_written": false
+  },
+  "github_mergeability": {
+    "base": "bc672937eb2230e1076e2bc35b93bf8415177ddf",
+    "source_conflicts_resolved": true,
+    "force_push": false,
+    "ci_results": "See latest PR checks; historical failed checks retained."
+  },
+  "v4_test_repetition_detail": "The existing full-cycle Examiner included its built-in task overview/overdue case. It is recorded as repeated coverage and is not new overdue acceptance. The dedicated corrected V4 probe was not rerun."
+}

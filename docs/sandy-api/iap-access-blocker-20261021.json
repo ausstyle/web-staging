@@ -1,0 +1,283 @@
+{
+  "recorded_at": "2026-10-21T19:11:38.245330+00:00",
+  "principal": "sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com",
+  "project": "elaborate-haven-511518-a5",
+  "project_number": "1030223524306",
+  "zone": "europe-west1-b",
+  "zone_numeric_id": "2101",
+  "diagnosis": {
+    "observed_at": "2026-10-21T19:08:51.364053+00:00",
+    "backend_version": 66,
+    "http_status": 200,
+    "administrative_transport_audit_id": 79,
+    "customer_MCP_proof": false,
+    "result": {
+      "principal": "sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com",
+      "project": "elaborate-haven-511518-a5",
+      "project_number": "1030223524306",
+      "zone": "europe-west1-b",
+      "zone_id": "2101",
+      "targets": [
+        {
+          "vm_name": "sandy-video",
+          "instance_id": "6831598645020395570",
+          "zone_id": "2101",
+          "iap_resource": "projects/1030223524306/iap_tunnel/zones/europe-west1-b/instances/6831598645020395570",
+          "port": 22,
+          "requested_permission": "iap.tunnelInstances.accessViaIAP",
+          "policy": {
+            "read_succeeded": false,
+            "error": {
+              "http_status": 403,
+              "reason": null,
+              "denied_permission": null
+            }
+          },
+          "iap_permissions": {
+            "error": {
+              "http_status": 403,
+              "reason": null,
+              "denied_permission": null
+            }
+          },
+          "compute_permissions": {
+            "granted": [
+              "compute.instances.get",
+              "compute.instances.osLogin",
+              "compute.instances.setIamPolicy"
+            ]
+          }
+        },
+        {
+          "vm_name": "sandy-windows",
+          "instance_id": "8120150462304566315",
+          "zone_id": "2101",
+          "iap_resource": "projects/1030223524306/iap_tunnel/zones/europe-west1-b/instances/8120150462304566315",
+          "port": 5986,
+          "requested_permission": "iap.tunnelInstances.accessViaIAP",
+          "policy": {
+            "read_succeeded": false,
+            "error": {
+              "http_status": 403,
+              "reason": null,
+              "denied_permission": null
+            }
+          },
+          "iap_permissions": {
+            "error": {
+              "http_status": 403,
+              "reason": null,
+              "denied_permission": null
+            }
+          },
+          "compute_permissions": {
+            "granted": [
+              "compute.instances.get",
+              "compute.instances.osLogin",
+              "compute.instances.setIamPolicy"
+            ]
+          }
+        }
+      ],
+      "audit": {
+        "entries": []
+      },
+      "windows": {
+        "vm_running": true,
+        "interactive_logon_registration": true,
+        "script_handles_powershell_command": false,
+        "guest_reporting": [
+          {
+            "key": "agent",
+            "status": "connected",
+            "time": "2026-10-19T23:43:45Z"
+          },
+          {
+            "key": "agent_setup",
+            "status": "installed",
+            "time": "2026-10-19T23:46:12.1698889Z"
+          },
+          {
+            "key": "setup",
+            "status": "completed",
+            "time": "2026-10-13T19:47:45.9853839Z"
+          }
+        ]
+      },
+      "policy_changes": 0,
+      "networking_changes": 0,
+      "commands_executed": 0,
+      "tunnel_attempts": 0,
+      "MCP_acceptance": false
+    }
+  },
+  "relay_close_evidence": {
+    "file": "computer-access-acceptance-20261021.json",
+    "actual_prior_close_code": 4033,
+    "documented_meaning": "NOT_AUTHORIZED",
+    "required_permission": "iap.tunnelInstances.accessViaIAP",
+    "source": "https://raw.githubusercontent.com/GoogleCloudPlatform/iap-desktop/02ddbe7bccd2ecc976ab7f1d3251e62da066b052/sources/Google.Solutions.Iap/Protocol/SshRelayConstants.cs",
+    "source_sha256": "13b0aa9f78b7cb045294e616bfafd8bc508cd28470e6fd769bddc0130afd1e35",
+    "new_tunnel_attempts_this_session": 0
+  },
+  "authorized_administration_path": {
+    "used": "existing audited Vault worker transport to the private provisioning backend, then normal machine Auth + WIF + scoped service-account impersonation",
+    "available_GCP_admin_outbound_identities": 0,
+    "IAP_policy_read": "HTTP403 on both fixed VM IAP resources",
+    "IAP_permission_inspection": "HTTP403 on both fixed VM IAP resources",
+    "Compute_instance_policy_permission_observed": true,
+    "Compute_policy_permission_is_not_IAP_policy_authority": true,
+    "blind_policy_replace_attempted": false,
+    "IAM_change_applied": false
+  },
+  "proposed_minimal_change": {
+    "requires_existing_authorized_IAP_policy_operator": true,
+    "role": "roles/iap.tunnelResourceAccessor",
+    "member": "serviceAccount:sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com",
+    "resource_level": "individual IAP TunnelInstance, not project-wide",
+    "bindings": [
+      {
+        "iap_resource": "projects/1030223524306/iap_tunnel/zones/europe-west1-b/instances/6831598645020395570",
+        "vm_name": "sandy-video",
+        "vm_instance_id": "6831598645020395570",
+        "condition": {
+          "title": "sandy-approved-ssh",
+          "expression": "destination.port == 22"
+        }
+      },
+      {
+        "iap_resource": "projects/1030223524306/iap_tunnel/zones/europe-west1-b/instances/8120150462304566315",
+        "vm_name": "sandy-windows",
+        "vm_instance_id": "8120150462304566315",
+        "condition": {
+          "title": "sandy-approved-winrm",
+          "expression": "destination.port == 5986"
+        }
+      }
+    ],
+    "apply_preconditions": [
+      "Read each current IAP policy at version3 and preserve every unrelated binding, condition and etag",
+      "Determine whether a missing binding, an existing condition or another policy causes the denial; 4033 alone does not identify which",
+      "If the binding is missing, add only this member/role and destination-port condition using the current etag",
+      "If a policy condition or perimeter denies access, seek the applicable operator decision rather than weakening it",
+      "Do not grant IAP Policy Admin, project Editor or OS Admin to Sandy merely to repair tunnel use"
+    ],
+    "operator_permissions": [
+      "iap.tunnelInstances.getIamPolicy",
+      "iap.tunnelInstances.setIamPolicy"
+    ],
+    "rollback": "Remove only a binding/membership actually added by this change using a fresh policy/etag; preserve existing principals/conditions",
+    "official_operator_guide": "https://raw.githubusercontent.com/GoogleCloudPlatform/iap-desktop/02ddbe7bccd2ecc976ab7f1d3251e62da066b052/doc/site/sources/docs/setup-iap.md",
+    "guide_sha256": "98c1dd96397c87638b7f998d7de346ce2eb1fbfd803a120100c9b2f9c773a8cd"
+  },
+  "windows_findings": {
+    "vm_running": true,
+    "interactive_logon_registration": true,
+    "script_handles_powershell_command": false,
+    "guest_reporting": [
+      {
+        "key": "agent",
+        "status": "connected",
+        "time": "2026-10-19T23:43:45Z"
+      },
+      {
+        "key": "agent_setup",
+        "status": "installed",
+        "time": "2026-10-19T23:46:12.1698889Z"
+      },
+      {
+        "key": "setup",
+        "status": "completed",
+        "time": "2026-10-13T19:47:45.9853839Z"
+      }
+    ]
+  },
+  "windows_limits": [
+    "Interactive-logon registration and old guest reports are observed; the current process/session cause is unobservable without authorized OS access",
+    "The metadata bootstrap has no PowerShell command handler; it is not proof of the contents of an already updated on-disk agent",
+    "No reboot, password reset, autologon change, public IP, firewall change or guest reinstall was attempted",
+    "WinRM listener and Windows credentials remain unverified behind IAP denial"
+  ],
+  "production_releases": [
+    {
+      "backend_version": 64,
+      "source_commit": "6f6d80480ba806ad365ab533a9130cc6c699e33f",
+      "status": "ACTIVE",
+      "source_files": 16,
+      "all_uploaded_sources_accounted_for": true,
+      "readback_sha256": "aba6f3a22afde0452ad58b7658eaff14e85f066ffac9060edec890930fc32a8e"
+    },
+    {
+      "backend_version": 65,
+      "source_commit": "945e1322d19564ad0402d3276ea3e4cd8ca6a6dd",
+      "status": "ACTIVE",
+      "source_files": 16,
+      "all_uploaded_sources_accounted_for": true,
+      "readback_sha256": "5921c2cf0b493cda5d50df1717a0ec90195770990ae2af6d4875951164936670"
+    },
+    {
+      "backend_version": 66,
+      "source_commit": "1999fe267bac5e8dad5c1d33fb7f243c23756bff",
+      "status": "ACTIVE",
+      "source_files": 16,
+      "all_uploaded_sources_accounted_for": true,
+      "readback_sha256": "4ab7a96c866d60079d1698344fc382b8fe27cf05030bae5fdedd000899de4a79"
+    }
+  ],
+  "acceptance": {
+    "Linux_MCP_whoami": false,
+    "Windows_MCP_execution": false,
+    "graphical_browser_MCP": false,
+    "remote_commands_executed_this_session": 0,
+    "remaining_application_activation": "Governed native VM contracts remain unapplied/unexposed pending legitimate target enrollment, scoped authorization and actual acceptance"
+  },
+  "wider_API_MCP_regression": {
+    "observed_at": "2026-10-21T19:03:48.506175+00:00",
+    "operation": "supabase.logs.query",
+    "http_status": 200,
+    "MCP_is_error": false,
+    "API_status": 200,
+    "executed": true,
+    "provider_http_status": 200,
+    "admission_id": "5eaba260-b43f-402c-b40a-565a5bbf5d04",
+    "entry_count": 1,
+    "fixture_marker_observed": true,
+    "project_logs_filtered_to_fixture": true,
+    "personal_Controller_token_used": false,
+    "response_sha256": "298c32230443a36db4d9e823584787781229bdc66f1042b2fffb393489beea4e",
+    "request_id": "a8e39c80-fa9a-4810-9b05-797bb71ffa74",
+    "arguments": {
+      "source": "function_logs",
+      "start": "2026-10-21T11:21:53Z",
+      "end": "2026-10-21T11:21:55Z",
+      "limit": 100
+    },
+    "result_keys": [
+      "ok",
+      "operation",
+      "contract_version",
+      "provider",
+      "request_state",
+      "executed",
+      "admission_id",
+      "provider_http_status",
+      "provider_request_id",
+      "result",
+      "possibly_truncated",
+      "truncated"
+    ],
+    "provider_result_keys": [
+      "entries",
+      "project_ref",
+      "next_query_before",
+      "redaction_policy",
+      "query_dialect"
+    ],
+    "scope": "existing owner-authorized fixture logs; not whole-family verification",
+    "passed": true
+  },
+  "registry_verification_flags_changed": false,
+  "original_family_counts_changed": false,
+  "credentials_exposed": false,
+  "resource_note": "Named zone matches documented IAP resource references; numeric zone2101 is observed Compute metadata, not a claimed access repair. Both numeric and named policy probes returned403. No least-privilege IAM repair could safely be applied with unreadable IAP policies."
+}

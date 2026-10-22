@@ -1,0 +1,54 @@
+{
+  "at_utc": "2026-10-21T19:57:41.380993+00:00",
+  "gateway_version": 33,
+  "runtime_version": 5,
+  "provider_engine_version": 12,
+  "source_commit": "373989e",
+  "source_owner_approved_change_id": "232d8d7e-ac98-4669-9907-93302303a7c1",
+  "controller_memberships": 0,
+  "personal_controller_token_used": false,
+  "discovery_http": 200,
+  "discovered_tools": 16,
+  "all_discovered_input_schemas_valid": true,
+  "canonical_read_discovered": true,
+  "operation": "gcp.compute.instances.get",
+  "arguments": {
+    "path": {
+      "instance": "sandy-video"
+    }
+  },
+  "jsonrpc_request_id": "b9a3363b-cfa6-421d-a344-6a4eaa0ffbc8",
+  "http_status": 200,
+  "MCP_is_error": false,
+  "API_status": 200,
+  "executed": true,
+  "admission_id": "9cc15888-c779-4677-be38-02d2626203ad",
+  "request_id": "c5fec2c9-0f15-4c7d-8de2-6e461eb29a63",
+  "provider_http_status": 200,
+  "provider_instance_id": "6831598645020395570",
+  "provider_instance_name": "sandy-video",
+  "provider_instance_status": "RUNNING",
+  "provider_result_keys": [
+    "name",
+    "id",
+    "kind",
+    "selfLink",
+    "status",
+    "zone",
+    "creationTimestamp",
+    "labels",
+    "machineType",
+    "serviceAccounts",
+    "disks",
+    "fingerprint"
+  ],
+  "response_sha256": "a02cceee0c04662c507c8872b33d41e004a5d03a1465f3476557c57281d88278",
+  "error": null,
+  "passed": true,
+  "durable_receipt_independently_read_back": {
+    "id": "9cc15888-c779-4677-be38-02d2626203ad",
+    "operation": "gcp.compute.instances.get",
+    "state": "succeeded",
+    "provider_http_status": 200
+  }
+}

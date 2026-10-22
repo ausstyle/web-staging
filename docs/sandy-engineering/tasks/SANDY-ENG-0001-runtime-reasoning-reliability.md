@@ -1,11 +1,11 @@
 # SANDY-ENG-0001 — Chat reasoning and agent runtime reliability
 
-Version: 1.1 — scope ownership and delivery coordination, 21 October 2026  
+Version: 1.2 — explicit autonomous infrastructure acceptance, 22 October 2026
 Status: DRAFT  
 Priority: P0  
 Owner: Sandy Engineering / Codex  
-Master Scope: sections 4–7, 10, 12–13, 17–19 and v1.1 amendment AC-01, AC-02, AC-05, AC-10  
-API Scope: #1–11 and #160, plus relevant customer-operation families
+Master Scope: sections 4–7, 10, 12–13, 17–19 and v1.1 amendment AC-01, AC-02, AC-03, AC-05, AC-08, AC-10; v1.2 Amendment B
+API Scope: #1–11, #17, #22, #26–43, #47–52, #67–68, #74 and #160, plus relevant customer-operation families
 
 ## Objective
 Make Sandy's chat, reasoning, model routing, context retrieval, tool selection, execution verification and follow-through trustworthy across web, email, WhatsApp and voice. Preserve working V1 services.
@@ -57,3 +57,32 @@ Release gates remain the Master pilot targets plus 100% critical tenant/permissi
 
 ## Status and evidence
 This is a design/acceptance specification, not proof of implementation. Codex must expand the as-built inventory and fixture evidence before changing live runtime paths. Use the [acceptance evidence template](../templates/acceptance-evidence.md) for baseline, source revision, deployment, actual outcomes and rollback. DRAFT is not a request to repeat planning indefinitely: begin authorized inspection and bounded corrective work, while recording review and release gates truthfully.
+
+
+## Existing obligation — autonomous infrastructure and server administration
+
+Autonomous Google Cloud infrastructure and Linux/Windows server administration is explicitly included in this existing workstream. Sandy must provision, configure, install approved software, deploy, monitor, diagnose, repair and roll back infrastructure within preauthorised resource, operation-class, risk and cost boundaries. This clarifies the existing API families and Master Scope AC-03/AC-08 and Amendment B; it does not create a new project or confer new provider permissions.
+
+Routine actions inside a current standing delegation proceed without individual owner approval. Independently enforced controls must validate authenticated identity, tenant, target project/VM, permitted command or artifact, risk, budget/quota, expiry and revocation at dispatch and after waits. The acting workload cannot establish or enlarge its own authority. IAM/security-policy expansion, destructive production changes and unbounded costs require a separately established restricted policy or fail closed. Provider IAM and branch/environment protections remain effective. Record policy authorization rather than inventing owner sign-off.
+
+0001 owns the end-to-end reasoning and truthful-outcome acceptance below. [0005](SANDY-ENG-0005-api-mcp-engineering-delivery.md) owns reusable provider adapters, API/MCP contracts, scoped authorization, authenticated computer access and release/recovery. 0003 owns orchestration, 0004 durable execution/receipts and 0002 the isolated computer experience; 0011 consumes that computer layer for browser skills. Reuse their implementations and evidence, without another executor, queue, registry expansion or software-specific MCP operation.
+
+### Infrastructure acceptance cohort (extends the existing evaluation program)
+
+| ID | Required real outcome and independent evidence |
+| --- | --- |
+| INF-01 | On an explicitly authorised test resource and within existing budget policy, provision or reconcile GCP VM/disk/network configuration; read back provider IDs and intended state; repeat the same idempotent request without creating duplicates. Verify ownership and pre-existing customer resources are preserved. |
+| INF-02 | Through authenticated MCP → Sandy API → supported SSH/OS Login/IAP, execute Linux `whoami`, return actual guest identity, stdout/stderr and exit code, then disconnect. Sandy runtime uses the same API boundary directly. Prefer permitted private connectivity; verify host identity and target-bound tunnel authority. |
+| INF-03 | Repeat harmless identity execution on Windows through supported authenticated PowerShell/WinRM or a properly enrolled agent; verify output/exit code, host identity, current agent generation/heartbeat where used and session termination. A registered handler or stale heartbeat is not a pass. |
+| INF-04 | On approved Linux and Windows canaries, transfer a checksummed fixture, install/configure approved software, deploy and manage a test service, inspect logs/health, induce a bounded reversible fault, repair it and independently verify service recovery. Preserve configuration/package provenance and capture a compatible rollback artifact before mutation. |
+| INF-05 | Roll back the canary deployment/configuration and verify the expected prior health and file/service state. Exercise interruption/resume, cancellation, timeout and uncertain provider outcomes through existing durable jobs; reconcile before retry and prove no duplicate mutation. |
+| INF-06 | Exercise an isolated graphical/browser session with a harmless permitted interaction and observable screenshot/artifact; verify resume/termination and tenant separation. This uses the generic computer layer, with no video deployment dependency. |
+| INF-07 | Demonstrate routine delegated lifecycle steps without approval clicks, plus wrong-target/tenant, expired/revoked grant, forbidden command/artifact, source mismatch, over-budget and unauthorised privilege expansion denials. An independent deterministic policy/verifier gates dispatch and completion; model judgement alone cannot authorize or certify an effect. |
+
+For each case, retain source revision, deployed handler version, caller/grant version, target, input digest, job/admission/receipt IDs, provider observation, redacted output, exit code where relevant and recovery result. Track implemented contracts, deployment, MCP execution, authorised dispatch and functional verification separately. Reuse still-valid receipts and existing API-T09 tests rather than rerunning completed work; new lifecycle assertions require their own real evidence. Accepted jobs and API exposure flags do not satisfy these cases.
+
+### Known gaps and dependency handling (22 October 2026)
+
+The current evidence remains [implementation status](../../sandy-api/implementation-status.md) and the [161-family matrix](../../sandy-api/requirement-coverage-current.json). Generic Linux/Windows/graphical access acceptance remains **0/3**; INF-01–07 are requirements, not completed tests. The currently deployed engineering GCP delegation permits metadata reads, not unrestricted infrastructure mutation or server administration. A legitimate administrator must establish any additional bounded operation-class/resource/risk/cost grant; this clarification cannot self-expand it.
+
+Candidate SSH/IAP/WinRM code is not a verified administration platform. Remaining software includes production transport activation, file/package/service lifecycle, guest enrollment and isolated graphical session lifecycle. IAP error **4033 NOT_AUTHORIZED**, target policy reads HTTP 403 and stale Windows heartbeat are distinct access dependencies; see the existing [IAP blocker](../../sandy-api/iap-access-blocker-20261021.md). Apply only legitimately authorised minimal target/port policy repairs; do not add public IPs, disable host controls or repeatedly probe unchanged denials. Provider entitlement, authority, implementation and functional failures remain separate. Continue independent API/provider work while these dependencies are unresolved.

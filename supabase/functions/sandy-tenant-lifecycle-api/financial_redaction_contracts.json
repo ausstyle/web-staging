@@ -1,0 +1,2086 @@
+{
+  "scope": {
+    "provider": "supabase",
+    "project_ref": "zmqlyygzqoidkcwdysok",
+    "manifest": "financial_subject_text_redaction_v1",
+    "financial_records_preserved": true,
+    "complete_tenant_coverage": false
+  },
+  "scope_sha256": "b686b66a7f00b944a9aca973b3cc1e7d2d5e322b429246006d9662da011e17c8",
+  "operations": [
+    {
+      "operation": "supabase.tenant.financial.redaction.policies.create",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "system:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "resource": {
+            "enum": [
+              "sandy_commerce_accounts",
+              "sandy_commerce_entries",
+              "sandy_commerce_entry_lines",
+              "sandy_commerce_statement_lines",
+              "sandy_commerce_invoices",
+              "sandy_commerce_entitlements"
+            ]
+          },
+          "record_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1,
+            "maxItems": 1000,
+            "uniqueItems": true
+          },
+          "source_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "enum": [
+              "subject_data_request",
+              "approved_retention_schedule"
+            ]
+          },
+          "policy_reference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_retained_financial_records": {
+            "const": true
+          },
+          "acknowledge_retained_control_copies": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "resource",
+          "record_ids",
+          "source_cutoff",
+          "effective_at",
+          "expires_at",
+          "basis",
+          "policy_reference",
+          "acknowledge_retained_financial_records",
+          "acknowledge_retained_control_copies"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "schema_sha256": {
+            "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+          },
+          "resource": {
+            "enum": [
+              "sandy_commerce_accounts",
+              "sandy_commerce_entries",
+              "sandy_commerce_entry_lines",
+              "sandy_commerce_statement_lines",
+              "sandy_commerce_invoices",
+              "sandy_commerce_entitlements"
+            ]
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "enum": [
+              "subject_data_request",
+              "approved_retention_schedule"
+            ]
+          },
+          "policy_reference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_reference_verified": {
+            "const": false
+          },
+          "state": {
+            "enum": [
+              "active",
+              "not_effective",
+              "expired",
+              "revoked",
+              "applied",
+              "invalidated"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "redacted_fields": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "name",
+                "description",
+                "counterparty_name",
+                "items.description",
+                "reason"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "retained_categories": {
+            "const": [
+              "financial_identifiers_and_external_references",
+              "amounts_currency_units_and_balance_history",
+              "posted_reversal_invoice_numbering_and_versions",
+              "commercial_consent_and_entitlement_state",
+              "source_relationships_and_record_identity",
+              "shared_admission_and_audit_hashes",
+              "separate_product_and_commerce_control_payload_copies"
+            ]
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "financial_records_preserved": {
+            "const": true
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "retained_control_copies": {
+            "const": true
+          },
+          "restore_supported": {
+            "const": false
+          }
+        },
+        "required": [
+          "policy_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "resource",
+          "record_count",
+          "source_sha256",
+          "consent_revision",
+          "source_cutoff",
+          "effective_at",
+          "expires_at",
+          "basis",
+          "policy_reference",
+          "policy_reference_verified",
+          "state",
+          "created_at",
+          "redacted_fields",
+          "retained_categories",
+          "complete_tenant_coverage",
+          "financial_records_preserved",
+          "external_provider_assets_included",
+          "retained_control_copies",
+          "restore_supported"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "financial_subject_text_redaction_v1",
+      "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63",
+      "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+      "complete_tenant_coverage": false,
+      "description": "Bounded owner-approved subject-text policy/redaction only; financial amounts/history, identifiers, permission state and separate control copies preserved. Explicit current customer erasure consent and holds/retention gates remain authoritative.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.financial.redaction.policies.create"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "financial_subject_text_redaction_v1"
+              },
+              "manifest_sha256": {
+                "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+              },
+              "schema_sha256": {
+                "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+              },
+              "resource": {
+                "enum": [
+                  "sandy_commerce_accounts",
+                  "sandy_commerce_entries",
+                  "sandy_commerce_entry_lines",
+                  "sandy_commerce_statement_lines",
+                  "sandy_commerce_invoices",
+                  "sandy_commerce_entitlements"
+                ]
+              },
+              "record_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "consent_revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_cutoff": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "effective_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "basis": {
+                "enum": [
+                  "subject_data_request",
+                  "approved_retention_schedule"
+                ]
+              },
+              "policy_reference": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "policy_reference_verified": {
+                "const": false
+              },
+              "state": {
+                "enum": [
+                  "active",
+                  "not_effective",
+                  "expired",
+                  "revoked",
+                  "applied",
+                  "invalidated"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redacted_fields": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "name",
+                    "description",
+                    "counterparty_name",
+                    "items.description",
+                    "reason"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true
+              },
+              "retained_categories": {
+                "const": [
+                  "financial_identifiers_and_external_references",
+                  "amounts_currency_units_and_balance_history",
+                  "posted_reversal_invoice_numbering_and_versions",
+                  "commercial_consent_and_entitlement_state",
+                  "source_relationships_and_record_identity",
+                  "shared_admission_and_audit_hashes",
+                  "separate_product_and_commerce_control_payload_copies"
+                ]
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "financial_records_preserved": {
+                "const": true
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "retained_control_copies": {
+                "const": true
+              },
+              "restore_supported": {
+                "const": false
+              }
+            },
+            "required": [
+              "policy_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "resource",
+              "record_count",
+              "source_sha256",
+              "consent_revision",
+              "source_cutoff",
+              "effective_at",
+              "expires_at",
+              "basis",
+              "policy_reference",
+              "policy_reference_verified",
+              "state",
+              "created_at",
+              "redacted_fields",
+              "retained_categories",
+              "complete_tenant_coverage",
+              "financial_records_preserved",
+              "external_provider_assets_included",
+              "retained_control_copies",
+              "restore_supported"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "a966c13abf1856fd579f3618aa5afca6ec14122f0b79d03a46b4c735b594cebd"
+    },
+    {
+      "operation": "supabase.tenant.financial.redaction.policies.get",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "system:write",
+      "is_mutation": false,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "policy_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "schema_sha256": {
+            "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+          },
+          "resource": {
+            "enum": [
+              "sandy_commerce_accounts",
+              "sandy_commerce_entries",
+              "sandy_commerce_entry_lines",
+              "sandy_commerce_statement_lines",
+              "sandy_commerce_invoices",
+              "sandy_commerce_entitlements"
+            ]
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "enum": [
+              "subject_data_request",
+              "approved_retention_schedule"
+            ]
+          },
+          "policy_reference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_reference_verified": {
+            "const": false
+          },
+          "state": {
+            "enum": [
+              "active",
+              "not_effective",
+              "expired",
+              "revoked",
+              "applied",
+              "invalidated"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "redacted_fields": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "name",
+                "description",
+                "counterparty_name",
+                "items.description",
+                "reason"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "retained_categories": {
+            "const": [
+              "financial_identifiers_and_external_references",
+              "amounts_currency_units_and_balance_history",
+              "posted_reversal_invoice_numbering_and_versions",
+              "commercial_consent_and_entitlement_state",
+              "source_relationships_and_record_identity",
+              "shared_admission_and_audit_hashes",
+              "separate_product_and_commerce_control_payload_copies"
+            ]
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "financial_records_preserved": {
+            "const": true
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "retained_control_copies": {
+            "const": true
+          },
+          "restore_supported": {
+            "const": false
+          }
+        },
+        "required": [
+          "policy_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "resource",
+          "record_count",
+          "source_sha256",
+          "consent_revision",
+          "source_cutoff",
+          "effective_at",
+          "expires_at",
+          "basis",
+          "policy_reference",
+          "policy_reference_verified",
+          "state",
+          "created_at",
+          "redacted_fields",
+          "retained_categories",
+          "complete_tenant_coverage",
+          "financial_records_preserved",
+          "external_provider_assets_included",
+          "retained_control_copies",
+          "restore_supported"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "financial_subject_text_redaction_v1",
+      "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63",
+      "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+      "complete_tenant_coverage": false,
+      "description": "Bounded owner-approved subject-text policy/redaction only; financial amounts/history, identifiers, permission state and separate control copies preserved. Explicit current customer erasure consent and holds/retention gates remain authoritative.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.financial.redaction.policies.get"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "financial_subject_text_redaction_v1"
+              },
+              "manifest_sha256": {
+                "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+              },
+              "schema_sha256": {
+                "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+              },
+              "resource": {
+                "enum": [
+                  "sandy_commerce_accounts",
+                  "sandy_commerce_entries",
+                  "sandy_commerce_entry_lines",
+                  "sandy_commerce_statement_lines",
+                  "sandy_commerce_invoices",
+                  "sandy_commerce_entitlements"
+                ]
+              },
+              "record_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "consent_revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_cutoff": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "effective_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "basis": {
+                "enum": [
+                  "subject_data_request",
+                  "approved_retention_schedule"
+                ]
+              },
+              "policy_reference": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "policy_reference_verified": {
+                "const": false
+              },
+              "state": {
+                "enum": [
+                  "active",
+                  "not_effective",
+                  "expired",
+                  "revoked",
+                  "applied",
+                  "invalidated"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redacted_fields": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "name",
+                    "description",
+                    "counterparty_name",
+                    "items.description",
+                    "reason"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true
+              },
+              "retained_categories": {
+                "const": [
+                  "financial_identifiers_and_external_references",
+                  "amounts_currency_units_and_balance_history",
+                  "posted_reversal_invoice_numbering_and_versions",
+                  "commercial_consent_and_entitlement_state",
+                  "source_relationships_and_record_identity",
+                  "shared_admission_and_audit_hashes",
+                  "separate_product_and_commerce_control_payload_copies"
+                ]
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "financial_records_preserved": {
+                "const": true
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "retained_control_copies": {
+                "const": true
+              },
+              "restore_supported": {
+                "const": false
+              }
+            },
+            "required": [
+              "policy_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "resource",
+              "record_count",
+              "source_sha256",
+              "consent_revision",
+              "source_cutoff",
+              "effective_at",
+              "expires_at",
+              "basis",
+              "policy_reference",
+              "policy_reference_verified",
+              "state",
+              "created_at",
+              "redacted_fields",
+              "retained_categories",
+              "complete_tenant_coverage",
+              "financial_records_preserved",
+              "external_provider_assets_included",
+              "retained_control_copies",
+              "restore_supported"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "7553b1d8b5e052057bcf7856135d17c548f5cf27190749bdb07eba4c4d9c21d3"
+    },
+    {
+      "operation": "supabase.tenant.financial.redaction.policies.revoke",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "system:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "confirm_policy_revocation": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "policy_id",
+          "confirm_policy_revocation"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "schema_sha256": {
+            "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+          },
+          "resource": {
+            "enum": [
+              "sandy_commerce_accounts",
+              "sandy_commerce_entries",
+              "sandy_commerce_entry_lines",
+              "sandy_commerce_statement_lines",
+              "sandy_commerce_invoices",
+              "sandy_commerce_entitlements"
+            ]
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "enum": [
+              "subject_data_request",
+              "approved_retention_schedule"
+            ]
+          },
+          "policy_reference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_reference_verified": {
+            "const": false
+          },
+          "state": {
+            "enum": [
+              "active",
+              "not_effective",
+              "expired",
+              "revoked",
+              "applied",
+              "invalidated"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "redacted_fields": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "name",
+                "description",
+                "counterparty_name",
+                "items.description",
+                "reason"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "retained_categories": {
+            "const": [
+              "financial_identifiers_and_external_references",
+              "amounts_currency_units_and_balance_history",
+              "posted_reversal_invoice_numbering_and_versions",
+              "commercial_consent_and_entitlement_state",
+              "source_relationships_and_record_identity",
+              "shared_admission_and_audit_hashes",
+              "separate_product_and_commerce_control_payload_copies"
+            ]
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "financial_records_preserved": {
+            "const": true
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "retained_control_copies": {
+            "const": true
+          },
+          "restore_supported": {
+            "const": false
+          }
+        },
+        "required": [
+          "policy_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "resource",
+          "record_count",
+          "source_sha256",
+          "consent_revision",
+          "source_cutoff",
+          "effective_at",
+          "expires_at",
+          "basis",
+          "policy_reference",
+          "policy_reference_verified",
+          "state",
+          "created_at",
+          "redacted_fields",
+          "retained_categories",
+          "complete_tenant_coverage",
+          "financial_records_preserved",
+          "external_provider_assets_included",
+          "retained_control_copies",
+          "restore_supported"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "financial_subject_text_redaction_v1",
+      "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63",
+      "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+      "complete_tenant_coverage": false,
+      "description": "Bounded owner-approved subject-text policy/redaction only; financial amounts/history, identifiers, permission state and separate control copies preserved. Explicit current customer erasure consent and holds/retention gates remain authoritative.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.financial.redaction.policies.revoke"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "financial_subject_text_redaction_v1"
+              },
+              "manifest_sha256": {
+                "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+              },
+              "schema_sha256": {
+                "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+              },
+              "resource": {
+                "enum": [
+                  "sandy_commerce_accounts",
+                  "sandy_commerce_entries",
+                  "sandy_commerce_entry_lines",
+                  "sandy_commerce_statement_lines",
+                  "sandy_commerce_invoices",
+                  "sandy_commerce_entitlements"
+                ]
+              },
+              "record_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "consent_revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_cutoff": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "effective_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "basis": {
+                "enum": [
+                  "subject_data_request",
+                  "approved_retention_schedule"
+                ]
+              },
+              "policy_reference": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "policy_reference_verified": {
+                "const": false
+              },
+              "state": {
+                "enum": [
+                  "active",
+                  "not_effective",
+                  "expired",
+                  "revoked",
+                  "applied",
+                  "invalidated"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redacted_fields": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "name",
+                    "description",
+                    "counterparty_name",
+                    "items.description",
+                    "reason"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true
+              },
+              "retained_categories": {
+                "const": [
+                  "financial_identifiers_and_external_references",
+                  "amounts_currency_units_and_balance_history",
+                  "posted_reversal_invoice_numbering_and_versions",
+                  "commercial_consent_and_entitlement_state",
+                  "source_relationships_and_record_identity",
+                  "shared_admission_and_audit_hashes",
+                  "separate_product_and_commerce_control_payload_copies"
+                ]
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "financial_records_preserved": {
+                "const": true
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "retained_control_copies": {
+                "const": true
+              },
+              "restore_supported": {
+                "const": false
+              }
+            },
+            "required": [
+              "policy_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "resource",
+              "record_count",
+              "source_sha256",
+              "consent_revision",
+              "source_cutoff",
+              "effective_at",
+              "expires_at",
+              "basis",
+              "policy_reference",
+              "policy_reference_verified",
+              "state",
+              "created_at",
+              "redacted_fields",
+              "retained_categories",
+              "complete_tenant_coverage",
+              "financial_records_preserved",
+              "external_provider_assets_included",
+              "retained_control_copies",
+              "restore_supported"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "d7630cbd8b070371d25c6d60e3a8615c5086d300b99a5b9558f4a6ddce245dac"
+    },
+    {
+      "operation": "supabase.tenant.financial.redaction.preview",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "system:write",
+      "is_mutation": false,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "policy_id"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "schema_sha256": {
+            "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+          },
+          "resource": {
+            "enum": [
+              "sandy_commerce_accounts",
+              "sandy_commerce_entries",
+              "sandy_commerce_entry_lines",
+              "sandy_commerce_statement_lines",
+              "sandy_commerce_invoices",
+              "sandy_commerce_entitlements"
+            ]
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "enum": [
+              "subject_data_request",
+              "approved_retention_schedule"
+            ]
+          },
+          "policy_reference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_reference_verified": {
+            "const": false
+          },
+          "state": {
+            "enum": [
+              "active",
+              "not_effective",
+              "expired",
+              "revoked",
+              "applied",
+              "invalidated"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "redacted_fields": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "name",
+                "description",
+                "counterparty_name",
+                "items.description",
+                "reason"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "retained_categories": {
+            "const": [
+              "financial_identifiers_and_external_references",
+              "amounts_currency_units_and_balance_history",
+              "posted_reversal_invoice_numbering_and_versions",
+              "commercial_consent_and_entitlement_state",
+              "source_relationships_and_record_identity",
+              "shared_admission_and_audit_hashes",
+              "separate_product_and_commerce_control_payload_copies"
+            ]
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "financial_records_preserved": {
+            "const": true
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "retained_control_copies": {
+            "const": true
+          },
+          "restore_supported": {
+            "const": false
+          },
+          "current_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "source_changed": {
+            "type": "boolean"
+          },
+          "changed_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "eligible": {
+            "type": "boolean"
+          },
+          "hold_or_retention_blocked": {
+            "type": "boolean"
+          },
+          "consent_current": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "policy_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "resource",
+          "record_count",
+          "source_sha256",
+          "consent_revision",
+          "source_cutoff",
+          "effective_at",
+          "expires_at",
+          "basis",
+          "policy_reference",
+          "policy_reference_verified",
+          "state",
+          "created_at",
+          "redacted_fields",
+          "retained_categories",
+          "complete_tenant_coverage",
+          "financial_records_preserved",
+          "external_provider_assets_included",
+          "retained_control_copies",
+          "restore_supported",
+          "current_sha256",
+          "source_changed",
+          "changed_count",
+          "eligible",
+          "hold_or_retention_blocked",
+          "consent_current"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "financial_subject_text_redaction_v1",
+      "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63",
+      "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+      "complete_tenant_coverage": false,
+      "description": "Bounded owner-approved subject-text policy/redaction only; financial amounts/history, identifiers, permission state and separate control copies preserved. Explicit current customer erasure consent and holds/retention gates remain authoritative.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.financial.redaction.preview"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "financial_subject_text_redaction_v1"
+              },
+              "manifest_sha256": {
+                "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+              },
+              "schema_sha256": {
+                "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+              },
+              "resource": {
+                "enum": [
+                  "sandy_commerce_accounts",
+                  "sandy_commerce_entries",
+                  "sandy_commerce_entry_lines",
+                  "sandy_commerce_statement_lines",
+                  "sandy_commerce_invoices",
+                  "sandy_commerce_entitlements"
+                ]
+              },
+              "record_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "consent_revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_cutoff": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "effective_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "basis": {
+                "enum": [
+                  "subject_data_request",
+                  "approved_retention_schedule"
+                ]
+              },
+              "policy_reference": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "policy_reference_verified": {
+                "const": false
+              },
+              "state": {
+                "enum": [
+                  "active",
+                  "not_effective",
+                  "expired",
+                  "revoked",
+                  "applied",
+                  "invalidated"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redacted_fields": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "name",
+                    "description",
+                    "counterparty_name",
+                    "items.description",
+                    "reason"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true
+              },
+              "retained_categories": {
+                "const": [
+                  "financial_identifiers_and_external_references",
+                  "amounts_currency_units_and_balance_history",
+                  "posted_reversal_invoice_numbering_and_versions",
+                  "commercial_consent_and_entitlement_state",
+                  "source_relationships_and_record_identity",
+                  "shared_admission_and_audit_hashes",
+                  "separate_product_and_commerce_control_payload_copies"
+                ]
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "financial_records_preserved": {
+                "const": true
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "retained_control_copies": {
+                "const": true
+              },
+              "restore_supported": {
+                "const": false
+              },
+              "current_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "source_changed": {
+                "type": "boolean"
+              },
+              "changed_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "eligible": {
+                "type": "boolean"
+              },
+              "hold_or_retention_blocked": {
+                "type": "boolean"
+              },
+              "consent_current": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "policy_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "resource",
+              "record_count",
+              "source_sha256",
+              "consent_revision",
+              "source_cutoff",
+              "effective_at",
+              "expires_at",
+              "basis",
+              "policy_reference",
+              "policy_reference_verified",
+              "state",
+              "created_at",
+              "redacted_fields",
+              "retained_categories",
+              "complete_tenant_coverage",
+              "financial_records_preserved",
+              "external_provider_assets_included",
+              "retained_control_copies",
+              "restore_supported",
+              "current_sha256",
+              "source_changed",
+              "changed_count",
+              "eligible",
+              "hold_or_retention_blocked",
+              "consent_current"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "b6218ca2571b9c7e4705109220a37eeafa9a0d83e37dc0700aad6450d8fb1b54"
+    },
+    {
+      "operation": "supabase.tenant.financial.redaction.apply",
+      "handler": "sandy-tenant-lifecycle-api",
+      "permission_scope": "system:write",
+      "is_mutation": true,
+      "requires_grant": true,
+      "requires_approval": true,
+      "requires_cost_approval": false,
+      "requirement": 111,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "expected_manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "expected_current_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "confirm_text_redaction": {
+            "const": true
+          }
+        },
+        "required": [
+          "tenant_id",
+          "manifest",
+          "expected_manifest_sha256",
+          "policy_id",
+          "expected_current_sha256",
+          "confirm_text_redaction"
+        ],
+        "additionalProperties": false
+      },
+      "result_schema": {
+        "type": "object",
+        "properties": {
+          "policy_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "manifest": {
+            "const": "financial_subject_text_redaction_v1"
+          },
+          "manifest_sha256": {
+            "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+          },
+          "schema_sha256": {
+            "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+          },
+          "resource": {
+            "enum": [
+              "sandy_commerce_accounts",
+              "sandy_commerce_entries",
+              "sandy_commerce_entry_lines",
+              "sandy_commerce_statement_lines",
+              "sandy_commerce_invoices",
+              "sandy_commerce_entitlements"
+            ]
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000
+          },
+          "source_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "consent_revision": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "source_cutoff": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "effective_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "basis": {
+            "enum": [
+              "subject_data_request",
+              "approved_retention_schedule"
+            ]
+          },
+          "policy_reference": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "policy_reference_verified": {
+            "const": false
+          },
+          "state": {
+            "enum": [
+              "active",
+              "not_effective",
+              "expired",
+              "revoked",
+              "applied",
+              "invalidated"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "redacted_fields": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "name",
+                "description",
+                "counterparty_name",
+                "items.description",
+                "reason"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 2,
+            "uniqueItems": true
+          },
+          "retained_categories": {
+            "const": [
+              "financial_identifiers_and_external_references",
+              "amounts_currency_units_and_balance_history",
+              "posted_reversal_invoice_numbering_and_versions",
+              "commercial_consent_and_entitlement_state",
+              "source_relationships_and_record_identity",
+              "shared_admission_and_audit_hashes",
+              "separate_product_and_commerce_control_payload_copies"
+            ]
+          },
+          "complete_tenant_coverage": {
+            "const": false
+          },
+          "financial_records_preserved": {
+            "const": true
+          },
+          "external_provider_assets_included": {
+            "const": false
+          },
+          "retained_control_copies": {
+            "const": true
+          },
+          "restore_supported": {
+            "const": false
+          },
+          "before_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "after_sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "changed_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000
+          },
+          "source_text_redacted": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "policy_id",
+          "tenant_id",
+          "manifest",
+          "manifest_sha256",
+          "schema_sha256",
+          "resource",
+          "record_count",
+          "source_sha256",
+          "consent_revision",
+          "source_cutoff",
+          "effective_at",
+          "expires_at",
+          "basis",
+          "policy_reference",
+          "policy_reference_verified",
+          "state",
+          "created_at",
+          "redacted_fields",
+          "retained_categories",
+          "complete_tenant_coverage",
+          "financial_records_preserved",
+          "external_provider_assets_included",
+          "retained_control_copies",
+          "restore_supported",
+          "before_sha256",
+          "after_sha256",
+          "changed_count",
+          "source_text_redacted"
+        ],
+        "additionalProperties": false
+      },
+      "manifest": "financial_subject_text_redaction_v1",
+      "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63",
+      "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+      "complete_tenant_coverage": false,
+      "description": "Bounded owner-approved subject-text policy/redaction only; financial amounts/history, identifiers, permission state and separate control copies preserved. Explicit current customer erasure consent and holds/retention gates remain authoritative.",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.tenant.financial.redaction.apply"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "accepted",
+              "observed"
+            ]
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "policy_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "tenant_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "manifest": {
+                "const": "financial_subject_text_redaction_v1"
+              },
+              "manifest_sha256": {
+                "const": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+              },
+              "schema_sha256": {
+                "const": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609"
+              },
+              "resource": {
+                "enum": [
+                  "sandy_commerce_accounts",
+                  "sandy_commerce_entries",
+                  "sandy_commerce_entry_lines",
+                  "sandy_commerce_statement_lines",
+                  "sandy_commerce_invoices",
+                  "sandy_commerce_entitlements"
+                ]
+              },
+              "record_count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000
+              },
+              "source_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "consent_revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "source_cutoff": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "effective_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "basis": {
+                "enum": [
+                  "subject_data_request",
+                  "approved_retention_schedule"
+                ]
+              },
+              "policy_reference": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "policy_reference_verified": {
+                "const": false
+              },
+              "state": {
+                "enum": [
+                  "active",
+                  "not_effective",
+                  "expired",
+                  "revoked",
+                  "applied",
+                  "invalidated"
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redacted_fields": {
+                "type": "array",
+                "items": {
+                  "enum": [
+                    "name",
+                    "description",
+                    "counterparty_name",
+                    "items.description",
+                    "reason"
+                  ]
+                },
+                "minItems": 1,
+                "maxItems": 2,
+                "uniqueItems": true
+              },
+              "retained_categories": {
+                "const": [
+                  "financial_identifiers_and_external_references",
+                  "amounts_currency_units_and_balance_history",
+                  "posted_reversal_invoice_numbering_and_versions",
+                  "commercial_consent_and_entitlement_state",
+                  "source_relationships_and_record_identity",
+                  "shared_admission_and_audit_hashes",
+                  "separate_product_and_commerce_control_payload_copies"
+                ]
+              },
+              "complete_tenant_coverage": {
+                "const": false
+              },
+              "financial_records_preserved": {
+                "const": true
+              },
+              "external_provider_assets_included": {
+                "const": false
+              },
+              "retained_control_copies": {
+                "const": true
+              },
+              "restore_supported": {
+                "const": false
+              },
+              "before_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "after_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "changed_count": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1000
+              },
+              "source_text_redacted": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "policy_id",
+              "tenant_id",
+              "manifest",
+              "manifest_sha256",
+              "schema_sha256",
+              "resource",
+              "record_count",
+              "source_sha256",
+              "consent_revision",
+              "source_cutoff",
+              "effective_at",
+              "expires_at",
+              "basis",
+              "policy_reference",
+              "policy_reference_verified",
+              "state",
+              "created_at",
+              "redacted_fields",
+              "retained_categories",
+              "complete_tenant_coverage",
+              "financial_records_preserved",
+              "external_provider_assets_included",
+              "retained_control_copies",
+              "restore_supported",
+              "before_sha256",
+              "after_sha256",
+              "changed_count",
+              "source_text_redacted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "executed",
+          "request_state",
+          "admission_id",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "373c52908a5c8b38095f95d0213c89ebec4289458a4b25ba95e67f93820fc0ad"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "http": 201,
+  "change_id": "6eeae4c5-525e-4098-92f9-272e1d27c83b",
+  "change_status": "proposed",
+  "normal_workload_source_registration": true,
+  "Controller_approval_asserted": false,
+  "prior_component_registration_http": 403,
+  "prior_denial_reason": "sandy-operation-api is outside the existing workload control scope; source-custody registration uses the explicitly granted repository prefix and does not confer deployment approval."
+}

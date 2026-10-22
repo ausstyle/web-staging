@@ -1,0 +1,305 @@
+[
+  {
+    "provider": "gcp-cloudresourcemanager",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudresourcemanager/v3/cloudresourcemanager-api.json",
+    "sha256": "b2c4dbd4e5e1287622355a2231af349763cf336921bad81938086942cb319c68",
+    "bytes": 202728,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-serviceusage",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/serviceusage/v1/serviceusage-api.json",
+    "sha256": "f71af919c6317082a695a95b51c1f291d7d502f74778801ed8ba459305c8828b",
+    "bytes": 219032,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-cloudquotas",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudquotas/v1/cloudquotas-api.json",
+    "state": "unavailable",
+    "error": "HTTPError",
+    "http_status": 404,
+    "authoritative_source": "https://cloudquotas.googleapis.com/$discovery/rest?version=v1",
+    "authoritative_source_failure": "network_proxy_denied",
+    "alternative_contract_status": "http_annotated_protobuf_available_discovery_unavailable",
+    "alternative_contract_sources": [
+      {
+        "format": "protobuf",
+        "source": "https://raw.githubusercontent.com/googleapis/googleapis/ba591f1d7fdedc610639425448756cd8a64adc0f/google/api/cloudquotas/v1/cloudquotas.proto",
+        "sha256": "4c7d8a51f37b1f6687136938a972c5cfd27d0cc1e7bc64033de60fe0a1e334a9",
+        "bytes": 12614,
+        "cache_file": "gcp-cloudquotas-v1-cloudquotas.proto"
+      },
+      {
+        "format": "protobuf",
+        "source": "https://raw.githubusercontent.com/googleapis/googleapis/ba591f1d7fdedc610639425448756cd8a64adc0f/google/api/cloudquotas/v1/resources.proto",
+        "sha256": "d82b88db0e7967c4646a986b5e1e56aea5f6cc876a90b3608901bc026da0ae7f",
+        "bytes": 12695,
+        "cache_file": "gcp-cloudquotas-v1-resources.proto"
+      }
+    ],
+    "alternative_contract_methods": [
+      {
+        "rpc": "ListQuotaInfos",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{parent=projects/*/locations/*/services/*}/quotaInfos"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=organizations/*/locations/*/services/*}/quotaInfos"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=folders/*/locations/*/services/*}/quotaInfos"
+          }
+        ]
+      },
+      {
+        "rpc": "GetQuotaInfo",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{name=projects/*/locations/*/services/*/quotaInfos/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=organizations/*/locations/*/services/*/quotaInfos/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=folders/*/locations/*/services/*/quotaInfos/*}"
+          }
+        ]
+      },
+      {
+        "rpc": "ListQuotaPreferences",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{parent=projects/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=folders/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{parent=organizations/*/locations/*}/quotaPreferences"
+          }
+        ]
+      },
+      {
+        "rpc": "GetQuotaPreference",
+        "http_bindings": [
+          {
+            "method": "GET",
+            "path": "/v1/{name=projects/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=organizations/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "GET",
+            "path": "/v1/{name=folders/*/locations/*/quotaPreferences/*}"
+          }
+        ]
+      },
+      {
+        "rpc": "CreateQuotaPreference",
+        "http_bindings": [
+          {
+            "method": "POST",
+            "path": "/v1/{parent=projects/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "POST",
+            "path": "/v1/{parent=folders/*/locations/*}/quotaPreferences"
+          },
+          {
+            "method": "POST",
+            "path": "/v1/{parent=organizations/*/locations/*}/quotaPreferences"
+          }
+        ]
+      },
+      {
+        "rpc": "UpdateQuotaPreference",
+        "http_bindings": [
+          {
+            "method": "PATCH",
+            "path": "/v1/{quota_preference.name=projects/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "PATCH",
+            "path": "/v1/{quota_preference.name=folders/*/locations/*/quotaPreferences/*}"
+          },
+          {
+            "method": "PATCH",
+            "path": "/v1/{quota_preference.name=organizations/*/locations/*/quotaPreferences/*}"
+          }
+        ]
+      }
+    ],
+    "alternative_contract_service": "google.api.cloudquotas.v1.CloudQuotas",
+    "alternative_contract_runtime_executable": false,
+    "authoritative_source_check": {
+      "checked_at": "2026-10-20T17:24:53.476657+00:00",
+      "result": "network_proxy_denied",
+      "proxy_connect_status": 403,
+      "provider_http_status": null,
+      "authenticated": false
+    },
+    "discovery_index_source": "https://raw.githubusercontent.com/googleapis/discovery-artifact-manager/2598333f74a86f57dde516cc8c681548c61f4d06/discoveries/index.json",
+    "discovery_index_contains_service": false
+  },
+  {
+    "provider": "gcp-iam",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/iam/v1/iam-api.json",
+    "sha256": "0f06a82cd252b2c0fd3b37a13978c7f8c7881afc8d7b028c95cbe8a2839934e6",
+    "bytes": 402441,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-oslogin",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/oslogin/v1/oslogin-api.json",
+    "sha256": "2b54fa7838fa019611ff14df7c6a559b7994a98089b8a7a41b1138f75a0e4f8f",
+    "bytes": 23205,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-cloudbilling",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudbilling/v1/cloudbilling-api.json",
+    "sha256": "41a8986db205f5c23fdff576d88a1fff9ef6c49ac0465b11fc88bdddef95766e",
+    "bytes": 124534,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-billingbudgets",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/billingbudgets/v1/billingbudgets-api.json",
+    "sha256": "f423d38b172da93bf926fc204c7ada340ffcb53c561d0935b3a2c3a4b785bc54",
+    "bytes": 38621,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-compute",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/compute/v1/compute-api.json",
+    "sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+    "bytes": 6370741,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-dns",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/dns/v1/dns-api.json",
+    "sha256": "397350a0d568db6512be21a7376a3ed58678537f23252043825a5ca74dbcbffa",
+    "bytes": 191082,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-run",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/run/v2/run-api.json",
+    "sha256": "d1f8d758d9234beddae7705d05cdf271af83b0ce7073927f74e256c33ece24aa",
+    "bytes": 420184,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-container",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/container/v1/container-api.json",
+    "sha256": "a14f9220095bc4eafafa86c17e1436eb4e1393320e6da0e0002795b4f74f96c0",
+    "bytes": 537889,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-artifactregistry",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/artifactregistry/v1/artifactregistry-api.json",
+    "sha256": "e45d694a7b3a0cc65076f74a719a56ace3329057e47ad5cabccf3012b2c31a7c",
+    "bytes": 253745,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-storage",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/storage/v1/storage-api.json",
+    "sha256": "f006fcfde7c604fe516a57429e14f56fe20ee3095c8d61f3fe4df26122f0e3cb",
+    "bytes": 290974,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-secretmanager",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/secretmanager/v1/secretmanager-api.json",
+    "sha256": "66df35b9a5820cddd16f227b0a49da4e8ef858655aca9b66696d4868e6ac358d",
+    "bytes": 123481,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-logging",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/logging/v2/logging-api.json",
+    "sha256": "09ffd0099481c15e0e67a3407f57d70dc60b74eda29d6bf66f465e1b0525af1f",
+    "bytes": 710392,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-monitoring",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/monitoring/v3/monitoring-api.json",
+    "sha256": "fd24b71316e15d0aed479a873bdc229d03fea212f2a97736c6bb09208766183d",
+    "bytes": 426218,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-cloudscheduler",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudscheduler/v1/cloudscheduler-api.json",
+    "sha256": "fc01f5349f80c186d339716b1d46b282c2088772fe9b380c6af8915e99c6e1bb",
+    "bytes": 68293,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-pubsub",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/pubsub/v1/pubsub-api.json",
+    "sha256": "56856a98a80ccba45ab5cfd5971b8396c6739ba57ddddf61e90a466de0b5d1d3",
+    "bytes": 188773,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-cloudtasks",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudtasks/v2/cloudtasks-api.json",
+    "sha256": "e001b5b42d63de8869fa4afd3f1996b90f6bdc7ea04a5ec621c1c2d07e75d6f9",
+    "bytes": 128343,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-securitycenter",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/securitycenter/v1/securitycenter-api.json",
+    "state": "downloaded",
+    "sha256": "c7f68add33d61ec94fc63543a50dd5dba0e3237cd9ebf3fc66cebe6ebe543701",
+    "bytes": 477833,
+    "discovery_version": "v1"
+  },
+  {
+    "provider": "gcp-cloudkms",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/cloudkms/v1/cloudkms-api.json",
+    "sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+    "bytes": 381137,
+    "state": "downloaded"
+  },
+  {
+    "provider": "gcp-backupdr",
+    "source": "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/backupdr/v1/backupdr-api.json",
+    "sha256": "1e11c8d80357d3044a0001a2504269311c5ae59d57b729ee8a2a0168a04e93fc",
+    "bytes": 365631,
+    "state": "downloaded"
+  },
+  {
+    "provider": "github",
+    "source": "https://raw.githubusercontent.com/github/rest-api-description/755ee33b4a81d51f6f07a902cce26cbec3b822f2/descriptions/api.github.com/api.github.com.json",
+    "sha256": "3177ad6a86ca04c57a9bef3fc24e28a339efb8eb040c6f950af3d3ed2fee7fa3",
+    "bytes": 13502446,
+    "state": "downloaded"
+  },
+  {
+    "provider": "supabase",
+    "source": "https://raw.githubusercontent.com/supabase/supabase/f5b00a5237155603efc708b08ece7d8c6aacf763/apps/docs/spec/api_v1_openapi.json",
+    "sha256": "a322345cd8bcaab5f22dc615600b3ae1e1a1f37c9534b7a9839971a66cde9434",
+    "bytes": 556701,
+    "state": "downloaded"
+  }
+]

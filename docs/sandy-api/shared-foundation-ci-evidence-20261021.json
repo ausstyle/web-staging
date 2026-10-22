@@ -1,0 +1,77 @@
+{
+  "baseline_python": {
+    "tests": 275,
+    "failures": 7,
+    "errors": 1
+  },
+  "baseline_deno": {
+    "passed": 345,
+    "failed": 2
+  },
+  "corrected_python": {
+    "passed": 267,
+    "failed": 0
+  },
+  "corrected_deno": {
+    "passed": 369,
+    "failed": 0
+  },
+  "external_provider_calls": 0,
+  "production_runtime_changed": false,
+  "source_isolation": "Tracked commit 79c047b in a detached worktree, with only the exact corrected test/workflow files overlaid; unrelated shared-workspace edits excluded.",
+  "changes": [
+    "Live financial-lock integration CLI now runs only when explicitly invoked, not during unittest discovery.",
+    "Existing executable planner/diagnosis/profile checks replace seven obsolete inline-source assertions, including the unsafe retry-after-lost-paid-request expectation.",
+    "Deployment fixture supplies the required authenticated role and distinguishes handler readiness from released-software functional verification.",
+    "Deno receives read access only to three pinned reference files; local EdgeRuntime declarations avoid dependency on a JSR type-only manifest. Real npm SDK imports remain."
+  ],
+  "corrected_file_sha256": {
+    ".github/workflows/sandy-api-contract-check.yml": "528a8b14ec8e857a9087d88305e076824f9369f033aeba2af60c225a80aee4ae",
+    "scripts/sandy/test_tenant_financial_redaction_lock.py": "841b6e28debaa9e552ec91d46b434d055b10113daba2978f5b06e34d25aff01d",
+    "scripts/sandy/test_v2_autonomous_api_qa.py": "c06faaf0caf2af8a9522a87ac5d7bfb457c97cbc13157177d886e0a431790e76",
+    "scripts/sandy/test_v2_examiner_design.py": "cebd1c010f96fe9a1aeed6e778217f6703811798ece6347be2b11e86601102f6",
+    "scripts/sandy/testing/edge_types_import_map.json": "a983f2429655c5fd171cfe67ba1c02363bf4d6f73cf962c25ccab16971086b51",
+    "supabase/functions/sandy-deployment-api/index_test.ts": "1fb3ea450ce925283639f2ae1e87395b38530de3b2db86be552324ce1628cdc5"
+  },
+  "github_ci_status": {
+    "head": "c679725b3b55d5fe3cbcdc7ed8f732c0e6118401",
+    "api_contract_tests": "SUCCESS",
+    "api_run": 39642559853,
+    "vm_protocol_contract_tests": "SUCCESS",
+    "offline_tests": "SUCCESS",
+    "offline_run": 39642559819,
+    "engineering_mcp_checks": "SUCCESS",
+    "engineering_mcp_deploy_verify": "SUCCESS",
+    "production_deployment_job": "SKIPPED",
+    "merged": false
+  },
+  "portable_offline_regression": {
+    "tests": 277,
+    "failed": 0,
+    "credentials_removed": [
+      "SANDY_SUPABASE_MANAGEMENT_TOKEN",
+      "GH_TOKEN",
+      "SANDY_CONTROLLER_ACCESS_TOKEN"
+    ],
+    "private_schema_cache_used": false,
+    "isolated_source": "0e2085d detached worktree plus exact portable-schema test/workflow files",
+    "log_sha256": "c06044aa680b54405f10f91e3880ae2c02c0ed652767d7ea83eee7548263d81c",
+    "individual_generated_contracts_checked": 1738,
+    "public_schema_fixtures": 25,
+    "fixture_bytes_gzip": 2252117,
+    "external_provider_calls": 0
+  },
+  "IAP_authority_release_20261021": {
+    "source_commit": "1999fe267bac5e8dad5c1d33fb7f243c23756bff",
+    "remote_applicable_checks_passed": 5,
+    "api_contract_run": 39658723238,
+    "offline_regression_run": 39658723159,
+    "focused_local_component_tests_passed": 9,
+    "backend_version": 66,
+    "source_files_accounted_for": 16,
+    "source_readback": "iap-access-blocker-20261021.json",
+    "provider_authorization_fixed": false,
+    "new_VM_MCP_acceptance": false,
+    "wider_MCP_log_regression": "engineering-logs-mcp-regression-20261021.json"
+  }
+}

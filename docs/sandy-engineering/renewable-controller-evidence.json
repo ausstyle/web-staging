@@ -1,0 +1,60 @@
+{
+  "scope": "renewable_controller_prerequisite",
+  "source_releases": [
+    {
+      "slug": "sandy-engineering-control",
+      "version": 45,
+      "source_commit": "21f93530329aba18f1cee416a5a56a481f289c43",
+      "entrypoint_sha256": "8bdf9ce1ac0b4d360831a8f7343a094665070990017fe0b178966c02d25e2cae",
+      "prior_version": 44,
+      "prior_bundle_sha256": "9d85513da12870d39cf712386c9f6036e19cdb23272dae0d80c5d8e82e590c1b",
+      "all_uploaded_sources_match": true,
+      "source_modules": 6
+    },
+    {
+      "slug": "sandy-engineering-runtime",
+      "version": 6,
+      "source_commit": "ff551d570a4da26baded568036ed38bba0a65f0d",
+      "entrypoint_sha256": "d738bd3c80702c960a76da6f41f735096a9a369aeb8115de54293f87b81be3f4",
+      "prior_version": 5,
+      "prior_bundle_sha256": "3430048ee637878f8157bc4c2b65c648115b23dfc8561d055847fd12a7ea139c",
+      "all_uploaded_sources_match": true,
+      "source_modules": 6
+    }
+  ],
+  "original_controller_registration_http": 401,
+  "initial_workload_registration_http": 201,
+  "change_id": "7edbee5b-4185-4f6b-b7b1-b41899d4dfc8",
+  "post_expiry_registration_http": 200,
+  "same_change_reused": true,
+  "expires_at": "2026-10-21T21:18:46+00:00",
+  "credential_epoch": 2,
+  "bootstrap_generation": 2,
+  "global_controller_memberships": 0,
+  "expiry_test": "Controlled expiry of the canary registered-session proof; not a claim that a full natural JWT lifetime elapsed. Normal Auth session issuance and independent Control admission were exercised. Clock-based unit tests cover natural expiry.",
+  "live_revocation": {
+    "revoked_grant_http": 403,
+    "denied": true,
+    "error": "engineering_control_scope_denied",
+    "test_marker_restored": true
+  },
+  "denial_checks": {
+    "deployment_dispatch": 403,
+    "foreign_repository_scope": 403,
+    "foreign_requester_change": 404
+  },
+  "tests": {
+    "deno_runtime_session_control": 34,
+    "postgres_rollback_assertions": 9
+  },
+  "credential_storage": {
+    "private_file_mode": "0600",
+    "private_directory_mode": "0700",
+    "auth_jwts_returned_or_stored": false
+  },
+  "environment_instructions_saved": true,
+  "environment_publish_required": true,
+  "fresh_task_restoration_verified": false,
+  "p0_cross_channel_runtime_complete": false,
+  "distinct_normal_auth_sessions_observed": true
+}

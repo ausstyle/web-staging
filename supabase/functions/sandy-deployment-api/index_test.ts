@@ -287,7 +287,10 @@ Deno.test("local MCP gateway release flow preserves metadata-only evidence end t
     handler: "sandy-operation-api",
     api_exposed: true,
     ai_exposed: true,
-    verified: false,
+    // Handler readiness is distinct from verification of the released software.
+    verified: true,
+    is_mutation: true,
+    permission_scope: "deployment:write",
     input_schema: {
       type: "object",
       properties: {
@@ -304,7 +307,7 @@ Deno.test("local MCP gateway release flow preserves metadata-only evidence end t
       getUser(token: string) {
         equal(token, "test.identity.token");
         return Promise.resolve({
-          data: { user: { id: "test-controller-owner" } },
+          data: { user: { id: "test-controller-owner", role: "authenticated", is_anonymous: false } },
           error: null,
         });
       },
@@ -375,7 +378,8 @@ Deno.test("local MCP gateway release flow preserves metadata-only evidence end t
       }),
     );
   const listed = await (await request("tools/list")).json();
-  equal(listed.result.tools[0].inputSchema, registry.input_schema);
+  equal(listed.result.tools[0].inputSchema.$defs.sandy_api_arguments, registry.input_schema);
+  equal(listed.result.tools[0].inputSchema.anyOf[0], { $ref: "#/$defs/sandy_api_arguments" });
   equal(listed.result.tools[0].outputSchema, registry.output_schema);
   const response = await request("tools/call", {
     name: registry.operation,

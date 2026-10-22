@@ -1,0 +1,244 @@
+{
+  "kind": "api16_service_boundary_gateway_source_validation",
+  "utc": "2026-10-21T04:38:16.434773+00:00",
+  "source_only": true,
+  "base_active_api15": {
+    "installed_operation_ids": 2390,
+    "installed_extensions": 401,
+    "source_commit": "b8a9e8f"
+  },
+  "candidate": {
+    "installed_operation_ids": 2521,
+    "installed_extensions": 532,
+    "new_installed_ids": 131,
+    "families": {
+      "private_provider_sensitive_capture": 18,
+      "internal_commerce_records": 53,
+      "private_support_recovery": 5,
+      "owner_system_metadata": 7,
+      "provider_relationship_bound": 48
+    },
+    "new_operations_activated": 0,
+    "new_operations_fully_verified": 0,
+    "original_161_requirements_newly_declared_complete": 0
+  },
+  "execution_boundaries": [
+    "Every new ID is a fixed canonical Sandy API handler reachable through the existing MCP\u2192API transport. No provider execution logic was added to MCP.",
+    "Owner service families use one central admission, immutable exact input/contract/scope proof, and a single backend-owned consume/finish. Normal owner sessions remain mandatory.",
+    "Commerce uses original actual user JWT and backend-owned admission/consume/finish, with no duplicate central admission and no actor/tenant override. The reviewed1.0 catalogue remains selected.",
+    "System metadata dispatch alone adds original api/mcp channel to its strict service body; current metadata exposure and actual confirmed owner are checked again in SQL. Connections scope includes explicit normalized customer UUID.",
+    "Support recovery extends the same tenant SQL engine and exact scope, validates returned case_id, and exposes no private-image download. Getter/setter both use actual customerJWT and65-name/128-cap consent with no auto-grants.",
+    "Tenant mutation output/transport ambiguity returns executed:null and reconciliation_required:true; explicit atomic SQL rollback returns executed:false. Existing read semantics remain preserved.",
+    "Bound provider methods require configured fresh authoritative parent/relationship proof. A safe branch read composes fixed parent inventory and target config, returning neither db_pass nor provider token."
+  ],
+  "tests": {
+    "composed_deno_passed": 353,
+    "failed": 0,
+    "files": [
+      {
+        "file": "supabase/functions/sandy-provider-supplement-api/index_test.ts",
+        "passed": 19
+      },
+      {
+        "file": "supabase/functions/sandy-provider-sensitive-api/index_test.ts",
+        "passed": 8
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/index_test.ts",
+        "passed": 22
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/download_test.ts",
+        "passed": 8
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/consent_extension_test.ts",
+        "passed": 2
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/protected_inventory_test.ts",
+        "passed": 12
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/scalar_contracts_test.ts",
+        "passed": 5
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/content_download_test.ts",
+        "passed": 9
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/content_available_test.ts",
+        "passed": 4
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/support_recovery_contracts_test.ts",
+        "passed": 3
+      },
+      {
+        "file": "supabase/functions/sandy-tenant-lifecycle-api/consent_recovery_test.ts",
+        "passed": 4
+      },
+      {
+        "file": "supabase/functions/sandy-product-service-api/index_test.ts",
+        "passed": 13
+      },
+      {
+        "file": "supabase/functions/sandy-product-service-api/providers_test.ts",
+        "passed": 28
+      },
+      {
+        "file": "supabase/functions/sandy-commerce-ledger-api/index_test.ts",
+        "passed": 20
+      },
+      {
+        "file": "supabase/functions/sandy-system-metadata-api/index_test.ts",
+        "passed": 12
+      },
+      {
+        "file": "supabase/functions/sandy-legacy-mcp-adapter/index_test.ts",
+        "passed": 16
+      },
+      {
+        "file": "supabase/functions/sandy-provider-bound-api/index_test.ts",
+        "passed": 8
+      },
+      {
+        "file": "supabase/functions/sandy-operation-api/index_test.ts",
+        "passed": 100
+      },
+      {
+        "file": "supabase/functions/sandy-operation-api/registry_schema_validator_test.ts",
+        "passed": 5
+      },
+      {
+        "file": "supabase/functions/sandy-operation-api/customer_key_principal_test.ts",
+        "passed": 8
+      },
+      {
+        "file": "supabase/functions/sandy-operation-api/api_job_routes_test.ts",
+        "passed": 7
+      },
+      {
+        "file": "supabase/functions/sandy-operation-api/registry_schema_interpreter_test.ts",
+        "passed": 14
+      },
+      {
+        "file": "supabase/functions/sandy-api-mcp/index_test.ts",
+        "passed": 20
+      },
+      {
+        "file": "supabase/functions/sandy-api-mcp/gateway_integration_test.ts",
+        "passed": 6
+      }
+    ],
+    "composed_log": "api16-final-composed-deno.log",
+    "composed_log_sha256": "ae699719f524eb5a6cb2c216c1a291d675f2f011257ff28c143c6f10db789a6d",
+    "typecheck": "pass as part of deno test",
+    "format": "pass for6 owned source files",
+    "diff_check": "pass for6 owned source files",
+    "actual_normal_auth_session": false,
+    "real_provider_calls_by_this_integration_suite": 0,
+    "actual_postgresql_output_schema_evidence_rechecked": {
+      "commerce": 53,
+      "system_metadata": 7
+    },
+    "component_fullROLLBACK_database_evidence_not_newly_reexecuted_by_gateway_suite": true,
+    "overlaps_component_and_peer_suites": true,
+    "node_mcp_repeated": false,
+    "node_mcp_reason": "No Node/MCPcapacity or metadata transport source changed in this release; API15 Node17 regression remains prior evidence."
+  },
+  "runtime_source_sha256": {
+    "supabase/functions/sandy-operation-api/index.ts": "b4d52db1f66af9b3a93c3119e680d307dfb2b6c209a941ad611704d50f6e7221",
+    "supabase/functions/sandy-operation-api/installed_extensions.ts": "a1218db030f6afdb32e35b12391730c55f93d1365ab7f7c3dd06e5809a6b9bd5",
+    "supabase/functions/sandy-operation-api/index_test.ts": "c9947e63923bb1532ef7db235c0ae11971140ce5ed88be85551aa4ccb5944b49",
+    "supabase/functions/sandy-tenant-lifecycle-api/gateway.ts": "afd0c68c152eb63ce5794a2b79639608abd8195b86ded5bf2fc248b781a06e39",
+    "supabase/functions/sandy-tenant-lifecycle-api/index.ts": "e2c85f10fd698f2c56a74e37f0b7ba6f64f21245924819e1d8b003718ed6d7a5",
+    "supabase/functions/sandy-tenant-lifecycle-api/index_test.ts": "048845d18a5a84ffce000919ddcaa0d17a97770cb8cd0d0392d835dc8ce886d9"
+  },
+  "component_source_checks": [
+    {
+      "manifest": "provider-sensitive-frozen-manifest.json",
+      "manifest_sha256": "4939e7d3b2b0a518aca8f3d482b13178128a302d8478b4b5ff4f7d93d8fdd914",
+      "files_checked": 19,
+      "mismatches": []
+    },
+    {
+      "manifest": "commerce-internal-frozen.json",
+      "manifest_sha256": "aa7d1eb7d1be9571ee3a6c8042ae21335475aac90de907df38eb2954632ced56",
+      "files_checked": 13,
+      "mismatches": [
+        "supabase/functions/sandy-commerce-ledger-api/index.ts"
+      ],
+      "deployed_pinned_commit": "05d0431",
+      "pinned_index_sha256": "46004058c0636b18a9977abe523ee91807f2c02ece07c4f7a0c62ad677f0fa0b",
+      "pinned_index_matches_frozen": true,
+      "working_tree_exception": {
+        "path": "supabase/functions/sandy-commerce-ledger-api/index.ts",
+        "purpose": "Root-authorized09120 future strict catalogue factory parameter only; default remains commerceOperations. Excluded from API16 owned source and production dependency graph.",
+        "current_sha256": "603be783570848cc0945be285ee0a46866d3f6ec35f7c4df595a68fe3ce5f0d7",
+        "deployed_backend_1_uses": "05d0431 original index; contracts.json/contracts.ts/gateway.ts stay exact frozen1.0 bytes"
+      }
+    },
+    {
+      "manifest": "tenant-support-recovery-frozen-manifest.json",
+      "manifest_sha256": "96976fc09010407ac7d2d0702ce54fcba9a2774a29ff0db36554f89de2b36ee8",
+      "files_checked": 13,
+      "mismatches": []
+    },
+    {
+      "manifest": "system-metadata-frozen.json",
+      "manifest_sha256": "ecf9fde56ada0a760820806bd15fe5659ea334ffddd19a9a6521421d0f5e1ca6",
+      "files_checked": 12,
+      "mismatches": []
+    },
+    {
+      "manifest": "provider-bound-frozen-manifest.json",
+      "manifest_sha256": "77319661a8ca2795159df3b26bc188185b0ca6894f1dea64a8a03aa7671a4e0d",
+      "files_checked": 21,
+      "mismatches": []
+    }
+  ],
+  "peer_review_reports": [
+    {
+      "path": "tenant-api16-integration-peer-review.json",
+      "sha256": "4a9b6a0bf23e1a83f9c11be4002e5fcb9267617912e8f76b1522f284edd6c05f"
+    },
+    {
+      "path": "provider-sensitive-gateway-peer-review.json",
+      "sha256": "1f08208a9f43718a8562328ce9fa6977bb9861f236526e9a62abd2a90cda3b93"
+    },
+    {
+      "path": "commerce-independent-peer-review.json",
+      "sha256": "15a3aa0139fb0068233b7a9c442baae73ab33936a41fc906006e8a7e44ef2377"
+    },
+    {
+      "path": "tenant-support-independent-peer-review.json",
+      "sha256": "545f1b3da203d7c06299c9e3cc57b55836500ea34101ad9671acdecbdd0b2b64"
+    },
+    {
+      "path": "system-metadata-independent-peer-review.json",
+      "sha256": "7b7ea8345a4687aab72648da3db822b1b7044b5493a52e030b3f07b913d781a0"
+    },
+    {
+      "path": "provider-bound-independent-peer-review.json",
+      "sha256": "3618f5fa870de932549255dc83c91ea7591c0a9acc37b08ee5afe86dc52eff01"
+    }
+  ],
+  "validator_dependency": {
+    "source_commit": "7c95cb3",
+    "manifest": "registry-validator-promotion/frozen-manifest.json",
+    "manifest_sha256": "e0d58f879d2015a2fe9c582bf1953d40e8099a0bceee75ce70fba166d5b48a69",
+    "owned_by": "gateway_release",
+    "coherent353_suite_includes_neutral_wrapper_and_interpreter": true,
+    "memory_and_registry_differential": "Separate gateway_release final2521-ID release evidence; no whole-CLI/all-activation capacity claim is made by this gateway source report."
+  },
+  "verification_limits": [
+    "No new live execution is certified; all131 IDs retain closed/unverified registry flags. Source and synthetic/component checks do not establish original161 scope completion.",
+    "Controller authenticated real HTTP tests remain separate from runtime egress and missing authorized provider resource fixtures/IAM. No administrative service key is substituted for a user.",
+    "Custom Domain provider entitlement is separate from Sandy implementation; no purchase or plan upgrade is authorized or performed.",
+    "Commerce1.0 broad resource schemas remain partial semantic contracts until the separately reviewed09120 revision. Payment processor, settlement and invoice-forward correspondence are not certified.",
+    "Product Graph external Outlook/legacy-editor race after preflight remains an existing documented limitation."
+  ],
+  "deployment_and_central_registry_evidence": "Parent release engineering owns git commit/merge, permanent migration sequence, exact deployment versions, source readback and production registry evidence. This source validation does not claim those actions."
+}

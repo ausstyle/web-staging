@@ -1,0 +1,15 @@
+{
+  "migration_sha256": "50d1d2e0c118b7da7707aeb4b5b2a5a6d0ac6badbff31c6a1654cf709fd2376a",
+  "report_rows": [
+    {
+      "passed": 26,
+      "failed": 0,
+      "rolled_back": true,
+      "provider_calls": false
+    }
+  ],
+  "real_database_transaction": true,
+  "rolled_back": true,
+  "provider_calls": false,
+  "normal_Auth_provider_acceptance_claimed": false
+}

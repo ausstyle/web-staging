@@ -12,7 +12,7 @@ on:
       - 'scripts/sandy/release_delegated_runtime.py'
       - 'scripts/sandy/test_delegated_runtime_release.py'
       - 'scripts/sandy/test_autonomous_delegation_postgres.mjs'
-      - 'supabase/migrations/20261022020000_sandy_autonomous_engineering_policy.sql'
+      - 'supabase/migrations/2026102211*.sql'
       - '.github/workflows/sandy-runtime-release-checks.yml'
   workflow_dispatch:
 permissions:

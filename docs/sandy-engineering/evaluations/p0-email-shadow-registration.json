@@ -1,0 +1,12 @@
+{
+  "source_commit": "1c1a21b67c68993c2637cefe97134befa091fdac",
+  "manifest_sha256": "f7b111d8222b011d4cc24423b2c91fa0ee5f3666788826ccbc1d6625832be951",
+  "baseline_version": 17,
+  "function": "sandy-email-runtime-canary",
+  "http_status": 403,
+  "error": "engineering_registration_scope_denied",
+  "registered": false,
+  "deployed": false,
+  "customer_identity_substituted": false,
+  "workload_scope_expanded": false
+}

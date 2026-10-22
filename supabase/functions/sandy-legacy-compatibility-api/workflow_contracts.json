@@ -1,0 +1,447 @@
+[
+  {
+    "operation": "supabase.deploy_edge_function",
+    "kind": "function_deploy",
+    "provider": "supabase",
+    "requirement": 83,
+    "provider_operation_id": "v1-deploy-a-function",
+    "source": "https://raw.githubusercontent.com/supabase/supabase/f5b00a5237155603efc708b08ece7d8c6aacf763/apps/docs/spec/api_v1_openapi.json",
+    "source_sha256": "a322345cd8bcaab5f22dc615600b3ae1e1a1f37c9534b7a9839971a66cde9434",
+    "is_mutation": true,
+    "permission_scope": "infrastructure:deploy",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "slug": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+        },
+        "entrypoint_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240,
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./@+ -]*$"
+        },
+        "import_map_path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 240,
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./@+ -]*$"
+        },
+        "verify_jwt": {
+          "const": true
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 63,
+          "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240,
+                "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./@+ -]*$"
+              },
+              "content_base64": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 1398104,
+                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+              },
+              "sha256": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "content_base64",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        },
+        "project_id": {
+          "const": "zmqlyygzqoidkcwdysok"
+        },
+        "artifact_ref": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "slug",
+        "entrypoint_path",
+        "verify_jwt",
+        "files",
+        "project_id",
+        "artifact_ref",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "supabase.deploy_edge_function"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "supabase"
+        },
+        "request_state": {
+          "enum": [
+            "observed",
+            "accepted"
+          ]
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 36,
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 599
+        },
+        "provider_request_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 63,
+              "pattern": "^[a-z](?:[-a-z0-9]{0,61}[a-z0-9])?$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "status": {
+              "enum": [
+                "ACTIVE",
+                "REMOVED",
+                "THROTTLED"
+              ]
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2147483647
+            },
+            "verify_jwt": {
+              "const": true
+            },
+            "source_sha256": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 64,
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "readback_matched": {
+              "type": "boolean"
+            },
+            "transfer_state": {
+              "const": "accepted"
+            }
+          },
+          "required": [
+            "id",
+            "slug",
+            "name",
+            "status",
+            "version",
+            "verify_jwt",
+            "source_sha256",
+            "readback_matched",
+            "transfer_state"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "canonical_target": "supabase.functions.deploy.multipart",
+    "handler": "sandy-legacy-compatibility-api",
+    "maximum_input_bytes": 1550000,
+    "requires_grant": true,
+    "requires_real_user_session": true,
+    "owner_only": true,
+    "api_exposed": false,
+    "contract_sha256": "c1aa2d3e0c2bf975292c1277f5e8458749afee842a5eb00a7611d07c2bf5ea18"
+  },
+  {
+    "operation": "github.push_files",
+    "canonical_target": "GitHub.GraphQL.createCommitOnBranch",
+    "handler": "sandy-legacy-compatibility-api",
+    "kind": "github_push_files",
+    "provider": "github",
+    "requirement": 115,
+    "provider_operation_id": "Mutation.createCommitOnBranch",
+    "source": "https://raw.githubusercontent.com/octokit/graphql-schema/master/schema.graphql",
+    "source_sha256": "3c62d0526d133cee53221c89de9b455ade24db78b9e7ad56d642c4c15bce2654",
+    "is_mutation": true,
+    "permission_scope": "engineering:write",
+    "requires_approval": true,
+    "api_key_delegable": false,
+    "maximum_input_bytes": 1550000,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "const": "ausstyle/web-staging"
+        },
+        "branch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_./-]{0,199}$"
+        },
+        "expected_head_oid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40,
+          "pattern": "^[a-f0-9]{40}$"
+        },
+        "headline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "message_body": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 10000
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 240,
+                "pattern": "^[A-Za-z0-9_.@+-]+(?:/[A-Za-z0-9_.@+-]+)*$"
+              },
+              "content_base64": {
+                "type": "string",
+                "minLength": 0,
+                "maxLength": 87384,
+                "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+              },
+              "sha256": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64,
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": [
+              "path",
+              "content_base64",
+              "sha256"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32,
+          "minItems": 1
+        },
+        "files_sha256": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      },
+      "required": [
+        "repository",
+        "branch",
+        "expected_head_oid",
+        "headline",
+        "files",
+        "files_sha256"
+      ],
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "operation": {
+          "const": "github.push_files"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "provider": {
+          "const": "github"
+        },
+        "request_state": {
+          "const": "accepted"
+        },
+        "executed": {
+          "const": true
+        },
+        "admission_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider_http_status": {
+          "type": "integer",
+          "minimum": 200,
+          "maximum": 299
+        },
+        "provider_request_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "repository": {
+              "const": "ausstyle/web-staging"
+            },
+            "branch": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "previous_head_oid": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "commit_oid": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "tree_oid": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40,
+              "pattern": "^[a-f0-9]{40}$"
+            },
+            "files_changed": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 32
+            },
+            "native_precondition": {
+              "const": "expectedHeadOid"
+            },
+            "branch_head_observed_match": {
+              "const": true
+            },
+            "transfer_state": {
+              "const": "accepted"
+            },
+            "effect_confirmed": {
+              "const": false
+            }
+          },
+          "required": [
+            "repository",
+            "branch",
+            "previous_head_oid",
+            "commit_oid",
+            "tree_oid",
+            "files_changed",
+            "native_precondition",
+            "branch_head_observed_match",
+            "transfer_state",
+            "effect_confirmed"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "provider",
+        "request_state",
+        "executed",
+        "admission_id",
+        "provider_http_status",
+        "provider_request_id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "requires_grant": true,
+    "requires_real_user_session": true,
+    "owner_only": true,
+    "api_exposed": false,
+    "contract_sha256": "b46b39b3a75941493ad226dd067fc05d025e3d70dafbb144ec20fdbc85f3137a"
+  }
+]

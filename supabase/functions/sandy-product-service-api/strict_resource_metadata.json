@@ -1,0 +1,1190 @@
+{
+  "kind": "read_only_production_schema_metadata",
+  "http": 201,
+  "utc": "2026-10-21T04:53:52.931489+00:00",
+  "columns": [
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "message_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "provider_attachment_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "filename",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "content_type",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "byte_size",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "storage_path",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "extracted_text",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "analysis_status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "direction",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_attachments",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_provider_config",
+      "column_name": "provider_key",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_provider_config",
+      "column_name": "model_name",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_provider_config",
+      "column_name": "enabled",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_provider_config",
+      "column_name": "is_default",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_provider_config",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_ai_provider_config",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "email_address",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "normalized_email",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "is_primary",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "verified_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_customer_addresses",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "display_name",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "google_drive_folder_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "google_drive_folder_url",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "google_drive_folder_status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "google_drive_folder_verified_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_customers",
+      "column_name": "google_drive_local_relative_path",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "conversation_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "sender_address",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "recipient_addresses",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "direction",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "provider_message_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "internet_message_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "subject",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "body_text",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "body_html",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "received_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "sent_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "delivery_status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "in_reply_to",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "references_header",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "provider_thread_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "thread_relation",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "matter_relation",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "message_intent",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "related_matter_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "email_messages",
+      "column_name": "classification_confidence",
+      "data_type": "numeric",
+      "udt_name": "numeric",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "source_message_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "action_key",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "action_type",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "provider_message_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "destination",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "attachment_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "error",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_email_action_receipts",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "file_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "process",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "owner_customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "severity",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "reason",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "first_seen_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "last_seen_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_file_processing_alerts",
+      "column_name": "resolved_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "notice_kind",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "state",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "delivery_channel",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "message",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "delivery_receipt",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_improvement_notifications",
+      "column_name": "sent_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_product_configuration_snapshots",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_configuration_snapshots",
+      "column_name": "admission_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_configuration_snapshots",
+      "column_name": "provider_key",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_configuration_snapshots",
+      "column_name": "before_row",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_configuration_snapshots",
+      "column_name": "after_row",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_configuration_snapshots",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "topic",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "event",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "resource_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "acknowledged_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_product_notification_inbox",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_preferences",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_preferences",
+      "column_name": "email_enabled",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_preferences",
+      "column_name": "whatsapp_enabled",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_preferences",
+      "column_name": "file_alerts_enabled",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_preferences",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_quiet_hours",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_quiet_hours",
+      "column_name": "enabled",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_quiet_hours",
+      "column_name": "timezone",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_quiet_hours",
+      "column_name": "start_minute",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_quiet_hours",
+      "column_name": "end_minute",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_quiet_hours",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_subscriptions",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_subscriptions",
+      "column_name": "topic",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_subscriptions",
+      "column_name": "enabled",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_subscriptions",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "name",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "body_text",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "version",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "deleted_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_notification_templates",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "subject",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "details",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "category",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "state",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "version",
+      "data_type": "integer",
+      "udt_name": "int4",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_cases",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_comments",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_comments",
+      "column_name": "case_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_comments",
+      "column_name": "actor_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_comments",
+      "column_name": "body",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_product_support_comments",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "wa_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "verification_status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "verified_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "allowed_scopes",
+      "data_type": "ARRAY",
+      "udt_name": "_text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_identities",
+      "column_name": "is_primary",
+      "data_type": "boolean",
+      "udt_name": "bool",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "id",
+      "data_type": "bigint",
+      "udt_name": "int8",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "meta_message_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "phone_number_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "sender_wa_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "direction",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "message_type",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "body",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "payload",
+      "data_type": "jsonb",
+      "udt_name": "jsonb",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "processing_status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_messages",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "idempotency_key",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "requested_wa_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "resolved_wa_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "message_text",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "status",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "meta_message_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "error_code",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "YES"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_outbound_requests",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "customer_id",
+      "data_type": "uuid",
+      "udt_name": "uuid",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "sender_wa_id",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "title",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "summary",
+      "data_type": "text",
+      "udt_name": "text",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    },
+    {
+      "table_name": "sandy_whatsapp_topics",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "udt_name": "timestamptz",
+      "is_nullable": "NO"
+    }
+  ]
+}

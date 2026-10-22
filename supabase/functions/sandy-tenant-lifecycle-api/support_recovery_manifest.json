@@ -1,0 +1,137 @@
+{
+  "id": "support_case_recovery_v1",
+  "format_version": "1.0.0",
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "complete_tenant_coverage": false,
+  "external_provider_assets_included": false,
+  "private_recovery_only": true,
+  "customer_export_projection": "customer_content_fragments_v1",
+  "retained_control_copies": true,
+  "case_scope_required": true,
+  "schema_sha256": "13ddd4182869ee7099717776840a259103f7ebfca73ec10b646d8c7afeca78a8",
+  "row_limit_per_table": 1000,
+  "maximum_artifact_bytes": 2097152,
+  "tables": [
+    {
+      "table": "sandy_product_support_cases",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "subject",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "details",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "category",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "order": [
+        "id"
+      ]
+    },
+    {
+      "table": "sandy_product_support_comments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "case_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "body",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "order": [
+        "id"
+      ]
+    }
+  ],
+  "manifest_sha256": "8dceb6dd7e7ead7a0b5f4cd463d2266a360aa64ab8f407f92518cc37ca9149cb"
+}

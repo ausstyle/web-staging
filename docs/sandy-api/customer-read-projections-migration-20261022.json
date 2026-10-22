@@ -1,0 +1,14 @@
+{
+  "migration": "20261022010000_sandy_customer_read_projections.sql",
+  "source_sha256": "7f1ff1866ccb6b278b7cba668c21e7f6ebd067b72ffff04d4c55697a0f4079b2",
+  "apply_http": 201,
+  "version": "20261022010000",
+  "readback_http": 201,
+  "readback": [
+    {
+      "version": "20261022010000",
+      "name": "sandy_customer_read_projections",
+      "exact_source_match": true
+    }
+  ]
+}

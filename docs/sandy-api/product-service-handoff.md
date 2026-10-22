@@ -1,0 +1,30 @@
+# Product service integration and verification
+
+The new `sandy-product-service-api` is the sole product executor. Main Sandy API and Sandy MCP forward requests; they do not reproduce provider or database logic. The standalone service owns its actual-user JWT admission/consume/finish lifecycle. Gateway integration must set owns-grant and requires-user-session for every product operation; it must not admit a second owner grant, accept an opaque API key, or replace the original JWT with a service-role key.
+
+`gateway.ts` exports `productGatewayContracts`, `productOperations`, `productContractMatches`, `isProductOperation`, `productRequiresUserSession`, `productOwnsGrant`, `productExecutionScope` and `productScopeSha256`. Owner authorization is `system:read/write`; portal and receipt authorization is `product:read/write`. The operation catalogue contains exact input/output schemas and SHA-256 contract hashes. The RPC checks the registry schemas, hash, exposure, sensitivity, current actor/tenant and channel again when consuming a one-use grant. A changed MCP flag fences an already admitted MCP request.
+
+Forward only this body, with the original actual user bearer:
+
+```json
+{
+  "operation": "customer.profile.get",
+  "arguments": {},
+  "channel": "mcp",
+  "request_id": "30000000-0000-4000-8000-000000000001"
+}
+```
+
+Read `request_id` is optional; the standalone API generates a UUID when absent. Mutations require `arguments.idempotency_key` as UUID; any supplied outer request_id must equal it. The only other optional body field is `approval_id` UUID. Caller-selected actor/tenant/provider/mailbox/URL, execution grants, credentials and arbitrary transport metadata are rejected. Each owner mutation and sensitive owner read still needs an actual approved exact operation/input/contract/scope job. `productScopeSha256` implements the SQL scope protocol for constructing an approval manifest; it grants no authority. The scope binds the actor, tenant (or literal `owner`), operation, API/MCP channel and exact contract hash.
+
+Every success response includes `ok`, `operation`, `contract_version`, `request_id`, `admission_id`, `request_state`, `executed`, `result` and `reconciliation_required`. A result has `item`, `items`, `changed`, `next_cursor`, `possibly_truncated`, `provider_id`, `provider_http_status` and `delivery_verified`. Provider-local configuration/recipient policy failures have no invented provider HTTP status. Their persisted executed flag remains false. Provider submission is accepted, a lost outcome is unknown, and an attempt is never automatically redispatched. The owned receipt operation reads its existing attempt. Unknown sends require reconciliation.
+
+Apply `20261021009000_sandy_product_service_boundary.sql` and then `20261021009010_sandy_product_service_contracts.sql`, after shared principal migration07100. They add private RLS-protected contracts/results/before-after evidence, support cases/comments, notification preferences/subscriptions/quiet hours/templates/inbox, provider configuration snapshots, Graph drafts/delta cursors and WhatsApp media bindings. Customer Auth admission uses the same central audit/rate/admissions tables and real Auth actor UUIDs; no opaque key is accepted. `sandy_product_execute_db` consumes and writes in one transaction; `sandy_product_bind_provider` fences owned resource IDs and claims before HTTP, then the service-only finish RPC persists the actual result. External HTTP and PostgreSQL cannot be one transaction.
+
+All98 new registry operations are disabled and unverified. Deployment does not authorize exposure. Real confirmed portal sessions need an active independently enrolled portal account and matching primary email; owner sessions need the existing enabled owner record and scoped approval for mutations. Existing source app-only Graph and Meta credentials stay in Edge environment settings. The invoice adapter additionally requires `SANDY_INVOICE_FORWARD_CUSTOMER_ID` set to the actual approved customer; it forwards to the pre-existing fixed Wise inbox and never claims payment execution. No provider was chosen for customer payments or push notifications.
+
+Run the two new Deno test files for typed handler/provider regression. Run `supabase/tests/sandy_product_services_rollback.sql` in a single transaction after the migrations for real PostgreSQL component tests. It begins and ends its own rollback transaction, guards fixture triggers by source hash, creates only fresh rollback-only Auth rows, excludes Drive, disables learning and makes no external request. Synthetic provider callbacks exercise local persistence only. They are explicitly not real-provider or HTTP authentication evidence. Shared audit hash-link verification accepts normal nontransactional sequence allocation gaps. No sequence is reset. Actual cleanup checks must confirm no lasting fixtures.
+
+The component tests do not justify setting verified=true. [product-service-coverage.md](product-service-coverage.md) records every requested PDF constituent, its actual implementation and remaining configuration/engineering. Tenant consent, hold, export, erase, restore and download remain owned by the dedicated scope111 tenant lifecycle service. No blanket completion claim is made for requirements146/149/157/158/159/161 or PDF7.18.
+
+`graph.drafts.get` returns the preview version and `reviewed_content_sha256`. Confirm-send requires both, rechecks the database version and provider subject/body/from/sender/replyTo/recipient set/changeKey plus the complete bounded file-attachment metadata before POST. Any remaining attachment nextLink or unsupported item/reference attachment fails closed. API leases prevent concurrent Sandy edits/sends. This is a provider preflight observation: a separate Outlook/legacy writer could still change the draft between Graph GET and send; no undocumented conditional-send atomicity is claimed. New send routes remain closed pending this provider constraint and actual session/provider validation.

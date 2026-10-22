@@ -1,0 +1,16 @@
+{
+  "source_commit": "5eb1f2c84086db4a067b484cd3de7c5ce6cec182",
+  "function": "sandy-examiner-full-cycle",
+  "expected_prior_version": 13,
+  "prior_bundle_sha256": "1a3bbf8cac5de9d96e89c4fa4579c3ff5edc57427b8869839c25e5b8154090dc",
+  "verify_jwt": false,
+  "files": {
+    "sandy-examiner-full-cycle/index.ts": "813a7212032c2b9433f02f9aca35b60b07d17288dde14e82994478838620d49f",
+    "sandy-examiner-full-cycle/judge.ts": "d55a98d0e3c3050f0a0390ce50abf999360cd36a3957bf8bf49378b5b76b349f",
+    "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26"
+  },
+  "scope": "existing fixed registered pilot quality test caller only; no customer channel deployment, new enrollment, model/prompt change, credential/grant change or provider bypass",
+  "focused_tests_passed": 18,
+  "typecheck": "offline SDK fallback; no SDK usage was changed",
+  "rollback": "Restore captured original v13 source under the same component lease and a fresh version/source guard; preserve all historic judgments and tasks."
+}

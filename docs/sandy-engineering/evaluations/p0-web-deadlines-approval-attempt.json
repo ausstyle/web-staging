@@ -1,0 +1,56 @@
+{
+  "captured_at_europe_rome": "2026-10-22T01:56:27.610304+02:00",
+  "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+  "source_commit": "3734254e872fcb2f0b5270aac43f8540b40726a2",
+  "manifest_sha256": "1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017",
+  "user_explicit_release_authorization_received": true,
+  "chat_authorization_treated_as_database_approval": false,
+  "owner_workflow": "Existing sandy-engineering-control status action with the configured Controller owner-session binding",
+  "owner_workflow_attempt_count": 1,
+  "owner_workflow_http_status": 401,
+  "owner_workflow_error": "Unauthorized",
+  "database_status_before": "proposed",
+  "database_status_after": "proposed",
+  "authenticated_owner_approval_event_present": false,
+  "approval_genuinely_recorded": false,
+  "renewable_engineering_metadata_http": 200,
+  "workload_owner_status_action_allowed": false,
+  "current_versions": {
+    "sandy-workspace": 46,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-agent-runtime-v4": 29,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 13
+  },
+  "candidate_modules_verified": 27,
+  "manifest_digest_verified": true,
+  "published_source_preserved": {
+    "sandy-agent-runtime-v4": {
+      "approved_web_modules_match": true,
+      "bundle_sha256": "bce5209688d6977bcd45cfae96c4ea1cdb6acd95671af343461407cc7a571c93"
+    },
+    "sandy-workspace": {
+      "approved_web_modules_match": true,
+      "bundle_sha256": "cc58531ab14b5e9d4ed964b91af9ad7dcc3a088d5469f1d0c3921f26dd4930d9"
+    },
+    "sandy-engineering-control": {
+      "previous_source_unchanged": true,
+      "bundle_sha256": "3e5aea745fbc701c9543620a83c13b8b18a7a8f0bbfa8ff692494b99978ae44d"
+    },
+    "sandy-engineering-runtime": {
+      "previous_source_unchanged": true,
+      "bundle_sha256": "80765269aae5affd9e6817b81a46597a202b9115f11ad7ca89336e9f984538d2"
+    }
+  },
+  "deployment_attempted": false,
+  "post_correction_customer_acceptance_run": false,
+  "rollback_of_this_attempt_required": false,
+  "customer_data_or_pilot_configuration_changed": false,
+  "customer_or_owner_tokens_minted": false,
+  "approval_written_through_management_or_sql": false,
+  "workload_grant_changed": false,
+  "new_secret_requested": false,
+  "unrelated_credentials_used": false,
+  "automatic_authentication_retry": false,
+  "remaining_requirement": "The existing Controller workflow must authenticate an enabled owner and record status_changed -> approved for the exact existing change and source/manifest. The configured owner binding returned 401; the engineering workload cannot self-approve. Existing Controller browser sign-in auto-refreshes its own Auth session but that browser session is not available to this execution environment."
+}

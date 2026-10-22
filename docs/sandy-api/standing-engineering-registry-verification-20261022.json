@@ -1,0 +1,395 @@
+{
+  "observed_at_utc": "2026-10-22T10:12:03.915806+00:00",
+  "evidence_file": "standing-engineering-GitHub-MCP-evidence-20261022.json",
+  "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+  "readback_matches": true,
+  "operations": [
+    {
+      "operation": "github.branches.list",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "df73ad0b-f9cd-4d44-b410-6ae44198ba31"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "b8b6f532-d6de-4f24-8bd2-4fb0076b0d3a"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.files.content.get",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "9f0f8b74-36ba-49bc-baf4-4b29b1205f93",
+          "0da43094-9872-4fb1-a04b-3e46f7c13b12"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "16a393ee-fac0-4036-b1d5-1d4ab0c73c27",
+          "28ddbe88-6ea9-420c-a3a5-5e44f446f051"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.files.create",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "a05e80f2-8ae2-4c22-9b12-4b87748b8c33",
+          "cdee8daf-0950-49ba-98cb-c8c7c7841dd9",
+          "689b253a-354e-4d4a-8072-cc7227ba3be3",
+          "4674c053-0888-497e-9e74-fa18929521e8"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "49739543-d405-46f8-adf6-27ad63ddd6ff",
+          "5772f2c0-506e-412f-a830-6e5f50fc1306",
+          "8db7ab37-de79-46d0-9e39-d86b3fe23bc8",
+          "eeae1087-7f08-403b-b33d-bc27aaa8e178"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.files.delete",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "df06d934-d26a-4378-8723-08f1c2e90aa4",
+          "23b975f5-967a-45b8-b9b6-7a3562e6337a"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "d453ca9b-2e97-4998-ae1f-d15c9b37295d",
+          "c2e24cce-fc4c-400d-9818-aac89d73a4ab"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.files.update",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "03f36716-3cf6-4105-9c60-137af9eaa3ef",
+          "4f0cf20d-962a-4a0c-ae0f-f39df2baa095",
+          "416b97f5-cb19-44aa-aa1c-65051c98d8c8",
+          "a469dab4-9fe6-449c-b6f3-8831dc69c3d2",
+          "55bdd1e8-cdda-42ae-af4b-9b64ce14c2dd"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "00ecd2c9-d26a-48bc-a97b-22acdb64738b",
+          "e419c75f-acad-4417-9da6-b541d8e418a5",
+          "4de10220-de04-4ef2-b1ee-a42e935c0cde",
+          "c1e13c65-0f0b-431b-a174-63642679f59a",
+          "ad0166e4-9d2e-44ad-bc81-de41a31ee089"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.git.commits.create",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "d70d7a4a-2852-4202-bfcb-c5363cf0c829"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "a1d40a8a-4f77-491d-9f51-a9d51ea1d815"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.git.commits.get",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "4ade7c0e-3c94-469c-b64b-c94d482cd035"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "39837aba-efdc-44b1-b65f-1dca61a028ef"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.pull_requests.list",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "85c27315-5513-470f-bd91-0632559a8b47"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "3925d302-4266-4cec-9757-6d1866fa256a"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.refs.create",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "fba18f67-d517-4ac3-87e1-6e1862f7c5b6"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "0bcaf232-22ed-4420-af0f-498f1bab73be"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.refs.get",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "a12ffb8d-f008-42fd-bd5d-0113218b7842",
+          "e02bc40b-659b-4ba1-8061-f6a0a191927b"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "1ed22288-bf6a-462e-95f9-c530eb8bcb67",
+          "7f11c7cd-cb49-45df-8166-d5e49315a686"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.refs.update",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "393997bc-f188-4340-a21c-5435545ae897"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "1b71a56e-2948-4e2f-a9c8-3b723e29850c"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "github.repos.get",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "dd61b088-0298-47d6-bf9c-d1050b7b17b5"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "68327f40-d516-45fe-ab11-d350c73e2057"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "system.execution.get",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "03f36716-3cf6-4105-9c60-137af9eaa3ef",
+          "416b97f5-cb19-44aa-aa1c-65051c98d8c8"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "d8e8faba-01d7-4a4f-9fb5-3915a435a4ce",
+          "438cb1ac-4977-4fa2-b407-42b43c51176f"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "system.lifecycle.compensate",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [
+          "1ef0cba9-cb53-4ad5-b2a6-ca5c1f4ec1e8",
+          "1ef0cba9-cb53-4ad5-b2a6-ca5c1f4ec1e8",
+          "b22a5ab5-d48d-4927-ad4e-64c227d143c5",
+          "369714a5-f758-497e-8ff4-1743050ec81c"
+        ],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "d9f6d0df-afce-48ef-849d-21f1f7ce71a4",
+          "b06f8e2b-3f0e-4724-8c74-2d06866cf856",
+          "2572b0b5-10b5-4d09-b3f4-f2d99e3b9f21",
+          "7c567bc5-7660-46f7-a9eb-98dc98dd1490"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "system.lifecycle.get",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "ad951ac1-f431-40a6-9984-fb5f1003f64a"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    },
+    {
+      "operation": "system.lifecycle.verify",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "implementation_state": "deployed",
+      "evidence": {
+        "scope": "current delegated engineering resources; evidence is operation-specific, not whole-family acceptance",
+        "admission_ids": [],
+        "evidence_file": "docs/sandy-api/standing-engineering-GitHub-MCP-evidence-20261022.json",
+        "evidence_sha256": "cd039712f71eb49ac3d72f774c03001986684b13e8ad2cdb53108ecda625f3da",
+        "whole_family_accepted": false,
+        "successful_request_ids": [
+          "7c8b3a18-32fc-4a1a-a173-62281c59c410"
+        ],
+        "current_gateway_version": 53,
+        "mcp_end_to_end_verified": true,
+        "historical_releases_not_relabelled_as_retests": true
+      }
+    }
+  ],
+  "counts": {
+    "registered": 2585,
+    "api_flags": 459,
+    "ai_flags": 442,
+    "verified_flags": 61
+  },
+  "registry_entries_added": 0,
+  "global_provider_executable_count": "not_certified",
+  "scoped_MCP_discoverable": 232,
+  "operation_specific_positive_MCP_evidence": 16,
+  "provider_contract_fingerprints_match_current_registry": true
+}

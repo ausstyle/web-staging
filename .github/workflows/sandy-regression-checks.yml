@@ -9,6 +9,13 @@ on:
       - 'supabase/functions/sandy-feature-discovery/**'
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'supabase/functions/sandy-repository-release-verifier/**'
+      - 'supabase/functions/sandy-examiner-full-cycle/**'
+      - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/sandy-whatsapp-webhook/**'
+      - 'supabase/functions/sandy-email-runtime-canary/**'
+      - 'supabase/functions/_shared/sandy-executive/**'
+      - 'supabase/functions/_shared/sandy-agent-operations/**'
+      - 'supabase/migrations/2026102211*.sql'
   push:
     branches: [main]
     paths:
@@ -18,16 +25,63 @@ on:
       - 'supabase/functions/sandy-feature-discovery/**'
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'supabase/functions/sandy-repository-release-verifier/**'
+      - 'supabase/functions/sandy-examiner-full-cycle/**'
+      - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/sandy-whatsapp-webhook/**'
+      - 'supabase/functions/sandy-email-runtime-canary/**'
+      - 'supabase/functions/_shared/sandy-executive/**'
+      - 'supabase/functions/_shared/sandy-agent-operations/**'
+      - 'supabase/migrations/2026102211*.sql'
 permissions:
   contents: read
 jobs:
+  examiner-evidence-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - name: Verify independent assessment and receipt boundaries
+        run: deno test --allow-read --allow-env supabase/functions/sandy-examiner-full-cycle/ supabase/functions/sandy-agent-operation-api/index_test.ts supabase/functions/sandy-email-runtime-canary/ supabase/functions/sandy-voice-account-context/executive_test.ts supabase/functions/_shared/sandy-agent-operations/ supabase/functions/sandy-whatsapp-webhook/
+      - name: Check shared channel entrypoints
+        run: deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts supabase/functions/sandy-whatsapp-webhook/index.ts
   offline-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Release admission tests read the exact previously approved commits.
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reviewed offline contract dependencies
+        run: python -m pip install -r scripts/sandy/testing/offline-requirements.txt
       - name: Run Sandy offline contract tests
-        run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
+        run: |
+          set +e
+          python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v > "$RUNNER_TEMP/sandy-offline-tests.log" 2>&1
+          test_status=$?
+          cat "$RUNNER_TEMP/sandy-offline-tests.log"
+          if [ "$test_status" -ne 0 ]; then
+            SANDY_TEST_LOG="$RUNNER_TEMP/sandy-offline-tests.log" python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          # Expose offline failures through the normal check-run annotations;
+          # downloading Actions logs can require a separately permitted host.
+          log=Path(os.environ['SANDY_TEST_LOG']).read_text()
+          failures=list(re.finditer(r'(?m)^(?:ERROR|FAIL): .+$',log))
+          for i,match in enumerate(failures):
+              end=failures[i+1].start() if i+1<len(failures) else len(log)
+              detail=log[match.start():end].split('\nRan ',1)[0][:3000]
+              detail=detail.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::error title=Offline regression failure::'+detail)
+          PY
+          fi
+          exit "$test_status"
       - name: Verify Python syntax
         run: python3 -m compileall -q scripts/sandy
       - name: Verify feature-discovery risk policy syntax

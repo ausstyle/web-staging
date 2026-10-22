@@ -1,0 +1,19 @@
+{
+  "observed_at": "2026-10-21T23:34:32.972792+00:00",
+  "derived_synthetic_facts_removed": 6,
+  "business_or_auth_customer_records_removed": false,
+  "execution_and_audit_ledger_retained": true,
+  "all_6_dedicated_fixture_customers": [
+    "22fa86f7-11a4-44b7-b8f4-3f4a7d8414e1",
+    "677702cc-a796-48e2-b849-043713e68e2d",
+    "a36f4eb6-9b8a-4de1-97b7-bf73d5253c71",
+    "cba84e0d-c516-47c4-b782-1c23d39cea7b",
+    "ce8571de-2c80-4a92-8ebc-81099a28037f",
+    "d513119e-5ecd-4aa7-8ad0-0acecdb6b3b5"
+  ],
+  "independent_remaining": {
+    "facts": 0,
+    "links": 0
+  },
+  "baseline_ownership_recovery": "Exactly two rows match the fixed synthetic task title/status, INSERT provenance, deleted customer/task and recorded original run window; four other customer IDs are retained in fixture manifests."
+}

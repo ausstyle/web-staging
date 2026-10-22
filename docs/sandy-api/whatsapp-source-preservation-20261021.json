@@ -1,0 +1,37 @@
+{
+  "deployed_version": 155,
+  "verify_jwt": false,
+  "source": "Actual production ESZIP original source maps; preserved before customer-link transaction changes",
+  "sources": [
+    {
+      "path": "index.ts",
+      "sha256": "3470471d8e435519f38fc16ecfa15a29a376baf7bdde0c17d9e7753ba3dca884",
+      "matches_workspace": false,
+      "secret_pattern_count": 0
+    },
+    {
+      "path": "helpers.ts",
+      "sha256": "023151a14122b9fae007a69968f40ff77476d626529f99ca2fc1648d045766f9",
+      "matches_workspace": false,
+      "secret_pattern_count": 0
+    },
+    {
+      "path": "deliver.ts",
+      "sha256": "7bec58a3aefd356dec1186eef91885035848a45d5e6e98102907c36992b31a20",
+      "matches_workspace": false,
+      "secret_pattern_count": 0
+    },
+    {
+      "path": "schedule-preview.ts",
+      "sha256": "9fcce9bc4eeae171f3a276f1ac48eaf6482f1050342288636b2ef832cb019748",
+      "matches_workspace": false,
+      "secret_pattern_count": 0
+    },
+    {
+      "path": "collab-route.ts",
+      "sha256": "6a954e5d245de75a26050ab9dd4f14f411fdf4da852286e947659956d441cfb1",
+      "matches_workspace": false,
+      "secret_pattern_count": 0
+    }
+  ]
+}

@@ -1,0 +1,329 @@
+{
+  "id": "application_leaf_links_v1",
+  "format_version": "1.0.0",
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "complete_tenant_coverage": false,
+  "external_provider_assets_included": false,
+  "schema_sha256": "458d232e80ec0d39383ddb96f2f85fecda1fe29faed5562cdd5838e96690ba7a",
+  "row_limit_per_table": 1000,
+  "maximum_artifact_bytes": 2097152,
+  "maximum_text_characters": 10000,
+  "tables": [
+    {
+      "table": "sandy_task_pins",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "task_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "customer_id",
+        "task_id"
+      ],
+      "order": [
+        "task_id"
+      ]
+    },
+    {
+      "table": "sandy_company_aliases",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "company_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "alias",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "normalized_alias",
+          "type": "text",
+          "nullable": false,
+          "generated": "s",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "customer_id",
+        "normalized_alias"
+      ],
+      "order": [
+        "normalized_alias"
+      ]
+    },
+    {
+      "table": "sandy_agenda_attention",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "task_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "first_detected_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "nullable": true,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "order": [
+        "id"
+      ]
+    },
+    {
+      "table": "sandy_life_task_contexts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "task_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "space_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "area_key",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "order": [
+        "id"
+      ]
+    },
+    {
+      "table": "sandy_life_goal_tasks",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "goal_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "task_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "goal_id",
+        "task_id"
+      ],
+      "order": [
+        "goal_id",
+        "task_id"
+      ]
+    },
+    {
+      "table": "sandy_social_connections",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "person_id",
+          "type": "uuid",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "related_person_id",
+          "type": "uuid",
+          "nullable": true,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "relationship",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "evidence_fact_id",
+          "type": "uuid",
+          "nullable": true,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "verification_status",
+          "type": "text",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false,
+          "generated": "",
+          "identity": ""
+        }
+      ],
+      "primary_key": [
+        "id"
+      ],
+      "order": [
+        "id"
+      ]
+    }
+  ],
+  "manifest_sha256": "02a198c09fcb15a3e88142bbe2c2fe002fe52a4fbdd3b1901b3593a6a4d16cf3"
+}

@@ -1,0 +1,162 @@
+{
+  "schema_version": "1.0.0",
+  "methods": 18,
+  "implemented_boundary": "bounded_fixed_project_private_protocol_capture",
+  "api_exposed": false,
+  "verified": false,
+  "provider_called": false,
+  "auth_session_tested": false,
+  "all_161_requirements_completed": false,
+  "limits": [
+    "64KiB per crypto input field",
+    "1MiB private JSON response",
+    "fixed project/europe-west1 and europe-west1-b",
+    "No public payload retrieval, credential activation or general signing service"
+  ],
+  "operations": [
+    {
+      "operation": "gcp.backup.data_sources.fetch_access_token.capture",
+      "provider_operation_id": "backupdr.projects.locations.backupVaults.dataSources.fetchAccessToken",
+      "requirement": 74,
+      "source_sha256": "1e11c8d80357d3044a0001a2504269311c5ae59d57b729ee8a2a0168a04e93fc",
+      "contract_sha256": "918d055e00ce1f9c14e97998f9bf5443ed55a57eacafe330bcc62be554bb47f0",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.compute.instances.get_guest_attributes.capture",
+      "provider_operation_id": "compute.instances.getGuestAttributes",
+      "requirement": 26,
+      "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "contract_sha256": "7421261590ee3990a2d69773e2f0ec15e20fdb0bf8fefd2baead45c2e3193f75",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.compute.instances.get_screenshot.capture",
+      "provider_operation_id": "compute.instances.getScreenshot",
+      "requirement": 26,
+      "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "contract_sha256": "0802a431307703f91d4af19a1ac834beab30797934279075a35f6f8ca82fc0f6",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.compute.instances.get_shielded_instance_identity.capture",
+      "provider_operation_id": "compute.instances.getShieldedInstanceIdentity",
+      "requirement": 26,
+      "source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "contract_sha256": "7b32967ad9c49f60c803c6ebeea1a6312566e28334f36a38f90bda1f885d0fa4",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.asymmetricDecrypt",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "15b62a287a9c031e96c65e23478a944bc9a9f583384ac909d6a0f6e857c192b4",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.asymmetricSign",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "f396e90c14e9e299b706ad13d8955eb08c742e3f66c702bd5df6d2a16cffc262",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.decapsulate.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.decapsulate",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "c4f4153ed701cf6ed6fe0458e4eb8b0bb3514ece329bd41e3b2b4bc8d47fc426",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.exportTrustedKeyWrappedCryptoKeyVersion",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "94a54f6f6bab5af08304b3a05705bffa0600b889b4ad8617d7eb1fbb14f513d5",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.get_public_key.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.getPublicKey",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "316d37d9f0732fe5d5b81b6fab73b7cccecc3aab69d32eca4d693cd8328943fd",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.importTrustedKeyWrappedCryptoKeyVersion",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "c9426a3ee51a2c1a46a78c4251953cee48633fed7d427803105797b547b5be36",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.mac_sign.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.macSign",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "e49504f92373d7bcf9d39595adf89f114e86871996754c00d27139c82ce9594e",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.mac_verify.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.macVerify",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "631cfc000b03e55916c7517c2eba6b3179461f3bd3db2a909b293748475a6a6f",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.raw_decrypt.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.rawDecrypt",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "4335e6d10c4511e7699aac99b9242b009bcefb114277d066d4c8f501671a73e5",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_key_versions.raw_encrypt.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.cryptoKeyVersions.rawEncrypt",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "7e9fadaa2f97e9aa6df6134295d43ccb47679d0ce6ae179c1475c99eb4733c27",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_keys.decrypt.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.decrypt",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "6c126f6ed27e3292524405250c55e3aca9d6a58fb3fe7ee79e056733d7f19c73",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kms.crypto_keys.encrypt.capture",
+      "provider_operation_id": "cloudkms.projects.locations.keyRings.cryptoKeys.encrypt",
+      "requirement": 73,
+      "source_sha256": "bae50d6d91cacc23a663d2ab93fce1e76dd088516821b9e0966a3300d20a0bf4",
+      "contract_sha256": "4c90df25cc68d7893071b48a1099499c086bf1a862dd3d45010ddec51b4e0204",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.kubernetes.clusters.get_jwks.capture",
+      "provider_operation_id": "container.projects.locations.clusters.getJwks",
+      "requirement": 62,
+      "source_sha256": "a14f9220095bc4eafafa86c17e1436eb4e1393320e6da0e0002795b4f74f96c0",
+      "contract_sha256": "eb74e16d92589d865e6e53367c8ad55f0f4b05315f386148f7fde0368fa30ad4",
+      "provider_verified": false
+    },
+    {
+      "operation": "gcp.monitoring.notification_channels.get_verification_code.capture",
+      "provider_operation_id": "monitoring.projects.notificationChannels.getVerificationCode",
+      "requirement": 68,
+      "source_sha256": "fd24b71316e15d0aed479a873bdc229d03fea212f2a97736c6bb09208766183d",
+      "contract_sha256": "4de848e8a26d3c4016891b6dce47839cfcc8162984bc9bb47ad7c4baeb8e3362",
+      "provider_verified": false
+    }
+  ]
+}

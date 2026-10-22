@@ -1,5 +1,5 @@
 {
-  "source_commit": "6f5b3d63ae634e5f08f4623505d1ff248f75931e",
+  "source_commit": "b934aaa4609f19dd7ac8f30bcbbb78b36375d4db",
   "risk": "high",
   "purpose": "One authenticated owner approval installs the exact Amendment B foundation and an explicitly declared durable, revocable grant; no workload self-authorization.",
   "prerequisite": {
@@ -75,15 +75,15 @@
     "deno.lock": "bcc20b3cf248f33dd10458b30ae73c5e66720d5e05a15865b9bd2f1b8192aa7c"
   },
   "workflow": {
-    ".github/workflows/sandy-runtime-release-checks.yml": "2eda353916fd8c6c88eb2cd00a179708bef39fc61b2e9312ebe975ee9ce03ad0",
-    ".github/workflows/sandy-amendment-b-release.yml": "821e09374f6aff9dcbd39194cc331b81fc5ecd2ae5143ddd5c1466b0320ececa",
-    ".github/workflows/sandy-engineering-control-repair.yml": "1b203dca038d3da8385b896a3fe2018532623c4ac942ce127d522eb2e1ff0499"
+    ".github/workflows/sandy-runtime-release-checks.yml": "16fd870304f31d7278105e55e3d962131776256d313b37df028a0769d4a19b6b",
+    ".github/workflows/sandy-amendment-b-release.yml": "09f95fee9fd902b16a77564f5b2b3b549cfa068ab2e34beb60c0cd8fe17832b1",
+    ".github/workflows/sandy-engineering-control-repair.yml": "7104c4007bb6648217de0ea3346842630463147d7453f507608709e871afaaec"
   },
   "rollback": "Capture exact prior Control/runtime bundles and schema function bodies privately under both component locks. Preserve the approved owner-repair migration. On failure stop new dispatch, revoke the standing grant through legitimate administration, restore source-compatible prior code under fresh version/source guards, and retain every approval, execution and revocation event. Prefer forward schema repair; never drop customer data or rewrite approval history.",
   "previous_immutable_manifest": {
-    "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
-    "sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
-    "archive": "docs/sandy-engineering/evaluations/p0-amendment-b-source-manifest.2994c411.json",
+    "source_commit": "6f5b3d63ae634e5f08f4623505d1ff248f75931e",
+    "sha256": "0cb21633c5f1e96d90aca7d712e1aa11bf5ccb142b1c91c0aa473dcae094e783",
+    "archive": "docs/sandy-engineering/evaluations/p0-amendment-b-source-manifest.6f5b3d63.json",
     "deployed": false
   },
   "reconciliation": {
@@ -91,6 +91,10 @@
     "new_policy_scope_added": false,
     "current_deployed_runtime_index_preserved": true,
     "existing_customer_data_changed": false,
-    "owner_approval_inferred_from_previous_manifest": false
+    "owner_approval_inferred_from_previous_manifest": false,
+    "existing_environment_secret_reference_corrected": true,
+    "canonical_migration_workflow_paths": true,
+    "security_function_sources_changed": false,
+    "standing_declaration_changed": false
   }
 }

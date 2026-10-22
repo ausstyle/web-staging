@@ -1,0 +1,270 @@
+{
+  "counts": {
+    "registered": 2570,
+    "api_exposed_flags": 432,
+    "ai_exposed_flags": 415,
+    "verified_flags": 18,
+    "engineering_distinct_mcp_e2e_verified": 11
+  },
+  "current_metadata_versions": [
+    {
+      "slug": "sandy-operation-api",
+      "version": 26,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-api-mcp",
+      "version": 14,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-engineering-runtime",
+      "version": 3,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-engineering-control",
+      "version": 43,
+      "status": "ACTIVE",
+      "verify_jwt": false
+    },
+    {
+      "slug": "sandy-provider-operation-api",
+      "version": 12,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-provider-gap-api",
+      "version": 7,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    },
+    {
+      "slug": "sandy-engineering-execution-fixture",
+      "version": 9,
+      "status": "ACTIVE",
+      "verify_jwt": true
+    }
+  ],
+  "verified_operation_evidence": {
+    "github.commit": {
+      "recorded_at": "2026-10-21T13:11:03.004030+00:00",
+      "mcp_end_to_end_verified": true,
+      "evidence_level": "actual_dedicated_normal_Auth_workload_MCP_to_Sandy_API_to_provider",
+      "scope": "exact owner-authorized isolated fixtures only",
+      "provider_family_complete": false,
+      "tool_argument_envelope_live_verified": true,
+      "personal_controller_session_used": false,
+      "service_role_substituted_for_user": false,
+      "controller_memberships": 0,
+      "api_source_commit": "545fa35afd2af4ded680dc85cc0491bdd03a018f",
+      "api_code_deployment_version": 24,
+      "successful_calls": [
+        {
+          "operation": "github.commit",
+          "request_id": "3a8351db-9726-4ffd-8140-d32191ada825",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "24b77dfa-244d-4190-a940-1192858a2e56",
+          "provider_http_status": 201,
+          "response_sha256": "c775b52338e009b77fcf759b1ab99b68cca2a39cb38ce4b4923375882d6c7ea6"
+        }
+      ],
+      "credential_rotation_and_session_renewal_live_verified": true,
+      "ordinary_nonowner_eight_denials_verified": true,
+      "source_evidence_sha256": "b163afe056e075368161343641cca86ec180c54ae2e8e3c5414529287cc34618"
+    },
+    "github.files.update": {
+      "recorded_at": "2026-10-21T13:11:03.004030+00:00",
+      "mcp_end_to_end_verified": true,
+      "evidence_level": "actual_dedicated_normal_Auth_workload_MCP_to_Sandy_API_to_provider",
+      "scope": "exact owner-authorized isolated fixtures only",
+      "provider_family_complete": false,
+      "tool_argument_envelope_live_verified": true,
+      "personal_controller_session_used": false,
+      "service_role_substituted_for_user": false,
+      "controller_memberships": 0,
+      "api_source_commit": "545fa35afd2af4ded680dc85cc0491bdd03a018f",
+      "api_code_deployment_version": 24,
+      "successful_calls": [
+        {
+          "operation": "github.files.update",
+          "request_id": "a35218a8-fff8-4b03-9f26-2f4518d12e82",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "d8ede045-43ad-43da-9bf6-d8c91443c4e9",
+          "provider_http_status": 200,
+          "response_sha256": "bb47c8a9b7905693518a748cfe3d243a466ce4dc37a008fd672ae8354f74747e"
+        },
+        {
+          "operation": "github.files.update",
+          "request_id": "4712a418-e578-4dbb-8050-6121eae01d16",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "cd13dad5-2325-4eaf-8f16-bf7829faf5e8",
+          "provider_http_status": 200,
+          "response_sha256": "8f9e62bf004af62f6d01e7fe60d3d1863e443f754c109cccc7fe22cc641d3984"
+        }
+      ],
+      "credential_rotation_and_session_renewal_live_verified": true,
+      "ordinary_nonowner_eight_denials_verified": true,
+      "source_evidence_sha256": "b163afe056e075368161343641cca86ec180c54ae2e8e3c5414529287cc34618"
+    },
+    "supabase.db.migrations.apply": {
+      "recorded_at": "2026-10-21T13:11:03.004030+00:00",
+      "mcp_end_to_end_verified": true,
+      "evidence_level": "actual_dedicated_normal_Auth_workload_MCP_to_Sandy_API_to_provider",
+      "scope": "exact owner-authorized isolated fixtures only",
+      "provider_family_complete": false,
+      "tool_argument_envelope_live_verified": true,
+      "personal_controller_session_used": false,
+      "service_role_substituted_for_user": false,
+      "controller_memberships": 0,
+      "api_source_commit": "545fa35afd2af4ded680dc85cc0491bdd03a018f",
+      "api_code_deployment_version": 24,
+      "successful_calls": [
+        {
+          "operation": "supabase.db.migrations.apply",
+          "request_id": "5d345eb4-e747-4188-90eb-481f10ca25da",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "3025ff09-6600-4eb2-b6ec-bda8c16474fa",
+          "provider_http_status": 200,
+          "response_sha256": "3360e5f305648acaef2aaa0814d9ca2cd894962560f93f29042f363436ad5d29"
+        },
+        {
+          "operation": "supabase.db.migrations.apply",
+          "request_id": "fc21598d-7a7d-43b7-9e0d-847a138a2d91",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "e3360472-3600-4531-a89b-d7699a9fe450",
+          "provider_http_status": 200,
+          "response_sha256": "f54d9bc9d760adf7e57ba8b46ad6acb1e86927bed635c8fd3507efd28827c88e"
+        }
+      ],
+      "credential_rotation_and_session_renewal_live_verified": true,
+      "ordinary_nonowner_eight_denials_verified": true,
+      "source_evidence_sha256": "b163afe056e075368161343641cca86ec180c54ae2e8e3c5414529287cc34618"
+    },
+    "supabase.deploy_edge_function": {
+      "recorded_at": "2026-10-21T13:11:03.004030+00:00",
+      "mcp_end_to_end_verified": true,
+      "evidence_level": "actual_dedicated_normal_Auth_workload_MCP_to_Sandy_API_to_provider",
+      "scope": "exact owner-authorized isolated fixtures only",
+      "provider_family_complete": false,
+      "tool_argument_envelope_live_verified": true,
+      "personal_controller_session_used": false,
+      "service_role_substituted_for_user": false,
+      "controller_memberships": 0,
+      "api_source_commit": "545fa35afd2af4ded680dc85cc0491bdd03a018f",
+      "api_code_deployment_version": 24,
+      "successful_calls": [
+        {
+          "operation": "supabase.deploy_edge_function",
+          "request_id": "f6d255fa-aa8b-4bed-8d77-6114aa63773a",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "ca5c18a4-ca93-41a2-8e67-3922beaee6e3",
+          "provider_http_status": 201,
+          "response_sha256": "2b24352514d2b720ed68fbcb8a23f5ec930c8b4a826ccdc229ab1eddb5be32a0"
+        },
+        {
+          "operation": "supabase.deploy_edge_function",
+          "request_id": "1b298fa6-9d06-469d-b9fd-61a2cb9f2b15",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "c921e674-f058-4b2c-bc95-121f35824f45",
+          "provider_http_status": 201,
+          "response_sha256": "f1049dd4a720e48a32de12b2b3cb7a3da8e469ef2cc16526349fe159847110d3"
+        }
+      ],
+      "credential_rotation_and_session_renewal_live_verified": true,
+      "ordinary_nonowner_eight_denials_verified": true,
+      "source_evidence_sha256": "b163afe056e075368161343641cca86ec180c54ae2e8e3c5414529287cc34618"
+    },
+    "supabase.functions.secrets.set": {
+      "recorded_at": "2026-10-21T13:11:03.004030+00:00",
+      "mcp_end_to_end_verified": true,
+      "evidence_level": "actual_dedicated_normal_Auth_workload_MCP_to_Sandy_API_to_provider",
+      "scope": "exact owner-authorized isolated fixtures only",
+      "provider_family_complete": false,
+      "tool_argument_envelope_live_verified": true,
+      "personal_controller_session_used": false,
+      "service_role_substituted_for_user": false,
+      "controller_memberships": 0,
+      "api_source_commit": "545fa35afd2af4ded680dc85cc0491bdd03a018f",
+      "api_code_deployment_version": 24,
+      "successful_calls": [
+        {
+          "operation": "supabase.functions.secrets.set",
+          "request_id": "7695487d-4946-4faa-b0eb-35e8a0988e70",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "584cf584-4ca9-4ace-bdb9-1eb82fa3929f",
+          "provider_http_status": 201,
+          "response_sha256": "b7052aa1fc0736bc06a93da14e78994bcf937b067b9807609d0b6214b679b734"
+        }
+      ],
+      "credential_rotation_and_session_renewal_live_verified": true,
+      "ordinary_nonowner_eight_denials_verified": true,
+      "source_evidence_sha256": "b163afe056e075368161343641cca86ec180c54ae2e8e3c5414529287cc34618"
+    },
+    "supabase.logs.query": {
+      "recorded_at": "2026-10-21T13:11:03.004030+00:00",
+      "mcp_end_to_end_verified": true,
+      "evidence_level": "actual_dedicated_normal_Auth_workload_MCP_to_Sandy_API_to_provider",
+      "scope": "exact owner-authorized isolated fixtures only",
+      "provider_family_complete": false,
+      "tool_argument_envelope_live_verified": true,
+      "personal_controller_session_used": false,
+      "service_role_substituted_for_user": false,
+      "controller_memberships": 0,
+      "api_source_commit": "545fa35afd2af4ded680dc85cc0491bdd03a018f",
+      "api_code_deployment_version": 24,
+      "successful_calls": [
+        {
+          "http_status": 200,
+          "executed": true,
+          "provider_http_status": 200,
+          "admission_id": "1aa9cb80-b8ef-492d-9edc-263b8a5d53af",
+          "fixture_marker_observed": true,
+          "project_logs_filtered_to_fixture": true
+        }
+      ],
+      "credential_rotation_and_session_renewal_live_verified": true,
+      "ordinary_nonowner_eight_denials_verified": true,
+      "source_evidence_sha256": "ae4a20f80164a7c65b740a736cd78528bad40b8aaf1d6d701f009aa006b8c50c"
+    }
+  },
+  "new_catalogue_rows": 0,
+  "new_original_161_requirements_certified": 0,
+  "scoped_workload_mcp_discoverable_and_provider_verified": 6
+}

@@ -1,0 +1,23 @@
+{
+  "timestamp_utc": "2026-10-21T05:31:46.609228+00:00",
+  "base_commit": "a4f9f5f",
+  "change": "Canonical and original-ID alias GitHub pull-request merge share one explicit boolean classifier after provider schema validation. HTTP200 merged=false returns409 executed=false with provider_attempted=true and terminal failed receipt. Malformed/lost/upstream5xx/persistence ambiguity returns executed=null and reconciliation_required=true with no second provider write.",
+  "scope": "Existing canonical github.pull_requests.merge and github.merge alias only; no other default behavior changed.",
+  "catalogues_unchanged_sha256": {
+    "supabase/functions/sandy-provider-operation-api/catalogue.ts": "03dcdb26866baf024c85db46da3febe2dd6de6e561fb2f2ffd3c6452a2167603",
+    "supabase/functions/sandy-provider-operation-api/gateway_manifest.json": "a16cc84f123c1cc8605c5efa631feb54d45adb78ff276fae49b6bf9390096553",
+    "supabase/functions/sandy-legacy-compatibility-api/provider_contracts.json": "d96ebc21ab5053902dd7e6d1420fbdab4a727650b1bec3f371f8e123bc74ddf7"
+  },
+  "deno_passed": 43,
+  "deno_failed": 0,
+  "test_files": [
+    "supabase/functions/sandy-provider-operation-api/merge_result_test.ts",
+    "supabase/functions/sandy-provider-operation-api/index_test.ts",
+    "supabase/functions/sandy-legacy-compatibility-api/provider_handler_test.ts"
+  ],
+  "test_log": "github-merge-shared-correction-tests.log",
+  "actual_provider_writes": 0,
+  "actual_auth_session": false,
+  "sql_changes": 0,
+  "production_deployed": false
+}

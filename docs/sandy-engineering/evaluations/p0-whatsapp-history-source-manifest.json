@@ -1,0 +1,29 @@
+{
+  "function": "sandy-whatsapp-webhook",
+  "source_commit": "be851722e37c352ecaa0f86f258fe3ebf89bd1c7",
+  "change_id": "7edbee5b-4185-4f6b-b7b1-b41899d4dfc8",
+  "branch": "engineering/sandy-unified-intelligence-20261021",
+  "risk": "normal",
+  "purpose": "Supply sender/phone-scoped paired history and original follow-up text to already existing central-runtime routes for the existing verified Executive pilot only. Preserve noncanary routing, pairing, providers, all scopes, learning hook, media and delivery. No pilot enrollment or cross-customer identity merge.",
+  "expected_prior_version": 162,
+  "prior_bundle_sha256": "d99f754b2e6210f8c86601b038c47d4043e73fe318801246ad48dccf7f1a2f56",
+  "prior_original_files": {
+    "sandy-whatsapp-webhook/index.ts": "3470471d8e435519f38fc16ecfa15a29a376baf7bdde0c17d9e7753ba3dca884",
+    "sandy-whatsapp-webhook/helpers.ts": "4340167fbd1657c46e112bb96e28349a7e0960c88ff20fba4312c348be05090c",
+    "sandy-whatsapp-webhook/deliver.ts": "060bac9bfde5119334384ccdbb9b8c78ed59e50d4495233dd3f408e01d8cd76f",
+    "sandy-whatsapp-webhook/schedule-preview.ts": "9fcce9bc4eeae171f3a276f1ac48eaf6482f1050342288636b2ef832cb019748",
+    "sandy-whatsapp-webhook/collab-route.ts": "6a954e5d245de75a26050ab9dd4f14f411fdf4da852286e947659956d441cfb1"
+  },
+  "verify_jwt": false,
+  "files": {
+    "sandy-whatsapp-webhook/index.ts": "3470471d8e435519f38fc16ecfa15a29a376baf7bdde0c17d9e7753ba3dca884",
+    "sandy-whatsapp-webhook/helpers.ts": "4340167fbd1657c46e112bb96e28349a7e0960c88ff20fba4312c348be05090c",
+    "sandy-whatsapp-webhook/deliver.ts": "4a2cf99ffabeca21e55c7f775ba9fd75d3468fa4df857e137f8dd34bd6f5adfa",
+    "sandy-whatsapp-webhook/executive.ts": "fcc095f1494974c4c0c828455c0b220ea470730d700b427b26355549e8ec1b5c",
+    "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+    "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+    "sandy-whatsapp-webhook/schedule-preview.ts": "9fcce9bc4eeae171f3a276f1ac48eaf6482f1050342288636b2ef832cb019748",
+    "sandy-whatsapp-webhook/collab-route.ts": "6a954e5d245de75a26050ab9dd4f14f411fdf4da852286e947659956d441cfb1"
+  },
+  "rollback": "Restore all five captured original v162 modules under a fresh WhatsApp component lease with a current version/source guard. Preserve provider messages, memory jobs, identity and scope records, web pilot allowlist, customer data and Gmail confirmation. No message replay."
+}

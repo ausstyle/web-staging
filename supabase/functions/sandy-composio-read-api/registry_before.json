@@ -1,0 +1,57 @@
+[
+  {
+    "operation": "composio.discover_toolkits",
+    "handler": "sandy-system-introspection",
+    "permission_scope": "system:read",
+    "is_mutation": false,
+    "input_schema": {},
+    "output_schema": {},
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  },
+  {
+    "operation": "composio.execute_read",
+    "handler": "sandy-composio-gateway",
+    "permission_scope": "connections:read",
+    "is_mutation": false,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "toolkit_slug",
+        "tool_slug",
+        "request_key",
+        "read_only"
+      ],
+      "properties": {
+        "arguments": {
+          "type": "object"
+        },
+        "read_only": {
+          "const": true
+        },
+        "tool_slug": {
+          "type": "string"
+        },
+        "company_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "request_key": {
+          "type": "string"
+        },
+        "toolkit_slug": {
+          "type": "string"
+        }
+      }
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "api_exposed": true,
+    "ai_exposed": true,
+    "verified": false
+  }
+]

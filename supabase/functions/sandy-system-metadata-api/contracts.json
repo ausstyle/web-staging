@@ -1,0 +1,1508 @@
+{
+  "version": "1.0.0",
+  "operations": [
+    {
+      "operation": "system.catalog",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": false,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "after_operation": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+          },
+          "domain": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "search": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "is_mutation": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.catalog"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+                    },
+                    "domain": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "permission_scope": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "is_mutation": {
+                      "type": "boolean"
+                    },
+                    "handler": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "api_exposed": {
+                      "type": "boolean"
+                    },
+                    "ai_exposed": {
+                      "type": "boolean"
+                    },
+                    "verified": {
+                      "type": "boolean"
+                    },
+                    "last_verified_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "implementation_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    }
+                  },
+                  "required": [
+                    "operation",
+                    "domain",
+                    "permission_scope",
+                    "is_mutation",
+                    "handler",
+                    "api_exposed",
+                    "ai_exposed",
+                    "verified",
+                    "last_verified_at",
+                    "implementation_state"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "null"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.catalog: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "b9f7fe3ed0e848755e8a23e194b599f97d8bbb1d1fd6ed8c45e7e0aa547ab2ff"
+    },
+    {
+      "operation": "system.operation_catalog",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": false,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "after_operation": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+          },
+          "domain": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "search": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "is_mutation": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.operation_catalog"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+                    },
+                    "domain": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "permission_scope": {
+                      "type": "string",
+                      "maxLength": 120
+                    },
+                    "is_mutation": {
+                      "type": "boolean"
+                    },
+                    "handler": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "api_exposed": {
+                      "type": "boolean"
+                    },
+                    "ai_exposed": {
+                      "type": "boolean"
+                    },
+                    "verified": {
+                      "type": "boolean"
+                    },
+                    "last_verified_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "implementation_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    }
+                  },
+                  "required": [
+                    "operation",
+                    "domain",
+                    "permission_scope",
+                    "is_mutation",
+                    "handler",
+                    "api_exposed",
+                    "ai_exposed",
+                    "verified",
+                    "last_verified_at",
+                    "implementation_state"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "null"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.operation_catalog: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "511fd4094d5c176bb3bddf8854a4993b2bfe12c71a1436c7be740e9512d6adc6"
+    },
+    {
+      "operation": "system.capabilities",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": false,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "feature_key": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "channel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "health_state": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "checked_after": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cursor": {
+            "type": "object",
+            "properties": {
+              "feature_key": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "scope_fingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "channel": {
+                "type": "string",
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "feature_key",
+              "scope_fingerprint",
+              "channel"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.capabilities"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "feature_key": {
+                      "type": "string",
+                      "maxLength": 240
+                    },
+                    "scope_fingerprint": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "deployment_version": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 240
+                    },
+                    "implementation_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "auth_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "health_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "checked_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "provider_verified": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "feature_key",
+                    "scope_fingerprint",
+                    "channel",
+                    "deployment_version",
+                    "implementation_state",
+                    "auth_state",
+                    "health_state",
+                    "checked_at",
+                    "provider_verified"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "null"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "feature_key": {
+                        "type": "string",
+                        "maxLength": 240
+                      },
+                      "scope_fingerprint": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "maxLength": 80
+                      }
+                    },
+                    "required": [
+                      "feature_key",
+                      "scope_fingerprint",
+                      "channel"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.capabilities: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "1aab674304d37bc9b68f97524974825fe7ff047df434b07dedec5fe89085aec3"
+    },
+    {
+      "operation": "system.runtime",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": false,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "feature_key": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "channel": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "health_state": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "checked_after": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "cursor": {
+            "type": "object",
+            "properties": {
+              "feature_key": {
+                "type": "string",
+                "maxLength": 240
+              },
+              "scope_fingerprint": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "channel": {
+                "type": "string",
+                "maxLength": 80
+              },
+              "checked_at": {
+                "type": "string",
+                "maxLength": 64,
+                "pattern": "^(none|[0-9]{4}-[0-9]{2}-[0-9]{2}T.*(Z|[+-][0-9]{2}:[0-9]{2}))$"
+              }
+            },
+            "required": [
+              "feature_key",
+              "scope_fingerprint",
+              "channel",
+              "checked_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.runtime"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "feature_key": {
+                      "type": "string",
+                      "maxLength": 240
+                    },
+                    "scope_fingerprint": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "channel": {
+                      "type": "string",
+                      "maxLength": 80
+                    },
+                    "deployment_version": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "maxLength": 240
+                    },
+                    "implementation_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "auth_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "health_state": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "checked_at": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    },
+                    "provider_verified": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "feature_key",
+                    "scope_fingerprint",
+                    "channel",
+                    "deployment_version",
+                    "implementation_state",
+                    "auth_state",
+                    "health_state",
+                    "checked_at",
+                    "provider_verified"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "null"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "feature_key": {
+                        "type": "string",
+                        "maxLength": 240
+                      },
+                      "scope_fingerprint": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "channel": {
+                        "type": "string",
+                        "maxLength": 80
+                      },
+                      "checked_at": {
+                        "type": "string",
+                        "maxLength": 64,
+                        "pattern": "^(none|[0-9]{4}-[0-9]{2}-[0-9]{2}T.*(Z|[+-][0-9]{2}:[0-9]{2}))$"
+                      }
+                    },
+                    "required": [
+                      "feature_key",
+                      "scope_fingerprint",
+                      "channel",
+                      "checked_at"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.runtime: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "b2750051ed3a907d88fd5a7a75e8ebdc7c0aa596233563d0055e52e8cf58479d"
+    },
+    {
+      "operation": "system.connections",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": true,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "company_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "provider": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "status": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "after_fingerprint": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "customer_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.connections"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "connection_fingerprint": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    "provider": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "recorded_status": {
+                      "type": "string",
+                      "maxLength": 160
+                    },
+                    "company_id": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "uuid"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "provider_verified": {
+                      "const": false
+                    }
+                  },
+                  "required": [
+                    "connection_fingerprint",
+                    "provider",
+                    "recorded_status",
+                    "company_id",
+                    "updated_at",
+                    "provider_verified"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "null"
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.connections: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "65b9cc93320a930f72d128b1082346335d2e544b2477a55922aaa200d5515447"
+    },
+    {
+      "operation": "system.coverage",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": false,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "after_operation": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+          },
+          "domain": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "search": {
+            "type": "string",
+            "maxLength": 240
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "is_mutation": {
+            "type": "boolean"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.coverage"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "operation": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+                    },
+                    "api_exposed": {
+                      "type": "boolean"
+                    },
+                    "ai_exposed": {
+                      "type": "boolean"
+                    },
+                    "verified": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "operation",
+                    "api_exposed",
+                    "ai_exposed",
+                    "verified"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "object",
+                "properties": {
+                  "registered": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "verified": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "unverified": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "api_exposed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "ai_exposed": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "registry_flags_complete": {
+                    "type": "boolean"
+                  },
+                  "original_161_completion_not_established": {
+                    "const": true
+                  },
+                  "count_scope": {
+                    "const": "filtered_registry"
+                  }
+                },
+                "required": [
+                  "registered",
+                  "verified",
+                  "unverified",
+                  "api_exposed",
+                  "ai_exposed",
+                  "registry_flags_complete",
+                  "original_161_completion_not_established",
+                  "count_scope"
+                ],
+                "additionalProperties": false
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.coverage: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "66e4b47ec49c2a3dcdc8aa6fab572c6d4c9bbbd3f46e18974b925838a18ca996"
+    },
+    {
+      "operation": "system.operation_status",
+      "handler": "sandy-system-metadata-api",
+      "version": "1.0.0",
+      "permission_scope": "system:read",
+      "is_mutation": false,
+      "requires_approval": false,
+      "requires_real_user_session": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "request_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.operation_status"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "request_state": {
+            "const": "observed"
+          },
+          "executed": {
+            "const": true
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "maxItems": 100,
+                "items": {
+                  "type": "object",
+                  "properties": {},
+                  "required": [],
+                  "additionalProperties": false
+                }
+              },
+              "item": {
+                "type": "object",
+                "properties": {
+                  "ok": {
+                    "const": true
+                  },
+                  "admission_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "request_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "operation": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_.-]{2,239}$"
+                  },
+                  "request_state": {
+                    "type": "string",
+                    "enum": [
+                      "admitted",
+                      "consumed",
+                      "accepted",
+                      "succeeded",
+                      "failed",
+                      "unknown",
+                      "rejected"
+                    ]
+                  },
+                  "accepted": {
+                    "type": "boolean"
+                  },
+                  "executed": {
+                    "type": [
+                      "boolean",
+                      "null"
+                    ]
+                  },
+                  "completed": {
+                    "type": "boolean"
+                  },
+                  "outcome": {
+                    "type": "string",
+                    "enum": [
+                      "pending",
+                      "accepted",
+                      "succeeded",
+                      "failed",
+                      "unknown",
+                      "rejected"
+                    ]
+                  },
+                  "provider_http_status": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 100,
+                    "maximum": 599
+                  },
+                  "provider_request_id_sha256": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "result_sha256": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "reconciliation_required": {
+                    "type": "boolean"
+                  },
+                  "redispatch_permitted": {
+                    "const": false
+                  },
+                  "created_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "finished_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ],
+                    "format": "date-time"
+                  }
+                },
+                "required": [
+                  "ok",
+                  "admission_id",
+                  "request_id",
+                  "operation",
+                  "request_state",
+                  "accepted",
+                  "executed",
+                  "completed",
+                  "outcome",
+                  "provider_http_status",
+                  "provider_request_id_sha256",
+                  "result_sha256",
+                  "reconciliation_required",
+                  "redispatch_permitted",
+                  "created_at",
+                  "finished_at"
+                ],
+                "additionalProperties": false
+              },
+              "next_cursor": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 240
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "possibly_truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "recorded_metadata"
+              },
+              "provider_verified": {
+                "const": false
+              },
+              "executability_not_implied": {
+                "const": true
+              },
+              "schemas_via": {
+                "const": "Sandy API describe"
+              },
+              "notice": {
+                "type": "string",
+                "maxLength": 600
+              }
+            },
+            "required": [
+              "items",
+              "item",
+              "next_cursor",
+              "possibly_truncated",
+              "source",
+              "provider_verified",
+              "executability_not_implied",
+              "schemas_via",
+              "notice"
+            ],
+            "additionalProperties": false
+          },
+          "reconciliation_required": {
+            "const": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "request_id",
+          "request_state",
+          "executed",
+          "result",
+          "reconciliation_required"
+        ],
+        "additionalProperties": false
+      },
+      "description": "system.operation_status: bounded explicit recorded metadata under a genuine owner admission; source flags do not prove current deployment, provider connectivity or original161 completion.",
+      "contract_sha256": "dc705411e86ca8245335fc5ad380eae809259dabbbb3459ee847f6061c2b6a9c"
+    }
+  ]
+}

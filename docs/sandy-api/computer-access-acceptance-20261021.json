@@ -1,0 +1,477 @@
+{
+  "observed_at": "2026-10-21T18:42:16.852973+00:00",
+  "completion": false,
+  "acceptance_passed": 0,
+  "acceptance_required": 3,
+  "production_backend": {
+    "version": 63,
+    "source_commit": "fff2ef5",
+    "source_readback": {
+      "slug": "sandy-deploy-provision",
+      "body_http": 200,
+      "sources": [
+        {
+          "path": "sandy-deploy-provision/index.ts",
+          "expected_sha256": "31c45c3b673ef7148cf54f1c354fe578f37e06a9f351dd39528d0b4ca6ac3e09",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-deploy-provision/video_network.ts",
+          "expected_sha256": "aed1d02c4871169eddf3aadade004b5819a9ce0bb8bedfc8bde7228941185112",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-vm-protocol-api/preflight.ts",
+          "expected_sha256": "3c772d22443fe467f5209912409741b56b519bda6a63d5b5ffd24a462771c8a6",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-vm-protocol-api/compute.ts",
+          "expected_sha256": "809002f559c20b730d0915e4485a52581a38ef126253479157324f3ddb27d380",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-vm-protocol-api/errors.ts",
+          "expected_sha256": "ec6a7f14345ecdcbe0d57fe14d6523919f829294ce1ca9760f6a2514b0c0b5fc",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-vm-protocol-api/bindings.ts",
+          "expected_sha256": "bfd99ea7401d31674379f5a9355885f7da02d90f5c44fde91eb14d0dad7e0698",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-supplement-api/runtime.ts",
+          "expected_sha256": "0394437936a0ee6a640745ceeaace74ccf20a3a5f4db6c8b868edbcdcf812823",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "expected_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/validator_cache.ts",
+          "expected_sha256": "c977a9929d10bb5faa01c0e8390c8821d10cbe73a4fcb121344946930a86f25c",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-supplement-api/contracts.ts",
+          "expected_sha256": "3276f51681cb1908878d60ce3238d2cd4ace5a230c80a685c6fb80d45fad1671",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-supplement-api/scope.ts",
+          "expected_sha256": "5f8f357bbd0d8d5678de40d67b355c223bc1b9b97c167e05793b77641c9284fb",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-operation-api/configured_scopes.ts",
+          "expected_sha256": "881f592b66b11f7b0edb9ba332fb3a8521a25a2d8fc1b5e02acbf6c95bc1c672",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-provider-supplement-api/scope_from_descriptor.ts",
+          "expected_sha256": "c5a88e95478e10583be3b6028f828c5d7ef97a06309360c629d2605dfa91806e",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "_shared/sandy_machine_identity.ts",
+          "expected_sha256": "3ddd14f8bbba19131ffbf7d18c8e3e192500ac254e20186b030e55514bc2894e",
+          "exact_original_source_match": true
+        },
+        {
+          "path": "sandy-vm-protocol-api/iap.ts",
+          "expected_sha256": "cee83ef2c7d6e1e22db04e408dae1b5f6e27b917a515bfcd48a6716b4176b088",
+          "exact_original_source_match": true
+        }
+      ],
+      "all_uploaded_sources_verified": true,
+      "all_uploaded_sources_accounted_for": true,
+      "compiler_runtime_graph": "sandy-deploy-provision-v63-deno-info.json",
+      "current_source_commit": "fff2ef5b8b4c9a6e4751f570261f51a073662b0e",
+      "uploaded_source_commit": "fff2ef5b8b4c9a6e4751f570261f51a073662b0e",
+      "current_runtime_metadata": {
+        "version": 63,
+        "status": "ACTIVE",
+        "verify_jwt": false
+      }
+    },
+    "previous_known_good_source": "d61bdd335d5636987019e46c34bb683fd6b04e98",
+    "gateway_unchanged": 31,
+    "MCP_unchanged": 14
+  },
+  "private_IAP_connectivity": {
+    "observed_at": "2026-10-21T18:32:54.747044+00:00",
+    "backend_version": 61,
+    "source_commit": "1f15ccd",
+    "http_status": 200,
+    "administrative_transport_audit_id": 75,
+    "customer_MCP_proof": false,
+    "result": {
+      "ok": false,
+      "administrative_readiness_only": true,
+      "provider_configuration_changed": false,
+      "commands_executed": 0,
+      "targets": [
+        {
+          "vm_name": "sandy-video",
+          "remote_command_executed": false,
+          "host_identity_verified": false,
+          "customer_or_MCP_execution": false,
+          "vm_identity_verified": true,
+          "vm_proof_sha256": "95d093642c620e37e94d36c0956386ac08ecca0660f3598f6b3ce6e856885b1d",
+          "public_address_required": false,
+          "iap_port": 22,
+          "target_permission": {
+            "permission": "compute.instances.osLogin",
+            "granted": true
+          },
+          "iap_tcp_connected": false,
+          "error": "iap_connection_refused",
+          "provider_http": null,
+          "provider_close_code": 4033
+        },
+        {
+          "vm_name": "sandy-windows",
+          "remote_command_executed": false,
+          "host_identity_verified": false,
+          "customer_or_MCP_execution": false,
+          "vm_identity_verified": true,
+          "vm_proof_sha256": "94dfef41c5396ddf92a46aaf87d4bf04df0ef5b80132c4c75643f4c229d1f7b0",
+          "public_address_required": false,
+          "iap_port": 5986,
+          "target_permission": {
+            "permission": "compute.instances.get",
+            "granted": true
+          },
+          "iap_tcp_connected": false,
+          "error": "iap_connection_refused",
+          "provider_http": null,
+          "provider_close_code": 4033
+        }
+      ]
+    }
+  },
+  "IAP_permission_observation": {
+    "observed_at": "2026-10-21T18:40:34.711856+00:00",
+    "backend_version": 63,
+    "http_status": 200,
+    "administrative_transport_audit_id": 77,
+    "customer_MCP_proof": false,
+    "result": {
+      "ok": false,
+      "administrative_readiness_only": true,
+      "provider_configuration_changed": false,
+      "commands_executed": 0,
+      "permission_test_only": true,
+      "targets": [
+        {
+          "vm_name": "sandy-video",
+          "remote_command_executed": false,
+          "host_identity_verified": false,
+          "customer_or_MCP_execution": false,
+          "vm_identity_verified": true,
+          "vm_proof_sha256": "95d093642c620e37e94d36c0956386ac08ecca0660f3598f6b3ce6e856885b1d",
+          "public_address_required": false,
+          "iap_port": 22,
+          "target_permission": {
+            "permission": "compute.instances.osLogin",
+            "granted": true
+          },
+          "iap_permission_observation_unavailable": true,
+          "iap_permission_error": {
+            "code": "vm_provider_iam_or_identity_refused",
+            "http_status": 403,
+            "reason": null
+          },
+          "tunnel_attempted": false
+        },
+        {
+          "vm_name": "sandy-windows",
+          "remote_command_executed": false,
+          "host_identity_verified": false,
+          "customer_or_MCP_execution": false,
+          "vm_identity_verified": true,
+          "vm_proof_sha256": "94dfef41c5396ddf92a46aaf87d4bf04df0ef5b80132c4c75643f4c229d1f7b0",
+          "public_address_required": false,
+          "iap_port": 5986,
+          "target_permission": {
+            "permission": "compute.instances.get",
+            "granted": true
+          },
+          "iap_permission_observation_unavailable": true,
+          "iap_permission_error": {
+            "code": "vm_provider_iam_or_identity_refused",
+            "http_status": 403,
+            "reason": null
+          },
+          "tunnel_attempted": false
+        }
+      ]
+    }
+  },
+  "existing_runtime_state": {
+    "observed_at": "2026-10-21T18:27:37.540449+00:00",
+    "windows_agent": [
+      {
+        "vm_name": "sandy-windows",
+        "last_seen_at": "2026-10-19 23:43:45.436+00",
+        "age_seconds": 153833
+      }
+    ],
+    "computer_sessions": [
+      {
+        "provider": "daytona",
+        "state": "running",
+        "sessions": 1
+      },
+      {
+        "provider": "daytona",
+        "state": "stopped",
+        "sessions": 1
+      },
+      {
+        "provider": "daytona",
+        "state": "failed",
+        "sessions": 5
+      }
+    ],
+    "windows_commands": [
+      {
+        "operation": "screenshot",
+        "state": "failed",
+        "commands": 1
+      },
+      {
+        "operation": "screenshot",
+        "state": "completed",
+        "commands": 99
+      },
+      {
+        "operation": "open_url",
+        "state": "completed",
+        "commands": 11
+      },
+      {
+        "operation": "type",
+        "state": "completed",
+        "commands": 4
+      },
+      {
+        "operation": "key",
+        "state": "completed",
+        "commands": 8
+      },
+      {
+        "operation": "click",
+        "state": "completed",
+        "commands": 37
+      }
+    ]
+  },
+  "authenticated_MCP_discovery": {
+    "observed_at": "2026-10-21T18:36:01.676183+00:00",
+    "http_status": 200,
+    "tools": [
+      {
+        "name": "github.commit",
+        "description": "Sandy API operation: github.commit"
+      },
+      {
+        "name": "github.files.update",
+        "description": "Sandy API operation: github.files.update"
+      },
+      {
+        "name": "supabase.db.migrations.apply",
+        "description": "Sandy API operation: supabase.db.migrations.apply"
+      },
+      {
+        "name": "supabase.deploy_edge_function",
+        "description": "Sandy API operation: supabase.deploy_edge_function"
+      },
+      {
+        "name": "supabase.functions.secrets.set",
+        "description": "Sandy API operation: supabase.functions.secrets.set"
+      },
+      {
+        "name": "supabase.logs.query",
+        "description": "Sandy API operation: supabase.logs.query"
+      },
+      {
+        "name": "video.execution.preflight",
+        "description": "Sandy API operation: video.execution.preflight"
+      },
+      {
+        "name": "video.install.preflight",
+        "description": "Sandy API operation: video.install.preflight"
+      },
+      {
+        "name": "video.network.preflight",
+        "description": "Sandy API operation: video.network.preflight"
+      },
+      {
+        "name": "video.osconfig.access",
+        "description": "Sandy API operation: video.osconfig.access"
+      },
+      {
+        "name": "video.osconfig.agent_status",
+        "description": "Sandy API operation: video.osconfig.agent_status"
+      },
+      {
+        "name": "video.osconfig.permissions",
+        "description": "Sandy API operation: video.osconfig.permissions"
+      },
+      {
+        "name": "video.osconfig.policy_preflight",
+        "description": "Sandy API operation: video.osconfig.policy_preflight"
+      },
+      {
+        "name": "video.ssh.preflight",
+        "description": "Sandy API operation: video.ssh.preflight"
+      },
+      {
+        "name": "video.status",
+        "description": "Sandy API operation: video.status"
+      }
+    ],
+    "result_keys": [
+      "jsonrpc",
+      "id",
+      "result"
+    ],
+    "normal_auth_through_dedicated_runtime": true,
+    "personal_token_used": false
+  },
+  "native_output_candidate": {
+    "contract_version": "1.1.0",
+    "deployed": false,
+    "new_operation_ids": 0,
+    "tests": {
+      "Deno_component_protocol": 37,
+      "compiler_invariants": 3,
+      "actual_database_rollback": 55
+    },
+    "SQL_evidence": {
+      "timestamp_utc": "2026-10-21T18:39:55.047473+00:00",
+      "http_status": 201,
+      "full_rollback": true,
+      "actual_auth_session": false,
+      "actual_provider_calls": 0,
+      "catalogue_activated": false,
+      "query_sha256": "aa5db4ced0f9636b7d2856946d331e5ce62b62b533625343f34e0cd6235b1fc2",
+      "source_sha256": {
+        "supabase/migrations/20261021008900_sandy_vm_protocol_boundary.sql": "6267b7f9d1975e3042000c5e07915c42cddbc8f6ddb56dc8e8f471b1c0d8564c",
+        "supabase/migrations/20261021008910_sandy_vm_protocol_contracts.sql": "b0372cfb9a0300d66456db22bb4cddc35e050c63b33d31632906cef8bc673092",
+        "supabase/functions/sandy-vm-protocol-api/custody_test.sql": "e7f6ebb7cf1c3c8cf774603aba33442353f84dd6066d9757f1c529403f10b058"
+      },
+      "result": [
+        {
+          "evidence": {
+            "checks": 55,
+            "labels": [
+              "admission_contexts_private_acl",
+              "all_nine_closed",
+              "all_unrelated_registry_rows_unchanged",
+              "altered_input_refused",
+              "approval_metadata_drift_refused",
+              "attempt_replay_refused_before_transport",
+              "attempts_private_acl",
+              "binding_get_exact",
+              "bindings_private_acl",
+              "command_digest_only_result",
+              "command_encrypted_native_vault",
+              "command_exact_ttl",
+              "command_get_metadata_only",
+              "commands_private_acl",
+              "contracts_private_acl",
+              "cross_vm_command_refused",
+              "delegated_identity_refused",
+              "enrollment_owner_context",
+              "enrollment_replay_refused",
+              "enrollment_without_identity_probe_refused",
+              "expected_command_sha_refused",
+              "explicit_authorized_output_matches_private_capture",
+              "first_attempt_claimed",
+              "foreign_actor_refused",
+              "forged_authorized_output_refused",
+              "gcp_consumer_post108_configuration_only",
+              "inline_ssh_exact_command",
+              "inline_winrm_fixed_binding",
+              "known_nonzero_command_failed",
+              "metadata_finish_tamper_refused",
+              "metadata_receipts_private_acl",
+              "native_mutation_finished_without_fake_http",
+              "native_output_finish_tamper_refused",
+              "output_native_vault_exact_ttl",
+              "output_no_public_bytes",
+              "output_replay_refused",
+              "output_wrong_digest_refused",
+              "outputs_private_acl",
+              "private_admission_arguments_encrypted",
+              "registered_command_exact_private_resolve",
+              "resolver_rpc_private",
+              "revoked_binding_absent",
+              "revoked_command_refused",
+              "revoked_command_vault_deleted",
+              "scope_substitution_refused",
+              "six_new_rows_only",
+              "succeeded_owner_pinned_binding_available",
+              "unconfirmed_owner_refused",
+              "unfinished_enrollment_not_usable",
+              "unknown_cannot_claim_success",
+              "unknown_preserves_running_job",
+              "unknown_with_native_result_refused",
+              "unknown_without_result_requires_reconciliation",
+              "vault_command_digest_tamper_refused",
+              "wrong_consumer_refused"
+            ],
+            "passed": true,
+            "full_rollback": true,
+            "provider_called": false,
+            "actual_auth_session": false,
+            "dummy_vault_material_only": true
+          }
+        }
+      ],
+      "independent_cleanup": [
+        {
+          "candidate_tables_absent": true,
+          "fixture_users": 0
+        }
+      ]
+    },
+    "output": "include_output=true on the same approved operation; original actor/input/target/admission, encrypted capture, exact byte hashes and terminal outcome are bound; default remains metadata only"
+  },
+  "acceptance": [
+    {
+      "case": "Linux MCP whoami + output + exit + disconnect",
+      "passed": false,
+      "actual_command_executed": false,
+      "provider_result": "IAP WebSocket close 4033 before SSH authentication",
+      "normal_OS_Login_permission_observed": true
+    },
+    {
+      "case": "Windows MCP harmless PowerShell command + output + exit + disconnect",
+      "passed": false,
+      "actual_command_executed": false,
+      "provider_result": "IAP WebSocket close 4033 before WinRM authentication",
+      "guest_agent_fresh": false
+    },
+    {
+      "case": "Graphical/browser MCP interaction + screenshot/artifact",
+      "passed": false,
+      "actual_interaction_executed": false,
+      "remaining_implementation": "Normal caller/target-bound session lifecycle and artifact delivery over the existing computer/guest services; no service-key substitute for a customer session"
+    }
+  ],
+  "remaining_components": [
+    "Resolve Google IAP authorization on the two fixed VM targets; permission inspection also returns403, so no missing role is inferred as fact",
+    "Approved host-key/certificate enrollment and Windows technical credential or fresh enrolled guest session",
+    "Activate the existing typed VM operations through Sandy API/MCP with genuine scoped authorization and actual provider acceptance",
+    "Reusable tenant-bound graphical sessions, lease/resume/termination and scoped artifact delivery using existing session/task stores",
+    "Generic file/service/software workflows over the authenticated execution layer; no app-specific MCP tools"
+  ],
+  "registry_verification_flags_changed": false,
+  "credentials_in_report": false
+}

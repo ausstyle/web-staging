@@ -1,0 +1,412 @@
+{
+  "id": "financial_subject_text_redaction_v1",
+  "format_version": "1.0.0",
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "complete_tenant_coverage": false,
+  "financial_records_preserved": true,
+  "external_provider_assets_included": false,
+  "restore_supported": false,
+  "retained_control_copies": true,
+  "maximum_records_per_policy": 1000,
+  "maximum_source_row_bytes": 16777216,
+  "replacement_text": "[redacted:subject-data-request]",
+  "resources": [
+    {
+      "table": "sandy_commerce_accounts",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "code",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "kind",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "minor_unit_exponent",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "active",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "redacted_fields": [
+        "name"
+      ],
+      "owner_column": "customer_id"
+    },
+    {
+      "table": "sandy_commerce_entries",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "external_reference",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "effective_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "minor_unit_exponent",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "reversal_of",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "posted_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "redacted_fields": [
+        "description"
+      ],
+      "owner_column": "customer_id"
+    },
+    {
+      "table": "sandy_commerce_entry_lines",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "entry_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "account_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "debit_minor",
+          "type": "bigint",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "credit_minor",
+          "type": "bigint",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "redacted_fields": [
+        "description"
+      ],
+      "owner_column": "entry_id",
+      "ownership_adapter": "financial_entry_customer"
+    },
+    {
+      "table": "sandy_commerce_statement_lines",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "statement_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "external_reference",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "effective_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "amount_minor",
+          "type": "bigint",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "nullable": false
+        }
+      ],
+      "redacted_fields": [
+        "description"
+      ],
+      "owner_column": "statement_id",
+      "ownership_adapter": "financial_statement_customer"
+    },
+    {
+      "table": "sandy_commerce_invoices",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "counterparty_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "external_reference",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "minor_unit_exponent",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "items",
+          "type": "jsonb",
+          "nullable": false,
+          "encoding": "strict_invoice_items"
+        },
+        {
+          "name": "subtotal_minor",
+          "type": "numeric(30,0)",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "tax_minor",
+          "type": "bigint",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "discount_minor",
+          "type": "bigint",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "total_minor",
+          "type": "numeric(30,0)",
+          "nullable": false,
+          "encoding": "decimal_integer_string"
+        },
+        {
+          "name": "due_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "state",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "invoice_number",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "source_message_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "forwarding_status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "payment_status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "redacted_fields": [
+        "counterparty_name",
+        "items.description"
+      ],
+      "owner_column": "customer_id"
+    },
+    {
+      "table": "sandy_commerce_entitlements",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "customer_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "feature_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        },
+        {
+          "name": "revoked_at",
+          "type": "timestamp with time zone",
+          "nullable": true
+        },
+        {
+          "name": "reason",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "nullable": false
+        }
+      ],
+      "redacted_fields": [
+        "reason"
+      ],
+      "owner_column": "customer_id"
+    }
+  ],
+  "retained_categories": [
+    "financial_identifiers_and_external_references",
+    "amounts_currency_units_and_balance_history",
+    "posted_reversal_invoice_numbering_and_versions",
+    "commercial_consent_and_entitlement_state",
+    "source_relationships_and_record_identity",
+    "shared_admission_and_audit_hashes",
+    "separate_product_and_commerce_control_payload_copies"
+  ],
+  "financial_source_manifest_sha256": "ccac4b06066c1f9ed0613d47e00e6abc85075063a29ce26f9b82f11fe43eaeb1",
+  "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+  "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63"
+}

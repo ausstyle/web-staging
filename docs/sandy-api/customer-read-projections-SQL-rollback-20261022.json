@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-21T22:25:36.878354+00:00",
+  "HTTP": 201,
+  "test_layer": "real_PostgreSQL_claim_and_data_component",
+  "normal_Auth_or_MCP_test": false,
+  "all_DDL_and_fixtures_rolled_back": true,
+  "source_sha256": "7f1ff1866ccb6b278b7cba668c21e7f6ebd067b72ffff04d4c55697a0f4079b2",
+  "result": [
+    {
+      "assertions": 13,
+      "passed": true
+    }
+  ]
+}

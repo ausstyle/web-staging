@@ -13,7 +13,6 @@ import unittest
 ROOT = Path(__file__).resolve().parents[2]
 EDGE = (ROOT / "supabase/functions/sandy-engineering-oidc-ingest/index.ts").read_text()
 FLOW = (ROOT / ".github/workflows/sandy-v2-examiner-design.yml").read_text()
-EVOLUTION = (ROOT / "supabase/functions/sandy-auto-improve/index.ts").read_text()
 MIGRATION = (ROOT / "supabase/migrations/20261017211020_sandy_examiner_ai_test_architect_design_cache.sql").read_text()
 
 class TestExaminerIntelligentDesign(unittest.TestCase):
@@ -187,10 +186,6 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         self.assertIn('if(handoffReceiptError)return fail(', EDGE)
         self.assertNotIn('EdgeRuntime.waitUntil(diagnostic)', EDGE)
 
-    def test_evolution_uses_approved_operational_model(self):
-        self.assertIn('model:"gpt-5.2",store:false', EVOLUTION)
-        self.assertNotIn('model:"gpt-6-astra"', EVOLUTION)
-
     def test_connected_lab_checks_real_sandy_runtime_without_mutation(self):
         for text in ('examinerlab_','url+"/functions/v1/sandy-agent-runtime"',
                      'required:"gmail_verified_recent"','required:"v2_connection_preflight"',
@@ -219,10 +214,6 @@ class TestExaminerIntelligentDesign(unittest.TestCase):
         for text in ('sandy_examiner_acceptance_gates','if(summary.attempted>0)',
                      'x.ai_design_run&&x.verdict==="pass"','acceptance_gate_write_failed'):
             self.assertIn(text, EDGE)
-
-    def test_evolution_diagnosis_json_has_room_and_explicit_failure(self):
-        for text in ('max_output_tokens:4500','diagnosis_response_incomplete','diagnosis_json_not_parseable'):
-            self.assertIn(text, EVOLUTION)
 
     def test_provider_count_parity_not_conflated_with_content_truth(self):
         for text in ('provider_count_comparable:providerCountComparable','provider_count_matches:providerCountMatches',

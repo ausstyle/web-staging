@@ -14,7 +14,7 @@
     },
     {
       "scope_id": "SANDY-API-161",
-      "title": "Sandy API Scope — 161 Requirement Families",
+      "title": "Sandy API Scope \u2014 161 Requirement Families",
       "scope_kind": "api",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-api/api-scope-161.md",
@@ -28,7 +28,7 @@
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0001-runtime-reasoning-reliability.md",
-      "source_version": "1.1",
+      "source_version": "1.2",
       "status": "DRAFT",
       "priority": "P0"
     },
@@ -68,7 +68,7 @@
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0005-api-mcp-engineering-delivery.md",
-      "source_version": "1.1",
+      "source_version": "1.2",
       "status": "DRAFT",
       "priority": "P1"
     },

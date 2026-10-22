@@ -1,0 +1,157 @@
+{
+  "at": "2026-10-21T02:22:59.706Z",
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "level": "actual_read_only_provider_component",
+  "controller_session_tested": false,
+  "sandy_api_mcp_end_to_end_tested": false,
+  "provider_mutation_tested": false,
+  "credential_disclosed": false,
+  "window_start": "2026-10-21T02:21:00.000Z",
+  "window_end": "2026-10-21T02:22:00.000Z",
+  "checks": [
+    {
+      "operation": "supabase.orgs.list",
+      "ok": true,
+      "http_status": 200,
+      "provider_request_id": null,
+      "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "result_schema_valid": true,
+      "returned_count": 0,
+      "correct_bound_organization_observed": false,
+      "content_disclosed": false
+    },
+    {
+      "operation": "supabase.project.logs.query",
+      "ok": true,
+      "http_status": 200,
+      "provider_request_id": null,
+      "response_sha256": "acf26309d10b2bd883a4f595e74a663b39dcb19ee399b191b4edc147824605ae",
+      "result_schema_valid": true,
+      "returned_count": 1,
+      "correct_bound_organization_observed": null,
+      "content_disclosed": false
+    }
+  ],
+  "schema_probes": {
+    "time": "2026-10-21T02:05:18.192803+00:00",
+    "checks": [
+      {
+        "operation": "bound_project_relation",
+        "status": 200,
+        "project_matches": true,
+        "organization_relation_present": true,
+        "response_sha256": "cf117e496210d6067db67cafa57680a6f9bb26816ea16fadf4faa55aef9acf5e"
+      },
+      {
+        "operation": "supabase.orgs.list",
+        "status": 200,
+        "bound_relationship_matches": 0,
+        "other_organizations_projected": false,
+        "response_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "operation": "logs_count_only_schema_probe",
+        "status": 200,
+        "has_error": true,
+        "result_is_array": false,
+        "result_keys": [],
+        "row_count": null,
+        "response_sha256": "0e94ee0ac7fb093fcf96c867dcf3d4fec1fa67548f1823fc860e362c1acde8d4",
+        "window_start": "2026-10-21T02:04:00+00:00",
+        "window_end": "2026-10-21T02:05:00+00:00"
+      },
+      {
+        "operation": "logs_unified_stream_count_only",
+        "status": 200,
+        "has_error": false,
+        "unknown_table": false,
+        "syntax_error": false,
+        "result_is_array": true,
+        "row_keys": [
+          "row_count"
+        ],
+        "row_count": 46,
+        "response_sha256": "344a033d1cce7eae153a3296a2b8a001141c13ddd028368cbdf52347274ad3a3",
+        "window_start": "2026-10-21T02:04:00+00:00",
+        "window_end": "2026-10-21T02:05:00+00:00"
+      },
+      {
+        "operation": "logs_empty_content_projection_probe",
+        "status": 200,
+        "has_error": false,
+        "unknown_identifier": false,
+        "result_is_array": true,
+        "row_keys": [
+          "event_message",
+          "id",
+          "source",
+          "timestamp"
+        ],
+        "field_types": {
+          "event_message": "str",
+          "id": "str",
+          "source": "str",
+          "timestamp": "str"
+        },
+        "all_messages_empty": true,
+        "response_sha256": "7c62be47f0ea6e73ee8f0ced5d67b3585b86fc7e0ec804e9bae6d8d274aa8b32",
+        "window_start": "2026-10-21T02:15:00+00:00",
+        "window_end": "2026-10-21T02:16:00+00:00"
+      }
+    ],
+    "dependencies": {
+      "organization_read": "list returned empty and direct bound organization GET403",
+      "logs_query": "see fixed query receipt"
+    }
+  },
+  "regression_evidence": {
+    "handler_tests": 14,
+    "all_operation_dispatch_cases": 35,
+    "isolated_postgresql_checks": 17,
+    "fixed_graphql_documents": 17,
+    "pinned_provider_sources": 5,
+    "rest_and_compute_method_checks": 26,
+    "controller_session_tested": false,
+    "provider_mutation_tested": false,
+    "original_provider_read_checks_after_consumer_extension": 24
+  },
+  "migration_rollback_evidence": [
+    {
+      "migration": "20261021008000_sandy_provider_package_identity.sql",
+      "test": "package_identity_test.sql",
+      "http_status": 201,
+      "all_changes_rolled_back": true,
+      "migration_sha256": "e5377ec6c3fde78d3883d59d84cd44938f4fa168e45e59d79caa4d7ebbfdffe0"
+    },
+    {
+      "migration": "20261021008100_sandy_provider_gap_contracts.sql",
+      "test": "registry_test.sql",
+      "http_status": 201,
+      "all_changes_rolled_back": true,
+      "migration_sha256": "0269dded368f4c3dd44250d78f4e6dedf2bcbdf82fc4ceba0fcd92ead492d04f"
+    },
+    {
+      "migration": "combined06200-08300.sql",
+      "test": "combined-consumer-test.sql",
+      "http_status": 201,
+      "all_changes_rolled_back": true,
+      "migration_sha256": "c7656bd9cf6bef5c831b4fc4b91b66a1a80d287b82cb9d22651b607bfe468fb6"
+    }
+  ],
+  "negative_consumer_source_guard_evidence": {
+    "migration": "20261021008300_sandy_provider_gap_consumer.sql",
+    "test": "consumer_resolver_test.sql",
+    "http_status": 400,
+    "all_changes_rolled_back": true,
+    "migration_sha256": "fa319cbc4481c05f8aef47cdfa14315914c127620f3e0198033b2fd4234f72f8",
+    "error_code": null,
+    "diagnostic": "Failed to run sql query: ERROR:  P0001: reviewed_06200_consumer_resolver_required\nCONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE\n"
+  },
+  "consumer_resolver": {
+    "baseline_06200_prosrc_sha256": "13e166e4fe8d56f5db964ce0977101874c1060825b9f0e7a3e312e140213ddf9",
+    "updated_08300_prosrc_sha256": "ff5e15282be44ce823b77e71d477dc3be74bb93c58a7ded1d279e0f2bdd3999c",
+    "only_handler_added": "sandy-provider-gap-api",
+    "existing_provider_read_proof_checks_preserved": true,
+    "new_active_bindings_created": false
+  }
+}

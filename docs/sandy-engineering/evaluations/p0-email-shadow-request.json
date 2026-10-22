@@ -1,0 +1,23 @@
+{
+  "action": "register",
+  "title": "SANDY-ENG-0001 bounded email-shadow shared Executive adapter",
+  "problem": "The remaining channel adapter needs the existing shared identity, history and truthful execution contracts; this is a bounded prerequisite, not complete channel acceptance.",
+  "expected_behavior": "Release 1c1a21b67c68993c2637cefe97134befa091fdac; manifest f7b111d8222b011d4cc24423b2c91fa0ee5f3666788826ccbc1d6625832be951. Send bounded same-customer/thread history into the existing shared read-only Executive assessment. Preserve QA subject/allowlist checks and authoritative draft generation; no delivery or draft promotion.",
+  "change_purpose": "Complete the shared intelligence runtime incrementally without replacing working transports or creating identities.",
+  "feature_improvement": "Send bounded same-customer/thread history into the existing shared read-only Executive assessment. Preserve QA subject/allowlist checks and authoritative draft generation; no delivery or draft promotion.",
+  "scope": [
+    "github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021",
+    "sandy-email-runtime-canary"
+  ],
+  "risk": "normal",
+  "idempotency_key": "sandy-eng0001-email-shadow-1c1a21b67c68",
+  "regression_rules": [
+    "Preserve existing customer identities, current source, Gmail confirmation, records, provider protections and pilot allowlist.",
+    "Require exact CI, legitimate applicable release authority, lease, rollback and independent source readback.",
+    "Do not claim customer acceptance from isolated tests, source upload or negative authorization probes."
+  ],
+  "acceptance_criteria": [
+    "Focused adapter/source/revocation tests and serving typechecks pass.",
+    "After legitimate release admission, verify real same-customer channel effects with independent provider/source receipts."
+  ]
+}

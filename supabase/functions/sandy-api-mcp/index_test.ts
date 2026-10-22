@@ -1,3 +1,5 @@
+import { Ajv } from "npm:ajv@8.17.1";
+import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import {
   type ApiResponse,
   createApi,
@@ -52,7 +54,7 @@ Deno.test("initialization authenticates through API discovery and preserves deni
   const handler = createHandler(async (token, body) => {
     calls++;
     equal(token, "test.identity.token");
-    equal(body, { action: "list" });
+    equal(body, { action: "list", channel: "mcp", limit: 1 });
     return {
       status: 403,
       result: { error: "controller_administrator_required" },
@@ -153,6 +155,7 @@ Deno.test("tool invocation forwards caller and arguments only to Sandy API", asy
     equal(token, "test.identity.token");
     equal(body, {
       action: "execute",
+      channel: "mcp",
       operation: "resource.inspect",
       arguments: { id: "abc" },
     });
@@ -300,4 +303,278 @@ Deno.test("API transport targets only Sandy operation API and preserves caller i
     }) as typeof fetch,
   );
   equal(await api("test.identity.token", { action: "list" }), catalogue);
+});
+
+Deno.test("scoped credential remains a separate header through MCP discovery and invocation", async () => {
+  const headers: string[] = [];
+  const api = createApi(
+    "https://project.test.invalid",
+    "public-anon",
+    (async (_url, init) => {
+      const h = new Headers(init?.headers);
+      equal(h.get("authorization"), "Bearer public.anon.jwt");
+      headers.push(h.get("x-sandy-api-key") ?? "missing");
+      const body = JSON.parse(String(init?.body));
+      return Response.json(
+        body.action === "list"
+          ? { ok: true, operations: [] }
+          : { ok: true, executed: true, result: { ok: true } },
+      );
+    }) as typeof fetch,
+  );
+  const handler = createHandler(api);
+  for (
+    const body of [
+      message("tools/list"),
+      message("tools/call", { name: "resource.inspect", arguments: {} }),
+    ]
+  ) {
+    const response = await handler(
+      new Request("https://local.invalid", {
+        method: "POST",
+        headers: {
+          authorization: "Bearer public.anon.jwt",
+          "x-sandy-api-key": "opaque.private.credential",
+        },
+        body: JSON.stringify(body),
+      }),
+    );
+    equal(response.status, 200);
+  }
+  equal(headers, ["opaque.private.credential", "opaque.private.credential"]);
+});
+
+Deno.test("a typed accepted job receipt is successful MCP admission without claiming execution", async () => {
+  const receipt = {
+    ok: true,
+    accepted: true,
+    executed: false,
+    job_id: "11111111-1111-4111-8111-111111111111",
+    state: "queued",
+  };
+  const handler = createHandler(async () => ({
+    status: 202,
+    result: {
+      ...receipt,
+      operation: "orchestration.plans.execute",
+      result: receipt,
+    },
+  }));
+  const response = await handler(
+    request(
+      message("tools/call", {
+        name: "orchestration.plans.execute",
+        arguments: {},
+      }),
+    ),
+  );
+  const body = await response.json();
+  equal(body.result.isError, false);
+  equal(body.result.structuredContent, receipt);
+  equal(body.result.structuredContent.executed, false);
+});
+
+Deno.test("MCP forwards validated approval/request headers beside the unchanged user and key without changing tool arguments", async () => {
+  const approvalId = "ABCDEF12-3456-4789-ABCD-EF1234567890",
+    requestId = "12345678-1234-4234-8234-1234567890ab";
+  const requests: Request[] = [];
+  const handler = createHandler(
+    createApi(
+      "https://api.fixture.invalid",
+      "anon",
+      (async (input, init) => {
+        const req = new Request(input, init);
+        requests.push(req.clone());
+        return Response.json({
+          ok: true,
+          operation: "fixture.execute",
+          executed: true,
+          result: { ok: true },
+        });
+      }) as typeof fetch,
+    ),
+  );
+  const response = await handler(
+    new Request("https://mcp.fixture.invalid", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer actual.user.jwt",
+        "x-sandy-api-key": "opaque-private-key",
+        "x-sandy-approval-id": approvalId,
+        "x-sandy-request-id": requestId,
+        "x-sandy-actor-id": "forged",
+        "x-sandy-tenant-id": "forged",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(
+        message("tools/call", {
+          name: "fixture.execute",
+          arguments: { value: "original" },
+          _meta: {
+            actor_id: "forged",
+            tenant_id: "forged",
+            approvalId: "ignored",
+          },
+        }),
+      ),
+    }),
+  );
+  equal(response.status, 200);
+  equal((await response.json()).result.isError, false);
+  equal(requests.length, 1);
+  const sent = requests[0];
+  equal(sent.headers.get("authorization"), "Bearer actual.user.jwt");
+  equal(sent.headers.get("x-sandy-api-key"), "opaque-private-key");
+  equal(sent.headers.get("x-sandy-approval-id"), approvalId);
+  equal(sent.headers.get("x-sandy-request-id"), requestId);
+  equal(sent.headers.get("x-sandy-actor-id"), null);
+  equal(sent.headers.get("x-sandy-tenant-id"), null);
+  equal(await sent.json(), {
+    action: "execute",
+    channel: "mcp",
+    operation: "fixture.execute",
+    arguments: { value: "original" },
+  });
+});
+Deno.test("malformed or duplicate execution metadata fails before any canonical API call", async () => {
+  const id = "12345678-1234-4234-8234-1234567890ab";
+  for (const header of ["x-sandy-approval-id", "x-sandy-request-id"]) {
+    for (
+      const value of ["", "bad", id + ", " + id, id + "extra", "x".repeat(4096)]
+    ) {
+      const response = await createHandler(noApi)(
+        new Request("https://mcp.fixture.invalid", {
+          method: "POST",
+          headers: {
+            authorization: "Bearer actual.user.jwt",
+            [header]: value,
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(
+            message("tools/call", { name: "fixture.execute", arguments: {} }),
+          ),
+        }),
+      );
+      equal(response.status, 400);
+      equal((await response.json()).error, "invalid_execution_metadata");
+    }
+  }
+  const headers = new Headers({ authorization: "Bearer actual.user.jwt" });
+  headers.append("x-sandy-request-id", id);
+  headers.append("x-sandy-request-id", id);
+  equal(
+    (await createHandler(noApi)(
+      new Request("https://mcp.fixture.invalid", {
+        method: "POST",
+        headers,
+        body: JSON.stringify(init),
+      }),
+    )).status,
+    400,
+  );
+});
+Deno.test("canonical API invoker also refuses malformed execution context without transport dispatch", async () => {
+  const api = createApi(
+    "https://api.fixture.invalid",
+    "anon",
+    (() => {
+      throw Error("must not dispatch");
+    }) as typeof fetch,
+  );
+  equal(
+    await api("actual.user.jwt", { action: "execute" }, undefined, {
+      requestId: "invalid",
+    }),
+    {
+      status: 400,
+      result: {
+        ok: false,
+        error: "invalid_execution_metadata",
+        executed: false,
+      },
+    },
+  );
+});
+Deno.test("canonical MCP bounds actual bytes while accepting a one MiB base64 tool envelope", async () => {
+  let calls = 0;
+  const handler = createHandler(async (_token, body) => {
+    calls++;
+    equal(
+      (body.arguments as Record<string, unknown>).content_base64,
+      "AAAA".repeat(349525) + "AA==",
+    );
+    return {
+      status: 200,
+      result: { ok: true, executed: true, result: { ok: true } },
+    };
+  });
+  const accepted = await handler(
+    request(
+      message("tools/call", {
+        name: "gcp.storage.objects.upload.media",
+        arguments: { content_base64: "AAAA".repeat(349525) + "AA==" },
+      }),
+    ),
+  );
+  equal(accepted.status, 200);
+  equal(calls, 1);
+  const overflow = await handler(
+    new Request("https://mcp.test.invalid", {
+      method: "POST",
+      headers: {
+        authorization: "Bearer test.identity.token",
+        "content-length": "1",
+      },
+      body: " ".repeat(1550001),
+    }),
+  );
+  equal(overflow.status, 413);
+  equal(calls, 1);
+});
+Deno.test("canonical MCP API response bound accepts exact capacity and refuses overflow", async () => {
+  const empty = JSON.stringify({ padding: "" });
+  for (const size of [2300000, 2300001]) {
+    const transport = (() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({ padding: "x".repeat(size - empty.length) }),
+        ),
+      )) as typeof fetch;
+    const api = createApi("https://api.fixture.invalid", "anon", transport);
+    const response = await api("actual.user.jwt", { action: "list" });
+    const result = response.result as Record<string, unknown>;
+    equal(
+      size === 2300000 ? typeof result.padding : result.error,
+      size === 2300000 ? "string" : "sandy_api_response_size_limit",
+    );
+    if (size > 2300000) {
+      equal(result.executed, null);
+      equal(result.reconciliation_required, true);
+    }
+  }
+});
+Deno.test("per-tool execution envelope forwards approval and request context while preserving API arguments", async () => {
+  const approvalId="abcdef12-3456-4789-abcd-ef1234567890", requestId="12345678-1234-4234-8234-1234567890ab";
+  let received: unknown;
+  const h=createHandler(async (token, body, key, metadata)=>{
+    received={token,body,key,metadata};return {status:200,result:{ok:true,executed:true,result:{ok:true}}};
+  });
+  const r=await h(request(message("tools/call",{name:"github.files.update",arguments:{__sandy_execution:{approval_id:approvalId,request_id:requestId},arguments:{path:{path:"engineering-smoke/test.txt"},body:{content:"Zm9v"}}}})));
+  equal(r.status,200);equal((await r.json()).result.isError,false);
+  equal(received,{token:"test.identity.token",body:{action:"execute",channel:"mcp",operation:"github.files.update",arguments:{path:{path:"engineering-smoke/test.txt"},body:{content:"Zm9v"}}},metadata:{approvalId,requestId}});
+});
+Deno.test("malformed, forged and header-conflicting tool envelopes never invoke Sandy API", async () => {
+  for(const metadata of [{actor_id:"forged"},{approval_id:"bad"},{},{approval_id:"abcdef12-3456-4789-abcd-ef1234567890",tenant_id:"forged"}]){
+    const r=await createHandler(noApi)(request(message("tools/call",{name:"fixture.execute",arguments:{__sandy_execution:metadata,arguments:{}}})));equal(r.status,400);
+  }
+  const r=await createHandler(noApi)(new Request("https://mcp.test.invalid",{method:"POST",headers:{authorization:"Bearer test.identity.token","x-sandy-approval-id":"12345678-1234-4234-8234-1234567890ab"},body:JSON.stringify(message("tools/call",{name:"fixture.execute",arguments:{__sandy_execution:{approval_id:"abcdef12-3456-4789-abcd-ef1234567890"},arguments:{}}}))}));equal(r.status,400);
+});
+Deno.test("approval tool discovery retains local schema references for ordinary and enveloped arguments", async () => {
+  const input={type:"object",required:["body"],properties:{body:{$ref:"#/$defs/body"}},additionalProperties:false,$defs:{body:{type:"object",required:["value"],properties:{value:{type:"string"}},additionalProperties:false}}};
+  const r=await createHandler(async()=>({status:200,result:{ok:true,operations:[{operation:"fixture.mutate",api_exposed:true,ai_exposed:true,executable:true,is_mutation:true,input_schema:input}]}}))(request(message("tools/list")));
+  const schema=(await r.json()).result.tools[0].inputSchema;const ajv=new Ajv({strict:true});for(const [name,format] of Object.entries(fullFormats))ajv.addFormat(name,format as Parameters<typeof ajv.addFormat>[1]);const validate=ajv.compile(schema);
+  equal(validate({body:{value:"original"}}),true);
+  equal(validate({__sandy_execution:{approval_id:"abcdef12-3456-4789-abcd-ef1234567890"},arguments:{body:{value:"wrapped"}}}),true);
+  equal(validate({__sandy_execution:{actor_id:"forged"},arguments:{body:{value:"wrapped"}}}),false);
+  equal(validate({__sandy_execution:{request_id:"abcdef12-3456-4789-abcd-ef1234567890"},arguments:{body:{value:4}}}),false);
 });

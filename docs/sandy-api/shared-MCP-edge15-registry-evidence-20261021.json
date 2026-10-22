@@ -1,0 +1,43 @@
+{
+  "updated_existing_rows": 2,
+  "flags_unchanged": true,
+  "rows_added": 0,
+  "evidence_readback_matches": true,
+  "admissions": [
+    {
+      "id": "0917722e-35bf-4400-be7f-383f59403258",
+      "operation": "github.commit",
+      "state": "accepted",
+      "provider_http_status": 201
+    },
+    {
+      "id": "7b893c8f-7b9d-458e-b6ff-bfe1d67370d1",
+      "operation": "gcp.compute.instances.get",
+      "state": "succeeded",
+      "provider_http_status": 200
+    },
+    {
+      "id": "97d59e37-4985-4451-9937-841d2c8bc554",
+      "operation": "gcp.compute.instances.get",
+      "state": "succeeded",
+      "provider_http_status": 200
+    },
+    {
+      "id": "c4366ef4-e5b0-4aff-8a87-9aeeaeccc27a",
+      "operation": "gcp.compute.instances.get",
+      "state": "succeeded",
+      "provider_http_status": 200
+    }
+  ],
+  "session_retirement": [
+    {
+      "session_id": "217b51fe-5406-41ff-b2c7-44fb12435a60",
+      "revoked": true,
+      "auth_session_absent": true
+    }
+  ],
+  "evidence_sha256": {
+    "github.commit": "9702ef92d4c54aed8d0643236646259f3938b3e4c80fb9ac42b1d95b127ec1b7",
+    "gcp.compute.instances.get": "296db4be252958878215c9a9186f7570e715909a853b45602c69f17e7c04d5e1"
+  }
+}

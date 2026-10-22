@@ -1,0 +1,23 @@
+{
+  "action": "register",
+  "title": "Supply bounded persisted execution context to the fixed-pilot Examiner",
+  "problem": "Production judge receives answer text without the task evidence needed to assess verified reads, deadline counts, connection checks and server time. Existing historical failures must be retained.",
+  "expected_behavior": "Release 5b56701aa4da95241e8b18ec4b0f2cafe2e0b9da; manifest 7a15e247b2a65f5f645a4aa8d58c86621c866a527f021e7a41c3141340444a93. Deploy only sandy-examiner-full-cycle from observed version 19. Supply bounded server-persisted receipt context to existing independent judging; never treat it as independent provider-effect proof.",
+  "change_purpose": "SANDY-ENG-0001 failed/review case correction and independently grounded acceptance.",
+  "feature_improvement": "Retain bounded source metadata and explicit unknown/pending/failed dispositions without exporting raw customer content, identifiers or credentials.",
+  "scope": [
+    "github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021",
+    "sandy-examiner-full-cycle"
+  ],
+  "risk": "normal",
+  "idempotency_key": "sandy-examiner-receipt-context-5b56701aa4da",
+  "regression_rules": [
+    "Preserve fixed pilot, model gateway service authentication and token budget; no new credentials or permissions.",
+    "Do not overwrite past judgments, expand enrollment or misreport provider effects.",
+    "Require CI, exact source readback, component lease and private rollback."
+  ],
+  "acceptance_criteria": [
+    "Focused receipt/gateway tests and independent CI pass.",
+    "After genuinely applicable release authorization, rerun failed/review cases with independently verified task/provider evidence; preserve successful historical cases."
+  ]
+}

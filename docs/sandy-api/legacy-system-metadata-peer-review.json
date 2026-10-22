@@ -1,0 +1,33 @@
+{
+  "reviewer": "root",
+  "reviewed_at_utc": "2026-10-21T04:28:11.703364+00:00",
+  "status": "pass",
+  "frozen_files_checked": 12,
+  "independent_Deno_tests": 12,
+  "external_provider_or_customer_Auth_tested": false,
+  "author_administrative_PostgreSQL_checks": 30,
+  "source_review": [
+    "Exact current owner actual Auth admission and registry/hash/revision checks",
+    "Service-only RPC and private helper ACL; no administrative customer session substitution",
+    "Grant consumption, bounded projection and final receipt share a PostgreSQL transaction",
+    "Fixed explicit projections; no raw schemas/dependencies/provider handles/scope keys",
+    "Customer-bound sensitive connection approval and owner-only prior receipt lookup",
+    "Bounded100-row keyset continuation and250k output refusal",
+    "HTTP transport and malformed/mismatched outputs remain unknown; explicit atomic refusals stay not-executed"
+  ],
+  "blocking_findings": [],
+  "source_sha256": {
+    "supabase/functions/sandy-system-metadata-api/build_contracts.py": "39a16294492e0ea8ea9209c014243f3e560deab09273cd42e359442c470aaa35",
+    "supabase/functions/sandy-system-metadata-api/contracts.json": "981c4f426c07bb998508903a92a2bd02934d28d79ea4fc940894df3c90b71ad3",
+    "supabase/functions/sandy-system-metadata-api/contracts.ts": "d5338000a07c4ff4dcfa0eb88d84a74832e5273017e02f8743b0d8a4e7ba38ee",
+    "supabase/functions/sandy-system-metadata-api/gateway.ts": "2fd25f454e9d4e0c7604b4902019f4a979e62f944d0d1b2f36d2391c644409e3",
+    "supabase/functions/sandy-system-metadata-api/index.ts": "79ba373816a60dafe1349cf3fc2349ac315b7ac2ed9c1ba034f674e2ea5b0834",
+    "supabase/functions/sandy-system-metadata-api/index_test.ts": "a5a103d131336c2dc0dad980bc0354df890a70078567e7efb53b013cc7a70ae1",
+    "supabase/migrations/20261021010700_sandy_system_metadata_boundary.sql": "f5928247215a5c1fecfbae48d1694f66954467775a1fa8685ac5a243431b4dc0",
+    "supabase/migrations/20261021010710_sandy_system_metadata_contracts.sql": "ea89d0ba8469d17e57875e2e4693413a623ad8f1aaeb8a7b8476f50c2da0fbf4",
+    "supabase/tests/sandy_system_metadata_rollback.sql": "860045e5e70070c446df500d8be9de4f4b25e2168e721923c8081bcc3c983ef9",
+    "docs/sandy-api/legacy-system-metadata-coverage.md": "623219e7f99ee804574977bf5a3547b72994145ff98b487e2ea45fd72a041107",
+    "docs/sandy-api/legacy-system-metadata-handoff.md": "24355048d33352a406eb897162ed5a9732b296b7faf03af07d4692e706bdd857",
+    "docs/sandy-api/legacy-system-metadata-source-inventory.json": "9c72182c7531b973d85cfed9284221cd33ec942118f0cd148bb6f66e8ded8247"
+  }
+}

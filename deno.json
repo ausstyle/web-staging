@@ -1,0 +1,6 @@
+{
+  "imports": {
+    "jsr:@supabase/functions-js/edge-runtime.d.ts": "npm:@supabase/functions-js@2.105.0/src/edge-runtime.d.ts",
+    "https://esm.sh/@supabase/supabase-js@2.105.0": "npm:@supabase/supabase-js@2.105.0"
+  }
+}

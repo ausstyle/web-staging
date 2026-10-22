@@ -1,0 +1,20 @@
+{
+  "observed_at": "2026-10-21T21:39:25.043133+00:00",
+  "production_runtime_version": 6,
+  "production_updated_at": "2026-10-21T20:15:24.395Z",
+  "runtime5_source_mismatch_detected": true,
+  "deployment_prevented_by_expected_version_guard": true,
+  "recovered_modules": {
+    "sandy-engineering-runtime/index.ts": {
+      "sha256": "d738bd3c80702c960a76da6f41f735096a9a369aeb8115de54293f87b81be3f4",
+      "bytes": 12012
+    },
+    "sandy-engineering-control/workload.ts": {
+      "sha256": "ec8293f1ea666447e992673ff6f663d65df1a159e5e298f5f6d571736f0dc87e",
+      "bytes": 2717
+    }
+  },
+  "source_provenance": "Deployed ESZIP source maps, not assumed to match prior git source",
+  "production_control_path_preserved": true,
+  "control_path_new_authority_added": false
+}

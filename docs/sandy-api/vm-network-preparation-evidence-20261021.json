@@ -1,0 +1,85 @@
+{
+  "component": {
+    "result": [
+      {
+        "passed": 24,
+        "failed": 0,
+        "rolled_back": true,
+        "provider_calls": false
+      }
+    ],
+    "migration_sha256": "8851e61600c170c8fafc36954de4d12c381efb9a770b19a538b328e2a5099fd1",
+    "test_sha256": "d5ef62b891aefa08dff49a457eb20aa3bf36ae789c5205f7ba3db0c6e851aa46",
+    "candidate_ddl_rolled_back": false,
+    "reused_evidence_sha256": "d7c107f20076fe906e7daaaf41bb3e86a46ac7b25bf4852a03ae06279e0ac77c"
+  },
+  "provider_write_invoked_through_mcp": false,
+  "actor_kind": "management_administration_using_private_Sandy_backend",
+  "source_change_id": "232d8d7e-ac98-4669-9907-93302303a7c1",
+  "remote_execution_verified": false,
+  "conference_verified": false,
+  "private_transport": {
+    "kind": "existing_Vault_worker_authentication",
+    "delivery_audit_id": 72,
+    "customer_session": false
+  },
+  "preparation_preflight": {
+    "http_status": 200,
+    "ok": true,
+    "subnetwork_http": 200,
+    "error": null
+  },
+  "prior_private_google_access_enabled": false,
+  "request_id": "5a721738-5153-47c0-9a3a-9626d632e86d",
+  "administrative_preparation": {
+    "http_status": 502,
+    "result": {
+      "ok": false,
+      "request_id": "5a721738-5153-47c0-9a3a-9626d632e86d",
+      "phase": "failed",
+      "mutation_attempted": true,
+      "accepted": false,
+      "subnetwork": "default",
+      "prior_private_google_access": false,
+      "configuration_verified": false,
+      "reconciliation_required": false,
+      "error": "video_network_provider_rejected",
+      "google_http": 403,
+      "google_error_status": "GOOGLE_API_REJECTED",
+      "google_error_message": "Required 'compute.subnetworks.setPrivateIpGoogleAccess' permission for 'projects/elaborate-haven-511518-a5/regions/europe-west1/subnetworks/default'",
+      "automatic_retry": false,
+      "iam_changed": false,
+      "public_ip_added": false,
+      "firewall_changed": false,
+      "nat_created": false,
+      "paid_resource_created": false
+    }
+  },
+  "provider_blocker_or_unknown": true,
+  "source_commit": "d61bdd335d5636987019e46c34bb683fd6b04e98",
+  "backend_version": 60,
+  "source_readback_all_accounted_for": true,
+  "unit_tests_passed": 20,
+  "backend_typecheck_passed": true,
+  "migration": {
+    "migration": "20261021162000_sandy_video_network_preparation.sql",
+    "source_sha256": "8851e61600c170c8fafc36954de4d12c381efb9a770b19a538b328e2a5099fd1",
+    "apply_http": 201,
+    "version": "20261021162000",
+    "readback_http": 201,
+    "readback": [
+      {
+        "version": "20261021162000",
+        "name": "sandy_video_network_preparation",
+        "exact_source_match": true
+      }
+    ]
+  },
+  "required_external_permission": {
+    "principal": "sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com",
+    "permission": "compute.subnetworks.setPrivateIpGoogleAccess",
+    "resource": "projects/elaborate-haven-511518-a5/regions/europe-west1/subnetworks/default"
+  },
+  "scope_note": "Bounded existing-VM Google API access prerequisite only. No specialised software-installation MCP operation or video-conferencing work. No provider acceptance, successful network change or remote execution is claimed.",
+  "new_catalogue_operations": 0
+}

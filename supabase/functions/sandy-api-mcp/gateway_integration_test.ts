@@ -4,6 +4,9 @@ import {
   type OperationDependencies,
 } from "../sandy-operation-api/index.ts";
 import { createApi, createHandler } from "./index.ts";
+import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
+import { loadExpandedProviderOperation } from "../sandy-provider-operation-api/expansion.ts";
+import { expandedProviderExecutionScope } from "../sandy-provider-operation-api/expansion_gateway.ts";
 
 // These tests compose the real API and MCP request handlers. Database rows and
 // provider responses below are test fixtures, never production evidence.
@@ -48,6 +51,9 @@ function compose(options: {
   role?: string | null;
   registry?: Row[];
   backend?: () => Response;
+  actorId?: string;
+  executionPolicy?: boolean;
+  rpc?: (name: string, args: Row) => Promise<{ data: unknown; error: null }>;
 } = {}) {
   const registry = options.registry ?? [preflight(), release()];
   const identityTokens: string[] = [];
@@ -55,11 +61,21 @@ function compose(options: {
   const apiRequests: Request[] = [];
   const apiResponses: { status: number; body: Record<string, unknown> }[] = [];
   const db = {
+    rpc(name: string, args: Row) {
+      if (!options.rpc) throw Error("unexpected policy RPC");
+      return options.rpc(name, args);
+    },
     auth: {
       getUser(token: string) {
         identityTokens.push(token);
         return Promise.resolve({
-          data: { user: { id: "fixture-controller" } },
+          data: {
+            user: {
+              id: options.actorId ?? "fixture-controller",
+              role: "authenticated",
+              is_anonymous: false,
+            },
+          },
           error: null,
         });
       },
@@ -75,7 +91,7 @@ function compose(options: {
         : [{
           role: options.role ?? "owner",
           enabled: true,
-          auth_user_id: "fixture-controller",
+          auth_user_id: options.actorId ?? "fixture-controller",
         }];
       const result = () => ({ data: rows, error: null });
       const query = {
@@ -113,6 +129,7 @@ function compose(options: {
     anon: "fixture-anon-key",
     db,
     fetch: backendFetch,
+    executionPolicy: options.executionPolicy,
   });
   const gatewayFetch: typeof fetch = async (input, init) => {
     const request = new Request(input, init);
@@ -121,7 +138,10 @@ function compose(options: {
       "https://sandy.fixture.invalid/functions/v1/sandy-operation-api",
     );
     apiRequests.push(request.clone());
-    const response = await gateway(request);
+    // Supabase Edge forwards the function-name path after removing /functions/v1.
+    const response = await gateway(
+      new Request("https://edge.fixture.invalid/sandy-operation-api", request),
+    );
     apiResponses.push({
       status: response.status,
       body: await response.clone().json(),
@@ -135,13 +155,18 @@ function compose(options: {
       gatewayFetch,
     ),
   );
-  const request = (method: string, params: Row = {}) =>
+  const request = (
+    method: string,
+    params: Row = {},
+    headers: Record<string, string> = {},
+  ) =>
     mcp(
       new Request("https://mcp.fixture.invalid", {
         method: "POST",
         headers: {
           authorization: "Bearer fixture.user.jwt",
           "content-type": "application/json",
+          ...headers,
         },
         body: JSON.stringify({
           jsonrpc: "2.0",
@@ -171,7 +196,9 @@ Deno.test("composed discovery carries registry schemas through API and MCP witho
   });
   const response = await h.request("tools/list");
   assert.equal(response.status, 200);
-  const tools = (await response.json()).result.tools;
+  const first = (await response.json()).result;
+  const tools = first.tools;
+  assert.match(first._meta.sandy_catalogue_version, /^[a-f0-9]{64}$/);
   assert.equal(tools.length, 2);
   assert.deepEqual(tools[0].inputSchema, registered.input_schema);
   assert.deepEqual(tools[0].outputSchema, registered.output_schema);
@@ -181,12 +208,56 @@ Deno.test("composed discovery carries registry schemas through API and MCP witho
   assert.equal(apiRows[0].verified, false);
   registered.input_schema.title =
     "Revised registry schema, same running adapter";
-  const revisedTools =
-    (await (await h.request("tools/list")).json()).result.tools;
+  const revised = (await (await h.request("tools/list")).json()).result;
+  const revisedTools = revised.tools;
+  assert.notEqual(
+    revised._meta.sandy_catalogue_version,
+    first._meta.sandy_catalogue_version,
+  );
   assert.equal(
     revisedTools[0].inputSchema.title,
     registered.input_schema.title,
   );
+  assert.equal(h.backendRequests.length, 0);
+});
+
+Deno.test("MCP discovery traverses byte-bounded API pages and refuses stale schema cursors", async () => {
+  const first = {
+      ...preflight(),
+      input_schema: {
+        ...preflight().input_schema,
+        description: "x".repeat(950000),
+      },
+    },
+    second = {
+      ...release(),
+      input_schema: {
+        ...release().input_schema,
+        title: "Original",
+        description: "y".repeat(950000),
+      },
+    };
+  const h = compose({ registry: [first, second] });
+  const one = await (await h.request("tools/list")).json();
+  assert.equal(one.result.tools.length, 1);
+  assert.match(one.result.nextCursor, /^sc1\.[a-f0-9]{64}\.1$/);
+  const two =
+    await (await h.request("tools/list", { cursor: one.result.nextCursor }))
+      .json();
+  assert.equal(two.result.tools.length, 1);
+  assert.equal(two.result.nextCursor, undefined);
+  assert.deepEqual([one.result.tools[0].name, two.result.tools[0].name], [
+    first.operation,
+    second.operation,
+  ]);
+  assert.deepEqual(one.result.tools[0].inputSchema, first.input_schema);
+  assert.deepEqual(two.result.tools[0].inputSchema, second.input_schema);
+  second.input_schema.title = "Changed while paging";
+  const stale = await h.request("tools/list", {
+    cursor: one.result.nextCursor,
+  });
+  assert.equal(stale.status, 409);
+  assert.match((await stale.json()).error.message, /restart/);
   assert.equal(h.backendRequests.length, 0);
 });
 
@@ -284,4 +355,146 @@ Deno.test("composed initialization rejects authenticated users without controlle
     "controller_administrator_required",
   );
   assert.equal(h.backendRequests.length, 0);
+});
+
+Deno.test("forwarded MCP IDs reach canonical admission bound to actual actor, operation, arguments and scope", async () => {
+  // Synthetic scoped-policy fixture exercises the actual transport and API;
+  // it does not issue a real approval or replace a production customer session.
+  const actor = "70000000-0000-4000-8000-000000000001",
+    other = "70000000-0000-4000-8000-000000000002",
+    approval = "70000000-0000-4000-8000-000000000003",
+    requestId = "70000000-0000-4000-8000-000000000004";
+  const operation = "gcp.instance_group_managers.get",
+    args = { path: { instanceGroupManager: "fixture" } };
+  const expectedInput = await argumentDigest(args),
+    expectedScope = await argumentDigest(
+      expandedProviderExecutionScope(operation),
+    );
+  const original = await loadExpandedProviderOperation(operation);
+  assert.ok(original);
+  const unrelated = await loadExpandedProviderOperation(
+    "github.repos.get_branch_protection",
+  );
+  assert.ok(unrelated);
+  for (
+    const scenario of [
+      { actor, operation, args, approval, allowed: true, contract: original },
+      {
+        actor: other,
+        operation,
+        args,
+        approval,
+        allowed: false,
+        contract: original,
+      },
+      {
+        actor,
+        operation,
+        args: { path: { instanceGroupManager: "different" } },
+        approval,
+        allowed: false,
+        contract: original,
+      },
+      {
+        actor,
+        operation,
+        args,
+        approval: other,
+        allowed: false,
+        contract: original,
+      },
+      {
+        actor,
+        operation: unrelated.operation,
+        args: { path: { branch: "fixture" } },
+        approval,
+        allowed: false,
+        contract: unrelated,
+      },
+    ]
+  ) {
+    let admissions = 0;
+    const h = compose({
+      actorId: scenario.actor,
+      executionPolicy: true,
+      registry: [{
+        ...preflight(),
+        ...scenario.contract,
+        handler: "sandy-provider-operation-api",
+        api_exposed: true,
+        ai_exposed: true,
+        verified: true,
+        output_schema: {
+          type: "object",
+          required: ["ok"],
+          properties: { ok: { const: true } },
+        },
+        error_contract: { contract_sha256: scenario.contract.contract_sha256 },
+      }],
+      async rpc(name, proof) {
+        admissions++;
+        assert.equal(name, "sandy_api_admit_execution");
+        assert.equal(proof.p_actor_id, scenario.actor);
+        assert.equal(proof.p_tenant_id, null);
+        assert.equal(proof.p_operation, scenario.operation);
+        assert.equal(proof.p_input_sha256, await argumentDigest(scenario.args));
+        assert.equal(proof.p_request_id, requestId);
+        assert.equal(proof.p_approval_id, scenario.approval);
+        assert.equal(proof.p_credential_id, null);
+        const bound = proof.p_actor_id === actor &&
+          proof.p_operation === operation &&
+          proof.p_input_sha256 === expectedInput &&
+          proof.p_scope_sha256 === expectedScope &&
+          proof.p_approval_id === approval;
+        assert.equal(bound, scenario.allowed);
+        return {
+          error: null,
+          data: bound
+            ? {
+              ok: true,
+              allowed: true,
+              reused: false,
+              admission_id: other,
+              grant_id: approval,
+              state: "admitted",
+              executed: false,
+              expires_at: new Date(Date.now() + 60000).toISOString(),
+            }
+            : {
+              ok: false,
+              http_status: 403,
+              error: "scoped_mutation_approval_required",
+            },
+        };
+      },
+      backend: () =>
+        Response.json({
+          ok: true,
+          operation,
+          executed: true,
+          result: { metadata: "synthetic" },
+        }),
+    });
+    const result = await (await h.request("tools/call", {
+      name: scenario.operation,
+      arguments: scenario.args,
+      _meta: { actor_id: other, tenant_id: other },
+    }, {
+      "x-sandy-approval-id": scenario.approval,
+      "x-sandy-request-id": requestId,
+      "x-sandy-actor-id": other,
+      "x-sandy-tenant-id": other,
+    })).json();
+    assert.equal(result.result.isError, !scenario.allowed);
+    assert.equal(admissions, 1);
+    assert.equal(h.backendRequests.length, scenario.allowed ? 1 : 0);
+    assert.deepEqual(h.identityTokens, ["fixture.user.jwt"]);
+    assert.equal(
+      h.apiRequests[0].headers.get("x-sandy-approval-id"),
+      scenario.approval,
+    );
+    assert.equal(h.apiRequests[0].headers.get("x-sandy-request-id"), requestId);
+    assert.equal(h.apiRequests[0].headers.get("x-sandy-actor-id"), null);
+    assert.equal(h.apiRequests[0].headers.get("x-sandy-tenant-id"), null);
+  }
 });

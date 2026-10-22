@@ -1,0 +1,404 @@
+{
+  "observed_at_utc": "2026-10-22T11:10:50.300471+00:00",
+  "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+  "operations": [
+    {
+      "operation": "github.actions.artifacts.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "4d81d5e3e62a726e3f08e57abd66ff43d79122745afd857be13b38f5f1522b64",
+      "evidence": {
+        "request_ids": [
+          "2e14fdf4-2147-41f4-bce2-68c3fcca7373"
+        ],
+        "admission_ids": [
+          "e79528bd-b88b-4e95-b699-3fda4a03d8d0"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "4d81d5e3e62a726e3f08e57abd66ff43d79122745afd857be13b38f5f1522b64",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.actions.runs.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "88e2a889e39f342182386e4a8a2cdc869fd7a5bd65c6f701be7d58c96c4d1df4",
+      "evidence": {
+        "request_ids": [
+          "a076b5e4-b368-444c-aa1c-06f9ee6b4fb1"
+        ],
+        "admission_ids": [
+          "a2cacb2a-874e-4850-8403-b5be1e5e1859"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "88e2a889e39f342182386e4a8a2cdc869fd7a5bd65c6f701be7d58c96c4d1df4",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.actions.workflows.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "79df036d8cdf8803f03e5fe28ea4436f2981dc115e021043cc47182e92b79b1c",
+      "evidence": {
+        "request_ids": [
+          "61e9488c-a569-41a2-a3e1-4f0477ff1f92"
+        ],
+        "admission_ids": [
+          "2e9c1501-11e8-4476-868c-d1b0590f350c"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "79df036d8cdf8803f03e5fe28ea4436f2981dc115e021043cc47182e92b79b1c",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.branches.get",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "715cfd58bb1c794d172ed1273d092d8842a38e8fd9a8e2c9ce28bd708050715f",
+      "evidence": {
+        "request_ids": [
+          "77f4067a-fd4f-4077-be16-345151a0df6b"
+        ],
+        "admission_ids": [
+          "545f16ed-8e1c-4522-9974-43c5d46ae602"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "715cfd58bb1c794d172ed1273d092d8842a38e8fd9a8e2c9ce28bd708050715f",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.checks.runs.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "c997eef0275a541de5a90bb7657d48d0f287c652f8e23d8112922e738076bea6",
+      "evidence": {
+        "request_ids": [
+          "f8a184c4-a0c7-4c7d-8e4c-17363b21cae5"
+        ],
+        "admission_ids": [
+          "da62daf1-99ca-4349-9ed4-c6b4b59d59a6"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "c997eef0275a541de5a90bb7657d48d0f287c652f8e23d8112922e738076bea6",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.collaborators.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "ca6179b5692ba0c491b1a0526ed24a404d94685c1ad764ad1eb086a3d351b0db",
+      "evidence": {
+        "request_ids": [
+          "f98155b2-086b-4267-beda-067f57b1eb62"
+        ],
+        "admission_ids": [
+          "76231612-6b6a-482f-bdbe-d4333af469eb"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "ca6179b5692ba0c491b1a0526ed24a404d94685c1ad764ad1eb086a3d351b0db",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.deployments.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "f823afac557fc55a434d702f2f1d0dd9a287009f7c40085d68026bc44fadac3d",
+      "evidence": {
+        "request_ids": [
+          "6f31a19d-eb5f-4dfe-93fb-e0217276154e"
+        ],
+        "admission_ids": [
+          "175e131b-5258-4dab-83ef-8a6518b57ce2"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "f823afac557fc55a434d702f2f1d0dd9a287009f7c40085d68026bc44fadac3d",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.environments.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "0ed85f5697fee57d272e182e471f6dcd3a6bc03d27d98ba8544329555137f535",
+      "evidence": {
+        "request_ids": [
+          "9d9c4e6b-afe8-4a3e-a5d5-0c2b57e06a64"
+        ],
+        "admission_ids": [
+          "d9334455-c35a-491c-bc94-c753dfe0e953"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "0ed85f5697fee57d272e182e471f6dcd3a6bc03d27d98ba8544329555137f535",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.files.content.get",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "e2c1ca36a4c5bc711ca692e78ea61d75b36ced92ba22d0283c9afc7e426605b4",
+      "evidence": {
+        "request_ids": [
+          "7d0f2014-1085-4487-9c44-377bcf7ffe9c"
+        ],
+        "admission_ids": [
+          "6f531c02-51a4-4bad-bb35-5ab582652642"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "e2c1ca36a4c5bc711ca692e78ea61d75b36ced92ba22d0283c9afc7e426605b4",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.git.trees.get",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "d62b6144c04cbce9d0fc617fdcbdcb5db388682cc97936b41ed449dfb8ed9538",
+      "evidence": {
+        "request_ids": [
+          "daba6480-d7bc-4e55-b8a8-92c9215dbc4b"
+        ],
+        "admission_ids": [
+          "470ec5c0-ab23-4197-8259-37952db6ea19"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "d62b6144c04cbce9d0fc617fdcbdcb5db388682cc97936b41ed449dfb8ed9538",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.issues.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "4d8beec5948ec916d1e55d19910c2f796d54e3475c68194306134c77bfa592ee",
+      "evidence": {
+        "request_ids": [
+          "a948e1b7-372c-46b0-82a9-1e2b130cab6f"
+        ],
+        "admission_ids": [
+          "6c03456c-1d2c-4cc5-b56a-e69bb5160d19"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "4d8beec5948ec916d1e55d19910c2f796d54e3475c68194306134c77bfa592ee",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.labels.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "37f5deaa62c9016df83176ef0f9737d10c5c3bbc9c211826ef97f83fa5574602",
+      "evidence": {
+        "request_ids": [
+          "93b1c613-658f-4259-876e-a755cd476d67"
+        ],
+        "admission_ids": [
+          "03c18a8f-d88e-49d3-b2e0-823edcbeb475"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "37f5deaa62c9016df83176ef0f9737d10c5c3bbc9c211826ef97f83fa5574602",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.milestones.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "3de5057fea9f9694e00ce912411f3acc14803eb1c5de75ab674ed81b470c65ca",
+      "evidence": {
+        "request_ids": [
+          "146c824e-287e-4e75-850d-d97ea5d716cb"
+        ],
+        "admission_ids": [
+          "4ac3db3d-a0ca-40e3-ba7e-950671431125"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "3de5057fea9f9694e00ce912411f3acc14803eb1c5de75ab674ed81b470c65ca",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.refs.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "6b68d2343c53be5b753bf81b99cdc02d7b4fa5644693a8edfd1d7f2af79cea7c",
+      "evidence": {
+        "request_ids": [
+          "a4004f52-1ba1-4e4f-be95-b1deee19544b"
+        ],
+        "admission_ids": [
+          "f8b13039-bd0b-4fc1-8f1e-c3e93c6ce287"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "6b68d2343c53be5b753bf81b99cdc02d7b4fa5644693a8edfd1d7f2af79cea7c",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.releases.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "813bd2ca769155087ba648da282c7bf4a58bd86552c4d5c4bc4c3b391c864baa",
+      "evidence": {
+        "request_ids": [
+          "cc1de670-c759-4eda-987c-cb83fb34594e"
+        ],
+        "admission_ids": [
+          "e9c6a370-dc6d-4cba-a920-894360432bb7"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "813bd2ca769155087ba648da282c7bf4a58bd86552c4d5c4bc4c3b391c864baa",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.rulesets.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "d2f0085c87d406b7252772937e4c9d506994f74e904a71ec9c741f3002438aa5",
+      "evidence": {
+        "request_ids": [
+          "b559ca84-aa3c-41e8-abfa-21eff363cb60"
+        ],
+        "admission_ids": [
+          "2a13e151-4838-4b4a-a51f-4448f87abd19"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "d2f0085c87d406b7252772937e4c9d506994f74e904a71ec9c741f3002438aa5",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.statuses.combined.get",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "54c3e320720077997ab2a6b2e127630dba43f0e596fc284b73de9cd53134dd67",
+      "evidence": {
+        "request_ids": [
+          "00e42b7f-de3f-4ee1-ab4c-47118d9d0896"
+        ],
+        "admission_ids": [
+          "da8aee30-8dfd-41b3-a948-667ca41895b0"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "54c3e320720077997ab2a6b2e127630dba43f0e596fc284b73de9cd53134dd67",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    },
+    {
+      "operation": "github.tags.list",
+      "verified": true,
+      "implementation_state": "deployed",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "contract_sha256": "f4ccf18f5b703eaa92b349541fb27dbf39d0f7accba12acbe732559a37eff85c",
+      "evidence": {
+        "request_ids": [
+          "e5301ccd-f8b5-4021-95e9-1646a9b15f84"
+        ],
+        "admission_ids": [
+          "df91942b-df16-48f5-97ca-16cda63b9653"
+        ],
+        "evidence_file": "docs/sandy-api/github-standing-broad-MCP-evidence-20261022.json",
+        "contract_sha256": "f4ccf18f5b703eaa92b349541fb27dbf39d0f7accba12acbe732559a37eff85c",
+        "evidence_sha256": "a4d755ea67c7728e47b438f5233d25e1b8f02e3d27887aeda23ed643e0a303e5",
+        "whole_family_accepted": false,
+        "MCP_end_to_end_verified": true,
+        "execution_versions_preserved": true
+      }
+    }
+  ],
+  "registry_entries_added": 0,
+  "provider_permission_blockers_not_marked_verified": true
+}

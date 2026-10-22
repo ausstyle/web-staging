@@ -1,0 +1,290 @@
+{
+  "operation": "supabase.tenant.content.exports.available",
+  "handler": "sandy-operation-api",
+  "permission_scope": "customer:read",
+  "is_mutation": false,
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483000
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      }
+    },
+    "required": [
+      "offset",
+      "limit"
+    ],
+    "additionalProperties": false
+  },
+  "output_schema": {
+    "type": "object",
+    "properties": {
+      "ok": {
+        "const": true
+      },
+      "offset": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483000
+      },
+      "limit": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 50
+      },
+      "total_count": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 2147483647
+      },
+      "next_offset": {
+        "anyOf": [
+          {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483000
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "items": {
+        "type": "array",
+        "maxItems": 50,
+        "items": {
+          "type": "object",
+          "properties": {
+            "snapshot_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "tenant_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "manifest": {
+              "const": "customer_content_fragments_v1"
+            },
+            "manifest_sha256": {
+              "const": "3c52f9ea5c2726ec7a82aeec1e9f1fadf796dc8bf35127f368a762bf823e0d99"
+            },
+            "schema_sha256": {
+              "const": "35291441439bfe3286bf362a69b7ac91482437ecd50a2c72d7cf8e1bb5f54b6e"
+            },
+            "fragment_count": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 2048
+            },
+            "row_counts": {
+              "type": "object",
+              "properties": {
+                "email_customers": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "email_customer_addresses": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_people": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_social_people": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_tasks": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_agenda_companies": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_life_spaces": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_life_goals": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_knowledge_documents": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_knowledge_entities": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "email_conversations": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "email_messages": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_support_cases": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_support_comments": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_notification_preferences": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_notification_quiet_hours": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_notification_subscriptions": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_notification_inbox": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_whatsapp_media": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                },
+                "sandy_product_graph_drafts": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 50000
+                }
+              },
+              "required": [
+                "email_customers",
+                "email_customer_addresses",
+                "sandy_people",
+                "sandy_social_people",
+                "sandy_tasks",
+                "sandy_agenda_companies",
+                "sandy_life_spaces",
+                "sandy_life_goals",
+                "sandy_knowledge_documents",
+                "sandy_knowledge_entities",
+                "email_conversations",
+                "email_messages",
+                "sandy_product_support_cases",
+                "sandy_product_support_comments",
+                "sandy_product_notification_preferences",
+                "sandy_product_notification_quiet_hours",
+                "sandy_product_notification_subscriptions",
+                "sandy_product_notification_inbox",
+                "sandy_product_whatsapp_media",
+                "sandy_product_graph_drafts"
+              ],
+              "additionalProperties": false
+            },
+            "total_plaintext_bytes": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 134217728
+            },
+            "artifact_index_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "state": {
+              "enum": [
+                "exported",
+                "purged"
+              ]
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "expires_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "complete_tenant_coverage": {
+              "const": false
+            },
+            "external_provider_assets_included": {
+              "const": false
+            },
+            "erasure_supported": {
+              "const": false
+            },
+            "restore_supported": {
+              "const": false
+            }
+          },
+          "required": [
+            "snapshot_id",
+            "tenant_id",
+            "manifest",
+            "manifest_sha256",
+            "schema_sha256",
+            "fragment_count",
+            "row_counts",
+            "total_plaintext_bytes",
+            "artifact_index_sha256",
+            "state",
+            "created_at",
+            "expires_at",
+            "complete_tenant_coverage",
+            "external_provider_assets_included",
+            "erasure_supported",
+            "restore_supported"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "required": [
+      "ok",
+      "offset",
+      "limit",
+      "total_count",
+      "next_offset",
+      "items"
+    ],
+    "additionalProperties": false
+  },
+  "requires_real_user_session": true,
+  "api_key_delegable": false,
+  "requirement_ids": [
+    111
+  ],
+  "complete_tenant_coverage": false,
+  "contract_sha256": "73737340566cdcd1f6b9373aee20355a506710022867fe51e3beb30aa2847826"
+}

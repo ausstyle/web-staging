@@ -1,13 +1,19 @@
+import { executionMetadataHeaders as executionHeaders, transportInputSchema, unpackExecution } from "../_shared/sandy_mcp_transport.mjs";
+export { transportInputSchema } from "../_shared/sandy_mcp_transport.mjs";
 /**
  * Sandy MCP is a transport adapter. Sandy API authenticates the caller, filters
  * executable operations, owns their schemas, and dispatches their handlers.
  * Keep this entrypoint self-contained for the existing release packaging.
  */
 type JsonObject = Record<string, unknown>;
+const CATALOGUE_CURSOR = /^sc1\.[a-f0-9]{64}\.[1-9][0-9]{0,5}$/;
 export type ApiResponse = { status: number; result: unknown };
+export type ApiExecutionMetadata = { approvalId?: string; requestId?: string };
 export type InvokeApi = (
   token: string,
   body: JsonObject,
+  apiKey?: string,
+  metadata?: ApiExecutionMetadata,
 ) => Promise<ApiResponse>;
 
 const isObject = (value: unknown): value is JsonObject =>
@@ -29,25 +35,72 @@ const json = (data: unknown, status = 200) =>
 const validId = (id: unknown) =>
   id === null || typeof id === "string" ||
   (typeof id === "number" && Number.isFinite(id));
+async function boundedJson(
+  message: Request | Response,
+  limit: number,
+): Promise<unknown> {
+  const reader = message.body?.getReader();
+  if (!reader) throw Error("invalid_json");
+  const parts: Uint8Array[] = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const part = await reader.read();
+      if (part.done) break;
+      size += part.value.byteLength;
+      if (size > limit) {
+        await reader.cancel().catch(() => {});
+        throw Error("body_size_limit");
+      }
+      parts.push(part.value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const part of parts) {
+    bytes.set(part, offset);
+    offset += part.byteLength;
+  }
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
+}
 
 export function createApi(
   base: string,
   anon: string,
   request: typeof fetch = fetch,
 ): InvokeApi {
-  return async (token, body) => {
+  return async (token, body, apiKey, metadata) => {
+    const forwarded = executionHeaders(metadata);
+    if (!forwarded) {
+      return {
+        status: 400,
+        result: {
+          ok: false,
+          error: "invalid_execution_metadata",
+          executed: false,
+        },
+      };
+    }
     const response = await request(`${base}/functions/v1/sandy-operation-api`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${token}`,
         apikey: anon,
         "content-type": "application/json",
+        ...(apiKey === undefined ? {} : { "x-sandy-api-key": apiKey }),
+        ...forwarded,
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(60000),
     });
-    const result = await response.json().catch(() => ({
-      error: "invalid_api_response",
+    const result = await boundedJson(response, 2300000).catch((error) => ({
+      error: error instanceof Error && error.message === "body_size_limit"
+        ? "sandy_api_response_size_limit"
+        : "invalid_api_response",
+      executed: null,
+      reconciliation_required: true,
     }));
     return { status: response.status, result };
   };
@@ -78,7 +131,9 @@ function discoveryTools(result: JsonObject) {
     description: typeof entry.description === "string"
       ? entry.description
       : `Sandy API operation: ${entry.operation}`,
-    inputSchema: entry.input_schema,
+    inputSchema: entry.is_mutation === true || isObject(entry.error_contract) &&
+        (entry.error_contract.requires_approval === true || entry.error_contract.requires_grant === true)
+      ? transportInputSchema(entry.input_schema as JsonObject) : entry.input_schema,
     ...(isObject(entry.output_schema) && entry.output_schema.type === "object"
       ? { outputSchema: entry.output_schema }
       : {}),
@@ -93,11 +148,35 @@ export function createHandler(api: InvokeApi) {
     const auth = req.headers.get("authorization") ?? "";
     const bearer = auth.match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
     if (!bearer) return json({ error: "authentication_required" }, 401);
+    const apiKey = req.headers.get("x-sandy-api-key") ?? undefined;
+    if (apiKey !== undefined && !apiKey.trim()) {
+      return json({ error: "invalid_api_credential" }, 401);
+    }
+    const metadata: ApiExecutionMetadata = {
+      ...(req.headers.has("x-sandy-approval-id")
+        ? { approvalId: req.headers.get("x-sandy-approval-id")! }
+        : {}),
+      ...(req.headers.has("x-sandy-request-id")
+        ? { requestId: req.headers.get("x-sandy-request-id")! }
+        : {}),
+    };
+    if (!executionHeaders(metadata)) {
+      return json({ error: "invalid_execution_metadata" }, 400);
+    }
     let parsed: unknown;
     try {
-      parsed = await req.json();
-    } catch {
-      return json(rpcError(null, -32700, "Invalid JSON"), 400);
+      parsed = await boundedJson(req, 1550000);
+    } catch (error) {
+      const oversized = error instanceof Error &&
+        error.message === "body_size_limit";
+      return json(
+        rpcError(
+          null,
+          -32700,
+          oversized ? "Request too large" : "Invalid JSON",
+        ),
+        oversized ? 413 : 400,
+      );
     }
     if (
       !isObject(parsed) || parsed.jsonrpc !== "2.0" ||
@@ -144,15 +223,42 @@ export function createHandler(api: InvokeApi) {
             400,
           );
         }
-        if (msg.method === "tools/list" && params.cursor !== undefined) {
+        if (
+          msg.method === "tools/list" && params.cursor !== undefined &&
+          (typeof params.cursor !== "string" ||
+            !CATALOGUE_CURSOR.test(params.cursor))
+        ) {
           return json(
-            rpcError(id, -32602, "Pagination cursor is not supported"),
+            rpcError(id, -32602, "Invalid pagination cursor"),
             400,
           );
         }
         // Initialization authenticates through the same API as discovery.
-        const a = await api(bearer, { action: "list" });
+        const a = await api(
+          bearer,
+          {
+            action: "list",
+            channel: "mcp",
+            limit: msg.method === "tools/list" ? 100 : 1,
+            ...(params.cursor === undefined ? {} : { cursor: params.cursor }),
+          },
+          apiKey,
+          metadata,
+        );
         if (a.status !== 200 || !isObject(a.result) || failedResult(a.result)) {
+          if (
+            a.status === 409 && isObject(a.result) &&
+            a.result.error === "catalogue_changed_restart_discovery"
+          ) {
+            return json(
+              rpcError(
+                id,
+                -32001,
+                "Catalogue changed; restart tools/list without a cursor",
+              ),
+              409,
+            );
+          }
           const status = a.status >= 400 && a.status <= 599 ? a.status : 502;
           return json(
             rpcError(id, -32000, "Sandy API discovery unavailable"),
@@ -166,13 +272,23 @@ export function createHandler(api: InvokeApi) {
           return json(rpc(id, {
             protocolVersion: "2025-03-26",
             capabilities: { tools: {} },
-            serverInfo: { name: "sandy-api-mcp", version: "0.2.0" },
+            serverInfo: { name: "sandy-api-mcp", version: "0.3.0" },
           }));
         }
         if (!Array.isArray(a.result.operations)) {
           return json(rpcError(id, -32000, "Invalid Sandy API catalogue"), 502);
         }
-        return json(rpc(id, { tools: discoveryTools(a.result) }));
+        return json(rpc(id, {
+          tools: discoveryTools(a.result),
+          ...(typeof a.result.next_cursor === "string" &&
+              CATALOGUE_CURSOR.test(a.result.next_cursor)
+            ? { nextCursor: a.result.next_cursor }
+            : {}),
+          ...(typeof a.result.catalogue_version === "string" &&
+              /^[a-f0-9]{64}$/.test(a.result.catalogue_version)
+            ? { _meta: { sandy_catalogue_version: a.result.catalogue_version } }
+            : {}),
+        }));
       }
       if (msg.method === "tools/call") {
         if (
@@ -185,14 +301,24 @@ export function createHandler(api: InvokeApi) {
             400,
           );
         }
-        const a = await api(bearer, {
-          action: "execute",
-          operation: params.name,
-          arguments: params.arguments ?? {},
-        });
+        const execution = unpackExecution(params.arguments ?? {}, metadata);
+        if (!execution) return json(rpcError(id, -32602, "Invalid or conflicting execution metadata"), 400);
+        const a = await api(
+          bearer,
+          {
+            action: "execute",
+            channel: "mcp",
+            operation: params.name,
+            arguments: execution.arguments_,
+          },
+          apiKey,
+          execution.metadata,
+        );
         const output = isObject(a.result) ? a.result.result : undefined;
+        const accepted = isObject(a.result) && a.result.accepted === true &&
+          a.result.executed === false && isObject(output);
         const failed = a.status < 200 || a.status >= 300 ||
-          !isObject(a.result) || a.result.executed !== true ||
+          !isObject(a.result) || (a.result.executed !== true && !accepted) ||
           failedResult(a.result) || !isObject(output);
         return json(rpc(id, {
           isError: failed,

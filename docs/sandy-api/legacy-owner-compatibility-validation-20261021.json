@@ -1,0 +1,85 @@
+{
+  "timestamp_utc": "2026-10-21T05:22:25.450781+00:00",
+  "scope": "seven original owner legacy IDs; source candidate only",
+  "operations": [
+    "github.read",
+    "github.update_file",
+    "github.commit",
+    "github.merge",
+    "supabase.apply_migration",
+    "supabase.deploy_edge_function",
+    "github.push_files"
+  ],
+  "operation_count": 7,
+  "new_original_161_requirements_certified_complete": 0,
+  "api_exposed": false,
+  "ai_exposed": false,
+  "verified": false,
+  "committed_by_component_agent": false,
+  "deployed_by_component_agent": false,
+  "deno": {
+    "composed_passed": 66,
+    "composed_failed": 0,
+    "gateway_additional_passed": 1,
+    "log": "legacy-owner-seven-composed-tests.log",
+    "gateway_log": "legacy-owner-gateway-contract-tests.log"
+  },
+  "postgresql": {
+    "timestamp_utc": "2026-10-21T05:20:45.525702+00:00",
+    "http_status": 201,
+    "query_sha256": "4a480e8a4bb466c2a61bc92129850e84514e170326a07cfe0982ebb1de08929e",
+    "full_rollback": true,
+    "read_only": false,
+    "response_file": "legacy-provider-component-rollback-response.json"
+  },
+  "postgresql_checks": 87,
+  "post_rollback": {
+    "timestamp_utc": "2026-10-21T05:21:09.649809+00:00",
+    "http_status": 201,
+    "read_only": true,
+    "registry_original_seven_unchanged": true,
+    "context_absent": true,
+    "consumer_sha256": "27987d528a27133fe4ab468f714de48b19692ab1a77ce58b440ebbb47c23ec26",
+    "fixture_auth_count": 0,
+    "contract_table_absent": true
+  },
+  "generation_idempotence": {
+    "passed": true,
+    "sha256": {
+      "supabase/functions/sandy-legacy-compatibility-api/provider_contracts.json": "d96ebc21ab5053902dd7e6d1420fbdab4a727650b1bec3f371f8e123bc74ddf7",
+      "supabase/functions/sandy-legacy-compatibility-api/workflow_contracts.json": "5d6e6ac58104888bf991459ffe7b348966a5a73993aed209f6c0c8383bc69ef6",
+      "supabase/functions/sandy-legacy-compatibility-api/gateway_manifest.json": "f15439e56790149e2f62ed3aaeca680e23cb249073f3f48a2fe824142ae36991",
+      "supabase/migrations/20261021010800_sandy_legacy_provider_boundary.sql": "013b6edadc74c7753bca8afcb48f4a90efd098ec22be063703c5d45019860838",
+      "supabase/migrations/20261021010810_sandy_legacy_provider_contracts.sql": "87766fb2264a6d5ba7c32772395f68af1cc3f5340fa0cbff4e414e44617ca115"
+    }
+  },
+  "maximum_artifact_cli": {
+    "exit_code": 0,
+    "heap_limit_mib": 96,
+    "peak_rss_bytes": 225685504,
+    "wall_seconds": 0.761,
+    "log": "legacy-owner-maximum-memory-96.log"
+  },
+  "actual_controller_session": false,
+  "actual_provider_mutations": 0,
+  "actual_credential_material_reads": 0,
+  "read_scope_partial": "fixture-only current reader; repository-general source capture/delivery outstanding",
+  "github_commit_semantics": "detached Git object; branch publishing not implied",
+  "provider_effect_confirmed": false,
+  "production_registry_updated": false,
+  "canonical_merge_correction": "separate source follow-up after this freeze",
+  "external_dependencies": [
+    "actual confirmed Controller owner session and scoped immutable approval",
+    "GitHub API runtime egress and authorized GitHub credential",
+    "Supabase authorized owner approval for real migration/deploy effects"
+  ],
+  "separate_remaining_legacy": [
+    "composio.discover_toolkits",
+    "composio.execute_read",
+    "video.install",
+    "video.logs",
+    "video.restart",
+    "video.verify_call",
+    "cloud.vm.exec"
+  ]
+}

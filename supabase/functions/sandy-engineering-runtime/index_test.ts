@@ -1,0 +1,438 @@
+import { strict as assert } from "node:assert";
+import { createEngineeringRuntime, type RuntimeDependencies } from "./index.ts";
+import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
+import policy from "../sandy-operation-api/engineering_identity_policy.json" with {
+  type: "json",
+};
+const USER = "10000000-0000-4000-8000-000000000001",
+  KEY = "synthetic_workload_bootstrap_" + "x".repeat(32),
+  TOKEN = "synthetic.private.user.token";
+const message = {
+  jsonrpc: "2.0",
+  id: 1,
+  method: "tools/call",
+  params: { name: "github.files.update", arguments: {} },
+};
+const controlMessage = {
+  jsonrpc: "2.0",
+  id: "register-fixture",
+  method: "engineering/control",
+  params: {
+    action: "register",
+    idempotency_key: "registration-fixture",
+    title: "Fixture change",
+  },
+};
+function request(value: unknown = message, key = KEY) {
+  return new Request("https://runtime.invalid", {
+    method: "POST",
+    headers: { authorization: "Bearer " + key },
+    body: JSON.stringify(value),
+  });
+}
+async function fixture(patch: Partial<RuntimeDependencies> = {}) {
+  const state = { sessions: 0, mcp: 0, receivedToken: "", resolvedHash: "" };
+  const deps: RuntimeDependencies = {
+    resolve: async (hash) => {
+      state.resolvedHash = hash;
+      return {
+        ok: true,
+        identity_user_id: USER,
+        credential_epoch: 1,
+        bootstrap_generation: 1,
+        policy_sha256: await argumentDigest(policy),
+      };
+    },
+    session: async (workload) => {
+      state.sessions++;
+      return {
+        token: TOKEN,
+        sessionId: USER,
+        expiresAt: Date.now() + 3600000,
+        workload,
+      };
+    },
+    mcp: async (token) => {
+      state.mcp++;
+      state.receivedToken = token;
+      return {
+        status: 200,
+        body: { jsonrpc: "2.0", id: 1, result: { ok: true } },
+      };
+    },
+    ...patch,
+  };
+  return { handler: createEngineeringRuntime(deps), state };
+}
+Deno.test("runtime uses a normal workload JWT only for Sandy MCP and returns no credentials", async () => {
+  const h = await fixture();
+  const r = await h.handler(request());
+  assert.equal(r.status, 200);
+  assert.equal(h.state.receivedToken, TOKEN);
+  assert.match(h.state.resolvedHash, /^[a-f0-9]{64}$/);
+  const text = await r.text();
+  assert.equal(text.includes(TOKEN), false);
+  assert.equal(text.includes(KEY), false);
+});
+Deno.test("Controller extension forwards a genuine workload session to existing Control without exposing it", async () => {
+  let received: any;
+  const h = await fixture({
+    control: async (token, body) => {
+      received = { token, body };
+      return {
+        status: 201,
+        body: { change: { id: USER, status: "proposed" } },
+      };
+    },
+  });
+  const response = await h.handler(request(controlMessage));
+  assert.equal(response.status, 201);
+  assert.deepEqual(received, { token: TOKEN, body: controlMessage.params });
+  assert.equal(h.state.mcp, 0);
+  assert.equal((await response.text()).includes(TOKEN), false);
+});
+Deno.test("expired Control session renews once and preserves registration idempotency", async () => {
+  let calls = 0, issued = 0, invalidations = 0;
+  const bodies: any[] = [];
+  const h = await fixture({
+    session: async (workload) => ({
+      token: "session-" + (++issued),
+      sessionId: USER,
+      expiresAt: Date.now() + 3600000,
+      workload,
+    }),
+    invalidate: () => {
+      invalidations++;
+    },
+    control: async (_token, body) => {
+      bodies.push(body);
+      return ++calls === 1
+        ? { status: 401, body: { error: "Unauthorized" } }
+        : { status: 201, body: { change: { id: USER, status: "proposed" } } };
+    },
+  });
+  assert.equal((await h.handler(request(controlMessage))).status, 201);
+  assert.equal(issued, 2);
+  assert.equal(invalidations, 1);
+  assert.deepEqual(bodies[0], bodies[1]);
+});
+Deno.test("Control permission errors never trigger renewal or replay", async () => {
+  let calls = 0;
+  const h = await fixture({
+    control: async () => {
+      calls++;
+      return {
+        status: 403,
+        body: { error: "engineering_control_scope_denied" },
+      };
+    },
+    invalidate: () => assert.fail("must not renew"),
+  });
+  assert.equal((await h.handler(request(controlMessage))).status, 403);
+  assert.equal(calls, 1);
+});
+Deno.test("Control transport uncertainty is not retried", async () => {
+  let calls = 0;
+  const h = await fixture({
+    control: async () => {
+      calls++;
+      throw Error(TOKEN);
+    },
+  });
+  const r = await h.handler(request(controlMessage));
+  assert.equal(r.status, 503);
+  assert.equal(calls, 1);
+  const v = await r.json();
+  assert.equal(v.reconciliation_required, true);
+  assert.equal(JSON.stringify(v).includes(TOKEN), false);
+});
+Deno.test("Control cannot select owner-only operations or submit non-idempotent registration", async () => {
+  let calls = 0;
+  const h = await fixture({
+    control: async () => {
+      calls++;
+      return { status: 200, body: {} };
+    },
+  });
+  for (
+    const params of [{ action: "execute_job" }, {
+      action: "status",
+      status: "approved",
+    }, { action: "register" }]
+  ) {
+    assert.equal(
+      (await h.handler(request({ ...controlMessage, params }))).status,
+      403,
+    );
+  }
+  assert.equal(calls, 0);
+  assert.equal(h.state.sessions, 0);
+});
+Deno.test("customer, Controller and service JWTs cannot substitute for the private workload bootstrap", async () => {
+  for (
+    const token of [
+      "",
+      "eyJhbGciOiJIUzI1NiJ9.payload.signature",
+      "service.role.jwt",
+    ]
+  ) {
+    const h = await fixture();
+    const r = await h.handler(request(message, token));
+    assert.equal(r.status, 401);
+    assert.equal(h.state.sessions, 0);
+    assert.equal(h.state.mcp, 0);
+  }
+});
+Deno.test("revoked bootstrap and changed scope fail before session issuance or MCP dispatch", async () => {
+  for (
+    const resolve of [
+      async () => ({ ok: false }),
+      async () => ({
+        ok: true,
+        identity_user_id: USER,
+        credential_epoch: 1,
+        bootstrap_generation: 1,
+        policy_sha256: "wrong",
+      }),
+    ]
+  ) {
+    const h = await fixture({ resolve });
+    assert.equal((await h.handler(request())).status, 403);
+    assert.equal(h.state.sessions, 0);
+    assert.equal(h.state.mcp, 0);
+  }
+});
+Deno.test("out-of-scope operations and malformed requests never reach MCP", async () => {
+  for (
+    const value of [
+      {
+        ...message,
+        params: { name: "system.credentials.issue", arguments: {} },
+      },
+      { ...message, params: { name: "shell.execute", arguments: {} } },
+      { ...message, method: "unknown" },
+      { ...message, id: undefined },
+      [],
+    ]
+  ) {
+    const h = await fixture();
+    assert.ok([400, 403].includes((await h.handler(request(value))).status));
+    assert.equal(h.state.mcp, 0);
+  }
+});
+Deno.test("session failure is known to precede provider execution", async () => {
+  const h = await fixture({
+      session: async () => {
+        throw Error("private credential must not leak");
+      },
+    }),
+    r = await h.handler(request()),
+    v = await r.json();
+  assert.equal(r.status, 503);
+  assert.equal(v.executed, false);
+  assert.equal(h.state.mcp, 0);
+  assert.equal(JSON.stringify(v).includes("private credential"), false);
+});
+Deno.test("uncertain MCP transport is never retried or reported as no effect", async () => {
+  let count = 0;
+  const h = await fixture({
+      mcp: async () => {
+        count++;
+        throw Error("private token");
+      },
+    }),
+    r = await h.handler(request()),
+    v = await r.json();
+  assert.equal(count, 1);
+  assert.equal(v.executed, null);
+  assert.equal(v.reconciliation_required, true);
+  assert.equal(v.automatic_retry, false);
+});
+Deno.test("defensive result propagation redacts workload and access credentials", async () => {
+  const h = await fixture({
+      mcp: async () => ({ status: 409, body: { error: TOKEN, detail: KEY } }),
+    }),
+    r = await h.handler(request()),
+    text = await r.text();
+  assert.equal(r.status, 409);
+  assert.equal(text.includes(TOKEN), false);
+  assert.equal(text.includes(KEY), false);
+  assert.ok(text.includes("[REDACTED]"));
+});
+
+Deno.test("pre-dispatch expired session is renewed once with the same bound request before successful execution", async () => {
+  let calls = 0, issued = 0, invalidated = 0;
+  const messages: unknown[] = [];
+  const h = await fixture({
+    session: async (workload) => ({
+      token: "private-session-" + (++issued),
+      sessionId: USER,
+      expiresAt: Date.now() + 3600000,
+      workload,
+    }),
+    invalidate: () => {
+      invalidated++;
+    },
+    mcp: async (_token, message) => {
+      messages.push(message);
+      calls++;
+      return calls === 1
+        ? {
+          status: 200,
+          body: {
+            jsonrpc: "2.0",
+            id: 1,
+            result: {
+              isError: true,
+              content: [{
+                text: JSON.stringify({
+                  status: 401,
+                  result: { error: "invalid_identity", executed: false },
+                }),
+              }],
+            },
+          },
+        }
+        : {
+          status: 200,
+          body: { jsonrpc: "2.0", id: 1, result: { isError: false } },
+        };
+    },
+  });
+  const r = await h.handler(request());
+  assert.equal(r.status, 200);
+  assert.equal(calls, 2);
+  assert.equal(issued, 2);
+  assert.equal(invalidated, 1);
+  assert.deepEqual(messages[0], messages[1]);
+});
+Deno.test("provider authorization failure and uncertain effects are never automatic session retries", async () => {
+  for (
+    const detail of [{
+      status: 502,
+      result: { error: "provider_authorization_refused", executed: true },
+    }, {
+      status: 401,
+      result: {
+        error: "invalid_identity",
+        executed: null,
+        reconciliation_required: true,
+      },
+    }, {
+      status: 403,
+      result: { error: "engineering_fixture_scope_denied", executed: false },
+    }]
+  ) {
+    let calls = 0, invalidated = 0;
+    const h = await fixture({
+      invalidate: () => {
+        invalidated++;
+      },
+      mcp: async () => {
+        calls++;
+        return {
+          status: 200,
+          body: {
+            result: {
+              isError: true,
+              content: [{ text: JSON.stringify(detail) }],
+            },
+          },
+        };
+      },
+    });
+    await h.handler(request());
+    assert.equal(calls, 1);
+    assert.equal(invalidated, 0);
+  }
+});
+Deno.test("revoked bootstrap discovered during renewal blocks issuance and the second MCP call", async () => {
+  let resolutions = 0, calls = 0, issued = 0;
+  const hash = await argumentDigest(policy);
+  const h = await fixture({
+    resolve: async () =>
+      ++resolutions === 1
+        ? {
+          ok: true,
+          identity_user_id: USER,
+          credential_epoch: 1,
+          bootstrap_generation: 1,
+          policy_sha256: hash,
+        }
+        : { ok: false },
+    session: async (workload) => {
+      issued++;
+      return {
+        token: TOKEN,
+        sessionId: USER,
+        expiresAt: Date.now() + 3600000,
+        workload,
+      };
+    },
+    invalidate: () => {},
+    mcp: async () => {
+      calls++;
+      return { status: 401, body: { error: "invalid_identity" } };
+    },
+  });
+  const r = await h.handler(request());
+  assert.equal(r.status, 403);
+  assert.equal(calls, 1);
+  assert.equal(issued, 1);
+});
+
+Deno.test("recognized fixed VM diagnostics still use the normal workload JWT and defer authorization to Sandy API", async () => {
+  const h = await fixture(),
+    r = await h.handler(
+      request({ ...message, params: { name: "video.status", arguments: {} } }),
+    );
+  assert.equal(r.status, 200);
+  assert.equal(h.state.mcp, 1);
+  assert.equal(h.state.receivedToken, TOKEN);
+  const denied = await fixture();
+  assert.equal(
+    (await denied.handler(
+      request({ ...message, params: { name: "video.install", arguments: {} } }),
+    )).status,
+    403,
+  );
+  assert.equal(denied.state.sessions, 0);
+  assert.equal(denied.state.mcp, 0);
+});
+
+Deno.test("deployed v14 canonical provider routing preserves downstream authorization denial",async()=>{let calls=0;const h=await fixture({mcp:async(token,message)=>{calls++;assert.equal(token,TOKEN);return {status:403,body:{error:"engineering_operation_scope_denied",executed:false}};}});const r=await h.handler(request({...message,params:{name:"supabase.projects.delete",arguments:{}}}));assert.equal(r.status,403);assert.equal(calls,1);assert.equal(h.state.sessions,1);assert.equal((await r.json()).executed,false);});
+Deno.test("preserved production control path uses only the normal workload session and its fixed action allowlist", async () => {
+  let calls = 0;
+  const h = await fixture({ control: async (token, body) => {
+    calls++; assert.equal(token, TOKEN); assert.equal(body.action, "list");
+    return { status: 200, body: { ok: true } };
+  }});
+  const r = await h.handler(request({ ...message, method: "engineering/control", params: { action: "list" } }));
+  assert.equal(r.status, 200); assert.equal(calls, 1); assert.equal(h.state.mcp, 0);
+  for (const params of [{ action: "delete" }, { action: "register" }, { action: "register", idempotency_key: "" }]) {
+    assert.equal((await h.handler(request({ ...message, method: "engineering/control", params }))).status, 403);
+  }
+  assert.equal(calls, 1);
+});
+Deno.test("absent control transport remains closed before session issuance", async () => {
+  const h = await fixture();
+  assert.equal((await h.handler(request({ ...message, method: "engineering/control", params: { action: "list" } }))).status, 403);
+  assert.equal(h.state.sessions, 0); assert.equal(h.state.mcp, 0);
+});
+
+Deno.test("deployed lifecycle recovery routing preserves downstream scope denial without replay", async () => {
+  for (const name of ["system.lifecycle.get", "system.lifecycle.verify", "system.lifecycle.compensate"]) {
+    let calls = 0;
+    const h = await fixture({ mcp: async (token, message) => {
+      calls++;
+      assert.equal(token, TOKEN);
+      assert.equal((message.params as { name: string }).name, name);
+      return { status: 403, body: { error: "engineering_operation_scope_denied", executed: false } };
+    }});
+    const result = await h.handler(request({ ...message, params: { name, arguments: {} } }));
+    assert.equal(result.status, 403);
+    assert.equal(calls, 1);
+    assert.equal(h.state.sessions, 1);
+    assert.equal((await result.json()).executed, false);
+  }
+});

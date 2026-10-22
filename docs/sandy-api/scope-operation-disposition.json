@@ -1,0 +1,634 @@
+{
+  "version": "1.1.0",
+  "basis": "Original 161 families plus the user's clarifications: use shared adapters, retain operation-specific authorization, and provide reusable VM execution rather than software-specific MCP installation tools.",
+  "standalone_mcp_tools_not_required": {
+    "video.install": "Software installation belongs to the authorized reusable engineering executor.",
+    "video.restart": "Use authorized generic VM service management.",
+    "video.logs": "Use authorized generic VM execution/result retrieval.",
+    "video.verify_call": "A particular video application is not the completion criterion for the API engineering program."
+  },
+  "explicit_family_required_operations": {
+    "26": [
+      "gcp.compute.instances.list",
+      "gcp.compute.instances.get",
+      "gcp.compute.instances.create",
+      "gcp.compute.instances.delete"
+    ],
+    "27": [
+      "gcp.compute.instances.start",
+      "gcp.compute.instances.stop",
+      "gcp.compute.instances.reset",
+      "gcp.compute.instances.suspend",
+      "gcp.compute.instances.resume"
+    ],
+    "28": [
+      "gcp.compute.instances.set_machine_type",
+      "gcp.compute.instances.set_labels",
+      "gcp.compute.instances.set_tags",
+      "gcp.compute.instances.set_metadata"
+    ],
+    "29": [
+      "gcp.compute.instances.attach_disk",
+      "gcp.compute.instances.detach_disk"
+    ],
+    "30": [
+      "gcp.disks.create",
+      "gcp.disks.resize",
+      "gcp.disks.delete"
+    ],
+    "36": [
+      "gcp.vm.ssh.exec"
+    ],
+    "37": [
+      "gcp.vm.winrm.exec"
+    ],
+    "38": [
+      "gcp.vm.files.upload",
+      "gcp.vm.files.download"
+    ],
+    "75": [
+      "supabase.orgs.list"
+    ],
+    "85": [
+      "supabase.logs.query"
+    ],
+    "110": [
+      "supabase.logs.query"
+    ],
+    "12": [
+      "gcp.organizations.list",
+      "gcp.organizations.get"
+    ],
+    "13": [
+      "gcp.folders.list",
+      "gcp.folders.create",
+      "gcp.folders.move",
+      "gcp.folders.delete"
+    ],
+    "15": [
+      "gcp.services.list",
+      "gcp.services.enable",
+      "gcp.services.disable"
+    ],
+    "18": [
+      "gcp.iam.roles.list",
+      "gcp.iam.roles.create",
+      "gcp.iam.roles.patch",
+      "gcp.iam.roles.delete"
+    ],
+    "19": [
+      "gcp.service_accounts.list",
+      "gcp.service_accounts.create",
+      "gcp.service_accounts.update",
+      "gcp.service_accounts.delete"
+    ],
+    "23": [
+      "gcp.billing.accounts.list"
+    ],
+    "24": [
+      "gcp.billing.projects.link",
+      "gcp.billing.projects.unlink"
+    ],
+    "31": [
+      "gcp.compute.images.create",
+      "gcp.compute.images.list",
+      "gcp.compute.images.delete"
+    ],
+    "33": [
+      "gcp.compute.instances.serial_output"
+    ],
+    "34": [
+      "gcp.compute.global_operations.get",
+      "gcp.compute.global_operations.wait",
+      "gcp.compute.zone_operations.get",
+      "gcp.compute.zone_operations.wait",
+      "gcp.region_operations.get",
+      "gcp.region_operations.wait"
+    ],
+    "72": [
+      "gcp.security.findings.list"
+    ],
+    "79": [
+      "supabase.domains.get",
+      "supabase.domains.create",
+      "supabase.domains.activate",
+      "supabase.domains.reverify",
+      "supabase.domains.delete"
+    ],
+    "84": [
+      "supabase.functions.secrets.list",
+      "supabase.functions.secrets.set",
+      "supabase.functions.secrets.delete",
+      "supabase.functions.secrets.rotate"
+    ],
+    "86": [
+      "supabase.project.health"
+    ],
+    "88": [
+      "supabase.sql.query"
+    ],
+    "89": [
+      "supabase.sql.execute"
+    ],
+    "90": [
+      "supabase.sql.transaction"
+    ],
+    "103": [
+      "supabase.auth.users.list",
+      "supabase.auth.users.get",
+      "supabase.auth.users.create",
+      "supabase.auth.users.update",
+      "supabase.auth.users.disable",
+      "supabase.auth.users.delete"
+    ],
+    "113": [
+      "github.apps.installations.list",
+      "github.apps.installations.verify"
+    ],
+    "115": [
+      "github.refs.list",
+      "github.refs.create",
+      "github.refs.update",
+      "github.refs.delete"
+    ],
+    "116": [
+      "github.branches.list",
+      "github.branches.protect"
+    ],
+    "119": [
+      "github.pull_requests.list",
+      "github.pull_requests.create",
+      "github.pull_requests.update",
+      "github.pull_requests.review",
+      "github.pull_requests.merge"
+    ],
+    "125": [
+      "github.releases.create",
+      "github.releases.update",
+      "github.releases.delete"
+    ],
+    "127": [
+      "github.actions.workflows.list",
+      "github.actions.workflows.dispatch",
+      "github.actions.workflows.enable",
+      "github.actions.workflows.disable"
+    ],
+    "128": [
+      "github.actions.runs.get",
+      "github.actions.runs.cancel",
+      "github.actions.runs.rerun"
+    ],
+    "76": [
+      "supabase.projects.list",
+      "supabase.projects.get",
+      "supabase.projects.create",
+      "supabase.projects.update",
+      "supabase.projects.pause",
+      "supabase.projects.restore",
+      "supabase.projects.delete"
+    ],
+    "82": [
+      "supabase.db.migrations.plan",
+      "supabase.db.migrations.apply",
+      "supabase.db.migrations.list",
+      "supabase.db.migrations.repair",
+      "supabase.db.migrations.verify"
+    ],
+    "83": [
+      "supabase.functions.list",
+      "supabase.functions.get",
+      "supabase.deploy_edge_function",
+      "supabase.functions.delete",
+      "supabase.functions.invoke",
+      "supabase.logs.query"
+    ],
+    "129": [
+      "github.actions.artifacts.list",
+      "github.actions.artifacts.download.capture",
+      "provider.artifacts.read_private",
+      "github.actions.artifacts.delete"
+    ]
+  },
+  "supporting_diagnostic_families": {
+    "video.status": [
+      26
+    ],
+    "video.execution.preflight": [
+      35
+    ],
+    "video.install.preflight": [
+      35
+    ],
+    "video.network.preflight": [
+      48
+    ],
+    "video.ssh.preflight": [
+      36
+    ],
+    "video.osconfig.access": [
+      35
+    ],
+    "video.osconfig.agent_status": [
+      35
+    ],
+    "video.osconfig.permissions": [
+      35
+    ],
+    "video.osconfig.policy_preflight": [
+      35
+    ]
+  },
+  "provider_action_groups": [
+    {
+      "action": "github_contents_write",
+      "operations": [
+        "github.files.create",
+        "github.files.update",
+        "github.files.upsert",
+        "github.update_file"
+      ],
+      "note": "Shared transport, with distinct create/update preconditions and permissions retained."
+    },
+    {
+      "action": "github_contents_read",
+      "operations": [
+        "github.files.content.get",
+        "github.files.metadata.get",
+        "github.read"
+      ],
+      "note": "Content custody and metadata projections remain distinct contracts."
+    },
+    {
+      "action": "github_git_commit_create",
+      "operations": [
+        "github.commit",
+        "github.git.commits.create"
+      ],
+      "note": "Commit-object creation does not itself advance a branch."
+    },
+    {
+      "action": "supabase_function_deploy",
+      "operations": [
+        "supabase.deploy_edge_function",
+        "supabase.functions.deploy.multipart"
+      ],
+      "note": "Reuse the reviewed multipart deployment implementation and source custody."
+    },
+    {
+      "action": "supabase_migration_execution",
+      "operations": [
+        "supabase.apply_migration",
+        "supabase.db.migrations.apply",
+        "supabase.db.migrations.transactional_apply"
+      ],
+      "note": "Share SQL/ledger infrastructure while preserving transaction and recovery semantics."
+    },
+    {
+      "action": "supabase_log_query",
+      "operations": [
+        "supabase.logs.query",
+        "supabase.project.logs.query"
+      ],
+      "note": "Share bounded query infrastructure; a fixture log test does not verify every source or grant."
+    }
+  ],
+  "scope_review_note": "Operations automatically associated with an explicit family but absent from its required list are supporting/optional candidates for that family, not additional required development units. Wildcard constituent review remains mandatory; this file does not declare unreviewed operations globally out of scope.",
+  "family_acceptance": {},
+  "implementation_review": {
+    "12": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "13": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "15": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "18": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "19": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "23": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "24": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "26": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "27": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "28": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "29": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "30": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "31": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "33": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "34": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "72": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "75": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "79": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "84": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "85": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "86": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "88": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "89": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "90": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "103": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "110": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "113": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "115": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "116": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "119": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "125": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "127": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "128": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "implemented_for_reviewed_authorized_targets",
+      "awaiting_real_family_acceptance": true,
+      "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    }
+  },
+  "explicit_semantic_mappings": {
+    "119": "Closing an existing PR is pull_requests.update with body.state=closed; this is not a separate transport or extra registry entry.",
+    "125": "Publishing an existing draft release is releases.update with body.draft=false.",
+    "28": "set_machine_type implements the reviewed machine-type change. Live resize constraints, stop prerequisites and guest effects remain acceptance obligations.",
+    "34": "Compute operation polling covers zone, region and global resources; unrelated Cloud Run/DNS operations are optional candidates for this explicit family."
+  },
+  "external_dependencies": [
+    {
+      "id": "iap_policy_authority",
+      "families": [
+        17,
+        35,
+        36,
+        37
+      ],
+      "type": "external_permission",
+      "evidence_file": "iap-access-blocker-20261021.json",
+      "actual_error": "IAP tunnel closes 4033 NOT_AUTHORIZED; both VM-specific policy reads and permission inspection return HTTP 403.",
+      "required_authority": "An authorized IAP policy administrator must inspect current policies and, if absent, grant the existing service account roles/iap.tunnelResourceAccessor on the two fixed VM IAP resources with port conditions.",
+      "software_work_remains": true
+    },
+    {
+      "id": "subnet_private_google_access",
+      "families": [
+        48
+      ],
+      "type": "external_permission",
+      "evidence_file": "vm-network-preparation-evidence-20261021.json",
+      "actual_error": "Google HTTP 403 for compute.subnetworks.setPrivateIpGoogleAccess on the fixed default subnet.",
+      "required_authority": "A subnet administrator is needed for this specific change. It is not a prerequisite for every VM transport or all subnet operations.",
+      "software_work_remains": true
+    },
+    {
+      "id": "custom_domain_entitlement",
+      "families": [
+        79
+      ],
+      "type": "provider_entitlement",
+      "evidence_file": "implementation-status-20261021-0512.md",
+      "actual_error": "Recorded provider Custom Domain add-on entitlement refusal; no new provider attempt or purchase in this release.",
+      "required_authority": "Existing provider entitlement or explicit commercial authorization; never purchase or upgrade automatically.",
+      "software_work_remains": false
+    },
+    {
+      "id": "github_actions_secret_metadata_scope",
+      "families": [
+        134
+      ],
+      "type": "external_permission",
+      "evidence_file": "github-standing-broad-MCP-evidence-20261022.json",
+      "actual_error": "Authenticated MCP github.repo_secrets.list: API HTTP 403, GitHub HTTP 403 provider_authorization_refused on GET /repos/ausstyle/web-staging/actions/secrets.",
+      "required_authority": "An authorized repository/GitHub App administrator must inspect required repository Secrets:read permission and any organization restrictions, granting only a missing permission where authorized. The exact cause beyond the genuine provider403 has not been independently inspected. Expired shell GH_TOKEN is separate; verified MCP source publication continues.",
+      "software_work_remains": true
+    }
+  ],
+  "computer_scope_obligations": {
+    "families": [
+      17,
+      22,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52
+    ],
+    "iap_authorization": "Required within existing IAM/access obligations, not out of scope. Read-only diagnostics are deployed; IAP policy modification is not implemented in the general API adapter.",
+    "interactive_control": "Master Scope v1.1 requires authenticated graphical/browser sessions, isolation, lifecycle and observable artifacts. Existing candidates are not production-verified.",
+    "remaining_software": [
+      "Wire native SSH and pinned TLS WinRM through the canonical gateway without legacy unsupported-transport placeholders.",
+      "Activate reviewed actor/target bindings and private credential custody through normal authorization.",
+      "Complete generic file/package/service execution, guest-agent enrollment and durable session lifecycle.",
+      "Complete reusable graphical/browser session start/resume/terminate and scoped screenshot/artifact delivery."
+    ],
+    "acceptance": {
+      "linux_ssh_whoami": false,
+      "windows_remote_whoami": false,
+      "graphical_browser_interaction": false
+    },
+    "external_permission_is_not_software_completion": true
+  },
+  "known_required_operation_gaps": {
+    "supabase.projects.list": "No registry operation or installed gateway handler; existing project-specific GET does not implement listing.",
+    "supabase.projects.create": "No registry operation or installed gateway handler; existing project management does not implement new-project provisioning.",
+    "supabase.functions.invoke": "No registry operation or installed gateway handler for general authorized Edge Function invocation; direct fixture HTTP readback does not satisfy MCP invocation."
+  },
+  "current_remaining_capability": {
+    "1": "Caller-filtered dynamic API catalogue and digest are deployed and exercised through MCP discovery. Canonical requirement-to-operation mapping and provider readiness/health aggregation remain incomplete; passive registry summaries are not executable discovery.",
+    "2": "Typed describe and discovery schemas exist. Uniform versions, examples, grants, readiness and corresponding canonical registry operation mapping still need reconciliation.",
+    "3": "Synchronous canonical MCP dispatch has evidence for 51 operations. Eight existing task/calendar/Agenda reads now have tenant-scoped one-use admissions, settled receipts, digest-only audit and replay refusal. General durable multi-provider execution and all original business constituents remain incomplete.",
+    "8": "Owned engineering-file create/update/delete compensation, immutable parent preimages, provider SHA conflicts, drift refusal and safe unadmitted recovery resumption are verified through MCP. General production-function rollback and durable verification of delayed/uncertain mutations remain incomplete.",
+    "9": "Append-only hash-chain audit and checkpoint/verification source exist. Complete normal-caller acceptance, provider correlation and retention/access-policy verification remain outstanding.",
+    "17": "Project/folder/organization IAM adapters exist. General target-specific IAP policy read/write integration is missing, and current IAP policy inspection returns HTTP403; no blind IAM write is permitted.",
+    "21": "Normal technical Auth to STS and service-account impersonation worked for the canonical Google VM read. Complete API-owned configuration/reconciliation of pools, providers and IAM bindings remains unaccepted.",
+    "22": "OS Login profile/key and IAM descriptors plus native ephemeral-key code exist. Reusable grant/revoke lifecycle, authorized target binding, host enrollment and real SSH execution are not production-accepted.",
+    "26": "Canonical instances.get is now authenticated-MCP/provider-verified for sandy-video, with durable receipt and denied-target tests. Listing, creation, deletion, new-resource ownership, lifecycle and independent readback remain unaccepted.",
+    "35": "Private IAP/SSH/WinRM source and read diagnostics exist. Production credential/target enrollment and access bootstrap/rotation/revocation remain incomplete; IAP authority is a separate documented dependency.",
+    "36": "Native SSH/IAP source has loopback and SQL tests, but production central routing still selects the closed legacy transport. Native migrations/target bindings remain unapplied; IAP4033 blocks real acceptance.",
+    "37": "Pinned TLS WinRM/IAP source has loopback and SQL tests, but production central routing still selects the closed legacy transport. Native migrations, Windows credentials/listener and guest heartbeat remain unresolved; IAP4033 is a separate access denial.",
+    "38": "Managed-guest file-transfer source exists but enrolled transport and actual upload/download/integrity/recovery are unverified. General native SSH/Windows transfer activation remains work.",
+    "39": "Approved package workflow source exists in the managed-guest layer. Real authorized installation/update/removal and recovery are unverified; no package was installed by this release.",
+    "40": "Managed-guest service workflow source exists. Target/service allowlists, real start/stop/restart/status and recovery remain unverified; no production service was changed.",
+    "43": "Agent installer/status source exists. Legitimate enrollment/update, service/process health and real executable guest transport remain unaccepted; the Windows heartbeat is stale.",
+    "48": "Typed subnet adapters exist. The default-subnet Private Google Access change returned HTTP403 for compute.subnetworks.setPrivateIpGoogleAccess; this specific denial does not block every subnet operation or IAP transport.",
+    "51": "The shared gateway now preserves configured organization/folder authority for 15 existing relationship-bound firewall-policy methods. Provider permissions, live execution and complete wildcard acceptance remain unverified.",
+    "76": "Project GET/update/pause/restore/delete candidates exist, but project listing and creation have no registered callable handlers. Complete new-project provisioning, authorization/budget and provider acceptance remain missing.",
+    "79": "Domain lifecycle adapters and entitlement refusal handling exist. The provider Custom Domain add-on is unavailable; no plan upgrade/purchase is authorized. DNS/certificate/functionality acceptance is outstanding.",
+    "82": "One reversible fixture migration apply passed through MCP. General planning/listing/repair/verification, typed source custody, production recovery and complete family acceptance remain outstanding.",
+    "83": "One isolated Edge Function was deployed/restored through MCP and its fixture logs were read. General Edge Function invocation has no callable API/MCP handler; broader function lifecycle/source custody/verification remain incomplete.",
+    "85": "Canonical bounded log query and all six provider source queries work. Normal-workload MCP proof is limited to the approved fixture function-log projection; this does not prove every owner source/parameter or event delivery.",
+    "110": "Canonical bounded log query and all six provider source queries work. Normal-workload MCP proof is limited to the approved fixture function-log projection; broader owner-source acceptance is outstanding.",
+    "117": "Standing repository-scoped file reads and text ranges, create/update/delete, exact provider readback and owned file compensation work through MCP. Atomic Git source publication preserves exact source commits and non-forced history. Binary/large artifact delivery and complete family constituent acceptance remain incomplete.",
+    "128": "Typed Actions run operations and private log/artifact capture source exist. General cancel/rerun acceptance, durable external run tracking and verified effects remain outstanding.",
+    "129": "Private Actions artifact capture/delivery source exists. All required list/download/delivery/delete outcomes, ownership and larger-transfer lifecycle remain unaccepted.",
+    "118": "Detached commits and engineering refs create/update have independently verified receipts. Atomic source-tree publication has exact Git source readback; blob/tree operation-level durable effect settlement and protected/destructive ref lifecycle remain incomplete.",
+    "119": "PR list/get contracts exist and authenticated listing works. Routine draft-creation class is implemented but creation, owned PR lifecycle and reviewed merge/recovery are not accepted.",
+    "130": "Actions workflow, artifact, run and check metadata reads work through the shared engine; nullable-array projection is repaired. Workflow mutation, protected delivery and complete Actions constituent acceptance remain outstanding.",
+    "134": "Repository Actions-secrets metadata listing reaches GitHub through normal MCP authorization but GitHub returns HTTP 403. No secret values were retrieved and no permission was expanded. Trusted ciphertext write/rotation and full constituent execution remain unaccepted."
+  }
+}

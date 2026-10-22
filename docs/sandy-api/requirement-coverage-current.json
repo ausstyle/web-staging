@@ -1,0 +1,118 @@
+{
+  "generated_at_utc": "2026-10-22T13:08:39.081817+00:00",
+  "summary": {
+    "original_families": 161,
+    "fully_accepted_families": 0,
+    "implemented_families_awaiting_real_verification": 33,
+    "families_with_external_dependencies": 7,
+    "families_with_external_permission_dependencies": 6,
+    "families_requiring_software_or_constituent_reconciliation": 128,
+    "families_with_partial_required_operation_MCP_evidence": 37,
+    "documented_distinct_MCP_success_operations": 83,
+    "documented_distinct_MCP_denial_operations": 23,
+    "registry_rows": 2585,
+    "api_flags": 459,
+    "ai_flags": 442,
+    "verified_flags": 78,
+    "missing_required_registry_operation_ids": [
+      "supabase.functions.invoke",
+      "supabase.projects.create",
+      "supabase.projects.list"
+    ],
+    "handler_labels": 64,
+    "shared_adapter_groups": 43,
+    "schema_generated_operations_on_one_provider_adapter": 1738,
+    "generated_provider_mix": {
+      "supabase": 78,
+      "github": 336,
+      "gcp": 1324
+    }
+  },
+  "requirements_total": 161,
+  "parts": [
+    {
+      "file": "requirement-coverage-current-part-1.json",
+      "sha256": "6c9ec19e5d05318e0f1d2c1fcd4b77525a7c4a8cd4992226c0e7cb3a4bd3abde",
+      "rows": 54
+    },
+    {
+      "file": "requirement-coverage-current-part-2.json",
+      "sha256": "28fa55a1ccb68f2ee53f639c3c120f5e5959ed2f0870193b8d79a17ffcc2c28d",
+      "rows": 54
+    },
+    {
+      "file": "requirement-coverage-current-part-3.json",
+      "sha256": "b1de71cdd1d9545a12db4c45a44ca2cf8788a769e7baf664cf24a3e1fa2bbc80",
+      "rows": 53
+    }
+  ],
+  "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
+  "scope_disposition_sha256": "595ceaf2c84d9b1ddcf15a7a13c26e0fd8ba9f532a15bc24f765d252e949baaf",
+  "full_reconciliation_snapshot_sha256": "6cd24cf8441b71a735ac19c65b57dbd7ac0cb4f9b2c2fcbbd25d497876affbd8",
+  "original_required_mapping_archive": "requirement-coverage-161.json",
+  "required_mapping_archive_is_historical_metadata": true,
+  "current_MCP_evidence_files": [
+    "canonical-vm-read-MCP-evidence-20261021.json",
+    "customer-onboarding-evidence-20261021.json",
+    "customer-provisioning-evidence-20261021.json",
+    "customer-read-receipt-MCP-evidence-20261022.json",
+    "customer-service-MCP-evidence-20261022.json",
+    "engineering-owner-mcp-evidence-20261021.json",
+    "engineering-workload-evidence-20261021.json",
+    "github-platform-MCP-evidence-20261022.json",
+    "github-standing-broad-MCP-evidence-20261022.json",
+    "sandy-video-diagnostic-evidence-20261021.json",
+    "standing-engineering-GitHub-MCP-evidence-20261022.json"
+  ],
+  "original_family_acceptance_not_inferred_from_flags": true,
+  "scope_note": "Every family is retained. Unreviewed wildcard candidate sets remain incomplete; current rows distinguish compiled/deployed handler metadata, scoped discovery and real operation evidence. Full raw metadata snapshots are retained in the private release workspace; the historical mapping archive does not describe current deployed versions.",
+  "family_external_dependencies": [
+    {
+      "id": "iap_policy_authority",
+      "families": [
+        17,
+        35,
+        36,
+        37
+      ],
+      "type": "external_permission",
+      "evidence_file": "iap-access-blocker-20261021.json",
+      "actual_error": "IAP tunnel closes 4033 NOT_AUTHORIZED; both VM-specific policy reads and permission inspection return HTTP 403.",
+      "required_authority": "An authorized IAP policy administrator must inspect current policies and, if absent, grant the existing service account roles/iap.tunnelResourceAccessor on the two fixed VM IAP resources with port conditions.",
+      "software_work_remains": true
+    },
+    {
+      "id": "subnet_private_google_access",
+      "families": [
+        48
+      ],
+      "type": "external_permission",
+      "evidence_file": "vm-network-preparation-evidence-20261021.json",
+      "actual_error": "Google HTTP 403 for compute.subnetworks.setPrivateIpGoogleAccess on the fixed default subnet.",
+      "required_authority": "A subnet administrator is needed for this specific change. It is not a prerequisite for every VM transport or all subnet operations.",
+      "software_work_remains": true
+    },
+    {
+      "id": "custom_domain_entitlement",
+      "families": [
+        79
+      ],
+      "type": "provider_entitlement",
+      "evidence_file": "implementation-status-20261021-0512.md",
+      "actual_error": "Recorded provider Custom Domain add-on entitlement refusal; no new provider attempt or purchase in this release.",
+      "required_authority": "Existing provider entitlement or explicit commercial authorization; never purchase or upgrade automatically.",
+      "software_work_remains": false
+    },
+    {
+      "id": "github_actions_secret_metadata_scope",
+      "families": [
+        134
+      ],
+      "type": "external_permission",
+      "evidence_file": "github-standing-broad-MCP-evidence-20261022.json",
+      "actual_error": "Authenticated MCP github.repo_secrets.list: API HTTP 403, GitHub HTTP 403 provider_authorization_refused on GET /repos/ausstyle/web-staging/actions/secrets.",
+      "required_authority": "An authorized repository/GitHub App administrator must inspect required repository Secrets:read permission and any organization restrictions, granting only a missing permission where authorized. The exact cause beyond the genuine provider403 has not been independently inspected. Expired shell GH_TOKEN is separate; verified MCP source publication continues.",
+      "software_work_remains": true
+    }
+  ]
+}

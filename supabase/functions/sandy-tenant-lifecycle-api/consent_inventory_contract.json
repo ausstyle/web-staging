@@ -1,0 +1,257 @@
+{
+  "previous_contract_sha256": "ad3905fe1ab5f8ec737408dfda7059c5b8f1875eb6bae272a01800cf12d8b99d",
+  "previous_input_schema": {
+    "type": "object",
+    "properties": {
+      "operations": {
+        "type": "array",
+        "items": {
+          "enum": [
+            "supabase.auth.users.list",
+            "supabase.auth.users.get",
+            "supabase.auth.users.create",
+            "supabase.auth.users.update",
+            "supabase.auth.users.disable",
+            "supabase.auth.users.delete",
+            "supabase.auth.mfa.factors.list",
+            "supabase.auth.mfa.factors.delete",
+            "supabase.auth.sessions.list",
+            "supabase.storage.buckets.list",
+            "supabase.storage.buckets.get",
+            "supabase.storage.buckets.create",
+            "supabase.storage.buckets.update",
+            "supabase.storage.buckets.empty",
+            "supabase.storage.buckets.delete",
+            "supabase.storage.objects.list",
+            "supabase.storage.objects.get",
+            "supabase.storage.objects.exists",
+            "supabase.storage.objects.upload",
+            "supabase.storage.objects.update",
+            "supabase.storage.objects.move",
+            "supabase.storage.objects.copy",
+            "supabase.storage.objects.delete",
+            "supabase.storage.objects.download",
+            "supabase.storage.policies.list",
+            "supabase.storage.policies.create",
+            "supabase.storage.policies.update",
+            "supabase.storage.policies.delete",
+            "supabase.realtime.permissions.list",
+            "supabase.realtime.permissions.create",
+            "supabase.realtime.permissions.update",
+            "supabase.realtime.permissions.delete",
+            "supabase.realtime.channels.list",
+            "supabase.realtime.channels.get",
+            "supabase.realtime.channels.create",
+            "supabase.realtime.channels.update",
+            "supabase.realtime.channels.delete",
+            "supabase.realtime.channels.subscribe",
+            "supabase.vault.secrets.managed.list",
+            "supabase.vault.secrets.managed.get",
+            "supabase.vault.secrets.managed.create",
+            "supabase.vault.secrets.managed.update",
+            "supabase.vault.secrets.managed.delete",
+            "supabase.compliance.audit",
+            "supabase.compliance.hold.create",
+            "supabase.compliance.retention.extend",
+            "supabase.tenant.export",
+            "supabase.tenant.erase",
+            "supabase.tenant.restore",
+            "supabase.tenant.exports.get",
+            "supabase.tenant.exports.purge"
+          ]
+        },
+        "uniqueItems": true,
+        "maxItems": 64
+      },
+      "approved_emails": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 254
+        },
+        "uniqueItems": true,
+        "maxItems": 8
+      },
+      "allow_erasure": {
+        "type": "boolean"
+      },
+      "expires_at": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "operations",
+      "approved_emails",
+      "allow_erasure",
+      "expires_at"
+    ],
+    "additionalProperties": false
+  },
+  "operation": {
+    "operation": "supabase.tenant.consent.set",
+    "handler": "sandy-operation-api",
+    "permission_scope": "customer:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "operations": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "supabase.auth.users.list",
+              "supabase.auth.users.get",
+              "supabase.auth.users.create",
+              "supabase.auth.users.update",
+              "supabase.auth.users.disable",
+              "supabase.auth.users.delete",
+              "supabase.auth.mfa.factors.list",
+              "supabase.auth.mfa.factors.delete",
+              "supabase.auth.sessions.list",
+              "supabase.storage.buckets.list",
+              "supabase.storage.buckets.get",
+              "supabase.storage.buckets.create",
+              "supabase.storage.buckets.update",
+              "supabase.storage.buckets.empty",
+              "supabase.storage.buckets.delete",
+              "supabase.storage.objects.list",
+              "supabase.storage.objects.get",
+              "supabase.storage.objects.exists",
+              "supabase.storage.objects.upload",
+              "supabase.storage.objects.update",
+              "supabase.storage.objects.move",
+              "supabase.storage.objects.copy",
+              "supabase.storage.objects.delete",
+              "supabase.storage.objects.download",
+              "supabase.storage.policies.list",
+              "supabase.storage.policies.create",
+              "supabase.storage.policies.update",
+              "supabase.storage.policies.delete",
+              "supabase.realtime.permissions.list",
+              "supabase.realtime.permissions.create",
+              "supabase.realtime.permissions.update",
+              "supabase.realtime.permissions.delete",
+              "supabase.realtime.channels.list",
+              "supabase.realtime.channels.get",
+              "supabase.realtime.channels.create",
+              "supabase.realtime.channels.update",
+              "supabase.realtime.channels.delete",
+              "supabase.realtime.channels.subscribe",
+              "supabase.vault.secrets.managed.list",
+              "supabase.vault.secrets.managed.get",
+              "supabase.vault.secrets.managed.create",
+              "supabase.vault.secrets.managed.update",
+              "supabase.vault.secrets.managed.delete",
+              "supabase.compliance.audit",
+              "supabase.compliance.hold.create",
+              "supabase.compliance.retention.extend",
+              "supabase.tenant.export",
+              "supabase.tenant.erase",
+              "supabase.tenant.restore",
+              "supabase.tenant.exports.get",
+              "supabase.tenant.exports.purge",
+              "supabase.tenant.protected_resources.inventory"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 64
+        },
+        "approved_emails": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254
+          },
+          "uniqueItems": true,
+          "maxItems": 8
+        },
+        "allow_erasure": {
+          "type": "boolean"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "operations",
+        "approved_emails",
+        "allow_erasure",
+        "expires_at"
+      ],
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 64
+        },
+        "approved_emails": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "email"
+          },
+          "maxItems": 8
+        },
+        "allow_erasure": {
+          "type": "boolean"
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "legal_hold": {
+          "type": "boolean"
+        },
+        "retention_until": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ok",
+        "tenant_id",
+        "operations",
+        "approved_emails",
+        "allow_erasure",
+        "expires_at",
+        "revision",
+        "legal_hold",
+        "retention_until"
+      ],
+      "additionalProperties": false
+    },
+    "requires_real_user_session": true,
+    "requirement_ids": [
+      111,
+      112
+    ],
+    "contract_sha256": "7a9ed304551bffc702c93f750361c607e3c4fc16da84991abab9c324f851b25d"
+  }
+}

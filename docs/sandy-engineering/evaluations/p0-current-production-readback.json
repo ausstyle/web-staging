@@ -1,0 +1,94 @@
+{
+  "captured_at_utc": "2026-10-22T13:35:27.778149+00:00",
+  "versions": {
+    "sandy-agent-runtime-v4": 32,
+    "sandy-workspace": 46,
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 15,
+    "sandy-examiner-full-cycle": 19,
+    "sandy-examiner-thread-review": 23,
+    "email-ai-generate-draft": 106,
+    "sandy-email-runtime-canary": 17,
+    "sandy-whatsapp-webhook": 163,
+    "sandy-voice-account-context": 19,
+    "sandy-voice-call": 38
+  },
+  "source_checks": {
+    "sandy-agent-runtime-v4": {
+      "bundle_sha256": "db33a352c0d0c7299e93aa19cbdeeb75a278c964caea3a462ebb18c0399df266",
+      "matches_expected": true
+    },
+    "sandy-whatsapp-webhook": {
+      "bundle_sha256": "2467efb90df11f00fc2ddaa3f7bfed0d7f2efb3f5c13c026c21b4b20e274036f",
+      "matches_expected": true
+    },
+    "sandy-engineering-runtime": {
+      "bundle_sha256": "f7fafb9b17bf2bf5110cca3ddb3ca04d1af02944b1646e6db8f98ee227c92709",
+      "matches_expected": true
+    },
+    "workspace_memory_hook_source_preserved": true
+  },
+  "genuine_approval_readback": [
+    {
+      "id": "7edbee5b-4185-4f6b-b7b1-b41899d4dfc8",
+      "status": "approved",
+      "risk": "normal",
+      "genuine_owner_approval_events": [
+        {
+          "event_id": 82,
+          "event_type": "status_changed",
+          "enabled_owner": true,
+          "non_workload_owner": true
+        }
+      ]
+    },
+    {
+      "id": "e6c9fb87-db2c-4ed7-ac63-bbdb60aad127",
+      "status": "approved",
+      "risk": "high",
+      "genuine_owner_approval_events": [
+        {
+          "event_id": 99,
+          "event_type": "status_changed",
+          "enabled_owner": true,
+          "non_workload_owner": true
+        }
+      ]
+    },
+    {
+      "id": "db40cccd-e0c6-4394-a14b-99011a2d3ddd",
+      "status": "proposed",
+      "risk": "high",
+      "genuine_owner_approval_events": null
+    }
+  ],
+  "renewable_control_get_http": 200,
+  "approved_runtime_scope": [
+    "github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021",
+    "sandy-agent-runtime-v4",
+    "sandy-workspace",
+    "sandy-whatsapp-webhook"
+  ],
+  "owner_repair_read_only_preflight": {
+    "preflight_passed": true,
+    "approval_verified": true,
+    "source_commit": "f9958d50b4fd4ebd82f97c8e3be76ad49250a192",
+    "manifest_sha256": "24b113ab99c422ab4394ea7895b7679476c38863e259e4c9172ef9647a83a573",
+    "deployed": false
+  },
+  "standing_policy_package": {
+    "source_commit": "b934aaa4609f19dd7ac8f30bcbbb78b36375d4db",
+    "manifest_sha256": "8947072af76f37042b2baed2ffaf67378f6cfae69f036f53db4a4fa2afe4a251",
+    "declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
+    "immutable_artifacts_verified": true,
+    "policy_activated": false
+  },
+  "automatic_approvals_created": false,
+  "customer_identity_substituted": false,
+  "pilot_readiness": {
+    "matched_customers": 1,
+    "verified_whatsapp_bindings": 0,
+    "voice_sessions": 0,
+    "verified_memory_consent_settings": 0
+  }
+}

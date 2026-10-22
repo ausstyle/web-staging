@@ -1,0 +1,17 @@
+{
+  "at_UTC": "2026-10-21T23:31:57.486628+00:00",
+  "workflow_run": 39692384698,
+  "source_commit": "e49eca5700929cbd38d2f6e8e1b7deb6a05de792",
+  "status": "waiting_for_protected_environment_review",
+  "environment": "sandy-production",
+  "Cloud_Run_candidate_deployed": false,
+  "production_traffic_promoted": false,
+  "acceptance": "Fresh normal Auth, official MCP client, bounded REST discovery and real provider logs; no VM diagnostics",
+  "previous_run": 39680783416,
+  "previous_run_status": "cancelled",
+  "previous_normal_approval_HTTP": 403,
+  "previous_normal_approval_error": "Resource not accessible by integration",
+  "approval_bypass_performed": false,
+  "protected_CI_management_test_credential_presence_unverified": true,
+  "source_preservation_and_rollback_prepared": true
+}

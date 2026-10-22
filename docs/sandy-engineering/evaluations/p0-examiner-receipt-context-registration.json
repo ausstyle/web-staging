@@ -1,0 +1,11 @@
+{
+  "source_commit": "5b56701aa4da95241e8b18ec4b0f2cafe2e0b9da",
+  "manifest_sha256": "7a15e247b2a65f5f645a4aa8d58c86621c866a527f021e7a41c3141340444a93",
+  "baseline_version": 19,
+  "http_status": 403,
+  "registered": false,
+  "error": "engineering_registration_scope_denied",
+  "deployed": false,
+  "old_pinned_gateway_approval_reused": false,
+  "customer_records_edited": false
+}

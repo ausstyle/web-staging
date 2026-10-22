@@ -1,0 +1,10 @@
+{
+  "real_PostgreSQL_rollback_drill": [
+    {
+      "rollback_restored_v1": true,
+      "unauthorized_role_still_denied": true
+    }
+  ],
+  "rolled_back": true,
+  "provider_calls": false
+}

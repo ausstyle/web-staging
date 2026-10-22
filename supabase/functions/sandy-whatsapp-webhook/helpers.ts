@@ -55,19 +55,20 @@ export async function linkingCommand(db:any,waId:string,text:string,priorMessage
   const sent=await sendPairingCode(String(owner.email_address),otp);
   return sent?neutral:"I couldn't send the verification email. Please try again later.";
  }
- const {data:challenge,error:challengeError}=await db.from("sandy_whatsapp_link_challenges").select("id,customer_id,email,code_hash,attempts,expires_at,used_at").eq("wa_id",waId).is("used_at",null).order("created_at",{ascending:false}).limit(1).maybeSingle();
+ const {data:challenge,error:challengeError}=await db.from("sandy_whatsapp_link_challenges").select("id,email").eq("wa_id",waId).is("used_at",null).order("created_at",{ascending:false}).limit(1).maybeSingle();
  if(challengeError)throw Error("link_verify_lookup:"+challengeError.code);
- if(!challenge||Date.parse(challenge.expires_at)<Date.now())return "There is no active verification code. Start with LINK EMAIL your@email.com.";
- if(challenge.attempts>=5)return "Verification attempts exceeded. Request a new code.";
+ if(!challenge)return "There is no active verification code. Start with LINK EMAIL your@email.com.";
  const candidate=await sha256(waId+":"+challenge.email+":"+finish![1]);
- if(!eq(candidate,challenge.code_hash)){
-  await db.from("sandy_whatsapp_link_challenges").update({attempts:challenge.attempts+1}).eq("id",challenge.id);
-  return "That verification code is incorrect. Check your email and try again.";
+ const {data:linked,error:linkError}=await db.rpc("sandy_customer_whatsapp_link_finish",{p_wa_id:waId,p_challenge_id:challenge.id,p_candidate_hash:candidate});
+ if(linkError||!linked||typeof linked.ok!=="boolean")throw Error("link_completion_unavailable");
+ if(!linked.ok){
+  if(linked.error==="invalid_link_proof")return "That verification code is incorrect. Check your email and try again.";
+  if(linked.error==="link_attempts_exceeded")return "Verification attempts exceeded. Request a new code.";
+  if(linked.error==="identity_link_conflict")return "This number is already associated with another client profile. I cannot merge or transfer customer identities automatically.";
+  if(linked.error==="link_challenge_unavailable")return "There is no active verification code. Start with LINK EMAIL your@email.com.";
+  throw Error("link_completion_unavailable");
  }
- const {data:used,error:useError}=await db.from("sandy_whatsapp_link_challenges").update({used_at:new Date().toISOString()}).eq("id",challenge.id).is("used_at",null).select("id");
- if(useError||!used?.length)throw Error("link_code_already_used");
- const {error:bindError}=await db.from("sandy_whatsapp_identities").upsert({wa_id:waId,customer_id:challenge.customer_id,verification_status:"verified",verified_at:new Date().toISOString(),allowed_scopes:["memory_read","email_read"],updated_at:new Date().toISOString()},{onConflict:"wa_id"});
- if(bindError)throw Error("link_binding:"+bindError.code);
+ if(linked.state!=="verified"||linked.identity_merged!==false)throw Error("link_completion_unavailable");
  return "Your WhatsApp number is verified and linked to your Sandy AI client profile. I can now use your customer memory and recent email context. Sending emails, changing files and other external actions still require dedicated authorization.";
 }
 
@@ -244,7 +245,7 @@ export function formatWhatsAppLinks(input:string):string{
 
 export async function persistSandyImage(db:any,owner:string,bytes:Uint8Array,mime:string,kind:string,messageId?:number):Promise<string>{
  if(!/^[0-9a-f-]{36}$/i.test(owner)||!["image/jpeg","image/png","image/webp"].includes(mime)||bytes.length<3||bytes.length>10485760)throw Error("media_storage_invalid");
- const hashBytes=new Uint8Array(await crypto.subtle.digest("SHA-256",bytes));
+ const hashBytes=new Uint8Array(await crypto.subtle.digest("SHA-256",new Uint8Array(bytes)));
  const digest=Array.from(hashBytes).map(b=>b.toString(16).padStart(2,"0")).join("");
  const ext=mime==="image/png"?"png":mime==="image/webp"?"webp":"jpg";
  const name=crypto.randomUUID();
@@ -255,3 +256,4 @@ export async function persistSandyImage(db:any,owner:string,bytes:Uint8Array,mim
  if(ins){await db.storage.from("sandy-whatsapp-media").remove([path]);throw Error("media_asset_insert_"+ins.code)}
  return asset.id;
 }
+

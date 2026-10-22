@@ -1,0 +1,2643 @@
+{
+  "version": "1.0.0",
+  "project_id": "elaborate-haven-511518-a5",
+  "zone": "europe-west1-b",
+  "evidence_schema": {
+    "type": "object",
+    "required": [
+      "kind"
+    ],
+    "properties": {
+      "kind": {
+        "type": "string"
+      },
+      "code": {
+        "type": "string"
+      },
+      "path": {
+        "type": "string"
+      },
+      "bytes": {
+        "type": "integer"
+      },
+      "sha256": {
+        "type": "string"
+      },
+      "content_base64": {
+        "type": "string"
+      },
+      "service": {
+        "type": "string"
+      },
+      "state": {
+        "type": "string"
+      },
+      "mutation_exit_code": {
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "readback_exit_code": {
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "exit_code": {
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "output_sha256": {
+        "type": "string"
+      },
+      "readback": {
+        "type": "string"
+      },
+      "inventory_confirmed": {
+        "type": "boolean"
+      },
+      "completion_basis": {
+        "type": "string"
+      },
+      "effect_confirmed": {
+        "type": "boolean"
+      },
+      "rule_id": {
+        "type": "string"
+      },
+      "before_boot_id_sha256": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "reboot_observed": {
+        "type": "boolean"
+      },
+      "reconciliation_required": {
+        "type": "boolean"
+      },
+      "observed_boot_id_sha256": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  },
+  "operations": [
+    {
+      "operation": "gcp.vm.access.bootstrap",
+      "requirement": 35,
+      "contract_version": "1.0.0",
+      "kind": "access",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          }
+        },
+        "required": [
+          "vm_name"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.access.bootstrap"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "vm_name": {
+                "type": "string",
+                "enum": [
+                  "sandy-windows",
+                  "sandy-video"
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "generation": {
+                "type": "integer"
+              },
+              "instance_id": {
+                "type": "string"
+              },
+              "project_id": {
+                "const": "elaborate-haven-511518-a5"
+              },
+              "key_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "agent_connected": {
+                "const": false
+              },
+              "revocation_cancels_already_running_os_effects": {
+                "const": false
+              },
+              "reused": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "vm_name",
+              "enabled",
+              "generation",
+              "instance_id",
+              "project_id",
+              "key_id",
+              "agent_connected",
+              "revocation_cancels_already_running_os_effects",
+              "reused"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.access.bootstrap",
+      "contract_sha256": "021589c295f2a5cddab855a8353f35bbc25fb5b3e87a2bee29cd4563f8417c6c"
+    },
+    {
+      "operation": "gcp.vm.access.rotate",
+      "requirement": 35,
+      "contract_version": "1.0.0",
+      "kind": "access",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          }
+        },
+        "required": [
+          "vm_name"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.access.rotate"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "vm_name": {
+                "type": "string",
+                "enum": [
+                  "sandy-windows",
+                  "sandy-video"
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "generation": {
+                "type": "integer"
+              },
+              "instance_id": {
+                "type": "string"
+              },
+              "project_id": {
+                "const": "elaborate-haven-511518-a5"
+              },
+              "key_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "agent_connected": {
+                "const": false
+              },
+              "revocation_cancels_already_running_os_effects": {
+                "const": false
+              },
+              "reused": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "vm_name",
+              "enabled",
+              "generation",
+              "instance_id",
+              "project_id",
+              "key_id",
+              "agent_connected",
+              "revocation_cancels_already_running_os_effects",
+              "reused"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.access.rotate",
+      "contract_sha256": "9a013a657293de00afd4ea3514b46f4e9ca619e9d2fe631fb946462cd9b86d64"
+    },
+    {
+      "operation": "gcp.vm.access.revoke",
+      "requirement": 35,
+      "contract_version": "1.0.0",
+      "kind": "access",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          }
+        },
+        "required": [
+          "vm_name"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.access.revoke"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "vm_name": {
+                "type": "string",
+                "enum": [
+                  "sandy-windows",
+                  "sandy-video"
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "generation": {
+                "type": "integer"
+              },
+              "instance_id": {
+                "type": "string"
+              },
+              "project_id": {
+                "const": "elaborate-haven-511518-a5"
+              },
+              "key_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "agent_connected": {
+                "const": false
+              },
+              "revocation_cancels_already_running_os_effects": {
+                "const": false
+              },
+              "reused": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "ok",
+              "vm_name",
+              "enabled",
+              "generation",
+              "instance_id",
+              "project_id",
+              "key_id",
+              "agent_connected",
+              "revocation_cancels_already_running_os_effects",
+              "reused"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.access.revoke",
+      "contract_sha256": "e64a3535ba767fb47482d8be11c34422e07b7395e0749eaee9befc4a8ed47a8c"
+    },
+    {
+      "operation": "gcp.vm.ssh.exec",
+      "requirement": 36,
+      "contract_version": "1.0.0",
+      "kind": "unsupported_transport",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "vm_name",
+          "command"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.ssh.exec"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.ssh.exec",
+      "contract_sha256": "da6fb096e30db977a7f942c502572777fe815dd3dd08085730d530fce3986f1d"
+    },
+    {
+      "operation": "gcp.vm.winrm.exec",
+      "requirement": 37,
+      "contract_version": "1.0.0",
+      "kind": "unsupported_transport",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "command": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": [
+          "vm_name",
+          "command"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.winrm.exec"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.winrm.exec",
+      "contract_sha256": "c743978bc5e1c59d442e4d4476486ebded8ec0ed35d547ad8476956f21cb37bf"
+    },
+    {
+      "operation": "gcp.vm.files.upload",
+      "requirement": 38,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?(?:/|$))[A-Za-z0-9_.-]+(?:/(?!\\.\\.?(?:/|$))[A-Za-z0-9_.-]+)*$",
+            "maxLength": 180
+          },
+          "content_base64": {
+            "type": "string",
+            "maxLength": 87384,
+            "pattern": "^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "path",
+          "content_base64",
+          "sha256"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.files.upload"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.files.upload",
+      "contract_sha256": "32b66e724903eac8058c8e3e1beea78038cc1a23f16c13be13d1500c27b7d392"
+    },
+    {
+      "operation": "gcp.vm.files.download",
+      "requirement": 38,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": false,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?(?:/|$))[A-Za-z0-9_.-]+(?:/(?!\\.\\.?(?:/|$))[A-Za-z0-9_.-]+)*$",
+            "maxLength": 180
+          }
+        },
+        "required": [
+          "vm_name",
+          "path"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.files.download"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:read",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.files.download",
+      "contract_sha256": "50c9490e3ab0d4fba287595c992ee709190950021c82550fcf3b9589be0504f2"
+    },
+    {
+      "operation": "gcp.vm.packages.install",
+      "requirement": 39,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "manager": {
+            "type": "string",
+            "enum": [
+              "apt",
+              "dnf",
+              "winget"
+            ]
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "vm_name",
+          "manager",
+          "packages"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.packages.install"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.packages.install",
+      "contract_sha256": "cf1747fa6e68fe80c4edd628127b0758caddd86ebd528a5f2c61b8a42961891a"
+    },
+    {
+      "operation": "gcp.vm.packages.update",
+      "requirement": 39,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "manager": {
+            "type": "string",
+            "enum": [
+              "apt",
+              "dnf",
+              "winget"
+            ]
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "vm_name",
+          "manager",
+          "packages"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.packages.update"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.packages.update",
+      "contract_sha256": "2bde8eb1767af9cb37398500057bf08fd0e62d88f7c94bfdeb08e132be5b36ff"
+    },
+    {
+      "operation": "gcp.vm.packages.remove",
+      "requirement": 39,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "manager": {
+            "type": "string",
+            "enum": [
+              "apt",
+              "dnf",
+              "winget"
+            ]
+          },
+          "packages": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+            },
+            "minItems": 1,
+            "maxItems": 20,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "vm_name",
+          "manager",
+          "packages"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.packages.remove"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.packages.remove",
+      "contract_sha256": "ea511a6e3e19fbffc1b6791974c040ac2378910d7b1cefa8a961107fab31b9bf"
+    },
+    {
+      "operation": "gcp.vm.services.start",
+      "requirement": 40,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.services.start"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.services.start",
+      "contract_sha256": "dcba46fd88066d4ae5678f944000711fa490fa19da99ba028b74a0cd45fcdf33"
+    },
+    {
+      "operation": "gcp.vm.services.stop",
+      "requirement": 40,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.services.stop"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.services.stop",
+      "contract_sha256": "28bc272daffb9fa124c2057256a1ace529e3c5a39815a87ee841cb34d8d01ed5"
+    },
+    {
+      "operation": "gcp.vm.services.restart",
+      "requirement": 40,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.services.restart"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.services.restart",
+      "contract_sha256": "2ea7dba0bf304c1fea816b7b189fc50a76c2da5f78f653f669595eade1163159"
+    },
+    {
+      "operation": "gcp.vm.services.status",
+      "requirement": 40,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": false,
+      "requires_approval": false,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "service": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9](?!.*\\.\\.)[A-Za-z0-9_.@:+-]{0,119}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.services.status"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:read",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.services.status",
+      "contract_sha256": "d05f8eaf9c6052ac92b57872d0a89b18c70e1130a1106a3a503620bbe5b48e8c"
+    },
+    {
+      "operation": "gcp.vm.reboot",
+      "requirement": 41,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "delay_seconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 300
+          }
+        },
+        "required": [
+          "vm_name",
+          "delay_seconds"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.reboot"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.reboot",
+      "contract_sha256": "31264807777242a3f7f6fd63984516a84425c5ba165055108dade6b7dac92e6c"
+    },
+    {
+      "operation": "gcp.vm.firewall_guest.manage",
+      "requirement": 42,
+      "contract_version": "1.0.0",
+      "kind": "queue",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "allow",
+              "deny",
+              "remove"
+            ]
+          },
+          "rule_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,47}$"
+          },
+          "protocol": {
+            "type": "string",
+            "enum": [
+              "tcp",
+              "udp"
+            ]
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 65535
+          },
+          "source_cidr": {
+            "type": "string",
+            "maxLength": 18,
+            "pattern": "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}/[0-9]{1,2}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "action",
+          "rule_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.firewall_guest.manage"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "type": "string"
+              },
+              "reused": {
+                "type": "boolean"
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "expires_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "redispatch_permitted": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "state",
+              "reused",
+              "executed",
+              "redispatch_permitted"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.firewallGuest.manage",
+      "contract_sha256": "2d6257f0094ead123317970e9c57e8b72123eb4d99f2cf88e2fc7e7900344792"
+    },
+    {
+      "operation": "gcp.vm.agent.install",
+      "requirement": 43,
+      "contract_version": "1.0.0",
+      "kind": "install",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "expected_metadata_fingerprint": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "vm_name",
+          "expected_metadata_fingerprint"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.agent.install"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "metadata_request_accepted": {
+                "const": true
+              },
+              "metadata_staged": {
+                "type": "boolean"
+              },
+              "metadata_readback_confirmed": {
+                "type": "boolean"
+              },
+              "provider_operation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_operation_status": {
+                "enum": [
+                  "PENDING",
+                  "RUNNING",
+                  "DONE"
+                ]
+              },
+              "worker_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "installation_confirmed": {
+                "const": false
+              },
+              "startup_execution_requires_reboot_or_provider_startup_runner": {
+                "const": true
+              }
+            },
+            "required": [
+              "metadata_request_accepted",
+              "metadata_staged",
+              "metadata_readback_confirmed",
+              "provider_operation",
+              "provider_operation_status",
+              "worker_sha256",
+              "installation_confirmed",
+              "startup_execution_requires_reboot_or_provider_startup_runner"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.agent.install",
+      "contract_sha256": "61f5722e722e1dd6130af88e6c6b13ec5a21c43164568da167aacafe53a56048"
+    },
+    {
+      "operation": "gcp.vm.agent.update",
+      "requirement": 43,
+      "contract_version": "1.0.0",
+      "kind": "install",
+      "is_mutation": true,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "expected_metadata_fingerprint": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "vm_name",
+          "expected_metadata_fingerprint"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.agent.update"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "metadata_request_accepted": {
+                "const": true
+              },
+              "metadata_staged": {
+                "type": "boolean"
+              },
+              "metadata_readback_confirmed": {
+                "type": "boolean"
+              },
+              "provider_operation": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_operation_status": {
+                "enum": [
+                  "PENDING",
+                  "RUNNING",
+                  "DONE"
+                ]
+              },
+              "worker_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "installation_confirmed": {
+                "const": false
+              },
+              "startup_execution_requires_reboot_or_provider_startup_runner": {
+                "const": true
+              }
+            },
+            "required": [
+              "metadata_request_accepted",
+              "metadata_staged",
+              "metadata_readback_confirmed",
+              "provider_operation",
+              "provider_operation_status",
+              "worker_sha256",
+              "installation_confirmed",
+              "startup_execution_requires_reboot_or_provider_startup_runner"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.agent.update",
+      "contract_sha256": "6851dae4a63baeb673d58b459fe54315865be9d3005a472f8ad80a1aea544b33"
+    },
+    {
+      "operation": "gcp.vm.agent.status",
+      "requirement": 43,
+      "contract_version": "1.0.0",
+      "kind": "status",
+      "is_mutation": false,
+      "requires_approval": false,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          }
+        },
+        "required": [
+          "vm_name"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.agent.status"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "vm_name": {
+                "type": "string",
+                "enum": [
+                  "sandy-windows",
+                  "sandy-video"
+                ]
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "generation": {
+                "type": "integer"
+              },
+              "instance_id": {
+                "type": "string"
+              },
+              "project_id": {
+                "const": "elaborate-haven-511518-a5"
+              },
+              "platform": {
+                "enum": [
+                  "linux",
+                  "win32"
+                ]
+              },
+              "last_seen_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "agent_version": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "agent_connected": {
+                "type": "boolean"
+              },
+              "installed_software_attested": {
+                "const": false
+              },
+              "ssh_transport_available": {
+                "const": false
+              },
+              "winrm_transport_available": {
+                "const": false
+              }
+            },
+            "required": [
+              "ok",
+              "vm_name",
+              "enabled",
+              "generation",
+              "instance_id",
+              "project_id",
+              "platform",
+              "last_seen_at",
+              "agent_version",
+              "agent_connected",
+              "installed_software_attested",
+              "ssh_transport_available",
+              "winrm_transport_available"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:read",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.agent.status",
+      "contract_sha256": "d4427a3a3521209402de89c0607e8c3a2f31563b7a89fb1bed5c5f5135c134a1"
+    },
+    {
+      "operation": "gcp.vm.bootstrap.get_logs",
+      "requirement": 44,
+      "contract_version": "1.0.0",
+      "kind": "logs",
+      "is_mutation": false,
+      "requires_approval": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "vm_name": {
+            "type": "string",
+            "enum": [
+              "sandy-windows",
+              "sandy-video"
+            ]
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        },
+        "required": [
+          "vm_name",
+          "start"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.bootstrap.get_logs"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "contents": {
+                "type": "string",
+                "maxLength": 8192
+              },
+              "next": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "truncated": {
+                "type": "boolean"
+              },
+              "source": {
+                "const": "compute_serial_port"
+              },
+              "agent_installation_confirmed": {
+                "const": false
+              }
+            },
+            "required": [
+              "contents",
+              "next",
+              "truncated",
+              "source",
+              "agent_installation_confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:read",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.bootstrap.getLogs",
+      "contract_sha256": "50be68ceabe155a825a168de8699cedaeac34c28cb010fc714f6d5d03b75d768"
+    },
+    {
+      "operation": "gcp.vm.tasks.get",
+      "requirement": 40,
+      "contract_version": "1.0.0",
+      "kind": "task_status",
+      "is_mutation": false,
+      "requires_approval": false,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "job_id"
+        ],
+        "additionalProperties": false
+      },
+      "output_schema": {
+        "type": "object",
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "accepted",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.vm.tasks.get"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "accepted": {
+            "type": "boolean"
+          },
+          "executed": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "request_state": {
+            "type": "string"
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "ok": {
+                "const": true
+              },
+              "job_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "vm_name": {
+                "type": "string",
+                "enum": [
+                  "sandy-windows",
+                  "sandy-video"
+                ]
+              },
+              "operation": {
+                "type": "string"
+              },
+              "request_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "state": {
+                "enum": [
+                  "queued",
+                  "claimed",
+                  "running",
+                  "completed",
+                  "accepted",
+                  "failed",
+                  "unknown",
+                  "cancelled",
+                  "expired",
+                  "blocked"
+                ]
+              },
+              "executed": {
+                "type": [
+                  "boolean",
+                  "null"
+                ]
+              },
+              "result_sha256": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "result_digest_format": {
+                "enum": [
+                  "canonical_json_v1",
+                  "pg_jsonb_v1"
+                ]
+              },
+              "evidence": {
+                "anyOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "required": [
+                      "kind"
+                    ],
+                    "properties": {
+                      "kind": {
+                        "type": "string"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "bytes": {
+                        "type": "integer"
+                      },
+                      "sha256": {
+                        "type": "string"
+                      },
+                      "content_base64": {
+                        "type": "string"
+                      },
+                      "service": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string"
+                      },
+                      "mutation_exit_code": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "readback_exit_code": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "exit_code": {
+                        "type": [
+                          "integer",
+                          "null"
+                        ]
+                      },
+                      "output_sha256": {
+                        "type": "string"
+                      },
+                      "readback": {
+                        "type": "string"
+                      },
+                      "inventory_confirmed": {
+                        "type": "boolean"
+                      },
+                      "completion_basis": {
+                        "type": "string"
+                      },
+                      "effect_confirmed": {
+                        "type": "boolean"
+                      },
+                      "rule_id": {
+                        "type": "string"
+                      },
+                      "before_boot_id_sha256": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "reboot_observed": {
+                        "type": "boolean"
+                      },
+                      "reconciliation_required": {
+                        "type": "boolean"
+                      },
+                      "observed_boot_id_sha256": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false
+                  }
+                ]
+              },
+              "created_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "finished_at": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "format": "date-time"
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "redispatch_permitted": {
+                "const": false
+              },
+              "evidence_basis": {
+                "const": "authenticated_fixed_vm_report_not_independent_provider_attestation"
+              }
+            },
+            "required": [
+              "ok",
+              "job_id",
+              "vm_name",
+              "operation",
+              "request_id",
+              "state",
+              "executed",
+              "result_sha256",
+              "result_digest_format",
+              "evidence",
+              "created_at",
+              "finished_at",
+              "reconciliation_required",
+              "redispatch_permitted",
+              "evidence_basis"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:read",
+      "api_key_delegable": false,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "specification_family": "gcp.vm.tasks.get",
+      "contract_sha256": "74c9dafbee4d383c18bb686ba08596b1d427a106253406f42e52da6caa3124e5"
+    }
+  ]
+}

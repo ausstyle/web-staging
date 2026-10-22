@@ -1,0 +1,41 @@
+{
+  "before": [
+    {
+      "registered": 2585,
+      "verified": 37,
+      "api_flags": 447,
+      "ai_flags": 430
+    }
+  ],
+  "after": [
+    {
+      "registered": 2585,
+      "verified": 37,
+      "api_flags": 447,
+      "ai_flags": 430
+    }
+  ],
+  "readback": [
+    {
+      "operation": "gcp.vm.ssh.exec",
+      "api_exposed": false,
+      "ai_exposed": false,
+      "verified": false,
+      "observed": "4033"
+    },
+    {
+      "operation": "gcp.vm.winrm.exec",
+      "api_exposed": false,
+      "ai_exposed": false,
+      "verified": false,
+      "observed": "4033"
+    },
+    {
+      "operation": "supabase.logs.query",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "verified": true,
+      "observed": "5eaba260-b43f-402c-b40a-565a5bbf5d04"
+    }
+  ]
+}

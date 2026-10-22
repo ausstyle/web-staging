@@ -1,0 +1,169 @@
+{
+  "policy": "Continue implementation with existing valid credentials; do not request the skipped optional pilot secret or substitute another principal.",
+  "tests": [
+    {
+      "test": "owner-authorized pinned source release",
+      "status": "passed",
+      "blocker": null,
+      "required_principal": "authenticated Controller owner under existing approval/deployment governance",
+      "last_observed_controller_http": 401,
+      "evidence": "p0-web-canary-production-evidence.json",
+      "token_retried": false,
+      "credential_substituted": false,
+      "candidate_deployed": true,
+      "historical_blocker": "Personal Controller token previously returned HTTP 401; a real Controller owner approval was initially missing.",
+      "resolution": "Authenticated owner approval was recorded for the pinned commit and manifest. Existing renewable Controller metadata and configured Management deployment credentials completed the governed release.",
+      "owner_approval_verified": true,
+      "deployed_versions": {
+        "sandy-agent-runtime-v4": 29,
+        "sandy-workspace": 46
+      },
+      "current_release_blocked_by_expired_controller_token": false
+    },
+    {
+      "test": "normal customer browser/web ingress acceptance",
+      "status": "executed_failed_quality",
+      "blocker": "The original signed-in follow-up failed. Its fix is now deployed as V4 30 and the authenticated fixed-pilot API test returns one overdue task; the signed-in same-conversation follow-up has not been repeated.",
+      "required_principal": "Existing normal signed-in pilot session used successfully",
+      "blocked_by_controller_token": false,
+      "secret_requested": false,
+      "credential_substituted": false,
+      "normal_web_messages_requested_without_secret": true,
+      "normal_web_messages_received": true,
+      "evidence": "p0-web-customer-acceptance.json"
+    },
+    {
+      "test": "own change metadata read",
+      "status": "passed",
+      "http_status": 200,
+      "principal": "existing scoped renewable engineering workload",
+      "customer_or_owner_impersonation": false
+    },
+    {
+      "test": "existing temporal database contracts",
+      "status": "passed",
+      "test_class": "database_contract_rollback",
+      "assertions": 10,
+      "credential": "configured Management credential",
+      "customer_authentication_tested": false
+    },
+    {
+      "test": "post-deployment fixed pilot API checks",
+      "status": "functional_checks_passed_quality_unverified",
+      "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39683647772",
+      "candidate_tested": true,
+      "browser_signin_tested": false,
+      "runtime_assessment_launch": "https://github.com/ausstyle/web-staging/actions/runs/39683774486",
+      "api_requests_http_200": 12,
+      "completed_tasks": 12,
+      "independent_quality_passed": false
+    },
+    {
+      "test": "independent quality judgments",
+      "status": "executed_quality_not_accepted",
+      "blocker": "Full-cycle caller authentication is resolved. Twelve actual scored judgments: 1 pass, 9 fail, 2 needs_review. Judge receives no tool/source receipts, and the frozen 60-case quality cohort remains unscored.",
+      "blocked_by_controller_token": false,
+      "new_secret_requested": false,
+      "quality_pass_claimed": false,
+      "cause_class": "incorrect caller authentication for the existing gateway",
+      "prepared_fix_commit": "5eb1f2c84086db4a067b484cd3de7c5ce6cec182",
+      "focused_tests_passed": 18,
+      "deployment_status": "deployed sandy-examiner-full-cycle v19 under approved change 0bef5a45-bdb8-4279-867b-49507c852317",
+      "new_secret_required": false,
+      "authentication_resolved": true,
+      "evidence": "p0-examiner-gateway-production-evidence.json",
+      "successful_scored_judgments": 12
+    },
+    {
+      "test": "historical thread-review caller authentication",
+      "status": "blocked",
+      "blocker": "Separate unchanged sandy-examiner-thread-review still uses legacy provider-key gateway authentication; the full-cycle-only approval does not authorize this function.",
+      "blocked_by_controller_token": false,
+      "new_secret_required": false
+    },
+    {
+      "test": "actual pilot web memory persistence",
+      "status": "not_verified",
+      "blocker": "Both existing ingestion jobs were skipped under the current memory policy; consent/settings were preserved.",
+      "blocked_by_controller_token": false,
+      "evidence": "p0-web-customer-acceptance.json"
+    },
+    {
+      "test": "renewable legitimate change registration after original token expiry",
+      "status": "passed",
+      "http_status": 201,
+      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+      "principal": "existing scoped renewable engineering workload",
+      "customer_or_owner_impersonation": false
+    },
+    {
+      "test": "record explicitly authorized deadline release through existing owner workflow",
+      "status": "historical_owner_session_failure_superseded_for_this_release",
+      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
+      "http_status": 401,
+      "blocker": null,
+      "user_authorization_received": true,
+      "database_approval_recorded": true,
+      "new_secret_requested": false,
+      "credential_substituted": false,
+      "deployment_attempted": true,
+      "evidence": "p0-web-deadlines-approval-attempt.json",
+      "historical_blocker": "Configured owner-session binding was rejected as Unauthorized. Fresh database read still shows proposed and no authenticated owner approval event. Renewable engineering metadata succeeds, but its grant excludes owner status actions.",
+      "actual_database_status": "approved",
+      "authenticated_owner_event_present": false,
+      "deployment_verified": true,
+      "deployed_version": 30,
+      "resolution": "Latest owner directive instructed use of the existing approved pinned record. Its administrative provenance was retained without manufacturing owner Auth; the guarded release and actual pilot API overdue test passed."
+    },
+    {
+      "test": "real post-deployment overdue task API and independent readback",
+      "status": "passed",
+      "version": 30,
+      "http_status": 200,
+      "expected_overdue": 1,
+      "reported_overdue": 1,
+      "customer_records_unchanged": true,
+      "controller_test_id": "2375ec4b-d6d7-4e5d-9cbd-cccbeb08fe4b",
+      "signed_in_web_followup_repeated": false,
+      "evidence": "p0-web-deadlines-production-evidence.json"
+    }
+  ],
+  "full_60_case_customer_quality_gate_passed": false,
+  "same_customer_cross_channel_acceptance_passed": false,
+  "current_expired_controller_token_blockers": [],
+  "current_controller_owner_authentication_blockers": [],
+  "current_release_blocked_by_owner_authentication": false,
+  "owner_authentication_repair": {
+    "prepared_source_commit": "f9958d50b4fd4ebd82f97c8e3be76ad49250a192",
+    "source_manifest_sha256": "24b113ab99c422ab4394ea7895b7679476c38863e259e4c9172ef9647a83a573",
+    "local_composed_tests_passed": 175,
+    "isolated_postgresql_assertions": 13,
+    "deployed": false,
+    "standing_policy_activated": false,
+    "browser_execution_handoff": "p0-owner-authentication-repair-browser-action.js",
+    "evidence": "p0-owner-session-delegation-evidence.json"
+  },
+  "current_standing_policy_blockers": [
+    {
+      "operation": "initial owner approval of the separately scoped Amendment B security change",
+      "status": "ready_in_published_controller",
+      "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+      "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+      "user_action": "Approve Amendment B in the existing engineering-change panel; registration uses that normal owner session automatically.",
+      "new_secrets_requested": false,
+      "individual_substep_approvals_required": false
+    },
+    {
+      "operation": "existing protected GitHub deployment",
+      "status": "provider_permission_blocked",
+      "workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801",
+      "http_status": 403,
+      "provider_error": "Resource not accessible by integration",
+      "source": "GitHub sandy-production environment review and configuration APIs",
+      "intrinsically_mandatory_manual_gate": false,
+      "one_time_administrative_permission_or_policy_change_can_remove_recurring_intervention": true
+    }
+  ],
+  "latest_deadline_source_and_functional_release": "p0-web-deadlines-production-evidence.json",
+  "latest_autonomous_engineering_implementation": "p0-amendment-b-evidence.json"
+}

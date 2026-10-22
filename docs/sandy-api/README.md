@@ -5,10 +5,11 @@ This directory is the canonical **GitHub documentation handoff** between ChatGPT
 ## Sources of truth
 
 - **Requirements:** `docs/sandy-api/api-scope-161.md` (161 scoped requirements, including function families).
+- **Original specification:** [Sandy Autonomous Control API Specification v1.0](Sandy_Autonomous_Control_API_Specification.pdf), supplied by the owner; SHA-256 `44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a`.
 - **Live implementation and evidence:** Supabase project `zmqlyygzqoidkcwdysok`, table `public.sandy_operation_registry`.
 - **Runtime and source:** deployed Edge Functions and corresponding checked-in source, not assumptions derived from registry entries.
 
-The original requirements were also created as `Sandy_Autonomous_Control_API_Specification.pdf` and `Sandy_API_Function_Inventory.xlsx`. The scope document provides architectural context. The Markdown checklist is the convenient in-repo textual reference. Avoid treating the current 90 registry records as equivalent to the 161 requirements.
+The original requirements were also created as `Sandy_Autonomous_Control_API_Specification.pdf` and `Sandy_API_Function_Inventory.xlsx`. The scope document provides architectural context. The Markdown checklist is the convenient in-repo textual reference. Registry counts are not equivalent to the 161 requirements.
 
 ## Universal API routing rule (mandatory)
 
@@ -30,7 +31,20 @@ See the normative section **Mandatory universal API and MCP architecture** in `a
 
 Codex writes progress to `docs/sandy-api/implementation-status.md` and commits code changes to this repository. ChatGPT reads those commits to review or continue work. New requirements go into `docs/sandy-api/api-scope-161.md`, and actual runtime state remains in Supabase. Never store credentials or customer secrets in this repository.
 
-## Last independently observed state (20 October 2026)
+## Latest engineering evidence
+
+See [implementation-status.md](implementation-status.md),
+[scope-reconciliation.json](scope-reconciliation.json) and
+[project-read-release-evidence.json](project-read-release-evidence.json).
+The latest release has API v7, MCP v3 and project-read handler v4; downloaded
+source maps match the committed source, including API helper modules. The live
+registry has 118 records. Evidence was updated for 39 operations while preserving
+all verification flags; three historical video flags remain and no new operation
+is declared verified. All 161 requirements are reconciled, with full acceptance
+and universal routing still incomplete. See [authentication requirements](auth-test-requirements.md)
+and [legacy MCP routing audit](mcp-routing-audit.md) for precise remaining work.
+
+## Historical baseline before this release (20 October 2026)
 
 - Sandy operation registry: 90 entries, 3 marked verified.
 - `sandy-infrastructure-read` deployed v4.

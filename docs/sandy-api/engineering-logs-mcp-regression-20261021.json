@@ -1,0 +1,45 @@
+{
+  "observed_at": "2026-10-21T19:03:48.506175+00:00",
+  "operation": "supabase.logs.query",
+  "http_status": 200,
+  "MCP_is_error": false,
+  "API_status": 200,
+  "executed": true,
+  "provider_http_status": 200,
+  "admission_id": "5eaba260-b43f-402c-b40a-565a5bbf5d04",
+  "entry_count": 1,
+  "fixture_marker_observed": true,
+  "project_logs_filtered_to_fixture": true,
+  "personal_Controller_token_used": false,
+  "response_sha256": "298c32230443a36db4d9e823584787781229bdc66f1042b2fffb393489beea4e",
+  "request_id": "a8e39c80-fa9a-4810-9b05-797bb71ffa74",
+  "arguments": {
+    "source": "function_logs",
+    "start": "2026-10-21T11:21:53Z",
+    "end": "2026-10-21T11:21:55Z",
+    "limit": 100
+  },
+  "result_keys": [
+    "ok",
+    "operation",
+    "contract_version",
+    "provider",
+    "request_state",
+    "executed",
+    "admission_id",
+    "provider_http_status",
+    "provider_request_id",
+    "result",
+    "possibly_truncated",
+    "truncated"
+  ],
+  "provider_result_keys": [
+    "entries",
+    "project_ref",
+    "next_query_before",
+    "redaction_policy",
+    "query_dialect"
+  ],
+  "scope": "existing owner-authorized fixture logs; not whole-family verification",
+  "passed": true
+}

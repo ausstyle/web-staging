@@ -1,0 +1,27 @@
+{
+  "observed_at": "2026-10-21T21:36:07.429Z",
+  "passed": true,
+  "credentials_recorded": false,
+  "personal_Controller_token_used": false,
+  "service_key_used_as_customer_session": false,
+  "target": "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-api-mcp",
+  "normal_Auth_user_verified": true,
+  "controller_memberships": 0,
+  "token_expiry_utc": "2026-10-21T22:36:10.000Z",
+  "session_id": "217b51fe-5406-41ff-b2c7-44fb12435a60",
+  "server_info": {
+    "name": "sandy-api-mcp",
+    "version": "0.3.0"
+  },
+  "tools_discovered": 16,
+  "canonical_VM_read_verified": true,
+  "actual_instance_id": "6831598645020395570",
+  "actual_instance_name": "sandy-video",
+  "actual_instance_status": "RUNNING",
+  "provider_http_status": 200,
+  "admission_id": "97d59e37-4985-4451-9937-841d2c8bc554",
+  "wrong_VM_API_status": 403,
+  "wrong_VM_denied_before_admission": true,
+  "remote_command_executed": false,
+  "normal_Auth_session_retired": true
+}

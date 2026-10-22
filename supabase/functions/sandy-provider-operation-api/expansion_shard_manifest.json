@@ -1,0 +1,247 @@
+[
+  {
+    "shard": "gcp-artifactregistry-00",
+    "operations": 42,
+    "plaintext_bytes": 269561,
+    "source_bytes": 13998,
+    "sha256": "263842e540c8b6e809f1f9786219e216ffb3b763ca00e112a91077d2efe2c2c3"
+  },
+  {
+    "shard": "gcp-backupdr-00",
+    "operations": 20,
+    "plaintext_bytes": 224831,
+    "source_bytes": 19094,
+    "sha256": "951d2a8dc72e5e51782a6393b3d9fb0cb7412a561c9b309db39beae332d05152"
+  },
+  {
+    "shard": "gcp-cloudbilling-00",
+    "operations": 6,
+    "plaintext_bytes": 40036,
+    "source_bytes": 4685,
+    "sha256": "e76cb8c065405b0a1892ed9fc50825c6f3cead9677ac83abe02edafbfe59a8a3"
+  },
+  {
+    "shard": "gcp-cloudkms-00",
+    "operations": 34,
+    "plaintext_bytes": 276880,
+    "source_bytes": 15286,
+    "sha256": "309e871cc56600c55719d5d52c2708b506c5dd22ffae2dfba5d230432b03068a"
+  },
+  {
+    "shard": "gcp-cloudresourcemanager-00",
+    "operations": 6,
+    "plaintext_bytes": 42403,
+    "source_bytes": 4485,
+    "sha256": "4cfdb8d073225197762bf6c235b08eae57c9d8b0d450e343a477ed382c2d60e4"
+  },
+  {
+    "shard": "gcp-cloudtasks-00",
+    "operations": 11,
+    "plaintext_bytes": 90080,
+    "source_bytes": 6693,
+    "sha256": "39bf2d55180a6afb7d881f3c5d9017102cbd2efe7ade00dee30cfe2566c1ccff"
+  },
+  {
+    "shard": "gcp-compute-00",
+    "operations": 48,
+    "plaintext_bytes": 616263,
+    "source_bytes": 39702,
+    "sha256": "ba1434b5577dbad1eaa8413dba2efb79fbf08dc9c818f789d9a78a756d8d925a"
+  },
+  {
+    "shard": "gcp-compute-01",
+    "operations": 48,
+    "plaintext_bytes": 602448,
+    "source_bytes": 39154,
+    "sha256": "09455c5baaa0f69cbd40f212e2bd1bef7e84bf205f41923e1c613b759cb78d21"
+  },
+  {
+    "shard": "gcp-compute-02",
+    "operations": 48,
+    "plaintext_bytes": 577392,
+    "source_bytes": 35374,
+    "sha256": "8451b821187b9148e12f3b9a4df3cc79fd9a0f6a18c8f84e27a571103699a307"
+  },
+  {
+    "shard": "gcp-compute-03",
+    "operations": 48,
+    "plaintext_bytes": 756000,
+    "source_bytes": 60314,
+    "sha256": "742f0ee90e0c7109a28896860d0f9e620b18545c31e2684f2680fe269dcfbacd"
+  },
+  {
+    "shard": "gcp-compute-04",
+    "operations": 48,
+    "plaintext_bytes": 697929,
+    "source_bytes": 59838,
+    "sha256": "7094f3d821f8ed6b82859b6cb8086491f1405dbf5f1ce73f8e94104c22531c90"
+  },
+  {
+    "shard": "gcp-compute-05",
+    "operations": 48,
+    "plaintext_bytes": 702984,
+    "source_bytes": 52318,
+    "sha256": "3c19c3d140852649c63f9091a91932dff930839487077007da24c7d262b80a89"
+  },
+  {
+    "shard": "gcp-compute-06",
+    "operations": 48,
+    "plaintext_bytes": 579259,
+    "source_bytes": 36366,
+    "sha256": "e21581280408bbc60ed7bc4b1b9c64c0dd3382e25ade598390803811e31922de"
+  },
+  {
+    "shard": "gcp-compute-07",
+    "operations": 48,
+    "plaintext_bytes": 767077,
+    "source_bytes": 59394,
+    "sha256": "9f7ac6620db5a04b9049e333fc313840c18b4b96b8b28b992c7a80e3bfd92be5"
+  },
+  {
+    "shard": "gcp-compute-08",
+    "operations": 48,
+    "plaintext_bytes": 556268,
+    "source_bytes": 32942,
+    "sha256": "c3095c54e44073ab0069072e86bdb7b120202b8630f082dfbaa3f22072fbb67e"
+  },
+  {
+    "shard": "gcp-compute-09",
+    "operations": 48,
+    "plaintext_bytes": 661332,
+    "source_bytes": 40190,
+    "sha256": "e68b9b6348ce32f1787bde3ad2cb4e8d902137defbbaeb4b8cda375f44add927"
+  },
+  {
+    "shard": "gcp-compute-10",
+    "operations": 48,
+    "plaintext_bytes": 741058,
+    "source_bytes": 57142,
+    "sha256": "ad7249e2dd206f3ed3fd244683121f6e990b14a61862269e4f7d87ba811946c3"
+  },
+  {
+    "shard": "gcp-compute-11",
+    "operations": 48,
+    "plaintext_bytes": 526994,
+    "source_bytes": 26470,
+    "sha256": "ca9b504f4b4a74c0c0e4fde7ce9113e88f46294981cacca85963a80cb0e7f4b7"
+  },
+  {
+    "shard": "gcp-compute-12",
+    "operations": 40,
+    "plaintext_bytes": 591520,
+    "source_bytes": 47526,
+    "sha256": "447eccfa1411b31594f5d5c77e7ad18e05d4b75e92979e29749781e41c7f30a7"
+  },
+  {
+    "shard": "gcp-container-00",
+    "operations": 3,
+    "plaintext_bytes": 24131,
+    "source_bytes": 4881,
+    "sha256": "9c3be0887a01893f801567ff258830f63f5c8f02fe9897f3f34f5b3766796f6d"
+  },
+  {
+    "shard": "gcp-dns-00",
+    "operations": 38,
+    "plaintext_bytes": 359995,
+    "source_bytes": 18374,
+    "sha256": "4eaa4e7482c9b8c7a0d409e9a9d57b12cf59365d563bcea8a14abeb755e1c648"
+  },
+  {
+    "shard": "gcp-iam-00",
+    "operations": 33,
+    "plaintext_bytes": 215895,
+    "source_bytes": 10958,
+    "sha256": "d0b16e4390331cc79684d91e4f62efa460669d94b3da188616dfad7c1d91ed08"
+  },
+  {
+    "shard": "gcp-logging-00",
+    "operations": 8,
+    "plaintext_bytes": 50663,
+    "source_bytes": 5557,
+    "sha256": "85adb304a3ff90ab56c40cb280aeb527aa75f9c97c3faff771e0bf33528a2cad"
+  },
+  {
+    "shard": "gcp-monitoring-00",
+    "operations": 3,
+    "plaintext_bytes": 19045,
+    "source_bytes": 3869,
+    "sha256": "ec30b5719da6a7af7204040d9519d8035db420ee926a892dd5cdcb0a8250d09b"
+  },
+  {
+    "shard": "gcp-pubsub-00",
+    "operations": 35,
+    "plaintext_bytes": 216460,
+    "source_bytes": 11858,
+    "sha256": "f5a9959ce83a0e7da3565998dadf419ef1a8bc1eb30d778302bcea4bbb63ec3c"
+  },
+  {
+    "shard": "gcp-run-00",
+    "operations": 21,
+    "plaintext_bytes": 306235,
+    "source_bytes": 30782,
+    "sha256": "83efaba459bdb3bbb8d1fc3ae4f3136875aa477d546c4213047c5265db708a26"
+  },
+  {
+    "shard": "gcp-secretmanager-00",
+    "operations": 4,
+    "plaintext_bytes": 28423,
+    "source_bytes": 4545,
+    "sha256": "65644693b81dc8804e683808b153d134aed41d05d35627bf3c0f89f39b257288"
+  },
+  {
+    "shard": "gcp-securitycenter-00",
+    "operations": 1,
+    "plaintext_bytes": 7586,
+    "source_bytes": 3140,
+    "sha256": "77153b3fc27233cc9e59e598602e47dcee917dce22e51a6ec787f948980dbc97"
+  },
+  {
+    "shard": "gcp-serviceusage-00",
+    "operations": 2,
+    "plaintext_bytes": 32590,
+    "source_bytes": 5673,
+    "sha256": "6c6e0263f2b49948d844e4907532a740e21280ddf63bf9ba10304895fade1791"
+  },
+  {
+    "shard": "github-00",
+    "operations": 48,
+    "plaintext_bytes": 442969,
+    "source_bytes": 37850,
+    "sha256": "e489a542b2eaa8192802191451356ba8d94ef0f04aa43283343894590198e72a"
+  },
+  {
+    "shard": "github-01",
+    "operations": 48,
+    "plaintext_bytes": 910141,
+    "source_bytes": 71290,
+    "sha256": "ccb0bc66f2f070e35cd7cf0f4c74d8424ef632dab0f12a6e216b5299c8d37f96"
+  },
+  {
+    "shard": "github-02",
+    "operations": 48,
+    "plaintext_bytes": 401384,
+    "source_bytes": 21638,
+    "sha256": "e5c0cc57d31908b51449dc5b2da7646b89e87d81a41191200dc00614bd5b5081"
+  },
+  {
+    "shard": "github-03",
+    "operations": 48,
+    "plaintext_bytes": 321183,
+    "source_bytes": 22586,
+    "sha256": "e59ddffd23d3487be5eae8162520415ea0a9eede265f436b7ea541ac944fbd96"
+  },
+  {
+    "shard": "github-04",
+    "operations": 38,
+    "plaintext_bytes": 367865,
+    "source_bytes": 24782,
+    "sha256": "a3f31a63ad2321e5544b2a8114079ce2a35e707af656a72214998f639a5c0964"
+  },
+  {
+    "shard": "supabase-00",
+    "operations": 30,
+    "plaintext_bytes": 141202,
+    "source_bytes": 10838,
+    "sha256": "af7383cb2470a9a61f54dcc637fabd5b34af084c805e1d7ba16a6dc49e8ce216"
+  }
+]

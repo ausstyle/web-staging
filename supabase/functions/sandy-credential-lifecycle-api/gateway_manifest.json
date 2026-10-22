@@ -1,0 +1,2390 @@
+{
+  "contract_version": "1.0.0",
+  "operations": [
+    {
+      "operation": "supabase.vault.secrets.create_version",
+      "spec_operation": "supabase.vault.secrets.createVersion",
+      "is_mutation": true,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 65536
+          }
+        },
+        "required": [
+          "target_id",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.vault.secrets.create_version"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "version_id",
+              "encrypted_at_rest",
+              "active",
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "64621fb2ff49aebf6aaca2b293dfed0b5b9b1e8110e4bbe17293b553df1383db"
+    },
+    {
+      "operation": "supabase.vault.secrets.delete",
+      "spec_operation": "supabase.vault.secrets.delete",
+      "is_mutation": true,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "target_id",
+          "version_id"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.vault.secrets.delete"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "version_id",
+              "custody_deleted",
+              "provider_credential_revoked",
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "2df7a447d8257354689d5af66d983db51f7eb3d5698807e0d53ed0b4b0471ea5"
+    },
+    {
+      "operation": "system.credentials.provider.adopt",
+      "spec_operation": "system.credentials.provider.adopt",
+      "is_mutation": true,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.credentials.provider.adopt"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "7765640556f7c785eb4bb44bd80184732c06bb123124dc4e4d259932a45a962e"
+    },
+    {
+      "operation": "supabase.functions.secrets.rotate",
+      "spec_operation": "supabase.functions.secrets.rotate",
+      "is_mutation": true,
+      "requirement": 84,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "source_version_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "supabase.functions.secrets.rotate"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "97f2b29b7d783805663d5f1ff46ca83969436c9ea0aea2b94ff476f04018ae82"
+    },
+    {
+      "operation": "github.repo_secrets.rotate",
+      "spec_operation": "github.repo_secrets.rotate",
+      "is_mutation": true,
+      "requirement": 134,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "source_version_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "github.repo_secrets.rotate"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "c0763dd72b616b3bd38ef2dc4960cdbd87e2a214b53f4b059126100272195415"
+    },
+    {
+      "operation": "gcp.secrets.create_version",
+      "spec_operation": "gcp.secrets.createVersion",
+      "is_mutation": true,
+      "requirement": 66,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "source_version_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.secrets.create_version"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "cee0edb5ca72445ccdc831c0cae2ac5e684910f095f05c63eb8a5c9606ebf3a8"
+    },
+    {
+      "operation": "gcp.secrets.rotate",
+      "spec_operation": "gcp.secrets.rotate",
+      "is_mutation": true,
+      "requirement": 66,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "source_version_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.secrets.rotate"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "1da8a0287c0c938cbaa2bfbfb0141d32719c86eaeaa40692c2c4386052403364"
+    },
+    {
+      "operation": "gcp.secrets.access",
+      "spec_operation": "gcp.secrets.access",
+      "is_mutation": true,
+      "requirement": 66,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.secrets.access"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "7fec9ad644f87383a60ef80165a35a5033beab5d8666257787203ce454b808e6"
+    },
+    {
+      "operation": "gcp.service_accounts.keys.rotate",
+      "spec_operation": "gcp.serviceAccounts.keys.rotate",
+      "is_mutation": true,
+      "requirement": 20,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "gcp.service_accounts.keys.rotate"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "aa8005d758d4be982be0f5d88da8f176907e49939faba5a2b7f2c64abd12c853"
+    },
+    {
+      "operation": "system.credentials.provider.reconcile",
+      "spec_operation": "system.credentials.provider.reconcile",
+      "is_mutation": true,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rotation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "rotation_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.credentials.provider.reconcile"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "c684698be2acca06361e12109391d12ba431c43ef2fd3583a05e662fc8e31fad"
+    },
+    {
+      "operation": "system.credentials.provider.verify",
+      "spec_operation": "system.credentials.provider.verify",
+      "is_mutation": false,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rotation_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "target_id",
+          "rotation_id"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.credentials.provider.verify"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "material_sha256",
+              "target_config_sha256",
+              "provider_verified",
+              "provider_version_id",
+              "probe_kind",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "b067a445fef71e6f0245c6cbc21446533159b191c56f0e5378b0208cf55031d9"
+    },
+    {
+      "operation": "system.credentials.provider.activate",
+      "spec_operation": "system.credentials.provider.activate",
+      "is_mutation": true,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rotation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "verification_admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "rotation_id",
+          "verification_admission_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.credentials.provider.activate"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "active_version_id",
+              "retained_version_id",
+              "provider_readback_verified",
+              "previous_credential_revoked",
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "a771298ad94463a538a0094e33706be2661b02a4892cd76befbd5db96e9d506a"
+    },
+    {
+      "operation": "system.credentials.provider.rollback",
+      "spec_operation": "system.credentials.provider.rollback",
+      "is_mutation": true,
+      "requirement": 109,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "rollback_rotation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "rollback_rotation_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.credentials.provider.rollback"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "target_id",
+              "rotation_id",
+              "version_id",
+              "provider_version_id",
+              "accepted",
+              "effect_confirmed",
+              "reconciliation_required",
+              "previous_credential_revoked",
+              "encrypted_at_rest",
+              "atomic_provider_cas"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "cc0cc2f7b3468967f74a3a24b52b4b1c0fba95994c301236892a1c480b1b7fdb"
+    },
+    {
+      "operation": "system.credentials.provider.revoke",
+      "spec_operation": "system.credentials.provider.revoke",
+      "is_mutation": true,
+      "requirement": 20,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "target_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "verification_rotation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "acknowledge_provider_has_no_cas": {
+            "const": true
+          }
+        },
+        "required": [
+          "target_id",
+          "version_id",
+          "verification_rotation_id",
+          "acknowledge_provider_has_no_cas"
+        ],
+        "additionalProperties": false
+      },
+      "permission_scope": "infrastructure:write",
+      "output_schema": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "operation": {
+            "const": "system.credentials.provider.revoke"
+          },
+          "contract_version": {
+            "const": "1.0.0"
+          },
+          "admission_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "executed": {
+            "const": true
+          },
+          "request_state": {
+            "enum": [
+              "observed",
+              "accepted"
+            ]
+          },
+          "result": {
+            "type": "object",
+            "properties": {
+              "target_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "rotation_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "active_version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "retained_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "verification_admission_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "provider_version_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "provider_verified": {
+                "type": "boolean"
+              },
+              "provider_readback_verified": {
+                "type": "boolean"
+              },
+              "provider_revocation_observed": {
+                "type": "boolean"
+              },
+              "previous_credential_revoked": {
+                "const": false
+              },
+              "custody_deleted": {
+                "type": "boolean"
+              },
+              "provider_credential_revoked": {
+                "const": false
+              },
+              "encrypted_at_rest": {
+                "const": true
+              },
+              "active": {
+                "type": "boolean"
+              },
+              "material_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "target_config_sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "probe_kind": {
+                "type": "string"
+              },
+              "revocation_scope": {
+                "enum": [
+                  "new_key_authentication",
+                  "secret_version_access"
+                ]
+              },
+              "issued_tokens_may_remain_valid": {
+                "type": "boolean"
+              },
+              "atomic_provider_cas": {
+                "const": false
+              },
+              "reconciliation_required": {
+                "type": "boolean"
+              },
+              "effect_confirmed": {
+                "const": false
+              },
+              "accepted": {
+                "const": true
+              }
+            },
+            "required": [
+              "version_id",
+              "provider_revocation_observed",
+              "custody_deleted",
+              "revocation_scope",
+              "issued_tokens_may_remain_valid",
+              "accepted",
+              "effect_confirmed"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "ok",
+          "operation",
+          "contract_version",
+          "admission_id",
+          "executed",
+          "request_state",
+          "result"
+        ],
+        "additionalProperties": false
+      },
+      "contract_sha256": "50c55c31359c251dc3308790982b395d5e917bb496d95253e67845793547c989"
+    }
+  ]
+}

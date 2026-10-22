@@ -1,0 +1,90 @@
+{
+  "scopes": [
+    "SANDY-ENG-0001",
+    "SANDY-ENG-0003",
+    "SANDY-ENG-0004",
+    "SANDY-ENG-0006"
+  ],
+  "candidate_deployed": false,
+  "full_customer_quality_gate_passed": false,
+  "cross_channel_acceptance_passed": false,
+  "reproduced_before_fix": {
+    "test_class": "deterministic",
+    "cases": 17,
+    "failed": 16,
+    "passed": 1,
+    "production_failure_rate": null
+  },
+  "local_checks": {
+    "test_class": "deterministic",
+    "executive_history_rollout": 49,
+    "outcome_boundary": 18,
+    "canonical_receipt_and_write_fencing": 25,
+    "temporal_context": 12,
+    "total": 104,
+    "failed": 0,
+    "typechecked_entrypoints": [
+      "sandy-agent-runtime-v4",
+      "sandy-workspace",
+      "sandy-whatsapp-webhook"
+    ],
+    "pending_draft_flow_preserved": true,
+    "existing_api_regressions": 12
+  },
+  "database_contract": {
+    "test_class": "database_contract_rollback",
+    "passed": 10,
+    "checks": [
+      "current correction replaces the old fact",
+      "historical projection preserves the then-current original",
+      "no external or application trigger can observe fixtures",
+      "pending future and expired facts remain excluded",
+      "projection retains inferred uncertainty",
+      "public anonymous and user roles cannot call the service-only RPC",
+      "read limit remains bounded",
+      "recorded rejection does not resurrect an older assertion",
+      "RPC filters the requested customer",
+      "same predicate retains distinct subjects"
+    ],
+    "customer_auth_tested": false,
+    "quality_acceptance_passed": false
+  },
+  "database_fixture_cleanup": {
+    "retained_fixture_rows": 0,
+    "query": "count of facts with test source marker p0-temporal-contract%",
+    "synthetic_only": true,
+    "transaction_rolled_back": true,
+    "fixture_setup_correction": "Existing source deduplication rejected the first fixture setup; distinct original/correction source references fixed the fixture. No production index or schema was changed."
+  },
+  "temporal_rpc_definition_sha256": "bf1a818807d0ee2b92c4196f3b71fb14f05558c04de9710065a7a3fb5f511c09",
+  "credential_use": {
+    "management": "configured Management credential for metadata and rollback-only database contracts",
+    "engineering": "existing renewable identity for own change metadata only",
+    "customer_impersonation": false,
+    "alternate_project_credentials_fetched": false,
+    "expired_controller_token_retried": false,
+    "optional_pilot_secret_requested": false
+  },
+  "production_readback": {
+    "sandy-agent-runtime-v4": 22,
+    "sandy-workspace": 39,
+    "sandy-whatsapp-webhook": 156,
+    "sandy-engineering-runtime": 6,
+    "sandy-engineering-control": 45
+  },
+  "engineering_metadata_read": {
+    "http_status": 200,
+    "change_id": "8ed79487-8eeb-41a6-9e7c-6bc24cee568b",
+    "status": "proposed",
+    "owner_approval_or_dispatch_permitted": false
+  },
+  "limitations": [
+    "Memory formatting is limited to automatic context in the enrolled web canary.",
+    "The current temporal RPC remains the authority for corrections; no new memory writer or store was created.",
+    "Archive/history tool visibility and global deletion/correction propagation retain existing API contracts and need separate acceptance.",
+    "The settings enabled/consent gate is local-tested; no authenticated customer memory test has run.",
+    "A returned tool result permits reasoning from its existing contract; it does not independently certify an entire mission."
+  ],
+  "snapshot_phase": "historical preparation before the owner-approved canary release",
+  "superseded_for_current_deployment_by": "p0-web-canary-production-evidence.json"
+}

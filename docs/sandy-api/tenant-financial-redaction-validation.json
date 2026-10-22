@@ -1,0 +1,172 @@
+{
+  "phase": "source_validated_not_applied_not_deployed",
+  "original_scope_ids": [
+    111,
+    112
+  ],
+  "complete_tenant_coverage": false,
+  "operations": [
+    "supabase.tenant.financial.redaction.policies.create",
+    "supabase.tenant.financial.redaction.policies.get",
+    "supabase.tenant.financial.redaction.policies.revoke",
+    "supabase.tenant.financial.redaction.preview",
+    "supabase.tenant.financial.redaction.apply"
+  ],
+  "scope": {
+    "provider": "supabase",
+    "project_ref": "zmqlyygzqoidkcwdysok",
+    "manifest": "financial_subject_text_redaction_v1",
+    "financial_records_preserved": true,
+    "complete_tenant_coverage": false
+  },
+  "scope_sha256": "b686b66a7f00b944a9aca973b3cc1e7d2d5e322b429246006d9662da011e17c8",
+  "manifest_sha256": "b3dfae14aac192f72c4c09e3f65a4184c78ef218b1e912aef5a9eeb61a357c63",
+  "schema_sha256": "a1348b7541435389e1358600ce0a90c4a494b7159d5bd6dd12e5d18b32618609",
+  "deno_tests_passed": 3,
+  "actual_database": {
+    "transport": "Supabase Management API",
+    "http_status": 201,
+    "transaction": "BEGIN/ROLLBACK",
+    "total_checks": 345,
+    "components": [
+      {
+        "path": "supabase/functions/sandy-supabase-service-api/component_test.sql",
+        "checks": 24,
+        "source_sha256": "88c09e39c9a260ad5d7f9b0b8464a58e051f5eb4190ad684b1738766b697b247"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/component_test.sql",
+        "checks": 25,
+        "source_sha256": "1563414eecbcdf32f68d97ca7bfb5d3abfb60fbf0c6c19304aef10e9c2566124"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/scalar_component_test.sql",
+        "checks": 26,
+        "source_sha256": "61da52c6232efa91dffccaf360710c0f9a6ce11a0deb6e6425dfe23c22af09bd"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/content_component_test.sql",
+        "checks": 36,
+        "source_sha256": "56f8e4ad41f3082ba2be6c80699544d7836243d222aeb01ac0d51faa08faae0e"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/support_recovery_boundary_component_test.sql",
+        "checks": 16,
+        "source_sha256": "34de8d6238ad09418b25a343ea5867c0e5d5d91ef4a8b5018cff448c333aae9a"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/financial_capture_component_test.sql",
+        "checks": 19,
+        "source_sha256": "42114bd6b5b13f01bbdb38ef07339f08eed3e4a03667ed0111f36be5a7a605d6"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/financial_boundary_component_test.sql",
+        "checks": 20,
+        "source_sha256": "15b84f78bb7b8bf628a87ce4402fff80a2405e68a207e1dfe2c93b08e3d447a2"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/financial_redaction_component_test.sql",
+        "checks": 47,
+        "source_sha256": "d0e92e3428d8ebc07e299ce9f8521768e0ad889f16a5299b4847f6eefad48247"
+      },
+      {
+        "path": "supabase/functions/sandy-tenant-lifecycle-api/consent_redaction_component_test.sql",
+        "checks": 9,
+        "source_sha256": "8595ae0608a047021b22bf59070d0474aab35b6b62e0d5798e075f71df1fb95c"
+      },
+      {
+        "path": "supabase/tests/sandy_commerce_ledger_rollback.sql",
+        "checks": 123,
+        "source_sha256": "bafab80fa516f182fe14eee79cea857337fc2b3d7faa1233d26c8de8a6d17475",
+        "composed_fixture_patch": {
+          "reason": "Only add two exact-source new073 coordination triggers to the existing fixture safe trigger whitelist; all existing commerce checks/source guards unchanged.",
+          "original_fixture_sha256": "bafab80fa516f182fe14eee79cea857337fc2b3d7faa1233d26c8de8a6d17475",
+          "executed_fixture_sha256": "8ba7bfaa0b1f8ada9f58d71ec77412be0f9858fcc7ae163bbc3908e164014531",
+          "added_function_definition_md5": "87df1b9da5509ce387bb0df04c0e2d7e"
+        }
+      }
+    ],
+    "real_owner_session": false,
+    "real_customer_jwt": false,
+    "synthetic_approval_fixture": true,
+    "provider_calls": false,
+    "production_customer_mutations": false,
+    "evidence_sha256": "82b29db36878bb7fc93eec5100dea4392fd1780d6c996f646fb40e788200abe8",
+    "redaction_checks": 47
+  },
+  "post_rollback": {
+    "checked_at": "2026-10-21T05:34:08.957236+00:00",
+    "http": 201,
+    "read_only": true,
+    "checks": {
+      "new_functions": 0,
+      "new_tables": 0,
+      "new_triggers": 0,
+      "new_indexes": 0,
+      "new_operations": 0,
+      "synthetic_users": 0,
+      "consent_hash": "a041c22fb7c2138a6ac12f405110a91f05c48e1a074a4e435cae471970026065",
+      "guard_hashes": {
+        "sandy_commerce_guard_posted_line": "436a15f3023adf1b8e6ac31846863429554eca3f2170d4e13bcbb53e7ef1464a",
+        "sandy_commerce_guard_posted_entry": "65d28a9aa39aea8ed4a1795bb4d7b4f71f4297c7b12e85ae1ac309e8b9359586",
+        "sandy_commerce_guard_issued_invoice": "048af21af6d74811fbd5120b4439c897edf889318d877e98a0cb82e6f30cb4dd"
+      },
+      "native_guards_enabled": true,
+      "replication_role": "origin"
+    },
+    "pass": true
+  },
+  "flags": {
+    "api_enabled": false,
+    "ai_enabled": false,
+    "verified": false
+  },
+  "remaining_engineering": [
+    "operation-specific financial/product mutation-evidence/result/terminal-dispatch payload redaction with immutable audit/provenance and truthful historical receipt replay",
+    "retained financial/customer identifiers and external source references",
+    "parent/source lifecycle erasure/restore without worker replay",
+    "external provider asset lifecycle"
+  ],
+  "external_test_dependencies": [
+    "genuine Controller owner session and corresponding approval",
+    "genuine JWT-bound customer consent session",
+    "runtime project egress where provider calls are required"
+  ],
+  "integration_status": "No073xx imports in deployedAPI17; next matching gateway/backend composition required.",
+  "separate_concurrent_database_test": {
+    "http": 201,
+    "checks": 3,
+    "two_real_database_sessions": true,
+    "full_rollback": true,
+    "apply_elapsed_seconds": 0.9779569370002719,
+    "evidence": [
+      {
+        "evidence": {
+          "real_customer_rows": false,
+          "real_provider_call": false,
+          "concurrent_holder_observed": true,
+          "invoice_apply_busy_before_change": true,
+          "nonmutating_inspection_not_blocked": true
+        }
+      }
+    ],
+    "source_sha256": "4cd2fea919e67a91bed18511aa60aaab2359128c82b1d89da2c684fdc1e310ed",
+    "note": "Synthetic random customer UUID, no customer rows or Auth created; only an advisory transaction key is held for eight seconds. No provider/API session claim.",
+    "harness_sha256": "7fdd61d1ccaca25ab99f2f42c2df7076e90b1d67ff139fd82b353cf07f8d51f5",
+    "harness_path": "scripts/sandy/test_tenant_financial_redaction_lock.py"
+  },
+  "invoice_boundary": {
+    "resource_scope": "Selected internal financial invoice text only; other financial resource policies remain independent.",
+    "current_recorded_attempts": "Customer-wide nonterminal actual receipts and unresolved canonical invoice-forward admissions; settled historical acceptance does not block forever.",
+    "concurrency": "Exact customer advisory key before all invoice/source locks; busy key and selected rows refuse NOWAIT; READ COMMITTED required.",
+    "guard_integrity": "Three complete trigger definitions/enabled states and two function bodies pinned; financial metadata includes native enabled state.",
+    "producer_custody": "Current/strict product bind/provider + archived legacy invoice-forward never read six financial target tables.",
+    "excluded_guarantees": [
+      "Uncoordinated pre-claim material is retained.",
+      "No asserted invoice/email/PDF correspondence.",
+      "No full stale-material prevention or provider asset erasure."
+    ],
+    "runtime_replica_mode_test": "Management role denied changing session_replication_role; origin guard independently source-reviewed, alternate mode not entered.",
+    "live_guard_disabled": false
+  }
+}
