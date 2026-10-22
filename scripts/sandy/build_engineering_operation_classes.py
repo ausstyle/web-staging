@@ -6,6 +6,7 @@ Unknown writes, entitlement/cost changes and security operations fail closed.
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -13,6 +14,27 @@ SOURCES = ['sandy-provider-operation-api/contracts.json',
            'sandy-provider-operation-api/expansion_contracts.json',
            'sandy-legacy-compatibility-api/provider_contracts.json']
 GUEST_SOURCE = 'sandy-guest-operation-api/contracts.json'
+
+
+def guest_descriptor(op):
+    """Only reviewed typed worker contracts; never arbitrary commands or IAM."""
+    name = op['operation']
+    if op['kind'] == 'status' and op['is_mutation'] is False:
+        return 'metadata_read', 'GET', '/sandy/guest/agent-status'
+    if op['kind'] != 'queue':
+        return None
+    match = re.fullmatch(r'gcp\.vm\.(files|packages|services)\.([a-z]+)', name)
+    if not match:
+        return None
+    group, action = match.groups()
+    expected = {'files': {'upload': True, 'download': False},
+                'services': {'start': True, 'stop': True, 'restart': True, 'status': False},
+                'packages': {'install': True, 'update': True, 'remove': True}}
+    if action not in expected[group] or op['is_mutation'] is not expected[group][action]:
+        return None
+    mutation = expected[group][action]
+    return ('guest_' + group + '_write' if mutation else 'guest_read',
+            'POST' if mutation else 'GET', '/sandy/guest/' + group)
 
 
 def classify(op):
@@ -65,11 +87,12 @@ def build():
     # distinct scope is bound to the enrolled project/zone/instance in SQL.
     guest = json.loads((ROOT / 'supabase/functions' / GUEST_SOURCE).read_text())
     for op in guest['operations']:
-        if op['kind'] == 'status' and op['is_mutation'] is False:
+        descriptor = guest_descriptor(op)
+        if descriptor:
             rows[op['operation']] = {
                 'operation': op['operation'], 'provider': 'gcp',
-                'operation_class': 'metadata_read', 'method': 'GET',
-                'path': '/sandy/guest/agent-status', 'is_mutation': False,
+                'operation_class': descriptor[0], 'method': descriptor[1],
+                'path': descriptor[2], 'is_mutation': op['is_mutation'],
                 'contract_sha256': op['contract_sha256'],
                 'source_path': 'supabase/functions/' + GUEST_SOURCE,
             }

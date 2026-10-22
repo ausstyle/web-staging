@@ -24,18 +24,21 @@ def transaction_body(path):
                      if line.strip() not in ('BEGIN;', 'COMMIT;', 'ROLLBACK;'))
 
 
-def run(output, deployed=False):
+def run(output, deployed=False, bounded=False):
     runtime = EngineeringRuntime()
+    migration = (ROOT / 'supabase/migrations/20261022173000_sandy_bounded_guest_policy.sql'
+                 if bounded else MIGRATION)
+    suites = ('sandy_bounded_guest_policy_rollback',) + SUITES if bounded else SUITES
     report = {'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'kind': 'database_boundary_fixtures_full_rollback',
-              'migration_sha256': hashlib.sha256(MIGRATION.read_bytes()).hexdigest(),
+              'migration_sha256': hashlib.sha256(migration.read_bytes()).hexdigest(),
               'candidate_installed_inside_rollback': not deployed,
               'provider_execution': False, 'VM_acceptance': False, 'suites': []}
-    for name in SUITES:
+    for name in suites:
         path = ROOT / 'supabase/tests' / (name + '.sql')
         query = "BEGIN; SET LOCAL lock_timeout='3s'; SET LOCAL statement_timeout='45s';\n"
         if not deployed:
-            query += transaction_body(MIGRATION) + '\n'
+            query += transaction_body(migration) + '\n'
         query += transaction_body(path) + '\nROLLBACK;'
         status, body = runtime._http('POST', MANAGEMENT + '/database/query',
                                     runtime._management,
@@ -57,5 +60,7 @@ if __name__ == '__main__':
     parser.add_argument('--output', required=True, type=Path)
     parser.add_argument('--deployed', action='store_true',
                         help='Test already-installed functions without reinstalling the candidate.')
+    parser.add_argument('--bounded', action='store_true',
+                        help='Include the bounded file/package/service policy candidate and suite.')
     args = parser.parse_args()
-    print(json.dumps(run(args.output, args.deployed)))
+    print(json.dumps(run(args.output, args.deployed, args.bounded)))

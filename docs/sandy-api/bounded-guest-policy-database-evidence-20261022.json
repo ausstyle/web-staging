@@ -1,0 +1,49 @@
+{
+  "observed_at": "2026-10-22T17:02:25.659873+00:00",
+  "migration_sha256": "a76ee91e8cea061a5c7b53bbf04c1b7c6cc7054fabef8dc82401378b8f8dc3b0",
+  "kind": "synthetic_database_components_full_rollback",
+  "provider_execution": false,
+  "persistent_authority_changes": false,
+  "tests": [
+    {
+      "suite": "sandy_bounded_guest_policy_rollback",
+      "status": 201,
+      "response": [
+        {
+          "checks": 51
+        }
+      ],
+      "passed": true
+    },
+    {
+      "suite": "sandy_guest_standing_dispatch_rollback",
+      "status": 201,
+      "response": [
+        {
+          "checks": 16
+        }
+      ],
+      "passed": true
+    },
+    {
+      "suite": "sandy_standing_session_binding_rollback",
+      "status": 201,
+      "response": [
+        {
+          "checks": 10
+        }
+      ],
+      "passed": true
+    },
+    {
+      "suite": "sandy_standing_engineering_rollback",
+      "status": 201,
+      "response": [
+        {
+          "checks": 30
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

@@ -2,6 +2,8 @@
 
 Current production checkpoint: 22 October 2026 UTC. The original programme remains incomplete.
 
+Latest shared-control repair: PR **#181** merged at `5597bde85578268b0677180d7883c4e9a2665561`; source `b183486fdd64209eeedfb007b7cc37b07cdc4ed9` is deployed as database migration **20261022170000**. Guest dispatch now recognizes the existing exact standing-admission verifier, rejects expired consumed admissions and honors Supabase Auth `not_after`. Actual normal-session MCP GitHub provider read and guest readiness reads passed; expiring an isolated Auth session caused a pre-admission 403, and a newly issued legitimate session succeeded. Both isolated sessions were retired and logged out. Delegation bounds, registry flags and VM enrollments are unchanged; guest Edge API stays **v16**. This closes shared authorization defects, not VM access acceptance. [Actual release/authentication evidence](guest-policy-release-evidence-20261022.json).
+
 PR **#136 merged** normally as `f7855132272b170e5ed387895967097e88f3402e` after all six candidate CI checks passed. Scope synchronization succeeded for all 13 documents; 0001 and 0005 version 1.2 match their merged source hashes. The bounded managed-worker update repair is deployed as **sandy-guest-operation-api v15**, source `37f128f2d0315a44c7f38e93769f4eb82905940e`, with all uploaded sources matched and a real anonymous dispatch refusal. No VM was enrolled, restarted or installed by this release. [Actual release/sync evidence](infrastructure-acceptance-release-20261022.json).
 
 - **0/161 requirement families fully accepted; 33 have reviewed implementations awaiting whole-family acceptance; 128 need software or constituent reconciliation.**

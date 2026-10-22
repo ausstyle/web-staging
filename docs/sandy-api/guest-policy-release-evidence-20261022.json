@@ -1,0 +1,293 @@
+{
+  "release": {
+    "observed_at": "2026-10-22T16:47:15.562266+00:00",
+    "source_commit": "b183486fdd64209eeedfb007b7cc37b07cdc4ed9",
+    "merge_commit": "5597bde85578268b0677180d7883c4e9a2665561",
+    "PR": 181,
+    "change_id": "4ddbf901-245d-48a8-9979-4eb9ca23c206",
+    "deployment_kind": "database_functions",
+    "migration": {
+      "version": "20261022170000",
+      "name": "sandy_guest_standing_dispatch",
+      "migration_sha256": "eb9076ecc8fd394e42026cb0f56eec7ecd6758f66d06c935e76eecb6ce994da9"
+    },
+    "CI_runs": [
+      {
+        "id": 39816181467,
+        "head_sha": "b183486fdd64209eeedfb007b7cc37b07cdc4ed9",
+        "status": "completed",
+        "conclusion": "success",
+        "updated_at": "2026-10-22T16:44:05Z"
+      },
+      {
+        "id": 39816181386,
+        "head_sha": "b183486fdd64209eeedfb007b7cc37b07cdc4ed9",
+        "status": "completed",
+        "conclusion": "success",
+        "updated_at": "2026-10-22T16:44:35Z"
+      }
+    ],
+    "functions": [
+      {
+        "name": "sandy_engineering_resolve_identity",
+        "source_sha256": "ef4d1a6068d123b1b042b9e4e1d515767426d1dabdd549afa26eccbfafaae04c",
+        "ACL_preserved": true
+      },
+      {
+        "name": "sandy_guest_admission_current",
+        "source_sha256": "3a380a9775860261922bbeec00a4cf7cd77e4d9abb84c967a3b1820a59313c47",
+        "ACL_preserved": true
+      }
+    ],
+    "standing_authority_enrollment_registry_flags_unchanged": true,
+    "guest_API_version": 16,
+    "VM_commands_executed": 0,
+    "VM_acceptance": false,
+    "authenticated_MCP_regression": "passed",
+    "new_registry_operations": 0
+  },
+  "database_regression": {
+    "observed_at": "2026-10-22T16:47:32.724091+00:00",
+    "kind": "database_boundary_fixtures_full_rollback",
+    "migration_sha256": "eb9076ecc8fd394e42026cb0f56eec7ecd6758f66d06c935e76eecb6ce994da9",
+    "candidate_installed_inside_rollback": false,
+    "provider_execution": false,
+    "VM_acceptance": false,
+    "suites": [
+      {
+        "name": "sandy_guest_standing_dispatch_rollback",
+        "source_sha256": "a13ccb27616c29fcf7d349cb844c6426a4e6ad3762530415d30b3a2ab065f41d",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 16,
+        "rolled_back": true
+      },
+      {
+        "name": "sandy_standing_session_binding_rollback",
+        "source_sha256": "5ac84a9260063ecf3885a16fdd10c5caf22d4adbf07c7da8a4eeb54eafe42670",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 10,
+        "rolled_back": true
+      },
+      {
+        "name": "sandy_standing_engineering_rollback",
+        "source_sha256": "6ea352071fbf56ed72a04bfa00bd97f0da33c7835864cb1606a93a1d09e9f407",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 30,
+        "rolled_back": true
+      }
+    ]
+  },
+  "authenticated_MCP": {
+    "observed_at": "2026-10-22T16:49:13.382576+00:00",
+    "deployment_migration": "20261022170000",
+    "source_commit": "b183486fdd64209eeedfb007b7cc37b07cdc4ed9",
+    "normal_Supabase_Auth": true,
+    "personal_Controller_token_used": false,
+    "service_key_used_as_MCP_session": false,
+    "calls": [
+      {
+        "operation": "github.repos.get",
+        "request_id": "42a08a80-dd68-449d-8e44-fe7a512c737c",
+        "MCP_id": "47a013aa-126c-45eb-b7d6-6c34362e410b",
+        "complete": true,
+        "HTTP_status": 200,
+        "MCP_isError": false,
+        "API_status": 200,
+        "error": null,
+        "executed": true,
+        "admission_id": "cd3bff5f-e693-45a4-b164-8bb7753f6c16",
+        "admission": {
+          "id": "cd3bff5f-e693-45a4-b164-8bb7753f6c16",
+          "state": "succeeded",
+          "actor_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "operation": "github.repos.get",
+          "result_sha256": "358d852441f72ec1a68e50fa79a37fbe39a201ff70661526da5977412d0daeb8",
+          "provider_http_status": 200,
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "session_id": "1dab30bf-a91e-4395-914b-78c6c75327ca",
+          "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        },
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "returned_result_digest": "358d852441f72ec1a68e50fa79a37fbe39a201ff70661526da5977412d0daeb8",
+        "provider_http_status": 200,
+        "observation": "Actual GitHub repository metadata read through MCP/API/provider"
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "request_id": "8af79bdc-7221-49c8-aa63-1c0be6da56bb",
+        "MCP_id": "697c32a4-cb2a-4893-8348-91a7cdbbed1c",
+        "complete": true,
+        "HTTP_status": 200,
+        "MCP_isError": false,
+        "API_status": 200,
+        "error": null,
+        "executed": true,
+        "admission_id": "a6920330-3d4a-486b-9436-be07bca8e537",
+        "admission": {
+          "id": "a6920330-3d4a-486b-9436-be07bca8e537",
+          "state": "succeeded",
+          "actor_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "operation": "gcp.vm.agent.status",
+          "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+          "provider_http_status": 200,
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "session_id": "1dab30bf-a91e-4395-914b-78c6c75327ca",
+          "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        },
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "returned_result_digest": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+        "independent_enrollment_readback": {
+          "vm_name": "sandy-video",
+          "enabled": false,
+          "generation": 0,
+          "last_seen_at": null
+        },
+        "observation": "Sandy enrollment read; no VM execution"
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "request_id": "03a8b4a3-ceba-43f9-b783-85129cd2546f",
+        "MCP_id": "1f366e2c-ea54-43ae-8920-29cdc9a9c9ed",
+        "complete": true,
+        "HTTP_status": 200,
+        "MCP_isError": true,
+        "API_status": 403,
+        "error": "engineering_identity_not_authorized",
+        "executed": false,
+        "admission_id": null,
+        "execution_admissions": 0
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "request_id": "2f450e02-be1e-438e-9a3c-b8d169f8946a",
+        "MCP_id": "a43f21bd-7f2b-404c-972d-909ec5d49a0d",
+        "complete": true,
+        "HTTP_status": 200,
+        "MCP_isError": false,
+        "API_status": 200,
+        "error": null,
+        "executed": true,
+        "admission_id": "b62fa135-ab47-4599-a141-c69cb4f36b4e",
+        "admission": {
+          "id": "b62fa135-ab47-4599-a141-c69cb4f36b4e",
+          "state": "succeeded",
+          "actor_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "operation": "gcp.vm.agent.status",
+          "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+          "provider_http_status": 200,
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "session_id": "a084f2ed-f2b0-41df-ba55-c815f009694f",
+          "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        },
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "returned_result_digest": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+        "independent_enrollment_readback": {
+          "vm_name": "sandy-video",
+          "enabled": false,
+          "generation": 0,
+          "last_seen_at": null
+        },
+        "observation": "Sandy enrollment read; no VM execution"
+      }
+    ],
+    "complete": true,
+    "VM_commands_executed": 0,
+    "isolated_session_id": "1dab30bf-a91e-4395-914b-78c6c75327ca",
+    "only_isolated_session_Auth_not_after_expired": true,
+    "fresh_session_id": "a084f2ed-f2b0-41df-ba55-c815f009694f",
+    "global_Controller_memberships": 0,
+    "cleanup": [
+      {
+        "session_id": "1dab30bf-a91e-4395-914b-78c6c75327ca",
+        "Sandy_session_retired": true,
+        "Auth_logout_HTTP_status": 204
+      },
+      {
+        "session_id": "a084f2ed-f2b0-41df-ba55-c815f009694f",
+        "Sandy_session_retired": true,
+        "Auth_logout_HTTP_status": 204
+      }
+    ]
+  },
+  "acceptance": {
+    "INF_01_to_07_fully_accepted": 0,
+    "Linux_Windows_graphical_execution_verified": 0,
+    "VM_commands_executed": 0,
+    "standing_write_grant_established": false,
+    "IAP_permissions_changed": false,
+    "native_transport_activated": false,
+    "guest_API_version": 16
+  },
+  "authenticated_write_denial": {
+    "MCP_id": "578cb3b3-95fc-44d3-a560-9a63fb5d523e",
+    "operation": "gcp.vm.agent.install",
+    "request_id": "4c4f784e-b6b2-4d8a-b75c-57066c057d02",
+    "HTTP_status": 200,
+    "API_status": 403,
+    "error": "engineering_operation_scope_denied",
+    "executed": false,
+    "execution_admissions": 0,
+    "normal_renewable_workload_Auth": true,
+    "personal_Controller_token_used": false
+  }
+}
