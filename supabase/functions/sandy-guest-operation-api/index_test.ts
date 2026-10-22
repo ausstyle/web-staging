@@ -322,6 +322,95 @@ Deno.test("reused or ambiguous grants cannot enqueue a second guest operation", 
   assert.equal((await response.json()).reconciliation_required, true);
   assert.equal(unknown.calls.length, 0);
 });
+
+Deno.test("known pre-queue rejection closes the consumed admission without provider success", async () => {
+  for (
+    const operation of [
+      "gcp.vm.files.upload",
+      "gcp.vm.packages.install",
+      "gcp.vm.services.status",
+    ]
+  ) {
+    const calls: { name: string; args: Record<string, unknown> }[] = [];
+    const f = setup({
+      signing: await signing(),
+      rpc: async (name, args) => {
+        calls.push({ name, args });
+        return {
+          error: null,
+          data: name === "sandy_guest_enqueue"
+            ? {
+              ok: false,
+              error: "guest_enrollment_required",
+              http_status: 424,
+            }
+            : { ok: true },
+        };
+      },
+    });
+    const args = operation.includes("files")
+      ? {
+        vm_name: "sandy-video",
+        path: "fixture.txt",
+        content_base64: "eA==",
+        sha256: await argumentDigest("fixture"),
+      }
+      : operation.includes("packages")
+      ? { vm_name: "sandy-video", manager: "apt", packages: ["hello"] }
+      : { vm_name: "sandy-video", service: "fixture.service" };
+    if (operation.includes("files")) {
+      args.sha256 =
+        "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881";
+    }
+    const response = await f.handler(api(operation, args));
+    assert.equal(response.status, 424);
+    assert.equal((await response.json()).executed, false);
+    assert.deepEqual(calls.map((x) => x.name), [
+      "sandy_guest_enqueue",
+      "sandy_api_finish_execution",
+    ]);
+    assert.equal(calls[1].args.p_admission_id, admission);
+    assert.equal(calls[1].args.p_outcome, "failed");
+    assert.equal(calls[1].args.p_provider_http_status, null);
+    assert.equal(
+      calls[1].args.p_result_sha256,
+      await argumentDigest({
+        error: "guest_enrollment_required",
+        executed: false,
+      }),
+    );
+  }
+});
+
+Deno.test("failed rejection receipt stays uncertain and never queues a retry", async () => {
+  const calls: string[] = [];
+  const f = setup({
+    signing: await signing(),
+    rpc: async (name) => {
+      calls.push(name);
+      return {
+        error: null,
+        data: name === "sandy_guest_enqueue"
+          ? { ok: false, error: "guest_enrollment_required", http_status: 424 }
+          : { ok: false },
+      };
+    },
+  });
+  const response = await f.handler(
+    api("gcp.vm.services.status", {
+      vm_name: "sandy-video",
+      service: "fixture.service",
+    }),
+  );
+  const body = await response.json();
+  assert.equal(response.status, 503);
+  assert.equal(body.executed, null);
+  assert.equal(body.reconciliation_required, true);
+  assert.deepEqual(calls, [
+    "sandy_guest_enqueue",
+    "sandy_api_finish_execution",
+  ]);
+});
 Deno.test("agent status remains independent of missing signer and reports absent enrollment truthfully", async () => {
   const f = setup();
   const response = await f.handler(
