@@ -13,6 +13,7 @@ import { operationRequestPath } from "./request_path.ts";
 import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
+import { readVerifiedExecution } from "../_shared/sandy_execution_receipt_transport.ts";
 import {
   admittedCustomerReads,
   governedCustomerRead,
@@ -616,6 +617,9 @@ async function upstreamResult(
     executed: preserveExecutionClaim ? (ok ? result.executed : null) : true,
     upstream_status: upstreamStatus,
     result,
+    ...(ok && readVerifiedExecution(response, operation, result.admission_id)
+      ? { execution_receipt: readVerifiedExecution(response, operation, result.admission_id) }
+      : {}),
     ...(preserveExecutionClaim && ok
       ? {
         request_state: result.request_state,

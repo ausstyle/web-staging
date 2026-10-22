@@ -51,6 +51,32 @@ class WorkloadVerificationTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, '^github_independent_readback_failed$'):
                 check.github('git/ref/heads/fixture')
 
+class GitHubRecoveryTests(unittest.TestCase):
+    def test_ambiguous_write_restores_only_the_owned_fixture_through_mcp_then_reads_back(self):
+        import base64
+        with tempfile.TemporaryDirectory() as tmp:
+            check = Verification.__new__(Verification)
+            check.output = Path(tmp) / 'proof.json'
+            check.state = {'steps': {}, 'original_github': {'content': base64.b64encode(b'original').decode()}}
+            check.require_github_receipts = True
+            check.github = Mock(side_effect=[{'content': base64.b64encode(b'Sandy engineering fixture machine verified\n').decode(), 'sha': 'a'*40}, {'content': base64.b64encode(b'original').decode()}])
+            check.call = Mock()
+            check.recover_github_fixture()
+            self.assertEqual(check.call.call_args.args[1], 'github.files.update')
+            self.assertEqual(check.call.call_args.args[2]['body']['sha'], 'a'*40)
+            self.assertTrue(check.state['failure_recovery_independently_verified'])
+            self.assertTrue(check.require_github_receipts)
+
+    def test_recovery_refuses_to_overwrite_a_foreign_concurrent_change(self):
+        import base64
+        check = Verification.__new__(Verification)
+        check.state = {'original_github': {'content': base64.b64encode(b'original').decode()}}
+        check.github = Mock(return_value={'content': base64.b64encode(b'foreign change').decode(), 'sha': 'a'*40})
+        check.call = Mock()
+        with self.assertRaisesRegex(RuntimeError, '^github_recovery_current_content_not_owned$'):
+            check.recover_github_fixture()
+        check.call.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

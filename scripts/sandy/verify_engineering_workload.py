@@ -20,8 +20,9 @@ ROOT = Path(__file__).resolve().parents[2]
 POLICY = json.loads((ROOT / 'supabase/functions/sandy-operation-api/engineering_identity_policy.json').read_text())
 
 class Verification:
-    def __init__(self, output, components=None):
+    def __init__(self, output, components=None, require_github_receipts=False):
         self.runtime = EngineeringRuntime()
+        self.require_github_receipts = require_github_receipts
         self.output = output
         self.components = set(components or ['github', 'migration', 'secret', 'functions'])
         self.state = json.loads(output.read_text()) if output.exists() else {'personal_controller_session_used': False, 'steps': {}}
@@ -48,11 +49,17 @@ class Verification:
         # These fixture provider results contain only artifact/resource identifiers.
         steps[name].update(http_status=status, is_error=result.get('isError'), api_status=envelope.get('status'),
             executed=payload.get('executed'), admission_id=payload.get('admission_id'),
+            execution_receipt=envelope.get('result', {}).get('execution_receipt'),
             provider_http_status=payload.get('provider_http_status'), response_sha256=hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest())
         if status != 200 or result.get('isError') is not False or not 200 <= envelope.get('status', 0) < 300:
             steps[name]['error'] = envelope.get('result', {}).get('error')
             self.save()
             raise RuntimeError('workload_execution_failed:' + name)
+        if getattr(self, 'require_github_receipts', False) and operation.startswith('github.'):
+            receipt = steps[name]['execution_receipt']
+            if not isinstance(receipt, dict) or receipt.get('admission_id') != payload.get('admission_id') or receipt.get('state') != 'succeeded' or receipt.get('effect_verified') is not True:
+                self.save()
+                raise RuntimeError('github_readback_receipt_not_verified:' + name)
         steps[name].update(verified=True, result=payload)
         self.save()
         print(json.dumps({'step': name, 'operation': operation, 'passed': True}), flush=True)
@@ -79,7 +86,49 @@ class Verification:
         args['artifact_ref'] = hashlib.sha256(json.dumps(manifest, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
         return args
 
+    def recover_github_fixture(self):
+        original = self.state.get('original_github')
+        if not original or self.state.get('github_file_content_restored'):
+            return
+        branch, path = POLICY['github_branch'], POLICY['github_path']
+        endpoint = 'contents/' + path + '?' + urllib.parse.urlencode({'ref': branch})
+        current = self.github(endpoint)
+        original_bytes = base64.b64decode(original['content'])
+        current_bytes = base64.b64decode(current['content'])
+        if current_bytes != original_bytes:
+            if current_bytes != b'Sandy engineering fixture machine verified\n':
+                raise RuntimeError('github_recovery_current_content_not_owned')
+            strict = getattr(self, 'require_github_receipts', False)
+            try:
+                # Cleanup uses the same authenticated MCP write. Lack of a new
+                # verification receipt cannot prevent restoring our own fixture.
+                self.require_github_receipts = False
+                self.call('github_failure_recovery', 'github.files.update', {'path': {'path': path}, 'body': {
+                    'branch': branch, 'sha': current['sha'], 'message': 'Restore dedicated Sandy engineering test fixture',
+                    'content': original['content'].replace('\n', '')}})
+            finally:
+                self.require_github_receipts = strict
+            if base64.b64decode(self.github(endpoint)['content']) != original_bytes:
+                raise RuntimeError('github_recovery_independent_readback_failed')
+        self.state['github_file_content_restored'] = True
+        self.state['failure_recovery_independently_verified'] = True
+        self.save()
+
     def run(self):
+        try:
+            self._run()
+        except Exception as error:
+            self.state['complete'] = False
+            self.state['failure_type'] = type(error).__name__
+            if 'github' in self.components:
+                try:
+                    self.recover_github_fixture()
+                except Exception as recovery:
+                    self.state['recovery_failure_type'] = type(recovery).__name__
+            self.save()
+            raise
+
+    def _run(self):
         r = self.runtime
         self.state['started_at'] = self.state.get('started_at', datetime.datetime.now(datetime.timezone.utc).isoformat())
         suffix = self.state.setdefault('migration_run_suffix', uuid.uuid4().hex)
@@ -146,5 +195,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--components', nargs='+', choices=['github', 'migration', 'secret', 'functions'], help='Exercise affected components while reusing recorded evidence for unchanged ones')
+    parser.add_argument('--require-github-receipts', action='store_true', help='Require MCP-propagated, independently settled effect verification')
     args = parser.parse_args()
-    Verification(args.output, args.components).run()
+    Verification(args.output, args.components, args.require_github_receipts).run()

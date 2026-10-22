@@ -6937,3 +6937,16 @@ Deno.test("normal-customer canonical read obtains its own durable receipt withou
     "sandy_api_consume_customer_read",
   ]);
 });
+
+Deno.test("canonical API carries only admission-bound backend verification metadata outside the unchanged provider contract",async()=>{
+ const actor="10000000-0000-4000-8000-000000000001",admission="10000000-0000-4000-8000-000000000002",grant="10000000-0000-4000-8000-000000000003";
+ for(const trusted of [true,false]){
+  const header=btoa(JSON.stringify({admission_id:trusted?admission:grant,state:"succeeded",effect_verified:true,verification_sha256:"f".repeat(64)}));
+  const h=harness({actorId:actor,executionPolicy:true,rows:[extensionRow("github.commit",true)],
+   rpcHandler(name){assert.equal(name,"sandy_api_admit_execution");return {ok:true,allowed:true,reused:false,admission_id:admission,grant_id:grant,state:"admitted",executed:false,expires_at:new Date(Date.now()+60000).toISOString()};},
+   backend(){return Response.json({ok:true,operation:"github.commit",contract_version:"1.0.0",provider:"github",request_state:"accepted",executed:true,admission_id:admission,provider_http_status:201,provider_request_id:null,result:{accepted:true,effect_confirmed:false,sha:"a".repeat(40)},possibly_truncated:false,result_limit:100,next_page:null},{headers:{"x-sandy-verified-execution":header}});},
+  });
+  const r=await h.request({action:"execute",operation:"github.commit",arguments:{body:{tree:"b".repeat(40),parents:["c".repeat(40)],message:"fixture"}}});const value=await r.json();
+  assert.equal(r.status,200,JSON.stringify(value));assert.equal(value.result.request_state,"accepted");assert.equal(value.execution_receipt?.state,trusted?"succeeded":undefined);
+ }
+});

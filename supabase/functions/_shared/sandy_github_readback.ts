@@ -1,0 +1,173 @@
+/** Immutable GitHub readback. Fixed provider/repository, GET only, bounded data;
+ * this neither authorizes an operation nor retries a mutation. */
+import { argumentDigest } from "./sandy_api_protocol.ts";
+type Obj = Record<string, unknown>;
+const object = (v: unknown): v is Obj =>
+  !!v && typeof v === "object" && !Array.isArray(v);
+const sha = (v: unknown): v is string =>
+  typeof v === "string" && /^[a-f0-9]{40}$/.test(v);
+export const githubReadbackOperations = new Set([
+  "github.files.create",
+  "github.files.update",
+  "github.commit",
+]);
+export type GithubReadback = { verified: true; proof: Obj } | {
+  verified: false;
+  reason: string;
+};
+function bytes(value: unknown): Uint8Array | null {
+  if (
+    typeof value !== "string" || value.length > 100000 ||
+    !/^[A-Za-z0-9+/\s]*={0,2}$/.test(value)
+  ) return null;
+  try {
+    const b = Uint8Array.from(
+      atob(value.replace(/\s/g, "")),
+      (c) => c.charCodeAt(0),
+    );
+    return b.length <= 65536 ? b : null;
+  } catch {
+    return null;
+  }
+}
+const digest = async (b: Uint8Array) =>
+  Array.from(
+    new Uint8Array(await crypto.subtle.digest("SHA-256", new Uint8Array(b).buffer)),
+    (v) => v.toString(16).padStart(2, "0"),
+  ).join("");
+async function read(
+  request: typeof fetch,
+  url: string,
+  token: string,
+): Promise<unknown> {
+  const response = await request(url, {
+    method: "GET",
+    redirect: "error",
+    headers: {
+      authorization: `Bearer ${token}`,
+      accept: "application/vnd.github+json",
+      "x-github-api-version": "2022-11-28",
+    },
+    signal: AbortSignal.timeout(15000),
+  });
+  if (response.status !== 200 || !response.body) {
+    await response.body?.cancel();
+    throw Error();
+  }
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    for (;;) {
+      const part = await reader.read();
+      if (part.done) break;
+      size += part.value.byteLength;
+      if (size > 200000) {
+        await reader.cancel();
+        throw Error();
+      }
+      chunks.push(part.value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const body = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    body.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body));
+}
+export async function verifyGithubReadback(
+  operation: string,
+  args: Obj,
+  raw: unknown,
+  token: string,
+  request: typeof fetch = fetch,
+): Promise<GithubReadback> {
+  if (
+    !githubReadbackOperations.has(operation) || !object(raw) ||
+    !object(args.body)
+  ) return { verified: false, reason: "github_readback_unsupported" };
+  const body = args.body;
+  try {
+    if (operation === "github.commit") {
+      if (
+        !sha(raw.sha) || !sha(body.tree) || !Array.isArray(body.parents) ||
+        body.parents.length > 10 || !body.parents.every(sha) ||
+        typeof body.message !== "string"
+      ) throw Error();
+      const observed = await read(
+        request,
+        `https://api.github.com/repos/ausstyle/web-staging/git/commits/${raw.sha}`,
+        token,
+      );
+      if (
+        !object(observed) || observed.sha !== raw.sha ||
+        !object(observed.tree) || observed.tree.sha !== body.tree ||
+        observed.message !== body.message || !Array.isArray(observed.parents) ||
+        observed.parents.length !== body.parents.length ||
+        observed.parents.some((p, i) =>
+          !object(p) || p.sha !== (body.parents as string[])[i]
+        )
+      ) throw Error();
+      return {
+        verified: true,
+        proof: {
+          version: 1,
+          kind: "github_commit",
+          repository: "ausstyle/web-staging",
+          commit_sha: raw.sha,
+          tree_sha: body.tree,
+          parents_sha256: await argumentDigest(body.parents),
+          message_sha256: await digest(new TextEncoder().encode(body.message)),
+          read_http_status: 200,
+        },
+      };
+    }
+    const path = object(args.path) ? args.path.path : undefined;
+    if (
+      typeof path !== "string" || path.length > 1024 || !path ||
+      /[\\%?#\u0000-\u001f\u007f]/.test(path) || path.split("/").some((p) =>
+        !p || p === "." || p === ".."
+      ) || !object(raw.commit) || !sha(raw.commit.sha) ||
+      !object(raw.content) || !sha(raw.content.sha)
+    ) throw Error();
+    const expected = bytes(body.content);
+    if (!expected) throw Error();
+    const observed = await read(
+      request,
+      `https://api.github.com/repos/ausstyle/web-staging/contents/${
+        path.split("/").map(encodeURIComponent).join("/")
+      }?ref=${raw.commit.sha}`,
+      token,
+    );
+    if (
+      !object(observed) || observed.path !== path || observed.type !== "file" ||
+      observed.encoding !== "base64" || observed.sha !== raw.content.sha ||
+      observed.size !== expected.length
+    ) throw Error();
+    const actual = bytes(observed.content);
+    if (
+      !actual || actual.length !== expected.length ||
+      actual.some((v, i) => v !== expected[i])
+    ) throw Error();
+    return {
+      verified: true,
+      proof: {
+        version: 1,
+        kind: "github_file",
+        repository: "ausstyle/web-staging",
+        commit_sha: raw.commit.sha,
+        blob_sha: raw.content.sha,
+        path,
+        byte_length: actual.length,
+        content_sha256: await digest(actual),
+        read_http_status: 200,
+      },
+    };
+  } catch {
+    return { verified: false, reason: "github_readback_not_confirmed" };
+  }
+}
