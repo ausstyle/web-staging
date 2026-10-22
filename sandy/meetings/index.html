@@ -234,7 +234,7 @@ async function startSandyAI(){
   sandyEvents.onmessage=event=>{
     let msg;try{msg=JSON.parse(event.data)}catch{return}
     const type=String(msg.type||"");
-    if(type==="response.created"){sandyBusy=true;}else if(type==="response.done"){sandyBusy=false;}else if(type==="response.function_call_arguments.done"){void handleSandyTool(msg);
+    if(type==="response.created"){sandyBusy=true;}else if(type==="response.done"){sandyBusy=false;if(msg.response?.status==="failed")$("callStatus").textContent="Sandy couldn't speak: "+String(msg.response?.status_details?.error?.message||"Voice generation failed");}else if(type==="response.function_call_arguments.done"){void handleSandyTool(msg);
     }else if(type==="conversation.item.input_audio_transcription.delta"){
       renderLive("host-"+(msg.item_id||"current"),"Room audio",String(msg.delta||""),true);
     }else if(type==="conversation.item.input_audio_transcription.completed"){
@@ -254,8 +254,6 @@ async function startSandyAI(){
       renderLive("sandy-"+(msg.item_id||msg.response_id||"current"),"Sandy",String(msg.delta||""),true);
     }else if(type==="response.output_audio_transcript.done"||type==="response.audio_transcript.done"){
       renderLive("sandy-"+(msg.item_id||msg.response_id||"current"),"Sandy",String(msg.transcript||""));
-    }else if(type==="response.done"&&msg.response?.status==="failed"){
-      $("callStatus").textContent="Sandy couldn't speak: "+String(msg.response?.status_details?.error?.message||"Voice generation failed");
     }else if(type==="error"){
       $("callStatus").textContent="Sandy voice: "+String(msg.error?.message||"Realtime event error");
     }
