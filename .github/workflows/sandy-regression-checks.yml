@@ -11,6 +11,7 @@ on:
       - 'supabase/functions/sandy-repository-release-verifier/**'
       - 'supabase/functions/sandy-examiner-full-cycle/**'
       - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/sandy-whatsapp-webhook/**'
       - 'supabase/functions/sandy-email-runtime-canary/**'
       - 'supabase/functions/_shared/sandy-executive/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
@@ -26,6 +27,7 @@ on:
       - 'supabase/functions/sandy-repository-release-verifier/**'
       - 'supabase/functions/sandy-examiner-full-cycle/**'
       - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/sandy-whatsapp-webhook/**'
       - 'supabase/functions/sandy-email-runtime-canary/**'
       - 'supabase/functions/_shared/sandy-executive/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
@@ -42,9 +44,9 @@ jobs:
         with:
           deno-version: v2.9.6
       - name: Verify independent assessment and receipt boundaries
-        run: deno test --allow-read --allow-env supabase/functions/sandy-examiner-full-cycle/ supabase/functions/sandy-agent-operation-api/index_test.ts supabase/functions/sandy-email-runtime-canary/ supabase/functions/sandy-voice-account-context/executive_test.ts supabase/functions/_shared/sandy-agent-operations/
+        run: deno test --allow-read --allow-env supabase/functions/sandy-examiner-full-cycle/ supabase/functions/sandy-agent-operation-api/index_test.ts supabase/functions/sandy-email-runtime-canary/ supabase/functions/sandy-voice-account-context/executive_test.ts supabase/functions/_shared/sandy-agent-operations/ supabase/functions/sandy-whatsapp-webhook/
       - name: Check shared channel entrypoints
-        run: deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
+        run: deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts supabase/functions/sandy-whatsapp-webhook/index.ts
   offline-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
