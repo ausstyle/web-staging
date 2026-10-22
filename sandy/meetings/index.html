@@ -315,7 +315,7 @@ $("shareGuestWhatsapp").onclick=()=>createInvite(invitationMeeting,"whatsapp").c
 async function receivedInvitations(){
  const response=await api("invitations_received");$("incomingInvites").replaceChildren();$("inboxCount").textContent=String(response.invitations.filter(x=>x.status==="pending").length);
  for(const i of response.invitations.filter(x=>["pending","accepted"].includes(x.status)&&x.sandy_video_meetings?.state==="scheduled")){
- const row=document.createElement("div");row.className="incoming-item";const name=document.createElement("strong");name.textContent=i.sandy_video_meetings?.title||"Sandy meeting";row.append(name);
+ const row=document.createElement("div");row.className="incoming-item";row.dataset.meetingId=i.meeting_id;const name=document.createElement("strong");name.textContent=i.sandy_video_meetings?.title||"Sandy meeting";row.append(name);
  const actions=document.createElement("div");actions.className="row";for(const choice of (i.status==="accepted"?["join"]:["accepted","declined"])){const b=document.createElement("button");b.className="btn sm";b.textContent=choice==="join"?"Join meeting":choice==="accepted"?"Accept & join":"Decline";b.onclick=async()=>{b.disabled=true;try{if(choice!=="join")await api("invitation_respond",{invitation_id:i.id,response:choice});if(choice!=="declined")await prepareJoin(i.meeting_id,false);else await receivedInvitations();}catch(e){notice(e.message)}finally{b.disabled=false}};actions.append(b)}row.append(actions);$("incomingInvites").append(row);
  }
 }
@@ -379,7 +379,9 @@ if(sandyRecipientMeeting){
 async function showRecipientInvitation(){
  await reload();
  $("invitationInbox").scrollIntoView({block:"start"});
- const hasMatch=[...$("incomingInvites").children].length>0;
+ const targetInvite=[...$("incomingInvites").children].find(row=>row.dataset.meetingId===sandyRecipientMeeting);
+ if(targetInvite)targetInvite.scrollIntoView({block:"center"});
+ const hasMatch=Boolean(targetInvite);
  if(!hasMatch)notice("No active invitation is available for this signed-in account. Check that you signed in with the email address that received the invitation.");
 }
 db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_IN"&&session?.access_token){idle.markActive(true);$("loginPanel").classList.add("hide");$("listing").classList.remove("hide");$("create").disabled=false;notice("");if(sandyRecipientMeeting)showRecipientInvitation().catch(e=>notice(e.message));else if(!guestMeeting)reload().catch(e=>notice(e.message));}});
