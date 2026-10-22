@@ -1,5 +1,35 @@
 import { strict as assert } from "node:assert";
-import { candidateUrl, managementRequest, selectManagementBinding, type ManagementEvidence, verify, verifyRestCatalogue } from "./verify_mcp_candidate.ts";
+import { acceptanceRequestEvidence, candidateUrl, managementRequest, selectManagementBinding, type ManagementEvidence, verify, verifyRestCatalogue } from "./verify_mcp_candidate.ts";
+
+Deno.test("acceptance transport diagnostics preserve requests and errors without private data", async () => {
+  const url = "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-operation-api/v1/capabilities?cursor=private-cursor";
+  const init = { headers: { authorization: "Bearer private-token" }, body: "private-body", method: "POST" };
+  const error = new DOMException("private-timeout-detail", "TimeoutError");
+  let calls = 0;
+  const evidence = acceptanceRequestEvidence((async (input, options) => {
+    calls++; assert.equal(input, url); assert.equal(options, init); throw error;
+  }) as typeof fetch);
+  await assert.rejects(() => evidence.request(url, init), e => e === error);
+  assert.equal(calls, 1); // No automatic retry or changed authentication.
+  assert.deepEqual(evidence.snapshot(), { endpoint: "API_REST_catalogue", method: "POST", http_status: null, outcome: "timeout" });
+  assert.equal(JSON.stringify(evidence.snapshot()).includes("private"), false);
+});
+
+Deno.test("failure request snapshot survives session cleanup and hides arbitrary destinations", async () => {
+  const evidence = acceptanceRequestEvidence((async () => new Response(null, { status: 403 })) as typeof fetch);
+  const response = await evidence.request("https://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app/mcp", { method: "POST" });
+  assert.equal(response.status, 403);
+  const failure = evidence.snapshot();
+  await evidence.request("https://zmqlyygzqoidkcwdysok.supabase.co/auth/v1/admin/users/private-id?secret=private-token");
+  assert.deepEqual(failure, { endpoint: "candidate_mcp", method: "POST", http_status: 403, outcome: "response_received" });
+  assert.equal(evidence.snapshot()?.endpoint, "project_auth");
+  for (const url of ["https://private-user:private-password@outside.invalid/private-path?token=private-token",
+    "https://zmqlyygzqoidkcwdysok.supabase.co/private-path", "http://api.supabase.com/private-path"]) {
+    await evidence.request(url);
+    assert.equal(evidence.snapshot()?.endpoint, "redacted_endpoint");
+    assert.equal(JSON.stringify(evidence.snapshot()).includes("private"), false);
+  }
+});
 
 Deno.test("release acceptance uses only the tagged endpoint of the exact preserved Sandy service", () => {
   const before = { service: "sandy-engineering-mcp", project: "elaborate-haven-511518-a5", source_commit_candidate: "a".repeat(40),
