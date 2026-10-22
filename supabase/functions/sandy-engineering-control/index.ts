@@ -1,4 +1,5 @@
 import {handleAutonomousRelease} from "./autonomous_release.ts";
+import {handleGcpAdminRead} from "./gcp_admin_read.ts";
 import { isCanonicalEngineeringOperation, prepareCanonicalEngineeringRequest, sameCanonicalRequest } from "./canonical_request.ts";
 import {authorizeWorkloadControl,workloadRegistrationAllowed} from "./workload.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -30,6 +31,10 @@ Deno.serve(async req=>{
    const lookup=await db.from("sandy_controller_admins").select("role,enabled").eq("auth_user_id",user.id).eq("enabled",true).maybeSingle();
    if(lookup.error||!lookup.data)return respond({error:"Sandy Controller administrator required"},403);
    admin=lookup.data;
+  }
+  if(action==="gcp_admin_read_claim"||(action==="preflight"&&b.connection!==undefined)){
+   try{return await handleGcpAdminRead(db,user,admin,token,b,Deno.env.get("SANDY_GCP_ADMIN_WORKER_URL"))}
+   catch{return respond({ok:false,error:"administrator_read_state_unavailable",executed:null,reconciliation_required:true},503)}
   }
   if(["set_autonomous_policy","authorize_release"].includes(action)){
    try{return respond(await handleAutonomousRelease(db,user,admin,b,async path=>{

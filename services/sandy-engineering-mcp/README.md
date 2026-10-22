@@ -91,3 +91,36 @@ are required before promotion. Missing model readiness or
 canary contracts are explicit compatibility gaps; the adapter does not replace
 them with direct backend calls. The model canary's existing bounded content checks
 do not establish general model quality or authorize routing changes.
+
+## Keyless administrator connection (candidate; not production verified)
+
+The existing canonical `engineering.preflight` operation accepts exactly
+`{"connection":"sandy-gcp-admin"}` for a confirmed current Controller Owner.
+Normal MCP discovery/invocation still forwards to Sandy API. The API delegates to
+Engineering Control, which issues a rate-limited, 60-second one-use admission in
+the shared execution ledger and calls this service's separate Sandy API worker.
+No catalogue row, MCP alias or engineering delegation is added or expanded.
+
+The worker explicitly uses Google's `Compute` metadata credentials, verifies
+`sandy-mcp-runtime@elaborate-haven-511518-a5.iam.gserviceaccount.com`, and presents
+a Google-signed, audience-bound ID token when claiming the admission through
+Engineering Control. That callback also rechecks normal Owner authentication and
+current authorization. Only then may the SDK impersonate
+`sandy-cloud-administrator@elaborate-haven-511518-a5.iam.gserviceaccount.com` for
+1,800 seconds. Credentials remain in memory and are never returned or logged.
+
+The fixed read verifies Cloud Run's configured identity, both immutable VM IDs
+and their IAP policies. It offers no arbitrary URL, caller-selected account,
+policy write, IAM grant or agent enrollment. Failed/uncertain reads are distinct
+from verified connection results. The existing engineering workload is denied;
+this feature does not amend delegation v6 or create global Controller membership.
+
+Release order: merge reviewed source; apply migration `20261022201500` and deploy
+the matching Engineering Control/gateway candidate with preserved source and
+rollback artifacts; deploy the Cloud Run candidate without changing traffic;
+configure `SANDY_GCP_ADMIN_WORKER_URL` on Engineering Control to that fixed
+service's candidate URL; run an authenticated Owner MCP preflight and inspect the
+shared receipt and actual runtime/provider proof. Source tests or deployment
+metadata alone must not mark the connection operational. The Cloud Run workflow
+fails with the exact observed account if the existing service identity differs;
+it does not silently repair identity or IAM configuration.

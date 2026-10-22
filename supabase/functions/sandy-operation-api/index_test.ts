@@ -443,6 +443,25 @@ Deno.test("registry errors prevent discovery and execution", async () => {
   assert.equal(h.calls.length, 0);
 });
 
+Deno.test("administrator preflight preserves Owner identity, accepts only the fixed selector and denies other roles", async () => {
+  const row = { ...preflight, input_schema: { type: "object" } };
+  const h = harness({ rows: [row], backend: () => Response.json({ ok: true, IAM_changes: 0 }) });
+  const response = await h.request({ action: "execute", operation: preflight.operation, arguments: { connection: "sandy-gcp-admin" } });
+  assert.equal(response.status, 200);
+  assert.deepEqual(JSON.parse(String(h.calls[0].init?.body)), { action: "preflight", connection: "sandy-gcp-admin" });
+  assert.equal(new Headers(h.calls[0].init?.headers).get("authorization"), "Bearer test-user-jwt");
+  for (const role of ["admin", "viewer"]) {
+    const denied = harness({ role, rows: [row] });
+    assert.equal((await denied.request({ action: "execute", operation: preflight.operation, arguments: { connection: "sandy-gcp-admin" } })).status, 403);
+    assert.equal(denied.calls.length, 0);
+  }
+  for (const args of [{ connection: "other" }, { connection: "sandy-gcp-admin", url: "https://evil.invalid" }]) {
+    const denied = harness({ rows: [row] });
+    assert.equal((await denied.request({ action: "execute", operation: preflight.operation, arguments: args })).status, 400);
+    assert.equal(denied.calls.length, 0);
+  }
+});
+
 Deno.test("preflight forwards the user identity and reports execution separately from verification", async () => {
   const h = harness({
     backend: () => Response.json({ ok: true, registered_change_count: 3 }),
