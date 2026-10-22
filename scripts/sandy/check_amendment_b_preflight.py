@@ -10,7 +10,7 @@ import json
 from pathlib import Path
 import uuid
 from release_amendment_b import Amendment, candidate, inspect as inspect_sources
-from release_owner_session_repair import candidate as repair_candidate, MIGRATION
+from release_owner_session_repair import candidate as repair_candidate, HISTORY_VERSION
 from release_web_canary import Blocked
 
 
@@ -18,7 +18,7 @@ def inspect(change):
     manifest, pin, declaration, _, migrations = candidate()
     _, _, repair_sql = repair_candidate()
     expected = {Path(p).name.split('_')[0]: value for p, value in migrations.items()}
-    expected[Path(MIGRATION).name.split('_')[0]] = repair_sql.decode()
+    expected[HISTORY_VERSION] = repair_sql.decode()
     release = Amendment(None, change, manifest, pin, declaration)
     blockers = []
     try:
@@ -32,7 +32,7 @@ def inspect(change):
         actual = row.get('statements')
         if not isinstance(actual, list) or len(actual) != 1 or actual[0] != expected[row['version']]:
             blockers.append({'kind': 'migration_version_occupied_by_other_source', 'version': row['version'], 'existing_name': row['name'], 'expected_sql_sha256': hashlib.sha256(expected[row['version']].encode()).hexdigest()})
-        elif row['version'] != Path(MIGRATION).name.split('_')[0]:
+        elif row['version'] != HISTORY_VERSION:
             blockers.append({'kind': 'migration_already_applied_reconcile_before_retry', 'version': row['version']})
     for function in manifest['functions']:
         current = json.loads(release.api('GET', '/functions/' + function['slug']))

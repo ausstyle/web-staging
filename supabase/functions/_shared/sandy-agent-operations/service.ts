@@ -239,6 +239,7 @@ export async function executeAgentOperation(
   const internal = record || operational || preflight;
   const contract = agentOperationContracts[operation] || internal;
   if (!contract) return refused(404, "agent_operation_not_supported");
+  if (context.readOnly === true && contract.is_mutation) return refused(403, "read_only_assessment_mutation_denied");
   if (internal && context.kind !== "trusted_runtime") return refused(403, "trusted_runtime_customer_task_required");
   const validInput = record ? validRuntimeRecordInput : operational ? validRuntimeOperationalInput : preflight ? validRuntimeConnectionPreflightInput : validAgentInput;
   const validOutput = record ? validRuntimeRecordOutput : operational ? validRuntimeOperationalOutput : preflight ? validRuntimeConnectionPreflightOutput : validAgentOutput;

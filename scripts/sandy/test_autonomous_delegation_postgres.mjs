@@ -18,7 +18,7 @@ CREATE TABLE sandy_engineering_changes(id uuid PRIMARY KEY,status text CONSTRAIN
 CREATE TABLE sandy_engineering_tests(change_id uuid,outcome text,checked_at timestamptz,evidence jsonb);
 CREATE TABLE sandy_engineering_change_events(change_id uuid,event_type text,actor uuid,detail jsonb);
 CREATE TABLE sandy_engineering_identity_events(identity_user_id uuid,owner_authority_id uuid,actor_kind text,event_type text,detail jsonb);`);
-await db.exec(await readFile(new URL('../../supabase/migrations/20261022020000_sandy_autonomous_engineering_policy.sql',import.meta.url),'utf8'));
+await db.exec(await readFile(new URL('../../supabase/migrations/20261022111000_sandy_autonomous_engineering_policy.sql',import.meta.url),'utf8'));
 const cfg={repository:'ausstyle/web-staging',project:'zmqlyygzqoidkcwdysok',environment:'canary',branch:'engineering/fixture',targets:[target],baseline_commit:'c'.repeat(40),workflow_sha256:'d'.repeat(64),expires_at:new Date(Date.now()+86400000).toISOString(),maximum_cost_units:0,max_releases_per_day:10};
 const provision=(who=owner,c=cfg)=>db.query('SELECT sandy_engineering_set_autonomous_policy($1,$2,$3)',[who,actor,c===null?null:JSON.stringify(c)]);
 const proof={target,source_commit:source,manifest_sha256:manifest,repository:cfg.repository,workflow_sha256:cfg.workflow_sha256,compared_from:cfg.baseline_commit,check_run_id:10};
@@ -49,7 +49,7 @@ UPDATE sandy_engineering_control_grants SET scope_prefixes=scope_prefixes||ARRAY
 ALTER TABLE sandy_engineering_control_grants ADD COLUMN authorization_ref text DEFAULT 'engineering_change:ca1e72bb-b604-4f5e-b259-acf30ca830d8';
 ALTER TABLE sandy_engineering_change_events ADD COLUMN id uuid DEFAULT gen_random_uuid();
 ALTER TABLE sandy_engineering_change_events ADD COLUMN occurred_at timestamptz DEFAULT clock_timestamp();`);
-await db.exec(await readFile(new URL('../../supabase/migrations/20261022030000_sandy_owner_approved_standing_install.sql',import.meta.url),'utf8'));
+await db.exec(await readFile(new URL('../../supabase/migrations/20261022112000_sandy_owner_approved_standing_install.sql',import.meta.url),'utf8'));
 const fixtureDeclaration=JSON.parse(await readFile(new URL('../../docs/sandy-engineering/evaluations/p0-amendment-b-standing-declaration.json',import.meta.url),'utf8'));
 fixtureDeclaration.identity_binding_sha256=(await db.query("SELECT encode(sha256(convert_to($1,'UTF8')),'hex') h",[actor])).rows[0].h;
 const declaration=JSON.stringify(fixtureDeclaration);

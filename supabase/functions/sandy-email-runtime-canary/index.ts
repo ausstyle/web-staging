@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {emailCandidateOutcome} from "./outcome.ts";
+import {emailExecutiveHistory} from "./history.ts";
+import {assessmentEnvelope} from "../_shared/sandy-executive/assessment.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
 const reply=(s:number,v:unknown)=>new Response(JSON.stringify(v),{status:s,headers:{"content-type":"application/json"}});
 Deno.serve(async req=>{
@@ -11,7 +13,7 @@ Deno.serve(async req=>{
  const id=String(input.source_message_id||"");
  if(!/^[0-9a-f-]{36}$/i.test(id))return reply(400,{error:"invalid id"});
  const db=createClient(url,key,{auth:{persistSession:false}});
- const {data:source,error:sourceError}=await db.from("email_messages").select("id,customer_id,direction,subject,body_text").eq("id",id).eq("direction","incoming").maybeSingle();
+ const {data:source,error:sourceError}=await db.from("email_messages").select("id,customer_id,direction,subject,body_text,conversation_id,created_at").eq("id",id).eq("direction","incoming").maybeSingle();
  if(sourceError||!source?.customer_id)return reply(404,{error:"source unavailable"});
  const {data:allowed}=await db.from("sandy_email_runtime_canary_allowlist").select("enabled").eq("customer_id",source.customer_id).maybeSingle();
  if(!allowed?.enabled||!/^\[SANDY QA\]/i.test(String(source.subject||"")))return reply(403,{error:"not enabled for this message"});
@@ -26,7 +28,8 @@ Deno.serve(async req=>{
  const inserted=await db.from("sandy_email_runtime_canary").insert({source_message_id:id,customer_id:source.customer_id,baseline_draft_id:g.draft_message_id,baseline_excerpt:String(d.body_text).slice(0,2500),status:"running"});
  if(inserted.error)return reply(500,{error:"reservation failed",code:inserted.error.code});
  try{
-  const result=await fetch(url+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},body:JSON.stringify({channel:"test",customer_id:source.customer_id,request_id:"canary_"+id.replaceAll("-",""),request:"Answer this email for comparison ONLY; do not send messages or claim to have sent anything. Subject: "+String(source.subject||"").slice(0,200)+"\nMessage: "+body}),signal:AbortSignal.timeout(110000)});
+  const history=await emailExecutiveHistory(db,source);
+  const result=await fetch(url+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},body:JSON.stringify(assessmentEnvelope({channel:"email",history,customer_id:source.customer_id,request_id:"canary_"+id.replaceAll("-",""),request:"Answer this email for comparison ONLY; do not send messages or claim to have sent anything. Subject: "+String(source.subject||"").slice(0,200)+"\nMessage: "+body})),signal:AbortSignal.timeout(110000)});
   const payload=await result.json().catch(()=>({}));
   const outcome=emailCandidateOutcome(result.ok,payload);
   if(!outcome.candidate)throw Error("runtime_http_"+result.status);

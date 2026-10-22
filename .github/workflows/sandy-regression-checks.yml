@@ -10,6 +10,10 @@ on:
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'supabase/functions/sandy-repository-release-verifier/**'
       - 'supabase/functions/sandy-examiner-full-cycle/**'
+      - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/sandy-email-runtime-canary/**'
+      - 'supabase/functions/_shared/sandy-executive/**'
+      - 'supabase/migrations/2026102211*.sql'
   push:
     branches: [main]
     paths:
@@ -20,6 +24,10 @@ on:
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'supabase/functions/sandy-repository-release-verifier/**'
       - 'supabase/functions/sandy-examiner-full-cycle/**'
+      - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/sandy-email-runtime-canary/**'
+      - 'supabase/functions/_shared/sandy-executive/**'
+      - 'supabase/migrations/2026102211*.sql'
 permissions:
   contents: read
 jobs:
@@ -32,7 +40,9 @@ jobs:
         with:
           deno-version: v2.9.6
       - name: Verify independent assessment and receipt boundaries
-        run: deno test supabase/functions/sandy-examiner-full-cycle/
+        run: deno test --allow-read --allow-env supabase/functions/sandy-examiner-full-cycle/ supabase/functions/sandy-agent-operation-api/index_test.ts supabase/functions/sandy-email-runtime-canary/ supabase/functions/sandy-voice-account-context/executive_test.ts
+      - name: Check shared channel entrypoints
+        run: deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
   offline-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5

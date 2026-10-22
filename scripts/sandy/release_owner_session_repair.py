@@ -18,6 +18,10 @@ CHANGE = 'e6c9fb87-db2c-4ed7-ac63-bbdb60aad127'
 SOURCE = 'f9958d50b4fd4ebd82f97c8e3be76ad49250a192'
 PIN = '24b113ab99c422ab4394ea7895b7679476c38863e259e4c9172ef9647a83a573'
 MIGRATION = 'supabase/migrations/20261022010000_sandy_owner_routine_delegation.sql'
+# The approved SQL is immutable at SOURCE:MIGRATION. Its old history identifier
+# was independently occupied by customer-read projections. Only the history key
+# changes; the applied SQL and owner-approved function modules remain exact.
+HISTORY_VERSION = '20261022110000'
 MANIFEST = 'docs/sandy-engineering/evaluations/p0-owner-session-delegation-source-manifest.json'
 digest = lambda b: hashlib.sha256(b).hexdigest()
 quote = lambda s: "'" + s.replace("'", "''") + "'"
@@ -70,6 +74,8 @@ def run(r, m, files, migration, deploy):
     schema = r.sql("select count(*)::integer AS installed from information_schema.columns where table_schema='public' and table_name='sandy_engineering_delegation_policy' and column_name='standing_authorized_by'")
     if schema != [{'installed': 0}]:
         raise Blocked('migration_already_present_reconcile_before_retry')
+    if r.sql(f"SELECT version FROM supabase_migrations.schema_migrations WHERE version='{HISTORY_VERSION}'"):
+        raise Blocked('relocated_migration_version_already_present')
     if not deploy:
         return {'preflight_passed': True, 'approval_verified': True, 'source_commit': SOURCE, 'manifest_sha256': PIN, 'deployed': False}
     if os.environ.get('GITHUB_ACTIONS') != 'true':
@@ -87,7 +93,7 @@ def run(r, m, files, migration, deploy):
             raise Blocked('transactional_migration_required')
         core = core[len('BEGIN;'):-len('COMMIT;')]
         r.sql("BEGIN; SELECT pg_advisory_xact_lock(hashtext('sandy-approved-owner-repair-migration')); " + core +
-              " INSERT INTO supabase_migrations.schema_migrations(version,statements,name,created_by,idempotency_key) VALUES('20261022010000',ARRAY[" + quote(migration.decode()) + "],'sandy_owner_routine_delegation','protected_github_owner_repair','owner-repair-" + CHANGE + "'); COMMIT;")
+              " INSERT INTO supabase_migrations.schema_migrations(version,statements,name,created_by,idempotency_key) VALUES('" + HISTORY_VERSION + "',ARRAY[" + quote(migration.decode()) + "],'sandy_owner_routine_delegation','protected_github_owner_repair','owner-repair-" + CHANGE + "'); COMMIT;")
         r.admission(True)
         current = json.loads(r.api('GET', '/functions/' + slug))
         body = r.api('GET', '/functions/' + slug + '/body')
@@ -100,7 +106,7 @@ def run(r, m, files, migration, deploy):
             raise Blocked('unknown_outcome_no_upload_retry')
         if r.sql("select count(*)::integer n from pg_proc where pronamespace='public'::regnamespace and proname in ('sandy_engineering_set_standing_delegation','sandy_engineering_record_owner_approval','sandy_engineering_apply_standing_delegation')") != [{'n': 3}]:
             raise Blocked('migration_postcondition_failed')
-        evidence = {'change_id': CHANGE, 'source_commit': SOURCE, 'manifest_sha256': PIN, 'deployed_version': current['version'], 'original_modules_verified': len(files), 'migration_sha256': digest(migration), 'genuine_owner_approval_verified': True, 'approval_status_written': False, 'policy_activated': False, 'frontend_deployed': False, 'customer_channels_changed': False, 'functional_owner_browser_acceptance_passed': False, 'rollback_captured': True, 'rollback_exercised': False}
+        evidence = {'change_id': CHANGE, 'source_commit': SOURCE, 'manifest_sha256': PIN, 'deployed_version': current['version'], 'original_modules_verified': len(files), 'migration_sha256': digest(migration), 'migration_history_version': HISTORY_VERSION, 'approved_sql_unchanged': True, 'genuine_owner_approval_verified': True, 'approval_status_written': False, 'policy_activated': False, 'frontend_deployed': False, 'customer_channels_changed': False, 'functional_owner_browser_acceptance_passed': False, 'rollback_captured': True, 'rollback_exercised': False}
         r.sql(f"INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{CHANGE}','protected_owner_repair_source_verified',NULL,jsonb_build_object('actor_kind','protected_github_management_release','evidence',{quote(json.dumps(evidence))}::jsonb,'owner_impersonation',false))")
         return evidence
     finally:

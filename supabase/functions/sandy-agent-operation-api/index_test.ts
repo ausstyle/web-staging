@@ -85,6 +85,19 @@ const sendReceipt = { successful: true, data: { id: "abcdef12345678" } };
 const verifiedReceipt = { successful: true, data: { id: "abcdef12345678", labelIds: ["SENT"],
   payload: { headers: [{ name: "Subject", value: "Exact subject" }, { name: "To", value: "recipient@example.test" }] } } };
 
+Deno.test("persisted read-only assessment mode rejects every mutation before provider execution or admission", async () => {
+  const db = new Db(); db.tables.sandy_agent_tasks[0].plan = { execution_mode: "read_only_assessment" };
+  const context = await runtime(db); equal(context.readOnly, true);
+  let calls = 0;
+  for (const operation of Object.entries(agentOperationContracts).filter(([, contract]) => contract.is_mutation).map(([name]) => name)) {
+    const denied = await executeAgentOperation(context, operation, {}, services(db, (async () => { calls++; throw Error("must not execute"); }) as typeof fetch));
+    equal(denied.status, 403); equal(denied.body.error, "read_only_assessment_mutation_denied"); equal(denied.body.executed, false);
+  }
+  equal(calls, 0); equal(db.tables.sandy_agent_operation_audit.length, 0);
+  const forged = { ...context, readOnly: false } as AgentPrincipal;
+  equal((await executeAgentOperation(forged, "gmail.messages.search", { query: "test" }, services(db))).status, 403);
+});
+
 Deno.test("forged principals, serialized worker grants and mismatched task tenants cannot execute", async () => {
   const db = new Db();
   const forged = { kind: "trusted_runtime", customerId: CUSTOMER, taskId: TASK } as AgentPrincipal;

@@ -8,6 +8,7 @@ export type AgentPrincipal = Readonly<{
   taskId: string | null;
   controllerOwner: boolean;
   requestText: string;
+  readOnly?: boolean;
 }>;
 type RuntimeProof = Readonly<{ serviceCaller: boolean }>;
 const runtimeProofs = new WeakSet<object>();
@@ -70,7 +71,7 @@ export async function bindRuntimeTask(
   if (!runtimeProofs.has(proof) || !uuid(expected.taskId) ||
     !uuid(expected.customerId)) return null;
   const { data, error } = await db.from("sandy_agent_tasks")
-    .select("id,customer_id,channel,request_id,status,user_request")
+    .select("id,customer_id,channel,request_id,status,user_request,plan")
     .eq("id", expected.taskId).eq("customer_id", expected.customerId).maybeSingle();
   if (error || !data || data.id !== expected.taskId ||
     data.customer_id !== expected.customerId || data.channel !== expected.channel ||
@@ -78,7 +79,7 @@ export async function bindRuntimeTask(
     !["queued", "running"].includes(data.status)) return null;
   return principal({ kind: "trusted_runtime", customerId: data.customer_id,
     authUserId: null, taskId: data.id, controllerOwner: false,
-    requestText: String(data.user_request || "") });
+    requestText: String(data.user_request || ""), readOnly: data.plan?.execution_mode === "read_only_assessment" });
 }
 
 /** An internal conversation can have no customer, exactly as the original

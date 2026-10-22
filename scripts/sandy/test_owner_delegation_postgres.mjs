@@ -19,7 +19,7 @@ await db.exec(`CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_
  CREATE TABLE sandy_engineering_change_events(id uuid DEFAULT gen_random_uuid(),change_id uuid,event_type text,actor uuid,detail jsonb);
  INSERT INTO auth.users VALUES('${owner}','{}'),('${workload}','{"sandy_engineering_test":true}');
  INSERT INTO sandy_controller_admins VALUES('${owner}',true,'owner'),('${workload}',true,'owner');`);
-await db.exec(await readFile(new URL("../../supabase/migrations/20261022010000_sandy_owner_routine_delegation.sql", import.meta.url), "utf8"));
+await db.exec(await readFile(new URL("../../supabase/migrations/20261022110000_sandy_owner_routine_delegation.sql", import.meta.url), "utf8"));
 const reset = async () => { await db.query("DELETE FROM sandy_engineering_change_events WHERE change_id=$1",[change]);
  await db.query("DELETE FROM sandy_engineering_tests WHERE change_id=$1",[change]);
  await db.query("DELETE FROM sandy_engineering_changes WHERE id=$1",[change]);
