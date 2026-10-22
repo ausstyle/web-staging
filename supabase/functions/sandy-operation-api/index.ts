@@ -2355,14 +2355,19 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         return upstreamResult(operation, response, entry.output_schema);
       }
       const args = body.arguments;
+      const administratorRead = operation === "engineering.preflight" && isObject(args) &&
+        Object.keys(args).length === 1 && args.connection === "sandy-gcp-admin";
       if (
         args !== undefined &&
-        (!isObject(args) || Object.keys(args).length !== 0)
+        (!isObject(args) || Object.keys(args).length !== 0) && !administratorRead
       ) {
         return reply(400, {
           error: "operation_accepts_no_arguments",
           executed: false,
         });
+      }
+      if (administratorRead && admin?.role !== "owner") {
+        return reply(403, { error: "administrator_read_owner_authority_required", executed: false });
       }
       let response: Response;
       try {
@@ -2376,8 +2381,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               apikey: anon,
               "content-type": "application/json",
             },
-            body: JSON.stringify({ action: handler.action }),
-            signal: AbortSignal.timeout(20000),
+            body: JSON.stringify({ action: handler.action, ...(administratorRead ? { connection: "sandy-gcp-admin" } : {}) }),
+            signal: AbortSignal.timeout(administratorRead ? 95000 : 20000),
           },
         );
       } catch {

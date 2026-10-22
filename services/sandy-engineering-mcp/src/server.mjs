@@ -4,6 +4,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { callTool, createApiInvoker, discover, describeTool, DiscoveryFailure, executionMetadataHeaders, isPublicAnonJwt } from "./api-adapter.mjs";
+import { createAdminReadWorker } from "./gcp-admin-worker.mjs";
 
 export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
   api = createApiInvoker(
@@ -19,6 +20,7 @@ export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || 
     res.set("x-content-type-options", "nosniff");
     next();
   });
+  app.post("/internal/gcp-admin/preflight", createAdminReadWorker());
   app.post("/mcp", async (req, res) => {
     let userToken = (req.headers.authorization || "").match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
     if (!userToken) return res.status(401).json({ error: "bearer_token_required" });
