@@ -44,7 +44,7 @@ Deno.serve(async req=>{
  let input:any;try{input=await req.json()}catch{return json(400,{error:"invalid JSON"})}
  input=runtimeRequestInput(input);if(!input)return json(400,{error:"invalid request"});
  const channel=String(input.channel||"test"),requestId=String(input.request_id||""),prompt=String(input.request||"");
- const readOnlyAssessment=input.execution_mode==="read_only_assessment";
+ const readOnlyAssessment=channel==="test"||input.execution_mode==="read_only_assessment";
  const voiceSessionId=input.voice_session_id;
  if(voiceSessionId!==undefined&&(!runtimeProof.serviceCaller||channel!=="voice"||typeof voiceSessionId!=="string"||!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(voiceSessionId)))return json(403,{error:"voice_source_binding_invalid"});
  if(!["email","whatsapp","voice","web","internal","test"].includes(channel)||!/^[-a-zA-Z0-9_]{12,110}$/.test(requestId)||prompt.length<2||prompt.length>12000)return json(400,{error:"invalid request"});
