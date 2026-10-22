@@ -199,12 +199,32 @@ async function showDeploymentApprovals(host){
 const engineeringControlUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-engineering-control";
 let engineeringChanges=[],engineeringChangesBusy=false,engineeringChangesError="",engineeringChangesLoaded=false;
 async function engineeringRequest(action,fields={}){
- const session=(await sb.auth.getSession()).data.session;
- if(!session)throw Error("Sign in to Sandy Controller first");
- const response=await fetch(engineeringControlUrl,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+session.access_token},body:JSON.stringify({action,...fields})});
- const result=await response.json().catch(()=>({error:"Invalid Engineering Control response"}));
- if(!response.ok||result.error)throw Error(result.error||"Engineering Control HTTP "+response.status);
- return result;
+ // Only a legitimate signed-in human Controller owner can authorize changes.
+ // Refresh the normal Supabase session before writes; never use a workload key.
+ const writes=["register","status","approve_job","rollback_approve"];
+ let session=(await sb.auth.getSession()).data.session;
+ if(!session)throw Error("Controller session expired. Sign in again.");
+ if(writes.includes(action)||!session.expires_at||session.expires_at*1000-Date.now()<90000){
+  const refreshed=await sb.auth.refreshSession();
+  if(refreshed.error||!refreshed.data.session)throw Error("Controller session renewal failed. Sign in again.");
+  session=refreshed.data.session;
+ }
+ const request=async token=>{
+  const response=await fetch(engineeringControlUrl,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+token},body:JSON.stringify({action,...fields})});
+  const result=await response.json().catch(()=>({error:"Invalid Engineering Control response"}));
+  return {response,result};
+ };
+ let outcome=await request(session.access_token);
+ if(outcome.response.status===401){
+  // Retry only after a definitive authentication refusal, before dispatch.
+  const renewed=await sb.auth.refreshSession();
+  if(renewed.error||!renewed.data.session)throw Error("Engineering Control rejected your session (401). Sign in again.");
+  outcome=await request(renewed.data.session.access_token);
+ }
+ if(!outcome.response.ok||outcome.result.error){
+  throw Error("Engineering Control HTTP "+outcome.response.status+": "+(outcome.result.error||"Request failed"));
+ }
+ return outcome.result;
 }
 async function refreshEngineeringChanges(){
  if(data?.role!=="owner")return;
