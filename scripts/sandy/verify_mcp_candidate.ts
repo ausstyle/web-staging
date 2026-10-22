@@ -19,6 +19,41 @@ const request: typeof fetch = (input, init = {}) => fetch(input, {
 class Failure extends Error { constructor(readonly code: string) { super(code); } }
 function requireThat(ok: unknown, code: string): asserts ok { if (!ok) throw new Failure(code); }
 
+export type ManagementEvidence = { endpoint: string; method: string; http_status: number | null;
+  classification: string; provider_code?: string };
+/** Closed Management paths; retain only reviewed error categories, never raw bodies. */
+export async function managementRequest(path: "/api-keys" | "/database/query", credential: string,
+  evidence: ManagementEvidence[], body?: Obj, transport: typeof fetch = request) {
+  requireThat(path === "/api-keys" && body === undefined || path === "/database/query" && body?.read_only === true,
+    "engineering_management_request_contract_invalid");
+  const receipt: ManagementEvidence = { endpoint: management + path, method: body ? "POST" : "GET",
+    http_status: null, classification: "transport_unavailable" };
+  evidence.push(receipt);
+  let response: Response;
+  try { response = await transport(management + path, { method: receipt.method, redirect: "error",
+    headers: { authorization: `Bearer ${credential}`, "content-type": "application/json" },
+    ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(30000) }); }
+  catch { throw new Failure("engineering_management_request_failed"); }
+  receipt.http_status = response.status;
+  receipt.classification = response.ok ? "success" : response.status === 401 ? "authentication_rejected"
+    : response.status === 403 ? "authorization_denied" : response.status === 429 ? "rate_limited"
+    : response.status >= 500 ? "provider_unavailable" : "request_rejected";
+  if (!response.ok) {
+    let failure: Obj = {};
+    try { const parsed = await json(response); if (object(parsed)) failure = parsed; } catch { /* status remains evidence */ }
+    const message = typeof failure.message === "string" ? failure.message : "";
+    if (response.status === 401 && /(?:expired|invalid|revoked).{0,20}(?:token|jwt)|(?:token|jwt).{0,20}(?:expired|invalid|revoked)/i.test(message)) {
+      receipt.classification = "token_invalid_expired_or_revoked";
+    }
+    const code = failure.code;
+    if (typeof code === "string" && ["42501", "42703", "42P01", "42601", "PGRST301"].includes(code)) receipt.provider_code = code;
+    if (response.status === 400 && /column .{1,100} does not exist/.test(message)) receipt.classification = "database_column_missing";
+    if (response.status === 400 && /relation .{1,100} does not exist/.test(message)) receipt.classification = "database_relation_missing";
+    throw new Failure("engineering_management_request_failed");
+  }
+  return await json(response) as any;
+}
+
 export function candidateUrl(before: Obj, after: Obj, source?: string): string {
   requireThat(before.service === "sandy-engineering-mcp" && before.project === "elaborate-haven-511518-a5" &&
     (!source || before.source_commit_candidate === source), "candidate_source_or_project_mismatch");
@@ -155,12 +190,9 @@ if (import.meta.main) {
     report.target = target;
     const credential = Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN"); requireThat(credential, "engineering_management_credential_unavailable");
     privateValues.push(credential);
-    const administration = async (path: string, body?: Obj) => {
-      const response = await request(management + path, { method: body ? "POST" : "GET", redirect: "error",
-        headers: { authorization: `Bearer ${credential}`, "content-type": "application/json" },
-        ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(30000) });
-      requireThat(response.ok, "engineering_management_request_failed"); return await json(response) as any;
-    };
+    const managementEvidence: ManagementEvidence[] = []; report.management_requests = managementEvidence;
+    const administration = (path: "/api-keys" | "/database/query", body?: Obj) =>
+      managementRequest(path, credential, managementEvidence, body);
     const keys = await administration("/api-keys"), service = keys.find((row: Obj) => row.name === "service_role")?.api_key,
       anon = keys.find((row: Obj) => row.name === "anon")?.api_key;
     requireThat(typeof service === "string" && typeof anon === "string", "engineering_session_configuration_unavailable"); privateValues.push(service, anon);
