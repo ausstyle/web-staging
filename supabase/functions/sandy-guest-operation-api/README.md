@@ -29,3 +29,16 @@ python3 supabase/functions/sandy-guest-operation-api/generate_contracts.py
 ```
 
 `test_database.sql` is a complete rollback component suite. Apply the new migration and the test together inside one enclosing rollback transaction for predeployment validation. Its owner/membership/enrollment/receipt fixtures are synthetic. It creates no Auth user/session, contacts no VM and makes no claim that the positive real mutation approval or actual provider path was tested. Keep those distinctions in registry evidence. Regenerate the manifest, bundled worker and SQL registry fragment after changing worker source; its SHA is part of every contract.
+
+
+Managed-worker update handoff (22 October 2026): the installer stops the existing
+marker-verified Linux unit before replacing code/configuration, then enables and
+starts it. Windows first verifies the existing scheduled task's exact executable,
+arguments and SYSTEM identity, requests stop and waits up to 30 seconds before
+replacement/re-registration. An unrelated task/unit or unconfirmed stop fails
+closed. The durable journal is retained; interrupted jobs are reconciled rather
+than replayed. This prevents an old enrollment remaining in a running process
+while a new configuration is staged. The isolated shell fixture covers successful
+update, failed stop and preservation of an unrelated service. Windows generated
+script contracts are checked, but actual Windows task execution and fresh VM
+heartbeats remain unverified until legitimate enrollment/connectivity is available.

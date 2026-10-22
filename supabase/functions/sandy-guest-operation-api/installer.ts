@@ -99,11 +99,24 @@ $fileAcl.SetOwner($systemSid)
 $fileAcl.SetAccessRuleProtection($true,$false)
 foreach($sid in @($systemSid,$adminSid)){$fileAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($sid,'FullControl','Allow'))}
 foreach($leaf in @('worker.mjs','config.json')){if(Test-Path -LiteralPath (Join-Path $root $leaf)){Set-Acl -LiteralPath (Join-Path $root $leaf) -AclObject $fileAcl}}
+$arguments='"'+(Join-Path $root 'worker.mjs')+'" "'+(Join-Path $root 'config.json')+'"'
+$existingTask=Get-ScheduledTask -TaskPath '\' -ErrorAction Stop | Where-Object {$_.TaskName -eq 'SandyManagedGuestV1'}
+if($existingTask){
+ if(@($existingTask.Actions).Count -ne 1 -or $existingTask.Actions[0].Execute -ne $node -or $existingTask.Actions[0].Arguments -ne $arguments -or $existingTask.Principal.UserId -notin @('SYSTEM','S-1-5-18','NT AUTHORITY\SYSTEM')){throw 'UnrelatedGuestTaskPreserved'}
+ # Stop the verified worker before replacing its code/config. Starting an
+ # already-running task otherwise leaves its old enrollment in memory.
+ Stop-ScheduledTask -TaskName 'SandyManagedGuestV1' -TaskPath '\' -ErrorAction Stop
+ $deadline=(Get-Date).AddSeconds(30)
+ while((Get-ScheduledTask -TaskName 'SandyManagedGuestV1' -TaskPath '\' -ErrorAction Stop).State -eq 'Running'){
+  if((Get-Date) -ge $deadline){throw 'GuestTaskStopUnconfirmed'}
+  Start-Sleep -Milliseconds 200
+ }
+}
 [IO.File]::WriteAllBytes((Join-Path $root 'worker.mjs'),[Convert]::FromBase64String('${encodedWorker}'))
 if((Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $root 'worker.mjs')).Hash.ToLowerInvariant() -ne '${WORKER_SHA256}'){throw 'WorkerDigestMismatch'}
 [IO.File]::WriteAllBytes((Join-Path $root 'config.json'),[Convert]::FromBase64String('${encodedConfig}'))
 foreach($leaf in @('worker.mjs','config.json')){Set-Acl -LiteralPath (Join-Path $root $leaf) -AclObject $fileAcl}
-$action=New-ScheduledTaskAction -Execute $node -Argument ('"'+(Join-Path $root 'worker.mjs')+'" "'+(Join-Path $root 'config.json')+'"')
+$action=New-ScheduledTaskAction -Execute $node -Argument $arguments
 $trigger=New-ScheduledTaskTrigger -AtStartup
 $settings=New-ScheduledTaskSettingsSet -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) -ExecutionTimeLimit (New-TimeSpan -Days 3650)
 Register-ScheduledTask -TaskName 'SandyManagedGuestV1' -Action $action -Trigger $trigger -Settings $settings -User 'SYSTEM' -RunLevel Highest -Force | Out-Null
@@ -125,6 +138,9 @@ done
 unit=/etc/systemd/system/sandy-managed-guest.service
 [ ! -L "$unit" ] || { echo GuestUnitSymlinkDenied >&2; exit 1; }
 if [ -e "$unit" ]; then [ "$(head -n 1 "$unit")" = '# SANDY_MANAGED_GUEST_V1' ] || { echo UnrelatedServicePreserved >&2; exit 1; }; fi
+# enable --now does not restart an existing service. Stop only the verified
+# managed unit before replacing the worker and enrollment configuration.
+if [ -e "$unit" ]; then systemctl stop sandy-managed-guest.service; fi
 install -d -o root -g root -m 0700 '${root}'
 printf '%s' '${encodedWorker}' | base64 -d > '${root}/worker.mjs'
 printf '%s  %s\n' '${WORKER_SHA256}' '${root}/worker.mjs' | sha256sum --check --status
