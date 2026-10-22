@@ -1,15 +1,34 @@
 # Sandy API implementation status
 
-Updated from production observations on 22 October 2026 UTC. This checkpoint covers the existing 161-family mandate; the programme is incomplete.
+Current production checkpoint: 22 October 2026 UTC. The original programme remains incomplete.
 
-- **0/161 families fully operational and accepted.** Representative operation successes do not certify whole wildcard families.
-- **33 families have reviewed implementation awaiting real whole-family acceptance.**
-- **128 families need software, integration or constituent reconciliation.** This does not mean all their existing code is missing.
-- **6 families have external dependencies, including 5 with permission denials and one entitlement.** These overlap implementation work.
-- **19 families have partial required-operation MCP evidence: 51 distinct positive operations and 18 operations with denial evidence.**
-- Production registry: **2,585 registered, 447 API flags, 430 AI flags, 46 verified flags**. No catalogue rows were added. Flags are not global executable or discoverable counts.
+- **0/161 requirement families fully accepted; 33 have reviewed implementations awaiting whole-family acceptance; 128 need software or constituent reconciliation.**
+- **37 families have partial required-operation MCP evidence**, covering **83 distinct operations** across retained authenticated test cohorts. Whole wildcard completion is not inferred.
+- **Seven families have documented external dependencies** (six involve permission denials, one an entitlement). These overlap implementation work.
+- The registry contains **2,585 entries / 459 API flags / 442 AI flags / 78 verified flags**. No operation was added. These flags do not certify global executable coverage.
+- The normal engineering identity actually discovers **232 scoped MCP tools**, with schemas and paginated discovery verified. Global executable/discoverable counts remain uncertified.
 
-The [complete matrix](requirement-coverage-161.md), [machine-readable evidence](requirement-coverage-161.json) and [reviewed operation disposition](scope-operation-disposition.json) distinguish code, deployed routes, exposure, authorized execution, real evidence and blockers. Global executable/MCP-discoverable coverage is not yet verified. Actual scoped discovery returned 63 tools for each synthetic customer and 16 for the engineering workload.
+The [current matrix](requirement-coverage-161.md) and [hashed JSON index covering all 161 families](requirement-coverage-current.json) distinguish implementation review, active handler versions, scoped discovery, actual MCP execution and blockers. The older large `requirement-coverage-161.json` is a historical constituent-mapping archive; its version and exposure totals are historical. Sections below the current checkpoint retain earlier release evidence at its actual versions.
+
+## Standing GitHub engineering capability — current checkpoint
+
+**Operational:** renewable normal Supabase Auth → Sandy MCP → Sandy API → GitHub for repository/source reads, broad repository and Actions metadata, engineering-branch file create/update/delete, commit/ref publication, own receipts and conditional file recovery. Standing authorization uses reviewed operation classes, fixed delegated resources, risk/budget/rate limits, expiry, revocation and provider IAM. It creates `authorized_by_policy` jobs with no fabricated Owner approval or global Controller membership.
+
+GitHub source publication now works through MCP without the expired shell `GH_TOKEN`. The client preserves exact Git commit hashes, immutable parent history and non-forced references; larger source batches use bounded text blobs and an atomic tree. A **90,000-byte** owned canary was published, reconstructed in **two actual MCP read ranges**, and removed through a verified forward restoration commit. Provider readback confirmed cleanup. Unknown outcomes are not blindly replayed; only proven pre-dispatch failures resume the same nonce.
+
+**Production:** `sandy-operation-api` **56** (source `f27fb982188436e61cda4cc473a7cae04c96afc8`), `sandy-provider-operation-api` **29** (source `89e597a654c391e875121a2e57918a5a9b11d423`), compatibility API **21**, private engineering runtime **15**, MCP **21**. Every uploaded source in the released gateway/provider/compatibility/runtime artifacts has an independently matched readback. JWT verification remains enabled on the public gateway/provider/compatibility functions; the existing private runtime authenticates its revocable bootstrap and then uses legitimate short-lived Auth sessions.
+
+The shared adapter now handles nullable provider arrays and propagates provider IAM HTTP 403 accurately. Source reference publication also checks all protected workflow/credential-file hashes against the approved immutable baseline and current main, then revalidates authority before dispatch. Real MCP reference creation/update succeeded; indirect protected-source omission attempts returned **403 before mutation**, preserved the existing reference and did not create the rejected reference. The same guard uses reviewed method/path descriptors for aliases; no alias was added to the catalogue merely for testing.
+
+Evidence: [standing authorization and recovery](standing-engineering-GitHub-MCP-evidence-20261022.json), [broad provider reads and genuine IAM denial](github-standing-broad-MCP-evidence-20261022.json), [source publication and 90 KB recovery](source-publication-MCP-evidence-20261022.json), [protected publication, successful and denied calls](github-protected-publication-MCP-evidence-20261022.json). Registry evidence links match these actual executions. Git blob/tree substeps remain **accepted**, with exact source readback, while commit/ref receipts are **succeeded**; missing durable sub-operation effect settlement is not concealed.
+
+**Committed and source-published to PR #136:** standing-policy/admission/session-binding/recovery changes, safe source ranges and dotfile reads, common Git mutation proofs, nullable-array and HTTP-error fixes, checkpointed exact source publication and protected reference publication. PR #136 remains open/draft and **has not been merged**. These production releases used authorized reviewed Management deployment, not a claim that general MCP-driven Supabase deployment is complete.
+
+**Remaining software:** binary/large artifact custody, complete immutable-object and delayed-outcome settlement, broader durable workers and production release verification/rollback; unaccepted draft-PR lifecycle, reviewed merge and higher-risk repository administration; general standing Supabase writes/releases, GCP execution and Sandy service completion. Reuse the existing provider engine and attested-release foundation. The source client currently supports bounded regular UTF-8 files, not arbitrary binary repositories.
+
+**External dependencies:** GitHub `GET /repos/ausstyle/web-staging/actions/secrets` returned provider/API **403 `provider_authorization_refused`** under otherwise valid standing authentication. A legitimate administrator must inspect required repository **Secrets:read** permission and organization restrictions; no permission was expanded. Shell GitHub authentication separately expired with **401 `Bad credentials`**; MCP source delivery continues. IAP/subnet permissions and Custom Domain entitlement retain their previously recorded errors and were not re-investigated or purchased.
+
+**Release integration:** main's runtime-release workflow references unmerged executive/delegation source. Its frozen runtime proposal also pins runtime 14 while production is 15, and its undeployed migration `20261022020000_sandy_autonomous_engineering_policy.sql` collides with the deployed customer-read migration. Reconcile the source, migration number, manifest and actual baseline before merging or promoting that independent release; preserve CI and protected-environment controls. See [integration handoff](standing-release-integration-handoff-20261022.md).
 
 ## Committed implementation and production delivery
 

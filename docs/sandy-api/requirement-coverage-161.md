@@ -2,9 +2,9 @@
 
 Generated from production metadata and recorded execution evidence. Flags and active functions do not prove execution. Shared-adapter coverage is reused; expanded rows are not separate implementation projects.
 
-**0/161 families fully accepted**; **19 families have partial required-operation MCP evidence**. **51 distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.
+**0/161 families fully accepted**; **37 families have partial required-operation MCP evidence**. **83 distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.
 
-**33 explicit families have reviewed code awaiting real family acceptance**; **128 need software, integration or constituent reconciliation**. **6 have documented external dependencies**, including **5 with permission denials**. External dependencies overlap the implementation counts; they do not certify completion or explain every missing function.
+**33 explicit families have reviewed code awaiting real family acceptance**; **128 need software, integration or constituent reconciliation**. **7 have documented external dependencies**, including **6 with permission denials**. External dependencies overlap the implementation counts; they do not certify completion or explain every missing function.
 
 The code review is limited to the existing authorized provider targets. It does not certify additional projects, tenants, organizations or newly purchased services. A missing review is classified as work remaining, not proof that every constituent lacks code. Wildcard families stay incomplete until their required business constituents are reconciled and accepted.
 
@@ -15,11 +15,11 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 1 | GET /v1/capabilities — executable operations, scopes and verification. | 3 | 3/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 2 | GET /v1/capabilities/{operation} — schema, handler and required grants. | 2 | 2/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 3 | POST /v1/operations/{operation}:execute — synchronous/asynchronous execution. | 4 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 4 | GET /v1/jobs/{jobId} — status, provider request IDs and result. | 6 | 5/3 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 4 | GET /v1/jobs/{jobId} — status, provider request IDs and result. | 6 | 6/4 | 2 | implementation_or_constituent_reconciliation_required | none established |
 | 5 | GET /v1/jobs/{jobId}/events — structured progress events. | 2 | 2/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 6 | POST /v1/jobs/{jobId}:cancel — cancel eligible job. | 2 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 7 | POST /v1/jobs/{jobId}:retry — retry idempotent failed steps. | 2 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 8 | POST /v1/jobs/{jobId}:rollback — verified compensation. | 9 | 8/8 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 8 | POST /v1/jobs/{jobId}:rollback — verified compensation. | 9 | 9/9 | 3 | implementation_or_constituent_reconciliation_required | none established |
 | 9 | GET /v1/audit?resource=... — tamper-evident audit. | 4 | 3/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 10 | POST /v1/plans:validate — dry-run, permissions, cost and blast radius. | 3 | 3/3 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 11 | POST /v1/plans:execute — multi-service dependency graph. | 4 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
@@ -125,32 +125,32 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 111 | supabase.tenant.export/erase/restore | 34 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 112 | supabase.compliance.audit | 10 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 113 | github.apps.installations.list/verify | 2 | 2/2 | 0 | implemented_awaiting_real_family_acceptance | none established |
-| 114 | github.repos.list/get/create/update/archive/delete | 6 | 3/3 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 115 | github.refs.list/create/update/delete | 4 | 1/1 | 0 | implemented_awaiting_real_family_acceptance | none established |
-| 116 | github.branches.list/protect | 2 | 1/1 | 0 | implemented_awaiting_real_family_acceptance | none established |
-| 117 | github.files.get/create/update/delete | 9 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
-| 118 | github.git.blobs/trees/commits.* | 7 | 3/3 | 1 | implementation_or_constituent_reconciliation_required | none established |
-| 119 | github.pullRequests.list/create/update/review/merge/close | 5 | 1/1 | 0 | implemented_awaiting_real_family_acceptance | none established |
-| 120 | github.issues.* | 63 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 121 | github.labels.* | 5 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 122 | github.milestones.* | 6 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 114 | github.repos.list/get/create/update/archive/delete | 6 | 3/3 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 115 | github.refs.list/create/update/delete | 4 | 4/4 | 3 | implemented_awaiting_real_family_acceptance | none established |
+| 116 | github.branches.list/protect | 2 | 1/1 | 1 | implemented_awaiting_real_family_acceptance | none established |
+| 117 | github.files.get/create/update/delete | 9 | 5/5 | 4 | implementation_or_constituent_reconciliation_required | none established |
+| 118 | github.git.blobs/trees/commits.* | 7 | 6/6 | 4 | implementation_or_constituent_reconciliation_required | none established |
+| 119 | github.pullRequests.list/create/update/review/merge/close | 5 | 2/2 | 1 | implemented_awaiting_real_family_acceptance | none established |
+| 120 | github.issues.* | 63 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 121 | github.labels.* | 5 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 122 | github.milestones.* | 6 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
 | 123 | github.discussions.* | 16 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 124 | github.tags.* | 3 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 124 | github.tags.* | 3 | 1/1 | 1 | implementation_or_constituent_reconciliation_required | none established |
 | 125 | github.releases.create/publish/delete | 3 | 0/0 | 0 | implemented_awaiting_real_family_acceptance | none established |
 | 126 | github.packages.* | 8 | 4/4 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 127 | github.actions.workflows.list/dispatch/enable/disable | 4 | 1/1 | 0 | implemented_awaiting_real_family_acceptance | none established |
+| 127 | github.actions.workflows.list/dispatch/enable/disable | 4 | 1/1 | 1 | implemented_awaiting_real_family_acceptance | none established |
 | 128 | github.actions.runs.get/cancel/rerun | 3 | 1/1 | 0 | implemented_awaiting_real_family_acceptance | none established |
-| 129 | github.actions.artifacts.list/download/delete | 4 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 130 | github.checks.* | 12 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 131 | github.statuses.* | 3 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 132 | github.deployments.create/status | 7 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 133 | github.environments.list/update | 14 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 134 | github.repoSecrets.set/remove | 6 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 129 | github.actions.artifacts.list/download/delete | 4 | 1/1 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 130 | github.checks.* | 12 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 131 | github.statuses.* | 3 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 132 | github.deployments.create/status | 7 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 133 | github.environments.list/update | 14 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 134 | github.repoSecrets.set/remove | 6 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | github_actions_secret_metadata_scope |
 | 135 | github.variables.set/remove | 10 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 136 | github.environmentSecrets.* | 5 | 3/3 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 137 | github.webhooks.list/create/update/delete/deliveries/redeliver | 12 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 138 | github.collaborators/teams/permissions.* | 9 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 139 | github.rulesets.* | 10 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 138 | github.collaborators/teams/permissions.* | 9 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
+| 139 | github.rulesets.* | 10 | 2/2 | 1 | implementation_or_constituent_reconciliation_required | none established |
 | 140 | github.audit.list | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 141 | github.security.alerts/list | 18 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 142 | github.codeScanning.* | 22 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
@@ -176,7 +176,7 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 
 Explicit-family optional candidates and the four legacy software/video-specific names are not new required implementation tasks. Wildcard expansion still needs semantic review; no unreviewed operation is declared globally out of scope.
 
-Operation-level schemas, permissions, risk classification, receipts and grants remain authoritative in the existing registry and typed source contracts. The JSON companion retains per-operation metadata, evidence references, missing IDs, shared adapter grouping and every family's remaining capability.
+Operation-level schemas, permissions, risk classification, receipts and grants remain authoritative in the existing registry and typed source contracts. The [current JSON index](requirement-coverage-current.json) and its three hashed parts retain all 161 current family states, production handler versions, actual scoped discovery, tested operations and blockers. The older requirement-coverage-161.json remains a historical constituent-mapping archive; its version/flag totals are historical.
 
 Known missing contracts within the original scope (reported without adding registry rows):
 

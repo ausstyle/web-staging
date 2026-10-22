@@ -536,6 +536,17 @@
       "actual_error": "Recorded provider Custom Domain add-on entitlement refusal; no new provider attempt or purchase in this release.",
       "required_authority": "Existing provider entitlement or explicit commercial authorization; never purchase or upgrade automatically.",
       "software_work_remains": false
+    },
+    {
+      "id": "github_actions_secret_metadata_scope",
+      "families": [
+        134
+      ],
+      "type": "external_permission",
+      "evidence_file": "github-standing-broad-MCP-evidence-20261022.json",
+      "actual_error": "Authenticated MCP github.repo_secrets.list: API HTTP 403, GitHub HTTP 403 provider_authorization_refused on GET /repos/ausstyle/web-staging/actions/secrets.",
+      "required_authority": "An authorized repository/GitHub App administrator must inspect required repository Secrets:read permission and any organization restrictions, granting only a missing permission where authorized. The exact cause beyond the genuine provider403 has not been independently inspected. Expired shell GH_TOKEN is separate; verified MCP source publication continues.",
+      "software_work_remains": true
     }
   ],
   "computer_scope_obligations": {
@@ -591,7 +602,7 @@
     "1": "Caller-filtered dynamic API catalogue and digest are deployed and exercised through MCP discovery. Canonical requirement-to-operation mapping and provider readiness/health aggregation remain incomplete; passive registry summaries are not executable discovery.",
     "2": "Typed describe and discovery schemas exist. Uniform versions, examples, grants, readiness and corresponding canonical registry operation mapping still need reconciliation.",
     "3": "Synchronous canonical MCP dispatch has evidence for 51 operations. Eight existing task/calendar/Agenda reads now have tenant-scoped one-use admissions, settled receipts, digest-only audit and replay refusal. General durable multi-provider execution and all original business constituents remain incomplete.",
-    "8": "Existing private preimage/conditional compensation code is limited to GitHub main-branch upsert and VM start/stop. General production release rollback and verified compensations remain incomplete; fixture restoration is separate evidence.",
+    "8": "Owned engineering-file create/update/delete compensation, immutable parent preimages, provider SHA conflicts, drift refusal and safe unadmitted recovery resumption are verified through MCP. General production-function rollback and durable verification of delayed/uncertain mutations remain incomplete.",
     "9": "Append-only hash-chain audit and checkpoint/verification source exist. Complete normal-caller acceptance, provider correlation and retention/access-policy verification remain outstanding.",
     "17": "Project/folder/organization IAM adapters exist. General target-specific IAP policy read/write integration is missing, and current IAP policy inspection returns HTTP403; no blind IAM write is permitted.",
     "21": "Normal technical Auth to STS and service-account impersonation worked for the canonical Google VM read. Complete API-owned configuration/reconciliation of pools, providers and IAM bindings remains unaccepted.",
@@ -612,8 +623,12 @@
     "83": "One isolated Edge Function was deployed/restored through MCP and its fixture logs were read. General Edge Function invocation has no callable API/MCP handler; broader function lifecycle/source custody/verification remain incomplete.",
     "85": "Canonical bounded log query and all six provider source queries work. Normal-workload MCP proof is limited to the approved fixture function-log projection; this does not prove every owner source/parameter or event delivery.",
     "110": "Canonical bounded log query and all six provider source queries work. Normal-workload MCP proof is limited to the approved fixture function-log projection; broader owner-source acceptance is outstanding.",
-    "117": "Fixed-file update/restore passed through MCP. General reviewed repository source delivery, all file verbs, immutable source custody and recovery remain incomplete.",
+    "117": "Standing repository-scoped file reads and text ranges, create/update/delete, exact provider readback and owned file compensation work through MCP. Atomic Git source publication preserves exact source commits and non-forced history. Binary/large artifact delivery and complete family constituent acceptance remain incomplete.",
     "128": "Typed Actions run operations and private log/artifact capture source exist. General cancel/rerun acceptance, durable external run tracking and verified effects remain outstanding.",
-    "129": "Private Actions artifact capture/delivery source exists. All required list/download/delivery/delete outcomes, ownership and larger-transfer lifecycle remain unaccepted."
+    "129": "Private Actions artifact capture/delivery source exists. All required list/download/delivery/delete outcomes, ownership and larger-transfer lifecycle remain unaccepted.",
+    "118": "Detached commits and engineering refs create/update have independently verified receipts. Atomic source-tree publication has exact Git source readback; blob/tree operation-level durable effect settlement and protected/destructive ref lifecycle remain incomplete.",
+    "119": "PR list/get contracts exist and authenticated listing works. Routine draft-creation class is implemented but creation, owned PR lifecycle and reviewed merge/recovery are not accepted.",
+    "130": "Actions workflow, artifact, run and check metadata reads work through the shared engine; nullable-array projection is repaired. Workflow mutation, protected delivery and complete Actions constituent acceptance remain outstanding.",
+    "134": "Repository Actions-secrets metadata listing reaches GitHub through normal MCP authorization but GitHub returns HTTP 403. No secret values were retrieved and no permission was expanded. Trusted ciphertext write/rotation and full constituent execution remain unaccepted."
   }
 }
