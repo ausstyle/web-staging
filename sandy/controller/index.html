@@ -70,14 +70,17 @@ h1{font-size:clamp(29px,3.5vw,43px);letter-spacing:-.055em;margin:30px 0 1px}h2{
 <main><div class="top"><div><b>Administration / <span id="sectionName">Overview</span></b><div id="updated" class="muted small">Loading metrics…</div></div><div><button id="refresh" class="btn">↻ Refresh</button> <button id="copyCodexToken" class="btn hide" type="button" title="Copy the current short-lived Controller session token for authorized Codex testing">Copy Codex test token</button> <button id="signout" class="btn">Sign out</button></div></div><h1 id="heading">Sandy operations</h1><p id="subtitle" class="muted">Your private control room for running and improving Sandy.</p><div id="content"></div></main></div>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+import {createControllerTransport} from "./session-transport.mjs";
+import {showOwnerReleaseControls,processRoutineProposals} from "./engineering-releases.mjs";
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-controller-api";
+const controllerTransport=createControllerTransport(sb.auth);
 let data=null,view="overview";
 const $=id=>document.getElementById(id),el=(tag,cls,txt)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(txt!==undefined)n.textContent=String(txt??"");return n};
 function add(p,...ns){ns.forEach(n=>p.append(n));return p}
 function date(s){return s?new Date(s).toLocaleString():"—"}
 function escape(s){return String(s??"")}
-async function call(op,params={}){const session=(await sb.auth.getSession()).data.session;if(!session)throw Error("Sign in required");const r=await fetch(endpoint,{method:"POST",headers:{"content-type":"application/json","authorization":"Bearer "+session.access_token},body:JSON.stringify({op,...params})});const j=await r.json();if(!r.ok)throw Error(j.error||"Request failed");return j}
+async function call(op,params={}){return controllerTransport.controller(op,params)}
 async function load(){try{data=await call("overview");$("gate").classList.add("hide");$("layout").classList.remove("hide");$("updated").textContent="Updated "+date(data.generated_at)+" · Access: "+data.role;$("copyCodexToken").classList.toggle("hide",data.role!=="owner");render();refreshMissions()}catch(e){$("layout").classList.add("hide");$("gate").classList.remove("hide");$("gateMsg").textContent=e.message==="operator_access_required"?"This Sandy account is signed in but is not registered as a Controller operator. Check the account below or switch accounts.":e.message;const user=(await sb.auth.getUser()).data.user;$("signedInAs").textContent=user?.email?"Currently signed in as: "+user.email:"No active Sandy sign-in detected."}}
 const headings={contextaudit:["OpenAI Context Audit","Which context Sandy shared, what the guard blocked, and which calls were audited."],selftasks:["Sandy Tasks","Sandy’s own tasks and improvement backlog."],intelligence:["Sandy Intelligence","Evidence-based supervision, failure analysis, capability maturity and experiment records."],missions:["Mission Inspector","Inspect Sandy projects and audit evidence."],engineering:["Engineering & Improvements","QA and development backlog."],overview:["Sandy operations","Live snapshot of customers, QA, roadmap and channel activity."],activity:["Activity & investigations","Trace incoming messages and their execution outcomes."],engagement:["Users & engagement","Customer-level activity using stored email and voice records; WhatsApp is shown in aggregate until identities are safely mapped."],examiner:["Examiner · full results","Run-by-run test transcripts, independent judgments and production conversation reviews."],qa:["Quality & improvements","Investigate incidents, verify fixes, and track the unified improvement roadmap."],roadmap:["Improvement register","Central feature roadmap with editable progress."],integrations:["Connected systems","Registered providers and verified deployment state; registration does not mean connected."],architecture:["Architecture map","Logical design map of Sandy's principal services and dependencies."],capabilities:["Master modules","Sandy Core, Examiner, Evolution, Meta-Intelligence, interfaces and other major systems."],operations:["Operator handbook","Administration, security boundaries, incident response and safe change management."]};
 const txt=(p,t,cls="")=>p.append(el("p",cls,t));
@@ -196,6 +199,7 @@ async function showDeploymentApprovals(host){
  }catch(e){status.textContent="Unable to load deployment approvals: "+e.message}
 }
 function showEngineering(c){
+ if(data?.role==="owner")showOwnerReleaseControls(c,controllerTransport,"9d9ac6e2e605d0f180709c901131eb3abdc4c2bdae26601291aef65d0ffb2367");
  showDeploymentApprovals(c);
  const p=panel("Improvement pipeline"),items=missionTelemetry?.improvements||data.proposals||[];
  txt(p,"Track proposed improvements and investigate issues. Only verified results should be marked complete.","small muted");
@@ -401,13 +405,14 @@ function render(){document.querySelectorAll(".nav[data-view]").forEach(n=>n.clas
 document.querySelectorAll(".nav[data-view]").forEach(n=>n.onclick=()=>{view=n.dataset.view;location.hash=view;render();if(view==="activity"&&!activityRows.length)loadActivity(true);if(view==="examiner"&&!examinerRuns.length){loadExaminerProductionAccount();loadExaminerRuns();loadExaminerProduction()}if(view==="contextaudit"&&!contextAuditData)loadContextAudit()});
 $("copyCodexToken").onclick=async()=>{
  if(data?.role!=="owner")return;
- const {data:{session},error}=await sb.auth.getSession();
- if(error||!session?.access_token){alert("Sign in again before copying a test credential.");return;}
+ let session;try{session=await controllerTransport.session()}catch{alert("Sign in again before copying a test credential.");return;}
  const expires=session.expires_at?new Date(session.expires_at*1000).toLocaleString():"soon";
  if(!confirm("Copy your CURRENT OWNER SESSION TOKEN to the clipboard? This credential grants your existing owner privileges until expiry ("+expires+"). Use only for a trusted Codex test, never in chat or source code. Cancel if you did not intend to share your session."))return;
  try{await navigator.clipboard.writeText(session.access_token);alert("Copied to clipboard. Paste only into the Codex network-secret value for SANDY_CONTROLLER_ACCESS_TOKEN, scoped to zmqlyygzqoidkcwdysok.supabase.co. Never share in chat. The token expires at "+expires+".");}
  catch{alert("Clipboard unavailable. Use a secure browser and allow clipboard access; the token was not displayed.");}
 };
+let routineProcessing=false;
+setInterval(async()=>{if(routineProcessing||data?.role!=="owner"||document.visibilityState!=="visible")return;routineProcessing=true;try{await processRoutineProposals(controllerTransport)}catch{}finally{routineProcessing=false}},30000);
 $("refresh").onclick=load;$("signout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 $("switchAccount").onclick=async()=>{await sb.auth.signOut();location.href="../app/?return="+encodeURIComponent(location.pathname)};
 $("signin").onclick=async()=>{const s=(await sb.auth.getSession()).data.session;if(s){await load();return}location.href="../app/"};

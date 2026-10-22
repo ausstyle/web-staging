@@ -60,6 +60,8 @@ Deno.test("owner approvals, status changes, deployment and rollback are outside 
       "implementation_request",
       "rollback_request",
       "preflight",
+      "delegation_policy",
+      "set_delegation_policy",
     ]
   ) {
     const store = db();

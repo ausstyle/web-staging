@@ -1,0 +1,49 @@
+name: Sandy runtime release checks
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/sandy-executive/**'
+      - 'supabase/functions/sandy-agent-runtime-v4/**'
+      - 'supabase/functions/sandy-workspace/**'
+      - 'supabase/functions/sandy-email-runtime-canary/**'
+      - 'supabase/functions/sandy-engineering-control/**'
+      - 'sandy/controller/**'
+      - 'docs/sandy-engineering/evaluations/**'
+      - '.github/workflows/sandy-runtime-release-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  sandy-runtime-release-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test isolated executive, owner session and delegation boundaries
+        run: >-
+          deno test --allow-read --allow-env
+          supabase/functions/_shared/sandy-executive/
+          supabase/functions/sandy-engineering-control/routine_delegation_test.ts
+          supabase/functions/sandy-engineering-control/workload_test.ts
+          sandy/controller/session-transport.test.mjs
+          sandy/controller/engineering-releases.test.mjs
+          sandy/controller/authorized-deadline-action.test.mjs
+      - name: Test isolated PostgreSQL owner and audit transactions
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_owner_delegation_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+      - name: Check serving entrypoints
+        run: >-
+          deno check
+          supabase/functions/sandy-agent-runtime-v4/index.ts
+          supabase/functions/sandy-workspace/index.ts
+          supabase/functions/sandy-email-runtime-canary/index.ts
+          supabase/functions/sandy-engineering-control/index.ts

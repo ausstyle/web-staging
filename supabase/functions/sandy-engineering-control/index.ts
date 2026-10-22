@@ -1,3 +1,4 @@
+import {handleStandingDelegation} from "./routine_delegation.ts";
 import { isCanonicalEngineeringOperation, prepareCanonicalEngineeringRequest, sameCanonicalRequest } from "./canonical_request.ts";
 import {authorizeWorkloadControl,workloadRegistrationAllowed} from "./workload.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -30,6 +31,11 @@ Deno.serve(async req=>{
    if(lookup.error||!lookup.data)return respond({error:"Sandy Controller administrator required"},403);
    admin=lookup.data;
   }
+  if(["delegation_policy","set_delegation_policy","auto_approve"].includes(action)){
+   if(action==="auto_approve"&&!uuid(b.change_id))return respond({error:"Valid change_id required"},400);
+   try{return respond(await handleStandingDelegation(db,user,admin,b,Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")||""))}
+   catch(e){return respond({error:e instanceof Error?e.message:"standing_delegation_failed",executed:false},403)}
+  }
   if(action==="preflight"){
    const [changes,rollbackRequests,pendingJobs]=await Promise.all([
      db.from("sandy_engineering_changes").select("id",{count:"exact",head:true}),
@@ -37,7 +43,7 @@ Deno.serve(async req=>{
      db.from("sandy_deployment_jobs").select("id",{count:"exact",head:true}).eq("status","pending_approval").not("engineering_change_id","is",null)
    ]);
    if(changes.error||rollbackRequests.error||pendingJobs.error)return respond({error:"engineering_preflight_database_unavailable"},503);
-   return respond({ok:true,engineering_control_version:10,change_registration_required:true,write_requires_engineering_change:true,
+   return respond({ok:true,engineering_control_version:11,standing_routine_policy_implemented:true,standing_routine_requires_authenticated_owner_session:true,change_registration_required:true,write_requires_engineering_change:true,
      github_smoke_executor_implemented:true,github_credential_present:Boolean(Deno.env.get("SANDY_ENGINEERING_GITHUB_TOKEN")),
      supabase_write_executor_implemented:false,supabase_deployment_dispatch_implemented:true,supabase_deployment_dispatch_scope:"three allowlisted functions, approved job, protected GitHub workflow; unverified until deployment receipt",rollback_request_implemented:true,rollback_executor_implemented:false,
      registered_change_count:changes.count,rollback_request_count:rollbackRequests.count,pending_engineering_jobs:pendingJobs.count});
@@ -53,7 +59,7 @@ Deno.serve(async req=>{
    const policyRead=await db.from("sandy_engineering_delegation_policy").select("enabled,allowed_risks,allowed_operations,require_authenticated_admin,require_change_record,require_test_evidence,require_rollback_plan").eq("id",1).maybeSingle();
    if(policyRead.error)return respond({error:"Delegation policy unavailable"},503);
    const routineScope=scope.length>0&&scope.every((x:unknown)=>typeof x==="string"&&(/^(github:ausstyle\/web-staging:)/.test(x)||/^(sandy-[a-z0-9-]+)$/.test(x)))&&!scope.some((x:unknown)=>/voice-sip|security|auth|billing|delete|secret|production-database/i.test(String(x)));
-   const delegated=admin.role==="owner"&&policyRead.data?.enabled&&policyRead.data?.allowed_risks?.includes(risk)&&routineScope&&criteria.length>0&&regressions.length>0;
+   const delegated=false; // Approval requires a later explicit owner action or the reviewed standing-policy gate.
    const {data,error}=await db.from("sandy_engineering_changes").insert({title,problem,expected_behavior:expected,change_purpose:purpose,feature_improvement:improvement,scope,regression_rules:regressions,acceptance_criteria:criteria,risk,requested_by:user.id,idempotency_key:keyValue,status:delegated?"approved":"proposed"}).select("*").single();
    if(error)throw error;
    await db.from("sandy_engineering_change_events").insert({change_id:data.id,event_type:delegated?"delegated_auto_approved":"registered",actor:user.id,detail:{source:"engineering_api",approval_mode:delegated?"automatic_owner_delegation":"manual",test_required_before_execution:true}});
@@ -74,34 +80,19 @@ Deno.serve(async req=>{
    if([events,artifacts,tests,rollbacks].some(x=>x.error))throw Error("Unable to read change history");
    return respond({change,events:events.data,artifacts:artifacts.data,tests:tests.data,rollbacks:rollbacks.data});
   }
-  if(action==="auto_approve"){
-   if(change.status!=="proposed")return respond({error:"Change is not awaiting approval",status:change.status},409);
-   const requestedOperation=string(b.operation,80);
-   const opKey=({update_file:"github_update_file",push_files:"github_push_files",deploy_function:"supabase_deploy_function",model_canary:"model_canary",readiness_check:"readiness_check"} as Record<string,string>)[requestedOperation]||requestedOperation;
-   const {data:policy,error:pe}=await db.from("sandy_engineering_delegation_policy").select("enabled,allowed_risks,allowed_operations,require_authenticated_admin,require_change_record,require_test_evidence,require_rollback_plan").eq("id",1).single();
-   if(pe||!policy?.enabled||!policy.allowed_risks?.includes(change.risk)||!policy.allowed_operations?.includes(opKey))return respond({error:"Operation is outside delegated approval policy",requires_owner_approval:true},403);
-   if(policy.require_authenticated_admin&&!admin.enabled)return respond({error:"Authorized administrator required"},403);
-   if(policy.require_change_record&&(!change.change_purpose||!change.feature_improvement||!change.expected_behavior))return respond({error:"Incomplete engineering change"},409);
-   if(!Array.isArray(change.acceptance_criteria)||!change.acceptance_criteria.length||!Array.isArray(change.regression_rules)||!change.regression_rules.length)return respond({error:"Acceptance and regression requirements missing"},409);
-   const {data:tests,error:te}=await db.from("sandy_engineering_tests").select("outcome,evidence,checked_at").eq("change_id",id);
-   if(te)return respond({error:"Test evidence unavailable"},503);
-   if(policy.require_test_evidence&&(!tests?.length||tests.some((t:any)=>t.outcome!=="passed"||!t.checked_at||!t.evidence||Object.keys(t.evidence).length===0)))return respond({error:"Passing recorded predeployment test evidence required"},409);
-   const rollback=string(b.rollback_plan,2000);
-   if(policy.require_rollback_plan&&(rollback.length<25||!/^[a-z0-9-]+(?:\/|:)/i.test(string(b.rollback_reference,500))))return respond({error:"Concrete rollback plan and prior-version reference required"},409);
-   const {data:approved,error:ae}=await db.from("sandy_engineering_changes").update({status:"approved",updated_at:new Date().toISOString()}).eq("id",id).eq("status","proposed").select("id,status").maybeSingle();
-   if(ae||!approved)return respond({error:"Concurrent approval or update error"},409);
-   const ev=await db.from("sandy_engineering_change_events").insert({change_id:id,event_type:"delegated_auto_approved",actor:user.id,detail:{operation:opKey,rollback_plan:rollback,rollback_reference:string(b.rollback_reference,500),policy:"routine_delegation",test_count:tests?.length||0}});
-   if(ev.error)return respond({error:"Approval recorded but audit insertion failed",change_id:id},503);
-   return respond({ok:true,change:approved,approval_mode:"delegated",human_approval_required:false});
-  }
   if(action==="status"){
    const next=string(b.status,40);
    const allowed:Record<string,string[]>={proposed:["approved","cancelled"],approved:["implementing","cancelled"],implementing:["committed","failed"],committed:["deployed","failed"],deployed:["verified","failed"],verified:["rolled_back"],failed:["implementing","rolled_back"],rolled_back:[],cancelled:[]};
    if(!allowed[change.status]?.includes(next))return respond({error:"Invalid status transition",from:change.status,to:next},409);
-   if(next==="approved"&&admin.role!=="owner")return respond({error:"Owner approval required"},403);
+   if(next==="approved"){
+    if(admin.role!=="owner")return respond({error:"Owner approval required"},403);
+    const approved=await db.rpc("sandy_engineering_record_owner_approval",{p_actor:user.id,p_change:id,p_reason:string(b.reason,1000)});
+    if(approved.error||approved.data?.ok!==true)return respond({error:"Owner approval transaction failed; read current status before retrying"},409);
+    return respond(approved.data);
+   }
    if(next==="verified"){
     const {data:tests,error}=await db.from("sandy_engineering_tests").select("outcome").eq("change_id",id);
-    if(error)throw error;if(!tests?.length||tests.some(t=>t.outcome!=="passed"))return respond({error:"All acceptance tests require passing evidence"},409);
+    if(error)throw error;if(!tests?.length||tests.some((t:any)=>t.outcome!=="passed"))return respond({error:"All acceptance tests require passing evidence"},409);
    }
    const {data,error}=await db.from("sandy_engineering_changes").update({status:next,updated_at:new Date().toISOString(),...(next==="verified"?{verified_at:new Date().toISOString()}:{})}).eq("id",id).eq("status",change.status).select("*").maybeSingle();
    if(error)throw error;if(!data)return respond({error:"Concurrent change; reload"},409);
@@ -181,7 +172,7 @@ Deno.serve(async req=>{
    if(tests.error)return respond({error:"Test evidence unavailable"},503);
    const passed=Boolean(tests.data?.length)&&tests.data.every((t:any)=>t.outcome==="passed"&&t.checked_at&&t.evidence&&Object.keys(t.evidence).length);
    const plan=string(proposal.rollback_plan,2000),before=string(proposal.before_ref,500);
-   const auto=admin.role==="owner"&&policy?.enabled&&opKey&&policy.allowed_operations?.includes(opKey)&&policy.allowed_risks?.includes(change.risk)&&scoped&&passed&&plan.length>=25&&before.length>=7;
+   const auto=false; // Legacy broad policy cannot implicitly approve deployment jobs.
    const {data,error}=await db.from("sandy_deployment_jobs").insert({requested_by:user.id,provider,operation,target,payload:{...proposal,engineering_change_id:id,expected_behavior:change.expected_behavior},idempotency_key:idempotency,status:auto?"approved":"pending_approval",engineering_change_id:id,...(auto?{approved_by:user.id,approved_at:new Date().toISOString()}:{})}).select("*").single();
    if(error)throw error;
    await db.from("sandy_engineering_change_events").insert({change_id:id,event_type:auto?"delegated_job_approved":"implementation_requested",actor:user.id,detail:{job_id:data.id,provider,operation,target,approval_mode:auto?"automatic_owner_delegation":"pending",test_count:tests.data?.length||0}});
@@ -192,23 +183,7 @@ Deno.serve(async req=>{
    const {data:job,error:jobErr}=await db.from("sandy_deployment_jobs").select("*").eq("id",b.job_id).eq("engineering_change_id",id).maybeSingle();
    if(jobErr)throw jobErr;if(!job)return respond({error:"Job not found for this change"},404);
    if(action==="job_status")return respond({job});
-   if(action==="auto_approve_job"){
-    if(job.status!=="pending_approval"||change.status!=="approved")return respond({error:"Approved engineering change and pending job required"},409);
-    const opKey=job.provider==="github"&&["update_file","push_files"].includes(job.operation)?"github_"+job.operation:job.provider==="supabase"&&job.operation==="deploy_function"?"supabase_deploy_function":null;
-    const {data:policy,error:pe}=await db.from("sandy_engineering_delegation_policy").select("*").eq("id",1).single();
-    if(pe||!policy?.enabled||!opKey||!policy.allowed_operations?.includes(opKey)||!policy.allowed_risks?.includes(change.risk))return respond({error:"Job is outside delegated approval scope",human_approval_required:true},403);
-    if(job.provider==="github"&&!change.scope?.includes("github:"+job.target))return respond({error:"Approved scope does not include GitHub target"},403);
-    if(job.provider==="supabase"&&!change.scope?.includes(job.target))return respond({error:"Approved scope does not include Supabase target"},403);
-    const {data:tests,error:te}=await db.from("sandy_engineering_tests").select("outcome,evidence,checked_at").eq("change_id",id);
-    if(te||policy.require_test_evidence&&(!tests?.length||tests.some((t:any)=>t.outcome!=="passed"||!t.checked_at||!t.evidence||Object.keys(t.evidence).length===0)))return respond({error:"Recorded passing test evidence required"},409);
-    const plan=string(job.payload?.rollback_plan||b.rollback_plan,2000),prior=string(job.payload?.before_ref||b.before_ref,500);
-    if(policy.require_rollback_plan&&(plan.length<25||prior.length<7))return respond({error:"Concrete rollback plan and source version required"},409);
-    const {data:approved,error:ae}=await db.from("sandy_deployment_jobs").update({status:"approved",approved_by:user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","pending_approval").select("id,status").maybeSingle();
-    if(ae||!approved)return respond({error:"Job auto-approval conflict"},409);
-    const ev=await db.from("sandy_engineering_change_events").insert({change_id:id,event_type:"delegated_job_approved",actor:user.id,detail:{job_id:job.id,operation:opKey,rollback_plan:plan,before_ref:prior,approval_mode:"delegated",test_count:tests?.length||0}});
-    if(ev.error)return respond({error:"Job approved but audit insertion failed",job_id:job.id},503);
-    return respond({ok:true,job:approved,approval_mode:"delegated",human_approval_required:false,execution:"not_started"});
-   }
+   if(action==="auto_approve_job")return respond({error:"Legacy job auto-approval disabled; use reviewed standing release approval or explicit owner job approval"},403);
    if(action==="approve_job"){
     if(admin.role!=="owner")return respond({error:"Owner approval required"},403);
     if(job.status!=="pending_approval")return respond({error:"Not pending approval"},409);
@@ -218,22 +193,6 @@ Deno.serve(async req=>{
     return respond({job:data,execution:"not_started"});
    }
    if(admin.role!=="owner")return respond({error:"Owner execution required"},403);
-   if(job.status==="pending_approval"&&change.status==="approved"&&job.provider==="supabase"&&job.operation==="deploy_calendar_sync"&&job.target==="zmqlyygzqoidkcwdysok"&&Array.isArray(change.scope)&&change.scope.includes("sandy-calendar-api")){
-    const approval=await db.from("sandy_deployment_jobs").update({status:"approved",approved_by:user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","pending_approval").select("id").maybeSingle();
-    if(approval.error||!approval.data)return respond({error:"automatic_approval_conflict"},409);
-    await db.from("sandy_engineering_change_events").insert({change_id:id,actor:user.id,event_type:"owner_scoped_auto_approval",detail:{job_id:job.id,operation:job.operation,target:job.target}});
-    job.status="approved";
-   }
-   if(job.status==="pending_approval"&&change.status==="approved"&&admin.role==="owner"&&["github","supabase"].includes(job.provider)){
-    const scoped=job.provider==="supabase"?(change.scope||[]).includes(job.target):(change.scope||[]).includes("github:"+job.target);
-    const allowed=job.provider==="supabase"?["deploy_function","deploy_calendar_sync"].includes(job.operation):["update_file","push_files","create_file"].includes(job.operation);
-    if(scoped&&allowed){
-     const auto=await db.from("sandy_deployment_jobs").update({status:"approved",approved_by:user.id,approved_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",job.id).eq("status","pending_approval").select("id").maybeSingle();
-     if(auto.error||!auto.data)return respond({error:"delegated_approval_conflict"},409);
-     await db.from("sandy_engineering_change_events").insert({change_id:id,actor:user.id,event_type:"owner_development_auto_approval",detail:{job_id:job.id,provider:job.provider,operation:job.operation}});
-     job.status="approved";
-    }
-   }
    if(job.status!=="approved")return respond({error:"Job is not approved or eligible for scoped owner auto-approval",status:job.status},409);
    if(job.provider==="supabase"&&job.operation==="deploy_function"){
     const fn=String(job.payload?.function_name||"");
@@ -413,7 +372,7 @@ Deno.serve(async req=>{
    const reason=string(b.reason,3000);if(reason.length<4)return respond({error:"Rollback reason required"},400);
    const {data:artifacts,error:artifactError}=await db.from("sandy_engineering_artifacts").select("*").eq("change_id",id);
    if(artifactError)throw artifactError;
-   const plan=(artifacts||[]).map(a=>({artifact_id:a.id,target:a.target,before_ref:a.before_ref,after_ref:a.after_ref,strategy:a.rollback_strategy,requires_approval:true,notes:a.rollback_notes}));
+   const plan=(artifacts||[]).map((a:any)=>({artifact_id:a.id,target:a.target,before_ref:a.before_ref,after_ref:a.after_ref,strategy:a.rollback_strategy,requires_approval:true,notes:a.rollback_notes}));
    const {data,error}=await db.from("sandy_engineering_rollback_requests").insert({change_id:id,requested_by:user.id,reason,plan}).select("*").single();
    if(error)throw error;
    await db.from("sandy_engineering_change_events").insert({change_id:id,event_type:"rollback_requested",actor:user.id,detail:{rollback_request_id:data.id,artifact_count:plan.length}});
