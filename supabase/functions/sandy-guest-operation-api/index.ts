@@ -595,6 +595,13 @@ export function createGuestOperationHandler(deps: GuestDependencies) {
           p_input_sha256: inputSha,
         });
         if (data.ok !== true) {
+          // The enqueue RPC returns a rejection only before inserting a guest
+          // job. This is a known no-dispatch outcome, not a running command.
+          // If receipt persistence fails the outer catch retains uncertainty.
+          await record("failed", null, {
+            error: String(data.error),
+            executed: false,
+          });
           return refuse(Number(data.http_status) || 403, String(data.error));
         }
         return resultResponse(
