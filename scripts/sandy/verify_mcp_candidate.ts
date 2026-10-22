@@ -12,7 +12,7 @@ const base = `https://${policy.project_ref}.supabase.co`, management = `https://
 // Honour the published execution machine's configured egress proxy. This does
 // not introduce a relay or change the destination allowlist.
 const proxy = import.meta.main ? Deno.env.get("HTTPS_PROXY") : undefined;
-const client = proxy ? Deno.createHttpClient({ proxy: { url: proxy } }) : undefined;
+const client = proxy ? Deno.createHttpClient({ proxy: { url: proxy }, http2: false }) : undefined;
 const request: typeof fetch = (input, init = {}) => fetch(input, {
   ...init, ...(client ? { client } : {}), signal: init.signal ?? AbortSignal.timeout(30000),
 });
@@ -20,7 +20,9 @@ class Failure extends Error { constructor(readonly code: string) { super(code); 
 function requireThat(ok: unknown, code: string): asserts ok { if (!ok) throw new Failure(code); }
 
 export type ManagementEvidence = { endpoint: string; method: string; http_status: number | null;
-  classification: string; provider_code?: string };
+  classification: string; provider_code?: string; provider_response?: { message: string } };
+export const engineeringIdentityQuery =
+  "SELECT i.user_id,i.credential_epoch,i.bootstrap_generation,(SELECT count(*)::integer FROM public.sandy_controller_admins a WHERE a.auth_user_id=i.user_id) controller_memberships FROM public.sandy_engineering_test_identities i JOIN auth.users u ON u.id=i.user_id WHERE u.email='sandy-engineering-test@sandy-ai.internal' AND i.enabled AND i.revoked_at IS NULL AND i.rotation_state='ready'";
 /** Closed Management paths; retain only reviewed error categories, never raw bodies. */
 export async function managementRequest(path: "/api-keys" | "/database/query", credential: string,
   evidence: ManagementEvidence[], body?: Obj, transport: typeof fetch = request) {
@@ -42,6 +44,11 @@ export async function managementRequest(path: "/api-keys" | "/database/query", c
     let failure: Obj = {};
     try { const parsed = await json(response); if (object(parsed)) failure = parsed; } catch { /* status remains evidence */ }
     const message = typeof failure.message === "string" ? failure.message : "";
+    // Exact literals only. A known prefix followed by a credential, query or
+    // private account detail must never pass through as a provider response.
+    const publicMessages = new Set(["Unauthorized", "Forbidden", "Invalid access token", "Token expired",
+      "You do not have permission to perform this action"]);
+    receipt.provider_response = { message: publicMessages.has(message) ? message : "[redacted provider message]" };
     if (response.status === 401 && /(?:expired|invalid|revoked).{0,20}(?:token|jwt)|(?:token|jwt).{0,20}(?:expired|invalid|revoked)/i.test(message)) {
       receipt.classification = "token_invalid_expired_or_revoked";
     }
@@ -196,8 +203,7 @@ if (import.meta.main) {
     const keys = await administration("/api-keys"), service = keys.find((row: Obj) => row.name === "service_role")?.api_key,
       anon = keys.find((row: Obj) => row.name === "anon")?.api_key;
     requireThat(typeof service === "string" && typeof anon === "string", "engineering_session_configuration_unavailable"); privateValues.push(service, anon);
-    const rows = await administration("/database/query", { read_only: true, query:
-      "SELECT i.user_id,i.credential_epoch,i.bootstrap_generation,(SELECT count(*)::integer FROM public.sandy_controller_admins a WHERE a.auth_user_id=i.user_id) controller_memberships FROM public.sandy_engineering_test_identities i JOIN auth.users u ON u.id=i.user_id WHERE u.email='sandy-engineering-test@sandy-ai.internal' AND i.enabled AND i.revoked_at IS NULL AND i.rotation_state='ready'" });
+    const rows = await administration("/database/query", { read_only: true, query: engineeringIdentityQuery });
     requireThat(Array.isArray(rows) && rows.length === 1 && rows[0].controller_memberships === 0, "engineering_nonowner_identity_required");
     const workload = { userId: rows[0].user_id, epoch: rows[0].credential_epoch, bootstrapGeneration: rows[0].bootstrap_generation };
     sessions = createEngineeringSessionClient(base, service, request); issued = await sessions.get(workload); privateValues.push(issued.token);

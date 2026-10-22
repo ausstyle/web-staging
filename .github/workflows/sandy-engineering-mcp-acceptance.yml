@@ -22,6 +22,11 @@ on:
         required: true
         default: false
         type: boolean
+      management_diagnostics_only:
+        description: Read only the intended Management credential prerequisites; no Auth sessions, MCP, GCP or promotion
+        required: true
+        default: false
+        type: boolean
 permissions:
   contents: read
   actions: read
@@ -30,7 +35,35 @@ concurrency:
   group: sandy-engineering-mcp-deploy
   cancel-in-progress: false
 jobs:
+  management-diagnostics:
+    if: ${{ inputs.management_diagnostics_only }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: sandy-production
+    permissions:
+      contents: read
+    steps:
+      - name: Refuse promotion in diagnostic mode
+        if: ${{ inputs.promote }}
+        run: exit 1
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Diagnose only the intended Management credential
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: >-
+          deno run --allow-env --allow-net --allow-read --allow-write
+          scripts/sandy/probe_mcp_management.ts
+          --output "$RUNNER_TEMP/management-diagnostics.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-management-diagnostics-${{ github.run_id }}
+          path: ${{ runner.temp }}/management-diagnostics.json
   acceptance:
+    if: ${{ !inputs.management_diagnostics_only }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     environment: sandy-production
