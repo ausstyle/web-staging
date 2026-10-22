@@ -27,7 +27,7 @@ async function boundedJson(response: Response): Promise<Obj | null> {
 /** One governed task-bound check. This does not repair a connection or treat an
  * asynchronous diagnosis request as completion. Provider scope and a complete,
  * structurally valid page are required before recording a contradiction. */
-export async function runtimeConnectionPreflightOperation(principal: AgentPrincipal, capability: RuntimeConnectionPreflight | undefined, deps: ConnectionPreflightDependencies): Promise<Obj> {
+export async function runtimeConnectionPreflightOperation(principal: AgentPrincipal, capability: RuntimeConnectionPreflight | undefined, deps: ConnectionPreflightDependencies, readOnly = false): Promise<Obj> {
   const binding = capability && bindings.get(capability);
   if (!isAgentPrincipal(principal) || principal.kind !== "trusted_runtime" || !binding || binding.principal !== principal) return { error: "runtime_connection_preflight_capability_required" };
   const { facts } = binding, customerId = principal.customerId;
@@ -36,7 +36,7 @@ export async function runtimeConnectionPreflightOperation(principal: AgentPrinci
     task.data.request_id !== facts.requestId || task.data.user_request !== principal.requestText || !["queued", "running"].includes(task.data.status)) return { error: "runtime_connection_preflight_task_mismatch" };
   if (deps.base !== "https://zmqlyygzqoidkcwdysok.supabase.co") return { error: "runtime_connection_preflight_backend_invalid" };
   if (facts.connectionError) {
-    await deps.db.from("sandy_v2_awareness_audit").insert({ customer_id: customerId, channel: facts.channel, request_id: facts.requestId, subject: "connections", outcome: "error", evidence: { reason: facts.connectionError } });
+    if(!readOnly)await deps.db.from("sandy_v2_awareness_audit").insert({ customer_id: customerId, channel: facts.channel, request_id: facts.requestId, subject: "connections", outcome: "error", evidence: { reason: facts.connectionError } });
     return { response: "I could not verify your current app connections from Sandy's database. I won't guess which services are linked.", success: false, provider_check: "unavailable", records: 0, mismatches: 0, findings_recorded: 0, diagnosis_requests_scheduled: 0, diagnosis_completed: false };
   }
   let providerCheck: "confirmed" | "unavailable" = "unavailable";
@@ -65,7 +65,7 @@ export async function runtimeConnectionPreflightOperation(principal: AgentPrinci
   const message = described.length ? "Sandy's connection records show:\n" + described.join("\n") : facts.requestedService ? "I found no active " + facts.requestedService + " connection recorded for your Sandy account. This does not establish whether authorisation is pending or has not been synced." : "I found no active app connections recorded for your Sandy account.";
   const mismatched = providerCheck === "confirmed" ? selected.filter(x => !verifiedIds.has(x.connected_account_id)) : [];
   let findings = 0, scheduled = 0;
-  for (const x of mismatched) {
+  for (const x of readOnly?[]:mismatched) {
     const fingerprint = "v2:connection:" + customerId + ":" + x.toolkit_slug + ":" + (x.company_id || "personal");
     const found = await deps.db.from("sandy_supervisor_findings").upsert({ fingerprint, category: "integration_state_discrepancy", severity: "medium", state: "open", subject: "Recorded app connection not confirmed by provider",
       explanation: "The authenticated customer's local ACTIVE connection was not confirmed by Composio. Inspect provider status, sync and permissions before executing.",
@@ -83,6 +83,6 @@ export async function runtimeConnectionPreflightOperation(principal: AgentPrinci
     }
   }
   const outcome = mismatched.length ? "contradiction" : providerCheck === "confirmed" ? "verified" : "unverified";
-  await deps.db.from("sandy_v2_awareness_audit").insert({ customer_id: customerId, channel: facts.channel, request_id: facts.requestId, subject: "connections", outcome, evidence: { provider_check: providerCheck, records: selected.length, mismatches: mismatched.length, requested_service: facts.requestedService || "all" } });
+  if(!readOnly)await deps.db.from("sandy_v2_awareness_audit").insert({ customer_id: customerId, channel: facts.channel, request_id: facts.requestId, subject: "connections", outcome, evidence: { provider_check: providerCheck, records: selected.length, mismatches: mismatched.length, requested_service: facts.requestedService || "all" } });
   return { response: message, success: true, provider_check: providerCheck, records: selected.length, mismatches: mismatched.length, findings_recorded: findings, diagnosis_requests_scheduled: scheduled, diagnosis_completed: false };
 }

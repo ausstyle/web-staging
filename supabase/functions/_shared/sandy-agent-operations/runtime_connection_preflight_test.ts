@@ -27,6 +27,11 @@ async function fixture(connectionError: string | null = null) {
   return { db, principal, cap };
 }
 const row = { id: "ca_owned", user_id: "sandy_customer_" + CUSTOMER, status: "ACTIVE" };
+Deno.test("read-only connection inspection preserves provider evidence without findings, diagnosis or domain writes",async()=>{
+ const {db,principal,cap}=await fixture();let scheduled=0;
+ const result=await runtimeConnectionPreflightOperation(principal,cap,{db,base,composioKey:"fixture",autoImproveKey:"fixture",defer:()=>{scheduled++;},request:(async()=>Response.json({items:[],next_cursor:null})) as typeof fetch},true);
+ assert.equal(result.mismatches,1);assert.equal(result.findings_recorded,0);assert.equal(result.diagnosis_requests_scheduled,0);assert.equal(scheduled,0);assert.equal(db.writes.length,0);
+});
 Deno.test("preflight confirms only a bounded complete provider page scoped to the actual task customer", async () => {
   const { db, principal, cap } = await fixture(); let calls = 0;
   const result = await runtimeConnectionPreflightOperation(principal, cap, { db, base, composioKey: "fixture-composio", autoImproveKey: "", defer: () => { throw Error("no diagnosis expected"); }, request: (async (url, init) => {

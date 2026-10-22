@@ -2,6 +2,7 @@ import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import type { AgentOperationContract } from "./contracts.ts";
 export const runtimeConnectionPreflightOperationName = "agent.runtime.connections.preflight";
+export const runtimeConnectionInspectOperationName = "agent.runtime.connections.inspect";
 const count = { type: "integer", minimum: 0, maximum: 100 };
 export const runtimeConnectionPreflightContract: AgentOperationContract & { internal_only: true; sensitive: true; api_exposed: false; ui_exposed: false; ai_exposed: false } = Object.freeze({
   description: "Check the task-bound customer's recorded connections against one complete identity-bound Composio page. Record scoped discrepancies and optionally schedule the existing private diagnosis workflow; never claim repair or diagnosis completion.",
@@ -18,6 +19,8 @@ export const runtimeConnectionPreflightContract: AgentOperationContract & { inte
   }, required: ["ok", "contract_version", "principal_kind", "task_id", "result"], additionalProperties: false },
 });
 const ajv = new Ajv({ strict: false, formats: fullFormats });
+export const runtimeConnectionInspectContract = Object.freeze({...runtimeConnectionPreflightContract,
+  description:"Inspect task-bound provider connections without discrepancy writes or automatic diagnosis.",is_mutation:false,consumes_model_resources:false});
 const input = ajv.compile(runtimeConnectionPreflightContract.input_schema), output = ajv.compile(runtimeConnectionPreflightContract.output_schema);
 export const validRuntimeConnectionPreflightInput = (_name: string, value: unknown) => input(value) === true;
 export const validRuntimeConnectionPreflightOutput = (_name: string, value: unknown) => output(value) === true;

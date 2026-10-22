@@ -115,7 +115,7 @@ Deno.serve(async req=>{
    !/\b(read|search|find|send|create|delete|write|summari[sz]e|download|upload|open|list files|retrieve|schedule)\b/i.test(prompt);
  if(v2DirectStatus){
    operationServices.connectionPreflight=bindRuntimeConnectionPreflight(operationPrincipal,{channel,requestId,connections:v2Connections,workspaceNames:v2WorkspaceNames,connectionError:v2ConnectionError,requestedService:v2RequestedService});
-   const checked=await runOperation("agent.runtime.connections.preflight",{},"connection-preflight");
+   const checked=await runOperation(readOnlyAssessment?"agent.runtime.connections.inspect":"agent.runtime.connections.preflight",{},"connection-preflight");
    if(checked.error){await update({status:"failed",failure:checked.error});return json(503,{ok:false,task_id:id,error:checked.error,reconciliation_required:checked.state==="unknown"||checked.reconciliation_required===true});}
    const toolTrace=[{tool:"v2_connection_preflight",success:checked.success,...(v2ConnectionError?{}:{provider_check:checked.provider_check})}];
    await update({status:"completed",model:"sandy-v2-system-awareness",result:{text:checked.response},tool_trace:toolTrace});

@@ -8,7 +8,7 @@ import { runtimeRecordOperation } from "./runtime_records.ts";
 import { runtimeOperationalContract, validRuntimeOperationalInput, validRuntimeOperationalOutput } from "./runtime_operational_contracts.ts";
 import { runtimeOperationalOperation, type RuntimeOperationalContext } from "./runtime_operational.ts";
 
-import { runtimeConnectionPreflightContract, runtimeConnectionPreflightOperationName, validRuntimeConnectionPreflightInput, validRuntimeConnectionPreflightOutput } from "./runtime_connection_preflight_contract.ts";
+import { runtimeConnectionPreflightContract, runtimeConnectionInspectContract, runtimeConnectionInspectOperationName, runtimeConnectionPreflightOperationName, validRuntimeConnectionPreflightInput, validRuntimeConnectionPreflightOutput } from "./runtime_connection_preflight_contract.ts";
 import { runtimeConnectionPreflightOperation, type RuntimeConnectionPreflight } from "./runtime_connection_preflight.ts";
 
 type Obj = Record<string, any>;
@@ -138,10 +138,10 @@ async function recentGmail(ctx: AgentPrincipal, limit: number, deps: AgentServic
 }
 async function rawOperation(ctx: AgentPrincipal, operation: string, args: Obj, deps: AgentServices): Promise<Obj> {
   const { db } = deps;
-  if (operation === runtimeConnectionPreflightOperationName) return await runtimeConnectionPreflightOperation(ctx, deps.connectionPreflight, {
+  if ([runtimeConnectionPreflightOperationName,runtimeConnectionInspectOperationName].includes(operation)) return await runtimeConnectionPreflightOperation(ctx, deps.connectionPreflight, {
     db, base: deps.base, composioKey: deps.composioKey, autoImproveKey: deps.autoImproveKey || "", request: deps.fetch ?? fetch,
     defer: deps.defer ?? (() => { throw Error("runtime_defer_required"); }),
-  });
+  },operation===runtimeConnectionInspectOperationName);
   if (runtimeOperationalContract(operation)) return await runtimeOperationalOperation(ctx, operation, db, deps.runtimeContext);
   if (internalRuntimeRecordContracts[operation]) return await runtimeRecordOperation(ctx, operation, args, db);
   if (operation === "gmail.drafts.prepare") return await prepareConnectedGmail(db, ctx.customerId, args);
@@ -237,7 +237,7 @@ export async function executeAgentOperation(
     return refused(403, "runtime_transport_profile_denied");
   const record = internalRuntimeRecordContracts[operation];
   const operational = runtimeOperationalContract(operation);
-  const preflight = operation === runtimeConnectionPreflightOperationName ? runtimeConnectionPreflightContract : null;
+  const preflight = operation === runtimeConnectionPreflightOperationName ? runtimeConnectionPreflightContract : operation === runtimeConnectionInspectOperationName ? runtimeConnectionInspectContract : null;
   const internal = record || operational || preflight;
   const contract = agentOperationContracts[operation] || internal;
   if (!contract) return refused(404, "agent_operation_not_supported");
@@ -308,7 +308,7 @@ export async function executeRuntimeOperation(
 ): Promise<Obj> {
   if (!context || context.kind !== "trusted_runtime") return failure("runtime_customer_binding_required");
   const input = { ...args };
-  if (["gmail.drafts.prepare", "agent.web.research", "agent.documents.search", "agent.execution_plan.draft"].includes(operation) || internalRuntimeRecordContracts[operation]?.is_mutation || operation === runtimeConnectionPreflightOperationName)
+  if (["gmail.drafts.prepare", "agent.web.research", "agent.documents.search", "agent.execution_plan.draft"].includes(operation) || internalRuntimeRecordContracts[operation]?.is_mutation || [runtimeConnectionPreflightOperationName,runtimeConnectionInspectOperationName].includes(operation))
     input.idempotency_key = "runtime:" + context.taskId + ":" + (await digest(step)).slice(0, 40);
   const outcome = await executeAgentOperation(context, operation, input, deps);
   return outcome.legacy;
