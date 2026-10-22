@@ -120,7 +120,7 @@ jobs:
             python3 - <<'PYERROR'
           import os, pathlib, re
           text = (pathlib.Path(os.environ['RUNNER_TEMP']) / 'sandy-vm-contract.log').read_text()
-          text = re.sub(r'\x1b\[[0-9;]*m', '', text)[-12000:]
+          text = re.sub(r'\x1b\[[0-9;]*m', '', text)[-3000:]
           escaped = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
           print('::error title=Isolated VM protocol regression::' + escaped)
           PYERROR

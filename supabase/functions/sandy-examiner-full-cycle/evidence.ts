@@ -22,6 +22,12 @@ export function pilotExecutionEvidence(edgeStatus: number, taskStatus: unknown, 
     if (typeof entry.timezone === "string") {
       try { new Intl.DateTimeFormat("en", { timeZone: entry.timezone }); tool.timezone = entry.timezone; } catch { /* Unverified zone omitted. */ }
     }
+    if (["confirmed", "unavailable"].includes(String(entry.provider_check))) tool.provider_check = entry.provider_check;
+    if (entry.tool === "system_clock" && entry.success === true && entry.source === "server_clock" &&
+        typeof entry.as_of === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(entry.as_of) &&
+        Number.isFinite(Date.parse(entry.as_of)) && new Date(entry.as_of).toISOString() === entry.as_of) {
+      tool.source = "server_clock"; tool.as_of = entry.as_of;
+    }
     if (object(entry.deadline_evidence)) {
       const deadlines: Obj = {};
       for (const key of ["total_overdue", "total_tasks", "total_outstanding"])

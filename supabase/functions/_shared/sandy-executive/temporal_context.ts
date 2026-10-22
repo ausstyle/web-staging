@@ -119,7 +119,7 @@ export function temporalContextBundle(
   return result;
 }
 
-/** Web canary only. The caller supplies its existing bound customer, never an
+/** Existing Executive canary only, consistently across authenticated channels. The caller supplies its existing bound customer, never an
  * identity extracted from a prompt. Check current memory consent before reading
  * and again before returning; failures disclose unavailable coverage, not zero
  * stored memories. Learning permission is separate from reading existing facts. */

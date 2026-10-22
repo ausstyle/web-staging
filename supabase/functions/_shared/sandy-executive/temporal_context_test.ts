@@ -252,3 +252,10 @@ Deno.test("invalid customer input cannot query a memory store", async () => {
   );
   assert.deepEqual(db.requests, []);
 });
+
+Deno.test("one customer temporal projection preserves separate cross-channel provenance",async()=>{
+ const rows=["web","email","whatsapp","voice"].map((source_channel,i)=>fact({id:id(i+1),source_channel,source_ref:"verified-source-"+source_channel}));
+ const db=database({rows});const result=await loadTemporalContext(CUSTOMER,db,NOW);
+ assert.equal(result.status,"available");assert.deepEqual(result.facts.map(x=>x.source_channel),["web","email","whatsapp","voice"]);
+ assert.equal(db.requests.filter(x=>x.kind==="settings").length,2);assert.equal(db.requests.filter(x=>x.kind==="rpc").length,1);
+});
