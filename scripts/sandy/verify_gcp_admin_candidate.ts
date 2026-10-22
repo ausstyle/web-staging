@@ -16,7 +16,7 @@ export function assertProof(p: any) {
     p.runtime_revision !== revision || p.administrator_identity !== administrator || p.token_issuance_verified !== true ||
     p.token_recorded !== false || p.IAM_changes !== 0 || p.agents_enrolled !== 0 ||
     !Array.isArray(p.targets) || p.targets.length !== 2 || !p.targets.every((t: any, i: number) => t.vm_name === ["sandy-video", "sandy-windows"][i] &&
-      t.instance_id === ["6831598645020395570", "8120150462304566315"][i] && t.policy_read_verified === true) ||
+      t.instance_id === ["6831598645020395570", "8120150462304566315"][i] && t.port === [22,5986][i] && typeof t.etag === "string" && t.etag.length > 0 && t.policy_read_verified === true) ||
     !Array.isArray(p.provider_receipts) || p.provider_receipts.length !== 5 || p.provider_receipts.some((r: any, i: number) => r.http_status !== 200 || r.endpoint !== expectedEndpoints[i])) throw Error("independent_administrator_proof_invalid");
   const remaining = Date.parse(p.token_expires_at) - Date.now();
   if (!Number.isFinite(remaining) || remaining < 60000 || remaining > 1810000) throw Error("independent_administrator_token_expiry_invalid");
@@ -39,7 +39,12 @@ if (import.meta.main) {
     if (typeof anon !== "string") throw Error("project_anon_configuration_unavailable");
     const auth = await request(base+"/auth/v1/user",{headers:{authorization:"Bearer "+token,apikey:anon}});
     report.normal_Auth_http_status=auth.status;
-    if (!auth.ok) { await auth.body?.cancel(); throw Error("legitimate_owner_session_invalid_or_expired"); }
+    if (!auth.ok) {
+      const denied=await auth.json().catch(()=>({}));
+      if(["bad_jwt","session_not_found","user_not_found","no_authorization","user_banned"].includes(denied.code))report.normal_Auth_error_code=denied.code;
+      report.normal_Auth_classification=typeof denied.msg==="string"&&denied.msg.includes("token is expired")?"token_expired":"authentication_rejected";
+      throw Error("legitimate_owner_session_invalid_or_expired");
+    }
     await auth.body?.cancel();
     const rpc = async(method: string, params: any) => {
       const response = await request(target,{method:"POST",headers:{authorization:"Bearer "+token,apikey:anon,
@@ -63,6 +68,8 @@ if (import.meta.main) {
     if(envelope?.status!==200||response.result?.isError!==false){
       const e=envelope?.result;
       report.provider_http_status=e?.result?.provider_http_status??null;
+      const endpoint=e?.result?.provider_endpoint;
+      if(expectedEndpoints.includes(endpoint)||endpoint===`https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${administrator}:generateAccessToken`)report.provider_endpoint=endpoint;
       const code=e?.error;
       report.API_error=typeof code==="string"&&/^[A-Za-z_]{1,100}$/.test(code)?code:"administrator_execution_failed";
       throw Error("administrator_execution_not_verified");
