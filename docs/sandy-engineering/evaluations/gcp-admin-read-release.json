@@ -1,0 +1,44 @@
+{
+  "change_id": "6a419c3c-1a04-4e1b-9c5f-6f1a9abd5719",
+  "source_commit": "e6ea3de912a422911d11269b9febcd35744f3c58",
+  "base_version": 51,
+  "base_bundle_sha256": "3e5aea745fbc701c9543620a83c13b8b18a7a8f0bbfa8ff692494b99978ae44d",
+  "base_files": {
+    "sandy-engineering-control/index.ts": "8bdf9ce1ac0b4d360831a8f7343a094665070990017fe0b178966c02d25e2cae",
+    "sandy-engineering-control/canonical_request.ts": "ab5ff8342026e4511c27b521ec661ef236326518d914a8716bc1563ad45815aa",
+    "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+    "sandy-operation-api/registry_schema_validator.ts": "21f60f0dd14de49e38b8fc021346fc35b9eca5a0a6fbc97736447f8bfe557cfe",
+    "sandy-operation-api/registry_schema_interpreter.ts": "b6e47ffddec8b45ab466e1a4843e9d2d3d56934673da1e7d4c03a0e1719414bd",
+    "sandy-engineering-control/workload.ts": "9bc3f2889bbadd8a8414ced9d28772981b24b1c98091f8cd79b6b13a24470f7b"
+  },
+  "patched_entrypoint_sha256": "fa54939c3a557e0472beb59848b697b7f63996be71cc5e8da0735095c0520b8b",
+  "gateway_version": 57,
+  "gateway_bundle_sha256": "debaa6cdeb23fef011b6e52ce3660dd128f57fc388df6dd073d6bacd1fd1a66d",
+  "worker_url": "https://sandy-api-review---sandy-engineering-mcp-4pqn6jsfxq-ew.a.run.app",
+  "migrations": [
+    "supabase/migrations/20261022201500_sandy_gcp_admin_read_admission.sql",
+    "supabase/migrations/20261023001500_sandy_gcp_admin_delegated_read.sql"
+  ],
+  "artifacts": {
+    ".github/workflows/sandy-gcp-admin-read-release.yml": "205844aede8e9bbb66671826979389d581022d852519be510c0831eb6936f561",
+    "scripts/sandy/gcp_admin_control_patch.py": "1e21d70c9f2b45fa76ac8f5f72a5bf0c726481c4a416ad4281015a7ee6c6954e",
+    "scripts/sandy/release_gcp_admin_read.py": "4fb30e5bd5083357d4059df91cbbc89c29104fe88c69cd54a7bb2d022c26ced5",
+    "scripts/sandy/release_owner_session_repair.py": "13001bf46fc4f3b92be9f4a038d9234d0e6b3bdf4218e07c9a29d7baeab384ec",
+    "scripts/sandy/release_web_canary.py": "570ce6122f8d50c15943b45e6aace0e776664519594ef66ddf5d67103fc2cbc1",
+    "scripts/sandy/release_delegated_runtime.py": "3a4a60ea816bffbbc386df34f9bca8efc5b93fad1c05420a8e5d5a042ea08e6d",
+    "scripts/sandy/engineering_control_client.py": "4b587a8c9949e7078e4748f4cb05d28896ed092dc0561f9cf9fc93e0755e2bc1",
+    "scripts/sandy/verify_gcp_admin_read.ts": "a584ed76e25fffd5e6790ca6bfebc6722ab48916d51d88bcae4b62cef9ac8a5b",
+    "scripts/sandy/verify_mcp_candidate.ts": "2ad093d1c697335b9d0cdcca3bb7e18e8457863cc40ca4a26d644b51c3bd449e",
+    "scripts/sandy/test_gcp_admin_release.py": "4b72659c6a3f32cfe0cbd280f0b96de9ffab44afb0575eb90ac9d400a93d584f",
+    "scripts/sandy/test_gcp_admin_delegation_postgres.mjs": "83b2a483a0a848fd4033019c06b26b3954b3c0a476d2fadfbc8dfef256883b0e",
+    "scripts/sandy/test_gcp_admin_read.sql": "7a23a96a8c03cd5564b939d89d212e5cc783844f2402618c0230d8c716d27092",
+    "supabase/functions/sandy-engineering-control/gcp_admin_read.ts": "82b605921b5551eccc52ce61f8af7c4990a3cf81ae7e030ebca577e424233e02",
+    "supabase/functions/_shared/sandy_engineering_session_client.ts": "9d1bf341ddce755063c2e4aa1f3ed65464a40995debe533f15b60c1eb8529b4a",
+    "supabase/functions/_shared/sandy_engineering_session.ts": "9fcbc86fe7bd067d224dc7d0f398e731534b0a1605d0008b4437a9444da2fbe4",
+    "supabase/functions/_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+    "supabase/functions/sandy-operation-api/engineering_identity_policy.json": "01407020d4c182f86cbe2048bd2a7fb02f4d04a33b8ba1396b9cd2b7275edd38",
+    "supabase/migrations/20261022201500_sandy_gcp_admin_read_admission.sql": "8f65c109928e59ef42af709a543dad1db53a45d41db342e0374541d87d09fb7c",
+    "supabase/migrations/20261023001500_sandy_gcp_admin_delegated_read.sql": "39acf42c2dc54bebc417dc1347daf794fd9df274bfa87e27a5e7dd0331b491c5"
+  },
+  "rollback": "Use the protected recovery event captured before mutation to restore original Control modules and delete the new binding. Leave additive DDL inert; preserve all customer data, gateway and Cloud Run traffic."
+}
