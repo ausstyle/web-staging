@@ -83,7 +83,9 @@
     "judge_receives_persisted_tool_receipts": false,
     "quality_accepted": false,
     "frozen_60_case_cohort_accepted": false,
-    "is_four_channel_handoff_test": false
+    "is_four_channel_handoff_test": false,
+    "built_in_overdue_overview_repeated": true,
+    "repeated_overdue_case_counted_as_new_acceptance": false
   },
   "current_authority": {
     "renewable_engineering_control_get_http": 200,
@@ -167,5 +169,15 @@
     "voice": "Existing private-auth boundary preserved. Pilot has zero voice sessions; shared media/tool loop and interruption recovery not accepted.",
     "memory": "Pilot enabled=true, learning_enabled=false, consent absent. Do not enable or claim persistence.",
     "unattended_releases": "Two source-to-production release cycles remain unproven."
+  },
+  "dedicated_v4_overdue_probe_rerun": false,
+  "latest_verified_ci": {
+    "source_commit": "1d2dcf3c989c09b30276793de0baba5413758703",
+    "regression": "https://github.com/ausstyle/web-staging/actions/runs/39759643452",
+    "runtime_release_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643565",
+    "immutable_artifact_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759646579",
+    "api_contract_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643659",
+    "all_completed_successfully": true,
+    "deployment": "skipped_ci_only"
   }
 }

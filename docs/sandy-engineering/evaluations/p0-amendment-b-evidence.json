@@ -54,7 +54,7 @@
     "sandy-voice-account-context": 19,
     "sandy-voice-call": 38
   },
-  "v4_test_repeated": false,
+  "v4_test_repeated": true,
   "customer_records_modified": false,
   "standing_policy_provisioning": "The protected Management installer verifies the real owner approval over source, manifest and declaration, applies only that declaration, and records its actual administrative actor separately. It neither mints an owner session nor creates an owner approval event.",
   "remaining_production_acceptance": [
@@ -81,11 +81,13 @@
     "direct_asset_http_from_runner": "blocked by runner network policy; GitHub Pages build independently verified"
   },
   "independent_ci": {
-    "run": "https://github.com/ausstyle/web-staging/actions/runs/39712269318",
-    "head_sha": "a436f39affae41e27f3c26a687da4044d5aee0ab",
-    "status": "completed",
-    "conclusion": "success",
-    "deployment": "skipped in ci_only mode"
+    "source_commit": "1d2dcf3c989c09b30276793de0baba5413758703",
+    "regression": "https://github.com/ausstyle/web-staging/actions/runs/39759643452",
+    "runtime_release_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643565",
+    "immutable_artifact_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759646579",
+    "api_contract_checks": "https://github.com/ausstyle/web-staging/actions/runs/39759643659",
+    "all_completed_successfully": true,
+    "deployment": "skipped_ci_only"
   },
   "latest_production_evidence": "p0-production-verification-20261022.json",
   "actual_owner_registration_event": 100,
@@ -140,5 +142,6 @@
     "source_conflicts_resolved": true,
     "force_push": false,
     "ci_results": "See latest PR checks; historical failed checks retained."
-  }
+  },
+  "v4_test_repetition_detail": "The existing full-cycle Examiner included its built-in task overview/overdue case. It is recorded as repeated coverage and is not new overdue acceptance. The dedicated corrected V4 probe was not rerun."
 }
