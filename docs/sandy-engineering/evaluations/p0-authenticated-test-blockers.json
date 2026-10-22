@@ -116,12 +116,27 @@
   "current_controller_owner_authentication_blockers": [
     {
       "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
-      "operation": "status -> approved",
-      "http_status": 401,
-      "database_status": "proposed",
+      "operation": "record genuine owner release approval/attestation",
+      "controller_http_status": 401,
+      "auth_error_code": "bad_jwt",
+      "auth_reports_expired": true,
+      "owner_refresh_session": "browser-only, confirmed by owner",
+      "database_status": "approved",
+      "authenticated_owner_approval_event_present": false,
+      "administrative_owner_session_verified": false,
       "new_owner_authorization_required": false,
-      "working_owner_authentication_required": true
+      "technical_owner_browser_execution_required": true
     }
   ],
-  "current_release_blocked_by_owner_authentication": true
+  "current_release_blocked_by_owner_authentication": true,
+  "owner_authentication_repair": {
+    "prepared_source_commit": "f9958d50b4fd4ebd82f97c8e3be76ad49250a192",
+    "source_manifest_sha256": "24b113ab99c422ab4394ea7895b7679476c38863e259e4c9172ef9647a83a573",
+    "local_composed_tests_passed": 175,
+    "isolated_postgresql_assertions": 13,
+    "deployed": false,
+    "standing_policy_activated": false,
+    "browser_execution_handoff": "p0-owner-authentication-repair-browser-action.js",
+    "evidence": "p0-owner-session-delegation-evidence.json"
+  }
 }

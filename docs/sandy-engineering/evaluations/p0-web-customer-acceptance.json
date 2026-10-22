@@ -54,7 +54,7 @@
   "web_customer_acceptance_passed": false,
   "prepared_repair": {
     "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
-    "status": "proposed",
+    "status": "approved",
     "source_commit": "3734254e872fcb2f0b5270aac43f8540b40726a2",
     "manifest_sha256": "1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017",
     "deadline_tests_passed": 8,
@@ -65,7 +65,10 @@
     "user_explicit_authorization_received": true,
     "owner_workflow_http_status": 401,
     "database_approval_recorded": false,
-    "release_blocker_evidence": "p0-web-deadlines-approval-attempt.json"
+    "release_blocker_evidence": "p0-web-deadlines-approval-attempt.json",
+    "authenticated_owner_event_present": false,
+    "administrative_approval_accepted_for_release": false,
+    "approval_recording_repair": "p0-owner-session-repair.md"
   },
   "remaining_cross_channel_requirements": {
     "email": "Authoritative delivery still has an independent loop; deploy and verify shared outcome shadow correction, then governed migration through normal email ingest/reply/confirmation with actual receipts. No unsolicited send.",

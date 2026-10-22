@@ -1,0 +1,61 @@
+{
+  "captured_at_europe_rome": "2026-10-22T02:36:29.223571+02:00",
+  "source_commit": "f9958d50b4fd4ebd82f97c8e3be76ad49250a192",
+  "source_manifest_sha256": "24b113ab99c422ab4394ea7895b7679476c38863e259e4c9172ef9647a83a573",
+  "diagnosis": {
+    "controller_http_status": 401,
+    "normal_auth_endpoint_http_status": 403,
+    "normal_auth_error_code": "bad_jwt",
+    "server_reports_expiry": true,
+    "owner_refresh_session_location": "browser-only; confirmed by owner",
+    "renewable_workload_is_owner": false,
+    "owner_refresh_credential_configured_in_runner": false
+  },
+  "implementation": {
+    "existing_browser_auth_refresh_used": true,
+    "refresh_tokens_exported": false,
+    "one_retry_only_after_known_pre_dispatch_auth_denial": true,
+    "uncertain_mutations_replayed": false,
+    "same_identity_required_after_refresh": true,
+    "atomic_actual_owner_status_and_audit": true,
+    "already_approved_but_unattested_state_supported_without_database_reset": true,
+    "workload_approval_actions_added": false,
+    "new_authentication_system_added": false,
+    "standing_policy_existing_table_extended": true,
+    "routine_risks": [
+      "low",
+      "normal"
+    ],
+    "expiry_days_maximum": 30,
+    "revocation_current_owner_and_revision_rechecked": true,
+    "independent_review_and_trusted_ci_required": true,
+    "higher_risk_manual_owner_action_preserved": true,
+    "automatic_policy_executor": "Active signed-in owner Controller browser; no unattended runner or protected OIDC policy worker is implemented.",
+    "browser_owner_action_for_existing_authorization": "p0-authorized-owner-browser-action.js"
+  },
+  "verification": {
+    "composed_local_tests_passed": 175,
+    "isolated_postgresql_assertions_passed": 13,
+    "production_database_used_for_sql_tests": false,
+    "controller_entrypoint_typecheck": "passed with existing offline SDK fallback",
+    "frontend_javascript_syntax": "passed",
+    "actual_owner_browser_test": "not run from this environment; browser session unavailable",
+    "production_source_deployed": false,
+    "migration_applied": false,
+    "standing_policy_activated": false,
+    "deadline_source_or_manifest_changed": false,
+    "post_deployment_overdue_test": "not run: database status was administratively changed to approved, but no authenticated owner event exists; no deployment"
+  },
+  "production_complete": false,
+  "current_deadline_database_state": {
+    "status": "approved",
+    "authenticated_owner_event": false,
+    "observed_event_type": "owner_directive_manual_db_approval",
+    "observed_event_owner_session_verified": false,
+    "administrative_event_preserved": true
+  },
+  "safe_read_only_admission_completed": true,
+  "real_release_helper_not_invoked": true,
+  "automatic_review_rejected_real_helper_guard_probe": true,
+  "owner_auth_repair_browser_execution": "p0-owner-authentication-repair-browser-action.js"
+}

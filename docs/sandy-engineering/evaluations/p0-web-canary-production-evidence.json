@@ -409,5 +409,14 @@
     "database_owner_approval_recorded": false,
     "deployment_attempted": false,
     "evidence": "p0-web-deadlines-approval-attempt.json"
+  },
+  "current_owner_approval_diagnosis": {
+    "database_status": "approved",
+    "authenticated_owner_event_present": false,
+    "administrative_owner_session_verified": false,
+    "administrative_event_preserved": true,
+    "read_only_admission_completed": true,
+    "release_attempted": false,
+    "evidence": "p0-owner-session-delegation-evidence.json"
   }
 }

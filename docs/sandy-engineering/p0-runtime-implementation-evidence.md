@@ -1,5 +1,25 @@
 # P0 runtime implementation — deployed, actual web acceptance failed
 
+## Latest owner-session repair disposition — 22 October 2026, Europe/Rome
+
+Normal Auth confirms the exported owner JWT expired (`bad_jwt`); the owner confirms
+its refresh session is browser-only. A later database write changed the deadline
+change to `approved`, but its administrative event explicitly has no verified
+owner session. No genuine owner event exists. The runner preserved that event and
+completed a read-only admission rejection; no V4 upload or status reset occurred.
+
+Prepared repair source `f9958d50b4fd4ebd82f97c8e3be76ad49250a192` refreshes the same
+real browser session, atomically records genuine owner approval/attestation, and
+adds a separately controlled standing routine release policy without workload
+self-approval. 175 local tests and 13 isolated PostgreSQL assertions pass. This
+security-sensitive source is **not deployed**, its migration is **not applied**,
+and its standing policy is **not active**. Automatic policy evaluation currently
+requires an active signed-in Controller browser; unattended delegation is not
+implemented. [Execution handoff, exact pins and limits](evaluations/p0-owner-session-repair.md)
+are reviewable. The original deadline source/manifest and live V4 29 / workspace 46
+remain unchanged; the corrected overdue-task result remains untested.
+
+
 Scopes: SANDY-ENG-0001, 0003, 0004 and 0006. As of the 21 October 2026
 23:28 UTC readback, the approved `addfc2ac5b933567c003466a8668a7b864330797`
 web source is **V4 29 / workspace 46**. All 26 + 2 local modules still match
