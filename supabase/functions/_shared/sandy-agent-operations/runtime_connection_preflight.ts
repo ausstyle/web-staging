@@ -13,6 +13,18 @@ export type ConnectionPreflightDependencies = {
   db: any; base: string; composioKey: string; autoImproveKey: string;
   request: typeof fetch; defer: (promise: Promise<unknown>) => void;
 };
+export function describeConnectionGroups(selected:Obj[],workspaceNames:Map<string,string>,providerCheck:string,verifiedIds:Set<string>):string[]{
+ const groups=new Map<string,Map<string,Obj>>();
+ selected.forEach((row,index)=>{const key=JSON.stringify([row.toolkit_slug,row.company_id||null]);if(!groups.has(key))groups.set(key,new Map());groups.get(key)!.set(row.connected_account_id||"record:"+index,row);});
+ return [...groups.values()].map(group=>{
+  const rows=[...group.values()],x=rows[0],count=rows.length;
+  const location=x.company_id?workspaceNames.get(x.company_id)||"a company workspace":"Personal";
+  const confirmed=rows.filter(row=>verifiedIds.has(row.connected_account_id)).length;
+  const provider=providerCheck==="confirmed"?(count===1?(confirmed?"confirmed active by provider":"not confirmed active by provider"):`${confirmed}/${count} confirmed active by provider`):"recorded active in Sandy; live provider status not verified";
+  const ability=x.toolkit_slug==="gmail"?"Gmail search and approval-gated sending are implemented in this chat":"A connection does not establish that this chat can perform actions in that app";
+  return x.toolkit_slug+" ("+location+"): "+(count>1?count+" distinct connections; ":"")+provider+". "+ability+".";
+ });
+}
 async function boundedJson(response: Response): Promise<Obj | null> {
   const reader = response.body?.getReader(); if (!reader) return null;
   const parts: Uint8Array[] = []; let size = 0;
@@ -56,12 +68,7 @@ export async function runtimeConnectionPreflightOperation(principal: AgentPrinci
   }
   const active = facts.connections.filter(x => String(x.status).toUpperCase() === "ACTIVE");
   const selected = facts.requestedService ? active.filter(x => x.toolkit_slug.toLowerCase() === facts.requestedService) : active;
-  const described = selected.map(x => {
-    const location = x.company_id ? facts.workspaceNames.get(x.company_id) || "a company workspace" : "Personal";
-    const provider = providerCheck === "confirmed" ? verifiedIds.has(x.connected_account_id) ? "confirmed active by provider" : "not confirmed active by provider" : "recorded active in Sandy; live provider status not verified";
-    const ability = x.toolkit_slug === "gmail" ? "Gmail search and approval-gated sending are implemented in this chat" : "A connection does not establish that this chat can perform actions in that app";
-    return x.toolkit_slug + " (" + location + "): " + provider + ". " + ability + ".";
-  });
+  const described = describeConnectionGroups(selected,facts.workspaceNames,providerCheck,verifiedIds);
   const message = described.length ? "Sandy's connection records show:\n" + described.join("\n") : facts.requestedService ? "I found no active " + facts.requestedService + " connection recorded for your Sandy account. This does not establish whether authorisation is pending or has not been synced." : "I found no active app connections recorded for your Sandy account.";
   const mismatched = providerCheck === "confirmed" ? selected.filter(x => !verifiedIds.has(x.connected_account_id)) : [];
   let findings = 0, scheduled = 0;

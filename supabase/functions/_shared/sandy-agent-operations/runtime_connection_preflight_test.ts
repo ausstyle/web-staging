@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { authenticateRuntime, bindRuntimeTask } from "./identity.ts";
-import { bindRuntimeConnectionPreflight, runtimeConnectionPreflightOperation } from "./runtime_connection_preflight.ts";
+import { bindRuntimeConnectionPreflight, runtimeConnectionPreflightOperation,describeConnectionGroups } from "./runtime_connection_preflight.ts";
 const CUSTOMER = "81000000-0000-4000-8000-000000000001";
 const TASK = "82000000-0000-4000-8000-000000000001";
 const base = "https://zmqlyygzqoidkcwdysok.supabase.co";
@@ -27,6 +27,13 @@ async function fixture(connectionError: string | null = null) {
   return { db, principal, cap };
 }
 const row = { id: "ca_owned", user_id: "sandy_customer_" + CUSTOMER, status: "ACTIVE" };
+Deno.test("connection descriptions group distinct accounts without merging workspaces or overstating provider confirmation",()=>{
+ const rows=[{toolkit_slug:"googlesuper",company_id:null,connected_account_id:"a"},{toolkit_slug:"googlesuper",company_id:null,connected_account_id:"b"},{toolkit_slug:"googlesuper",company_id:null,connected_account_id:"a"},{toolkit_slug:"googlesuper",company_id:"company",connected_account_id:"c"}];
+ const result=describeConnectionGroups(rows,new Map([["company","Company"]]),"confirmed",new Set(["a"]));
+ assert.equal(result.length,2);assert.match(result[0],/2 distinct connections; 1\/2 confirmed active by provider/);assert.match(result[1],/Company.*not confirmed active by provider/);
+ assert.equal(result.some(line=>line.includes("connected_account_id")),false);
+ const unverified=describeConnectionGroups(rows,new Map(),"unavailable",new Set(["a","b","c"]));assert(unverified.every(line=>line.includes("live provider status not verified")));assert(unverified.every(line=>!line.includes("confirmed active by provider")));
+});
 Deno.test("read-only connection inspection preserves provider evidence without findings, diagnosis or domain writes",async()=>{
  const {db,principal,cap}=await fixture();let scheduled=0;
  const result=await runtimeConnectionPreflightOperation(principal,cap,{db,base,composioKey:"fixture",autoImproveKey:"fixture",defer:()=>{scheduled++;},request:(async()=>Response.json({items:[],next_cursor:null})) as typeof fetch},true);
