@@ -20,7 +20,7 @@ export function showOwnerReleaseControls(host, transport, workflowDigest) {
   }
   refresh.onclick = () => run(inspect); select.onchange = refresh.onclick;
   record.onclick = () => run(async () => {
-    const current = await inspect(); if (!current || current.change.status !== "proposed") throw Error("Read the current recorded state before proceeding.");
+    const current = await inspect(); if (!current || !["proposed","approved"].includes(current.change.status)) throw Error("Read the current recorded state before proceeding.");
     const pins = (current.tests || []).map(t => t.evidence).filter(e => /^[a-f0-9]{40}$/.test(e?.source_commit || "") &&
       /^[a-f0-9]{64}$/.test(e?.manifest_sha256 || "") && current.change.expected_behavior.includes(e.source_commit) &&
       current.change.expected_behavior.includes(e.manifest_sha256));
@@ -30,7 +30,7 @@ export function showOwnerReleaseControls(host, transport, workflowDigest) {
     await transport.engineering({ action: "status", change_id: current.change.id, status: "approved",
       reason: `Release ${pin.source_commit}; manifest ${pin.manifest_sha256}. Owner records the authorized bounded release through the existing authenticated Controller workflow.` });
     const verified = await transport.engineering({ action: "get", change_id: current.change.id });
-    if (verified.change.status !== "approved" || !verified.events?.some(e => e.actor === owner && e.event_type === "status_changed" &&
+    if (verified.change.status !== "approved" || !verified.events?.some(e => e.actor === owner && (e.event_type === "status_changed" || (e.event_type === "owner_release_attested" && e.detail?.owner_session_authenticated===true)) &&
       e.detail?.to === "approved" && e.detail?.reason?.includes(pin.source_commit) && e.detail?.reason?.includes(pin.manifest_sha256))) {
       throw Error("Approval audit is not verified. Read recorded state; do not repeat the action.");
     }
@@ -53,7 +53,7 @@ export function showOwnerReleaseControls(host, transport, workflowDigest) {
   } }); await loadPolicy(); });
   revoke.onclick = () => run(async () => { await transport.engineering({ action: "set_delegation_policy", enabled: false }); await loadPolicy(); });
   run(async () => { const { changes } = await transport.engineering({ action: "list" });
-    for (const c of changes || []) if (c.status === "proposed") { const o = element("option", `${c.title} · ${c.id}`); o.value = c.id; select.append(o); }
+    for (const c of changes || []) if (["proposed","approved"].includes(c.status)) { const o = element("option", `${c.title} · ${c.id}`); o.value = c.id; select.append(o); }
     status.textContent = "Using your existing authenticated Controller owner session."; await inspect(); await loadPolicy();
   });
 }

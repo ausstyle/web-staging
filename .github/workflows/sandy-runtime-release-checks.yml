@@ -36,6 +36,7 @@ jobs:
           sandy/controller/session-transport.test.mjs
           sandy/controller/engineering-releases.test.mjs
           sandy/controller/authorized-deadline-action.test.mjs
+          sandy/controller/authorized-auth-repair-action.test.mjs
       - name: Test isolated PostgreSQL owner and audit transactions
         run: |
           npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14

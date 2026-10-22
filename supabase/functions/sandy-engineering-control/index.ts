@@ -83,7 +83,7 @@ Deno.serve(async req=>{
   if(action==="status"){
    const next=string(b.status,40);
    const allowed:Record<string,string[]>={proposed:["approved","cancelled"],approved:["implementing","cancelled"],implementing:["committed","failed"],committed:["deployed","failed"],deployed:["verified","failed"],verified:["rolled_back"],failed:["implementing","rolled_back"],rolled_back:[],cancelled:[]};
-   if(!allowed[change.status]?.includes(next))return respond({error:"Invalid status transition",from:change.status,to:next},409);
+   if(!allowed[change.status]?.includes(next)&&!(next==="approved"&&change.status==="approved"))return respond({error:"Invalid status transition",from:change.status,to:next},409);
    if(next==="approved"){
     if(admin.role!=="owner")return respond({error:"Owner approval required"},403);
     const approved=await db.rpc("sandy_engineering_record_owner_approval",{p_actor:user.id,p_change:id,p_reason:string(b.reason,1000)});

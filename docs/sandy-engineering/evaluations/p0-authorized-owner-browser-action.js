@@ -71,15 +71,18 @@ async function recordAuthorizedDeadline(transport) {
       !before.change.scope.includes("github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021")) {
     throw Error("The recorded change differs from the owner's exact authorized release.");
   }
-  if (before.change.status === "proposed") {
+  const owner = (await transport.session()).user.id;
+  const ownerEvent = e => e.actor === owner && e.detail?.to === "approved" && e.detail.reason?.includes(p.source) &&
+    e.detail.reason?.includes(p.manifest) && (e.event_type === "status_changed" ||
+      (e.event_type === "owner_release_attested" && e.detail.owner_session_authenticated === true));
+  if (before.change.status === "proposed" || (before.change.status === "approved" && !before.events?.some(ownerEvent))) {
     await transport.engineering({ action: "status", change_id: p.change, status: "approved",
       reason: `Release ${p.source}; manifest ${p.manifest}. Record the owner's existing explicit authorization for the bounded V4 deadline correction. Preserve the existing pilot, Gmail confirmation, customer data and memory ingestion. Require guarded source/version deployment and actual overdue-task verification.` });
   } else if (!["approved", "implementing"].includes(before.change.status)) {
     throw Error("Change is not awaiting approval or ready for the authorized release.");
   }
-  const after = await read(), owner = (await transport.session()).user.id;
-  const audited = after.events?.some(e => e.actor === owner && e.event_type === "status_changed" &&
-    e.detail?.to === "approved" && e.detail.reason?.includes(p.source) && e.detail.reason?.includes(p.manifest));
+  const after = await read();
+  const audited = after.events?.some(ownerEvent);
   if (!["approved", "implementing"].includes(after.change?.status) || !audited) {
     throw Error("A matching owner audit event is not verified. Do not repeat the action; have the runner read the actual database state.");
   }

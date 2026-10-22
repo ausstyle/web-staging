@@ -47,17 +47,25 @@ END $$;
 
 CREATE FUNCTION public.sandy_engineering_record_owner_approval(p_actor uuid,p_change uuid,p_reason text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
-DECLARE c public.sandy_engineering_changes%ROWTYPE;
+DECLARE c public.sandy_engineering_changes%ROWTYPE; source_pin text; manifest_pin text;
 BEGIN
  PERFORM 1 FROM public.sandy_controller_admins a JOIN auth.users u ON u.id=a.auth_user_id
   WHERE a.auth_user_id=p_actor AND a.enabled AND a.role='owner'
   AND coalesce(u.raw_app_meta_data->>'sandy_engineering_test','false')<>'true' FOR SHARE OF a,u;
  IF NOT FOUND THEN RAISE EXCEPTION 'current authenticated owner required'; END IF;
  SELECT * INTO c FROM public.sandy_engineering_changes WHERE id=p_change FOR UPDATE;
- IF c.id IS NULL OR c.status<>'proposed' THEN RAISE EXCEPTION 'proposed change required'; END IF;
+ IF c.id IS NULL OR c.status NOT IN ('proposed','approved') THEN RAISE EXCEPTION 'proposed or approved change required'; END IF;
+ IF c.status='approved' THEN
+  source_pin:=substring(p_reason from 'Release ([a-f0-9]{40}); manifest');
+  manifest_pin:=substring(p_reason from 'manifest ([a-f0-9]{64})');
+  IF source_pin IS NULL OR manifest_pin IS NULL OR position(source_pin in c.expected_behavior)=0 OR position(manifest_pin in c.expected_behavior)=0
+  THEN RAISE EXCEPTION 'exact existing release pins required for owner attestation'; END IF;
+ END IF;
  UPDATE public.sandy_engineering_changes SET status='approved',updated_at=clock_timestamp() WHERE id=c.id;
  INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail)
- VALUES(c.id,'status_changed',p_actor,jsonb_build_object('from','proposed','to','approved','reason',left(p_reason,1000),'owner_workflow','authenticated_controller'));
+ VALUES(c.id,CASE WHEN c.status='approved' THEN 'owner_release_attested' ELSE 'status_changed' END,p_actor,
+  jsonb_build_object('from',c.status,'to','approved','reason',left(p_reason,1000),'owner_workflow','authenticated_controller',
+   'owner_session_authenticated',true,'source_commit',source_pin,'manifest_sha256',manifest_pin));
  RETURN jsonb_build_object('ok',true,'change',jsonb_build_object('id',c.id,'status','approved'));
 END $$;
 

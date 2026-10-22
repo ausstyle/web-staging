@@ -23,5 +23,18 @@ for (const patch of [{ id: "another-change" }, { expected_behavior: "different s
   });
 }
 test("approved status without the genuine matching audit event is not reported verified", async () => {
-  const f = fixture("approved", {}, false); await assert.rejects(recordAuthorizedDeadline(f.transport)); assert.equal(f.calls.some(c => c.action === "status"), false);
+  const f = fixture("approved", {}, false); await assert.rejects(recordAuthorizedDeadline(f.transport)); assert.equal(f.calls.filter(c => c.action === "status").length, 1);
+});
+test("an administrative approval is preserved while a genuine owner attests the pinned release", async () => {
+  const f = fixture("approved"); let attested = false;
+  const old = f.transport.engineering;
+  f.transport.engineering = async body => {
+    const result = await old(body);
+    if (body.action === "status") attested = true;
+    result.events = [{ actor: null, event_type: "owner_directive_manual_db_approval", detail: { owner_session_verified: false } },
+      ...(attested ? [{ actor: "real-owner", event_type: "owner_release_attested", detail: { to: "approved", owner_session_authenticated: true, reason: `Release ${p.source}; manifest ${p.manifest}` } }] : [])];
+    return result;
+  };
+  assert.equal((await recordAuthorizedDeadline(f.transport)).matching_owner_audit_verified, true);
+  assert.equal(f.calls.filter(c => c.action === "status").length, 1);
 });

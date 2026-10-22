@@ -39,6 +39,16 @@ await expect("owner action records approval plus actual actor atomically",async(
  assert.equal(await status(),"approved");const rows=await db.query("SELECT actor,detail->>'to' AS target FROM sandy_engineering_change_events WHERE change_id=$1",[change]);assert.deepEqual(rows.rows,[{actor:owner,target:"approved"}]);
 });
 await reset();
+await expect("unattested administrative status can receive a real owner attestation without resetting status",async()=>{
+ await db.query("UPDATE sandy_engineering_changes SET status='approved' WHERE id=$1",[change]);
+ await db.query("INSERT INTO sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES($1,'owner_directive_manual_db_approval',NULL,'{\"owner_session_verified\":false}')",[change]);
+ await assert.rejects(db.query("SELECT sandy_engineering_record_owner_approval($1,$2,'wrong source')",[owner,change]));
+ await assert.rejects(db.query("SELECT sandy_engineering_record_owner_approval($1,$2,$3)",[workload,change,`Release ${source}; manifest ${manifest}`]));
+ await db.query("SELECT sandy_engineering_record_owner_approval($1,$2,$3)",[owner,change,`Release ${source}; manifest ${manifest}`]);
+ const rows=(await db.query("SELECT event_type,actor,detail FROM sandy_engineering_change_events WHERE change_id=$1 ORDER BY event_type",[change])).rows;
+ assert.equal(rows.length,2);assert.equal(rows[0].actor,null);assert.equal(rows[1].event_type,"owner_release_attested");assert.equal(rows[1].actor,owner);assert.equal(rows[1].detail.owner_session_authenticated,true);assert.equal(await status(),"approved");
+});
+await reset();
 await expect("audit failure rolls back approval status",async()=>{
  await db.exec("CREATE FUNCTION deny_fixture_audit() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture audit failure'; END $$; CREATE TRIGGER deny_fixture BEFORE INSERT ON sandy_engineering_change_events FOR EACH ROW EXECUTE FUNCTION deny_fixture_audit();");
  try { await assert.rejects(db.query("SELECT sandy_engineering_record_owner_approval($1,$2,'fixture')",[owner,change]));assert.equal(await status(),"proposed"); }

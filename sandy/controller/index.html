@@ -199,7 +199,7 @@ async function showDeploymentApprovals(host){
  }catch(e){status.textContent="Unable to load deployment approvals: "+e.message}
 }
 function showEngineering(c){
- if(data?.role==="owner")showOwnerReleaseControls(c,controllerTransport,"9d9ac6e2e605d0f180709c901131eb3abdc4c2bdae26601291aef65d0ffb2367");
+ if(data?.role==="owner")showOwnerReleaseControls(c,controllerTransport,"48c3f5614eeca2cea89263f9cc34dfd50bb4efbacabf6d1140ac94fae24f0fb6");
  showDeploymentApprovals(c);
  const p=panel("Improvement pipeline"),items=missionTelemetry?.improvements||data.proposals||[];
  txt(p,"Track proposed improvements and investigate issues. Only verified results should be marked complete.","small muted");
