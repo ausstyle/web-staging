@@ -7105,3 +7105,132 @@ Deno.test("standing lifecycle canary reaches the guarded executor while ordinary
     "operation_requires_live_verification",
   );
 });
+Deno.test("standing lifecycle children reauthenticate the real workload instead of inheriting the parent's bound request", async () => {
+  const machine = "40000000-0000-4000-8000-000000000001",
+    owner = "40000000-0000-4000-8000-000000000002",
+    session = "40000000-0000-4000-8000-000000000003";
+  const metadata = { sandy_engineering_test: true, sandy_engineering_epoch: 1 };
+  const jwt = "verified." +
+    btoa(
+      JSON.stringify({
+        sub: machine,
+        aud: "authenticated",
+        role: "authenticated",
+        session_id: session,
+        exp: Date.now() / 1000 + 3600,
+        app_metadata: metadata,
+      }),
+    ) + ".signature";
+  const child = "github.git.commits.get",
+    c = providerOperations[child],
+    digest = await argumentDigest(engineeringPolicy);
+  const h = harness({
+    actorId: machine,
+    authorityId: owner,
+    authMetadata: metadata,
+    executionPolicy: true,
+    rows: [extensionRow("system.lifecycle.compensate"), {
+      ...c,
+      operation: child,
+      handler: "sandy-provider-operation-api",
+      input_schema: { type: "object" },
+      output_schema: { type: "object" },
+      api_exposed: true,
+      ai_exposed: true,
+      verified: false,
+      error_contract: { contract_sha256: c.contract_sha256 },
+    }],
+    rpcHandler: (name) => {
+      if (name === "sandy_engineering_resolve_identity") {
+        return {
+          ok: true,
+          identity_user_id: machine,
+          owner_authority_id: owner,
+          session_id: session,
+          credential_epoch: 1,
+          policy_sha256: digest,
+          operations: engineeringPolicy.operations,
+        };
+      }
+      if (name === "sandy_engineering_resolve_standing") {
+        return {
+          ok: true,
+          identity_user_id: machine,
+          owner_authority_id: owner,
+          session_id: session,
+          delegation_id: productRequestId,
+          version: 1,
+          expires_at: new Date(Date.now() + 60000).toISOString(),
+          operations: ["system.lifecycle.compensate", child],
+        };
+      }
+      if (name === "sandy_engineering_owns_execution") {
+        return { ok: true, owned: true };
+      }
+      if (name === "sandy_engineering_recovery_context") {
+        return {
+          ok: true,
+          snapshot_exists: false,
+          commit_sha: "a".repeat(40),
+          blob_sha: "b".repeat(40),
+          path: "engineering-smoke/child.txt",
+          branch: "engineering/child",
+          admission_id: productRequestId,
+          expected_blob_sha: "c".repeat(40),
+        };
+      }
+      if (name === "sandy_engineering_prepare_delegated") {
+        return {
+          ok: true,
+          authorization_id: productRequestId,
+          authorization_state: "authorized_by_policy",
+        };
+      }
+      if (name === "sandy_api_admit_execution") {
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: productRequestId,
+          grant_id: productRequestId,
+          state: "admitted",
+          executed: false,
+          expires_at: new Date(Date.now() + 60000).toISOString(),
+        };
+      }
+      return { ok: true };
+    },
+    backend: () =>
+      Response.json({
+        ok: false,
+        error: "provider_transport_unavailable",
+        executed: false,
+      }, { status: 502 }),
+  });
+  const response = await h.handler(
+    new Request(
+      "https://example.supabase.co/functions/v1/sandy-operation-api",
+      {
+        method: "POST",
+        headers: { authorization: "Bearer " + jwt },
+        body: JSON.stringify({
+          action: "execute",
+          operation: "system.lifecycle.compensate",
+          arguments: { source_request_id: productRequestId },
+          channel: "mcp",
+        }),
+      },
+    ),
+  );
+  assert.equal(response.status, 424);
+  assert.equal(h.calls.length, 1);
+  assert.equal(JSON.parse(String(h.calls[0].init?.body)).operation, child);
+  assert.ok(
+    h.rpcCalls.some((c) =>
+      c.name === "sandy_engineering_prepare_delegated" &&
+      (c.args as Row).p_operation === child
+    ),
+  );
+  assert.ok(h.identityTokens.length >= 4);
+  assert.ok(h.identityTokens.every((token) => token === jwt));
+});

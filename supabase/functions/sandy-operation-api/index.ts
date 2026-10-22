@@ -1532,7 +1532,15 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (context.kind === "user") {
         // The existing verified user's real JWT is forwarded, not replaced by
         // the internal platform/service credential.
-        canonical = createOperationHandler(dependencies);
+        canonical = createOperationHandler({
+          ...dependencies,
+          // A standing parent's one-request credential must never be inherited
+          // by a different child. Forward its real workload JWT through Auth
+          // and current policy again; no replacement Owner session is created.
+          resolveCredential: lifecycleEngineeringProof
+            ? undefined
+            : dependencies.resolveCredential,
+        });
         childRequest = new Request(`${base}/functions/v1/sandy-operation-api`, {
           method: "POST",
           headers,
