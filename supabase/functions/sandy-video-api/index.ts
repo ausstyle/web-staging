@@ -123,6 +123,9 @@ Deno.serve(async(req)=>{
   if(!Array.isArray(addresses)||addresses.length<1||addresses.length>10||addresses.some((x:any)=>typeof x!=="string"||x.length>320||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(x)))return reply(400,{error:"invalid_recipient_emails"},origin);
   const all=await db.auth.admin.listUsers({page:1,perPage:1000});
   if(all.error)throw all.error;
+  const {data:inviterRecord}=await db.auth.admin.getUserById(userId!);
+  const metadata=inviterRecord?.user?.user_metadata||{};
+  const inviterName=String(metadata.full_name||metadata.name||inviterRecord?.user?.email||"A Sandy user").replace(/[\r\n<>]/g," ").slice(0,100);
   let invited=0,notFound=0;const deliveries:any[]=[];
   for(const entry of [...new Set(addresses.map((x:string)=>x.trim().toLowerCase()))]){
     const person=all.data.users.find((u:any)=>u.email?.toLowerCase()===entry);
@@ -168,10 +171,10 @@ Deno.serve(async(req)=>{
           if(identityError)throw identityError;
           if(identity?.wa_id){
             const link="https://ausstyle.github.io/web-staging/sandy/meetings/#user="+encodeURIComponent(mid);
-            const message="You're invited to a Sandy video meeting: "+link+"\nOpen it using your Sandy account to join.";
+            const message=inviterName+" invited you to a Sandy video meeting: "+String(meeting.title||"Meeting").slice(0,110)+".\nTap Join meeting to open Sandy.";
             const idem="sandy_meeting_"+invitationId.replaceAll("-","_");
             try{
-              const sent=await fetch(ROOT+"/functions/v1/sandy-whatsapp-send",{method:"POST",headers:{"authorization":"Bearer "+SERVICE,"content-type":"application/json"},body:JSON.stringify({customer_id:account.customer_id,requested_wa_id:identity.wa_id,text:message,idempotency_key:idem}),signal:AbortSignal.timeout(18000)});
+              const sent=await fetch(ROOT+"/functions/v1/sandy-whatsapp-send",{method:"POST",headers:{"authorization":"Bearer "+SERVICE,"content-type":"application/json"},body:JSON.stringify({customer_id:account.customer_id,requested_wa_id:identity.wa_id,text:message,cta_url:link,idempotency_key:idem}),signal:AbortSignal.timeout(18000)});
               const res=await sent.json().catch(()=>({}));
               whatsapp=sent.ok&&res.ok!==false?"submitted":res.error==="customer_service_window_closed"?"window_closed":res.error==="already_processed"?"submitted":"failed";
               failure=whatsapp==="failed"?String(res.error||"whatsapp_send_failed").slice(0,80):null;
