@@ -61,7 +61,7 @@ export async function executeGoogleMethod(call:GoogleCall,identity:GoogleIdentit
    if(!(key in given))throw Error("missing_path_parameter:"+key);
    const v=given[key];
    if(typeof v!=="string"||v.length>500||v.includes("?")||v.includes("#")||v.includes("://"))throw Error("invalid_path_parameter");
-   if(/project|parent|name/i.test(key)&&v.includes("projects/")&&!v.includes("projects/"+PROJECT))throw Error("cross_project_request");
+   if(v.includes("projects/")&&!v.includes("projects/"+PROJECT))throw Error("cross_project_request");
    return plus?v.split("/").map(encodeURIComponent).join("/"):encodeURIComponent(v);
  });
  if(/[{}]/.test(path)||path.includes(".."))throw Error("unresolved_google_path");
