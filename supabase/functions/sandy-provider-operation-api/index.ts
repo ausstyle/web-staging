@@ -931,6 +931,10 @@ export function createProviderOperationHandler(
         ? "provider_resource_not_found"
         : status === 429
         ? "provider_rate_limited"
+        : status === 409
+        ? "provider_conflict"
+        : status === 412
+        ? "provider_precondition_failed"
         : "provider_request_failed";
       const state = op.is_mutation && status >= 500 ? "unknown" : "failed";
       const recorded = await finish(state, status, provider_request_id, {
@@ -944,6 +948,8 @@ export function createProviderOperationHandler(
           ? 404
           : status === 429
           ? 429
+          : status === 409 || status === 412
+          ? status
           : 502,
         {
           ok: false,

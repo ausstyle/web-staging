@@ -232,6 +232,32 @@ Deno.test("lost finish receipt never reports success", async () => {
   assertEquals(result.status, 503);
   assertEquals((await result.json()).error, "execution_receipt_state_unknown");
 });
+Deno.test("provider conflicts and failed preconditions propagate without retry or leaking upstream errors", async () => {
+  for (const status of [409, 412]) {
+    let requests = 0;
+    const h = harness({
+      fetch: (async () => {
+        requests++;
+        return Response.json({ message: "PRIVATE provider diagnostic" }, {
+          status,
+        });
+      }) as typeof fetch,
+    });
+    const response = await h.call("supabase.projects.pause");
+    const body = await response.json();
+    assertEquals(response.status, status);
+    assertEquals(
+      body.error,
+      status === 409 ? "provider_conflict" : "provider_precondition_failed",
+    );
+    assertEquals(body.provider_http_status, status);
+    assertEquals(body.request_state, "failed");
+    assertEquals(JSON.stringify(body).includes("PRIVATE"), false);
+    assertEquals(requests, 1);
+    assertEquals(h.finishes.length, 1);
+    assertEquals(h.finishes[0].outcome, "failed");
+  }
+});
 Deno.test("nonconforming provider JSON is not silently projected", async () => {
   const h = harness({
     fetch: (() =>
@@ -685,13 +711,18 @@ Deno.test("compact gateway fingerprints match the executable full schemas", asyn
 });
 
 Deno.test("bulk secrets preserve the exact approved JSON array and accept the real empty201 response", async () => {
-  const body = [{ name: "SANDY_ENGINEERING_FIXTURE", value: "fixture-value-not-a-credential" }];
+  const body = [{
+    name: "SANDY_ENGINEERING_FIXTURE",
+    value: "fixture-value-not-a-credential",
+  }];
   const before = await argumentDigest({ body });
   let observed: unknown;
-  const h = harness({ fetch: ((_url, init) => {
-    observed = JSON.parse(String(init?.body));
-    return Promise.resolve(new Response(null, { status: 201 }));
-  }) as typeof fetch });
+  const h = harness({
+    fetch: ((_url, init) => {
+      observed = JSON.parse(String(init?.body));
+      return Promise.resolve(new Response(null, { status: 201 }));
+    }) as typeof fetch,
+  });
   const response = await h.call("supabase.functions.secrets.set", { body });
   assertEquals(response.status, 200);
   assertEquals(observed, body);
