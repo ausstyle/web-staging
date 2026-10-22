@@ -44,7 +44,23 @@ jobs:
       - name: Install reviewed offline contract dependencies
         run: python -m pip install -r scripts/sandy/testing/offline-requirements.txt
       - name: Run Sandy offline contract tests
-        run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
+        run: |
+          set +e
+          python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v > "$RUNNER_TEMP/sandy-offline-tests.log" 2>&1
+          test_status=$?
+          cat "$RUNNER_TEMP/sandy-offline-tests.log"
+          if [ "$test_status" -ne 0 ]; then
+            SANDY_TEST_LOG="$RUNNER_TEMP/sandy-offline-tests.log" python3 - <<'PY'
+          import os
+          from pathlib import Path
+          # Expose offline failures through the normal check-run annotations;
+          # downloading Actions logs can require a separately permitted host.
+          detail='\n'.join(Path(os.environ['SANDY_TEST_LOG']).read_text().splitlines()[-80:])
+          detail=detail.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+          print('::error title=Offline regression failure::'+detail)
+          PY
+          fi
+          exit "$test_status"
       - name: Verify Python syntax
         run: python3 -m compileall -q scripts/sandy
       - name: Verify feature-discovery risk policy syntax
