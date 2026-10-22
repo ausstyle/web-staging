@@ -534,6 +534,7 @@ function executionAvailability(
     String(entry.operation),
     entry,
     config?.verifiedBindings,
+    authorizedByStandingPolicy,
   );
   if (extension) return extension;
   const provider = providerOperations[String(entry.operation)];
@@ -1413,6 +1414,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       operation,
       entry,
       dependencies.providerConfig?.verifiedBindings,
+      engineeringProofFor(delegation)?.standingOperations?.includes(
+        operation,
+      ) === true,
     );
     if (extensionReady && !extensionReady.executable) {
       return reply(424, {

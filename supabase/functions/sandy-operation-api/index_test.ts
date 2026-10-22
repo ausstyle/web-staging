@@ -6938,15 +6938,170 @@ Deno.test("normal-customer canonical read obtains its own durable receipt withou
   ]);
 });
 
-Deno.test("canonical API carries only admission-bound backend verification metadata outside the unchanged provider contract",async()=>{
- const actor="10000000-0000-4000-8000-000000000001",admission="10000000-0000-4000-8000-000000000002",grant="10000000-0000-4000-8000-000000000003";
- for(const trusted of [true,false]){
-  const header=btoa(JSON.stringify({admission_id:trusted?admission:grant,state:"succeeded",effect_verified:true,verification_sha256:"f".repeat(64)}));
-  const h=harness({actorId:actor,executionPolicy:true,rows:[extensionRow("github.commit",true)],
-   rpcHandler(name){assert.equal(name,"sandy_api_admit_execution");return {ok:true,allowed:true,reused:false,admission_id:admission,grant_id:grant,state:"admitted",executed:false,expires_at:new Date(Date.now()+60000).toISOString()};},
-   backend(){return Response.json({ok:true,operation:"github.commit",contract_version:"1.0.0",provider:"github",request_state:"accepted",executed:true,admission_id:admission,provider_http_status:201,provider_request_id:null,result:{accepted:true,effect_confirmed:false,sha:"a".repeat(40)},possibly_truncated:false,result_limit:100,next_page:null},{headers:{"x-sandy-verified-execution":header}});},
+Deno.test("canonical API carries only admission-bound backend verification metadata outside the unchanged provider contract", async () => {
+  const actor = "10000000-0000-4000-8000-000000000001",
+    admission = "10000000-0000-4000-8000-000000000002",
+    grant = "10000000-0000-4000-8000-000000000003";
+  for (const trusted of [true, false]) {
+    const header = btoa(
+      JSON.stringify({
+        admission_id: trusted ? admission : grant,
+        state: "succeeded",
+        effect_verified: true,
+        verification_sha256: "f".repeat(64),
+      }),
+    );
+    const h = harness({
+      actorId: actor,
+      executionPolicy: true,
+      rows: [extensionRow("github.commit", true)],
+      rpcHandler(name) {
+        assert.equal(name, "sandy_api_admit_execution");
+        return {
+          ok: true,
+          allowed: true,
+          reused: false,
+          admission_id: admission,
+          grant_id: grant,
+          state: "admitted",
+          executed: false,
+          expires_at: new Date(Date.now() + 60000).toISOString(),
+        };
+      },
+      backend() {
+        return Response.json({
+          ok: true,
+          operation: "github.commit",
+          contract_version: "1.0.0",
+          provider: "github",
+          request_state: "accepted",
+          executed: true,
+          admission_id: admission,
+          provider_http_status: 201,
+          provider_request_id: null,
+          result: {
+            accepted: true,
+            effect_confirmed: false,
+            sha: "a".repeat(40),
+          },
+          possibly_truncated: false,
+          result_limit: 100,
+          next_page: null,
+        }, { headers: { "x-sandy-verified-execution": header } });
+      },
+    });
+    const r = await h.request({
+      action: "execute",
+      operation: "github.commit",
+      arguments: {
+        body: {
+          tree: "b".repeat(40),
+          parents: ["c".repeat(40)],
+          message: "fixture",
+        },
+      },
+    });
+    const value = await r.json();
+    assert.equal(r.status, 200, JSON.stringify(value));
+    assert.equal(value.result.request_state, "accepted");
+    assert.equal(
+      value.execution_receipt?.state,
+      trusted ? "succeeded" : undefined,
+    );
+  }
+});
+Deno.test("standing lifecycle canary reaches the guarded executor while ordinary unverified access remains closed", async () => {
+  const machine = "40000000-0000-4000-8000-000000000001",
+    owner = "40000000-0000-4000-8000-000000000002",
+    session = "40000000-0000-4000-8000-000000000003";
+  const metadata = { sandy_engineering_test: true, sandy_engineering_epoch: 1 };
+  const jwt = "verified." +
+    btoa(
+      JSON.stringify({
+        sub: machine,
+        aud: "authenticated",
+        role: "authenticated",
+        session_id: session,
+        exp: Date.now() / 1000 + 3600,
+        app_metadata: metadata,
+      }),
+    ) + ".signature";
+  const row = {
+    ...extensionRow("system.lifecycle.compensate"),
+    verified: false,
+  };
+  const digest = await argumentDigest(engineeringPolicy);
+  const h = harness({
+    actorId: machine,
+    authorityId: owner,
+    authMetadata: metadata,
+    rows: [row],
+    rpcHandler: (name) => {
+      if (name === "sandy_engineering_resolve_identity") {
+        return {
+          ok: true,
+          identity_user_id: machine,
+          owner_authority_id: owner,
+          session_id: session,
+          credential_epoch: 1,
+          policy_sha256: digest,
+          operations: engineeringPolicy.operations,
+        };
+      }
+      if (name === "sandy_engineering_resolve_standing") {
+        return {
+          ok: true,
+          identity_user_id: machine,
+          owner_authority_id: owner,
+          session_id: session,
+          delegation_id: productRequestId,
+          version: 1,
+          expires_at: new Date(Date.now() + 60000).toISOString(),
+          operations: ["system.lifecycle.compensate"],
+        };
+      }
+      if (name === "sandy_engineering_owns_execution") {
+        return { ok: true, owned: true };
+      }
+      if (name === "sandy_engineering_recovery_context") {
+        return {
+          ok: false,
+          error: "verified_github_recovery_source_required",
+          http_status: 424,
+        };
+      }
+      return { ok: true };
+    },
   });
-  const r=await h.request({action:"execute",operation:"github.commit",arguments:{body:{tree:"b".repeat(40),parents:["c".repeat(40)],message:"fixture"}}});const value=await r.json();
-  assert.equal(r.status,200,JSON.stringify(value));assert.equal(value.result.request_state,"accepted");assert.equal(value.execution_receipt?.state,trusted?"succeeded":undefined);
- }
+  const req = (token: string) =>
+    new Request(
+      "https://example.supabase.co/functions/v1/sandy-operation-api",
+      {
+        method: "POST",
+        headers: { authorization: "Bearer " + token },
+        body: JSON.stringify({
+          action: "execute",
+          channel: "mcp",
+          operation: "system.lifecycle.compensate",
+          arguments: { source_request_id: productRequestId },
+        }),
+      },
+    );
+  const r = await h.handler(req(jwt));
+  assert.equal(r.status, 424);
+  assert.equal(
+    (await r.json()).error,
+    "verified_github_recovery_source_required",
+  );
+  assert.equal(h.calls.length, 0);
+  assert.ok(
+    h.rpcCalls.some((c) => c.name === "sandy_engineering_recovery_context"),
+  );
+  const ordinary = harness({ rows: [row] });
+  const denied = await ordinary.handler(req("ordinary"));
+  assert.equal(denied.status, 424);
+  assert.equal(
+    (await denied.json()).error,
+    "operation_requires_live_verification",
+  );
 });

@@ -476,6 +476,7 @@ export function extensionAvailability(
   operation: string,
   entry: Obj,
   providerBindings?: VerifiedProviderBindings,
+  authorizedByStandingPolicy = false,
 ): { executable: boolean; unavailable_reason?: string } | null {
   const kind = extensionKind(operation);
   if (!kind) return null;
@@ -499,7 +500,7 @@ export function extensionAvailability(
       (kind === "provider_gap"
         ? extensionContracts[operation].requires_grant === true
         : extensionOwnsGrant(operation))) &&
-    entry.verified !== true
+    entry.verified !== true && !authorizedByStandingPolicy
   ) {
     return {
       executable: false,
