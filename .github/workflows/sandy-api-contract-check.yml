@@ -74,7 +74,25 @@ jobs:
       - name: Test inventory and read-only production inspection
         env:
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python -m unittest discover -s scripts/sandy -p 'test_*api*.py' -v
+        run: |
+          set +e
+          python -m unittest discover -s scripts/sandy -p 'test_*api*.py' -v > "$RUNNER_TEMP/sandy-api-python.log" 2>&1
+          test_status=$?
+          cat "$RUNNER_TEMP/sandy-api-python.log"
+          if [ "$test_status" -ne 0 ]; then
+            SANDY_TEST_LOG="$RUNNER_TEMP/sandy-api-python.log" python - <<'PYTHON'
+          import os, re
+          from pathlib import Path
+          log=Path(os.environ['SANDY_TEST_LOG']).read_text()
+          failures=list(re.finditer(r'(?m)^(?:ERROR|FAIL): .+$',log))
+          for i,match in enumerate(failures):
+              end=failures[i+1].start() if i+1<len(failures) else len(log)
+              detail=log[match.start():end].split('\nRan ',1)[0][:3000]
+              detail=detail.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::error title=API Python regression failure::'+detail)
+          PYTHON
+          fi
+          exit "$test_status"
   vm-protocol-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
