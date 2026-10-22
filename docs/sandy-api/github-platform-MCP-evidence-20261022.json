@@ -1,0 +1,430 @@
+{
+  "observed_at_utc": "2026-10-22T00:42:46.110626+00:00",
+  "platform": "GitHub",
+  "milestone": "approved fixture write, immutable provider readback, recovery and durable verification through production MCP",
+  "full_provider_platform_operational": false,
+  "source_releases": {
+    "sandy-operation-api": {
+      "version": 45,
+      "source_commit": "7a78ea5c6d2d519499c1698ac4b78a80c626bfee",
+      "all_uploaded_sources_accounted_for": true,
+      "source_readback_sha256": "f8bb4b5e514f47433fc566d4f953a0a09ec9de59aa943a1ece4dceca23966eeb"
+    },
+    "sandy-provider-operation-api": {
+      "version": 21,
+      "source_commit": "d17a11cb88c962aa271286acecb5b9817950d7fc",
+      "all_uploaded_sources_accounted_for": true,
+      "source_readback_sha256": "8e57c28cafd9f2819dd5bde32d93036f86f28479a62114a22f3b2e2feac70263"
+    },
+    "sandy-legacy-compatibility-api": {
+      "version": 16,
+      "source_commit": "d17a11cb88c962aa271286acecb5b9817950d7fc",
+      "all_uploaded_sources_accounted_for": true,
+      "source_readback_sha256": "95eb549e1ea43ddc8d32226bf0225c3ee5462d9e9dc8f779314ee18fb34c52d7"
+    }
+  },
+  "migration": {
+    "version": "20261022030000",
+    "sha256": "29113576ef73be832a2e95d202650e10480b9eb2f1418688c6bc42f21006f96f"
+  },
+  "MCP_discovery": {
+    "http_status": 200,
+    "github_tools_discovered": [
+      "github.commit",
+      "github.files.update"
+    ],
+    "schemas_present": true,
+    "discovery_authority": "normal renewable non-owner engineering identity with existing standing fixture grant"
+  },
+  "MCP_execution": {
+    "github_write": {
+      "operation": "github.files.update",
+      "request_id": "7572365c-314f-488b-ac1d-07aff027db38",
+      "verified": true,
+      "http_status": 200,
+      "is_error": false,
+      "api_status": 200,
+      "executed": true,
+      "admission_id": "64ac3085-5dcc-4c34-ba04-4df350295f8a",
+      "execution_receipt": {
+        "admission_id": "64ac3085-5dcc-4c34-ba04-4df350295f8a",
+        "state": "succeeded",
+        "effect_verified": true,
+        "verification_sha256": "75f809ed4fa23280344dc4dbf9663826b2b5ce5daee79120432d6dcf0d37ce4f"
+      },
+      "provider_http_status": 200,
+      "response_sha256": "ab9a6b9a5eb99cad69ce1a643eae4f86170f27b765f04ffe13a8c02868335051"
+    },
+    "github_restore": {
+      "operation": "github.files.update",
+      "request_id": "51906b08-cd32-4e6f-ac12-772c2579da5a",
+      "verified": true,
+      "http_status": 200,
+      "is_error": false,
+      "api_status": 200,
+      "executed": true,
+      "admission_id": "63d249bd-6ecb-4593-b111-9bfe6a767c13",
+      "execution_receipt": {
+        "admission_id": "63d249bd-6ecb-4593-b111-9bfe6a767c13",
+        "state": "succeeded",
+        "effect_verified": true,
+        "verification_sha256": "be3e594982508cd3c2c85ff3a3aa2284faa3de2a8bd14e44b5018de3c58c564f"
+      },
+      "provider_http_status": 200,
+      "response_sha256": "8640078c559bdfe24776d5f795df4f7a81bb3f6dd8e7e88f40124219e2990313"
+    },
+    "github_commit": {
+      "operation": "github.commit",
+      "request_id": "35523320-61a1-4e8c-a626-546c13f36065",
+      "verified": true,
+      "http_status": 200,
+      "is_error": false,
+      "api_status": 200,
+      "executed": true,
+      "admission_id": "2a756f95-7150-4e61-a1ee-dc07d1c88a7a",
+      "execution_receipt": {
+        "admission_id": "2a756f95-7150-4e61-a1ee-dc07d1c88a7a",
+        "state": "succeeded",
+        "effect_verified": true,
+        "verification_sha256": "44bd28f6bfe3ea451dd00596492009e746f82af40cb2f12ac88a9c0fa6798c66"
+      },
+      "provider_http_status": 201,
+      "response_sha256": "f8cc0814075ab04d9514aaa2701575b9a87eea7e2d51ba78a781223724eb0377"
+    }
+  },
+  "independent_provider_verification": {
+    "sha": "208a089b9f34b400a60975232054f86a03973913",
+    "tree": "06a95551da6bf6264288faea87f113790dce0812",
+    "parent": "30a6f3b5aace696d4eb1f960e14202c2ff3dc867",
+    "file_content_restored": true,
+    "detached_commit_did_not_move_reference": true
+  },
+  "durable_verification": {
+    "real_MCP_admissions": [
+      {
+        "id": "64ac3085-5dcc-4c34-ba04-4df350295f8a",
+        "operation": "github.files.update",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "effect_verification": {
+          "kind": "github_file",
+          "path": "engineering-smoke/mcp-execution-20261021.txt",
+          "version": 1,
+          "blob_sha": "c323edcd3e04b2efadeae7b3a0ad5552c82e27e7",
+          "commit_sha": "ba5516054b345ca845058def253e92b6c02d36ee",
+          "repository": "ausstyle/web-staging",
+          "byte_length": 43,
+          "content_sha256": "874921caa8840b3e90cfc2c46ffff365c43b26ffb94bfe4acf95d82cf35fcc81",
+          "read_http_status": 200
+        },
+        "verification_sha256": "75f809ed4fa23280344dc4dbf9663826b2b5ce5daee79120432d6dcf0d37ce4f",
+        "job_status": "succeeded",
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "sequence": 9546,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "sequence": 9547,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "accepted",
+            "sequence": 9548,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "verification",
+            "outcome": "succeeded",
+            "sequence": 9549,
+            "hash_valid": true,
+            "previous_link_valid": true
+          }
+        ]
+      },
+      {
+        "id": "63d249bd-6ecb-4593-b111-9bfe6a767c13",
+        "operation": "github.files.update",
+        "state": "succeeded",
+        "provider_http_status": 200,
+        "effect_verification": {
+          "kind": "github_file",
+          "path": "engineering-smoke/mcp-execution-20261021.txt",
+          "version": 1,
+          "blob_sha": "d4937bbbd33e6e8065ddcb7575d1ff0f6619e613",
+          "commit_sha": "30a6f3b5aace696d4eb1f960e14202c2ff3dc867",
+          "repository": "ausstyle/web-staging",
+          "byte_length": 45,
+          "content_sha256": "f9af4472f5ce1276c5707a87d7fdae854100755c57926e6dfc5b3a530fccd1d5",
+          "read_http_status": 200
+        },
+        "verification_sha256": "be3e594982508cd3c2c85ff3a3aa2284faa3de2a8bd14e44b5018de3c58c564f",
+        "job_status": "succeeded",
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "sequence": 9550,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "sequence": 9551,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "accepted",
+            "sequence": 9552,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "verification",
+            "outcome": "succeeded",
+            "sequence": 9553,
+            "hash_valid": true,
+            "previous_link_valid": true
+          }
+        ]
+      },
+      {
+        "id": "2a756f95-7150-4e61-a1ee-dc07d1c88a7a",
+        "operation": "github.commit",
+        "state": "succeeded",
+        "provider_http_status": 201,
+        "effect_verification": {
+          "kind": "github_commit",
+          "version": 1,
+          "tree_sha": "06a95551da6bf6264288faea87f113790dce0812",
+          "commit_sha": "208a089b9f34b400a60975232054f86a03973913",
+          "repository": "ausstyle/web-staging",
+          "message_sha256": "1f48702ece450c8c9b64c9be2bd230dd7797674aa2711ac651b73c7d5a386db8",
+          "parents_sha256": "bba2e4ad614dedd912e56d30562b9746c7a05a299921d2b7799057d810d37c07",
+          "read_http_status": 200
+        },
+        "verification_sha256": "44bd28f6bfe3ea451dd00596492009e746f82af40cb2f12ac88a9c0fa6798c66",
+        "job_status": "succeeded",
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "sequence": 9554,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "sequence": 9555,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "accepted",
+            "sequence": 9556,
+            "hash_valid": true,
+            "previous_link_valid": true
+          },
+          {
+            "phase": "verification",
+            "outcome": "succeeded",
+            "sequence": 9557,
+            "hash_valid": true,
+            "previous_link_valid": true
+          }
+        ]
+      }
+    ],
+    "idempotent_verification": [
+      {
+        "admission_id": "64ac3085-5dcc-4c34-ba04-4df350295f8a",
+        "reused": true
+      },
+      {
+        "admission_id": "63d249bd-6ecb-4593-b111-9bfe6a767c13",
+        "reused": true
+      },
+      {
+        "admission_id": "2a756f95-7150-4e61-a1ee-dc07d1c88a7a",
+        "reused": true
+      }
+    ],
+    "repeat_verification_added_no_audit_events": true,
+    "fixture_file_content_restored": true,
+    "detached_commit_preserved_branch": true,
+    "provider_write_replayed": false
+  },
+  "negative_execution": [
+    {
+      "case": "wrong_branch",
+      "operation": "github.files.update",
+      "request_id": "7be6195d-a73c-4f80-9abc-597e71b8d88a",
+      "http_status": 200,
+      "api_status": 403,
+      "error": "engineering_fixture_scope_denied",
+      "executed": false,
+      "admission_id": null,
+      "response_sha256": "ca1495bb1efe09b83dcc96da8d5c455094333dacaec325b1afb149edc16018e0",
+      "passed": true,
+      "denial_layer": "MCP_to_API"
+    },
+    {
+      "case": "invalid_sha",
+      "operation": "github.files.update",
+      "request_id": "29a7eefd-556c-4a23-b318-988ed6420936",
+      "http_status": 200,
+      "api_status": 403,
+      "error": "engineering_fixture_scope_denied",
+      "executed": false,
+      "admission_id": null,
+      "response_sha256": "1246ba8e9b3b17b263e1dff672b7cf127bc965c084bc4b872db1189d8fc0a6e3",
+      "passed": true,
+      "denial_layer": "MCP_to_API"
+    },
+    {
+      "case": "wrong_path",
+      "operation": "github.files.update",
+      "request_id": "73d164ea-28b2-4686-b54b-e7199b1f5173",
+      "http_status": 200,
+      "api_status": 403,
+      "error": "engineering_fixture_scope_denied",
+      "executed": false,
+      "admission_id": null,
+      "response_sha256": "213ab033834979908ccc1cc22a763e66d574c78360aeaeb690a85f6b18e497a1",
+      "passed": true,
+      "denial_layer": "MCP_to_API"
+    },
+    {
+      "case": "missing_content",
+      "operation": "github.files.update",
+      "request_id": "5bbdf09c-373b-4f70-86d4-cae35ed5d64f",
+      "http_status": 200,
+      "api_status": 403,
+      "error": "engineering_fixture_scope_denied",
+      "executed": false,
+      "admission_id": null,
+      "response_sha256": "cde8a97417aece1ea19c4beb3620a18fe90d5316815ba599dfb9c5326fa896b3",
+      "passed": true,
+      "denial_layer": "MCP_to_API"
+    },
+    {
+      "case": "retired_session_request_replay",
+      "operation": "github.files.update",
+      "request_id": "7572365c-314f-488b-ac1d-07aff027db38",
+      "http_status": 200,
+      "api_status": 403,
+      "error": "engineering_request_conflict",
+      "executed": false,
+      "admission_id": null,
+      "response_sha256": "fae41060f3dc1e0e342ca179c9ccd397cdd0e0cc2129443071cdb7fc9ff6ec9b",
+      "passed": true,
+      "denial_layer": "MCP_to_API"
+    },
+    {
+      "case": "outside_standing_grant",
+      "operation": "github.repos.get",
+      "request_id": "ba85e7c0-d59c-49b6-a4a4-5983f356800e",
+      "http_status": 403,
+      "api_status": null,
+      "error": "engineering_operation_scope_denied",
+      "executed": null,
+      "admission_id": null,
+      "response_sha256": "c3f90db533b92fca3d5aff481c47b7bb8206fe73eedabdd26a4c7d944c7bbb54",
+      "denial_layer": "engineering_runtime_before_MCP",
+      "passed": true
+    }
+  ],
+  "negative_requests_preserved_fixture": true,
+  "authentication": {
+    "normal_short_lived_Auth_sessions": true,
+    "personal_Controller_session_used": false,
+    "controller_memberships": 0,
+    "credentials_recorded": false,
+    "execution_used_direct_GitHub_or_Supabase_connectors": false,
+    "independent_administrative_reads_used_for_verification": true
+  },
+  "shared_MCP_regression": {
+    "passed": true,
+    "normal_Auth_user_verified": true,
+    "API_REST_description_verified": true,
+    "provider_log_query_verified": true,
+    "provider_http_status": 200,
+    "wrong_log_source_API_status": 403,
+    "wrong_source_denied_before_admission": true,
+    "normal_Auth_session_retired": true
+  },
+  "failure_recovery": [
+    {
+      "failed_acceptance_checkpoint": "live-github.json",
+      "reason": "GitHub padded base64 followed by newline rejected before decoder repair",
+      "initial_MCP_verification_state": "accepted",
+      "write_replayed": false,
+      "MCP_recovery_receipt": {
+        "admission_id": "5879dc54-4865-49e4-a010-93bfc39e572d",
+        "state": "succeeded",
+        "effect_verified": true,
+        "verification_sha256": "d578e0b72d875c293e23a02b35207c02ef16dfbac59c89ac710330f328d91abf"
+      },
+      "original_content_independently_restored": true,
+      "later_administrative_reconciliation": {
+        "ok": true,
+        "state": "succeeded",
+        "reused": false,
+        "admission_id": "8097e032-5318-4a87-942c-2ae42907b6b4",
+        "verification_sha256": "ef982d355f7fea1b20586b0d3046ac159a93980b000126bb5bda06889fd83372"
+      },
+      "later_reconciliation_is_not_automatic_MCP_verification": true
+    },
+    {
+      "failed_acceptance_checkpoint": "live-github-final.json",
+      "reason": "GitHub padded base64 followed by newline rejected before decoder repair",
+      "initial_MCP_verification_state": "accepted",
+      "write_replayed": false,
+      "MCP_recovery_receipt": {
+        "admission_id": "2d2f4ba7-9eb7-4a37-a3b5-43463d7444fc",
+        "state": "succeeded",
+        "effect_verified": true,
+        "verification_sha256": "4d8c9f874bd367e5e4ad366a5370d13fa7f02d98b3b1cfee906fb07213ec3467"
+      },
+      "original_content_independently_restored": true,
+      "later_administrative_reconciliation": {
+        "ok": true,
+        "state": "succeeded",
+        "reused": false,
+        "admission_id": "4d84419b-0de5-4d6e-9ce3-5d5d0b876a95",
+        "verification_sha256": "1c4ba5c3d0c2f2103e49be5ef28f03d6030bb4819e464158c636677c3e6bcee5"
+      },
+      "later_reconciliation_is_not_automatic_MCP_verification": true
+    }
+  ],
+  "release_recovery": {
+    "previous_source_artifacts_preserved": true,
+    "previous_versions": {
+      "sandy-operation-api": 43,
+      "sandy-provider-operation-api": 18,
+      "sandy-legacy-compatibility-api": 13
+    },
+    "production_function_rollback_executed": false,
+    "MCP_engineering_rollback_execute_verified": false
+  },
+  "scope_limits": [
+    "Standalone repository/source reads, refs, pull requests, Actions, administration and broader GitHub writes are not covered by this standing fixture grant. Broader attempted github.repos.get returned runtime HTTP 403 engineering_operation_scope_denied before MCP.",
+    "General source capture/private delivery and source-to-production execution through Sandy MCP remain incomplete. Direct reviewed Management deployment is distinct from MCP-driven deployment.",
+    "Cloud Run replacement workflow 39692384698 remains waiting for sandy-production approval. Earlier approval attempt returned HTTP 403 Resource not accessible by integration; no repeated approval attempt or gate bypass.",
+    "GitHub organisation-wide repositories, Discussions, packages, audit, security administration and environment secrets have not received family acceptance; existing contracts alone do not establish working functionality.",
+    "No new catalogue entries, global Controller membership, production branch force-push, VM, networking, runtime or video changes."
+  ]
+}

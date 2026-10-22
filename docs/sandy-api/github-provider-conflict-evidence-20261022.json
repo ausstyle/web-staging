@@ -1,0 +1,80 @@
+{
+  "observed_at_utc": "2026-10-22T00:51:16.605441+00:00",
+  "operation": "github.files.update",
+  "shared_adapter_fix": "Preserve provider HTTP409 and HTTP412 with fixed error codes and no upstream body disclosure",
+  "source_releases": {
+    "sandy-provider-operation-api": {
+      "version": 22,
+      "source_commit": "9c2b637d729b87297135ac1f17db43101b2fdf17",
+      "all_uploaded_sources_accounted_for": true,
+      "readback_sha256": "60e2cdd9aed0ab7c464f4bec49cc49ad55e55d81c9081e6b43810728057ed800"
+    },
+    "sandy-legacy-compatibility-api": {
+      "version": 17,
+      "source_commit": "9c2b637d729b87297135ac1f17db43101b2fdf17",
+      "all_uploaded_sources_accounted_for": true,
+      "readback_sha256": "8c27aa509c4dd20970eaab4fbe78f343454be2bf151399863b6a3268e3aa0bdd"
+    }
+  },
+  "before_fix": {
+    "complete": true,
+    "request_id": "3b0a47cf-ec2a-4298-956e-de6ceb15142a",
+    "operation": "github.files.update",
+    "stale_blob_sha": "c323edcd3e04b2efadeae7b3a0ad5552c82e27e7",
+    "current_blob_sha": "d4937bbbd33e6e8065ddcb7575d1ff0f6619e613",
+    "personal_Controller_session_used": false,
+    "http_status": 200,
+    "MCP_is_error": true,
+    "API_status": 502,
+    "API_error": "provider_request_failed",
+    "provider_http_status": 409,
+    "admission_id": "6d975376-d1fa-4d9b-b5cd-5d8d9e0636f1",
+    "state": "failed",
+    "response_sha256": "3e5ea79e519e9c79c1dec09546c5fceb1778ae2a18bf7dc89ba8609779ceeff4",
+    "file_content_unchanged": true,
+    "fixture_branch_unchanged": true,
+    "independent_receipt": [
+      {
+        "id": "6d975376-d1fa-4d9b-b5cd-5d8d9e0636f1",
+        "state": "failed",
+        "provider_http_status": 409,
+        "job_status": "failed",
+        "audit_events": 3
+      }
+    ]
+  },
+  "after_fix": {
+    "complete": true,
+    "request_id": "2c32053b-b348-4b35-9477-05529fe83f28",
+    "operation": "github.files.update",
+    "stale_blob_sha": "c323edcd3e04b2efadeae7b3a0ad5552c82e27e7",
+    "current_blob_sha": "d4937bbbd33e6e8065ddcb7575d1ff0f6619e613",
+    "personal_Controller_session_used": false,
+    "http_status": 200,
+    "MCP_is_error": true,
+    "API_status": 409,
+    "API_error": "provider_conflict",
+    "provider_http_status": 409,
+    "admission_id": "1c89f129-4df0-4983-b220-9a989846ae85",
+    "state": "failed",
+    "response_sha256": "7276b8f47c75be8e6db74549151647289818eea0172de498426d00ccd92a9f8c",
+    "file_content_unchanged": true,
+    "fixture_branch_unchanged": true,
+    "independent_receipt": [
+      {
+        "id": "1c89f129-4df0-4983-b220-9a989846ae85",
+        "state": "failed",
+        "provider_http_status": 409,
+        "job_status": "failed",
+        "audit_events": 3
+      }
+    ]
+  },
+  "authentication": "normal renewable non-owner workload through Sandy MCP; no personal Controller token or provider connector execution",
+  "existing_positive_evidence": "github-platform-MCP-evidence-20261022.json",
+  "positive_fixture_tests_not_repeated": "The success/readback/receipt code is unchanged; this release changes only provider error classification. Targeted adapter/legacy regressions and the real affected provider refusal were rerun.",
+  "HTTP412_real_provider_tested": false,
+  "HTTP412_shared_regression_tested": true,
+  "full_GitHub_platform_operational": false,
+  "general_production_rollback_verified": false
+}

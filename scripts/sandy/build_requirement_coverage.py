@@ -131,6 +131,33 @@ def execution_evidence(docs=DOCS):
                     value = {"file": filename, "level": "MCP_request_replay_or_changed_operation_refused"}
                     if value not in denied[call["operation"]]:
                         denied[call["operation"]].append(value)
+    filename = "github-platform-MCP-evidence-20261022.json"
+    path = docs / filename
+    if path.exists():
+        report = load(path)
+        durable = report.get("durable_verification", {}).get("real_MCP_admissions", [])
+        for call in report.get("MCP_execution", {}).values():
+            receipt = call.get("execution_receipt") or {}
+            if (call.get("verified") is True and call.get("http_status") == 200
+                    and call.get("api_status") in (200, 201) and call.get("is_error") is False
+                    and call.get("executed") is True and receipt.get("state") == "succeeded"
+                    and receipt.get("effect_verified") is True and any(
+                        row.get("id") == call.get("admission_id") == receipt.get("admission_id")
+                        and row.get("state") == row.get("job_status") == "succeeded"
+                        and row.get("verification_sha256") == receipt.get("verification_sha256")
+                        for row in durable)):
+                value = {"file": filename, "level": "MCP_GitHub_fixture_immutable_readback_settled_receipt",
+                         "durable_admission_receipt_present": True}
+                if value not in positive[call["operation"]]:
+                    positive[call["operation"]].append(value)
+        for call in report.get("negative_execution", []):
+            # A runtime refusal before MCP is a separate dependency, not MCP evidence.
+            if (call.get("denial_layer") == "MCP_to_API" and call.get("passed") is True
+                    and call.get("http_status") == 200 and call.get("api_status") == 403
+                    and call.get("executed") is False and not call.get("admission_id")):
+                value = {"file": filename, "level": "MCP_GitHub_fixture_wrong_scope_or_replay_denied"}
+                if value not in denied[call["operation"]]:
+                    denied[call["operation"]].append(value)
     return dict(positive), dict(denied)
 
 

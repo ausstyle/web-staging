@@ -72,3 +72,38 @@ Pre-release source regression: 408 passed. Real PostgreSQL boundary assertions:
 27 passed inside ROLLBACK. Production/MCP acceptance is pending this slice.
 
 Validated follow-up: gateway 43, source c103bbf, accounts for all 122 uploaded sources. Migration 20261022020000 matches the exact committed ledger SQL. Actual normal-Auth MCP acceptance passed 28/28 calls, independently settling 22 receipts (18 succeeded / four failed own-scoped foreign-resource queries) with three audit events each. Replays did not redispatch. The shared normal-workload REST/log/provider path also passed. All dedicated fixture customers, users, sessions and derived temporal records were cleaned; the shared audit/execution ledger is retained. Source checks 408, compact-artifact runtime checks 326, rollback-only PostgreSQL assertions 27. The lease is released. Other legacy customer reads and general mutation recovery still require adoption.
+
+
+## GitHub verification follow-up — 22 October 2026
+
+Gateway 45 (`7a78ea5`), provider 21 and legacy 16 (`d17a11c`) are deployed,
+source-readback verified and retain JWT enforcement. The existing GitHub
+file/commit executor performs fixed-host immutable readback and a narrow
+service-only settlement RPC after the original accepted receipt. API/MCP
+metadata carries the admission-bound verification proof without changing the
+provider output contract, normal Auth verification or standing workload grant.
+Three real MCP fixture executions now settle succeeded with independent provider
+and audit verification. Two prior failed verifications exercised actual MCP
+fixture recovery; no write was blindly replayed. GitHub padded base64 decoding
+and bounded GET retry handling are repaired.
+
+No runtime/workspace/VM/video component was deployed. Main `ad8685c` is merged
+into the API branch at `47695b1`; PR #136 is pushed, draft and unmerged. The
+source-custody change is `be7f429e-b1d4-4627-9f10-1063bee77009`; its registration
+is not evidence of provider authority. Only our three component leases were
+released after verification. Broader GitHub MCP authority, private source delivery
+and general production rollback remain open. Preserve the dedicated engineering
+identity's normal Auth/session lifecycle and zero Controller memberships.
+
+Use [GitHub evidence](github-platform-MCP-evidence-20261022.json) and the current
+implementation status for exact release and recovery limits. The current provider
+milestone is GitHub; do not divert into unrelated runtime or video changes.
+
+
+Error propagation follow-up: provider 22 and legacy 17, source `9c2b637`, preserve
+provider conflicts/precondition failures as API 409/412. An actual authorized MCP
+stale-SHA test changed from API 502 to `provider_conflict` / 409; GitHub refused the
+write, the shared admission and deployment job are failed, three audit events are
+present and the fixture reference/content are unchanged. HTTP 412 is unit-tested;
+no real 412 claim. The positive receipt path is unchanged and retains its prior
+production proof. No gateway/runtime/MCP redeployment was necessary for this fix.

@@ -15,13 +15,18 @@ import uuid
 from verify_engineering_workload import Verification, POLICY
 
 
-def verify(checkpoint, output):
-    if output.exists():
+def verify(checkpoint, output, resume_denials=False):
+    if output.exists() and not resume_denials:
         raise RuntimeError('existing_boundary_checkpoint_requires_review')
     check = Verification(checkpoint, ['github'], True)
     assert check.state.get('complete') and check.state.get('github_file_content_restored')
     assert check.state.get('github_reference_preserved')
-    report = {'complete': False, 'personal_controller_session_used': False, 'calls': []}
+    report = json.loads(output.read_text()) if output.exists() else {'complete': False, 'personal_controller_session_used': False, 'calls': []}
+    if resume_denials:
+        # Never resume an ambiguous execution. Reuse completed negative evidence;
+        # retry only requests explicitly refused before admission.
+        assert not report.get('complete') and report.get('cleanup_independently_verified')
+        assert all(c.get('passed') or c.get('http_status') == 403 and not c.get('admission_id') and not c.get('executed') for c in report['calls'])
     original_state = copy.deepcopy(check.state)
     check.output = output.with_suffix('.recovery.json')
     check.state = {'steps': {}, 'original_github': original_state['original_github']}
@@ -51,17 +56,23 @@ def verify(checkpoint, output):
     cases.append(('outside_standing_grant', 'github.repos.get', {}, str(uuid.uuid4())))
     try:
         for name, operation, arguments, request_id in cases:
+            if any(c['case'] == name and c.get('passed') for c in report['calls']):
+                continue
             status, value = check.runtime.invoke({'jsonrpc': '2.0', 'id': request_id, 'method': 'tools/call',
                 'params': {'name': operation, 'arguments': {'__sandy_execution': {'request_id': request_id}, 'arguments': arguments}}})
             result = value.get('result', {})
             envelope = json.loads(result.get('content', [{}])[0].get('text', '{}'))
             api = envelope.get('result', {})
             row = {'case': name, 'operation': operation, 'request_id': request_id,
-                'http_status': status, 'api_status': envelope.get('status'), 'error': api.get('error'),
+                'http_status': status, 'api_status': envelope.get('status'), 'error': api.get('error') or value.get('error'),
                 'executed': api.get('executed'), 'admission_id': api.get('admission_id'),
                 'response_sha256': hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()}
-            row['passed'] = (status == 200 and result.get('isError') is True and
+            runtime_denied = (name == 'outside_standing_grant' and status == 403 and
+                value.get('error') == 'engineering_operation_scope_denied' and 'result' not in value)
+            row['denial_layer'] = 'engineering_runtime_before_MCP' if runtime_denied else 'MCP_to_API'
+            row['passed'] = runtime_denied or (status == 200 and result.get('isError') is True and
                 envelope.get('status') in (400, 403, 409) and not api.get('executed') and not api.get('admission_id'))
+            report['calls'] = [c for c in report['calls'] if c['case'] != name]
             report['calls'].append(row)
             output.write_text(json.dumps(report, indent=2) + '\n')
             assert row['passed'], 'negative_MCP_call_not_denied:' + name
@@ -81,7 +92,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--checkpoint', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--resume-denials', action='store_true', help='Retain passed evidence and retry only an explicitly refused, unadmitted request')
     args = parser.parse_args()
-    report = verify(args.checkpoint, args.output)
+    report = verify(args.checkpoint, args.output, args.resume_denials)
     print(json.dumps({'complete': report['complete'], 'denied_calls': len(report['calls']),
                       'fixture_contents_unchanged': report.get('fixture_contents_unchanged')}))

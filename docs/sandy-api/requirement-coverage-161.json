@@ -1,16 +1,16 @@
 {
-  "generated_at_utc": "2026-10-21T23:40:19.834426+00:00",
+  "generated_at_utc": "2026-10-22T00:52:35.958975+00:00",
   "snapshot_provenance": {
     "registry": {
-      "sha256": "ed654cedd43b0d45330e00a636eb70eb9e78a392adddcb5059b30ba8bf746aa8",
-      "captured_at_utc": "2026-10-21T23:35:43.987125+00:00"
+      "sha256": "4c18d9dffc0591b18ab72da9bd71493bf76ff591d814922129d2143e3e50da95",
+      "captured_at_utc": "2026-10-22T00:52:13.195345+00:00"
     },
     "functions": {
-      "sha256": "f072d6532f99e260fa90296e8ae6664214903598f074231447325caecdf09c94",
-      "captured_at_utc": "2026-10-21T23:35:44.165487+00:00"
+      "sha256": "dc1331cabeb6a024788af1dc3d3f3e16e4dc195cbfba071a49d515fc2c45b1df",
+      "captured_at_utc": "2026-10-22T00:52:13.365806+00:00"
     }
   },
-  "source_head": "1d69b5ac75c6d4843301061bf13cfa2e21441f8c",
+  "source_head": "9c2b637d729b87297135ac1f17db43101b2fdf17",
   "original_pdf_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
   "semantics": {
@@ -67,7 +67,7 @@
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -166,7 +166,7 @@
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -356,7 +356,7 @@
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -569,7 +569,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -645,7 +645,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -726,7 +726,7 @@
           "verify_jwt": false
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -907,7 +907,7 @@
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1210,7 +1210,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1287,7 +1287,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1392,7 +1392,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -1578,7 +1578,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1668,7 +1668,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -1820,7 +1820,7 @@
           "verify_jwt": false
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2097,7 +2097,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2205,7 +2205,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2321,7 +2321,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -2467,7 +2467,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3202,7 +3202,7 @@
           "verify_jwt": false
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3353,7 +3353,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3424,7 +3424,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3496,7 +3496,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3616,7 +3616,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3779,7 +3779,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -3899,7 +3899,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4006,7 +4006,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4081,7 +4081,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4207,7 +4207,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -4312,7 +4312,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -5212,7 +5212,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -6268,7 +6268,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -7613,7 +7613,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -7833,7 +7833,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8251,7 +8251,7 @@
       ],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8475,7 +8475,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8590,7 +8590,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -8744,7 +8744,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -10075,7 +10075,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -10445,7 +10445,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -10875,7 +10875,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -11140,7 +11140,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -11630,7 +11630,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -11880,7 +11880,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -14716,7 +14716,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -15086,7 +15086,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -16106,7 +16106,7 @@
           "verify_jwt": false
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -16387,7 +16387,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -16667,7 +16667,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -17268,7 +17268,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -18252,7 +18252,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -18553,7 +18553,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -19055,7 +19055,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -19356,7 +19356,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -19982,7 +19982,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -20568,7 +20568,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -20733,7 +20733,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -21464,7 +21464,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -21794,7 +21794,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -21875,7 +21875,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -22736,7 +22736,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -23640,7 +23640,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -23798,7 +23798,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24018,7 +24018,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -24203,7 +24203,7 @@
       ],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -24331,7 +24331,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -24618,7 +24618,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -24767,7 +24767,7 @@
           "verify_jwt": true
         },
         "sandy-legacy-compatibility-api": {
-          "version": 13,
+          "version": 17,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -24777,7 +24777,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -24955,7 +24955,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -25214,7 +25214,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -25537,7 +25537,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -26918,7 +26918,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -27105,7 +27105,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -27287,7 +27287,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27468,7 +27468,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -27674,7 +27674,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -28005,7 +28005,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -28923,7 +28923,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -29474,7 +29474,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -29676,7 +29676,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29753,7 +29753,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29889,7 +29889,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -29996,7 +29996,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30101,12 +30101,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-legacy-compatibility-api": {
-          "version": 13,
+          "version": 17,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30190,12 +30190,21 @@
             {
               "file": "engineering-workload-evidence-20261021.json",
               "level": "authenticated_MCP_provider_execution_and_readback"
+            },
+            {
+              "file": "github-platform-MCP-evidence-20261022.json",
+              "level": "MCP_GitHub_fixture_immutable_readback_settled_receipt",
+              "durable_admission_receipt_present": true
             }
           ],
           "denied_execution_evidence": [
             {
               "file": "engineering-workload-evidence-20261021.json",
               "level": "normal_nonowner_denied"
+            },
+            {
+              "file": "github-platform-MCP-evidence-20261022.json",
+              "level": "MCP_GitHub_fixture_wrong_scope_or_replay_denied"
             }
           ],
           "existing_target_only_not_universal_authority": true
@@ -30293,12 +30302,12 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-legacy-compatibility-api": {
-          "version": 13,
+          "version": 17,
           "status": "ACTIVE",
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30328,6 +30337,11 @@
             {
               "file": "engineering-workload-evidence-20261021.json",
               "level": "authenticated_MCP_provider_execution_and_readback"
+            },
+            {
+              "file": "github-platform-MCP-evidence-20261022.json",
+              "level": "MCP_GitHub_fixture_immutable_readback_settled_receipt",
+              "durable_admission_receipt_present": true
             }
           ],
           "denied_execution_evidence": [
@@ -30462,7 +30476,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -30608,7 +30622,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -31599,7 +31613,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -31714,7 +31728,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32124,7 +32138,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32214,7 +32228,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32478,7 +32492,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32587,7 +32601,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -32702,7 +32716,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -32811,7 +32825,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33031,7 +33045,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33116,7 +33130,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33261,7 +33275,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33516,7 +33530,7 @@
           "verify_jwt": true
         },
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33647,7 +33661,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -33952,7 +33966,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34172,7 +34186,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -34353,7 +34367,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -34598,7 +34612,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -34914,7 +34928,7 @@
       "external_dependency_details": [],
       "production_handler_versions": {
         "sandy-provider-operation-api": {
-          "version": 18,
+          "version": 22,
           "status": "ACTIVE",
           "verify_jwt": true
         }
@@ -35294,7 +35308,7 @@
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -36050,7 +36064,7 @@
           "verify_jwt": false
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -39523,7 +39537,7 @@
           "verify_jwt": false
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -41306,7 +41320,7 @@
           "verify_jwt": true
         },
         "sandy-operation-api": {
-          "version": 43,
+          "version": 45,
           "status": "ACTIVE",
           "verify_jwt": true
         },
@@ -47272,12 +47286,15 @@
         "id": "d053f8db-306c-4041-b571-389887128b53",
         "name": "sandy-legacy-compatibility-api",
         "slug": "sandy-legacy-compatibility-api",
-        "version": 13,
+        "version": 17,
         "status": "ACTIVE",
         "verify_jwt": true,
-        "updated_at": 1792561043712
+        "updated_at": 1792630190734
       },
-      "attested_source": null,
+      "attested_source": {
+        "source_commit": "9c2b637d729b87297135ac1f17db43101b2fdf17",
+        "readback_sha256": "de7a453bf5aea5e7d49bc668c8b1f5827a83e43cad6e5b27c592b0ec04f51a9e"
+      },
       "actual_MCP_success_operations": [
         "github.commit",
         "supabase.deploy_edge_function"
@@ -47307,14 +47324,14 @@
         "id": "6e50ff35-5878-42e2-982c-c205df6cac2e",
         "name": "sandy-operation-api",
         "slug": "sandy-operation-api",
-        "version": 43,
+        "version": 45,
         "status": "ACTIVE",
         "verify_jwt": true,
-        "updated_at": 1792625191031
+        "updated_at": 1792629205563
       },
       "attested_source": {
-        "source_commit": "c103bbfcb3f5ed85cda964cc76ab465c3d41ba91",
-        "readback_sha256": "a2b10cf79c410d31f6a09d0a50aa0e815cb50463412b58726dc18a91280629ee"
+        "source_commit": "7a78ea5c6d2d519499c1698ac4b78a80c626bfee",
+        "readback_sha256": "570fd9f5c8536663453874f5265276136aa7306a2507e52338b748c1d9e601ff"
       },
       "actual_MCP_success_operations": [],
       "state": "unverified_by_this_evidence_set"
@@ -47431,14 +47448,14 @@
         "id": "a621f69e-89a4-453d-8a96-903764b4c99b",
         "name": "sandy-provider-operation-api",
         "slug": "sandy-provider-operation-api",
-        "version": 18,
+        "version": 22,
         "status": "ACTIVE",
         "verify_jwt": true,
-        "updated_at": 1792582415825
+        "updated_at": 1792630159823
       },
       "attested_source": {
-        "source_commit": "0334a878406663b8a683b519bc79c9c4d5e2abb6",
-        "readback_sha256": "d4aa76b05ba80fccc42c579647520104f30d5a9eff12eafd478131a96e8c9d77"
+        "source_commit": "9c2b637d729b87297135ac1f17db43101b2fdf17",
+        "readback_sha256": "1d9c11361bd470f78124bdf6470d53d1231b106cf2a2fb04f0cc71e24e622d71"
       },
       "actual_MCP_success_operations": [
         "gcp.compute.instances.get",
@@ -47845,12 +47862,22 @@
       {
         "file": "engineering-workload-evidence-20261021.json",
         "level": "authenticated_MCP_provider_execution_and_readback"
+      },
+      {
+        "file": "github-platform-MCP-evidence-20261022.json",
+        "level": "MCP_GitHub_fixture_immutable_readback_settled_receipt",
+        "durable_admission_receipt_present": true
       }
     ],
     "github.files.update": [
       {
         "file": "engineering-workload-evidence-20261021.json",
         "level": "authenticated_MCP_provider_execution_and_readback"
+      },
+      {
+        "file": "github-platform-MCP-evidence-20261022.json",
+        "level": "MCP_GitHub_fixture_immutable_readback_settled_receipt",
+        "durable_admission_receipt_present": true
       }
     ],
     "supabase.db.migrations.apply": [
@@ -48217,6 +48244,10 @@
       {
         "file": "engineering-workload-evidence-20261021.json",
         "level": "normal_nonowner_denied"
+      },
+      {
+        "file": "github-platform-MCP-evidence-20261022.json",
+        "level": "MCP_GitHub_fixture_wrong_scope_or_replay_denied"
       }
     ],
     "supabase.db.migrations.apply": [
@@ -89825,12 +89856,13 @@
       "api_exposed": true,
       "ai_exposed": true,
       "verified": true,
-      "last_verified_at": "2026-10-21 23:05:48.851706+00",
+      "last_verified_at": "2026-10-22 00:42:48.948533+00",
       "requirement_ids": [],
       "contract_sha256": "05efc808b048a28c45458d4c83028d3d813dab898a72b881d26686a974cab9ae",
       "evidence_keys": [
         "engineering_workload_20261021",
         "legacy_owner_backend_v2_20261021",
+        "github_verified_receipts_20261022",
         "engineering_mcp_execution_20261021",
         "engineering_write_regression_20261022",
         "shared_MCP_edge15_acceptance_20261021",
@@ -90670,7 +90702,7 @@
       "api_exposed": true,
       "ai_exposed": true,
       "verified": true,
-      "last_verified_at": "2026-10-21 23:05:46.387224+00",
+      "last_verified_at": "2026-10-22 00:42:48.917625+00",
       "requirement_ids": [
         117
       ],
@@ -90686,6 +90718,8 @@
         "engineering_session_20261021",
         "engineering_workload_20261021",
         "mcp_transport_release_20261021",
+        "github_provider_conflict_20261022",
+        "github_verified_receipts_20261022",
         "engineering_mcp_execution_20261021",
         "engineering_session_20261021_followup",
         "engineering_write_regression_20261022",
