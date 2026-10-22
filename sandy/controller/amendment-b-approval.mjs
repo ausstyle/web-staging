@@ -3,7 +3,7 @@
 const HASH=/^[a-f0-9]{64}$/,SHA=/^[a-f0-9]{40}$/;
 export async function sha256(value){return [...new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)))].map(x=>x.toString(16).padStart(2,'0')).join('');}
 export async function loadAmendmentRelease(fetcher=fetch){
- const response=await fetcher('./amendment-b-release.json',{cache:'no-store',redirect:'error'});
+ const response=await fetcher('../../docs/sandy-engineering/evaluations/p0-amendment-b-release.json',{cache:'no-store',redirect:'error'});
  if(!response.ok)throw Error('Amendment B release metadata is unavailable.');
  const d=await response.json(),r=d.request;
  if(!SHA.test(d.source_commit||'')||!HASH.test(d.manifest_sha256||'')||!HASH.test(d.declaration_sha256||'')||

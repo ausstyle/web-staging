@@ -9,9 +9,6 @@ on:
         required: true
 permissions:
   contents: read
-concurrency:
-  group: sandy-engineering-control-approved-repair
-  cancel-in-progress: false
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -36,6 +33,9 @@ jobs:
       - name: Verify exact approved modules and migration
         run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -c 'from release_owner_session_repair import candidate; m,files,sql=candidate(); print("Pinned modules verified:",len(files))'
   deploy:
+    concurrency:
+      group: sandy-engineering-control-approved-repair
+      cancel-in-progress: false
     if: ${{ inputs.mode == 'deploy' }}
     needs: checks
     runs-on: ubuntu-latest

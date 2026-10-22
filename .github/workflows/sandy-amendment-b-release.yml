@@ -13,9 +13,6 @@ on:
         description: Genuine owner-approved Amendment B change UUID
 permissions:
   contents: read
-concurrency:
-  group: sandy-engineering-control-approved-repair
-  cancel-in-progress: false
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -40,6 +37,9 @@ jobs:
       - name: Verify exact approved modules and migration
         run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -c 'from release_amendment_b import candidate; m,p,d,files,sql=candidate(); print("Amendment B immutable artifacts verified:",p)'
   deploy:
+    concurrency:
+      group: sandy-engineering-control-approved-repair
+      cancel-in-progress: false
     if: ${{ inputs.mode == 'deploy' }}
     needs: checks
     runs-on: ubuntu-latest
