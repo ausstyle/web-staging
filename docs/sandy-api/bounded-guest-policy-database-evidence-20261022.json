@@ -1,0 +1,42 @@
+{
+  "observed_at": "2026-10-22T17:11:05.257947+00:00",
+  "kind": "database_boundary_fixtures_full_rollback",
+  "migration_sha256": "418d82f6a4e787c4affa049b07231b5132057cae19fdfb2157e5f1b29ae29c13",
+  "candidate_installed_inside_rollback": true,
+  "provider_execution": false,
+  "VM_acceptance": false,
+  "suites": [
+    {
+      "name": "sandy_bounded_guest_policy_rollback",
+      "source_sha256": "fcc984e57091a54282e26a1a04ed6dcb21297aad795909e97eca5601ea18fe4e",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 55,
+      "rolled_back": true
+    },
+    {
+      "name": "sandy_guest_standing_dispatch_rollback",
+      "source_sha256": "a13ccb27616c29fcf7d349cb844c6426a4e6ad3762530415d30b3a2ab065f41d",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 16,
+      "rolled_back": true
+    },
+    {
+      "name": "sandy_standing_session_binding_rollback",
+      "source_sha256": "5ac84a9260063ecf3885a16fdd10c5caf22d4adbf07c7da8a4eeb54eafe42670",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 10,
+      "rolled_back": true
+    },
+    {
+      "name": "sandy_standing_engineering_rollback",
+      "source_sha256": "6ea352071fbf56ed72a04bfa00bd97f0da33c7835864cb1606a93a1d09e9f407",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 30,
+      "rolled_back": true
+    }
+  ]
+}

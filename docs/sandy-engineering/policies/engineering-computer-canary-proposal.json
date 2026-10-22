@@ -1,0 +1,94 @@
+{
+  "status": "PROPOSAL_NOT_ESTABLISHED",
+  "requires": "Restricted administration by a legitimate administrator; never workload self-installation.",
+  "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+  "expected_parent_delegation_version": 5,
+  "preserve_existing_expires_at": "2026-11-21T09:51:26.753549+00:00",
+  "policy": {
+    "version": "standing-engineering-v1",
+    "risk_ceiling": "routine",
+    "declared_unit_budget": 0,
+    "requests_per_minute": 30,
+    "environments": [
+      "test",
+      "production"
+    ],
+    "resources": {
+      "github": [
+        "ausstyle/web-staging"
+      ],
+      "supabase": [
+        "zmqlyygzqoidkcwdysok"
+      ],
+      "gcp": [
+        "elaborate-haven-511518-a5"
+      ]
+    },
+    "classes": {
+      "github": [
+        "metadata_read",
+        "source_read",
+        "code_write",
+        "git_write",
+        "pull_request_write"
+      ],
+      "supabase": [
+        "metadata_read"
+      ],
+      "gcp": [
+        "metadata_read",
+        "guest_read",
+        "guest_files_write",
+        "guest_services_write",
+        "guest_packages_write"
+      ]
+    },
+    "computer": {
+      "targets": {
+        "sandy-video": {
+          "project_id": "elaborate-haven-511518-a5",
+          "zone": "europe-west1-b",
+          "instance_id": "6831598645020395570",
+          "file_prefixes": [
+            "sandy-engineering-canary/"
+          ],
+          "services": [
+            "sandy-engineering-canary"
+          ],
+          "packages": {
+            "manager": "apt",
+            "names": [
+              "hello"
+            ]
+          }
+        },
+        "sandy-windows": {
+          "project_id": "elaborate-haven-511518-a5",
+          "zone": "europe-west1-b",
+          "instance_id": "8120150462304566315",
+          "file_prefixes": [
+            "sandy-engineering-canary/"
+          ],
+          "services": [
+            "SandyEngineeringCanary"
+          ],
+          "packages": {
+            "manager": "winget",
+            "names": [
+              "7zip.7zip"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "provider_execution_verified": false,
+  "does_not_authorize": [
+    "IAM or firewall changes",
+    "New billable resources",
+    "Agent enrollment or installation",
+    "Native SSH/WinRM commands",
+    "Graphical sessions",
+    "Paths, services or packages outside these exact canary boundaries"
+  ]
+}
