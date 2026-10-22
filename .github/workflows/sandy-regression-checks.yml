@@ -51,13 +51,17 @@ jobs:
           cat "$RUNNER_TEMP/sandy-offline-tests.log"
           if [ "$test_status" -ne 0 ]; then
             SANDY_TEST_LOG="$RUNNER_TEMP/sandy-offline-tests.log" python3 - <<'PY'
-          import os
+          import os, re
           from pathlib import Path
           # Expose offline failures through the normal check-run annotations;
           # downloading Actions logs can require a separately permitted host.
-          detail='\n'.join(Path(os.environ['SANDY_TEST_LOG']).read_text().splitlines()[-80:])
-          detail=detail.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
-          print('::error title=Offline regression failure::'+detail)
+          log=Path(os.environ['SANDY_TEST_LOG']).read_text()
+          failures=list(re.finditer(r'(?m)^(?:ERROR|FAIL): .+$',log))
+          for i,match in enumerate(failures):
+              end=failures[i+1].start() if i+1<len(failures) else len(log)
+              detail=log[match.start():end].split('\nRan ',1)[0][:3000]
+              detail=detail.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+              print('::error title=Offline regression failure::'+detail)
           PY
           fi
           exit "$test_status"
