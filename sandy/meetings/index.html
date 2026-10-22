@@ -241,7 +241,7 @@ async function startSandyAI(){
       const speech=String(msg.transcript||"");
       renderLive("host-"+(msg.item_id||crypto.randomUUID()),"Room audio",speech);
       // Do not answer ordinary meeting discussion; only direct invocations.
-      const directlyAddressed=/(?:^|[.!?;,\\s])(?:hey\\s+|hi\\s+|okay\\s+|ok\\s+)?sandy\\b/i.test(speech);
+      const directlyAddressed=/(?:^|[.!?;,\s])(?:hey\s+|hi\s+|okay\s+|ok\s+)?sandy\b/i.test(speech);
       if(directlyAddressed&&sandyEvents?.readyState==="open"){
         // Turn completion is the authoritative point to respond. Do not block on
         // stale response.created state: a prior response.done can be missed.
