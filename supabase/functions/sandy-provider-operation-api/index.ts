@@ -964,6 +964,8 @@ export function createProviderOperationHandler(
       return response(
         error === "provider_entitlement_required"
           ? 424
+          : status === 403
+          ? 403
           : status === 404
           ? 404
           : status === 429

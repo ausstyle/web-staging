@@ -750,3 +750,26 @@ Deno.test("shared projection accepts nullable arrays while retaining nested cred
   assertEquals(projectValue(null, schema, {}), null);
   assertThrows(() => projectValue([], { type: "object", properties: {} }, {}));
 });
+
+Deno.test("provider IAM denial remains a provider-specific 403 with a failed receipt and no raw response", async () => {
+  const h = harness({
+    fetch: (() =>
+      Promise.resolve(
+        new Response(
+          JSON.stringify({
+            message: "Resource not accessible by integration",
+            secret: "PRIVATE",
+          }),
+          { status: 403 },
+        ),
+      )) as typeof fetch,
+  });
+  const response = await h.call("github.repo_secrets.list");
+  assertEquals(response.status, 403);
+  const body = await response.json();
+  assertEquals(body.error, "provider_authorization_refused");
+  assertEquals(body.provider_http_status, 403);
+  assertEquals(body.request_state, "failed");
+  assertEquals(h.finishes[0].outcome, "failed");
+  assertEquals(JSON.stringify(body).includes("PRIVATE"), false);
+});
