@@ -1,15 +1,15 @@
 {
   "function": "sandy-agent-runtime-v4",
-  "source_commit": "d32a28d768ed4b5a9ed5c9ff5e36f4e13631a79a",
+  "source_commit": "33542ff1cb5a3b166b40e91472564e30e6f4c99d",
   "change_id": "7edbee5b-4185-4f6b-b7b1-b41899d4dfc8",
   "branch": "engineering/sandy-unified-intelligence-20261021",
   "risk": "normal",
-  "purpose": "Group connected accounts by provider and workspace, deduplicate account identifiers and report provider-confirmed counts without implying verified tool capability.",
+  "purpose": "Group distinct connected accounts by provider/workspace with truthful provider counts; ground clock answers in server receipts; consistently apply the existing consent-checked temporal projection across canary channels. No new customer enrollment, learning consent, provider permissions or message effects.",
   "expected_prior_version": 31,
   "prior_bundle_sha256": "eccecbce2189e953f778d32085b197b965704d5dd16182f224a550a3890cbb85",
   "verify_jwt": false,
   "files": {
-    "sandy-agent-runtime-v4/index.ts": "3c20715fc846f20bc3391a2dc81d7cf6c7afa8ad55ba4f5abcec5fbcd36e97a3",
+    "sandy-agent-runtime-v4/index.ts": "a79476ac878f7e0b41a0aeb3c71e5ae5b8a06f03dee25fee7ed8a372b0eb8c53",
     "_shared/sandy-agent-operations/connected-gmail.ts": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
     "_shared/sandy-agent-operations/identity.ts": "f0be25140ac8afc7762d7e88239f843d21caf6612de8fdb9b5b8c99390a89d99",
     "_shared/sandy-agent-operations/runtime_conversation.ts": "7aea8453ce9c0b4fe04e6015c6945f2cba49d983fe96f7c8dfc53ccfa33c206a",
@@ -34,10 +34,11 @@
     "_shared/sandy-executive/pending_reply.ts": "e4aa16d79fd18224a15387ad952e2c008b8003a43328e2d65c7cf69bce320887",
     "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
     "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
-    "_shared/sandy-executive/temporal_context.ts": "4799f324b8869c6b01e3ede239308d03a9556dfa559e0000cbdb52be5eace99e",
+    "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
     "_shared/sandy-executive/task_deadlines.ts": "d68219d1101477e8160e2d6c4cbcd251139dea1f7359c5e7de6b58e186aae25e",
     "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
-    "sandy-agent-runtime-v4/version-awareness.js": "ee8ac38d54136ab291736f211f713f542bbc6c83af6460081f06a35782fe06c9"
+    "sandy-agent-runtime-v4/version-awareness.js": "ee8ac38d54136ab291736f211f713f542bbc6c83af6460081f06a35782fe06c9",
+    "_shared/sandy-executive/clock.ts": "7944043a954dbffeba9141f23522b7607b404c265ea7ef7e850732388a5c9c6e"
   },
   "rollback": "Restore all captured prior original modules under a fresh V4 component lease after checking the current version and digest. Do not replay customer effects or alter stored records, memory consent, Gmail confirmation or the existing allowlist."
 }
