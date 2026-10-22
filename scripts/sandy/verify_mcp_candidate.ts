@@ -198,10 +198,13 @@ export async function verifyRestCatalogue(token: string, anon: string) {
   };
   const names = new Set<string>(), cursors = new Set<string>();
   let cursor: string | undefined, version: string | undefined, pages = 0;
+  // Use the API's supported maximum page size to avoid dozens of full
+  // catalogue reconstructions. All permission and cursor assertions remain.
+  const pageSize = 100;
   for (; pages < 100; pages++) {
-    const page = await get(`?limit=5${cursor ? "&cursor=" + encodeURIComponent(cursor) : ""}`);
+    const page = await get(`?limit=${pageSize}${cursor ? "&cursor=" + encodeURIComponent(cursor) : ""}`);
     requireThat(page.status === 200 && page.body.ok === true && Array.isArray(page.body.operations) &&
-      page.body.operations.length <= 5 && typeof page.body.catalogue_version === "string", "API_REST_catalogue_page_invalid");
+      page.body.operations.length <= pageSize && typeof page.body.catalogue_version === "string", "API_REST_catalogue_page_invalid");
     if (version) requireThat(version === page.body.catalogue_version, "API_REST_catalogue_changed");
     version = page.body.catalogue_version;
     for (const operation of page.body.operations) {
