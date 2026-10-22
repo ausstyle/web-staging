@@ -1,0 +1,155 @@
+name: Accept existing Sandy Engineering MCP candidate
+on:
+  workflow_dispatch:
+    inputs:
+      release_run_id:
+        description: Existing deployment workflow run
+        required: true
+        default: '39849886412'
+        type: string
+      release_attempt:
+        description: Existing candidate deployment attempt
+        required: true
+        default: '4'
+        type: string
+      artifact_id:
+        description: Existing immutable release artifact ID
+        required: true
+        default: '12460309247'
+        type: string
+      promote:
+        description: Promote only after authenticated acceptance and fresh traffic/identity checks
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  acceptance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify original release and artifact provenance
+        id: provenance
+        uses: actions/github-script@v7
+        env:
+          SANDY_RELEASE_RUN: ${{ inputs.release_run_id }}
+          SANDY_RELEASE_ATTEMPT: ${{ inputs.release_attempt }}
+          SANDY_RELEASE_ARTIFACT: ${{ inputs.artifact_id }}
+        with:
+          script: |
+            const values = ['SANDY_RELEASE_RUN','SANDY_RELEASE_ATTEMPT','SANDY_RELEASE_ARTIFACT'].map(k => process.env[k]);
+            if (!values.every(v => /^[1-9][0-9]{0,14}$/.test(v))) throw Error('invalid_release_identifier');
+            const [runId,attempt,artifactId] = values.map(Number);
+            const repo = {owner:context.repo.owner,repo:context.repo.repo};
+            const {data:run} = await github.rest.actions.getWorkflowRun({...repo,run_id:runId});
+            const {data:artifact} = await github.rest.actions.getArtifact({...repo,artifact_id:artifactId});
+            const {data:jobs} = await github.rest.actions.listJobsForWorkflowRunAttempt({...repo,run_id:runId,attempt_number:attempt});
+            if (run.repository.id !== 1416227508 || run.head_repository.id !== 1416227508 || run.head_branch !== 'main' ||
+                run.path !== '.github/workflows/sandy-engineering-mcp-deploy.yml' || !/^[a-f0-9]{40}$/.test(run.head_sha) ||
+                artifact.expired || artifact.workflow_run.id !== runId || artifact.workflow_run.head_sha !== run.head_sha ||
+                artifact.name !== 'sandy-mcp-release-'+run.head_sha ||
+                !jobs.jobs.some(j => j.name === 'deploy' && j.steps.some(s =>
+                  s.name === 'Preserve current revision and deploy a candidate without changing traffic' && s.conclusion === 'success')))
+              throw Error('existing_candidate_provenance_required');
+            core.setOutput('source_sha',run.head_sha);
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: ${{ inputs.artifact_id }}
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.release_run_id }}
+          path: ${{ runner.temp }}/sandy-existing-release
+          merge-multiple: true
+      - name: Validate existing release configuration
+        env:
+          PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
+          WIF_PROVIDER: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          DEPLOYER: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test "$PROJECT" = elaborate-haven-511518-a5
+          test -n "$WIF_PROVIDER"
+          test -n "$DEPLOYER"
+          test "$DEPLOYER" != sandy-cloud-administrator@elaborate-haven-511518-a5.iam.gserviceaccount.com
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Read current service and exact existing revision
+        env:
+          SANDY_RELEASE_RUN: ${{ inputs.release_run_id }}
+          SANDY_RELEASE_ATTEMPT: ${{ inputs.release_attempt }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/sandy-acceptance"
+          revision="sandy-engineering-mcp-api-$SANDY_RELEASE_RUN-$SANDY_RELEASE_ATTEMPT"
+          gcloud run services describe sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 \
+            --format='json(status.traffic,status.url,spec.template.spec.serviceAccountName)' > "$RUNNER_TEMP/sandy-acceptance/live-service.json"
+          gcloud run revisions describe "$revision" --project elaborate-haven-511518-a5 --region europe-west1 \
+            --format='json(metadata.name,metadata.labels,spec.serviceAccountName,status.conditions,status.imageDigest)' > "$RUNNER_TEMP/sandy-acceptance/live-revision.json"
+      - name: Verify exact revision, runtime identity and unchanged traffic
+        env:
+          SANDY_CANDIDATE_SOURCE: ${{ steps.provenance.outputs.source_sha }}
+          SANDY_RELEASE_RUN: ${{ inputs.release_run_id }}
+          SANDY_RELEASE_ATTEMPT: ${{ inputs.release_attempt }}
+        run: >-
+          deno run --allow-env --allow-read --allow-write
+          scripts/sandy/existing_mcp_candidate.ts verify
+          "$RUNNER_TEMP/sandy-existing-release" "$RUNNER_TEMP/sandy-acceptance"
+      - name: Authenticated customer-session MCP and provider acceptance
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: >-
+          deno run --allow-env --allow-net --allow-read --allow-write
+          scripts/sandy/verify_mcp_candidate.ts
+          --release-dir "$RUNNER_TEMP/sandy-existing-release"
+          --source-commit "${{ steps.provenance.outputs.source_sha }}"
+          --output "$RUNNER_TEMP/sandy-acceptance/authenticated-acceptance.json"
+      - name: Guard and promote the accepted existing revision
+        if: ${{ inputs.promote }}
+        env:
+          SANDY_CANDIDATE_SOURCE: ${{ steps.provenance.outputs.source_sha }}
+          SANDY_RELEASE_RUN: ${{ inputs.release_run_id }}
+          SANDY_RELEASE_ATTEMPT: ${{ inputs.release_attempt }}
+        run: |
+          set -euo pipefail
+          gcloud run services describe sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 \
+            --format='json(status.traffic,status.url,spec.template.spec.serviceAccountName)' > "$RUNNER_TEMP/sandy-acceptance/live-service.json"
+          deno run --allow-env --allow-read --allow-write scripts/sandy/existing_mcp_candidate.ts promote-guard "$RUNNER_TEMP/sandy-existing-release" "$RUNNER_TEMP/sandy-acceptance"
+          revision="sandy-engineering-mcp-api-$SANDY_RELEASE_RUN-$SANDY_RELEASE_ATTEMPT"
+          gcloud run services update-traffic sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 --to-revisions="$revision=100" --quiet
+          gcloud run services describe sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 \
+            --format='json(status.traffic,status.url,spec.template.spec.serviceAccountName)' > "$RUNNER_TEMP/sandy-acceptance/promoted-service.json"
+          deno run --allow-env --allow-read --allow-write scripts/sandy/existing_mcp_candidate.ts promoted "$RUNNER_TEMP/sandy-existing-release" "$RUNNER_TEMP/sandy-acceptance"
+      - name: Record bounded acceptance result
+        if: always()
+        run: |
+          python3 - <<'PYRESULT'
+          import json, os, pathlib
+          path = pathlib.Path(os.environ['RUNNER_TEMP']) / 'sandy-acceptance/authenticated-acceptance.json'
+          if path.exists():
+              report = json.loads(path.read_text())
+              keys = ['passed', 'error', 'cleanup_error', 'candidate_source_commit', 'normal_Auth_user_verified',
+                      'controller_memberships', 'normal_Auth_session_retired', 'tools_discovered', 'operation',
+                      'provider_log_query_verified', 'provider_http_status', 'admission_id',
+                      'matching_fixture_markers', 'log_event_delivery_verified', 'wrong_log_source_API_status',
+                      'wrong_source_denied_before_admission']
+              safe = {k: report[k] for k in keys if k in report}
+              print('::notice title=Authenticated existing candidate acceptance::' + json.dumps(safe))
+          PYRESULT
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-existing-candidate-acceptance-${{ github.run_id }}
+          path: ${{ runner.temp }}/sandy-acceptance/
