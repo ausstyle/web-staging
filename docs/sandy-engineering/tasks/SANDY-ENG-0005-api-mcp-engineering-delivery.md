@@ -1,6 +1,6 @@
 # SANDY-ENG-0005 — Sandy API, MCP and Engineering Delivery Completion
 
-Version: 1.0 · 21 October 2026  
+Version: 1.2 · 22 October 2026 — infrastructure acceptance linkage
 Status: DRAFT — target architecture and acceptance contract  
 Priority: P1 overall; runtime-critical and safe release foundations are P0 dependencies  
 Owner: Sandy Platform/API Engineering / Codex  
@@ -112,3 +112,10 @@ Primary protocol/security references are in the shared architecture document. Pi
 ## Amendment — Remove repetitive manual engineering approvals (22 October 2026)
 
 Implement Master amendment B: eliminate per-change and per-deployment manual owner-approval waits **for operations already inside a standing, revocable engineering grant**. Admission must evaluate legitimate workload identity, precise resource, operation, risk, budget, source artifact, tests and rollback policy. Record `authorized_by_policy` and its grant/version, then execute and verify without a human click. Policy misses are explicit `policy_blocked` outcomes, never automatic elevation. Preserve the external provider's own protections, sensitive-change restrictions and all historical owner-approval records. Update the Controller to display authorization and execution evidence rather than require an Approve button for routine delegated actions. Add end-to-end tests for two unattended routine releases, revocation, expiry, cross-target denial, high-risk refusal and source/manifest mismatch. This is a target engineering requirement; do not mark implemented before a production canary.
+
+
+## Existing infrastructure lifecycle acceptance — 0001 coordination
+
+API-08 and API-T09 expressly cover reusable autonomous Google Cloud infrastructure and Linux/Windows administration: provisioning/configuration, approved software installation, deployment, monitoring, repair and verified rollback. Use the existing adapters and computer layer for API scope #17, #22, #26–43, #47–52, #67–68 and #74, including target-specific IAP authorization and private connectivity. Expose appropriate existing contracts through MCP; Sandy runtime uses Sandy API directly. No new operation catalogue or application-specific installer is required by this clarification.
+
+Implement and record the [0001 INF-01–07 acceptance cohort](SANDY-ENG-0001-runtime-reasoning-reliability.md#infrastructure-acceptance-cohort-extends-the-existing-evaluation-program) alongside API-T09: real Linux and Windows identity output/exit codes, isolated graphical evidence, idempotent provisioning, file/package/service lifecycle, health/fault repair, compatible rollback, durable recovery and independent denied-request tests. 0001 owns integrated acceptance; 0005 retains implementation/release ownership. Routine actions use current standing class/resource/risk/budget grants without approval clicks; no workload self-expansion or bypass of provider IAM. Keep the existing documented IAP and Windows heartbeat dependencies separate from missing software and continue independent provider milestones. This scope update neither changes the active grant nor certifies unexecuted functions.
