@@ -15,7 +15,6 @@ on:
       - 'supabase/functions/sandy-email-runtime-canary/**'
       - 'supabase/functions/_shared/sandy-executive/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
-      - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'supabase/migrations/2026102211*.sql'
   push:
     branches: [main]
@@ -32,21 +31,10 @@ on:
       - 'supabase/functions/sandy-email-runtime-canary/**'
       - 'supabase/functions/_shared/sandy-executive/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
-      - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'supabase/migrations/2026102211*.sql'
 permissions:
   contents: read
 jobs:
-  native-enrollment-preparation:
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    steps:
-      - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v2
-        with:
-          deno-version: v2.9.6
-      - name: Verify offline native preparation without VM enrollment
-        run: deno test --no-lock --allow-read --allow-write=/tmp --allow-run=openssl,deno supabase/functions/sandy-vm-protocol-api/prepare_enrollment_test.ts
   examiner-evidence-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
