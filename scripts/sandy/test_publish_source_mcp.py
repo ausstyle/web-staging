@@ -1,8 +1,9 @@
 import json
 from pathlib import Path
 import tempfile
+import subprocess
 import unittest
-from publish_source_mcp import SourcePublisher
+from publish_source_mcp import SourcePublisher, source_candidate
 
 
 class UncertainRuntime:
@@ -43,3 +44,26 @@ class SourcePublicationTests(unittest.TestCase):
             record = publisher.call('source-commit', 'github.git.commits.create', {'body': {}})
             self.assertTrue(record['complete'])
             self.assertFalse(record['execution_receipt']['effect_verified'])
+
+    def test_source_candidate_preserves_git_message_bytes_including_final_newline(self):
+        with tempfile.TemporaryDirectory() as folder:
+            def git(*args):
+                return subprocess.check_output(["git", "-C", folder, *args])
+            git("init", "-q")
+            git("config", "user.name", "Source delivery test")
+            git("config", "user.email", "source-test@example.invalid")
+            file = Path(folder) / "source.txt"
+            file.write_text("baseline\n")
+            git("add", "source.txt")
+            git("commit", "-qm", "baseline")
+            file.write_text("reviewed source\n")
+            git("commit", "-qam", "preserve exact source message")
+            commit = git("rev-parse", "HEAD").decode().strip()
+            from unittest.mock import patch
+            import publish_source_mcp
+            with patch.object(publish_source_mcp, "git", side_effect=git):
+                _, _, _, arguments, files = source_candidate(commit, "engineering/source-test")
+            expected = git("cat-file", "commit", commit).split(b"\n\n", 1)[1].decode()
+            self.assertTrue(expected.endswith("\n"))
+            self.assertEqual(arguments["body"]["message"], expected)
+            self.assertEqual(files[0]["bytes"], len("reviewed source\n"))

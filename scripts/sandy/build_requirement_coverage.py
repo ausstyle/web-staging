@@ -30,6 +30,57 @@ def successful_call(call):
             and call.get("executed") is True and not call.get("error"))
 
 
+def standing_execution_evidence(report, verification, evidence_sha256):
+    """Accept operation-specific MCP evidence only with matching registry readback.
+
+    These are historical executions at their recorded releases, never blanket
+    certificates for a wildcard family or a newly revised provider contract.
+    """
+    positive, denied = defaultdict(list), defaultdict(list)
+    if (report.get("complete") is not True
+            or verification.get("evidence_sha256") != evidence_sha256):
+        return {}, {}
+    durable = {r["id"]: r for r in report.get("durable_admissions", [])}
+    registry = {r["operation"]: r for r in verification.get("operations", [])}
+    filename = "standing-engineering-GitHub-MCP-evidence-20261022.json"
+    for operation, proof in report.get("operation_evidence", {}).items():
+        row = registry.get(operation, {})
+        if (proof.get("mcp_end_to_end_verified") is not True or row.get("verified") is not True
+                or row.get("evidence", {}).get("evidence_sha256") != evidence_sha256):
+            continue
+        for call in proof.get("successful_calls", []):
+            if not successful_call(call) or call.get("operation") != operation:
+                continue
+            admission = call.get("admission_id")
+            receipt = call.get("execution_receipt")
+            record = durable.get(admission, {})
+            if admission and (record.get("state") != "succeeded"
+                    or record.get("job_status") != "succeeded"
+                    or not record.get("audit") or not all(a.get("hash_valid") is True
+                        and a.get("previous_link_valid") is True for a in record["audit"])):
+                continue
+            if receipt and (receipt.get("state") != "succeeded"
+                    or receipt.get("effect_verified") is not True
+                    or receipt.get("admission_id") != admission):
+                continue
+            if not admission and operation not in ("system.lifecycle.get", "system.lifecycle.verify"):
+                continue
+            value = {"file": filename, "level": "standing_Auth_MCP_provider_execution_at_recorded_release",
+                     "durable_admission_receipt_present": bool(admission),
+                     "whole_family_acceptance": False}
+            if value not in positive[operation]:
+                positive[operation].append(value)
+    for call in report.get("policy_denials", []):
+        if (call.get("http_status") == 200 and call.get("API_status") == 403
+                and call.get("MCP_isError") is True and call.get("executed") is False
+                and call.get("provider_admissions") == 0
+                and call.get("authenticated_denial_audit", {}).get("hash_valid") is True):
+            value = {"file": filename, "level": "standing_Auth_MCP_scope_expiry_revocation_denied_before_provider"}
+            if value not in denied[call["operation"]]:
+                denied[call["operation"]].append(value)
+    return dict(positive), dict(denied)
+
+
 def execution_evidence(docs=DOCS):
     positive, denied = defaultdict(list), defaultdict(list)
     workload = "engineering-workload-evidence-20261021.json"
@@ -158,6 +209,20 @@ def execution_evidence(docs=DOCS):
                 value = {"file": filename, "level": "MCP_GitHub_fixture_wrong_scope_or_replay_denied"}
                 if value not in denied[call["operation"]]:
                     denied[call["operation"]].append(value)
+    filename = "standing-engineering-GitHub-MCP-evidence-20261022.json"
+    readback = docs / "standing-engineering-registry-verification-20261022.json"
+    if (docs / filename).exists() and readback.exists():
+        report = load(docs / filename)
+        reference = report.get("durable_admissions_reference", {})
+        if reference.get("file") == "standing-engineering-durable-admissions-20261022.json":
+            receipts = docs / reference["file"]
+            if receipts.exists() and digest(receipts) == reference.get("sha256"):
+                report["durable_admissions"] = load(receipts)
+        actual, refusals = standing_execution_evidence(report, load(readback), digest(docs / filename))
+        for operation, evidence in actual.items():
+            positive[operation].extend(evidence)
+        for operation, evidence in refusals.items():
+            denied[operation].extend(evidence)
     return dict(positive), dict(denied)
 
 

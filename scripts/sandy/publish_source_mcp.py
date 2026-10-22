@@ -56,9 +56,9 @@ def source_candidate(commit, branch):
     if not entries or len(json.dumps(tree_args).encode()) > 120 * 1024:
         raise ValueError('bounded_source_tree_required')
     fields = git('show', '-s', '--format=%an%n%ae%n%aI%n%cn%n%ce%n%cI', commit).decode().splitlines()
-    # GitHub's REST representation excludes the conventional final Git newline.
-    # The exact resulting Git hash below guards unusual message/date formatting.
-    message = git('cat-file', 'commit', commit).split(b'\n\n', 1)[1].decode().removesuffix('\n')
+    # Preserve the exact Git message bytes. The provider readback verifier handles
+    # the REST-only terminal-newline representation without changing the object.
+    message = git('cat-file', 'commit', commit).split(b'\n\n', 1)[1].decode()
     commit_args = {'body': {'tree': tree, 'parents': [parent], 'message': message,
         'author': dict(zip(('name', 'email', 'date'), fields[:3])),
         'committer': dict(zip(('name', 'email', 'date'), fields[3:]))}}
