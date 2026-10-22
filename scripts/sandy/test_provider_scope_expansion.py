@@ -10,8 +10,17 @@ class ExpansionContractsTest(unittest.TestCase):
  def setUpClass(cls):
   cls.baseline=json.loads((BASE/'contracts.json').read_text())['operations']
   cls.expanded=json.loads((BASE/'expansion_contracts.json').read_text())['operations']
- def test_baseline_is_frozen_and_has_no_semantic_rewrite(self):
-  self.assertEqual(hashlib.sha256((BASE/'contracts.json').read_bytes()).hexdigest(),'ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef')
+ def test_baseline_preserves_594_contracts_and_pins_the_reviewed_range_read(self):
+  # API source 618e6ce adds bounded repository byte ranges to this one read.
+  # Keep the other 594 contracts pinned to their original semantic digest;
+  # accepting arbitrary catalogue changes would hide actual merge regressions.
+  unchanged=[o for o in self.baseline if o['operation']!='github.files.content.get']
+  self.assertEqual(len(unchanged),594)
+  self.assertEqual(hashlib.sha256(json.dumps(unchanged,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest(),'c967b6e8b1c356fa2ff33f6969bbbaa5e2728d059bc69e33f2abc87aa5d722f4')
+  ranged=next(o for o in self.baseline if o['operation']=='github.files.content.get')
+  self.assertEqual(ranged['contract_sha256'],'ded0ad6b40a43c7de6ee5e69ead81726f2ddbc7aed5ca725ebe4f972745cc311')
+  unsigned={k:v for k,v in ranged.items() if k!='contract_sha256'}
+  self.assertEqual(hashlib.sha256(json.dumps(unsigned,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest(),ranged['contract_sha256'])
   self.assertEqual(len(self.baseline),595)
  def test_additions_are_unique_closed_and_do_not_duplicate_installed_provider_reads(self):
   ids={o['operation'] for o in self.baseline};providers={o['provider_operation_id'] for o in self.baseline}
