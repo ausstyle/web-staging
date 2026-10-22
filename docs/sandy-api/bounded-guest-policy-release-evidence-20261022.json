@@ -1,0 +1,401 @@
+{
+  "kind": "source_attested_control_release_and_MCP_regression",
+  "release": {
+    "observed_at": "2026-10-22T17:16:51.268629+00:00",
+    "source_commit": "11636b525119327ce794f87975c291c24232db35",
+    "merge_commit": "f18bd5a2add8924d58a0ae648516aa7c0462f945",
+    "PR": 182,
+    "change_id": "3f64dcd9-8e7f-41e2-a7f5-14f3c9d2ff32",
+    "deployment_channel": "authorized_supabase_management",
+    "function": "sandy-guest-operation-api",
+    "version": 17,
+    "verify_jwt": true,
+    "all_uploaded_sources_accounted_for": true,
+    "previous_version": 16,
+    "previous_artifact_sha256": "4c81e1baf9200354181823d7004aba672260bb8200a1ebe25d6e25aa176502fd",
+    "migration": {
+      "version": "20261022173000",
+      "name": "sandy_bounded_guest_policy",
+      "migration_sha256": "418d82f6a4e787c4affa049b07231b5132057cae19fdfb2157e5f1b29ae29c13"
+    },
+    "SQL_functions": [
+      {
+        "name": "sandy_engineering_admin_set_standing",
+        "source_sha256": "bdd82e7ca78a5b4599eac2d94fef0c8194d91b5f9fb927b24bab188571c1baf1",
+        "expected_source_and_ACL_match": true
+      },
+      {
+        "name": "sandy_engineering_computer_policy_valid",
+        "source_sha256": "db8f602b05be082a65207a221f9b66400f35e746b74c88fb56f4484afacee15e",
+        "expected_source_and_ACL_match": true
+      },
+      {
+        "name": "sandy_engineering_guest_policy_target",
+        "source_sha256": "1337218b591a05dc53a8c295b64eee53eba3ad50fa07a6c94ac3ba3adfe7aa7d",
+        "expected_source_and_ACL_match": true
+      },
+      {
+        "name": "sandy_engineering_policy_target",
+        "source_sha256": "0876c8402a9ed03f2687e4117d49a3fba1914fcbbc5a0de31855b9a8ef301eec",
+        "expected_source_and_ACL_match": true
+      },
+      {
+        "name": "sandy_guest_admission_current",
+        "source_sha256": "4cf83507e7b441bb5fa563de6ad3d323cc42909d62cd063dbad217ab119803ab",
+        "expected_source_and_ACL_match": true
+      }
+    ],
+    "standing_authority_enrollment_registry_flags_unchanged": true,
+    "new_registry_operations": 0,
+    "new_private_classifications": 10,
+    "VM_commands_executed": 0,
+    "guest_execution_acceptance": false,
+    "actual_MCP_regression": "passed",
+    "CI_checks": [
+      {
+        "id": 119971182198,
+        "name": "api-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119971181621,
+        "name": "vm-protocol-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119971118119,
+        "name": "examiner-evidence-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119971117395,
+        "name": "offline-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ]
+  },
+  "database_components": {
+    "observed_at": "2026-10-22T17:18:09.994797+00:00",
+    "kind": "database_boundary_fixtures_full_rollback",
+    "migration_sha256": "418d82f6a4e787c4affa049b07231b5132057cae19fdfb2157e5f1b29ae29c13",
+    "candidate_installed_inside_rollback": false,
+    "provider_execution": false,
+    "VM_acceptance": false,
+    "suites": [
+      {
+        "name": "sandy_bounded_guest_policy_rollback",
+        "source_sha256": "fcc984e57091a54282e26a1a04ed6dcb21297aad795909e97eca5601ea18fe4e",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 55,
+        "rolled_back": true
+      },
+      {
+        "name": "sandy_guest_standing_dispatch_rollback",
+        "source_sha256": "a13ccb27616c29fcf7d349cb844c6426a4e6ad3762530415d30b3a2ab065f41d",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 16,
+        "rolled_back": true
+      },
+      {
+        "name": "sandy_standing_session_binding_rollback",
+        "source_sha256": "5ac84a9260063ecf3885a16fdd10c5caf22d4adbf07c7da8a4eeb54eafe42670",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 10,
+        "rolled_back": true
+      },
+      {
+        "name": "sandy_standing_engineering_rollback",
+        "source_sha256": "6ea352071fbf56ed72a04bfa00bd97f0da33c7835864cb1606a93a1d09e9f407",
+        "HTTP_status": 201,
+        "passed": true,
+        "database_assertions": 30,
+        "rolled_back": true
+      }
+    ]
+  },
+  "MCP": {
+    "complete": true,
+    "discovery": {
+      "scoped_tools": 233,
+      "pages": 3,
+      "new_guest_writes_or_transports_discovered": false
+    },
+    "normal_renewable_workload_Auth": true,
+    "personal_Controller_token_used": false,
+    "observations": [
+      {
+        "operation": "github.repos.get",
+        "API_status": 200,
+        "executed": true,
+        "admission": {
+          "id": "ec5fbd68-f621-45c2-b70a-03d685a3038f",
+          "operation": "github.repos.get",
+          "state": "succeeded",
+          "result_sha256": "358d852441f72ec1a68e50fa79a37fbe39a201ff70661526da5977412d0daeb8",
+          "provider_http_status": 200,
+          "registry_revision_sha256": "417e9c8f581fabc1c40e3de3222171d539110fb01bde9f074bd9d33d66f0d0a3",
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "request_id": "fbee7a74-bc6b-44d5-9993-bc97e5638b11",
+          "session_id": "83d5c83f-b6bf-4675-9bac-8ea5a6f0cc8a",
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        },
+        "matching_result_sha256": "358d852441f72ec1a68e50fa79a37fbe39a201ff70661526da5977412d0daeb8",
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "input_schema_valid": true,
+        "provider_HTTP_status": 200,
+        "independent_GitHub_readback": {
+          "full_name": "ausstyle/web-staging",
+          "id": 1416227508,
+          "name": "web-staging"
+        },
+        "provider_result_matches": true
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "API_status": 200,
+        "executed": true,
+        "admission": {
+          "id": "324480a6-92a6-4f38-8c07-98666a5b7cb5",
+          "operation": "gcp.vm.agent.status",
+          "state": "succeeded",
+          "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+          "provider_http_status": 200,
+          "registry_revision_sha256": "9e42110b242a98ec6c8302fb6a0ba07fa6800ac335dbec894d85685f880929aa",
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "request_id": "e318a852-281d-45ae-8aed-24187ce97183",
+          "session_id": "ad0bd8eb-fe4f-4c44-9d1e-a6f9debdde11",
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        },
+        "matching_result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "input_schema_valid": true,
+        "result": {
+          "ok": true,
+          "enabled": false,
+          "vm_name": "sandy-video",
+          "platform": "linux",
+          "generation": 0,
+          "project_id": "elaborate-haven-511518-a5",
+          "instance_id": "6831598645020395570",
+          "last_seen_at": null,
+          "agent_version": null,
+          "agent_connected": false,
+          "ssh_transport_available": false,
+          "winrm_transport_available": false,
+          "installed_software_attested": false
+        },
+        "independent_enrollment_match": true,
+        "observation_source": "Sandy enrollment and last authenticated heartbeat, not a VM command"
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "API_status": 200,
+        "executed": true,
+        "admission": {
+          "id": "1e250d79-5c59-44dd-ba1d-9f8628f407cf",
+          "operation": "gcp.vm.agent.status",
+          "state": "succeeded",
+          "result_sha256": "3dfa17ffe8405ece938a5af12b4f0c152561c4dc7264b3eb7661276efe7f7005",
+          "provider_http_status": 200,
+          "registry_revision_sha256": "9e42110b242a98ec6c8302fb6a0ba07fa6800ac335dbec894d85685f880929aa",
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+          "request_id": "edd6efa9-7273-4596-b0ac-2bbdb1988906",
+          "session_id": "5c8e4092-be38-4920-bcad-eff2578dadd1",
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        },
+        "matching_result_sha256": "3dfa17ffe8405ece938a5af12b4f0c152561c4dc7264b3eb7661276efe7f7005",
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "input_schema_valid": true,
+        "result": {
+          "ok": true,
+          "enabled": false,
+          "vm_name": "sandy-windows",
+          "platform": "win32",
+          "generation": 0,
+          "project_id": "elaborate-haven-511518-a5",
+          "instance_id": "8120150462304566315",
+          "last_seen_at": null,
+          "agent_version": null,
+          "agent_connected": false,
+          "ssh_transport_available": false,
+          "winrm_transport_available": false,
+          "installed_software_attested": false
+        },
+        "independent_enrollment_match": true,
+        "observation_source": "Sandy enrollment and last authenticated heartbeat, not a VM command"
+      },
+      {
+        "operation": "gcp.vm.files.upload",
+        "request_id": "a9b41e58-daa0-4658-abfc-60f3cd4f9c2c",
+        "API_status": 403,
+        "error": "engineering_operation_scope_denied",
+        "executed": false,
+        "execution_admissions": 0
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "request_id": "e206ab29-9706-4330-9143-c8c2cd753046",
+        "API_status": 400,
+        "error": "invalid_operation_arguments",
+        "executed": false,
+        "execution_admissions": 0
+      }
+    ]
+  },
+  "component_readback": {
+    "observed_at": "2026-10-22T17:29:28.118665+00:00",
+    "functions": {
+      "sandy-guest-operation-api": {
+        "version": 17,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      "sandy-operation-api": {
+        "version": 56,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      "sandy-provider-operation-api": {
+        "version": 29,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      "sandy-legacy-compatibility-api": {
+        "version": 21,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      "sandy-engineering-runtime": {
+        "version": 15,
+        "status": "ACTIVE",
+        "verify_jwt": false
+      },
+      "sandy-api-mcp": {
+        "version": 21,
+        "status": "ACTIVE",
+        "verify_jwt": true
+      },
+      "sandy-vm-protocol-api": null
+    },
+    "native_SQL": {
+      "bindings": null,
+      "contracts": null
+    }
+  },
+  "legacy_Windows_heartbeat_database_readback": [
+    {
+      "vm_name": "sandy-windows",
+      "last_seen_at": "2026-10-19 23:43:45.436+00"
+    }
+  ],
+  "standing_authority": {
+    "delegations": [
+      {
+        "id": "da36e501-f8c5-4e11-ba79-44d5ba2be289",
+        "version": 5,
+        "policy_sha256": "4776b5bab8cddd789d2b9456807d4108b90247866073e62f2ac24d37c40c5652",
+        "source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+        "expires_at": "2026-11-21 09:51:26.753549+00",
+        "revoked_at": null
+      }
+    ],
+    "expanded_by_this_release": false,
+    "canary_policy_proposal": "../sandy-engineering/policies/engineering-computer-canary-proposal.json",
+    "canary_policy_established": false
+  },
+  "rollback": {
+    "previous_guest_version": 16,
+    "previous_artifact_sha256": "4c81e1baf9200354181823d7004aba672260bb8200a1ebe25d6e25aa176502fd",
+    "prior_SQL_definitions_preserved": true,
+    "VM_rollback_exercised": false,
+    "production_rollback_exercised": false
+  },
+  "infrastructure_acceptance": {
+    "scenarios_total": 7,
+    "complete_scenario_implementations": 0,
+    "partially_implemented_scenarios": 7,
+    "fully_verified_scenarios": 0,
+    "fully_accepted_scenarios": 0,
+    "direct_external_IAP_blocked_scenarios": [
+      "INF-02",
+      "INF-03"
+    ],
+    "VM_commands_executed": 0,
+    "Linux_Windows_graphical_verified": 0,
+    "new_billable_resources": 0,
+    "software_remaining": [
+      "Scoped provisioning/risk/cost policy and real reconciliation",
+      "Native SSH/WinRM existing-contract activation and trusted endpoint/credential enrollment",
+      "Restricted managed-agent enrollment and preserving existing startup programs",
+      "Graphical session isolation, resume/termination and artifact lifecycle"
+    ],
+    "authorization_dependencies": [
+      "IAP provider policy administrator and target/port tunnel permission",
+      "Restricted establishment of scoped writes/enrollment; the active grant remains metadata-only"
+    ]
+  }
+}
