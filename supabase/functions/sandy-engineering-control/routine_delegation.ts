@@ -69,7 +69,7 @@ export async function verifyRoutineReview(candidate: Obj, read: (path: string) =
   const executions = await read(`${root}/actions/runs?head_sha=${head}&per_page=100`);
   if (!Array.isArray(executions.workflow_runs) || executions.total_count > 100 ||
       !executions.workflow_runs.some((r: Obj) => r.head_sha === head && r.check_suite_id === required.check_suite?.id &&
-        r.path === workflowPath && r.event === "pull_request" && r.status === "completed" && r.conclusion === "success")) throw Error("trusted_ci_run_required");
+        r.path === workflowPath && (r.event === "pull_request" || candidate.autonomous && r.event === "workflow_dispatch") && r.status === "completed" && r.conclusion === "success")) throw Error("trusted_ci_run_required");
   const file = await read(`${root}/contents/${workflowPath}?ref=${head}`);
   if (file?.encoding !== "base64" || typeof file.content !== "string") throw Error("trusted_workflow_required");
   const bytes = Uint8Array.from(atob(file.content.replace(/\s/g, "")), c => c.charCodeAt(0));

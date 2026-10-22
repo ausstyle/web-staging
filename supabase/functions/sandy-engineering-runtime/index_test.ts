@@ -207,7 +207,7 @@ Deno.test("out-of-scope operations and malformed requests never reach MCP", asyn
     const value of [
       {
         ...message,
-        params: { name: "supabase.projects.delete", arguments: {} },
+        params: { name: "shell.execute", arguments: {} },
       },
       { ...message, method: "unknown" },
       { ...message, id: undefined },
@@ -398,3 +398,5 @@ Deno.test("recognized fixed VM diagnostics still use the normal workload JWT and
   assert.equal(denied.state.sessions, 0);
   assert.equal(denied.state.mcp, 0);
 });
+
+Deno.test("deployed v14 canonical provider routing preserves downstream authorization denial",async()=>{let calls=0;const h=await fixture({mcp:async(token,message)=>{calls++;assert.equal(token,TOKEN);return {status:403,body:{error:"engineering_operation_scope_denied",executed:false}};}});const r=await h.handler(request({...message,params:{name:"supabase.projects.delete",arguments:{}}}));assert.equal(r.status,403);assert.equal(calls,1);assert.equal(h.state.sessions,1);assert.equal((await r.json()).executed,false);});

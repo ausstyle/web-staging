@@ -4,9 +4,8 @@
  * never returned, and this function implements no provider operations. */
 import { createClient } from "npm:@supabase/supabase-js@2.57.4";
 import { argumentDigest, requestJson } from "../_shared/sandy_api_protocol.ts";
+import { createEngineeringSessionClient } from "../_shared/sandy_engineering_session_client.ts";
 import {
-  createEngineeringSessionProvider,
-  type EngineeringAuth,
   type IssuedSession,
   type Workload,
 } from "../_shared/sandy_engineering_session.ts";
@@ -159,7 +158,9 @@ export function createEngineeringRuntime(deps: RuntimeDependencies) {
       message.method === "tools/call" &&
       (!object(params) || typeof params.name !== "string" ||
         !policy.operations.includes(params.name) &&
-          !vmReadPolicy.operations.includes(params.name))
+          !vmReadPolicy.operations.includes(params.name) &&
+          params.name !== "system.execution.get" &&
+          !/^(github|supabase|gcp)\.[a-z0-9_.]{1,100}$/.test(params.name))
     ) return reply(403, { error: "engineering_operation_scope_denied" });
     let session: IssuedSession;
     try {
@@ -262,40 +263,7 @@ if (import.meta.main) {
       if (r.error) throw Error("runtime_policy_unavailable");
       return r.data;
     };
-    const sessions = createEngineeringSessionProvider({
-      auth: () =>
-        createClient(base, service, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        }).auth as unknown as EngineeringAuth,
-      register: async (id, session, epoch, expiry) =>
-        (await rpc("sandy_engineering_register_session", {
-          p_user_id: id,
-          p_session_id: session,
-          p_epoch: epoch,
-          p_expires_at: expiry,
-        }))?.ok === true,
-      retire: async (id, session) =>
-        (await rpc("sandy_engineering_retire_session", {
-          p_user_id: id,
-          p_session_id: session,
-        }))?.ok === true,
-      acquire: async (workload) => {
-        const value = await rpc("sandy_engineering_claim_auth_issue", {
-          p_user_id: workload.userId,
-          p_epoch: workload.epoch,
-        });
-        if (value?.ok !== true) {
-          throw Error("engineering_auth_issue_not_authorized");
-        }
-        return typeof value.lease_id === "string" ? value.lease_id : null;
-      },
-      release: async (id, lease) => {
-        await rpc("sandy_engineering_release_auth_issue", {
-          p_user_id: id,
-          p_lease_id: lease,
-        });
-      },
-    });
+    const sessions = createEngineeringSessionClient(base, service);
     Deno.serve(createEngineeringRuntime({
       resolve: (hash) =>
         rpc("sandy_engineering_resolve_bootstrap", { p_sha256: hash }),
