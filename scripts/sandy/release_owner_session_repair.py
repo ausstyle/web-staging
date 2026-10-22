@@ -14,7 +14,7 @@ import urllib.request
 import urllib.error
 import uuid
 from release_web_canary import Release, Blocked, ROOT, BASE, NoRedirect, private_write, original_sources
-from owner_repair_diagnostics import ManagementFailure, failure_details, provider_sqlstate
+from owner_repair_diagnostics import ManagementFailure, failure_details, provider_sqlstate, github_annotation
 from release_delegated_runtime import upload
 CHANGE = 'e6c9fb87-db2c-4ed7-ac63-bbdb60aad127'
 SOURCE = 'f9958d50b4fd4ebd82f97c8e3be76ad49250a192'
@@ -171,7 +171,11 @@ def reconcile(r,m,files,migration):
             report['ok']=False;report['observations'][stage]={'ok':False,**failure_details(error)}
             return None
     slug=m['function']['slug']
-    meta=probe('function_metadata',lambda:json.loads(r.api('GET','/functions/'+slug)))
+    def metadata():
+        value=json.loads(r.api('GET','/functions/'+slug))
+        if not isinstance(value,dict) or type(value.get('version')) is not int or value.get('status') not in ('ACTIVE','INACTIVE','REMOVED','DEPLOYING') or type(value.get('verify_jwt')) is not bool:raise ValueError('invalid_function_metadata')
+        return {k:value[k] for k in ('version','status','verify_jwt')}
+    meta=probe('function_metadata',metadata)
     def source():
         body=r.api('GET','/functions/'+slug+'/body')
         return {'bundle_sha256':digest(body),'matches_pinned_prior':digest(body)==m['function']['prior_bundle_sha256'],
@@ -187,7 +191,7 @@ def reconcile(r,m,files,migration):
     probe('migration_functions',functions)
     probe('migration_event_table',lambda:r.sql("SELECT to_regclass('public.sandy_engineering_delegation_events') IS NOT NULL AS present"))
     probe('component_lease',lambda:r.sql("SELECT component,change_id,expires_at,expires_at>clock_timestamp() AS active FROM public.sandy_engineering_component_leases WHERE component='sandy-engineering-control'"))
-    probe('release_events',lambda:r.sql(f"SELECT id,event_type,occurred_at FROM public.sandy_engineering_change_events WHERE change_id='{CHANGE}' ORDER BY id"))
+    probe('release_events',lambda:r.sql(f"SELECT id,event_type,occurred_at FROM public.sandy_engineering_change_events WHERE change_id='{CHANGE}' ORDER BY id DESC LIMIT 50"))
     if meta:
         # A remote error body must never be mistaken for function metadata.
         report['observations']['function_metadata']={k:meta.get(k) for k in ('version','status','verify_jwt')}
@@ -196,6 +200,10 @@ def reconcile(r,m,files,migration):
     report['clean_retry_preconditions_verified']=bool(clean)
     report['state']='verified_unchanged_prior_release' if clean else 'requires_reconciliation'
     return report
+
+def emit(result):
+    print(json.dumps(result))
+    if os.environ.get('GITHUB_ACTIONS')=='true':print(github_annotation(result))
 
 def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__);mode=p.add_mutually_exclusive_group();mode.add_argument('--deploy', action='store_true');mode.add_argument('--reconcile',action='store_true');p.add_argument('--evidence-dir', type=Path); args = p.parse_args(argv)
@@ -210,7 +218,7 @@ def main(argv=None):
         if args.deploy:
             private_write(out, 'redacted-receipt.json', json.dumps(result, indent=2).encode())
         if args.reconcile:private_write(out,'redacted-reconciliation.json',json.dumps(result,indent=2).encode())
-        print(json.dumps(result)); return 0 if result.get('ok',True) else 1
+        emit(result); return 0 if result.get('ok',True) else 1
     except Exception as error:
         result={'ok':False,'error':'owner_repair_blocked_or_unknown_outcome',**failure_details(error),
                 'stage':getattr(r,'stage',stage),'automatic_retry':False,'approval_written':False,
@@ -221,6 +229,6 @@ def main(argv=None):
         if (args.deploy or args.reconcile) and out.is_dir():
             try:private_write(out,'redacted-failure.json',json.dumps(result,indent=2).encode())
             except OSError:result['failure_artifact_saved']=False
-        print(json.dumps(result)); return 1
+        emit(result); return 1
 if __name__ == '__main__':
     raise SystemExit(main())

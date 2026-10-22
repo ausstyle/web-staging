@@ -39,7 +39,7 @@ class Tests(unittest.TestCase):
         output=io.StringIO()
         with patch.object(release,'candidate',return_value=({}, {}, b'')),patch.object(release,'Repair',return_value=r),patch.object(release,'run',side_effect=failed),contextlib.redirect_stdout(output):
             code=release.main([])
-        value=json.loads(output.getvalue());self.assertEqual(code,1);self.assertEqual(value['stage'],'approval_verification');self.assertEqual(value['failure_code'],'management_http_403_no_automatic_retry')
+        value=json.loads(output.getvalue().splitlines()[0]);self.assertEqual(code,1);self.assertEqual(value['stage'],'approval_verification');self.assertEqual(value['failure_code'],'management_http_403_no_automatic_retry')
         self.assertFalse(value['migration_dispatched']);self.assertFalse(value['function_upload_dispatched']);self.assertTrue(value['read_only'])
     def test_failed_migration_never_uploads_or_discards_the_unknown_outcome_lease(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -93,6 +93,10 @@ class Tests(unittest.TestCase):
         with patch.object(release,'original_sources',return_value={}):result=release.reconcile(r,release_fixtures.Tests().manifest(),{},b'approved')
         self.assertFalse(result['ok']);self.assertEqual(result['observations']['approval_verification']['http_status'],403)
         self.assertFalse(result['migration_dispatched']);self.assertFalse(result['function_upload_dispatched'])
+    def test_check_run_annotations_include_codes_without_provider_messages_or_source(self):
+        result={'ok':False,'read_only':True,'observations':{'approval_verification':{'ok':False,'failure_code':'management_http_403_no_automatic_retry','http_status':403,'raw_message':'fixture-private-source'}},'private':'fixture-credential'}
+        notice=diagnostics.github_annotation(result)
+        self.assertIn('management_http_403_no_automatic_retry',notice);self.assertNotIn('fixture',notice);self.assertLess(len(notice),1000)
     def test_failure_artifact_contains_safe_codes_only(self):
         with tempfile.TemporaryDirectory() as temp:
             out=Path(temp)/'new';r=release.Repair(out)

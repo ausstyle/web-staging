@@ -48,3 +48,30 @@ def failure_details(error):
     elif isinstance(error,(ValueError,TypeError)):code='provider_or_artifact_payload_invalid'
     else:code='unexpected_release_failure'
     return {'failure_code':code,**detail}
+
+STAGES=frozenset('''initialization candidate_verification approval_verification prior_function_readback
+migration_state_readback preflight_verified rollback_capture component_lease_acquire
+approval_and_lease_recheck migration_transaction post_migration_source_guard function_upload
+function_source_verification migration_postconditions release_audit_record release_verified
+function_metadata function_source migration_history migration_columns migration_functions
+migration_event_table component_lease release_events'''.split())
+def github_annotation(result):
+    """Expose bounded codes in check-run annotations when log downloads are unavailable."""
+    if result.get('ok') is False:
+        summary={k:result[k] for k in ('failure_code','http_status','sqlstate','read_only') if k in result}
+        summary['stage']=result.get('stage') if result.get('stage') in STAGES else 'reconciliation'
+        summary['probe_failures']={stage:{k:value[k] for k in ('failure_code','http_status','sqlstate') if k in value}
+            for stage,value in result.get('observations',{}).items() if stage in STAGES and isinstance(value,dict) and value.get('ok') is False}
+        kind='error'
+    else:
+        observations=result.get('observations',{})
+        metadata=observations.get('function_metadata',{})
+        source=observations.get('function_source',{})
+        summary={'read_only':result.get('read_only') is True,'clean_retry_preconditions_verified':result.get('clean_retry_preconditions_verified') is True,
+                 'function_version':metadata.get('version') if type(metadata.get('version')) is int else None,
+                 'deployed_version':result.get('deployed_version') if type(result.get('deployed_version')) is int else None}
+        if re.fullmatch('[a-f0-9]{64}',str(source.get('bundle_sha256',''))):summary['bundle_sha256']=source['bundle_sha256']
+        kind='notice'
+    import json
+    text=json.dumps(summary).replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+    return '::'+kind+' title=Owner repair diagnostic::'+text
