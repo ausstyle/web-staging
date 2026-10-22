@@ -30,7 +30,8 @@ class OperationClasses(unittest.TestCase):
                                    ('gcp.vm.packages.install','guest_packages_write'),
                                    ('gcp.vm.services.restart','guest_services_write'),
                                    ('gcp.vm.files.download','guest_read'),
-                                   ('gcp.vm.services.status','guest_read')]:
+                                   ('gcp.vm.services.status','guest_read'),
+                                   ('gcp.vm.tasks.get','guest_read')]:
             self.assertEqual(rows[operation]['operation_class'],expected)
         for name in ['gcp.vm.reboot','gcp.vm.firewall_guest.manage','gcp.vm.access.revoke']:
             self.assertNotIn(name,rows)

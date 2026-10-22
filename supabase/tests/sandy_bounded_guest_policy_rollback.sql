@@ -4,7 +4,7 @@ BEGIN;
 DO $test$
 DECLARE base jsonb;p jsonb;bad jsonb;s jsonb;windows_scope jsonb;t record;actual boolean;
  uid uuid:='7a519da9-2ee3-4edf-adec-42697da5a560';owner uuid;epoch integer;
- sid uuid:=gen_random_uuid();req uuid:=gen_random_uuid();job uuid;aid uuid;gid uuid;
+ sid uuid:=gen_random_uuid();req uuid:=gen_random_uuid();job uuid;aid uuid;gid uuid;guest_job uuid;task_scope jsonb;
  contract text;args text:='{"content_base64":"eA==","path":"sandy-engineering-canary/probe.txt","sha256":"2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881","vm_name":"sandy-video"}';
  scope text:='{"instance_id":"6831598645020395570","project_id":"elaborate-haven-511518-a5","provider":"gcp_guest","vm_name":"sandy-video","zone":"europe-west1-b"}';
  result jsonb;hash text;checks integer:=0;
@@ -93,6 +93,16 @@ BEGIN
  THEN RAISE EXCEPTION 'bounded_standing_mutation_gate_refused';END IF;checks:=checks+1;
  result:=public.sandy_guest_enqueue(owner,'sandy-video','gcp.vm.files.upload',aid,req,args,hash);
  IF result->>'error' IS DISTINCT FROM 'guest_enrollment_required' THEN RAISE EXCEPTION 'absent_enrollment_gate_bypassed';END IF;checks:=checks+1;
+ -- A nonexecuted synthetic task tests receipt isolation without enrollment.
+ INSERT INTO public.sandy_guest_jobs(actor_id,admission_id,vm_name,generation,operation,request_id,input_sha256,arguments,registry_revision_sha256)
+ VALUES(owner,aid,'sandy-video',0,'gcp.vm.files.upload',req,hash,args::jsonb,public.sandy_api_registry_revision('gcp.vm.files.upload')) RETURNING id INTO guest_job;
+ task_scope:=jsonb_build_object('provider','gcp_guest','project_id','elaborate-haven-511518-a5','receipt_actor_id',owner);
+ IF NOT public.sandy_engineering_policy_target(p,'gcp.vm.tasks.get',jsonb_build_object('job_id',guest_job),task_scope)
+ THEN RAISE EXCEPTION 'own_scoped_task_read_refused';END IF;checks:=checks+1;
+ IF public.sandy_engineering_policy_target(p,'gcp.vm.tasks.get',jsonb_build_object('job_id',guest_job),task_scope||jsonb_build_object('receipt_actor_id',gen_random_uuid()))
+ OR public.sandy_engineering_policy_target(p,'gcp.vm.tasks.get',jsonb_build_object('job_id',gen_random_uuid()),task_scope)
+ OR public.sandy_engineering_policy_target(base,'gcp.vm.tasks.get',jsonb_build_object('job_id',guest_job),task_scope)
+ THEN RAISE EXCEPTION 'unscoped_task_receipt_allowed';END IF;checks:=checks+3;
  IF EXISTS(SELECT 1 FROM public.sandy_api_mutation_approval_snapshots WHERE job_id=job)
  OR EXISTS(SELECT 1 FROM public.sandy_deployment_jobs WHERE id=job AND (approved_by IS NOT NULL OR approved_at IS NOT NULL))
  THEN RAISE EXCEPTION 'owner_approval_manufactured';END IF;checks:=checks+1;

@@ -82,8 +82,39 @@ BEGIN
  OR (p_policy->'classes'->'gcp' ? c.operation_class) IS DISTINCT FROM true
  OR jsonb_typeof(p_args) IS DISTINCT FROM 'object' OR jsonb_typeof(p_scope) IS DISTINCT FROM 'object'
  OR p_scope->>'provider' IS DISTINCT FROM 'gcp_guest'
- OR (p_scope-ARRAY['provider','project_id','zone','vm_name','instance_id'])<>'{}'::jsonb
  THEN RETURN false;END IF;
+ IF c.path='/sandy/guest/task-status' THEN
+  IF c.operation_class<>'guest_read' OR c.method<>'GET' OR c.is_mutation
+  OR (p_args-'job_id')<>'{}'::jsonb OR jsonb_typeof(p_args->'job_id') IS DISTINCT FROM 'string'
+  OR coalesce(p_args->>'job_id','') !~ '^[a-f0-9-]{36}$'
+  OR (p_scope-ARRAY['provider','project_id','receipt_actor_id'])<>'{}'::jsonb
+  OR NOT public.sandy_engineering_computer_policy_valid(p_policy)
+  THEN RETURN false;END IF;
+  -- Read only a job originating from this standing workload/owner and a
+  -- currently delegated target. Other Controller jobs are not inherited merely
+  -- because the engineering API actor is the bound owner authority.
+  RETURN EXISTS(SELECT 1 FROM public.sandy_guest_jobs j
+   JOIN public.sandy_guest_enrollments target ON target.vm_name=j.vm_name
+   JOIN public.sandy_api_execution_admissions a ON a.id=j.admission_id
+   JOIN public.sandy_engineering_execution_authorizations origin ON origin.job_id=a.approval_id
+   JOIN public.sandy_engineering_standing_delegations d ON d.id=origin.delegation_id
+   JOIN public.sandy_operation_registry r ON r.operation=c.operation
+   WHERE j.id::text=p_args->>'job_id' AND j.actor_id::text=p_scope->>'receipt_actor_id'
+    AND a.actor_id=j.actor_id AND a.tenant_id IS NULL AND a.credential_id IS NULL AND a.customer_key_id IS NULL
+    AND a.operation=j.operation AND a.request_id=j.request_id AND a.input_sha256=j.input_sha256
+    AND origin.operation=a.operation AND origin.request_id=a.request_id
+    AND origin.input_sha256=a.input_sha256 AND origin.contract_sha256=a.contract_sha256 AND origin.scope_sha256=a.scope_sha256
+    AND origin.owner_authority_id=j.actor_id AND d.owner_authority_id=j.actor_id
+    AND origin.identity_user_id=d.identity_user_id AND d.policy=p_policy
+    AND d.revoked_at IS NULL AND d.expires_at>clock_timestamp()
+    AND target.project_id=p_scope->>'project_id'
+    AND p_policy->'computer'->'targets'->target.vm_name->>'project_id'=target.project_id
+    AND p_policy->'computer'->'targets'->target.vm_name->>'zone'=target.zone
+    AND p_policy->'computer'->'targets'->target.vm_name->>'instance_id'=target.instance_id
+    AND r.handler='sandy-guest-operation-api' AND NOT r.is_mutation
+    AND r.error_contract->>'contract_sha256'=c.contract_sha256);
+ END IF;
+ IF (p_scope-ARRAY['provider','project_id','zone','vm_name','instance_id'])<>'{}'::jsonb THEN RETURN false;END IF;
  SELECT * INTO e FROM public.sandy_guest_enrollments WHERE vm_name=p_args->>'vm_name';
  IF e.vm_name IS NULL OR e.vm_name IS DISTINCT FROM p_scope->>'vm_name'
  OR e.project_id IS DISTINCT FROM p_scope->>'project_id' OR e.zone IS DISTINCT FROM p_scope->>'zone'
@@ -207,5 +238,7 @@ DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE op
 INSERT INTO public.sandy_engineering_operation_classes SELECT * FROM jsonb_populate_record(NULL::public.sandy_engineering_operation_classes,'{"operation":"gcp.vm.services.status","provider":"gcp","operation_class":"guest_read","method":"GET","path":"/sandy/guest/services","is_mutation":false,"contract_sha256":"d05f8eaf9c6052ac92b57872d0a89b18c70e1130a1106a3a503620bbe5b48e8c","source_path":"supabase/functions/sandy-guest-operation-api/contracts.json"}'::jsonb);
 DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='gcp.vm.services.stop' AND handler='sandy-guest-operation-api' AND is_mutation=true AND error_contract->>'contract_sha256'='28bc272daffb9fa124c2057256a1ace529e3c5a39815a87ee841cb34d8d01ed5') THEN RAISE EXCEPTION 'reviewed_guest_contract_required';END IF;END $$;
 INSERT INTO public.sandy_engineering_operation_classes SELECT * FROM jsonb_populate_record(NULL::public.sandy_engineering_operation_classes,'{"operation":"gcp.vm.services.stop","provider":"gcp","operation_class":"guest_services_write","method":"POST","path":"/sandy/guest/services","is_mutation":true,"contract_sha256":"28bc272daffb9fa124c2057256a1ace529e3c5a39815a87ee841cb34d8d01ed5","source_path":"supabase/functions/sandy-guest-operation-api/contracts.json"}'::jsonb);
+DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='gcp.vm.tasks.get' AND handler='sandy-guest-operation-api' AND NOT is_mutation AND error_contract->>'contract_sha256'='74c9dafbee4d383c18bb686ba08596b1d427a106253406f42e52da6caa3124e5') THEN RAISE EXCEPTION 'reviewed_guest_contract_required';END IF;END $$;
+INSERT INTO public.sandy_engineering_operation_classes SELECT * FROM jsonb_populate_record(NULL::public.sandy_engineering_operation_classes,'{"operation":"gcp.vm.tasks.get","provider":"gcp","operation_class":"guest_read","method":"GET","path":"/sandy/guest/task-status","is_mutation":false,"contract_sha256":"74c9dafbee4d383c18bb686ba08596b1d427a106253406f42e52da6caa3124e5","source_path":"supabase/functions/sandy-guest-operation-api/contracts.json"}'::jsonb);
 -- No operation registry row, exposure/verification flag, standing policy or enrollment is changed.
 COMMIT;

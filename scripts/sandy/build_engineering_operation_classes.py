@@ -21,6 +21,8 @@ def guest_descriptor(op):
     name = op['operation']
     if op['kind'] == 'status' and op['is_mutation'] is False:
         return 'metadata_read', 'GET', '/sandy/guest/agent-status'
+    if op['kind'] == 'task_status' and op['is_mutation'] is False:
+        return 'guest_read', 'GET', '/sandy/guest/task-status'
     if op['kind'] != 'queue':
         return None
     match = re.fullmatch(r'gcp\.vm\.(files|packages|services)\.([a-z]+)', name)

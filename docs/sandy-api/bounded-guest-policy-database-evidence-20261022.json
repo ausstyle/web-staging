@@ -1,49 +1,42 @@
 {
-  "observed_at": "2026-10-22T17:02:25.659873+00:00",
-  "migration_sha256": "a76ee91e8cea061a5c7b53bbf04c1b7c6cc7054fabef8dc82401378b8f8dc3b0",
-  "kind": "synthetic_database_components_full_rollback",
+  "observed_at": "2026-10-22T17:06:01.783529+00:00",
+  "kind": "database_boundary_fixtures_full_rollback",
+  "migration_sha256": "09b13a1217ff607c765a8d635758d52b8e5cdafaeba70238ebbbed4cef6275aa",
+  "candidate_installed_inside_rollback": true,
   "provider_execution": false,
-  "persistent_authority_changes": false,
-  "tests": [
+  "VM_acceptance": false,
+  "suites": [
     {
-      "suite": "sandy_bounded_guest_policy_rollback",
-      "status": 201,
-      "response": [
-        {
-          "checks": 51
-        }
-      ],
-      "passed": true
+      "name": "sandy_bounded_guest_policy_rollback",
+      "source_sha256": "358edffb3f64b16e4b3f9e9eca700f98a97cd6a41e45538c74bff60e3f5f522d",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 55,
+      "rolled_back": true
     },
     {
-      "suite": "sandy_guest_standing_dispatch_rollback",
-      "status": 201,
-      "response": [
-        {
-          "checks": 16
-        }
-      ],
-      "passed": true
+      "name": "sandy_guest_standing_dispatch_rollback",
+      "source_sha256": "a13ccb27616c29fcf7d349cb844c6426a4e6ad3762530415d30b3a2ab065f41d",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 16,
+      "rolled_back": true
     },
     {
-      "suite": "sandy_standing_session_binding_rollback",
-      "status": 201,
-      "response": [
-        {
-          "checks": 10
-        }
-      ],
-      "passed": true
+      "name": "sandy_standing_session_binding_rollback",
+      "source_sha256": "5ac84a9260063ecf3885a16fdd10c5caf22d4adbf07c7da8a4eeb54eafe42670",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 10,
+      "rolled_back": true
     },
     {
-      "suite": "sandy_standing_engineering_rollback",
-      "status": 201,
-      "response": [
-        {
-          "checks": 30
-        }
-      ],
-      "passed": true
+      "name": "sandy_standing_engineering_rollback",
+      "source_sha256": "6ea352071fbf56ed72a04bfa00bd97f0da33c7835864cb1606a93a1d09e9f407",
+      "HTTP_status": 201,
+      "passed": true,
+      "database_assertions": 30,
+      "rolled_back": true
     }
   ]
 }
