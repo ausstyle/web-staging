@@ -54,6 +54,68 @@ export async function managementRequest(path: "/api-keys" | "/database/query", c
   return await json(response) as any;
 }
 
+type BindingName = "SUPABASE_ACCESS_TOKEN" | "SANDY_SUPABASE_MANAGEMENT_TOKEN" | "SANDY_SUPABASE_ACCESS_TOKEN";
+type Binding = { name: BindingName; credential: string | undefined };
+const organization = "fygliqnwsicjuawdofrp";
+/** Fixed project/organisation only. Profile fingerprints hash a public subject ID,
+ * never a credential. No emails, usernames, other resources or raw bodies escape. */
+export async function selectManagementBinding(bindings: Binding[], assessments: Obj[], transport: typeof fetch = request) {
+  for (const binding of bindings) {
+    if (!binding.credential) { assessments.push({ binding: binding.name, configured: false }); continue; }
+    const evidence: ManagementEvidence[] = [], assessment: Obj = { binding: binding.name, configured: true,
+      required_management_access_verified: false, requests: evidence };
+    assessments.push(assessment);
+    const metadata = async (path: string) => {
+      requireThat(["/v1/profile", "/v1/organizations", `/v1/projects/${policy.project_ref}`,
+        `/v1/organizations/${organization}/members`].includes(path), "management_metadata_path_denied");
+      const row: ManagementEvidence = { endpoint: "https://api.supabase.com" + path, method: "GET", http_status: null, classification: "transport_unavailable" };
+      evidence.push(row);
+      try {
+        const response = await transport(row.endpoint, { redirect: "error", headers: { authorization: `Bearer ${binding.credential}` }, signal: AbortSignal.timeout(30000) });
+        row.http_status = response.status; row.classification = response.ok ? "success" : response.status === 403 ? "authorization_denied"
+          : response.status === 401 ? "authentication_rejected" : response.status === 429 ? "rate_limited" : response.status >= 500 ? "provider_unavailable" : "request_rejected";
+        if (!response.ok) { await response.body?.cancel(); return null; }
+        return await json(response) as any;
+      } catch { return null; }
+    };
+    const results = await Promise.allSettled([metadata("/v1/profile"), metadata(`/v1/projects/${policy.project_ref}`), metadata("/v1/organizations")]);
+    const [profile, project, organizations] = results.map(r => r.status === "fulfilled" ? r.value : null);
+    const subject = profile?.gotrue_id;
+    if (typeof subject === "string" && /^[a-f0-9-]{36}$/.test(subject)) {
+      assessment.profile_subject_sha256 = [...new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(subject)))].map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+    assessment.target_project_visible = (project?.ref ?? project?.id) === policy.project_ref &&
+      (project?.organization_slug ?? project?.organization_id) === organization;
+    assessment.target_organization_visible = Array.isArray(organizations)
+      ? organizations.some(r => r.slug === organization || r.id === organization) : null;
+    assessment.account_ownership_verified = false;
+    if (assessment.profile_subject_sha256 && assessment.target_project_visible) {
+      const members = await metadata(`/v1/organizations/${organization}/members`);
+      if (Array.isArray(members)) {
+        const own = members.filter(r => r.user_id === subject).map(r => String(r.role_name).toLowerCase());
+        assessment.self_organization_roles = own.filter(r => ["owner", "administrator", "admin", "developer", "read-only", "read_only"].includes(r));
+        assessment.account_ownership_verified = own.includes("owner");
+      }
+    }
+    try {
+      const keys = await managementRequest("/api-keys", binding.credential, evidence, undefined, transport);
+      requireThat(Array.isArray(keys) && ["service_role", "anon"].every(name => keys.some(r => r.name === name && typeof r.api_key === "string" && r.api_key.length > 0)), "engineering_session_configuration_unavailable");
+      await managementRequest("/database/query", binding.credential, evidence, { read_only: true, query: "SELECT 1 AS acceptance_management_read_probe" }, transport);
+      requireThat(assessment.target_project_visible, "engineering_management_project_binding_unverified");
+      assessment.required_management_access_verified = true;
+      return { name: binding.name, credential: binding.credential, keys };
+    } catch (error) {
+      const last = evidence.at(-1);
+      // Only a provider authorization refusal permits another explicitly bound,
+      // existing credential. Availability/schema failures must not be concealed.
+      if (!(error instanceof Failure && error.code === "engineering_management_request_failed" &&
+        (last?.http_status === 401 || last?.http_status === 403))) throw error;
+      assessment.blocker = assessment.target_project_visible ? "project_visible_management_permission_denied" : "management_permission_denied_project_membership_unproven";
+    }
+  }
+  throw new Failure("engineering_management_credential_scope_insufficient");
+}
+
 export function candidateUrl(before: Obj, after: Obj, source?: string): string {
   requireThat(before.service === "sandy-engineering-mcp" && before.project === "elaborate-haven-511518-a5" &&
     (!source || before.source_commit_candidate === source), "candidate_source_or_project_mismatch");
@@ -188,12 +250,22 @@ if (import.meta.main) {
       report.candidate_source_commit = source ?? null;
     }
     report.target = target;
-    const credential = Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN"); requireThat(credential, "engineering_management_credential_unavailable");
-    privateValues.push(credential);
+    const primaryName = Deno.env.get("SANDY_ACCEPTANCE_PRIMARY_BINDING") ?? "SANDY_SUPABASE_MANAGEMENT_TOKEN";
+    requireThat(["SUPABASE_ACCESS_TOKEN", "SANDY_SUPABASE_MANAGEMENT_TOKEN"].includes(primaryName), "engineering_management_binding_invalid");
+    const bindings: Binding[] = [
+      { name: primaryName as BindingName, credential: Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN") },
+      { name: "SANDY_SUPABASE_MANAGEMENT_TOKEN", credential: Deno.env.get("SANDY_ACCEPTANCE_EXISTING_MANAGEMENT_TOKEN") },
+      { name: "SANDY_SUPABASE_ACCESS_TOKEN", credential: Deno.env.get("SANDY_ACCEPTANCE_EXISTING_ACCESS_TOKEN") },
+    ];
+    requireThat(bindings.some(b => b.credential), "engineering_management_credential_unavailable");
+    for (const b of bindings) if (b.credential) privateValues.push(b.credential);
+    const assessments: Obj[] = []; report.management_credential_assessments = assessments;
+    const selected = await selectManagementBinding(bindings, assessments);
+    const credential = selected.credential; report.management_credential_binding = selected.name;
     const managementEvidence: ManagementEvidence[] = []; report.management_requests = managementEvidence;
     const administration = (path: "/api-keys" | "/database/query", body?: Obj) =>
       managementRequest(path, credential, managementEvidence, body);
-    const keys = await administration("/api-keys"), service = keys.find((row: Obj) => row.name === "service_role")?.api_key,
+    const keys = selected.keys, service = keys.find((row: Obj) => row.name === "service_role")?.api_key,
       anon = keys.find((row: Obj) => row.name === "anon")?.api_key;
     requireThat(typeof service === "string" && typeof anon === "string", "engineering_session_configuration_unavailable"); privateValues.push(service, anon);
     const rows = await administration("/database/query", { read_only: true, query:

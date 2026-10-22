@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { candidateUrl, managementRequest, type ManagementEvidence, verify, verifyRestCatalogue } from "./verify_mcp_candidate.ts";
+import { candidateUrl, managementRequest, selectManagementBinding, type ManagementEvidence, verify, verifyRestCatalogue } from "./verify_mcp_candidate.ts";
 
 Deno.test("release acceptance uses only the tagged endpoint of the exact preserved Sandy service", () => {
   const before = { service: "sandy-engineering-mcp", project: "elaborate-haven-511518-a5", source_commit_candidate: "a".repeat(40),
@@ -109,4 +109,63 @@ Deno.test("Management acceptance preserves read-only SQL, successful receipts an
     (async () => { throw Error("synthetic-private-error"); }) as typeof fetch), /engineering_management_request_failed/);
   assert.equal(errors[0].classification, "transport_unavailable");
   assert.equal(JSON.stringify(errors).includes("synthetic-private-error"), false);
+});
+
+Deno.test("binding assessment compares only fixed resources and selects an existing authorized binding after 403", async () => {
+  const assessments: any[] = [], calls: string[] = [];
+  const transport = (async (input, init) => {
+    const url = new URL(String(input)), token = (init?.headers as Record<string, string>).authorization;
+    calls.push(token + " " + url.pathname);
+    if (url.pathname === "/v1/profile") return Response.json({ private: "never-output" }, { status: 403 });
+    if (url.pathname === "/v1/organizations") return Response.json([]);
+    if (url.pathname === "/v1/projects/zmqlyygzqoidkcwdysok") return Response.json({ ref: "zmqlyygzqoidkcwdysok", organization_slug: "fygliqnwsicjuawdofrp" });
+    if (url.pathname.endsWith("/api-keys")) return token === "Bearer original-secret" ? Response.json({ message: "forbidden" }, { status: 403 })
+      : Response.json([{ name: "service_role", api_key: "private-service" }, { name: "anon", api_key: "private-anon" }]);
+    assert.equal(JSON.parse(String(init?.body)).read_only, true);
+    return Response.json([{ acceptance_management_read_probe: 1 }], { status: 201 });
+  }) as typeof fetch;
+  const selected = await selectManagementBinding([
+    { name: "SUPABASE_ACCESS_TOKEN", credential: "original-secret" },
+    { name: "SANDY_SUPABASE_ACCESS_TOKEN", credential: "existing-secret" },
+  ], assessments, transport);
+  assert.equal(selected.name, "SANDY_SUPABASE_ACCESS_TOKEN");
+  assert.equal(assessments[0].blocker, "project_visible_management_permission_denied");
+  assert.equal(assessments[0].requests.find((r: any) => r.endpoint.endsWith("/api-keys")).http_status, 403);
+  assert.equal(assessments[1].required_management_access_verified, true);
+  assert.equal(assessments[1].account_ownership_verified, false);
+  for (const value of ["original-secret", "existing-secret", "private-service", "private-anon", "never-output"]) assert.ok(!JSON.stringify(assessments).includes(value));
+  assert.equal(calls.some(c => c.endsWith("/members")), false);
+});
+Deno.test("binding selection preserves a working primary and does not use alternate credentials for outages or wrong resources", async () => {
+  for (const condition of ["working", "outage", "wrong-project", "denied"]) {
+    const reports: any[] = [], tokens: string[] = [];
+    const transport = (async (input, init) => {
+      const url = new URL(String(input)); tokens.push((init?.headers as Record<string, string>).authorization);
+      if (url.pathname.endsWith("/api-keys")) return condition === "outage" ? Response.json({}, { status: 503 })
+        : condition === "denied" ? Response.json({}, { status: 403 }) : Response.json([{ name: "service_role", api_key: "private-service" }, { name: "anon", api_key: "private-anon" }]);
+      if (url.pathname.endsWith("/database/query")) return Response.json([{ acceptance_management_read_probe: 1 }], { status: 201 });
+      if (url.pathname.endsWith("/zmqlyygzqoidkcwdysok")) return Response.json({ ref: condition === "wrong-project" ? "other" : "zmqlyygzqoidkcwdysok", organization_slug: "fygliqnwsicjuawdofrp" });
+      return Response.json({}, { status: 403 });
+    }) as typeof fetch;
+    const bindings = [{ name: "SUPABASE_ACCESS_TOKEN" as const, credential: "primary" },
+      { name: "SANDY_SUPABASE_MANAGEMENT_TOKEN" as const, credential: condition === "denied" ? undefined : "alternate" }];
+    if (condition === "working") assert.equal((await selectManagementBinding(bindings, reports, transport)).name, "SUPABASE_ACCESS_TOKEN");
+    else await assert.rejects(() => selectManagementBinding(bindings, reports, transport), condition === "denied" ? /credential_scope_insufficient/ : condition === "outage" ? /request_failed/ : /project_binding_unverified/);
+    assert.equal(tokens.includes("Bearer alternate"), false);
+  }
+});
+Deno.test("account ownership is asserted only from an accessible matching profile and target organisation member", async () => {
+  const reports: any[] = [], subject = "11111111-1111-4111-8111-111111111111";
+  const transport = (async (input) => {
+    const path = new URL(String(input)).pathname;
+    if (path === "/v1/profile") return Response.json({ gotrue_id: subject, primary_email: "private@example.invalid", username: "private-user" });
+    if (path.endsWith("/members")) return Response.json([{ user_id: subject, role_name: "Owner", email: "private@example.invalid" }, { user_id: "another-user", role_name: "Administrator" }]);
+    if (path.endsWith("/api-keys")) return Response.json([{ name: "service_role", api_key: "service" }, { name: "anon", api_key: "anon" }]);
+    if (path.endsWith("/database/query")) return Response.json([{ acceptance_management_read_probe: 1 }], { status: 201 });
+    if (path === "/v1/organizations") return Response.json([{ slug: "fygliqnwsicjuawdofrp" }]);
+    return Response.json({ ref: "zmqlyygzqoidkcwdysok", organization_slug: "fygliqnwsicjuawdofrp" });
+  }) as typeof fetch;
+  await selectManagementBinding([{ name: "SUPABASE_ACCESS_TOKEN", credential: "private-token" }], reports, transport);
+  assert.equal(reports[0].account_ownership_verified, true); assert.deepEqual(reports[0].self_organization_roles, ["owner"]);
+  for (const secret of [subject, "private@example.invalid", "private-user", "another-user", "private-token"]) assert.ok(!JSON.stringify(reports).includes(secret));
 });
