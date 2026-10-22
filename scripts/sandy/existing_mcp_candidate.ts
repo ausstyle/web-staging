@@ -14,7 +14,11 @@ function active(rows: Obj[]) {
 export function validate(before: Obj, after: Obj, live: Obj, revision: Obj, source: string, run: string, attempt: string, promoted = false) {
   need(/^[a-f0-9]{40}$/.test(source) && /^[1-9][0-9]{0,14}$/.test(run) && /^[1-9][0-9]{0,14}$/.test(attempt), "release_identifiers_invalid");
   const expected = `${service}-api-${run}-${attempt}`, target = candidateUrl(before, after, source);
-  need(before.verified_runtime_identity === identity && before.region === "europe-west1", "preserved_identity_mismatch");
+  // The original deployment records project/source/identity, but not region.
+  // Both live provider reads are fixed to europe-west1 by the protected workflow.
+  // Reject an explicitly different region without inventing historical evidence.
+  need(before.verified_runtime_identity === identity &&
+    (before.region === undefined || before.region === "europe-west1"), "preserved_identity_mismatch");
   need(after.status?.latestCreatedRevisionName === expected, "artifact_revision_mismatch");
   const artifactTag = after.status?.traffic?.filter((r: Obj) => r.tag === "sandy-api-review");
   need(artifactTag?.length === 1 && artifactTag[0].revisionName === expected, "artifact_tag_mismatch");
