@@ -1,57 +1,60 @@
 {
-  "governing_main_commit": "faee1656822dca1f3e869d08f75565dd349e2fe7",
-  "master_version": "1.2",
-  "source_commit": "24252d51c8d46089e5aa7cbc834e6feff40bd254",
-  "manifest_sha256": "ab75f021eb275ba6be41944474cac0605f870ece04d1c30776d9126598e9dd85",
-  "implementation_status": "implemented_locally_not_deployed_or_activated",
-  "controller_implementation_version": 12,
-  "production_controller_provider_version": 51,
-  "production_runtime_provider_version": 13,
-  "normal_workload_identity_reused": true,
-  "new_authentication_system": false,
-  "owner_browser_required_for_each_routine_release": false,
-  "workload_can_provision_its_own_grant": false,
-  "live_probe": {
-    "http_status": 403,
-    "response": {
-      "error": "engineering_control_scope_denied",
-      "executed": false
-    }
-  },
-  "production_grant_actions": [
-    "register",
-    "get",
-    "list",
-    "test",
-    "artifact"
-  ],
-  "policy_provisioning_available_to_runner": false,
-  "owner_refresh_session_location": "browser only; no browser tool or renewable owner binding available to this runner",
-  "new_secrets_requested": false,
-  "per_change_owner_approval_requested": false,
-  "migration_applied": false,
-  "standing_policy_enabled": false,
-  "two_unattended_production_cycles_passed": false,
+  "source_commit": "5b37a1a3588b3030c9451084724c892ed07574dd",
+  "manifest_sha256": "8f67fa1d8c975525c7dfd311d59af9b6e7f049c5bfec90388b559cf1bc5e1569",
+  "standing_declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
+  "status": "prepared_for_one_owner_action_not_deployed",
   "tests": {
-    "composed_deno_tests_passed": 189,
-    "isolated_postgresql_assertions_passed": 26,
-    "release_transport_tests_passed": 5,
-    "two_mocked_release_cycles": "passed; not production evidence",
-    "serving_entrypoint_typechecks": "Control and runtime passed using cached offline maps; SDK usage unchanged",
-    "frontend_syntax_checks": "passed; no real signed-in owner-browser test"
+    "composed": 196,
+    "isolated_postgresql_assertions": 31,
+    "release_transport": 5
   },
-  "implementation": {
-    "policy_administration": "normal authenticated Controller owner only; existing actor-bound grant; no self-expansion; audited revision and revoke",
-    "routine_admission": "existing normal renewable workload Auth; active identity and grant rechecks; resource/risk/expiry/daily release budget; exact committed manifest and module hashes; dependency closure; trusted GitHub CI; protected source-patch exclusions; no mandatory human reviewer",
-    "execution": "release_delegated_runtime.py consumes genuine policy decisions, captures rollback, leases the component, rechecks policy and current source/version, uploads exactly once with intended Management credential, independently reads all original source modules and records an artifact",
-    "quality": "source release does not certify customer behavior or close the scope",
-    "legacy_history": "approved records retained; new routine proposals map to authorized_by_policy with actual workload actor and grant revision"
+  "approval_recorded": false,
+  "grant_active": false,
+  "owner_browser_required_after_approval": false,
+  "owner_approval_event_manufactured": false,
+  "workload_self_grant_allowed": false,
+  "initial_grant": {
+    "version": "amendment-b-standing-v1",
+    "identity_authorization_ref": "engineering_change:ca1e72bb-b604-4f5e-b259-acf30ca830d8",
+    "repository": "ausstyle/web-staging",
+    "project": "zmqlyygzqoidkcwdysok",
+    "environment": "canary",
+    "branch": "engineering/sandy-unified-intelligence-20261021",
+    "targets": [
+      "sandy-agent-runtime-v4",
+      "sandy-workspace"
+    ],
+    "risk_ceiling": "normal",
+    "max_releases_per_day": 10,
+    "maximum_cost_units": 0,
+    "baseline": "approved_source_commit",
+    "workflow": "approved_workflow_sha256",
+    "expiry_mode": "until_revoked",
+    "identity_binding_sha256": "8f864a36dfdfdadebe1817ede42d2f26792d600737ff0405217c655583aeeede"
   },
-  "current_blocker": "The live workload grant has no release action. Amendment B explicitly says a written design is not an authorization grant and a workload cannot establish or expand its own delegation. The owner refresh session is browser-only and inaccessible here. Security-policy provisioning/release must use an existing legitimate administrator mechanism; no alternate credential or direct approval-status update was used.",
-  "remaining_acceptance": [
-    "Legitimate restricted administrative deployment of the pinned foundation and provisioning of the bounded standing grant",
-    "Two actual unattended routine source-to-release cycles",
-    "Actual revoke/expiry/wrong-target/high-risk/mismatch production canaries",
-    "Full four-channel runtime, memory, model/tool/Mission acceptance and required quality cohort"
+  "protected_owner_repair": {
+    "change_id": "e6c9fb87-db2c-4ed7-ac63-bbdb60aad127",
+    "genuine_enabled_owner_audit_verified": true,
+    "workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801",
+    "independent_ci": "passed",
+    "deployment": "waiting_at_existing_environment_protection",
+    "review_api_http": 403,
+    "environment_update_api_http": 403
+  },
+  "actual_current_versions": {
+    "sandy-engineering-control": 51,
+    "sandy-engineering-runtime": 13,
+    "sandy-agent-runtime-v4": 30,
+    "sandy-workspace": 46
+  },
+  "v4_test_repeated": false,
+  "customer_records_modified": false,
+  "standing_policy_provisioning": "The protected Management installer verifies the real owner approval over source, manifest and declaration, applies only that declaration, and records its actual administrative actor separately. It neither mints an owner session nor creates an owner approval event.",
+  "remaining_production_acceptance": [
+    "Genuine owner approval of this separate exact Amendment B change through the existing Controller button",
+    "Existing GitHub integration permission to satisfy or legitimately remove the repository-owned environment gate",
+    "Pinned prerequisite repair, Amendment B deployment, actual grant and normal-session renewal verification",
+    "Two real unattended routine releases and mandatory denial/rollback tests",
+    "Remaining SANDY-ENG-0001 four-channel customer acceptance"
   ]
 }

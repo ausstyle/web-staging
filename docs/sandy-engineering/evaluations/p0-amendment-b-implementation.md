@@ -1,52 +1,46 @@
-# Amendment B implementation and current production boundary
+# Amendment B — one owner action, then standing authority
 
-Master v1.2 and AD-08 govern this change. Source
-`24252d51c8d46089e5aa7cbc834e6feff40bd254`, manifest
-`ab75f021eb275ba6be41944474cac0605f870ece04d1c30776d9126598e9dd85`.
+Source `5b37a1a3588b3030c9451084724c892ed07574dd`, manifest
+`8f67fa1d8c975525c7dfd311d59af9b6e7f049c5bfec90388b559cf1bc5e1569`.
 
-The V4 correction is deployed and its real overdue-task API probe passes. The
-standing-policy foundation is implemented locally, not deployed or activated.
-The [machine-readable evidence](p0-amendment-b-evidence.json) distinguishes those
-outcomes and records the live 403 scope denial.
+The existing Controller engineering-change panel now has **Approve Amendment B**.
+On opening the panel as a signed-in owner, it idempotently registers a separate
+high-risk proposal using these exact pins. One click records the owner action
+through normal Engineering Control and independently reads its matching audit.
+No browser-console code, database edit, token export or individual sub-step
+confirmation is required. A status field alone is never treated as owner audit.
 
-Routine releases use the existing renewable workload session through Engineering
-Control. The new `authorize_release` action evaluates the current actor-bound
-grant, repository, branch, canary project/environment, target, low/normal risk,
-expiry, revocation and daily release budget. It independently reads the committed
-manifest, module hashes, import closure, trusted CI and source diff from GitHub.
-Protected security, identity, pilot and confirmation changes are excluded. No
-individual human review is required by Sandy's routine gate; active requested
-changes and external provider protections still apply. Admission and its audit
-commit atomically with the actual workload actor and grant revision. An existing
-approved record retains its status and historical provenance.
+The owner also approves the frozen standing-policy declaration. The protected
+administrative installer subsequently verifies the real owner event and applies
+only that declaration. It records its own Management actor separately; it does
+not mint an owner session, invent an approval event or let the workload establish
+its own delegation. No owner browser is required after that approval.
 
-`release_delegated_runtime.py` consumes that policy result, captures the original
-bundle privately, holds a component lease, rechecks policy and source immediately
-before one Management upload, reads back all original modules and records the
-artifact through Control. It does not mark customer functional acceptance or the
-whole scope complete. Timeout or uncertain provider results are never blindly
-replayed; reconcile observed source/version first.
+Initial delegated authority binds the existing engineering identity, repository,
+project, branch and V4/workspace canary. Only low/normal-risk routine releases are
+eligible, with ten releases per day and zero new resource spending. The policy
+lasts until revoked or the parent identity grant expires. Normal Auth sessions
+and release admissions remain short-lived. Dated policy expiry, revocation,
+wrong-target, high-risk and source/manifest denials remain enforced and tested.
+CI, source verification, component locks, independent readback, idempotency and
+rollback remain mandatory. Provider protections remain effective.
 
-The Controller preserves the newer published engineering panel and refresh
-behavior. Routine rows display authorization and evidence rather than an Approve
-button. The draft's active-owner-browser approval scheduler is removed. The
-standing-policy settings call normal authenticated administrator provisioning;
-they do not export an owner token or authorize the workload to grant itself access.
+The separate owner-session repair change `e6c9fb87-db2c-4ed7-ac63-bbdb60aad127`
+has a genuine enabled-owner approval bound to its original `f9958d50…` source and
+`24b113ab…` manifest. Independent GitHub CI passed in
+[run 39708487801](https://github.com/ausstyle/web-staging/actions/runs/39708487801).
+Deployment is waiting at the existing GitHub environment gate: both environment
+configuration and deployment-review APIs returned HTTP 403 for this integration.
+The Amendment B release checks the exact repair bundle and schema as a prerequisite;
+it cannot silently substitute its newer source under the older approval.
 
-The additive migrations install inactive capability. They do not seed a grant,
-update historical approvals, backdate owner events or widen customer authority.
-Before any security-foundation release, use its pinned administrative change
-request and the existing legitimate restricted-administration process. Apply the
-owner-session additive migration before the Amendment B migration, capture each
-prior source bundle under its release lock and preserve exact version/source
-optimistic guards. Existing grants remain unchanged until legitimate policy
-provisioning. No such administrative caller is available to this runner: the
-owner refresh session is browser-only, while the workload's existing grant
-excludes releases. The new design itself is explicitly not a grant.
+Current Control/runtime remain 51/13; V4/workspace remain 30/46. No V4 overdue
+probe was repeated and no customer records, channel processing, memory ingestion
+or pilot allowlist were changed. The old manual token-copy UI was removed.
 
-After legitimate provisioning, certify two distinct unattended routine releases,
-revocation, expiry, wrong target, high risk, source mismatch and source-to-provider
-readback in production. The 189 composed tests, 26 isolated PostgreSQL assertions
-and five transport tests are local evidence, including two mocked release cycles;
-they are not substitutes for those production canaries. Whole-scope completion
-also requires all four channels and the frozen quality cohort.
+Local verification: 196 composed tests, 31 isolated PostgreSQL assertions and five
+release-transport tests. Actual grant activation, two unattended production release
+cycles and the four-channel SANDY-ENG-0001 acceptance still require production
+verification. See [observed exceptions](p0-authority-exceptions.json); optional
+customer confirmations are not declared legally mandatory merely because they
+exist in historical code.

@@ -1,0 +1,36 @@
+{
+  "status": "observed_exceptions_only_not_a_claim_of_system_wide_completion",
+  "exceptions": [
+    {
+      "id": "github_environment_integration_permission",
+      "source": "GitHub sandy-production required-reviewers protection; environment-update and review-pending-deployments APIs both returned HTTP 403 Resource not accessible by integration",
+      "kind": "current_external_permission_boundary",
+      "intrinsically_mandatory_manual_approval": false,
+      "minimise_intervention": "One legitimate repository-administrator change to the integration permissions or environment policy; preserve CI, source, audit and rollback. No per-sub-step Controller approval is needed.",
+      "current_workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801"
+    },
+    {
+      "id": "initial_security_delegation",
+      "source": "Acting workload has no authority to establish or expand its own grant. Owner approval of exact security source, manifest and standing declaration is required.",
+      "kind": "security_authority_boundary",
+      "minimise_intervention": "One Approve Amendment B action in the authenticated Controller. The protected installer then applies the approved declaration; routine work uses durable revocable delegation without a browser dependency."
+    },
+    {
+      "id": "customer_identity_and_provider_consent",
+      "source": "Authenticated customer/account/tenant grants and provider OAuth scopes; platform-owner authority does not impersonate customers or grant missing provider permissions.",
+      "kind": "customer_and_provider_security_boundary",
+      "minimise_intervention": "Reuse existing valid customer permissions and legitimately renewable identities. Obtain only genuinely missing account-specific consent or scope, never repeated confirmation merely because a historical workflow used it."
+    }
+  ],
+  "automatic_checks_retained": [
+    "authentication",
+    "scope and tenant binding",
+    "revocation and any configured expiry",
+    "short-lived Auth sessions and release admissions",
+    "CI and exact source",
+    "budget",
+    "idempotency",
+    "independent effect verification",
+    "rollback"
+  ]
+}
