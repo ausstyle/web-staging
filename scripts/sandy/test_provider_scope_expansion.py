@@ -19,7 +19,10 @@ class ExpansionContractsTest(unittest.TestCase):
    operation=next(o for o in self.baseline if o['operation']==revision['operation'])
    self.assertEqual(operation['contract_sha256'],revision['after_contract_sha256'])
    migration=(ROOT/revision['migration']).read_text()
-   self.assertIn(revision['before_contract_sha256'],migration);self.assertIn(revision['after_contract_sha256'],migration)
+   self.assertIn(revision.get('prior_contract_sha256',revision['before_contract_sha256']),migration);self.assertIn(revision['after_contract_sha256'],migration)
+   if revision.get('prior_revision_migration'):
+    prior=(ROOT/revision['prior_revision_migration']).read_text()
+    self.assertIn(revision['before_contract_sha256'],prior);self.assertIn(revision['prior_contract_sha256'],prior)
   data=json.loads((BASE/'contracts.json').read_text());data['operations']=[o for o in self.baseline if o['operation'] not in {r['operation'] for r in revisions}]
   unchanged=hashlib.sha256(json.dumps(data,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
   self.assertEqual(unchanged,reviewed['unchanged_catalogue_without_revisions_sha256'])

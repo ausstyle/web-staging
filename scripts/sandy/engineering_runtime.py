@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import secrets
+import time
 import urllib.error
 import urllib.request
 import uuid
@@ -23,6 +24,9 @@ EMAIL = "sandy-engineering-test@sandy-ai.internal"
 
 class RuntimeErrorCode(RuntimeError):
     """Fixed codes only; never attach provider response bodies or credentials."""
+
+class RuntimePreDispatchError(RuntimeErrorCode):
+    """Bootstrap/configuration failed before any engineering MCP dispatch."""
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, *args, **kwargs):
@@ -81,11 +85,20 @@ class EngineeringRuntime:
 
     def _api_keys(self):
         if self._keys is None:
-            status, rows = self._http("GET", MANAGEMENT + "/api-keys", self._management)
-            if status != 200:
-                raise RuntimeErrorCode("runtime_auth_configuration_unavailable")
-            self._keys = {name: next(x["api_key"] for x in rows if x["name"] == name)
-                          for name in ("anon", "service_role")}
+            for attempt in range(3):
+                status, rows = self._http("GET", MANAGEMENT + "/api-keys", self._management)
+                if status == 200:
+                    break
+                if status in (408, 429, 500, 502, 503, 504) and attempt < 2:
+                    time.sleep(0.25 * (attempt + 1))
+                    continue
+                raise RuntimeErrorCode("runtime_auth_configuration_unavailable_http_" + str(status))
+            if not isinstance(rows, list):
+                raise RuntimeErrorCode("runtime_auth_configuration_incomplete")
+            keys = {x.get("name"): x.get("api_key") for x in rows if isinstance(x, dict)}
+            if not all(isinstance(keys.get(name), str) and keys[name] for name in ("anon", "service_role")):
+                raise RuntimeErrorCode("runtime_auth_configuration_incomplete")
+            self._keys = {name: keys[name] for name in ("anon", "service_role")}
         return self._keys
 
     def _auth_admin(self, method, path, body=None):
@@ -172,9 +185,13 @@ class EngineeringRuntime:
         if not isinstance(message, dict):
             raise RuntimeErrorCode("invalid_runtime_message")
         # The bootstrap stays in memory; the runner never returns its user JWT.
-        key = self._bootstrap_key()
+        try:
+            key = self._bootstrap_key()
+            anon = self._api_keys()["anon"]
+        except RuntimeErrorCode as error:
+            raise RuntimePreDispatchError(str(error)) from None
         return self._http("POST", BASE + "/functions/v1/sandy-engineering-runtime", key,
-                          message, self._api_keys()["anon"])
+                          message, anon)
 
     def public_status(self):
         state = self.state()

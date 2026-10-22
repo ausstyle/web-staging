@@ -4,13 +4,18 @@ No upstream schema refresh and no registry operation creation are performed.
 The provider response contract remains pinned; only local source-delivery bounds
 and backwards-compatible optional range metadata change.
 """
-import hashlib,json
+import argparse,hashlib,json
 from pathlib import Path
 from build_provider_operations import output_schema,catalogue_loader,compact_manifest
 ROOT=Path(__file__).resolve().parents[2]
-PATTERN=r'^(?!\.)(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*$'
+PATTERN=r'^(?:(?!\.{1,2}(?:/|$))[A-Za-z0-9_.-]+/)*(?!\.{1,2}$)[A-Za-z0-9_.-]+$'
 
-def revise():
+def revise(migration):
+    migration=Path(migration)
+    if migration.exists():
+        raise ValueError("immutable_migration_already_exists")
+    if migration.parent != ROOT/"supabase/migrations":
+        raise ValueError("migration_must_be_in_repository_migrations")
     folder=ROOT/'supabase/functions/sandy-provider-operation-api';file=folder/'contracts.json'
     data=json.loads(file.read_text());op=next(x for x in data['operations'] if x['operation']=='github.files.content.get');old=op['contract_sha256']
     op['input_schema']['properties']['path']['properties']['path']['pattern']=PATTERN
@@ -21,7 +26,10 @@ def revise():
     if old==op['contract_sha256']:return
     source=(json.dumps(data,separators=(',',':'),ensure_ascii=False)+'\n').encode();file.write_bytes(source);(folder/'catalogue.ts').write_text(catalogue_loader(source));(folder/'gateway_manifest.json').write_text(json.dumps(compact_manifest(data),separators=(',',':'),ensure_ascii=False)+'\n')
     quote=lambda v:"'"+json.dumps(v,separators=(',',':')).replace("'","''")+"'::jsonb"
-    sql="BEGIN;\n-- Existing inactive source operation; preserve all exposure/verification flags.\nDO $revision$ DECLARE n int;BEGIN\nUPDATE public.sandy_operation_registry SET input_schema="+quote(op['input_schema'])+",output_schema="+quote(op['output_schema'])+",error_contract=jsonb_set(error_contract,'{contract_sha256}',to_jsonb('"+op['contract_sha256']+"'::text)),updated_at=clock_timestamp() WHERE operation='github.files.content.get' AND error_contract->>'contract_sha256'='"+old+"';GET DIAGNOSTICS n=ROW_COUNT;IF n<>1 THEN RAISE EXCEPTION 'repository_source_contract_drift';END IF;END $revision$;\nCOMMIT;\n"
-    (ROOT/'supabase/migrations/20261022042000_sandy_repository_source_ranges.sql').write_text(sql)
+    sql="BEGIN;\n-- Existing source operation: reset verification after contract revision; no new operation.\nDO $revision$ DECLARE n int;BEGIN\nUPDATE public.sandy_operation_registry SET verified=false,input_schema="+quote(op['input_schema'])+",output_schema="+quote(op['output_schema'])+",error_contract=jsonb_set(error_contract,'{contract_sha256}',to_jsonb('"+op['contract_sha256']+"'::text)),updated_at=clock_timestamp() WHERE operation='github.files.content.get' AND error_contract->>'contract_sha256'='"+old+"';GET DIAGNOSTICS n=ROW_COUNT;IF n<>1 THEN RAISE EXCEPTION 'repository_source_contract_drift';END IF;END $revision$;\nCOMMIT;\n"
+    migration.write_text(sql)
     print(json.dumps({'operation':op['operation'],'old_contract':old,'new_contract':op['contract_sha256'],'registry_operations_added':0}))
-if __name__=='__main__':revise()
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--migration',required=True,type=Path)
+    revise(parser.parse_args().migration.resolve())

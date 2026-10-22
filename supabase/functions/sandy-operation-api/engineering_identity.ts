@@ -322,7 +322,15 @@ export async function engineeringRequest(
                   inputBody.encoding === undefined
                 ? "utf-8"
                 : "base64",
+              String(operation).includes(".blobs.") ? 512 * 1024 : 65536,
             );
+          }
+          if (Array.isArray(inputBody.tree)) {
+            for (const item of inputBody.tree) {
+              if (object(item) && typeof item.content === "string") {
+                repositoryText(item.content, "utf-8");
+              }
+            }
           }
         } catch {
           return deny(403, "repository_source_material_refused");

@@ -75,3 +75,20 @@ class RuntimeCredentialTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class RuntimeReadRetryTests(unittest.TestCase):
+    def test_only_readonly_transient_configuration_failures_retry(self):
+        runtime = EngineeringRuntime("synthetic-management")
+        calls = []
+        def request(*args):
+            calls.append(args)
+            return (503, {}) if len(calls) == 1 else (200, [{"name": n, "api_key": "synthetic"} for n in ("anon", "service_role")])
+        runtime._http = request
+        with patch("engineering_runtime.time.sleep"):
+            self.assertEqual(runtime._api_keys()["anon"], "synthetic")
+        self.assertEqual([c[0] for c in calls], ["GET", "GET"])
+        runtime = EngineeringRuntime("synthetic-management")
+        runtime._http = lambda *args: (403, {"message": "PRIVATE"})
+        with self.assertRaisesRegex(RuntimeErrorCode, "runtime_auth_configuration_unavailable_http_403"):
+            runtime._api_keys()

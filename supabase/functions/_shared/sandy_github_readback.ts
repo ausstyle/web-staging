@@ -42,11 +42,22 @@ const digest = async (b: Uint8Array) =>
     ),
     (v) => v.toString(16).padStart(2, "0"),
   ).join("");
-async function read(
+export async function readGithubObservation(
   request: typeof fetch,
   url: string,
   token: string,
+  maximum = 200000,
 ): Promise<unknown> {
+  const target = new URL(url);
+  if (
+    target.origin !== "https://api.github.com" ||
+    !target.pathname.startsWith("/repos/ausstyle/web-staging/") ||
+    target.username || target.password || target.hash ||
+    !Number.isSafeInteger(maximum) ||
+    maximum < 1 || maximum > 2 * 1024 * 1024
+  ) {
+    throw new ReadbackError("github_readback_unsupported");
+  }
   let response: Response | undefined;
   // Retry only immutable GETs. A new commit can be briefly unavailable on a
   // different provider replica; a failed verification must never replay PUT/POST.
@@ -109,7 +120,7 @@ async function read(
       const part = await reader.read();
       if (part.done) break;
       size += part.value.byteLength;
-      if (size > 200000) {
+      if (size > maximum) {
         await reader.cancel();
         throw new ReadbackError("github_readback_response_limit");
       }
@@ -163,7 +174,7 @@ export async function verifyGithubReadback(
         raw.ref !== "refs/" + normalized || !object(raw.object) ||
         raw.object.sha !== body.sha
       ) throw Error();
-      const observed = await read(
+      const observed = await readGithubObservation(
         request,
         `https://api.github.com/repos/ausstyle/web-staging/git/ref/${
           normalized.split("/").map(encodeURIComponent).join("/")
@@ -193,7 +204,7 @@ export async function verifyGithubReadback(
         body.parents.length > 10 || !body.parents.every(sha) ||
         typeof body.message !== "string"
       ) throw Error();
-      const observed = await read(
+      const observed = await readGithubObservation(
         request,
         `https://api.github.com/repos/ausstyle/web-staging/git/commits/${raw.sha}`,
         token,
@@ -201,7 +212,10 @@ export async function verifyGithubReadback(
       if (
         !object(observed) || observed.sha !== raw.sha ||
         !object(observed.tree) || observed.tree.sha !== body.tree ||
-        observed.message !== body.message || !Array.isArray(observed.parents) ||
+        !(observed.message === body.message ||
+          (body.message.endsWith("\n") &&
+            observed.message === body.message.slice(0, -1))) ||
+        !Array.isArray(observed.parents) ||
         observed.parents.length !== body.parents.length ||
         observed.parents.some((p, i) =>
           !object(p) || p.sha !== (body.parents as string[])[i]
@@ -232,7 +246,7 @@ export async function verifyGithubReadback(
       ) throw Error();
       // A 404 alone could mean a new commit is not visible yet. First prove the
       // immutable commit exists, then prove the exact path is absent there.
-      const revision = await read(
+      const revision = await readGithubObservation(
         request,
         `https://api.github.com/repos/ausstyle/web-staging/git/commits/${raw.commit.sha}`,
         token,
@@ -278,7 +292,7 @@ export async function verifyGithubReadback(
     ) throw Error();
     const expected = bytes(body.content);
     if (!expected) throw Error();
-    const observed = await read(
+    const observed = await readGithubObservation(
       request,
       `https://api.github.com/repos/ausstyle/web-staging/contents/${
         path.split("/").map(encodeURIComponent).join("/")

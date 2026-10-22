@@ -1,5 +1,5 @@
 import unittest
-from build_requirement_coverage import reconcile
+from build_requirement_coverage import reconcile, standing_execution_evidence
 
 
 def requirements():
@@ -127,3 +127,26 @@ class RequirementCoverageTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class StandingEvidenceTests(unittest.TestCase):
+    def test_hash_or_failed_durable_receipt_cannot_certify_a_provider_operation(self):
+        op = "github.repos.get"
+        report = {"complete": True, "operation_evidence": {op: {
+            "mcp_end_to_end_verified": True, "successful_calls": [{
+                "operation": op, "channel": "mcp", "http_status": 200,
+                "api_status": 200, "is_error": False, "executed": True,
+                "admission_id": "receipt"}]}}, "durable_admissions": [{
+                    "id": "receipt", "state": "failed", "job_status": "failed",
+                    "audit": [{"hash_valid": True, "previous_link_valid": True}]}]}
+        verification = {"evidence_sha256": "correct", "operations": [{
+            "operation": op, "verified": True,
+            "evidence": {"evidence_sha256": "correct"}}]}
+        self.assertEqual(standing_execution_evidence(report, verification, "wrong"), ({}, {}))
+        self.assertEqual(standing_execution_evidence(report, verification, "correct"), ({}, {}))
+        report["durable_admissions"][0].update(state="succeeded", job_status="succeeded")
+        positive, _ = standing_execution_evidence(report, verification, "correct")
+        self.assertIn(op, positive)
+        self.assertFalse(positive[op][0]["whole_family_acceptance"])
+        report["durable_admissions"][0]["audit"][0]["hash_valid"] = False
+        self.assertEqual(standing_execution_evidence(report, verification, "correct"), ({}, {}))

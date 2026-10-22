@@ -110,3 +110,48 @@ Deno.test("repository credential material is refused before any text range is re
     (e: unknown) => e instanceof SourceDeliveryError && e.status === 403,
   );
 });
+
+Deno.test("readonly dotfiles and CI definitions are delivered, credential paths and traversal are refused", async () => {
+  for (
+    const name of [
+      ".gitignore",
+      ".github/workflows/sandy-runtime-release-checks.yml",
+      "nested/.editorconfig",
+    ]
+  ) {
+    const provider = { ...await raw("reviewed public source\n"), path: name };
+    const result = await githubSourceDelivery(
+      provider,
+      { path: { path: name } },
+      "PRIVATE",
+      fetch,
+    );
+    assert.equal(atob(String(result.content)), "reviewed public source\n");
+  }
+  for (
+    const name of [
+      ".env",
+      "nested/.env.production",
+      ".git/config",
+      "secrets/service-account.json",
+      "../outside",
+      "nested/../outside",
+      "/absolute",
+      "folder//file",
+      "encoded%2fpath",
+      "key.pem",
+    ]
+  ) {
+    const provider = { ...await raw("not released\n"), path: name };
+    await assert.rejects(
+      () =>
+        githubSourceDelivery(
+          provider,
+          { path: { path: name } },
+          "PRIVATE",
+          fetch,
+        ),
+      (e: unknown) => e instanceof SourceDeliveryError && e.status === 422,
+    );
+  }
+});

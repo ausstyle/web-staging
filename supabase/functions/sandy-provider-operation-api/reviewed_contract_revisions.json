@@ -1,14 +1,16 @@
 {
   "baseline_catalogue_sha256": "ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef",
-  "reviewed_catalogue_sha256": "d8347eab55acd1e7ae455098f3c8e6400e9b07ef88eb2839b64d3dd85bd79a9a",
+  "reviewed_catalogue_sha256": "b849c1a24fb35afaf8a6834122269f54121eaabc36fa02e7fd9d987622981afa",
   "unchanged_catalogue_without_revisions_sha256": "fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e",
   "revisions": [
     {
       "operation": "github.files.content.get",
       "before_contract_sha256": "c3c19636005a12c9e3f8ac984c8401f0bf5b60aea758b9d7e2298aa7ffe2a2df",
-      "after_contract_sha256": "ded0ad6b40a43c7de6ee5e69ead81726f2ddbc7aed5ca725ebe4f972745cc311",
-      "migration": "supabase/migrations/20261022042000_sandy_repository_source_ranges.sql",
-      "purpose": "Immutable bounded source ranges; other 594 provider contracts and catalogue metadata remain unchanged"
+      "after_contract_sha256": "e2c1ca36a4c5bc711ca692e78ea61d75b36ced92ba22d0283c9afc7e426605b4",
+      "migration": "supabase/migrations/20261022051000_sandy_repository_dotfile_contract.sql",
+      "purpose": "Readonly CI and dotfile source delivery; other 594 contracts and write authority unchanged",
+      "prior_revision_migration": "supabase/migrations/20261022042000_sandy_repository_source_ranges.sql",
+      "prior_contract_sha256": "ded0ad6b40a43c7de6ee5e69ead81726f2ddbc7aed5ca725ebe4f972745cc311"
     }
   ]
 }

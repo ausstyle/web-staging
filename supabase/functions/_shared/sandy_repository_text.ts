@@ -38,3 +38,14 @@ export async function repositoryBlobMatches(
     (b) => b.toString(16).padStart(2, "0"),
   ).join("") === sha;
 }
+
+/** Reviewed source paths, including dotfiles and CI definitions. Repository
+ * internals and credential files remain unavailable; mutations use a separate
+ * stricter policy and never gain authority from this read-only predicate. */
+export function repositorySourcePath(path: unknown): path is string {
+  return typeof path === "string" && path.length > 0 && path.length <= 1024 &&
+    /^(?:(?!\.{1,2}(?:\/|$))[A-Za-z0-9_.-]+\/)*(?!\.{1,2}$)[A-Za-z0-9_.-]+$/
+      .test(path) &&
+    !/(?:^|\/)(?:\.env[^/]*|\.git)(?:\/|$)|(?:^|\/)[^/]*(?:credential|private.?key|service.?account)[^/]*\.json$|\.(?:pem|key|p12|pfx)$/i
+      .test(path);
+}
