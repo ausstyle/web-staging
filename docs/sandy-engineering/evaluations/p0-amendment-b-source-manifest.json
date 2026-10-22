@@ -1,5 +1,5 @@
 {
-  "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+  "source_commit": "6f5b3d63ae634e5f08f4623505d1ff248f75931e",
   "risk": "high",
   "purpose": "One authenticated owner approval installs the exact Amendment B foundation and an explicitly declared durable, revocable grant; no workload self-authorization.",
   "prerequisite": {
@@ -10,7 +10,8 @@
       "sandy_engineering_set_standing_delegation": "16aeacd776d2b48f6b17839dbc926420e81d9ee5a7461c992079de19c7b7789c",
       "sandy_engineering_record_owner_approval": "5e1f24c91cb702a6a47e9c30eb07877a49d998cae072b27753c9c1f8e74fd45f",
       "sandy_engineering_apply_standing_delegation": "fa3d77ff758dc7df08e7089b3a8fe1fd91a89362d4b7a4f332194316470e72f4"
-    }
+    },
+    "migration_history_version": "20261022110000"
   },
   "functions": [
     {
@@ -39,11 +40,11 @@
     },
     {
       "slug": "sandy-engineering-runtime",
-      "expected_prior_version": 14,
-      "prior_bundle_sha256": "392f7feca414f0e19ccc4d17989bcce4ef5ae68f7dffbb002a80c775bd52ed59",
+      "expected_prior_version": 15,
+      "prior_bundle_sha256": "f7fafb9b17bf2bf5110cca3ddb3ca04d1af02944b1646e6db8f98ee227c92709",
       "verify_jwt": false,
       "files": {
-        "sandy-engineering-runtime/index.ts": "108b0fceab2407f384d8e49b66687daba112103a2c3b34fdbd79309aff90840c",
+        "sandy-engineering-runtime/index.ts": "a901572a616cc85d0544fb133123e6523ad1d0089f114c5932d5372edc72b88e",
         "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
         "_shared/sandy_engineering_session_client.ts": "9d1bf341ddce755063c2e4aa1f3ed65464a40995debe533f15b60c1eb8529b4a",
         "_shared/sandy_engineering_session.ts": "9fcbc86fe7bd067d224dc7d0f398e731534b0a1605d0008b4437a9444da2fbe4",
@@ -61,20 +62,35 @@
     "sandy/controller/amendment-b-approval.mjs": "0d2b393c7ba5aa59660c3964229677bc8366db21acbedd0588c3e1891fdddcc8"
   },
   "migrations": {
-    "supabase/migrations/20261022020000_sandy_autonomous_engineering_policy.sql": "d01ad5f297ca894f2892b5a21dff3b13a391b7426294d38010f9d1f5f58cfd17",
-    "supabase/migrations/20261022030000_sandy_owner_approved_standing_install.sql": "c92f1ea27a40cd892561f42bfaf602d7151cef8b7c278708cce5fbe74571ef70"
+    "supabase/migrations/20261022111000_sandy_autonomous_engineering_policy.sql": "d01ad5f297ca894f2892b5a21dff3b13a391b7426294d38010f9d1f5f58cfd17",
+    "supabase/migrations/20261022112000_sandy_owner_approved_standing_install.sql": "c92f1ea27a40cd892561f42bfaf602d7151cef8b7c278708cce5fbe74571ef70"
   },
   "tooling": {
     "scripts/sandy/release_amendment_b.py": "4d910f1ebb1cc6234a7035bbb2946ccf9d9df44c03c4905d091f2a952b83ddef",
-    "scripts/sandy/release_owner_session_repair.py": "adb124c3971fc57fffca92f11d707282fc10b62ee30cd57d0945816f09f339f2",
+    "scripts/sandy/release_owner_session_repair.py": "13001bf46fc4f3b92be9f4a038d9234d0e6b3bdf4218e07c9a29d7baeab384ec",
     "scripts/sandy/release_delegated_runtime.py": "3a4a60ea816bffbbc386df34f9bca8efc5b93fad1c05420a8e5d5a042ea08e6d",
     "scripts/sandy/release_web_canary.py": "570ce6122f8d50c15943b45e6aace0e776664519594ef66ddf5d67103fc2cbc1",
-    "scripts/sandy/engineering_control_client.py": "4b587a8c9949e7078e4748f4cb05d28896ed092dc0561f9cf9fc93e0755e2bc1"
+    "scripts/sandy/engineering_control_client.py": "4b587a8c9949e7078e4748f4cb05d28896ed092dc0561f9cf9fc93e0755e2bc1",
+    "deno.json": "f5e81e317c0c9c410ad97fdf8340b9e45c2cf9905fd85f25665cf190b176b6ab",
+    "deno.lock": "bcc20b3cf248f33dd10458b30ae73c5e66720d5e05a15865b9bd2f1b8192aa7c"
   },
   "workflow": {
     ".github/workflows/sandy-runtime-release-checks.yml": "2eda353916fd8c6c88eb2cd00a179708bef39fc61b2e9312ebe975ee9ce03ad0",
     ".github/workflows/sandy-amendment-b-release.yml": "821e09374f6aff9dcbd39194cc331b81fc5ecd2ae5143ddd5c1466b0320ececa",
     ".github/workflows/sandy-engineering-control-repair.yml": "1b203dca038d3da8385b896a3fe2018532623c4ac942ce127d522eb2e1ff0499"
   },
-  "rollback": "Capture exact prior Control/runtime bundles and schema function bodies privately under both component locks. Preserve the approved owner-repair migration. On failure stop new dispatch, revoke the standing grant through legitimate administration, restore source-compatible prior code under fresh version/source guards, and retain every approval, execution and revocation event. Prefer forward schema repair; never drop customer data or rewrite approval history."
+  "rollback": "Capture exact prior Control/runtime bundles and schema function bodies privately under both component locks. Preserve the approved owner-repair migration. On failure stop new dispatch, revoke the standing grant through legitimate administration, restore source-compatible prior code under fresh version/source guards, and retain every approval, execution and revocation event. Prefer forward schema repair; never drop customer data or rewrite approval history.",
+  "previous_immutable_manifest": {
+    "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+    "sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+    "archive": "docs/sandy-engineering/evaluations/p0-amendment-b-source-manifest.2994c411.json",
+    "deployed": false
+  },
+  "reconciliation": {
+    "approved_owner_repair_sql_changed": false,
+    "new_policy_scope_added": false,
+    "current_deployed_runtime_index_preserved": true,
+    "existing_customer_data_changed": false,
+    "owner_approval_inferred_from_previous_manifest": false
+  }
 }
