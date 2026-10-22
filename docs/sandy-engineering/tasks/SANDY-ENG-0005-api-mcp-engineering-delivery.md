@@ -107,3 +107,8 @@ Use schema-compatible canaries, caller-specific feature flags, one release lock 
 Deliver OpenAPI/JSON schemas, MCP contract tests, 161-row reconciliation, credential/egress matrix without values, deployed-source parity report, end-to-end release receipts, rollback exercise, operation readiness dashboard and incident playbook. The pending status of an operation must remain visible; API capability count is not the success metric.
 
 Primary protocol/security references are in the shared architecture document. Pin implementation versions and recheck upstream provider documentation before adding a new adapter.
+
+
+## Amendment — Remove repetitive manual engineering approvals (22 October 2026)
+
+Implement Master amendment B: eliminate per-change and per-deployment manual owner-approval waits **for operations already inside a standing, revocable engineering grant**. Admission must evaluate legitimate workload identity, precise resource, operation, risk, budget, source artifact, tests and rollback policy. Record `authorized_by_policy` and its grant/version, then execute and verify without a human click. Policy misses are explicit `policy_blocked` outcomes, never automatic elevation. Preserve the external provider's own protections, sensitive-change restrictions and all historical owner-approval records. Update the Controller to display authorization and execution evidence rather than require an Approve button for routine delegated actions. Add end-to-end tests for two unattended routine releases, revocation, expiry, cross-target denial, high-risk refusal and source/manifest mismatch. This is a target engineering requirement; do not mark implemented before a production canary.
