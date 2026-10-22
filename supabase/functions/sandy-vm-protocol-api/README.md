@@ -1,5 +1,17 @@
 Production foundation now installed by PR187: native API1, gateway57 and migrations08900/20261022190000, source5cb524a. Execution contracts stay closed/unverified, trusted bindings remain empty and actual MCP native calls fail before admission under unchanged delegation6. See `docs/sandy-api/native-transport-foundation-evidence-20261022.json`. No native OS acceptance is claimed.
 
+`prepare_enrollment.ts` now prepares an offline artifact for the existing private
+native enrollment contract. Supply a recent `{observed_at, instance}` Compute
+observation and public enrollment arguments (`vm_name` plus `ssh` or `winrm`).
+It checks the fixed instance/project/zone/runtime identity, a five-minute
+observation window and the Windows certificate digest, name and validity. The
+CLI creates a new mode-0600 artifact and refuses overwrites. It needs filesystem
+access only, performs no provider request and never authorizes enrollment or
+marks a host pin verified. The artifact retains observation/contract digests
+without copying VM metadata. A separately authorized enrollment must still
+independently verify its host pin and recheck current provider state. It does not
+add catalogue operations or change the installed API versions or delegation.
+
 Administrator helper dependencies are pinned in `scripts/sandy/iap-admin-requirements.txt`. Run it with a Python environment containing those dependencies. It now uses Google authentication SDK ADC through the selected connection file, renews short-lived credentials per request and sanitizes renewal errors; it does not require gcloud or start login. An actual configured administrator connection is still required.
 
 Current activation preparation (22 October 2026): use existing boundary migration `20261021008900` followed by `20261022190000_sandy_native_execution_activation.sql`. The latter installs nine private contracts and updates only the three existing execution IDs, preserving their closed exposure/verification flags. Do not apply the historical 08910 catalogue expansion. Gateway composition now routes those exact execution IDs to this native handler and obtains actor-specific public bindings through its service-only RPC; no metadata alias is added to external discovery. Guest API18 and standing delegation6 remain separate and unchanged. Production deployment and OS acceptance require their own actual evidence; source preparation grants no authority.
