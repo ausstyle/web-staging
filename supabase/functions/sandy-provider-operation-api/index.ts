@@ -16,6 +16,7 @@ import {
   type GithubVerificationRequest,
 } from "../_shared/sandy_github_verification_client.ts";
 import { verifiedExecutionHeaders } from "../_shared/sandy_execution_receipt_transport.ts";
+import { repositorySourcePath } from "../_shared/sandy_repository_text.ts";
 import {
   githubSourceDelivery,
   SourceDeliveryError,
@@ -629,6 +630,12 @@ export function createProviderOperationHandler(
     if (
       !object(args) || !validator(op.operation + ":in", op.input_schema)(args)
     ) return refusal(400, "invalid_operation_arguments");
+    if (
+      op.kind === "file_content" &&
+      !repositorySourcePath((args.path as JsonObject)?.path)
+    ) {
+      return refusal(400, "invalid_operation_arguments");
+    }
     if (
       typeof body.actor_id !== "string" || !UUID.test(body.actor_id) ||
       typeof body.request_id !== "string" || !UUID.test(body.request_id) ||

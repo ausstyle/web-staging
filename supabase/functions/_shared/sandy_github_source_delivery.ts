@@ -2,6 +2,7 @@
  * ranges. No caller URL, redirect, filesystem access or separate credentials. */
 import {
   repositoryBlobMatches,
+  repositorySourcePath,
   repositoryText,
 } from "./sandy_repository_text.ts";
 type Obj = Record<string, unknown>;
@@ -33,7 +34,7 @@ export async function githubSourceDelivery(
   request: typeof fetch,
 ): Promise<Obj> {
   if (
-    !object(raw) || raw.type !== "file" || typeof raw.path !== "string" ||
+    !object(raw) || raw.type !== "file" || !repositorySourcePath(raw.path) ||
     !object(args.path) || raw.path !== args.path.path ||
     typeof raw.sha !== "string" || !/^[a-f0-9]{40}$/.test(raw.sha) ||
     typeof raw.size !== "number" || raw.size < 0 || raw.size > 8 * 1024 * 1024

@@ -483,7 +483,7 @@ def projected_result(spec, raw, schemas):
             "ssl_validation_records": {"type": "array", "maxItems": 100, "items": object_schema({"txt_name": {"type": "string"}, "txt_value": {"type": "string"}})},
             "validation_error_count": {"type": "integer", "minimum": 0}}, ["status", "custom_hostname", "ownership_verification", "ssl_validation_records", "validation_error_count"])
     elif spec["kind"] == "file_content":
-        result = object_schema({"path": {"type": "string", "pattern": "^(?!\\.)(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*$"}, "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "size": {"type": "integer", "minimum": 0, "maximum": 65536}, "encoding": {"const": "base64"}, "content": {"type": "string", "maxLength": 87384, "pattern": "^[A-Za-z0-9+/]*={0,2}$"}, "type": {"const": "file"}}, ["path", "sha", "size", "encoding", "content", "type"])
+        result = object_schema({"path": {"type": "string", "pattern": "^(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9_.-]+/)*(?!\\.{1,2}$)[A-Za-z0-9_.-]+$"}, "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "size": {"type": "integer", "minimum": 0, "maximum": 65536}, "encoding": {"const": "base64"}, "content": {"type": "string", "maxLength": 87384, "pattern": "^[A-Za-z0-9+/]*={0,2}$"}, "type": {"const": "file"}}, ["path", "sha", "size", "encoding", "content", "type"])
     elif spec["kind"] in {"mutation_metadata", "empty"}:
         result = object_schema({"accepted": {"const": True}, "effect_confirmed": {"const": False},
             **{key: {"type": ["string", "number", "boolean", "null"]} for key in ["id", "number", "name", "ref", "sha", "state", "status", "url", "content_sha", "commit_sha", "path"]}}, ["accepted", "effect_confirmed"])
@@ -567,7 +567,7 @@ def compile_route(spec, document, source):
             if location == "query" and value.get("type") == "string":
                 value.setdefault("maxLength", 4096)
             if spec["kind"] == "file_content" and location == "path" and name == "path":
-                value["pattern"] = "^(?!\\.)(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*$"
+                value["pattern"] = "^(?:(?!\\.{1,2}(?:/|$))[A-Za-z0-9_.-]+/)*(?!\\.{1,2}$)[A-Za-z0-9_.-]+$"
             fields[name] = value
             if parameter.get("required"):
                 needed.append(name)
