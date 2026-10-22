@@ -214,6 +214,21 @@ export async function engineeringRequest(
         op === "system.execution.get" ||
         /^system\.lifecycle\.(get|verify|compensate)$/.test(op))
     );
+  if (deps.executionScope && standing === null) {
+    return deny(503, "engineering_policy_unavailable");
+  }
+  if (standing?.policy_present === true && !standingAuthorized) {
+    return deny(
+      403,
+      [
+          "standing_delegation_revoked",
+          "standing_delegation_expired",
+          "standing_delegation_authority_mismatch",
+        ].includes(String(standing.error))
+        ? String(standing.error)
+        : "engineering_operation_scope_denied",
+    );
+  }
   const vmScope = resolved.vm_read_scope;
   const vmAuthorized = object(vmScope) &&
     vmScope.policy_sha256 === await argumentDigest(vmReadPolicy) &&

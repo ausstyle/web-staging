@@ -10,8 +10,20 @@ class ExpansionContractsTest(unittest.TestCase):
  def setUpClass(cls):
   cls.baseline=json.loads((BASE/'contracts.json').read_text())['operations']
   cls.expanded=json.loads((BASE/'expansion_contracts.json').read_text())['operations']
- def test_baseline_is_frozen_and_has_no_semantic_rewrite(self):
-  self.assertEqual(hashlib.sha256((BASE/'contracts.json').read_bytes()).hexdigest(),'ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef')
+ def test_baseline_is_frozen_except_source_attested_contract_revisions(self):
+  reviewed=json.loads((BASE/'reviewed_contract_revisions.json').read_text())
+  self.assertEqual(reviewed['baseline_catalogue_sha256'],'ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef')
+  self.assertEqual(hashlib.sha256((BASE/'contracts.json').read_bytes()).hexdigest(),reviewed['reviewed_catalogue_sha256'])
+  revisions=reviewed['revisions'];self.assertEqual([r['operation'] for r in revisions],['github.files.content.get'])
+  for revision in revisions:
+   operation=next(o for o in self.baseline if o['operation']==revision['operation'])
+   self.assertEqual(operation['contract_sha256'],revision['after_contract_sha256'])
+   migration=(ROOT/revision['migration']).read_text()
+   self.assertIn(revision['before_contract_sha256'],migration);self.assertIn(revision['after_contract_sha256'],migration)
+  data=json.loads((BASE/'contracts.json').read_text());data['operations']=[o for o in self.baseline if o['operation'] not in {r['operation'] for r in revisions}]
+  unchanged=hashlib.sha256(json.dumps(data,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+  self.assertEqual(unchanged,reviewed['unchanged_catalogue_without_revisions_sha256'])
+  self.assertEqual(unchanged,'fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e')
   self.assertEqual(len(self.baseline),595)
  def test_additions_are_unique_closed_and_do_not_duplicate_installed_provider_reads(self):
   ids={o['operation'] for o in self.baseline};providers={o['provider_operation_id'] for o in self.baseline}

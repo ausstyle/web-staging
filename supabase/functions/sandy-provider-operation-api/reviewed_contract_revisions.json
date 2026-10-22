@@ -1,0 +1,14 @@
+{
+  "baseline_catalogue_sha256": "ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef",
+  "reviewed_catalogue_sha256": "d8347eab55acd1e7ae455098f3c8e6400e9b07ef88eb2839b64d3dd85bd79a9a",
+  "unchanged_catalogue_without_revisions_sha256": "fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e",
+  "revisions": [
+    {
+      "operation": "github.files.content.get",
+      "before_contract_sha256": "c3c19636005a12c9e3f8ac984c8401f0bf5b60aea758b9d7e2298aa7ffe2a2df",
+      "after_contract_sha256": "ded0ad6b40a43c7de6ee5e69ead81726f2ddbc7aed5ca725ebe4f972745cc311",
+      "migration": "supabase/migrations/20261022042000_sandy_repository_source_ranges.sql",
+      "purpose": "Immutable bounded source ranges; other 594 provider contracts and catalogue metadata remain unchanged"
+    }
+  ]
+}
