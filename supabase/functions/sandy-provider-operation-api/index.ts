@@ -15,6 +15,11 @@ import {
   createGithubVerificationClient,
   type GithubVerificationRequest,
 } from "../_shared/sandy_github_verification_client.ts";
+import {
+  createGithubPublicationBoundary,
+  type GithubPublicationRequest,
+  type GithubPublicationResult,
+} from "../_shared/sandy_github_publication_boundary.ts";
 import { verifiedExecutionHeaders } from "../_shared/sandy_execution_receipt_transport.ts";
 import { repositorySourcePath } from "../_shared/sandy_repository_text.ts";
 import {
@@ -157,6 +162,9 @@ export interface ProviderDependencies extends ProviderConfig {
   ) => Promise<PolicyResult>;
   consumeGrant: (request: GrantRequest) => Promise<PolicyResult>;
   finishExecution: (request: FinishRequest) => Promise<PolicyResult>;
+  verifyGithubPublication?: (
+    request: GithubPublicationRequest,
+  ) => Promise<GithubPublicationResult>;
   verifyGithubMutation?: (
     request: GithubVerificationRequest,
   ) => Promise<{ allowed: boolean; verification_sha256?: string }>;
@@ -909,6 +917,47 @@ export function createProviderOperationHandler(
         });
       }
     }
+    if (
+      op.operation === "github.refs.create" ||
+      op.operation === "github.refs.update"
+    ) {
+      let boundary: GithubPublicationResult;
+      try {
+        boundary = await deps.verifyGithubPublication?.({
+          admission_id,
+          operation: op.operation,
+          arguments: args,
+          token,
+        }) ??
+          {
+            allowed: false,
+            error: "engineering_source_boundary_unavailable",
+            http_status: 503,
+          };
+      } catch {
+        boundary = {
+          allowed: false,
+          error: "engineering_source_boundary_unavailable",
+          http_status: 503,
+        };
+      }
+      if (!boundary.allowed) {
+        const recorded = await finish("failed", null, null, {
+          error: boundary.error,
+          mutation_dispatched: false,
+        });
+        return response(boundary.http_status, {
+          ok: false,
+          error: boundary.error,
+          operation: op.operation,
+          executed: false,
+          mutation_dispatched: false,
+          admission_id,
+          request_state: "failed",
+          receipt_recorded: recorded,
+        });
+      }
+    }
     let upstream: Response;
     let text: string;
     try {
@@ -1297,6 +1346,7 @@ if (import.meta.main) {
         p_contract_sha256: r.contract_sha256,
         p_scope_sha256: r.scope_sha256,
       }),
+    verifyGithubPublication: createGithubPublicationBoundary(db),
     verifyGithubMutation: createGithubVerificationClient(db),
     finishExecution: async (r) => {
       const { data, error } = await db.rpc("sandy_api_finish_execution", {

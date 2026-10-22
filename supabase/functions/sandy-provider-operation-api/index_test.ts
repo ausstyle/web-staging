@@ -53,6 +53,7 @@ function harness(overrides: Partial<ProviderDependencies> = {}) {
     github: "github-fixture",
     getGcpAccessToken: () => Promise.resolve("gcp-fixture"),
     authorizeContext: () => Promise.resolve({ allowed: true }),
+    verifyGithubPublication: () => Promise.resolve({ allowed: true }),
     consumeGrant: () => {
       consumes++;
       return Promise.resolve({ allowed: true, admission_id: ADMISSION });
@@ -772,4 +773,27 @@ Deno.test("provider IAM denial remains a provider-specific 403 with a failed rec
   assertEquals(body.request_state, "failed");
   assertEquals(h.finishes[0].outcome, "failed");
   assertEquals(JSON.stringify(body).includes("PRIVATE"), false);
+});
+
+Deno.test("protected-source refusal settles the admission without dispatching the ref mutation", async () => {
+  const h = harness({
+    verifyGithubPublication: () =>
+      Promise.resolve({
+        allowed: false,
+        error: "engineering_protected_source_denied",
+        http_status: 403,
+      }),
+  });
+  const response = await h.call("github.refs.create", {
+    body: {
+      ref: "refs/heads/engineering/source-boundary",
+      sha: "a".repeat(40),
+    },
+  });
+  assertEquals(response.status, 403);
+  const body = await response.json();
+  assertEquals(body.executed, false);
+  assertEquals(body.mutation_dispatched, false);
+  assertEquals(h.requests.length, 0);
+  assertEquals(h.finishes[0].outcome, "failed");
 });
