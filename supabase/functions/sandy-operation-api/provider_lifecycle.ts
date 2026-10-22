@@ -111,6 +111,7 @@ export const providerLifecycleContracts: Record<
           "github.files.upsert",
           "github.files.create",
           "github.files.update",
+          "github.files.delete",
           "github.update_file",
           "gcp.compute.instances.start",
           "gcp.compute.instances.stop",
@@ -122,6 +123,7 @@ export const providerLifecycleContracts: Record<
       compensation_operation: {
         enum: [
           "github.files.upsert",
+          "github.files.create",
           "github.files.update",
           "github.files.delete",
           "gcp.compute.instances.start",
@@ -243,6 +245,8 @@ const errors = new Map([
   ["verified_github_recovery_source_required", 424],
   ["immutable_recovery_proof_invalid", 409],
   ["compensation_resource_changed", 409],
+  ["compensation_not_resumable", 409],
+  ["engineering_request_conflict", 409],
   ["engineering_policy_blocked", 403],
   ["standing_delegation_inactive", 403],
   ["engineering_rate_limited", 429],
@@ -699,7 +703,12 @@ async function loadSnapshot(
     if (
       !(context.engineering ? safeRepositoryPath(path) : filePath(path)) ||
       r.verify_operation !== "github.files.metadata.get" ||
-      !["github.files.upsert", "github.files.update", "github.files.delete"]
+      ![
+        "github.files.upsert",
+        "github.files.create",
+        "github.files.update",
+        "github.files.delete",
+      ]
         .includes(
           r.compensation_operation,
         )
@@ -890,7 +899,29 @@ export async function executeProviderLifecycle(
       if (observed instanceof Response) return observed;
       value = observed;
     } else {
-      if (object(data.compensation)) {
+      if (
+        context.engineering && object(data.compensation) &&
+        ["reserved", "unknown"].includes(String(data.compensation.state)) &&
+        !uuid(data.compensation.admission_id)
+      ) {
+        const synchronized = await rpc(
+          deps,
+          "sandy_lifecycle_finish_compensation",
+          {
+            p_actor_id: context.actorId,
+            p_snapshot_id: snapshot.id,
+            p_request_id: data.compensation.request_id,
+          },
+          true,
+        );
+        if (synchronized instanceof Response) return synchronized;
+        data.compensation = { ...data.compensation, ...synchronized };
+      }
+      if (
+        object(data.compensation) && !(context.engineering &&
+          ["reserved", "unknown"].includes(String(data.compensation.state)) &&
+          !uuid(data.compensation.admission_id))
+      ) {
         const c = data.compensation;
         value = compensationReceipt(
           snapshot.source_request_id,
@@ -930,7 +961,10 @@ export async function executeProviderLifecycle(
           !uuid(reserved.request_id) || typeof reserved.reused !== "boolean" ||
           reserved.redispatch_permitted !== !reserved.reused
         ) return failure(503, "compensation_reservation_outcome_unknown", true);
-        if (reserved.reused === false) {
+        if (
+          reserved.reused === false ||
+          context.engineering && reserved.attempt_delivery === true
+        ) {
           try {
             await deps.executeCanonical(
               {
@@ -1028,6 +1062,7 @@ function githubFileSource(operation: string): boolean {
     "github.files.upsert",
     "github.files.create",
     "github.files.update",
+    "github.files.delete",
     "github.update_file",
   ].includes(operation);
 }
@@ -1099,14 +1134,16 @@ async function prepareStandingGithubRecovery(
   ) {
     return failure(409, "immutable_recovery_baseline_mismatch");
   }
-  const compensationOperation = baseline.absent
+  const compensationOperation = source.effect_exists === false
+    ? "github.files.create"
+    : baseline.absent
     ? "github.files.delete"
     : "github.files.update";
   const compensationArguments = {
     path: { path: source.path },
     body: {
       branch: source.branch,
-      sha: source.blob_sha,
+      ...(source.effect_exists === false ? {} : { sha: source.blob_sha }),
       message: `Sandy compensation for ${sourceRequestId}`,
       ...(baseline.absent ? {} : { content: baseline.result.content }),
     },
@@ -1130,7 +1167,9 @@ async function prepareStandingGithubRecovery(
     baseline: baseline.absent
       ? { exists: false }
       : { exists: true, sha: expectedOld },
-    expected_effect: { exists: true, sha: source.blob_sha },
+    expected_effect: source.effect_exists === false
+      ? { exists: false }
+      : { exists: true, sha: source.blob_sha },
     resource: {
       provider: "github",
       repository: "ausstyle/web-staging",

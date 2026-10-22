@@ -706,6 +706,8 @@ async function standingRecoveryHarness(
     wrongBaseline?: boolean;
     changedResource?: boolean;
     reserveLost?: boolean;
+    deleted?: boolean;
+    pending?: "unadmitted" | "consumed";
   } = {},
 ) {
   const branch = "engineering/recovery-canary",
@@ -714,7 +716,11 @@ async function standingRecoveryHarness(
     effectSha = (await gitBlobSha(after))!;
   const commitSha = "a".repeat(40), parentSha = "b".repeat(40);
   let record: ObjectValue | undefined, compensation: ObjectValue | null = null;
-  let currentSha = options.changedResource ? "c".repeat(40) : effectSha;
+  let currentSha: string | null = options.changedResource
+    ? "c".repeat(40)
+    : options.deleted
+    ? null
+    : effectSha;
   let writes = 0;
   const calls: { operation: string; args: ObjectValue }[] = [];
   const engineering = {
@@ -739,6 +745,7 @@ async function standingRecoveryHarness(
             path: file,
             branch,
             expected_blob_sha: baselineSha,
+            effect_exists: !options.deleted,
           };
         } else if (name === "sandy_engineering_capture_recovery") {
           record = args.p_record as ObjectValue;
@@ -746,9 +753,21 @@ async function standingRecoveryHarness(
             (record.compensation_arguments as ObjectValue).body &&
               ((record.compensation_arguments as ObjectValue)
                 .body as ObjectValue).sha,
-            effectSha,
+            options.deleted ? undefined : effectSha,
           );
-          assert.equal(record.compensation_operation, "github.files.update");
+          assert.equal(
+            record.compensation_operation,
+            options.deleted ? "github.files.create" : "github.files.update",
+          );
+          if (options.pending) {
+            compensation = {
+              request_id: inverseRequest,
+              state: "unknown",
+              admission_id: options.pending === "consumed"
+                ? inverseAdmission
+                : null,
+            };
+          }
           data = { ok: true, snapshot_id: snapshotId, reused: false };
         } else if (name === "sandy_lifecycle_context") {
           data = {
@@ -758,7 +777,9 @@ async function standingRecoveryHarness(
               id: snapshotId,
               actor_id: actor,
               source_request_id: sourceRequest,
-              source_operation: "github.files.update",
+              source_operation: options.deleted
+                ? "github.files.delete"
+                : "github.files.update",
               captured_at: "2026-10-22T00:00:00Z",
               record,
             },
@@ -782,14 +803,19 @@ async function standingRecoveryHarness(
             ok: true,
             request_id: inverseRequest,
             authorization_id: inverseApproval,
-            reused: false,
-            redispatch_permitted: true,
+            reused: options.pending === "unadmitted",
+            redispatch_permitted: options.pending !== "unadmitted",
+            attempt_delivery: options.pending === "unadmitted",
           };
         } else if (name === "sandy_lifecycle_finish_compensation") {
           compensation = {
             request_id: inverseRequest,
-            state: "accepted",
-            admission_id: inverseAdmission,
+            state: writes === 0 && options.pending === "unadmitted"
+              ? "unknown"
+              : "accepted",
+            admission_id: writes === 0 && options.pending === "unadmitted"
+              ? null
+              : inverseAdmission,
           };
           data = { ok: true, ...compensation, redispatch_permitted: false };
         } else throw Error("Unexpected private RPC " + name);
@@ -819,8 +845,21 @@ async function standingRecoveryHarness(
           content: options.wrongBaseline ? after : before,
         };
       } else if (operation === "github.files.metadata.get") {
+        if (currentSha === null) {
+          return Response.json({
+            operation,
+            admission_id: readAdmission,
+            executed: true,
+            error: "provider_resource_not_found",
+            provider_http_status: 404,
+            request_state: "failed",
+            receipt_recorded: true,
+          }, { status: 404 });
+        }
         result = { path: file, type: "file", sha: currentSha };
-      } else if (operation === "github.files.update") {
+      } else if (
+        ["github.files.update", "github.files.create"].includes(operation)
+      ) {
         writes++;
         assert.equal(childContext.scope?.approvalId, inverseApproval);
         assert.deepEqual(args, record!.compensation_arguments);
@@ -887,4 +926,35 @@ Deno.test("standing recovery refuses an altered baseline, changed current file a
     );
     assert.equal(h.writes(), 0);
   }
+});
+
+Deno.test("standing deletion recovery restores immutable parent content only while the path is absent", async () => {
+  const h = await standingRecoveryHarness({ deleted: true });
+  const r = await h.run("system.lifecycle.compensate");
+  assert.equal(r.status, 200, await r.clone().text());
+  assert.equal((await r.json()).effect_confirmed, true);
+  assert.equal(h.writes(), 1);
+  const inverse = h.calls.find((c) => c.operation === "github.files.create")!;
+  assert.ok(inverse);
+  assert.equal(Object.hasOwn(inverse.args.body as ObjectValue, "sha"), false);
+  const changed = await standingRecoveryHarness({
+    deleted: true,
+    changedResource: true,
+  });
+  const denied = await changed.run("system.lifecycle.compensate");
+  assert.equal(denied.status, 409);
+  assert.equal(changed.writes(), 0);
+});
+
+Deno.test("durable recovery redelivers only an unadmitted bound request and never retries an uncertain provider admission", async () => {
+  const pending = await standingRecoveryHarness({ pending: "unadmitted" });
+  const resumed = await pending.run("system.lifecycle.compensate");
+  assert.equal(resumed.status, 200, await resumed.clone().text());
+  assert.equal((await resumed.json()).effect_confirmed, true);
+  assert.equal(pending.writes(), 1);
+  const consumed = await standingRecoveryHarness({ pending: "consumed" });
+  const unknown = await consumed.run("system.lifecycle.compensate");
+  assert.equal(unknown.status, 202);
+  assert.equal((await unknown.json()).request_state, "unknown");
+  assert.equal(consumed.writes(), 0);
 });

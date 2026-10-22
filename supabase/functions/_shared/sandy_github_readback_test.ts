@@ -300,3 +300,28 @@ Deno.test("reviewed commit aliases share immutable readback while engineering re
   assert.equal(denied.verified, false);
   assert.equal(dispatched, false);
 });
+Deno.test("file deletion verifies commit visibility before accepting an immutable path absence", async () => {
+  for (const visible of [true, false]) {
+    let calls = 0;
+    const result = await verifyGithubReadback(
+      "github.files.delete",
+      { path: { path }, body: { sha: blob, branch: "engineering/canary" } },
+      { commit: { sha: commit }, content: null },
+      "PRIVATE",
+      (async (url) => {
+        calls++;
+        if (String(url).includes("/git/commits/")) {
+          return Response.json({ sha: visible ? commit : parent });
+        }
+        return new Response(null, { status: 404 });
+      }) as typeof fetch,
+    );
+    assert.equal(result.verified, visible);
+    assert.equal(calls, visible ? 2 : 1);
+    if (result.verified) {
+      assert.equal(result.proof.kind, "github_file_deleted");
+      assert.equal(result.proof.blob_sha, blob);
+      assert.equal(result.proof.read_http_status, 404);
+    }
+  }
+});

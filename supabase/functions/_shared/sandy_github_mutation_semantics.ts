@@ -2,10 +2,11 @@
  * allowlist. Every caller still needs its exact contract and resource policy. */
 export const githubMutationSemantics: Record<
   string,
-  "file" | "commit" | "ref"
+  "file" | "file_delete" | "commit" | "ref"
 > = {
   "github.files.create": "file",
   "github.files.update": "file",
+  "github.files.delete": "file_delete",
   "github.files.upsert": "file",
   "github.update_file": "file",
   "github.commit": "commit",

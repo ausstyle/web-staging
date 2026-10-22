@@ -221,6 +221,53 @@ export async function verifyGithubReadback(
         },
       };
     }
+    if (githubMutationSemantics[operation] === "file_delete") {
+      const path = object(args.path) ? args.path.path : undefined;
+      if (
+        typeof path !== "string" || !path || path.length > 1024 ||
+        /[\\%?#\u0000-\u001f\u007f]/.test(path) ||
+        path.split("/").some((p) => !p || p === "." || p === "..") ||
+        !object(raw.commit) || !sha(raw.commit.sha) || !sha(body.sha) ||
+        raw.content !== null
+      ) throw Error();
+      // A 404 alone could mean a new commit is not visible yet. First prove the
+      // immutable commit exists, then prove the exact path is absent there.
+      const revision = await read(
+        request,
+        `https://api.github.com/repos/ausstyle/web-staging/git/commits/${raw.commit.sha}`,
+        token,
+      );
+      if (!object(revision) || revision.sha !== raw.commit.sha) throw Error();
+      const response = await request(
+        `https://api.github.com/repos/ausstyle/web-staging/contents/${
+          path.split("/").map(encodeURIComponent).join("/")
+        }?ref=${raw.commit.sha}`,
+        {
+          method: "GET",
+          redirect: "error",
+          signal: AbortSignal.timeout(5000),
+          headers: {
+            authorization: `Bearer ${token}`,
+            accept: "application/vnd.github+json",
+            "x-github-api-version": "2022-11-28",
+          },
+        },
+      );
+      await response.body?.cancel();
+      if (response.status !== 404) throw Error();
+      return {
+        verified: true,
+        proof: {
+          version: 1,
+          kind: "github_file_deleted",
+          repository: "ausstyle/web-staging",
+          commit_sha: raw.commit.sha,
+          blob_sha: body.sha,
+          path,
+          read_http_status: 404,
+        },
+      };
+    }
     const path = object(args.path) ? args.path.path : undefined;
     if (
       typeof path !== "string" || path.length > 1024 || !path ||
