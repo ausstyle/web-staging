@@ -1,6 +1,7 @@
 /** Immutable GitHub readback. Fixed provider/repository, GET only, bounded data;
  * this neither authorizes an operation nor retries a mutation. */
 import { argumentDigest } from "./sandy_api_protocol.ts";
+import type { GithubReadbackReason } from "./sandy_execution_receipt_transport.ts";
 type Obj = Record<string, unknown>;
 const object = (v: unknown): v is Obj =>
   !!v && typeof v === "object" && !Array.isArray(v);
@@ -11,26 +12,6 @@ export const githubReadbackOperations = new Set([
   "github.files.update",
   "github.commit",
 ]);
-export type GithubReadbackReason =
-  | "github_readback_unsupported"
-  | "github_readback_not_confirmed"
-  | "github_readback_transport_unavailable"
-  | "github_readback_response_limit"
-  | "github_readback_invalid_json"
-  | "github_readback_http_error"
-  | `github_readback_http_${
-    | 400
-    | 401
-    | 403
-    | 404
-    | 408
-    | 409
-    | 422
-    | 429
-    | 500
-    | 502
-    | 503
-    | 504}`;
 export type GithubReadback = { verified: true; proof: Obj } | {
   verified: false;
   reason: GithubReadbackReason;

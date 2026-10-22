@@ -1,7 +1,26 @@
 /** Metadata around a validated provider response, not a replacement output
  * contract. Only fixed authenticated backend responses supply this header. */
 export const verifiedExecutionHeader = "x-sandy-verified-execution";
-import type { GithubReadbackReason } from "./sandy_github_readback.ts";
+export type GithubReadbackReason =
+  | "github_readback_unsupported"
+  | "github_readback_not_confirmed"
+  | "github_readback_transport_unavailable"
+  | "github_readback_response_limit"
+  | "github_readback_invalid_json"
+  | "github_readback_http_error"
+  | `github_readback_http_${
+    | 400
+    | 401
+    | 403
+    | 404
+    | 408
+    | 409
+    | 422
+    | 429
+    | 500
+    | 502
+    | 503
+    | 504}`;
 export type VerifiedExecution = {
   admission_id: string;
   state: "succeeded";
