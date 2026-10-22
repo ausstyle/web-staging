@@ -2,7 +2,7 @@
   "action": "register",
   "title": "Install Amendment B standing engineering policy authorization",
   "problem": "Normal engineering repeatedly stalls on per-change owner approval and exported personal sessions. The current renewable workload is valid but has metadata-only authority; it must not invent its own release grant.",
-  "expected_behavior": "Release 5b37a1a3588b3030c9451084724c892ed07574dd; manifest 8f67fa1d8c975525c7dfd311d59af9b6e7f049c5bfec90388b559cf1bc5e1569. Install only the pinned Control/runtime and additive security migrations after the separately approved owner-session repair. Apply the frozen standing-policy declaration through the protected authenticated administrative installer after genuine owner approval. No further owner browser or per-change Controller approval is required for eligible routine work.",
+  "expected_behavior": "Release 9fa56e8824c3c258588880c6d288ff662b9baa80; manifest 88907173e82f0fc8e0bb3a8f3f22ac7da6c5a8cbe364064ae26fa91db13745a9. Install only the pinned Control/runtime and additive security migrations after the separately approved owner-session repair. Apply the frozen standing-policy declaration through the protected authenticated administrative installer after genuine owner approval. No further owner browser or per-change Controller approval is required for eligible routine work.",
   "change_purpose": "Implement the owner-directed permanent autonomous authority policy through legitimate, durable, scoped and revocable standing delegation.",
   "feature_improvement": "Automatically admit eligible routine releases using normal renewable workload Auth, exact source and CI, budget and scope checks, audit, component locks, rollback and independent source readback.",
   "scope": [
@@ -13,7 +13,7 @@
     "security:standing-engineering-delegation"
   ],
   "risk": "high",
-  "idempotency_key": "sandy-amendment-b-5b37a1a3588b",
+  "idempotency_key": "sandy-amendment-b-9fa56e8824c3",
   "regression_rules": [
     "Standing-policy declaration: {\"version\":\"amendment-b-standing-v1\",\"identity_authorization_ref\":\"engineering_change:ca1e72bb-b604-4f5e-b259-acf30ca830d8\",\"repository\":\"ausstyle/web-staging\",\"project\":\"zmqlyygzqoidkcwdysok\",\"environment\":\"canary\",\"branch\":\"engineering/sandy-unified-intelligence-20261021\",\"targets\":[\"sandy-agent-runtime-v4\",\"sandy-workspace\"],\"risk_ceiling\":\"normal\",\"max_releases_per_day\":10,\"maximum_cost_units\":0,\"baseline\":\"approved_source_commit\",\"workflow\":\"approved_workflow_sha256\",\"expiry_mode\":\"until_revoked\",\"identity_binding_sha256\":\"8f864a36dfdfdadebe1817ede42d2f26792d600737ff0405217c655583aeeede\"}",
     "The executing workload cannot create or expand its own authority. Only the protected Management installer may apply the exact declaration already approved by the real owner.",

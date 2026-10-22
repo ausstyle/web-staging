@@ -1,5 +1,5 @@
 {
-  "source_commit": "5b37a1a3588b3030c9451084724c892ed07574dd",
+  "source_commit": "9fa56e8824c3c258588880c6d288ff662b9baa80",
   "risk": "high",
   "purpose": "One authenticated owner approval installs the exact Amendment B foundation and an explicitly declared durable, revocable grant; no workload self-authorization.",
   "prerequisite": {
@@ -54,10 +54,10 @@
   ],
   "standing_declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
   "frontend": {
-    "sandy/controller/index.html": "667737d7685adf620c7cfc5ef91a53bcbb5f6c036a87d49cd9bfa6a6ae8a2af7",
+    "sandy/controller/index.html": "32e93e2fa85c41708d8e1016c384d59a702dd4b92bb4c8e12965baeee8884f92",
     "sandy/controller/session-transport.mjs": "c107a9063c2c65fe59d18707fac54a77d28c66131434d4fb79ba11056b9f7a66",
     "sandy/controller/autonomous-policy.mjs": "3440eb9180e5a8e779c96736ba850cf13449937481528b13ec3144a8f176b352",
-    "sandy/controller/amendment-b-approval.mjs": "c04256eb550487ca6f416ff59687ef7b269d882eb565d8e81b60034653308211"
+    "sandy/controller/amendment-b-approval.mjs": "0d2b393c7ba5aa59660c3964229677bc8366db21acbedd0588c3e1891fdddcc8"
   },
   "migrations": {
     "supabase/migrations/20261022020000_sandy_autonomous_engineering_policy.sql": "d01ad5f297ca894f2892b5a21dff3b13a391b7426294d38010f9d1f5f58cfd17",
@@ -72,8 +72,8 @@
   },
   "workflow": {
     ".github/workflows/sandy-runtime-release-checks.yml": "b67fc58b5ae60802828e3fd05c5c11002c4a1e9ed3fd581e587a9a725e29d354",
-    ".github/workflows/sandy-amendment-b-release.yml": "6e96c452cef299c98b70e6ee16bc8b476d86d685d3b7433c2a2f1a0c70b512dc",
-    ".github/workflows/sandy-engineering-control-repair.yml": "58d64dafbf219be36938c6facd97b1183c6696ce3d7aea2c0d87db491d6d3e36"
+    ".github/workflows/sandy-amendment-b-release.yml": "38646af8d34ded3b4f18478191b263e6cdb7d67a04a3fac6182d344dbdc4f77a",
+    ".github/workflows/sandy-engineering-control-repair.yml": "3776b79c9fd0ff9b1e9b5c92f86a1dfea32143e8b2632315644bb8ae6300d4fb"
   },
   "rollback": "Capture exact prior Control/runtime bundles and schema function bodies privately under both component locks. Preserve the approved owner-repair migration. On failure stop new dispatch, revoke the standing grant through legitimate administration, restore source-compatible prior code under fresh version/source guards, and retain every approval, execution and revocation event. Prefer forward schema repair; never drop customer data or rewrite approval history."
 }

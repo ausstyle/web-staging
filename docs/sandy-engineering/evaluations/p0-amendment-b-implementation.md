@@ -1,7 +1,7 @@
 # Amendment B — one owner action, then standing authority
 
-Source `5b37a1a3588b3030c9451084724c892ed07574dd`, manifest
-`8f67fa1d8c975525c7dfd311d59af9b6e7f049c5bfec90388b559cf1bc5e1569`.
+Source `9fa56e8824c3c258588880c6d288ff662b9baa80`, manifest
+`88907173e82f0fc8e0bb3a8f3f22ac7da6c5a8cbe364064ae26fa91db13745a9`.
 
 The existing Controller engineering-change panel now has **Approve Amendment B**.
 On opening the panel as a signed-in owner, it idempotently registers a separate
