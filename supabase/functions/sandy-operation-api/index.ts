@@ -1828,6 +1828,23 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               const { data, error } = await db.auth.getUser(token);
               return !error && data.user ? { id: data.user.id } : null;
             },
+            ownsEngineeringReceipt: async (receiptRequestId) => {
+              const proof = engineeringProofFor(delegation);
+              if (
+                !proof?.standingOperations?.includes("system.execution.get")
+              ) return false;
+              const { data, error } = await db.rpc(
+                "sandy_engineering_owns_execution",
+                {
+                  p_user_id: proof.machineUserId,
+                  p_session_id: proof.sessionId,
+                  p_epoch: proof.epoch,
+                  p_request_id: receiptRequestId,
+                },
+              );
+              return !error && isObject(data) && data.ok === true &&
+                data.owned === true;
+            },
           },
           {
             kind: delegation?.kind ?? "user",

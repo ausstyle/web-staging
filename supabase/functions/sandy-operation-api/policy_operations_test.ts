@@ -483,3 +483,48 @@ Deno.test("execution receipts preserve exact API-key ownership and never admit o
   );
   assert.equal(invalid.calls.length, 0);
 });
+
+Deno.test("engineering receipt transport requires fresh in-process ownership proof and cannot issue credentials", async () => {
+  const receipt = {
+    ok: true,
+    admission_id: admission,
+    request_id: request,
+    operation: event.operation,
+    request_state: "unknown",
+    accepted: false,
+    executed: null,
+    completed: false,
+    outcome: "unknown",
+    provider_http_status: null,
+    provider_request_id_sha256: null,
+    result_sha256: null,
+    reconciliation_required: true,
+    redispatch_permitted: false,
+    created_at: event.occurred_at,
+    finished_at: event.occurred_at,
+  };
+  for (const owned of [false, true]) {
+    const h = harness(() => receipt);
+    const dependencies = {
+      ...h.dependencies,
+      ownsEngineeringReceipt: async (id: string) => id === request && owned,
+    };
+    const r = await executePolicyOperation(
+      dependencies,
+      { kind: "job_lease", actorId: actor },
+      "system.execution.get",
+      { request_id: request },
+    );
+    assert.equal(r.status, owned ? 200 : 403);
+    assert.equal(h.calls.length, owned ? 1 : 0);
+    const before = h.calls.length;
+    const denied = await executePolicyOperation(
+      dependencies,
+      { kind: "job_lease", actorId: actor },
+      "system.credentials.revoke",
+      { credential_id: credential },
+    );
+    assert.equal(denied.status, 403);
+    assert.equal(h.calls.length, before);
+  }
+});

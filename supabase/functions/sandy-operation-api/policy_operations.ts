@@ -20,6 +20,8 @@ export type PolicyOperationContext = {
 export type PolicyOperationDependencies = {
   db: PolicyDb;
   verifySession: SessionVerifier;
+  /** In-process gateway proof plus fresh workload/session and receipt ownership. */
+  ownsEngineeringReceipt?: (requestId: string) => Promise<boolean>;
 };
 const object = (value: unknown): value is ObjectValue =>
   value !== null && typeof value === "object" && !Array.isArray(value);
@@ -404,7 +406,11 @@ export async function executePolicyOperation(
   if (!object(args) || inputValidators.get(operation)?.(args) !== true) {
     return fail(400, "invalid_operation_arguments");
   }
-  if (context.kind === "job_lease") {
+  if (
+    context.kind === "job_lease" &&
+    (operation !== "system.execution.get" ||
+      !await deps.ownsEngineeringReceipt?.(String(args.request_id)))
+  ) {
     return fail(403, "normal_user_session_required");
   }
   if (operation === "system.execution.get") {
