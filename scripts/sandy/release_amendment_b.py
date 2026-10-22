@@ -66,6 +66,10 @@ def inspect(r):
         if f.get('prior_bundle_sha256') and digest(body)!=f['prior_bundle_sha256']:raise Blocked('prior_bundle_changed')
         if f.get('prior_original_files') and {p:digest(v) for p,v in original_sources(body).items()}!=f['prior_original_files']:raise Blocked('approved_owner_repair_prerequisite_not_deployed')
         result[slug]=(meta,body)
+    expected=r.m['prerequisite']['migration_functions']
+    names=','.join(quote(name) for name in expected)
+    functions=r.sql("SELECT proname,prosrc FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname IN ("+names+")")
+    if {f['proname']:digest(f['prosrc'].encode()) for f in functions}!=expected:raise Blocked('approved_owner_repair_schema_prerequisite_not_verified')
     return result
 
 def run(r,files,migrations,deploy):
