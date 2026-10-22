@@ -1,0 +1,222 @@
+{
+  "approval": "Explicit user approval of exact immutable proposal in this session; protected Management administration, not workload self-authorization or interactive Owner Auth approval.",
+  "proposal_commit": "11636b525119327ce794f87975c291c24232db35",
+  "proposal_path": "docs/sandy-engineering/policies/engineering-computer-canary-proposal.json",
+  "proposal_file_sha256": "5dcbbe945e63fa00d1eecb089d3ad9085bc88e148b3ed51934402360b9f1be1f",
+  "policy_sha256": "71451e7b0a092b28e99b60075711d879c29f4134a1b2473ab0c8998be72b2555",
+  "policy_hash_encoding": "UTF-8 JSON sort_keys=True separators=(comma,colon), no newline",
+  "observed_at": "2026-10-22T18:02:43.443228+00:00",
+  "before_version": 5,
+  "after_delegation": {
+    "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+    "id": "da36e501-f8c5-4e11-ba79-44d5ba2be289",
+    "version": 6,
+    "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+    "policy": {
+      "classes": {
+        "gcp": [
+          "metadata_read",
+          "guest_read",
+          "guest_files_write",
+          "guest_services_write",
+          "guest_packages_write"
+        ],
+        "github": [
+          "metadata_read",
+          "source_read",
+          "code_write",
+          "git_write",
+          "pull_request_write"
+        ],
+        "supabase": [
+          "metadata_read"
+        ]
+      },
+      "version": "standing-engineering-v1",
+      "computer": {
+        "targets": {
+          "sandy-video": {
+            "zone": "europe-west1-b",
+            "packages": {
+              "names": [
+                "hello"
+              ],
+              "manager": "apt"
+            },
+            "services": [
+              "sandy-engineering-canary"
+            ],
+            "project_id": "elaborate-haven-511518-a5",
+            "instance_id": "6831598645020395570",
+            "file_prefixes": [
+              "sandy-engineering-canary/"
+            ]
+          },
+          "sandy-windows": {
+            "zone": "europe-west1-b",
+            "packages": {
+              "names": [
+                "7zip.7zip"
+              ],
+              "manager": "winget"
+            },
+            "services": [
+              "SandyEngineeringCanary"
+            ],
+            "project_id": "elaborate-haven-511518-a5",
+            "instance_id": "8120150462304566315",
+            "file_prefixes": [
+              "sandy-engineering-canary/"
+            ]
+          }
+        }
+      },
+      "resources": {
+        "gcp": [
+          "elaborate-haven-511518-a5"
+        ],
+        "github": [
+          "ausstyle/web-staging"
+        ],
+        "supabase": [
+          "zmqlyygzqoidkcwdysok"
+        ]
+      },
+      "environments": [
+        "test",
+        "production"
+      ],
+      "risk_ceiling": "routine",
+      "requests_per_minute": 30,
+      "declared_unit_budget": 0
+    },
+    "tenant_id": null,
+    "source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+    "source_sha256": "71451e7b0a092b28e99b60075711d879c29f4134a1b2473ab0c8998be72b2555",
+    "established_by": "postgres",
+    "established_at": "2026-10-22 18:02:11.860777+00",
+    "engineering_change_id": "fa703b39-eca6-4089-bfe8-59018cc6a0e0",
+    "expires_at": "2026-11-21 09:51:26.753549+00",
+    "revoked_at": null
+  },
+  "independent_readback_match": true,
+  "unchanged_enrollment_registry_identity_and_setter": true,
+  "privileges": [
+    {
+      "role": "postgres",
+      "can_execute": true
+    },
+    {
+      "role": "anon",
+      "can_execute": false
+    },
+    {
+      "role": "authenticated",
+      "can_execute": false
+    },
+    {
+      "role": "service_role",
+      "can_execute": false
+    }
+  ],
+  "audit": [
+    {
+      "actor_kind": "management_administration",
+      "event_type": "scope_authorized",
+      "detail": {
+        "mode": "standing_policy_administration",
+        "policy": {
+          "classes": {
+            "gcp": [
+              "metadata_read",
+              "guest_read",
+              "guest_files_write",
+              "guest_services_write",
+              "guest_packages_write"
+            ],
+            "github": [
+              "metadata_read",
+              "source_read",
+              "code_write",
+              "git_write",
+              "pull_request_write"
+            ],
+            "supabase": [
+              "metadata_read"
+            ]
+          },
+          "version": "standing-engineering-v1",
+          "computer": {
+            "targets": {
+              "sandy-video": {
+                "zone": "europe-west1-b",
+                "packages": {
+                  "names": [
+                    "hello"
+                  ],
+                  "manager": "apt"
+                },
+                "services": [
+                  "sandy-engineering-canary"
+                ],
+                "project_id": "elaborate-haven-511518-a5",
+                "instance_id": "6831598645020395570",
+                "file_prefixes": [
+                  "sandy-engineering-canary/"
+                ]
+              },
+              "sandy-windows": {
+                "zone": "europe-west1-b",
+                "packages": {
+                  "names": [
+                    "7zip.7zip"
+                  ],
+                  "manager": "winget"
+                },
+                "services": [
+                  "SandyEngineeringCanary"
+                ],
+                "project_id": "elaborate-haven-511518-a5",
+                "instance_id": "8120150462304566315",
+                "file_prefixes": [
+                  "sandy-engineering-canary/"
+                ]
+              }
+            }
+          },
+          "resources": {
+            "gcp": [
+              "elaborate-haven-511518-a5"
+            ],
+            "github": [
+              "ausstyle/web-staging"
+            ],
+            "supabase": [
+              "zmqlyygzqoidkcwdysok"
+            ]
+          },
+          "environments": [
+            "test",
+            "production"
+          ],
+          "risk_ceiling": "routine",
+          "requests_per_minute": 30,
+          "declared_unit_budget": 0
+        },
+        "version": 6,
+        "tenant_id": null,
+        "expires_at": "2026-11-21T09:51:26.753549+00:00",
+        "administrator": "postgres",
+        "delegation_id": "da36e501-f8c5-4e11-ba79-44d5ba2be289",
+        "source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+        "source_sha256": "71451e7b0a092b28e99b60075711d879c29f4134a1b2473ab0c8998be72b2555",
+        "interactive_owner_approval": false
+      },
+      "occurred_at": "2026-10-22 18:02:11.86616+00"
+    }
+  ],
+  "VM_commands_executed": 0,
+  "provider_execution_verified": false,
+  "guest_API_version": 17,
+  "enrollment_installation_native_IAM_graphical_authority_added": false
+}

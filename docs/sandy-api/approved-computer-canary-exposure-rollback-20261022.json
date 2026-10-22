@@ -1,0 +1,168 @@
+{
+  "migration_sha256": "9b43f53ad527bef23fe71f83c042afc8215c00e3c1fd5d7e90eb0142da5d3a2c",
+  "rollback_restored_exact_registry": true,
+  "changes": [
+    {
+      "before": {
+        "operation": "gcp.vm.files.download",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.files.download",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.files.upload",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.files.upload",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.packages.install",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.packages.install",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.packages.remove",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.packages.remove",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.packages.update",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.packages.update",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.services.restart",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.services.restart",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.services.start",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.services.start",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.services.status",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.services.status",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.services.stop",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.services.stop",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    },
+    {
+      "before": {
+        "operation": "gcp.vm.tasks.get",
+        "api_exposed": false,
+        "ai_exposed": false,
+        "verified": false,
+        "last_verified_at": null
+      },
+      "candidate": {
+        "operation": "gcp.vm.tasks.get",
+        "api_exposed": true,
+        "ai_exposed": true,
+        "verified": false,
+        "last_verified_at": null
+      }
+    }
+  ],
+  "new_operations": 0,
+  "verification_flags_changed": 0
+}
