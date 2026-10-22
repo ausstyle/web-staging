@@ -9,6 +9,7 @@ on:
       - 'supabase/functions/sandy-feature-discovery/**'
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'supabase/functions/sandy-repository-release-verifier/**'
+      - 'supabase/functions/sandy-examiner-full-cycle/**'
   push:
     branches: [main]
     paths:
@@ -18,9 +19,20 @@ on:
       - 'supabase/functions/sandy-feature-discovery/**'
       - 'supabase/functions/sandy-engineering-oidc-ingest/**'
       - 'supabase/functions/sandy-repository-release-verifier/**'
+      - 'supabase/functions/sandy-examiner-full-cycle/**'
 permissions:
   contents: read
 jobs:
+  examiner-evidence-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - name: Verify independent assessment and receipt boundaries
+        run: deno test supabase/functions/sandy-examiner-full-cycle/
   offline-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5

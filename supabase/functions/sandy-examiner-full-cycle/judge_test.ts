@@ -24,6 +24,19 @@ Deno.test("judge uses the existing service gateway authentication without an opt
   assert.equal(calls, 1);
   assert.deepEqual(answer, verdict);
 });
+Deno.test("judge receives separately sourced persisted execution evidence without promoting provider verification", async () => {
+  const result = await judgePilotAnswer("Task count?", "Two tasks", "synthetic", broker, async (_url, init) => {
+    const body = JSON.parse(String(init?.body));
+    const input = JSON.parse(body.input[1].content);
+    assert.equal(input.execution_evidence.source, "server_persisted_customer_request_task");
+    assert.equal(input.execution_evidence.tools[0].count, 2);
+    assert.equal(input.execution_evidence.provider_effect_independently_verified, false);
+    assert.equal(String(init?.body).includes("private-customer"), false);
+    assert.match(body.input[0].content, /needs_review/);
+    return Response.json(envelope());
+  }, { edgeStatus: 200, taskStatus: "completed", trace: [{ tool: "list_tasks", count: 2, success: true, customer_id: "private-customer" }] });
+  assert.deepEqual(result, verdict);
+});
 for (const status of [401, 403, 404, 422, 429, 500]) {
   Deno.test(`gateway HTTP ${status} remains unscored with no retry or raw error disclosure`, async () => {
     let calls = 0;
