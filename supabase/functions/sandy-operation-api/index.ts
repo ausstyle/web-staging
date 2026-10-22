@@ -527,6 +527,7 @@ function ownerOnly(operation: string) {
 function executionAvailability(
   entry: Record<string, unknown>,
   config?: ProviderConfig,
+  authorizedByStandingPolicy = false,
 ) {
   const extension = extensionAvailability(
     String(entry.operation),
@@ -537,7 +538,7 @@ function executionAvailability(
   const provider = providerOperations[String(entry.operation)];
   if (
     (entry.is_mutation === true || provider?.requires_grant) &&
-    entry.verified !== true
+    entry.verified !== true && !authorizedByStandingPolicy
   ) {
     return {
       executable: false,
@@ -618,7 +619,13 @@ async function upstreamResult(
     upstream_status: upstreamStatus,
     result,
     ...(ok && readVerifiedExecution(response, operation, result.admission_id)
-      ? { execution_receipt: readVerifiedExecution(response, operation, result.admission_id) }
+      ? {
+        execution_receipt: readVerifiedExecution(
+          response,
+          operation,
+          result.admission_id,
+        ),
+      }
       : {}),
     ...(preserveExecutionClaim && ok
       ? {
@@ -946,6 +953,28 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               enabledEntry(entry) && discoverableContract(entry),
             argumentsValid: (schema, args) =>
               schemaValid(schema, args) === true,
+            executionScope: async (operation, args) => {
+              const scope = extensionKind(operation)
+                ? await extensionExecutionScope(
+                  operation,
+                  args,
+                  data.user!.id,
+                  async () => null,
+                  {
+                    restoreBindings: dependencies.packageRestoreBindings,
+                    providerBindings: dependencies.providerConfig
+                      ?.verifiedBindings,
+                  },
+                )
+                : providerExecutionScope(
+                  operation,
+                  dependencies.providerConfig,
+                );
+              if (!isObject(scope)) {
+                throw Error("provider_scope_configuration_required");
+              }
+              return scope;
+            },
             delegate: (forwarded, scopedCredential) =>
               createOperationHandler({
                 ...dependencies,
@@ -1168,7 +1197,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         )
         .map((entry) => ({
           ...entry,
-          ...executionAvailability(entry, dependencies.providerConfig),
+          ...executionAvailability(
+            entry,
+            dependencies.providerConfig,
+            engineeringProofFor(delegation)?.standingOperations?.includes(
+              String(entry.operation),
+            ) === true,
+          ),
         }));
       const bytes = new TextEncoder().encode(JSON.stringify(operations));
       const digest = new Uint8Array(
@@ -1313,7 +1348,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         ok: true,
         operation: {
           ...entry,
-          ...executionAvailability(entry, dependencies.providerConfig),
+          ...executionAvailability(
+            entry,
+            dependencies.providerConfig,
+            engineeringProofFor(delegation)?.standingOperations?.includes(
+              String(entry.operation),
+            ) === true,
+          ),
         },
       });
     }
@@ -1359,7 +1400,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     if (
       (entry.is_mutation === true ||
         providerOperations[operation]?.requires_grant === true) &&
-      entry.verified !== true
+      entry.verified !== true &&
+      !engineeringProofFor(delegation)?.standingOperations?.includes(operation)
     ) {
       return reply(424, {
         error: "operation_requires_live_verification",

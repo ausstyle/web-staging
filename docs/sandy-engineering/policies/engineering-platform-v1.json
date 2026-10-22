@@ -1,0 +1,36 @@
+{
+  "version": "standing-engineering-v1",
+  "risk_ceiling": "routine",
+  "declared_unit_budget": 0,
+  "requests_per_minute": 30,
+  "environments": [
+    "test",
+    "production"
+  ],
+  "resources": {
+    "github": [
+      "ausstyle/web-staging"
+    ],
+    "supabase": [
+      "zmqlyygzqoidkcwdysok"
+    ],
+    "gcp": [
+      "elaborate-haven-511518-a5"
+    ]
+  },
+  "classes": {
+    "github": [
+      "metadata_read",
+      "source_read",
+      "code_write",
+      "git_write",
+      "pull_request_write"
+    ],
+    "supabase": [
+      "metadata_read"
+    ],
+    "gcp": [
+      "metadata_read"
+    ]
+  }
+}

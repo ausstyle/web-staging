@@ -17,6 +17,10 @@ import {
 } from "../_shared/sandy_github_verification_client.ts";
 import { verifiedExecutionHeaders } from "../_shared/sandy_execution_receipt_transport.ts";
 import {
+  githubSourceDelivery,
+  SourceDeliveryError,
+} from "../_shared/sandy_github_source_delivery.ts";
+import {
   argumentDigest,
   canonicalJson,
   JsonRequestError,
@@ -444,7 +448,10 @@ export function bindProviderRequest(
   }
   return url;
 }
-async function boundedText(resp: Response): Promise<string> {
+async function boundedText(
+  resp: Response,
+  maximum = 2 * 1024 * 1024,
+): Promise<string> {
   if (!resp.body) return "";
   const reader = resp.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -454,7 +461,7 @@ async function boundedText(resp: Response): Promise<string> {
       const part = await reader.read();
       if (part.done) break;
       length += part.value.byteLength;
-      if (length > 2 * 1024 * 1024) {
+      if (length > maximum) {
         await reader.cancel();
         throw new Error("provider_response_size_limit");
       }
@@ -907,7 +914,10 @@ export function createProviderOperationHandler(
           ? { body: JSON.stringify(providerBody) }
           : {}),
       });
-      text = await boundedText(upstream);
+      text = await boundedText(
+        upstream,
+        op.kind === "file_content" ? 12 * 1024 * 1024 : 2 * 1024 * 1024,
+      );
     } catch {
       await finish("unknown", null, null, {
         error: "provider_response_unavailable",
@@ -1010,19 +1020,7 @@ export function createProviderOperationHandler(
         result = acceptedProjection(raw);
       } else if (op.kind === "domain") result = domainProjection(raw);
       else if (op.kind === "file_content") {
-        if (
-          !object(raw) || raw.type !== "file" || raw.encoding !== "base64" ||
-          typeof raw.size !== "number" || raw.size > 65536 ||
-          typeof raw.content !== "string"
-        ) throw new Error("provider_projection_mismatch");
-        result = {
-          path: raw.path,
-          sha: raw.sha,
-          size: raw.size,
-          type: "file",
-          encoding: "base64",
-          content: raw.content.replace(/\s/g, ""),
-        };
+        result = await githubSourceDelivery(raw, args, token, fetcher);
       } else if (["mutation_metadata", "empty"].includes(op.kind)) {
         result = acceptedProjection(raw);
       } else if (op.kind === "openapi") {
@@ -1046,7 +1044,22 @@ export function createProviderOperationHandler(
           $defs: op.public_defs,
         })(result)
       ) throw new Error("provider_projection_mismatch");
-    } catch {
+    } catch (error) {
+      if (error instanceof SourceDeliveryError) {
+        const recorded = await finish("failed", status, provider_request_id, {
+          error: error.code,
+        });
+        return response(error.status, {
+          ok: false,
+          error: error.code,
+          operation: op.operation,
+          executed: true,
+          admission_id,
+          provider_http_status: status,
+          request_state: "failed",
+          receipt_recorded: recorded,
+        });
+      }
       await finish(
         op.is_mutation ? "unknown" : "failed",
         status,
@@ -1234,6 +1247,14 @@ if (import.meta.main) {
         };
       }
       if (op.requires_grant && !row.verified) {
+        const standing = await db.rpc(
+          "sandy_engineering_authorized_admission",
+          {
+            p_admission_id: context.admission_id,
+            p_expected_state: "admitted",
+          },
+        );
+        if (!standing.error && standing.data === true) return { allowed: true };
         return {
           allowed: false,
           error: "verified_execution_contract_required",

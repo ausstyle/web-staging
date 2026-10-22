@@ -5,8 +5,16 @@ import policy from "./engineering_identity_policy.json" with { type: "json" };
 import vmReadPolicy from "./engineering_vm_read_policy.json" with {
   type: "json",
 };
+import {
+  recognizableRepositoryCredential,
+  repositoryText,
+} from "../_shared/sandy_repository_text.ts";
 export const engineeringVmReadPolicy = Object.freeze(vmReadPolicy);
-import { argumentDigest, requestJson } from "../_shared/sandy_api_protocol.ts";
+import {
+  argumentDigest,
+  canonicalJson,
+  requestJson,
+} from "../_shared/sandy_api_protocol.ts";
 export const engineeringPolicy = Object.freeze(policy);
 type Obj = Record<string, unknown>;
 const object = (v: unknown): v is Obj =>
@@ -28,6 +36,7 @@ export type EngineeringProof = {
   epoch: number;
   policySha256: string;
   vmReadScopeSha256?: string;
+  standingOperations?: string[];
 };
 const proofs = new WeakMap<object, EngineeringProof>();
 export const engineeringProofFor = (credential: unknown) =>
@@ -100,6 +109,7 @@ export type EngineeringDependencies = {
   entry(operation: string): Promise<Obj | null>;
   contractMatches(entry: Obj): boolean;
   argumentsValid(schema: unknown, args: unknown): boolean;
+  executionScope?(operation: string, args: Obj): Obj | Promise<Obj>;
   delegate(request: Request, credential: Obj): Promise<Response>;
 };
 async function rpc(
@@ -162,6 +172,28 @@ export async function engineeringRequest(
     !["list", "describe", "execute"].includes(String(body.action))
   ) return fail(400, "invalid_engineering_request");
   const operation = body.operation;
+  // The separate administrative policy is read only after ordinary Auth and
+  // workload/session verification. Missing policy preserves the legacy grant.
+  const standing = deps.executionScope
+    ? await rpc(deps.db, "sandy_engineering_resolve_standing", {
+      p_user_id: user.id,
+      p_session_id: jwt.session_id,
+      p_epoch: metadata.sandy_engineering_epoch,
+    })
+    : null;
+  const standingAuthorized = standing?.ok === true &&
+    standing.identity_user_id === user.id &&
+    standing.owner_authority_id === resolved.owner_authority_id &&
+    standing.session_id === jwt.session_id &&
+    uuid(standing.delegation_id) && Number.isSafeInteger(standing.version) &&
+    typeof standing.expires_at === "string" &&
+    Date.parse(standing.expires_at) > Date.now() &&
+    Array.isArray(standing.operations) && standing.operations.length <= 3000 &&
+    standing.operations.every((op) =>
+      typeof op === "string" &&
+      (/^(github|gcp|supabase)\.[a-z0-9_.]+$/.test(op) ||
+        op === "system.execution.get")
+    );
   const vmScope = resolved.vm_read_scope;
   const vmAuthorized = object(vmScope) &&
     vmScope.policy_sha256 === await argumentDigest(vmReadPolicy) &&
@@ -171,8 +203,11 @@ export async function engineeringRequest(
     JSON.stringify(vmScope.operations) ===
       JSON.stringify(vmReadPolicy.operations);
   const allowedOperations = [
-    ...policy.operations,
-    ...(vmAuthorized ? vmReadPolicy.operations : []),
+    ...new Set([
+      ...policy.operations,
+      ...(vmAuthorized ? vmReadPolicy.operations : []),
+      ...(standingAuthorized ? standing!.operations as string[] : []),
+    ]),
   ];
   if (
     body.action !== "list" &&
@@ -185,7 +220,123 @@ export async function engineeringRequest(
       entry = await deps.entry(String(operation));
     const vmRead = vmAuthorized && typeof operation === "string" &&
       vmReadPolicy.operations.includes(operation);
-    if (vmRead) {
+    const standingExecution = standingAuthorized &&
+      (standing!.operations as string[]).includes(String(operation));
+    if (standingExecution && operation === "system.execution.get") {
+      if (
+        !entry || !deps.contractMatches(entry) || entry.api_exposed !== true ||
+        entry.ai_exposed !== true ||
+        !object(args) || !deps.argumentsValid(entry.input_schema, args) ||
+        !uuid(args.request_id)
+      ) return fail(400, "invalid_execution_receipt_request");
+      const owned = await rpc(deps.db, "sandy_engineering_owns_execution", {
+        p_user_id: user.id,
+        p_session_id: jwt.session_id,
+        p_epoch: metadata.sandy_engineering_epoch,
+        p_request_id: args.request_id,
+      });
+      if (owned?.ok !== true || owned.owned !== true) {
+        return fail(404, "execution_receipt_not_found");
+      }
+      const requestId = headers.get("x-sandy-request-id") ??
+        crypto.randomUUID();
+      if (!uuid(requestId)) return fail(400, "invalid_execution_request_id");
+      headers.delete("x-sandy-approval-id");
+      boundExecution = {
+        operation,
+        arguments: args,
+        inputDigest: await argumentDigest(args),
+        channel: body.channel === "mcp" ? "mcp" : "api",
+        registryContract: entry,
+        dispatchId: requestId,
+      };
+    } else if (standingExecution) {
+      if (
+        !entry || !deps.contractMatches(entry) || entry.api_exposed !== true ||
+        entry.ai_exposed !== true ||
+        !object(entry.error_contract) ||
+        typeof entry.error_contract.contract_sha256 !== "string"
+      ) {
+        return fail(424, "engineering_execution_contract_unavailable");
+      }
+      if (!object(args) || !deps.argumentsValid(entry.input_schema, args)) {
+        return fail(400, "invalid_operation_arguments");
+      }
+      if (String(operation).startsWith("github.")) {
+        try {
+          if (recognizableRepositoryCredential(JSON.stringify(args))) {
+            throw Error();
+          }
+          const inputBody = object(args.body) ? args.body : {};
+          if (typeof inputBody.content === "string") {
+            repositoryText(
+              inputBody.content,
+              inputBody.encoding === "utf-8" ||
+                String(operation).includes(".blobs.") &&
+                  inputBody.encoding === undefined
+                ? "utf-8"
+                : "base64",
+            );
+          }
+        } catch {
+          return fail(403, "repository_source_material_refused");
+        }
+      }
+      if (
+        request.headers.has("x-sandy-declared-units") &&
+        request.headers.get("x-sandy-declared-units") !== "0"
+      ) return fail(403, "engineering_cost_scope_denied");
+      const requestId = headers.get("x-sandy-request-id") ??
+        crypto.randomUUID();
+      if (!uuid(requestId)) return fail(400, "invalid_execution_request_id");
+      let scope: Obj;
+      try {
+        scope = await deps.executionScope!(String(operation), args);
+      } catch {
+        return fail(424, "provider_scope_configuration_required");
+      }
+      const prepared = await rpc(
+        deps.db,
+        "sandy_engineering_prepare_delegated",
+        {
+          p_user_id: user.id,
+          p_session_id: jwt.session_id,
+          p_epoch: metadata.sandy_engineering_epoch,
+          p_request_id: requestId,
+          p_operation: operation,
+          p_canonical_arguments: canonicalJson(args),
+          p_contract_sha256: entry.error_contract.contract_sha256,
+          p_canonical_scope: canonicalJson(scope),
+        },
+      );
+      if (!prepared) return fail(503, "engineering_policy_unavailable");
+      if (
+        prepared.ok !== true || !uuid(prepared.authorization_id) ||
+        prepared.authorization_state !== "authorized_by_policy"
+      ) {
+        return fail(
+          [400, 403, 409, 424, 429].includes(Number(prepared.http_status))
+            ? Number(prepared.http_status)
+            : 403,
+          typeof prepared.error === "string" &&
+            /^[a-z][a-z0-9_]{2,80}$/.test(prepared.error)
+            ? prepared.error
+            : "engineering_policy_blocked",
+        );
+      }
+      // Compatibility transport field carries the existing job/admission ID.
+      // Its record has authorized_by_policy, never fabricated owner sign-off.
+      headers.set("x-sandy-approval-id", prepared.authorization_id);
+      headers.set("x-sandy-request-id", requestId);
+      boundExecution = {
+        operation,
+        arguments: args,
+        inputDigest: await argumentDigest(args),
+        channel: body.channel === "mcp" ? "mcp" : "api",
+        registryContract: entry,
+        dispatchId: requestId,
+      };
+    } else if (vmRead) {
       if (
         !entry || !deps.contractMatches(entry) || entry.api_exposed !== true ||
         entry.ai_exposed !== true || entry.is_mutation !== false ||
@@ -200,7 +351,8 @@ export async function engineeringRequest(
           Object.keys(args.path).length === 1 &&
           args.path.instance === vmReadPolicy.instance_name
         : object(args) && Object.keys(args).every((key) => key === "target") &&
-          (args.target === undefined || args.target === vmReadPolicy.instance_name);
+          (args.target === undefined ||
+            args.target === vmReadPolicy.instance_name);
       if (!exactTarget || !deps.argumentsValid(entry.input_schema, args)) {
         return fail(403, "engineering_vm_read_target_denied");
       }
@@ -308,6 +460,9 @@ export async function engineeringRequest(
     sessionId: jwt.session_id,
     epoch: Number(metadata.sandy_engineering_epoch),
     policySha256: String(resolved.policy_sha256),
+    ...(standingAuthorized
+      ? { standingOperations: standing!.operations as string[] }
+      : {}),
     ...(vmAuthorized
       ? { vmReadScopeSha256: String((vmScope as Obj).policy_sha256) }
       : {}),
@@ -338,7 +493,10 @@ export async function engineeringRequest(
       headers: response.headers,
     });
   }
-  if (body.action !== "execute" || operation !== "supabase.logs.query" || !response.ok) return response;
+  if (
+    body.action !== "execute" || operation !== "supabase.logs.query" ||
+    !response.ok
+  ) return response;
   // Authorization projection: this workload may see only the two pinned fixture
   // console markers. Provider execution stays in the canonical log handler.
   const output: unknown = await response.json().catch(() => null);

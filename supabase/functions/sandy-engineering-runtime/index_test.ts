@@ -103,7 +103,7 @@ Deno.test("out-of-scope operations and malformed requests never reach MCP", asyn
     const value of [
       {
         ...message,
-        params: { name: "supabase.projects.delete", arguments: {} },
+        params: { name: "system.credentials.issue", arguments: {} },
       },
       { ...message, method: "unknown" },
       { ...message, id: undefined },
