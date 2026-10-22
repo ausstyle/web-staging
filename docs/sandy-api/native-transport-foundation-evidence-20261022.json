@@ -1,0 +1,347 @@
+{
+  "observed_at": "2026-10-22T19:04:54.821739+00:00",
+  "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+  "release": {
+    "observed_at": "2026-10-22T19:04:54.758908+00:00",
+    "PR": 187,
+    "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+    "merge_commit": "791877c260fb7425e8a8768b395bc0fd62a23905",
+    "change_id": "b2c634b2-ebe4-48d4-8706-ddca1b5a77a9",
+    "deployments": [
+      {
+        "function": "sandy-vm-protocol-api",
+        "version": 1,
+        "verify_jwt": true,
+        "all_uploaded_sources_accounted_for": true,
+        "readback_sha256": "eaea1e103ac2c5b65e5a0e65a98b1fb0a1dd32b11fe28fa49ba9b165f9f83dff"
+      },
+      {
+        "function": "sandy-operation-api",
+        "version": 57,
+        "verify_jwt": true,
+        "all_uploaded_sources_accounted_for": true,
+        "readback_sha256": "163f534a99a5ed0a90cc871dc419b350591e616e171197d990e47d42e19a985d"
+      }
+    ],
+    "migrations": [
+      {
+        "version": "20261021008900",
+        "name": "sandy_vm_protocol_boundary",
+        "sha256": "6267b7f9d1975e3042000c5e07915c42cddbc8f6ddb56dc8e8f471b1c0d8564c"
+      },
+      {
+        "version": "20261022190000",
+        "name": "sandy_native_execution_activation",
+        "sha256": "26b1da112c5b1a19314319554448e0891dbaac27971850b91ee228139e9eb525"
+      }
+    ],
+    "private_SQL_source_ACLs_match_rollback_candidate": true,
+    "private_binding_count": 0,
+    "registry_rows_added": 0,
+    "exposure_verification_flags_unchanged": true,
+    "delegation6_guest18_enrollments_preserved": true,
+    "VM_commands_executed": 0,
+    "provider_or_OS_execution_verified": false,
+    "CI_checks": [
+      {
+        "id": 120024524227,
+        "name": "examiner-evidence-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 120024524148,
+        "name": "vm-protocol-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 120024523735,
+        "name": "api-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 120024523448,
+        "name": "offline-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "rollback": "Preserve exact gateway56 body/source f27fb982188436e61cda4cc473a7cae04c96afc8 and JWT metadata; restore reviewed source as a new version after source/version guards. Native execution rows remain closed. Restore only exact three registry preimages and prior credential resolver after guarded source checks if necessary. Do not drop native custody or audit once used; no blind retry after unknown release/provider outcome. Preserve guest18/delegation6/enrollments. No VM/IAM/network mutation is part of this release.",
+    "release_reconciliation": "All mutations executed once. SQL readback alias-case and final local evidence-variable mismatches were reconciled by read-only observation; no migration or deployment replay."
+  },
+  "database_rollback": {
+    "observed_at": "2026-10-22T18:55:14.073545+00:00",
+    "source_migrations": {
+      "supabase/migrations/20261021008900_sandy_vm_protocol_boundary.sql": "6267b7f9d1975e3042000c5e07915c42cddbc8f6ddb56dc8e8f471b1c0d8564c",
+      "supabase/migrations/20261022190000_sandy_native_execution_activation.sql": "26b1da112c5b1a19314319554448e0891dbaac27971850b91ee228139e9eb525"
+    },
+    "actual_Postgres_rollback": true,
+    "new_registry_rows": 0,
+    "new_VM_bindings": 0,
+    "flags_unchanged": true,
+    "guest18_v6_preserved": true,
+    "result": {
+      "functions": [
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_claim_execution",
+          "sha256": "97a7b32539a360ca4a1330e79157fc7ab2748c6b4eb3ebb71e9873dc5d9c1d38"
+        },
+        {
+          "ACL": "{postgres=X/postgres}",
+          "name": "sandy_vm_protocol_cleanup",
+          "sha256": "04aad349759309ef0781eda96b7f18d766d3c11c5f69255037c5de972e934347"
+        },
+        {
+          "ACL": "{postgres=X/postgres}",
+          "name": "sandy_vm_protocol_consumed",
+          "sha256": "e6ab238d6acf5bb0cc5f7e7834a041ce063a7893c804a99e96c29180fc1706f6"
+        },
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_context",
+          "sha256": "682672b296abdcb5cc3e278fc07681200ca3fc21144ddc5465f8233cd1e7e608"
+        },
+        {
+          "ACL": "{postgres=X/postgres}",
+          "name": "sandy_vm_protocol_current_binding",
+          "sha256": "b6600b2591c50f53f2d0aa068a763c18dc5a6a1376a6b0435fd402af91c990f5"
+        },
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_finish",
+          "sha256": "55c3a7f6647303efce30fde6c14d77f2a4a3360919d4f03ca8b4b16812aacb68"
+        },
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_metadata",
+          "sha256": "7e34ecc49fd2d3e0e15ca7d0c6635985e925b37ca7550286068b71dcbe5722f9"
+        },
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_public_bindings",
+          "sha256": "ca501207490bb118d030afa53df07f1ad230463660803bf40d23c330388668b5"
+        },
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_resolve_execution",
+          "sha256": "a666074699e271ded57bce561a5b3ede23c56fb6c665edb65e6120e955e380fa"
+        },
+        {
+          "ACL": "{postgres=X/postgres,service_role=X/postgres}",
+          "name": "sandy_vm_protocol_save_result",
+          "sha256": "97c5eb4717c2b1eaa78f58b132a330ed6221f5fdaa7fc4f97036e4a75946a74f"
+        },
+        {
+          "ACL": "{postgres=X/postgres}",
+          "name": "sandy_vm_protocol_scope",
+          "sha256": "b47068c69fa4ac6f3306f6e65756def8fd37c23683056cefdfc9c3ae0a296d23"
+        }
+      ],
+      "native_rows": [
+        {
+          "handler": "sandy-vm-protocol-api",
+          "verified": false,
+          "operation": "cloud.vm.exec",
+          "ai_exposed": false,
+          "api_exposed": false
+        },
+        {
+          "handler": "sandy-vm-protocol-api",
+          "verified": false,
+          "operation": "gcp.vm.ssh.exec",
+          "ai_exposed": false,
+          "api_exposed": false
+        },
+        {
+          "handler": "sandy-vm-protocol-api",
+          "verified": false,
+          "operation": "gcp.vm.winrm.exec",
+          "ai_exposed": false,
+          "api_exposed": false
+        }
+      ],
+      "native_bindings": 0,
+      "registry_counts": {
+        "ai": 453,
+        "api": 470,
+        "rows": 2585,
+        "verified": 79
+      },
+      "guest_enrollments": [
+        {
+          "enabled": false,
+          "vm_name": "sandy-windows",
+          "generation": 0
+        },
+        {
+          "enabled": false,
+          "vm_name": "sandy-video",
+          "generation": 0
+        }
+      ],
+      "private_contracts": 9,
+      "delegation_version": 6
+    },
+    "provider_or_OS_execution": false
+  },
+  "MCP": {
+    "normal_renewable_workload_Auth": true,
+    "personal_Controller_token_used": false,
+    "discovery": {
+      "tools": 243,
+      "pages": 3,
+      "closed_native_and_enrollment_operations_absent": true
+    },
+    "calls": [
+      {
+        "operation": "github.repos.get",
+        "arguments": {},
+        "request_id": "993390b9-2f53-48f2-8a59-67bddd8547dd",
+        "API_status": 200,
+        "error": null,
+        "executed": true,
+        "admissions": [
+          {
+            "id": "297c86a6-2241-40f9-8704-2e81378b3687",
+            "operation": "github.repos.get",
+            "state": "succeeded",
+            "result_sha256": "358d852441f72ec1a68e50fa79a37fbe39a201ff70661526da5977412d0daeb8",
+            "provider_http_status": 200,
+            "delegation_version": 6,
+            "job_status": "succeeded",
+            "approved_by": null,
+            "approved_at": null
+          }
+        ],
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "result_digest_matches": true,
+        "independent_GitHub_readback": {
+          "full_name": "ausstyle/web-staging",
+          "id": 1416227508,
+          "name": "web-staging"
+        },
+        "provider_HTTP_status": 200
+      },
+      {
+        "operation": "gcp.vm.agent.status",
+        "arguments": {
+          "vm_name": "sandy-video"
+        },
+        "request_id": "af7826db-e62c-4767-834a-f71af0fa3a95",
+        "API_status": 200,
+        "error": null,
+        "executed": true,
+        "admissions": [
+          {
+            "id": "6ce3b2bd-0dba-4be7-8ffc-5ed74434ef20",
+            "operation": "gcp.vm.agent.status",
+            "state": "succeeded",
+            "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+            "provider_http_status": 200,
+            "delegation_version": 6,
+            "job_status": "succeeded",
+            "approved_by": null,
+            "approved_at": null
+          }
+        ],
+        "audit": [
+          {
+            "phase": "admission",
+            "outcome": "admitted",
+            "hash_valid": true
+          },
+          {
+            "phase": "grant",
+            "outcome": "consumed",
+            "hash_valid": true
+          },
+          {
+            "phase": "execution",
+            "outcome": "succeeded",
+            "hash_valid": true
+          }
+        ],
+        "result_digest_matches": true,
+        "enrollment_database_match": true,
+        "remote_OS_execution": false
+      },
+      {
+        "operation": "gcp.vm.ssh.exec",
+        "arguments": {
+          "vm_name": "sandy-video",
+          "command": "whoami",
+          "include_output": true
+        },
+        "request_id": "6fef3eb1-b830-49b8-a7e0-aee98bfd97b6",
+        "API_status": 403,
+        "error": "engineering_operation_scope_denied",
+        "executed": false,
+        "admissions": []
+      },
+      {
+        "operation": "gcp.vm.winrm.exec",
+        "arguments": {
+          "vm_name": "sandy-windows",
+          "command": "whoami",
+          "include_output": true
+        },
+        "request_id": "4642707d-6aaf-4422-8f5e-db3594e37480",
+        "API_status": 403,
+        "error": "engineering_operation_scope_denied",
+        "executed": false,
+        "admissions": []
+      }
+    ]
+  },
+  "native_boot_denial": {
+    "HTTP_status": 403,
+    "error": "internal_service_transport_required",
+    "VM_command_dispatched": false
+  },
+  "administrator_connection": {
+    "observed_spec_revision": "13",
+    "outbound_identities": [],
+    "SDK_manifest_connections": [],
+    "administrator_connection_available": false,
+    "IAP_policy_writes_attempted": 0,
+    "credential_values_inspected_or_printed": false
+  },
+  "enrollment_preparation": {
+    "source": "supabase/functions/sandy-guest-operation-api/prepare_enrollment.ts",
+    "tests": "Offline synthetic installer metadata and fixed-identity/secret-field/startup-preservation tests passed; no live enrollment or installation.",
+    "enrollment_performed": false,
+    "separate_authorization_required": true
+  },
+  "actual_OS_commands": 0,
+  "OS_execution_receipts": [],
+  "Linux_Windows_graphical_accepted": 0,
+  "infrastructure_scenarios_accepted": 0,
+  "new_registry_rows": 0,
+  "verification_promotions": 0,
+  "remaining_dependencies": [
+    "Configure a legitimate GCP administrator outbound identity to inspect current IAP policy/etag and repair the exact fixed VM/port grant. Historical4033/403 was not repeatedly reprobed.",
+    "Establish separate restricted host/agent enrollment and native command authorization; current delegation6 intentionally authorizes neither. Trusted host/CA bindings remain empty.",
+    "Native first-canary authorization and enrollment must be reconciled through the existing access lifecycle without adding the six historical proposed metadata aliases. Closed foundation deployment is not completed native access acceptance.",
+    "Windows managed heartbeat remains absent; legacy interactive-logon agent is not a verified WinRM session.",
+    "Graphical/browser session lifecycle and remaining infrastructure acceptance are pending actual authenticated computer access and remaining software."
+  ]
+}

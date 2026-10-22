@@ -2,7 +2,10 @@ import copy
 import tempfile
 from pathlib import Path
 import unittest
-from iap_admin_repair import MEMBER, ROLE, RepairError, apply, candidate, connection_env, plan
+from unittest.mock import patch
+from types import ModuleType, SimpleNamespace
+import json
+from iap_admin_repair import Admin, MEMBER, ROLE, RepairError, apply, candidate, connection_env, plan
 
 
 class AdminFixture:
@@ -23,6 +26,30 @@ class AdminFixture:
 
 
 class IapRepairTests(unittest.TestCase):
+    def test_SDK_uses_only_selected_credentials_and_sanitizes_renewal_failure(self):
+        observed = []
+        class Credentials:
+            service_account_email = "authorized-admin@example.test"
+            def before_request(self, *args):
+                raise RuntimeError("PRIVATE_TOKEN_MUST_NEVER_LEAK")
+        google = ModuleType("google"); google.__path__ = []
+        auth = ModuleType("google.auth"); auth.__path__ = []; google.auth = auth
+        def load(path, **kwargs):
+            observed.append((path, kwargs["scopes"])); return Credentials(), "fixed-project"
+        auth.load_credentials_from_file = load
+        transport = ModuleType("google.auth.transport"); transport.__path__ = []
+        request = ModuleType("google.auth.transport.requests"); request.Request = lambda **kwargs: object()
+        requests = ModuleType("requests"); requests.Session = lambda: SimpleNamespace(verify=True)
+        with tempfile.TemporaryDirectory() as directory:
+            manifest = Path(directory) / "manifest.json"
+            manifest.write_text(json.dumps({"version": 1, "connections": [{"alias": "authorized-admin", "provider_kind": "gcp", "config_dir": "fixture-config", "configuration_name": "fixture-profile", "credentials_file": "fixture-selector-only"}]}))
+            with patch.dict("sys.modules", {"google": google, "google.auth": auth, "google.auth.transport": transport, "google.auth.transport.requests": request, "requests": requests}), patch.dict("os.environ", {"OIC_MANIFEST_PATH": str(manifest)}):
+                admin = Admin("authorized-admin")
+                self.assertEqual(admin.principal, "authorized-admin@example.test")
+                with self.assertRaisesRegex(RepairError, "^GCP_administrator_token_renewal_unavailable$"):
+                    admin.policy("sandy-video")
+        self.assertEqual(observed, [("fixture-selector-only", ["https://www.googleapis.com/auth/cloud-platform"])])
+
     def test_preserves_every_existing_binding_condition_and_audit(self):
         policy = AdminFixture().value
         policy["auditConfigs"] = [{"service": "allServices", "auditLogConfigs": [{"logType": "ADMIN_READ"}]}]
