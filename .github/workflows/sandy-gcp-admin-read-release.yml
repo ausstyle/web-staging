@@ -1,0 +1,120 @@
+name: Activate approved Sandy administrator read
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-engineering-control/gcp_admin_read*'
+      - 'supabase/migrations/20261022201500_sandy_gcp_admin_read_admission.sql'
+      - 'supabase/migrations/20261023001500_sandy_gcp_admin_delegated_read.sql'
+      - 'scripts/sandy/*gcp_admin*'
+      - 'docs/sandy-engineering/evaluations/gcp-admin-read-release.json'
+      - '.github/workflows/sandy-gcp-admin-read-release.yml'
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [preflight, activate]
+        default: preflight
+        required: true
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check authority, revocation, single-use admission and release guards
+        run: |
+          deno test --allow-read --allow-env supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts scripts/sandy/verify_mcp_candidate_test.ts
+          deno check scripts/sandy/verify_gcp_admin_read.ts
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_gcp_admin_release.py
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_gcp_admin_delegation_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -c 'from release_gcp_admin_read import candidate; m,p,a=candidate(); print("Immutable administrator read artifacts verified:",p)'
+  release:
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: sandy-production
+    concurrency:
+      group: sandy-engineering-mcp-deploy
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '12460309247'
+          github-token: ${{ github.token }}
+          run-id: '39849886412'
+          path: ${{ runner.temp }}/sandy-existing-release
+          merge-multiple: true
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Verify the immutable existing candidate, runtime and unchanged traffic
+        env:
+          SANDY_CANDIDATE_SOURCE: '45054252f4e4b824163ae2683615b96095398c34'
+          SANDY_RELEASE_RUN: '39849886412'
+          SANDY_RELEASE_ATTEMPT: '4'
+        run: |
+          mkdir -p "$RUNNER_TEMP/sandy-gcp-admin-evidence"
+          gcloud run services describe sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 --format='json(status.traffic,status.url,spec.template.spec.serviceAccountName)' > "$RUNNER_TEMP/sandy-gcp-admin-evidence/live-service.json"
+          gcloud run revisions describe sandy-engineering-mcp-api-39849886412-4 --project elaborate-haven-511518-a5 --region europe-west1 --format='json(metadata.name,metadata.labels,spec.serviceAccountName,status.conditions,status.imageDigest)' > "$RUNNER_TEMP/sandy-gcp-admin-evidence/live-revision.json"
+          deno run --allow-env --allow-read --allow-write scripts/sandy/existing_mcp_candidate.ts verify "$RUNNER_TEMP/sandy-existing-release" "$RUNNER_TEMP/sandy-gcp-admin-evidence"
+      - name: Preflight the genuine owner authority, current schema and exact deployed base
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 scripts/sandy/release_gcp_admin_read.py --evidence-dir "$RUNNER_TEMP/sandy-gcp-admin-evidence"
+      - name: Activate only the approved fixed read, preserving gateway and Cloud Run
+        if: ${{ inputs.mode == 'activate' }}
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 scripts/sandy/release_gcp_admin_read.py --deploy --evidence-dir "$RUNNER_TEMP/sandy-gcp-admin-evidence"
+      - name: Verify real short-lived impersonation, both IAP reads and central execution receipt
+        if: ${{ inputs.mode == 'activate' }}
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: deno run --allow-env --allow-read --allow-net --allow-write scripts/sandy/verify_gcp_admin_read.ts --output "$RUNNER_TEMP/sandy-gcp-admin-evidence/provider-verification.json"
+      - name: Independently recheck preserved candidate and production traffic
+        if: ${{ always() }}
+        env:
+          SANDY_CANDIDATE_SOURCE: '45054252f4e4b824163ae2683615b96095398c34'
+          SANDY_RELEASE_RUN: '39849886412'
+          SANDY_RELEASE_ATTEMPT: '4'
+        run: |
+          gcloud run services describe sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 --format='json(status.traffic,status.url,spec.template.spec.serviceAccountName)' > "$RUNNER_TEMP/sandy-gcp-admin-evidence/live-service.json"
+          deno run --allow-env --allow-read --allow-write scripts/sandy/existing_mcp_candidate.ts verify "$RUNNER_TEMP/sandy-existing-release" "$RUNNER_TEMP/sandy-gcp-admin-evidence"
+      - name: Record safe release receipt only
+        if: ${{ always() }}
+        run: |
+          python3 - <<'PYRESULT'
+          import os,json,pathlib
+          p=pathlib.Path(os.environ['RUNNER_TEMP'])/'sandy-gcp-admin-evidence'
+          for name in ['release-receipt.json','provider-verification.json']:
+              f=p/name
+              if f.exists():
+                  result=json.loads(f.read_text()); result.pop('provider_proof',None)
+                  print('::notice title=Bounded administrator read::'+json.dumps(result))
+          PYRESULT
+      # Recovery bundles and infrastructure policy details are deliberately not
+      # published as artifacts in this public repository. The protected database
+      # audit retains real provider proof and source/manifest/admission references.

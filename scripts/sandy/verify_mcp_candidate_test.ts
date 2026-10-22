@@ -104,6 +104,24 @@ Deno.test("REST acceptance rejects a server that ignores page limits and checks 
   } finally { globalThis.fetch = original; }
 });
 
+Deno.test("REST acceptance preserves a small pagination probe then batches the entire large catalogue without retries", async () => {
+  const original = globalThis.fetch, limits: number[] = [];
+  const entries = Array.from({ length: 134 }, (_, i) => ({ operation: i === 133 ? "supabase.logs.query" : "fixture.read." + i }));
+  globalThis.fetch = (async (input, init) => {
+    const url = new URL(String(input));
+    if (url.pathname.endsWith("/supabase.logs.query")) return Response.json({ ok: true, operation: { operation: "supabase.logs.query", input_schema: {}, output_schema: {} } });
+    if (url.pathname.endsWith("/engineering.job.approve")) return Response.json({}, { status: 403 });
+    if (url.searchParams.getAll("limit").length > 1) return Response.json({}, { status: 400 });
+    const limit = Number(url.searchParams.get("limit")), offset = Number(url.searchParams.get("cursor")?.split(".").at(-1) ?? 0);
+    assert.ok(init?.signal); limits.push(limit);
+    return Response.json({ ok: true, catalogue_version: "a".repeat(64), operations: entries.slice(offset, offset + limit),
+      ...(offset + limit < entries.length ? { next_cursor: "sc1." + "a".repeat(64) + "." + (offset + limit) } : {}) });
+  }) as typeof fetch;
+  try { const result = await verifyRestCatalogue("synthetic", "synthetic");
+    assert.equal(result.API_REST_operations_observed, 134); assert.deepEqual(limits, [5, 50, 50, 50]);
+  } finally { globalThis.fetch = original; }
+});
+
 Deno.test("Management acceptance records exact endpoint and status without provider bodies or credentials", async () => {
   const credential = "synthetic-secret-never-record", providerSecret = "private-provider-data";
   for (const [status, message, classification] of [

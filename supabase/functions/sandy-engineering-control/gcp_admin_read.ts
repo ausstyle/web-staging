@@ -1,5 +1,5 @@
-/** Owner-only read connection within the existing canonical preflight operation.
- * Runtime callbacks require both normal Owner Auth and Google's signed identity.
+/** Fixed read connection within the existing canonical preflight operation.
+ * Runtime callbacks require normal Auth, current authority and Google's identity.
  */
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.10.0";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
@@ -46,9 +46,22 @@ export async function handleGcpAdminRead(
   request = fetch,
   verify = verifyRuntime,
 ): Promise<Response> {
-  if (
-    admin.role !== "owner" || user.app_metadata?.sandy_engineering_test === true
-  ) return fail("administrator_read_owner_authority_required");
+  const engineering = user.app_metadata?.sandy_engineering_test === true;
+  let session: Record<string, unknown> = {};
+  if (engineering) {
+    // getUser(token) has already authenticated this actor in the ingress. Bind
+    // the verified token's session to the existing revocable standing policy;
+    // do not turn a workload into an owner or install/expand any delegation.
+    try {
+      const claims = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+      const epoch = user.app_metadata.sandy_engineering_epoch;
+      if (admin.role !== "engineering" || claims.sub !== user.id || !uuid(claims.session_id) ||
+        !Number.isSafeInteger(epoch) || epoch < 1) throw Error();
+      session = { p_session: claims.session_id, p_epoch: epoch };
+      const authority = await db.rpc("sandy_gcp_admin_read_authority", { p_actor: user.id, ...session });
+      if (authority.error || authority.data?.ok !== true) throw Error();
+    } catch { return fail("standing_administrator_metadata_read_denied"); }
+  } else if (admin.role !== "owner") return fail("administrator_read_owner_authority_required");
   if (b.action === "gcp_admin_read_claim") {
     if (
       Object.keys(b).some((k) =>
@@ -70,6 +83,7 @@ export async function handleGcpAdminRead(
       p_admission: b.admission_id,
       p_grant: b.grant_id,
       p_request: b.request_id,
+      ...session,
     });
     return error || data?.ok !== true
       ? fail("administrator_read_admission_refused")
@@ -89,6 +103,7 @@ export async function handleGcpAdminRead(
   }
   const { data: admitted, error } = await db.rpc("sandy_gcp_admin_read_admit", {
     p_actor: user.id,
+    ...session,
   });
   if (error || !uuid(admitted?.admission_id)) {
     return fail("administrator_read_admission_unavailable", 503);

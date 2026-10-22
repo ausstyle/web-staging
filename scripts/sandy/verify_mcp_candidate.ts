@@ -193,15 +193,20 @@ export async function verifyRestCatalogue(token: string, anon: string) {
   const get = async (suffix: string) => {
     const response = await request(`${base}/functions/v1/sandy-operation-api/v1/capabilities${suffix}`, {
       redirect: "error", headers: { authorization: `Bearer ${token}`, apikey: anon },
+      // Match the deployed MCP -> API transport's bounded 60-second budget.
+      signal: AbortSignal.timeout(60000),
     });
     return { status: response.status, body: await json(response) as Obj };
   };
   const names = new Set<string>(), cursors = new Set<string>();
   let cursor: string | undefined, version: string | undefined, pages = 0;
   for (; pages < 100; pages++) {
-    const page = await get(`?limit=5${cursor ? "&cursor=" + encodeURIComponent(cursor) : ""}`);
+    // Force the small first page to test pagination, then avoid rebuilding the
+    // entire authorized catalogue for every five entries in a large deployment.
+    const limit = pages === 0 ? 5 : 50;
+    const page = await get(`?limit=${limit}${cursor ? "&cursor=" + encodeURIComponent(cursor) : ""}`);
     requireThat(page.status === 200 && page.body.ok === true && Array.isArray(page.body.operations) &&
-      page.body.operations.length <= 5 && typeof page.body.catalogue_version === "string", "API_REST_catalogue_page_invalid");
+      page.body.operations.length <= limit && typeof page.body.catalogue_version === "string", "API_REST_catalogue_page_invalid");
     if (version) requireThat(version === page.body.catalogue_version, "API_REST_catalogue_changed");
     version = page.body.catalogue_version;
     for (const operation of page.body.operations) {

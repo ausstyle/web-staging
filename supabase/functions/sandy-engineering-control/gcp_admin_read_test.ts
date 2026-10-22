@@ -11,6 +11,23 @@ const body = { action: "preflight", connection: "sandy-gcp-admin" };
 const worker =
   "https://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app";
 
+Deno.test("engineering read uses its own normal session and existing standing grant; revocation stops the worker", async () => {
+  const user = { ...owner, app_metadata: { sandy_engineering_test: true, sandy_engineering_epoch: 2 } };
+  const token = "fixture." + btoa(JSON.stringify({ sub: user.id, session_id: ticket.request_id })) + ".fixture";
+  let enabled = false, claimCalls = 0;
+  const db = { rpc: async (name: string, args: any) => {
+    assert.equal(args.p_actor, user.id); assert.equal(args.p_session, ticket.request_id); assert.equal(args.p_epoch, 2);
+    if (name === "sandy_gcp_admin_read_authority") return enabled ? { data: { ok: true } } : { error: {} };
+    assert.equal(name, "sandy_gcp_admin_read_claim"); claimCalls++; return { data: { ok: true } };
+  } };
+  const claim = { action: "gcp_admin_read_claim", ...ticket, worker_identity: "fixture-google-identity" };
+  const invoke = () => handleGcpAdminRead(db, user, { role: "engineering" }, token, claim, worker, fetch, async () => true);
+  assert.equal((await invoke()).status, 403); assert.equal(claimCalls, 0);
+  enabled = true; assert.equal((await invoke()).status, 200); assert.equal(claimCalls, 1);
+  enabled = false; assert.equal((await invoke()).status, 403); assert.equal(claimCalls, 1);
+  assert.equal((await handleGcpAdminRead(db, user, { role: "owner" }, token, claim, worker)).status, 403);
+});
+
 Deno.test("successful administrator proof requires fixed provider reads and rejects unexpected credential fields", async () => {
   const runtime =
     "sandy-mcp-runtime@elaborate-haven-511518-a5.iam.gserviceaccount.com";
