@@ -5,7 +5,9 @@ import unittest
 from unittest.mock import patch
 from types import ModuleType, SimpleNamespace
 import json
-from iap_admin_repair import Admin, MEMBER, ROLE, RepairError, apply, candidate, connection_env, plan
+import datetime
+from iap_admin_repair import (Admin, MEMBER, ROLE, RepairError, apply, candidate, connection_env, plan,
+    ADMIN_ALIAS, ADMIN_ACCOUNT, RUNTIME_ACCOUNT, TOKEN_LIFETIME, impersonation_credentials, verify_administrator)
 
 
 class AdminFixture:
@@ -26,6 +28,85 @@ class AdminFixture:
 
 
 class IapRepairTests(unittest.TestCase):
+    def keyless_source(self, principal=RUNTIME_ACCOUNT, module="google.auth.identity_pool"):
+        cls = type("FixtureCredentials", (), {"__module__": module})
+        value = cls(); value.service_account_email = principal
+        return value
+
+    def test_exact_keyless_runtime_chain_uses_short_lived_SDK_impersonation(self):
+        source = self.keyless_source(); observed = []
+        def factory(**args):observed.append(args);return "fixture-result"
+        self.assertEqual(impersonation_credentials(source, factory), "fixture-result")
+        self.assertIs(observed[0]["source_credentials"], source)
+        self.assertEqual(observed[0]["target_principal"], ADMIN_ACCOUNT)
+        self.assertEqual(observed[0]["lifetime"], TOKEN_LIFETIME)
+        self.assertEqual(observed[0]["target_scopes"], ["https://www.googleapis.com/auth/cloud-platform"])
+
+    def test_wrong_sources_and_static_keys_are_not_substituted(self):
+        for source in [self.keyless_source(MEMBER.split(":",1)[1]),
+                       self.keyless_source(module="google.oauth2.service_account"),
+                       self.keyless_source(ADMIN_ACCOUNT, "google.oauth2.service_account")]:
+            with self.assertRaises(RepairError):impersonation_credentials(source, lambda **args:self.fail("unexpected impersonation"))
+
+    def test_configured_impersonated_ADC_preserves_chain_and_refuses_key_backing(self):
+        credentials = self.keyless_source(ADMIN_ACCOUNT, "google.auth.impersonated_credentials")
+        credentials._source_credentials = self.keyless_source()
+        self.assertIs(impersonation_credentials(credentials, lambda **args:self.fail("unexpected second impersonation")), credentials)
+        credentials._source_credentials = self.keyless_source(module="google.oauth2.service_account")
+        with self.assertRaises(RepairError):impersonation_credentials(credentials, lambda **args:self.fail("unexpected impersonation"))
+
+    def test_issuance_proof_reports_expiry_without_a_token_or_exception_text(self):
+        admin = object.__new__(Admin);admin.alias=ADMIN_ALIAS;admin.principal=ADMIN_ACCOUNT
+        class Credentials:
+            expiry = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=30)
+            token = "PRIVATE_TOKEN_MUST_NEVER_LEAK"
+            def refresh(self, request):pass
+        admin._credentials=Credentials();admin._auth_request=object()
+        proof=admin.refresh_identity()
+        self.assertTrue(proof["issuance_verified"]);self.assertLessEqual(proof["remaining_seconds"],1800)
+        self.assertNotIn("PRIVATE_TOKEN",json.dumps(proof))
+        admin._credentials.refresh=lambda request:(_ for _ in ()).throw(ValueError("PRIVATE_TOKEN_MUST_NEVER_LEAK"))
+        with self.assertRaisesRegex(RepairError,"^keyless_administrator_token_issuance_unavailable$"):admin.refresh_identity()
+
+    def verification_fixture(self):
+        admin = AdminFixture();admin.alias=ADMIN_ALIAS;admin.principal=ADMIN_ACCOUNT;admin.receipts=[]
+        admin.refresh_identity=lambda:{"issuance_verified":True,"token_recorded":False}
+        def request(method,url,body=None):
+            admin.calls.append((method,url))
+            if url.startswith("https://run.googleapis.com/"):
+                return {"template":{"serviceAccount":RUNTIME_ACCOUNT},"latestReadyRevision":"fixture-ready"}
+            if url.startswith("https://iam.googleapis.com/") and ":getIamPolicy" in url:
+                self.assertEqual(method,"GET");self.assertTrue(url.endswith("options.requestedPolicyVersion=3"))
+                return {"etag":"account-etag","bindings":[{"role":"roles/iam.serviceAccountTokenCreator","members":["serviceAccount:"+RUNTIME_ACCOUNT]}]}
+            if url.startswith("https://iam.googleapis.com/") and method=="GET":return {"email":ADMIN_ACCOUNT,"disabled":False}
+            if url.startswith("https://cloudresourcemanager.googleapis.com/") and url.endswith(":getIamPolicy"):
+                return {"etag":"project-etag","bindings":[{"role":"roles/iap.admin","members":["serviceAccount:"+ADMIN_ACCOUNT]}]}
+            if url.endswith(":testIamPermissions"):return {"permissions":body["permissions"]}
+            raise AssertionError("unexpected provider operation")
+        admin.request=request
+        return admin
+
+    def test_preflight_checks_actual_identity_grant_roles_and_effective_target_permissions(self):
+        admin=self.verification_fixture();result=verify_administrator(admin)
+        self.assertTrue(result["ok"]);self.assertEqual(result["deployed_runtime_identity"],RUNTIME_ACCOUNT)
+        self.assertTrue(result["direct_token_creator_binding_verified"])
+        self.assertEqual([(t["vm_name"],t["port"]) for t in result["targets"]],[("sandy-video",22),("sandy-windows",5986)])
+        self.assertTrue(all(not t["missing_permissions"] for t in result["targets"]))
+        self.assertFalse(any("setIamPolicy" in str(c) for c in admin.calls))
+        self.assertEqual(result["IAM_changes"],0)
+
+    def test_preflight_does_not_treat_project_role_names_as_effective_IAP_authority(self):
+        admin=self.verification_fixture();original=admin.request
+        admin.request=lambda method,url,body=None:{"permissions":[]} if url.endswith(":testIamPermissions") else original(method,url,body)
+        result=verify_administrator(admin)
+        self.assertFalse(result["ok"]);self.assertTrue(all(t["missing_permissions"] for t in result["targets"]))
+
+    def test_runtime_mismatch_stops_read_only_before_IAP(self):
+        admin=self.verification_fixture();original=admin.request
+        admin.request=lambda method,url,body=None:{"template":{"serviceAccount":"unrelated@example.test"}} if url.startswith("https://run.googleapis.com/") else original(method,url,body)
+        with self.assertRaisesRegex(RepairError,"deployed_MCP_runtime_identity_mismatch"):verify_administrator(admin)
+        self.assertFalse(any(c[0]=="read" for c in admin.calls))
+
     def test_SDK_uses_only_selected_credentials_and_sanitizes_renewal_failure(self):
         observed = []
         class Credentials:

@@ -1,11 +1,13 @@
 """Fixed-target IAP repair through a selected, configured GCP administrator.
 
 Plan first, then apply exactly that saved plan after fresh policy/etag readback.
-No fallback identity, impersonation, public address or host/network changes.
+The sandy-gcp-admin alias uses only the owner-authorized, keyless runtime-to-admin
+impersonation chain. No fallback identity, public address or host/network changes.
 """
 from __future__ import annotations
 import argparse
 import copy
+import datetime
 import hashlib
 import json
 import os
@@ -20,6 +22,10 @@ ZONE = "europe-west1-b"
 MEMBER = "serviceAccount:sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com"
 TARGETS = {"sandy-video": ("6831598645020395570", 22), "sandy-windows": ("8120150462304566315", 5986)}
 ROLE = "roles/iap.tunnelResourceAccessor"
+ADMIN_ALIAS = "sandy-gcp-admin"
+RUNTIME_ACCOUNT = "sandy-mcp-runtime@" + PROJECT + ".iam.gserviceaccount.com"
+ADMIN_ACCOUNT = "sandy-cloud-administrator@" + PROJECT + ".iam.gserviceaccount.com"
+TOKEN_LIFETIME = 1800
 
 
 class RepairError(RuntimeError):
@@ -78,6 +84,43 @@ def connection_env(alias, manifest):
     return env
 
 
+def impersonation_credentials(credentials, factory):
+    """Inspect SDK identity metadata only; never read a key or credential file."""
+    principal = getattr(credentials, "service_account_email", None)
+    source = credentials
+    if principal == ADMIN_ACCOUNT:
+        # Google's impersonated ADC has no public source-credential accessor.
+        # Inspect only its identity/type; never inspect a token or signer value.
+        if type(credentials).__module__ != "google.auth.impersonated_credentials":
+            raise RepairError("keyless_runtime_impersonation_chain_required")
+        source = getattr(credentials, "_source_credentials", None)
+    if getattr(source, "service_account_email", None) != RUNTIME_ACCOUNT:
+        raise RepairError("authorized_MCP_runtime_source_required")
+    if type(source).__module__ not in {
+        "google.auth.compute_engine.credentials", "google.auth.identity_pool",
+        "google.auth.aws", "google.auth.external_account", "google.auth.pluggable",
+        "google.auth.impersonated_credentials",
+    }:
+        raise RepairError("keyless_runtime_source_required")
+    # An existing impersonated runtime ADC must also originate from federation
+    # or metadata, rather than a service-account key or personal refresh session.
+    leaf = source
+    for _ in range(8):
+        if type(leaf).__module__ != "google.auth.impersonated_credentials":
+            break
+        leaf = getattr(leaf, "_source_credentials", None)
+    if type(leaf).__module__ not in {
+        "google.auth.compute_engine.credentials", "google.auth.identity_pool",
+        "google.auth.aws", "google.auth.external_account", "google.auth.pluggable",
+    }:
+        raise RepairError("keyless_runtime_source_required")
+    if principal == ADMIN_ACCOUNT:
+        return credentials
+    return factory(source_credentials=source, target_principal=ADMIN_ACCOUNT,
+        target_scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        lifetime=TOKEN_LIFETIME)
+
+
 class Admin:
     def __init__(self, alias):
         manifest = os.environ.get("OIC_MANIFEST_PATH")
@@ -85,9 +128,12 @@ class Admin:
             raise RepairError("configured_GCP_administrator_connection_required")
         env = connection_env(alias, json.loads(Path(manifest).read_text()))
         self.alias = alias
+        self.receipts = []
+        self.policy_write_dispatched = False
         # Use the configured ADC selector through Google's supported SDK.
         # Credentials stay inside the SDK; no gcloud installation, login,
-        # fallback account or ad-hoc impersonation is required.
+        # fallback account or exported credential is required. The named alias
+        # adds only the exact runtime-to-administrator impersonation below.
         try:
             import google.auth
             from google.auth.transport.requests import Request
@@ -103,6 +149,9 @@ class Admin:
                 env["GOOGLE_APPLICATION_CREDENTIALS"],
                 scopes=["https://www.googleapis.com/auth/cloud-platform"],
                 request=self._auth_request)
+            if alias == ADMIN_ALIAS:
+                from google.auth.impersonated_credentials import Credentials
+                self._credentials = impersonation_credentials(self._credentials, Credentials)
             self.principal = getattr(self._credentials, "service_account_email", None) or getattr(self._credentials, "account", None)
             if not isinstance(self.principal, str) or "@" not in self.principal or len(self.principal) > 320:
                 raise RepairError("GCP_administrator_principal_unavailable")
@@ -112,6 +161,25 @@ class Admin:
             raise
         except Exception:
             raise RepairError("GCP_administrator_SDK_setup_unavailable") from None
+
+    def refresh_identity(self):
+        if self.alias != ADMIN_ALIAS or self.principal != ADMIN_ACCOUNT:
+            raise RepairError("authorized_administrator_alias_and_principal_required")
+        try:
+            self._credentials.refresh(self._auth_request)
+            expiry = self._credentials.expiry
+            if not isinstance(expiry, datetime.datetime):
+                raise ValueError()
+            if expiry.tzinfo is None:expiry = expiry.replace(tzinfo=datetime.timezone.utc)
+            remaining = (expiry - datetime.datetime.now(datetime.timezone.utc)).total_seconds()
+            if not 60 < remaining <= 3610:
+                raise ValueError()
+            return {"issuance_verified": True, "mechanism": "google_auth_keyless_impersonation",
+                "source_principal": RUNTIME_ACCOUNT, "target_principal": self.principal,
+                "expires_at": expiry.isoformat(), "remaining_seconds": int(remaining),
+                "token_recorded": False, "keys_created": 0}
+        except Exception:
+            raise RepairError("keyless_administrator_token_issuance_unavailable") from None
 
     def request(self, method, url, body=None):
         # Every URL is constructed from fixed constants in this module.
@@ -127,13 +195,18 @@ class Admin:
             def redirect_request(self, *args, **kwargs):
                 return None
         try:
+            if method == "POST" and url.endswith(":setIamPolicy"):
+                self.policy_write_dispatched = True
             with urllib.request.build_opener(NoRedirect()).open(request, timeout=30) as response:
                 data = response.read(262145)
                 if len(data) > 262144:
                     raise RepairError("administrator_response_limit")
+                self.receipts.append({"method": method, "endpoint": url,
+                    "http_status": response.status, "response_sha256": hashlib.sha256(data).hexdigest()})
                 return json.loads(data)
         except urllib.error.HTTPError as error:
             # Error bodies may contain credential material; expose status only.
+            self.receipts.append({"method": method, "endpoint": url, "http_status": error.code})
             raise RepairError("administrator_request_HTTP_" + str(error.code)) from None
         except (OSError, ValueError):
             raise RepairError("administrator_request_unavailable") from None
@@ -148,6 +221,45 @@ class Admin:
 
     def policy(self, name):
         return self.request("POST", self.url(name) + ":getIamPolicy", {"options": {"requestedPolicyVersion": 3}})
+
+
+def verify_administrator(admin):
+    """Provider reads only. Role names are evidence, not assumed permissions."""
+    issuance = admin.refresh_identity()
+    service = admin.request("GET", f"https://run.googleapis.com/v2/projects/{PROJECT}/locations/europe-west1/services/sandy-engineering-mcp")
+    actual_runtime = service.get("template", {}).get("serviceAccount")
+    if actual_runtime != RUNTIME_ACCOUNT:
+        raise RepairError("deployed_MCP_runtime_identity_mismatch")
+    account_url = f"https://iam.googleapis.com/v1/projects/{PROJECT}/serviceAccounts/{ADMIN_ACCOUNT}"
+    account = admin.request("GET", account_url)
+    if account.get("email") != ADMIN_ACCOUNT or account.get("disabled", False) is not False:
+        raise RepairError("enabled_administrator_account_required")
+    service_policy = admin.request("GET", account_url + ":getIamPolicy?options.requestedPolicyVersion=3")
+    direct = [b for b in service_policy.get("bindings", []) if b.get("role") == "roles/iam.serviceAccountTokenCreator" and "serviceAccount:" + RUNTIME_ACCOUNT in b.get("members", [])]
+    if not direct:
+        raise RepairError("direct_runtime_token_creator_binding_not_verified")
+    project_policy = admin.request("POST", f"https://cloudresourcemanager.googleapis.com/v1/projects/{PROJECT}:getIamPolicy", {"options": {"requestedPolicyVersion": 3}})
+    roles = [{"role": b.get("role"), "condition": b.get("condition")} for b in project_policy.get("bindings", []) if "serviceAccount:" + ADMIN_ACCOUNT in b.get("members", [])]
+    targets = []
+    required = ["iap.tunnelInstances.getIamPolicy", "iap.tunnelInstances.setIamPolicy"]
+    for name, (instance, port) in TARGETS.items():
+        admin.identity(name)
+        permissions = admin.request("POST", admin.url(name) + ":testIamPermissions", {"permissions": required})
+        policy = admin.policy(name)
+        targets.append({"vm_name": name, "instance_id": instance, "port": port,
+            "etag": policy.get("etag"), "policy_sha256": digest(policy), "policy_version": policy.get("version", 1),
+            "binding_count": len(policy.get("bindings", [])),
+            "target_member_bindings": [{"role": b.get("role"), "condition": b.get("condition")} for b in policy.get("bindings", []) if MEMBER in b.get("members", [])],
+            "effective_permissions": [p for p in permissions.get("permissions", []) if p in required],
+            "missing_permissions": [p for p in required if p not in permissions.get("permissions", [])]})
+    return {"ok": all(not t["missing_permissions"] and t["etag"] for t in targets),
+        "read_only": True, "administrator_alias": admin.alias, "administrator_principal": admin.principal,
+        "deployed_runtime_identity": actual_runtime, "latest_ready_revision": service.get("latestReadyRevision"),
+        "administrator_enabled": True, "token_issuance": issuance,
+        "direct_token_creator_binding_verified": True, "service_account_policy_etag": service_policy.get("etag"),
+        "observed_project_role_bindings": roles, "project_policy_etag": project_policy.get("etag"),
+        "inherited_roles_enumerated": False, "targets": targets, "provider_receipts": admin.receipts,
+        "IAM_changes": 0, "agents_enrolled": 0, "software_installed": 0}
 
 
 def plan(admin, name):
@@ -169,6 +281,8 @@ def apply(admin, saved, evidence_path):
         raise RepairError("reviewed_fixed_target_plan_required")
     if evidence_path.exists():
         raise RepairError("existing_attempt_reconcile_before_retry")
+    if admin.alias == ADMIN_ALIAS and not verify_administrator(admin)["ok"]:
+        raise RepairError("administrator_effective_IAP_permissions_required")
     # Fresh full readback also checks administrator identity and immutable VM.
     fresh = plan(admin, name)
     if fresh != saved:
@@ -196,12 +310,22 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--administrator-alias", required=True)
     sub = parser.add_subparsers(dest="action", required=True)
+    p = sub.add_parser("verify"); p.add_argument("--output", type=Path, required=True)
     p = sub.add_parser("plan"); p.add_argument("--vm", choices=TARGETS, required=True); p.add_argument("--output", type=Path, required=True)
     p = sub.add_parser("apply"); p.add_argument("--plan", type=Path, required=True); p.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args()
+    admin = None
     try:
         admin = Admin(args.administrator_alias)
-        if args.action == "plan":
+        if args.action == "verify":
+            if args.output.exists():raise RepairError("existing_verification_requires_review")
+            result = verify_administrator(admin)
+            args.output.write_text(json.dumps(result, indent=2) + "\n");args.output.chmod(0o600)
+            print(json.dumps({"ok": result["ok"], "read_only": True, "administrator_alias": admin.alias,
+                "administrator_principal": admin.principal, "token_issuance_verified": True,
+                "targets": [{"vm_name": t["vm_name"], "missing_permissions": t["missing_permissions"]} for t in result["targets"]]}))
+            if not result["ok"]:raise SystemExit(1)
+        elif args.action == "plan":
             if args.output.exists():
                 raise RepairError("existing_plan_requires_review")
             result = plan(admin, args.vm)
@@ -211,5 +335,12 @@ if __name__ == "__main__":
             result = apply(admin, json.loads(args.plan.read_text()), args.evidence)
             print(json.dumps({"vm_name": result["vm_name"], "outcome": result["outcome"], "tunnel_execution_verified": False}))
     except RepairError as error:
-        print(json.dumps({"ok": False, "error": str(error)}))
+        failure = {"ok": False, "error": str(error),
+            "provider_receipts": getattr(admin, "receipts", []),
+            "policy_write_dispatched": getattr(admin, "policy_write_dispatched", False),
+            "IAM_changes": None if getattr(admin, "policy_write_dispatched", False) else 0}
+        if args.action == "verify" and not args.output.exists():
+            fd = os.open(args.output, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            with os.fdopen(fd, "w") as stream:json.dump(failure, stream, indent=2)
+        print(json.dumps(failure))
         raise SystemExit(1)
