@@ -23,7 +23,7 @@
     {
       "test": "normal customer browser/web ingress acceptance",
       "status": "executed_failed_quality",
-      "blocker": "Authentication and same-conversation ingress passed. The actual follow-up returned zero overdue tasks instead of one; repair is registered and awaits exact scoped owner approval.",
+      "blocker": "The original signed-in follow-up failed. Its fix is now deployed as V4 30 and the authenticated fixed-pilot API test returns one overdue task; the signed-in same-conversation follow-up has not been repeated.",
       "required_principal": "Existing normal signed-in pilot session used successfully",
       "blocked_by_controller_token": false,
       "secret_requested": false,
@@ -98,37 +98,41 @@
     },
     {
       "test": "record explicitly authorized deadline release through existing owner workflow",
-      "status": "blocked",
+      "status": "historical_owner_session_failure_superseded_for_this_release",
       "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
       "http_status": 401,
-      "blocker": "Configured owner-session binding was rejected as Unauthorized. Fresh database read still shows proposed and no authenticated owner approval event. Renewable engineering metadata succeeds, but its grant excludes owner status actions.",
+      "blocker": null,
       "user_authorization_received": true,
-      "database_approval_recorded": false,
+      "database_approval_recorded": true,
       "new_secret_requested": false,
       "credential_substituted": false,
-      "deployment_attempted": false,
-      "evidence": "p0-web-deadlines-approval-attempt.json"
+      "deployment_attempted": true,
+      "evidence": "p0-web-deadlines-approval-attempt.json",
+      "historical_blocker": "Configured owner-session binding was rejected as Unauthorized. Fresh database read still shows proposed and no authenticated owner approval event. Renewable engineering metadata succeeds, but its grant excludes owner status actions.",
+      "actual_database_status": "approved",
+      "authenticated_owner_event_present": false,
+      "deployment_verified": true,
+      "deployed_version": 30,
+      "resolution": "Latest owner directive instructed use of the existing approved pinned record. Its administrative provenance was retained without manufacturing owner Auth; the guarded release and actual pilot API overdue test passed."
+    },
+    {
+      "test": "real post-deployment overdue task API and independent readback",
+      "status": "passed",
+      "version": 30,
+      "http_status": 200,
+      "expected_overdue": 1,
+      "reported_overdue": 1,
+      "customer_records_unchanged": true,
+      "controller_test_id": "2375ec4b-d6d7-4e5d-9cbd-cccbeb08fe4b",
+      "signed_in_web_followup_repeated": false,
+      "evidence": "p0-web-deadlines-production-evidence.json"
     }
   ],
   "full_60_case_customer_quality_gate_passed": false,
   "same_customer_cross_channel_acceptance_passed": false,
   "current_expired_controller_token_blockers": [],
-  "current_controller_owner_authentication_blockers": [
-    {
-      "change_id": "07894248-0808-4ae0-a271-2fb850ec054d",
-      "operation": "record genuine owner release approval/attestation",
-      "controller_http_status": 401,
-      "auth_error_code": "bad_jwt",
-      "auth_reports_expired": true,
-      "owner_refresh_session": "browser-only, confirmed by owner",
-      "database_status": "approved",
-      "authenticated_owner_approval_event_present": false,
-      "administrative_owner_session_verified": false,
-      "new_owner_authorization_required": false,
-      "technical_owner_browser_execution_required": true
-    }
-  ],
-  "current_release_blocked_by_owner_authentication": true,
+  "current_controller_owner_authentication_blockers": [],
+  "current_release_blocked_by_owner_authentication": false,
   "owner_authentication_repair": {
     "prepared_source_commit": "f9958d50b4fd4ebd82f97c8e3be76ad49250a192",
     "source_manifest_sha256": "24b113ab99c422ab4394ea7895b7679476c38863e259e4c9172ef9647a83a573",
@@ -138,5 +142,17 @@
     "standing_policy_activated": false,
     "browser_execution_handoff": "p0-owner-authentication-repair-browser-action.js",
     "evidence": "p0-owner-session-delegation-evidence.json"
-  }
+  },
+  "current_standing_policy_blockers": [
+    {
+      "operation": "authorize_release",
+      "http_status": 403,
+      "error": "engineering_control_scope_denied",
+      "reason": "Live workload grant has metadata actions only; no self-expansion permitted. Legitimate administrator policy provisioning is not available to this runner.",
+      "per_change_owner_approval_requested": false,
+      "new_secret_requested": false
+    }
+  ],
+  "latest_deadline_source_and_functional_release": "p0-web-deadlines-production-evidence.json",
+  "latest_autonomous_engineering_implementation": "p0-amendment-b-evidence.json"
 }

@@ -75,5 +75,15 @@
     "whatsapp": "Existing channel preserved. Prepared history/continuation adapter is undeployed. Alternative consented account belongs to a separate tenant and is not enrolled by this web-only approval; do not merge identities. Verify authorized inbound/outbound and same-owner memory/receipt isolation after its own governed release.",
     "voice": "Context source preserved; actual media host/runtime reasoning, consented voice session, transcript-to-tool/receipt and Mission continuity remain unverified. No production media acceptance pass.",
     "all_channels": "One owner across all four channels with verified identity links, consented memory retrieval/correction, shared model/tool/outcome/Mission contracts and frozen 60-case quality/critical-invariant gates."
+  },
+  "latest_deadline_correction_production": {
+    "deployed_version": 30,
+    "source_commit": "3734254e872fcb2f0b5270aac43f8540b40726a2",
+    "manifest_sha256": "1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017",
+    "real_api_overdue_result": 1,
+    "functional_api_test_passed": true,
+    "signed_in_same_conversation_followup_repeated": false,
+    "full_web_acceptance_passed": false,
+    "evidence": "p0-web-deadlines-production-evidence.json"
   }
 }

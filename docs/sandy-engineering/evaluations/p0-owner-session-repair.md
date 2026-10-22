@@ -1,3 +1,5 @@
+> Superseded for routine engineering by Master v1.2 Amendment B. The browser-scheduler design below is historical and is no longer the active release proposal. See [current implementation and production status](p0-amendment-b-evidence.json). Legacy genuine owner-session repair remains separate from routine policy admission.
+
 # Controller owner-session repair and routine delegation — prepared, not deployed
 
 The normal Supabase Auth endpoint confirmed that the configured exported owner

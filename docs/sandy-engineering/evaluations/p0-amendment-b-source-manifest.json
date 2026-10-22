@@ -1,0 +1,55 @@
+{
+  "source_commit": "24252d51c8d46089e5aa7cbc834e6feff40bd254",
+  "risk": "high",
+  "purpose": "Amendment B authenticated policy administration and routine workload release admission; installs no grant",
+  "functions": [
+    {
+      "slug": "sandy-engineering-control",
+      "expected_prior_version": 51,
+      "prior_bundle_sha256": "3e5aea745fbc701c9543620a83c13b8b18a7a8f0bbfa8ff692494b99978ae44d",
+      "verify_jwt": false,
+      "files": {
+        "sandy-engineering-control/index.ts": "922f94c4b8b9dfd44136642909db3d367715e30a8373edf8c6547662599422be",
+        "sandy-engineering-control/autonomous_release.ts": "154c6dd9a868547747e3b3cac0211b4279aa622c86233315c7090d42ef283982",
+        "sandy-engineering-control/routine_delegation.ts": "c1924e739c0f61ef3313ccf34a8c8dced360a33b073429e8779a9a740fc65b98",
+        "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+        "sandy-engineering-control/canonical_request.ts": "ab5ff8342026e4511c27b521ec661ef236326518d914a8716bc1563ad45815aa",
+        "sandy-operation-api/registry_schema_validator.ts": "21f60f0dd14de49e38b8fc021346fc35b9eca5a0a6fbc97736447f8bfe557cfe",
+        "sandy-operation-api/registry_schema_interpreter.ts": "b6e47ffddec8b45ab466e1a4843e9d2d3d56934673da1e7d4c03a0e1719414bd",
+        "sandy-engineering-control/workload.ts": "5d600ed19c25614528b23c8690251bcae0319523928a21a3649e22f5aa5502c6"
+      }
+    },
+    {
+      "slug": "sandy-engineering-runtime",
+      "expected_prior_version": 13,
+      "prior_bundle_sha256": "80765269aae5affd9e6817b81a46597a202b9115f11ad7ca89336e9f984538d2",
+      "verify_jwt": false,
+      "files": {
+        "sandy-engineering-runtime/index.ts": "d738bd3c80702c960a76da6f41f735096a9a369aeb8115de54293f87b81be3f4",
+        "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+        "_shared/sandy_engineering_session.ts": "9fcbc86fe7bd067d224dc7d0f398e731534b0a1605d0008b4437a9444da2fbe4",
+        "sandy-operation-api/engineering_identity_policy.json": "01407020d4c182f86cbe2048bd2a7fb02f4d04a33b8ba1396b9cd2b7275edd38",
+        "sandy-operation-api/engineering_vm_read_policy.json": "cb3f9bd1095371c643894cadd675996632254efbad4e24caf204560ea09a9c25",
+        "sandy-engineering-control/workload.ts": "5d600ed19c25614528b23c8690251bcae0319523928a21a3649e22f5aa5502c6"
+      }
+    }
+  ],
+  "frontend": {
+    "sandy/controller/index.html": "77ec0f564c245b1f264b9f025d42aa8152a23435493a0954eec19a24cb9b3da6",
+    "sandy/controller/session-transport.mjs": "c107a9063c2c65fe59d18707fac54a77d28c66131434d4fb79ba11056b9f7a66",
+    "sandy/controller/autonomous-policy.mjs": "3440eb9180e5a8e779c96736ba850cf13449937481528b13ec3144a8f176b352"
+  },
+  "migrations": {
+    "supabase/migrations/20261022010000_sandy_owner_routine_delegation.sql": "a17103757651e9c541867f224c04baab1e8db75bce00ebc75e262bd4350f1d49",
+    "supabase/migrations/20261022020000_sandy_autonomous_engineering_policy.sql": "441395e6ec30bf2dd28883733d6a077eeae0a8219f9e58acdfc1492568c0c3ac"
+  },
+  "release_client": {
+    "scripts/sandy/release_delegated_runtime.py": "3a4a60ea816bffbbc386df34f9bca8efc5b93fad1c05420a8e5d5a042ea08e6d",
+    "scripts/sandy/engineering_control_client.py": "4b587a8c9949e7078e4748f4cb05d28896ed092dc0561f9cf9fc93e0755e2bc1",
+    "scripts/sandy/release_web_canary.py": "570ce6122f8d50c15943b45e6aace0e776664519594ef66ddf5d67103fc2cbc1"
+  },
+  "workflow": {
+    ".github/workflows/sandy-runtime-release-checks.yml": "70e1644366b476e9f4bb277bb36b00315a4cbf6a1753c61dc4944cb83f9909b0"
+  },
+  "rollback": "Capture exact prior Control/runtime bundles and frontend source under per-component locks; deploy schema additions first. On failed health/source checks restore prior compatible code under a fresh version/source guard and revoke policy using its legitimate administrator. Preserve all existing grants and historical events; do not drop expanded tables or rewrite approvals."
+}

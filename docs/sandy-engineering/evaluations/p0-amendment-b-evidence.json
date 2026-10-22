@@ -1,0 +1,57 @@
+{
+  "governing_main_commit": "faee1656822dca1f3e869d08f75565dd349e2fe7",
+  "master_version": "1.2",
+  "source_commit": "24252d51c8d46089e5aa7cbc834e6feff40bd254",
+  "manifest_sha256": "ab75f021eb275ba6be41944474cac0605f870ece04d1c30776d9126598e9dd85",
+  "implementation_status": "implemented_locally_not_deployed_or_activated",
+  "controller_implementation_version": 12,
+  "production_controller_provider_version": 51,
+  "production_runtime_provider_version": 13,
+  "normal_workload_identity_reused": true,
+  "new_authentication_system": false,
+  "owner_browser_required_for_each_routine_release": false,
+  "workload_can_provision_its_own_grant": false,
+  "live_probe": {
+    "http_status": 403,
+    "response": {
+      "error": "engineering_control_scope_denied",
+      "executed": false
+    }
+  },
+  "production_grant_actions": [
+    "register",
+    "get",
+    "list",
+    "test",
+    "artifact"
+  ],
+  "policy_provisioning_available_to_runner": false,
+  "owner_refresh_session_location": "browser only; no browser tool or renewable owner binding available to this runner",
+  "new_secrets_requested": false,
+  "per_change_owner_approval_requested": false,
+  "migration_applied": false,
+  "standing_policy_enabled": false,
+  "two_unattended_production_cycles_passed": false,
+  "tests": {
+    "composed_deno_tests_passed": 189,
+    "isolated_postgresql_assertions_passed": 26,
+    "release_transport_tests_passed": 5,
+    "two_mocked_release_cycles": "passed; not production evidence",
+    "serving_entrypoint_typechecks": "Control and runtime passed using cached offline maps; SDK usage unchanged",
+    "frontend_syntax_checks": "passed; no real signed-in owner-browser test"
+  },
+  "implementation": {
+    "policy_administration": "normal authenticated Controller owner only; existing actor-bound grant; no self-expansion; audited revision and revoke",
+    "routine_admission": "existing normal renewable workload Auth; active identity and grant rechecks; resource/risk/expiry/daily release budget; exact committed manifest and module hashes; dependency closure; trusted GitHub CI; protected source-patch exclusions; no mandatory human reviewer",
+    "execution": "release_delegated_runtime.py consumes genuine policy decisions, captures rollback, leases the component, rechecks policy and current source/version, uploads exactly once with intended Management credential, independently reads all original source modules and records an artifact",
+    "quality": "source release does not certify customer behavior or close the scope",
+    "legacy_history": "approved records retained; new routine proposals map to authorized_by_policy with actual workload actor and grant revision"
+  },
+  "current_blocker": "The live workload grant has no release action. Amendment B explicitly says a written design is not an authorization grant and a workload cannot establish or expand its own delegation. The owner refresh session is browser-only and inaccessible here. Security-policy provisioning/release must use an existing legitimate administrator mechanism; no alternate credential or direct approval-status update was used.",
+  "remaining_acceptance": [
+    "Legitimate restricted administrative deployment of the pinned foundation and provisioning of the bounded standing grant",
+    "Two actual unattended routine source-to-release cycles",
+    "Actual revoke/expiry/wrong-target/high-risk/mismatch production canaries",
+    "Full four-channel runtime, memory, model/tool/Mission acceptance and required quality cohort"
+  ]
+}

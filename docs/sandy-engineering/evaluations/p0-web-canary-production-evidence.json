@@ -241,7 +241,7 @@
   "full_60_case_quality_gate_passed": false,
   "same_customer_cross_channel_acceptance_passed": false,
   "quality_verdict": "Not accepted: independent caller authentication repaired, 1/12 pass, 9/12 fail, 2/12 needs_review; question/answer-only judge evidence is incomplete. Actual web follow-up incorrectly reports zero overdue tasks.",
-  "runtime_identity_label_defect": "The current deployed V4 source retains inherited V2 task labels. Authoritative conversation audit confirms V4; correction is prepared in the separately proposed deadline release, not deployed.",
+  "runtime_identity_label_defect": "Corrected by deployed V4 30 / pinned source 3734254e872fcb2f0b5270aac43f8540b40726a2. Earlier failed evidence is retained.",
   "rollback": {
     "prior_source_captured": true,
     "private_snapshots": "web-release-owner-approved-addfc2a/{slug}.before.body and .before-metadata.json",
@@ -418,5 +418,26 @@
     "read_only_admission_completed": true,
     "release_attempted": false,
     "evidence": "p0-owner-session-delegation-evidence.json"
+  },
+  "latest_pinned_deadline_release": {
+    "deployed_version": 30,
+    "source_commit": "3734254e872fcb2f0b5270aac43f8540b40726a2",
+    "manifest_sha256": "1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017",
+    "workspace_version": 46,
+    "all_27_modules_verified": true,
+    "functional_api_overdue_test_passed": true,
+    "full_web_acceptance_passed": false,
+    "evidence": "p0-web-deadlines-production-evidence.json"
+  },
+  "latest_governance_amendment": "Master v1.2 Amendment B: genuine standing policy authorization replaces individual routine owner approval; no grant is created by a design document or by this implementation.",
+  "latest_examiner_run": {
+    "workflow_run": "https://github.com/ausstyle/web-staging/actions/runs/39702287862",
+    "run_key": "production:2e06ff74-387f-4481-bcd9-8562d8bf2c3d",
+    "status": "complete",
+    "attempted": 12,
+    "passed": 0,
+    "failed": 9,
+    "needs_review": 3,
+    "quality_gate_passed": false
   }
 }

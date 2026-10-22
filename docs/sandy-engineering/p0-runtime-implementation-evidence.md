@@ -248,16 +248,54 @@ another secret or changed policy. The historical thread reviewer is a separate,
 unchanged function with the same old caller defect and requires its own scoped
 correction. See the [current blocker ledger](evaluations/p0-authenticated-test-blockers.json).
 
-The new web deadline source is outside both prior immutable approvals. Its
-registered change is proposed and requires an authenticated owner approval for
-its exact commit and manifest before release. That approval boundary is separate
-from token expiry; no replacement secret is requested.
+## V4 deadline release and Amendment B (22 October 2026)
+
+The existing deadline change `07894248-0808-4ae0-a271-2fb850ec054d` was read as
+`approved`. Following the latest explicit owner instruction to proceed with that
+record, the guarded release deployed **V4 30**, source
+`3734254e872fcb2f0b5270aac43f8540b40726a2`, manifest
+`1cd49be83211912bae2fce62bf0f0415a486e5f904a48acc65f4c852b2986017`.
+All 27 original modules match. The lease was released and the prior v29 bundle
+was captured privately; a live restore was not exercised. The administrative
+approval event remains administrative: no owner Auth event or new approval
+status was manufactured. Workspace 46 and its memory-ingestion source are unchanged.
+
+The real authenticated fixed-pilot API test returned HTTP 200 and correctly
+identified **one outstanding, overdue task**. Its successful `list_tasks` receipt
+has complete coverage, fresh `as_of` and `total_overdue: 1`; independent database
+readback confirms the task and deadline are unchanged. Engineering Control
+recorded this result through the renewable workload (HTTP 201; test
+`2375ec4b-d6d7-4e5d-9cbd-cccbeb08fe4b`). The original signed-in follow-up has not
+been repeated. See [release evidence](evaluations/p0-web-deadlines-production-evidence.json).
+
+The full real Examiner rerun completed 12 cases: 0 pass, 9 fail, 3 needs review.
+Its text-only judge does not receive tool receipts and failed even the independently
+verified overdue answer for missing evidence. These scores remain visible and are
+not converted into a cohort pass. The frozen 60-case quality gate remains unmet.
+
+Master v1.2 Amendment B now governs routine engineering. The prepared implementation
+uses the existing renewable identity and Control grant: administrator-only
+provisioning, workload policy admission, exact source/manifest/module checks,
+trusted CI, risk/target/expiry/budget checks, revocation, audit, rollback capture,
+component lease and a single guarded Management upload. Routine execution has no
+owner-browser scheduler or individual approval click. Local verification passed
+189 composed tests, 26 isolated PostgreSQL assertions and five transport tests.
+
+**This policy implementation is not deployed or activated.** A real call to the
+current runtime returned HTTP 403 `engineering_control_scope_denied`: the existing
+live grant has only register/get/list/test/artifact. Amendment B forbids the workload
+from creating or expanding its own delegation. The legitimate owner refresh
+session is browser-only and inaccessible to this runner. No secret or repeated
+individual approval is requested. The security foundation and bounded standing
+grant require the existing legitimate administrative provisioning path before the
+two unattended production release cycles can be certified. See
+[implementation and blocker evidence](evaluations/p0-amendment-b-evidence.json).
 
 ## Remaining channel acceptance
 
 | Channel | Current verified boundary | Required real acceptance still missing |
 | --- | --- | --- |
-| Web | V4 29 / workspace 46 source verified; two actual signed-in turns and task tools executed | Release and retest overdue-count correction; consented web memory/provenance, failure/uncertain outcome cases and full baseline/candidate quality cohort |
+| Web | V4 30 / workspace 46 source verified; real API overdue result corrected to one; original signed-in turns retained | Repeat the signed-in same-conversation follow-up; consented web memory/provenance, failure/uncertain outcome cases and full baseline/candidate quality cohort |
 | Email | Generator 106 source preserved; shadow 17 remains the prior implementation | Deploy/review the shared shadow outcome adapter; verify inbound sender authority, quoted content, attachments, shared model/tool policy, draft confirmation, deduplication and delivery receipts |
 | WhatsApp | Webhook 162 source preserved; existing verified alternative account remains separate | Release the prepared scoped follow-up adapter after web gates; actual verified inbound/replay/follow-up tests and permitted Mission/memory handoffs |
 | Voice | Account context 19 / call function 38 observed; context source preserved | Consented active private voice session, actual media/tool loop, interruption/recovery and voice-to-web continuation |

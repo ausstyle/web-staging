@@ -1,0 +1,28 @@
+{
+  "action": "register",
+  "title": "Install Amendment B standing engineering policy authorization",
+  "problem": "The working renewable engineering identity has only metadata actions. The new governing scope removes per-release human approval inside a genuine grant, but the deployed Controller lacks the bounded unattended admission and policy-provisioning path.",
+  "expected_behavior": "Release 24252d51c8d46089e5aa7cbc834e6feff40bd254; manifest ab75f021eb275ba6be41944474cac0605f870ece04d1c30776d9126598e9dd85. Deploy only the pinned Engineering Control/runtime/frontend and additive migrations under existing legitimate restricted administration; enable no grant merely by installation.",
+  "change_purpose": "Implement standing revocable policy admission without owner-session impersonation, workload self-grants, fabricated approval records or recurring per-release owner clicks.",
+  "feature_improvement": "Permit eligible routine releases to register, test, commit, deploy and verify through existing authenticated infrastructure with source, CI, rollback and audit protections.",
+  "scope": [
+    "github:ausstyle/web-staging:engineering/sandy-unified-intelligence-20261021",
+    "sandy-engineering-control",
+    "sandy-engineering-runtime",
+    "controller:autonomous-policy",
+    "security:standing-engineering-delegation"
+  ],
+  "risk": "high",
+  "idempotency_key": "sandy-amendment-b-24252d51c8d4",
+  "regression_rules": [
+    "Do not enable, expand or impersonate a workload grant using the executing workload.",
+    "Preserve all owner records, customer grants, data, working communications and external provider protections.",
+    "Preserve V4 30, workspace 46, the single-pilot allowlist, Gmail confirmation and memory ingestion.",
+    "Preserve Auth verification, scoped revocation, exact source/version guards, component locks and compatible rollback."
+  ],
+  "acceptance_criteria": [
+    "189 composed tests, 26 isolated PostgreSQL assertions and five release transport tests pass.",
+    "Verify real administrator provisioning, two unattended routine production cycles and revoke/expiry/target/risk/source negative canaries before claiming operational autonomy.",
+    "Keep source verification distinct from customer quality and cross-channel acceptance."
+  ]
+}
