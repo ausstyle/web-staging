@@ -285,7 +285,7 @@ if (import.meta.main) {
   const report: Obj = { observed_at: new Date().toISOString(), passed: false, credentials_recorded: false,
     personal_Controller_token_used: false, service_key_used_as_customer_session: false };
   const privateValues: string[] = []; let issued: IssuedSession | undefined, sessions: ReturnType<typeof createEngineeringSessionClient> | undefined;
-  let stage = "candidate_source";
+  report.acceptance_stage = "candidate_source";
   try {
     let target = `${base}/functions/v1/sandy-api-mcp`;
     if (!edge) {
@@ -298,7 +298,7 @@ if (import.meta.main) {
       report.candidate_source_commit = source ?? null;
     }
     report.target = target;
-    stage = "management_configuration";
+    report.acceptance_stage = "management_configuration";
     const primaryName = Deno.env.get("SANDY_ACCEPTANCE_PRIMARY_BINDING") ?? "SANDY_SUPABASE_MANAGEMENT_TOKEN";
     requireThat(["SUPABASE_ACCESS_TOKEN", "SANDY_SUPABASE_MANAGEMENT_TOKEN"].includes(primaryName), "engineering_management_binding_invalid");
     const bindings: Binding[] = [
@@ -320,17 +320,18 @@ if (import.meta.main) {
     const rows = await administration("/database/query", { read_only: true, query: engineeringIdentityQuery });
     requireThat(Array.isArray(rows) && rows.length === 1 && rows[0].controller_memberships === 0, "engineering_nonowner_identity_required");
     const workload = { userId: rows[0].user_id, epoch: rows[0].credential_epoch, bootstrapGeneration: rows[0].bootstrap_generation };
-    stage = "engineering_session";
+    report.acceptance_stage = "engineering_session";
     sessions = createEngineeringSessionClient(base, service, request); issued = await sessions.get(workload); privateValues.push(issued.token);
     report.normal_Auth_user_verified = true; report.controller_memberships = 0;
     report.token_expiry_utc = new Date(issued.expiresAt).toISOString(); report.session_id = issued.sessionId;
-    stage = "rest_catalogue";
+    report.acceptance_stage = "api_rest_catalogue";
     Object.assign(report, await verifyRestCatalogue(issued.token, anon));
-    stage = "candidate_mcp";
-    Object.assign(report, await verify(target, issued.token, anon)); report.passed = true;
+    report.acceptance_stage = "mcp_candidate";
+    Object.assign(report, await verify(target, issued.token, anon));
+    report.acceptance_stage = "complete"; report.passed = true;
   } catch (error) {
     // Copy before retirement sends its own requests and overwrites the tracker.
-    report.failure_stage = stage; report.failure_kind = failureKind(error);
+    report.failure_kind = failureKind(error);
     report.failure_request = requestEvidence.snapshot();
     report.error = error instanceof Failure ? error.code : error instanceof Error && /^engineering_(auth|workload|credential)_[a-z_]+$/.test(error.message)
       ? error.message : "candidate_verification_failed";
