@@ -87,6 +87,9 @@ fi`,
         await Deno.writeTextFile(dir + "/install.sh", script);
         const output = await new Deno.Command("sh", {
           args: [dir + "/install.sh"],
+          // This fixture needs only its explicitly supplied variables. Inherit
+          // neither runtime credentials nor CI loader injection variables.
+          clearEnv: true,
           env: {
             PATH: bin + ":/usr/bin:/bin",
             FIXTURE_ROOT: root,
