@@ -145,8 +145,12 @@ if (import.meta.main) {
     let target = `${base}/functions/v1/sandy-api-mcp`;
     if (!edge) {
       const directory = Deno.args[releaseIndex + 1]; requireThat(directory, "candidate_release_metadata_missing");
+      const sourceIndex = Deno.args.indexOf("--source-commit");
+      const source = sourceIndex >= 0 ? Deno.args[sourceIndex + 1] : Deno.env.get("GITHUB_SHA");
+      requireThat(typeof source === "string" && /^[a-f0-9]{40}$/.test(source), "candidate_source_commit_required");
+      report.source_commit_candidate = source;
       target = candidateUrl(JSON.parse(await Deno.readTextFile(`${directory}/before.json`)),
-        JSON.parse(await Deno.readTextFile(`${directory}/after.json`)), Deno.env.get("GITHUB_SHA"));
+        JSON.parse(await Deno.readTextFile(`${directory}/after.json`)), source);
     }
     report.target = target;
     const credential = Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN"); requireThat(credential, "engineering_management_credential_unavailable");

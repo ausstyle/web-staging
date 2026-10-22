@@ -6,6 +6,7 @@ Deno.test("release acceptance uses only the tagged endpoint of the exact preserv
     url: "https://sandy-engineering-mcp-fixture-ew.a.run.app" };
   const after = { status: { traffic: [{ tag: "sandy-api-review", url: "https://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app" }] } };
   assert.equal(candidateUrl(before, after, "a".repeat(40)), "https://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app/mcp");
+  assert.throws(() => candidateUrl(before, after, "b".repeat(40)), /candidate_source_or_project_mismatch/);
   for (const url of ["https://outside.invalid", "https://user:password@sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app",
     "https://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app/other", "http://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app",
     "https://sandy-api-review---sandy-engineering-mcp-other.a.run.app"]) {

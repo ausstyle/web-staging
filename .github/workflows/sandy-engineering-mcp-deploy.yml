@@ -6,7 +6,6 @@ on:
       - 'services/sandy-engineering-mcp/**'
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
       - 'scripts/sandy/sync_mcp_transport.py'
-      - 'scripts/sandy/verify_mcp_candidate*'
       - 'supabase/functions/_shared/sandy_engineering_session*'
       - 'supabase/functions/sandy-engineering-runtime/**'
   pull_request:
@@ -205,11 +204,12 @@ jobs:
       - name: Verify candidate through normal Auth, MCP and the real provider
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          GITHUB_SHA: ${{ steps.existing.outputs.source_commit || github.sha }}
+          CANDIDATE_SOURCE_COMMIT: ${{ steps.existing.outputs.source_commit || github.sha }}
         run: >-
           deno run --allow-env --allow-net --allow-read --allow-write
           scripts/sandy/verify_mcp_candidate.ts
           --release-dir "$RUNNER_TEMP/sandy-mcp-release"
+          --source-commit "$CANDIDATE_SOURCE_COMMIT"
           --output "$RUNNER_TEMP/sandy-mcp-release/authenticated-acceptance.json"
       - uses: actions/upload-artifact@v4
         if: always()
