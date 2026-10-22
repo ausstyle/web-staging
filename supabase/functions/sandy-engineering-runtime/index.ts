@@ -160,6 +160,7 @@ export function createEngineeringRuntime(deps: RuntimeDependencies) {
         !policy.operations.includes(params.name) &&
           !vmReadPolicy.operations.includes(params.name) &&
           params.name !== "system.execution.get" &&
+          !/^system\.lifecycle\.(get|verify|compensate)$/.test(params.name) &&
           !/^(github|supabase|gcp)\.[a-z0-9_.]{1,100}$/.test(params.name))
     ) return reply(403, { error: "engineering_operation_scope_denied" });
     let session: IssuedSession;

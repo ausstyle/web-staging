@@ -8,7 +8,21 @@ import { descriptorExecutionScope } from "./scope_from_descriptor.ts";
 import { createBoundedValidatorCache } from "./validator_cache.ts";
 import { classifyGithubMergeResult } from "../_shared/sandy_github_merge.ts";
 import {
+  githubReadbackOperations,
+  verifyGithubReadback,
+} from "../_shared/sandy_github_readback.ts";
+import {
+  createGithubVerificationClient,
+  type GithubVerificationRequest,
+} from "../_shared/sandy_github_verification_client.ts";
+import { verifiedExecutionHeaders } from "../_shared/sandy_execution_receipt_transport.ts";
+import {
+  githubSourceDelivery,
+  SourceDeliveryError,
+} from "../_shared/sandy_github_source_delivery.ts";
+import {
   argumentDigest,
+  canonicalJson,
   JsonRequestError,
   requestJson,
 } from "../_shared/sandy_api_protocol.ts";
@@ -142,6 +156,9 @@ export interface ProviderDependencies extends ProviderConfig {
   ) => Promise<PolicyResult>;
   consumeGrant: (request: GrantRequest) => Promise<PolicyResult>;
   finishExecution: (request: FinishRequest) => Promise<PolicyResult>;
+  verifyGithubMutation?: (
+    request: GithubVerificationRequest,
+  ) => Promise<{ allowed: boolean; verification_sha256?: string }>;
 }
 /** Signing in the dedicated machine must never replace the service client's
  * session used to authorize owners and persist execution receipts. */
@@ -204,12 +221,17 @@ export function validateAllContracts(): number {
   }
   return catalogue.operations.length;
 }
-function response(status: number, body: JsonObject): Response {
+function response(
+  status: number,
+  body: JsonObject,
+  extraHeaders: Record<string, string> = {},
+): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "content-type": "application/json",
       "cache-control": "no-store",
+      ...extraHeaders,
     },
   });
 }
@@ -426,7 +448,10 @@ export function bindProviderRequest(
   }
   return url;
 }
-async function boundedText(resp: Response): Promise<string> {
+async function boundedText(
+  resp: Response,
+  maximum = 2 * 1024 * 1024,
+): Promise<string> {
   if (!resp.body) return "";
   const reader = resp.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -436,7 +461,7 @@ async function boundedText(resp: Response): Promise<string> {
       const part = await reader.read();
       if (part.done) break;
       length += part.value.byteLength;
-      if (length > 2 * 1024 * 1024) {
+      if (length > maximum) {
         await reader.cancel();
         throw new Error("provider_response_size_limit");
       }
@@ -655,7 +680,9 @@ export function createProviderOperationHandler(
       : structuredClone(args.body);
     try {
       for (const [key, value] of Object.entries((op as any).fixed_body ?? {})) {
-        if (!object(providerBody)) throw Error("provider_fixed_body_shape_conflict");
+        if (!object(providerBody)) {
+          throw Error("provider_fixed_body_shape_conflict");
+        }
         providerBody[key] = typeof value === "string"
           ? substituteBinding(value, deps.verifiedBindings)
           : value;
@@ -887,7 +914,10 @@ export function createProviderOperationHandler(
           ? { body: JSON.stringify(providerBody) }
           : {}),
       });
-      text = await boundedText(upstream);
+      text = await boundedText(
+        upstream,
+        op.kind === "file_content" ? 12 * 1024 * 1024 : 2 * 1024 * 1024,
+      );
     } catch {
       await finish("unknown", null, null, {
         error: "provider_response_unavailable",
@@ -911,6 +941,10 @@ export function createProviderOperationHandler(
         ? "provider_resource_not_found"
         : status === 429
         ? "provider_rate_limited"
+        : status === 409
+        ? "provider_conflict"
+        : status === 412
+        ? "provider_precondition_failed"
         : "provider_request_failed";
       const state = op.is_mutation && status >= 500 ? "unknown" : "failed";
       const recorded = await finish(state, status, provider_request_id, {
@@ -924,6 +958,8 @@ export function createProviderOperationHandler(
           ? 404
           : status === 429
           ? 429
+          : status === 409 || status === 412
+          ? status
           : 502,
         {
           ok: false,
@@ -984,19 +1020,7 @@ export function createProviderOperationHandler(
         result = acceptedProjection(raw);
       } else if (op.kind === "domain") result = domainProjection(raw);
       else if (op.kind === "file_content") {
-        if (
-          !object(raw) || raw.type !== "file" || raw.encoding !== "base64" ||
-          typeof raw.size !== "number" || raw.size > 65536 ||
-          typeof raw.content !== "string"
-        ) throw new Error("provider_projection_mismatch");
-        result = {
-          path: raw.path,
-          sha: raw.sha,
-          size: raw.size,
-          type: "file",
-          encoding: "base64",
-          content: raw.content.replace(/\s/g, ""),
-        };
+        result = await githubSourceDelivery(raw, args, token, fetcher);
       } else if (["mutation_metadata", "empty"].includes(op.kind)) {
         result = acceptedProjection(raw);
       } else if (op.kind === "openapi") {
@@ -1020,7 +1044,22 @@ export function createProviderOperationHandler(
           $defs: op.public_defs,
         })(result)
       ) throw new Error("provider_projection_mismatch");
-    } catch {
+    } catch (error) {
+      if (error instanceof SourceDeliveryError) {
+        const recorded = await finish("failed", status, provider_request_id, {
+          error: error.code,
+        });
+        return response(error.status, {
+          ok: false,
+          error: error.code,
+          operation: op.operation,
+          executed: true,
+          admission_id,
+          provider_http_status: status,
+          request_state: "failed",
+          receipt_recorded: recorded,
+        });
+      }
       await finish(
         op.is_mutation ? "unknown" : "failed",
         status,
@@ -1059,6 +1098,47 @@ export function createProviderOperationHandler(
         request_state: state,
       });
     }
+    let verificationHeaders: Record<string, string> = {};
+    if (
+      op.provider === "github" && githubReadbackOperations.has(op.operation) &&
+      deps.verifyGithubMutation
+    ) {
+      const checked = await verifyGithubReadback(
+        op.operation,
+        args,
+        raw,
+        token,
+        fetcher,
+      );
+      verificationHeaders = verifiedExecutionHeaders({
+        admission_id,
+        state: "accepted",
+        effect_verified: false,
+        reconciliation_required: true,
+        verification_error: checked.verified
+          ? "github_verification_receipt_unavailable"
+          : checked.reason,
+      });
+      if (checked.verified) {
+        try {
+          const settled = await deps.verifyGithubMutation({
+            admission_id,
+            canonical_arguments: canonicalJson(args),
+            proof: checked.proof,
+          });
+          if (settled.allowed && settled.verification_sha256) {
+            verificationHeaders = verifiedExecutionHeaders({
+              admission_id,
+              state: "succeeded",
+              effect_verified: true,
+              verification_sha256: settled.verification_sha256,
+            });
+          }
+        } catch {
+          /* Keep the accepted receipt; never redispatch a mutation. */
+        }
+      }
+    }
     let next_page: number | null = null;
     const link = upstream.headers.get("link");
     const page = object(args.query) && typeof args.query.page === "number"
@@ -1082,7 +1162,7 @@ export function createProviderOperationHandler(
       possibly_truncated: isTruncated(result) || !!next_page,
       result_limit: 100,
       next_page,
-    });
+    }, verificationHeaders);
   };
 }
 
@@ -1167,6 +1247,14 @@ if (import.meta.main) {
         };
       }
       if (op.requires_grant && !row.verified) {
+        const standing = await db.rpc(
+          "sandy_engineering_authorized_admission",
+          {
+            p_admission_id: context.admission_id,
+            p_expected_state: "admitted",
+          },
+        );
+        if (!standing.error && standing.data === true) return { allowed: true };
         return {
           allowed: false,
           error: "verified_execution_contract_required",
@@ -1197,6 +1285,7 @@ if (import.meta.main) {
         p_contract_sha256: r.contract_sha256,
         p_scope_sha256: r.scope_sha256,
       }),
+    verifyGithubMutation: createGithubVerificationClient(db),
     finishExecution: async (r) => {
       const { data, error } = await db.rpc("sandy_api_finish_execution", {
         p_admission_id: r.admission_id,

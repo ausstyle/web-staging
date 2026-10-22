@@ -1,7 +1,28 @@
 # Authentication requirements for Sandy integration tests
 
-Reviewed against source and read-only production metadata on 2026-10-20.
-No user, session, membership or fixture was created during this review.
+Current checkpoint: 21 October 2026 UTC. The permanent dedicated engineering identity
+uses source `97bd825` (latest observed metadata runtime **13**), normal Supabase Auth verification and renewable short-lived
+user sessions. Its bootstrap credential stays in Vault; it has **zero Controller
+memberships**. The personal Controller token is not used for successful tests.
+The existing six-operation fixture delegation remains unchanged. A separate,
+revocable owner-approved VM read scope permits ten fixed-target reads, including
+canonical `gcp.compute.instances.get` for `sandy-video` through the shared provider
+engine. Another VM, project override and command input are refused before admission.
+
+Broader owner-only acceptance needs a genuinely approved, target-specific workload
+delegation or a current normal owner session. Existing fixture or VM authority
+does not grant other provider operations. Do not fabricate an owner approval,
+assign the workload global Controller ownership, or send a service-role key as a
+customer session. Additional workload-scope implementation and owner consent are
+separate from token renewal, which is operational. See the actual positive and
+revocation evidence in `canonical-vm-read-MCP-evidence-20261021.json` and
+`canonical-vm-read-denial-evidence-20261021.json`.
+
+Current normal-Auth acceptance also passed bounded REST/MCP log execution and real GitHub/test-migration writes without a personal Controller token. See `REST-log-MCP-evidence-20261022.json` and `engineering-write-MCP-evidence-20261022.json`. Two fresh normal customer fixtures verified scoped reads and denials; see `customer-service-MCP-evidence-20261022.json`.
+
+The following sections preserve the original 20 October source review. Statements
+about unavailable Auth egress or an absent renewable identity are historical;
+they do not describe the current deployed runtime.
 
 ## Controller tests
 

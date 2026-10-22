@@ -1,0 +1,7 @@
+{
+  "released_after_source_and_MCP_acceptance": true,
+  "lease": {
+    "component": "sandy-operation-api",
+    "holder": "sandy-api-customer-read-receipts-c103bbf"
+  }
+}

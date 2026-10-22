@@ -207,8 +207,9 @@ Deno.test("out-of-scope operations and malformed requests never reach MCP", asyn
     const value of [
       {
         ...message,
-        params: { name: "shell.execute", arguments: {} },
+        params: { name: "system.credentials.issue", arguments: {} },
       },
+      { ...message, params: { name: "shell.execute", arguments: {} } },
       { ...message, method: "unknown" },
       { ...message, id: undefined },
       [],
@@ -400,3 +401,38 @@ Deno.test("recognized fixed VM diagnostics still use the normal workload JWT and
 });
 
 Deno.test("deployed v14 canonical provider routing preserves downstream authorization denial",async()=>{let calls=0;const h=await fixture({mcp:async(token,message)=>{calls++;assert.equal(token,TOKEN);return {status:403,body:{error:"engineering_operation_scope_denied",executed:false}};}});const r=await h.handler(request({...message,params:{name:"supabase.projects.delete",arguments:{}}}));assert.equal(r.status,403);assert.equal(calls,1);assert.equal(h.state.sessions,1);assert.equal((await r.json()).executed,false);});
+Deno.test("preserved production control path uses only the normal workload session and its fixed action allowlist", async () => {
+  let calls = 0;
+  const h = await fixture({ control: async (token, body) => {
+    calls++; assert.equal(token, TOKEN); assert.equal(body.action, "list");
+    return { status: 200, body: { ok: true } };
+  }});
+  const r = await h.handler(request({ ...message, method: "engineering/control", params: { action: "list" } }));
+  assert.equal(r.status, 200); assert.equal(calls, 1); assert.equal(h.state.mcp, 0);
+  for (const params of [{ action: "delete" }, { action: "register" }, { action: "register", idempotency_key: "" }]) {
+    assert.equal((await h.handler(request({ ...message, method: "engineering/control", params }))).status, 403);
+  }
+  assert.equal(calls, 1);
+});
+Deno.test("absent control transport remains closed before session issuance", async () => {
+  const h = await fixture();
+  assert.equal((await h.handler(request({ ...message, method: "engineering/control", params: { action: "list" } }))).status, 403);
+  assert.equal(h.state.sessions, 0); assert.equal(h.state.mcp, 0);
+});
+
+Deno.test("deployed lifecycle recovery routing preserves downstream scope denial without replay", async () => {
+  for (const name of ["system.lifecycle.get", "system.lifecycle.verify", "system.lifecycle.compensate"]) {
+    let calls = 0;
+    const h = await fixture({ mcp: async (token, message) => {
+      calls++;
+      assert.equal(token, TOKEN);
+      assert.equal(message.params.name, name);
+      return { status: 403, body: { error: "engineering_operation_scope_denied", executed: false } };
+    }});
+    const result = await h.handler(request({ ...message, params: { name, arguments: {} } }));
+    assert.equal(result.status, 403);
+    assert.equal(calls, 1);
+    assert.equal(h.state.sessions, 1);
+    assert.equal((await result.json()).executed, false);
+  }
+});

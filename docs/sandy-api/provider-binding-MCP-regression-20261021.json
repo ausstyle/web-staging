@@ -1,0 +1,25 @@
+{
+  "at_utc": "2026-10-21T19:41:16.744743+00:00",
+  "gateway_version": 32,
+  "source_commit": "18035e8854708bd04909bcc716b3be49ff34bae9",
+  "operation": "supabase.logs.query",
+  "request_id": "48232c46-7fa2-4f1a-ab46-d2f1d126f4e6",
+  "http_status": 200,
+  "MCP_is_error": false,
+  "API_status": 200,
+  "executed": true,
+  "provider_http_status": 200,
+  "admission_id": "1f98a516-bf36-4b49-97f0-e7d36475290e",
+  "fixture_entry_count": 1,
+  "fixture_marker_observed": true,
+  "personal_controller_token_used": false,
+  "arguments": {
+    "source": "function_logs",
+    "start": "2026-10-21T11:21:53Z",
+    "end": "2026-10-21T11:21:55Z",
+    "limit": 100
+  },
+  "response_sha256": "64b5b5e7d30992284a6e3380223fc37c6b7fcb8a00adce379156686598f22831",
+  "previous_probe_assertion": "incorrectly assumed only v1 and no whitespace; provider execution succeeded; original evidence retained",
+  "passed": true
+}

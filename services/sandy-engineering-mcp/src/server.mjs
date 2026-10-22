@@ -2,8 +2,8 @@ import express from "express";
 import { pathToFileURL } from "node:url";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
-import { ListToolsRequestSchema, CallToolRequestSchema, McpError, ErrorCode } from "@modelcontextprotocol/sdk/types.js";
-import { callTool, createApiInvoker, discover, DiscoveryFailure, executionMetadataHeaders, isPublicAnonJwt } from "./api-adapter.mjs";
+import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { callTool, createApiInvoker, discover, describeTool, DiscoveryFailure, executionMetadataHeaders, isPublicAnonJwt } from "./api-adapter.mjs";
 
 export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
   api = createApiInvoker(
@@ -38,19 +38,23 @@ export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || 
     // API discovery authenticates and authorizes the actual caller on every
     // request. No user-specific catalogue or token survives this request.
     let catalogue;
-    try { catalogue = await discover(api, userToken, apiKey, metadata); }
+    try {
+      catalogue = req.body?.method === "tools/call" && typeof req.body?.params?.name === "string"
+        ? await describeTool(api, userToken, req.body.params.name, apiKey, metadata)
+        : await discover(api, userToken, apiKey, metadata,
+          req.body?.method === "tools/list" ? req.body?.params?.cursor : undefined);
+    }
     catch (error) {
       const known = error instanceof DiscoveryFailure;
       return res.status(known ? error.status : 503).json({
         error: known ? error.code : "sandy_api_discovery_unavailable"
       });
     }
-    const server = new Server({ name: "sandy-engineering-mcp", version: "0.2.0" }, {
+    const server = new Server({ name: "sandy-engineering-mcp", version: "0.3.0" }, {
       capabilities: { tools: {} }
     });
     server.setRequestHandler(ListToolsRequestSchema, request => {
-      if (request.params?.cursor !== undefined) throw new McpError(ErrorCode.InvalidParams, "Pagination cursor is unsupported");
-      return { tools: catalogue.tools, _meta: catalogue.metadata };
+      return { tools: catalogue.tools, ...(catalogue.nextCursor ? { nextCursor: catalogue.nextCursor } : {}), _meta: catalogue.metadata };
     });
     server.setRequestHandler(CallToolRequestSchema, request =>
       callTool(api, userToken, catalogue, request.params.name, request.params.arguments ?? {}, apiKey, metadata));

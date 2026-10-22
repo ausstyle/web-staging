@@ -10,6 +10,7 @@ import {
   type ProviderDependencies,
 } from "../sandy-provider-operation-api/index.ts";
 import { createLegacyOwnerHandler } from "./owner_handler.ts";
+import { createGithubVerificationClient } from "../_shared/sandy_github_verification_client.ts";
 export { createLegacyProviderHandler } from "./provider_handler.ts";
 if (import.meta.main) {
   const base = "https://zmqlyygzqoidkcwdysok.supabase.co";
@@ -60,6 +61,7 @@ if (import.meta.main) {
     });
   const providerDependencies: ProviderDependencies = {
     service,
+    verifyGithubMutation: createGithubVerificationClient(db),
     authorizeContext: authorizeLegacy,
     consumeGrant: (r) =>
       rpc("sandy_api_consume_execution_grant", {

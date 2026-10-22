@@ -1,0 +1,13 @@
+{
+  "observed_at": "2026-10-21T23:35:44.165589+00:00",
+  "registered": 2585,
+  "API_flags": 447,
+  "AI_flags": 430,
+  "verified_flags": 46,
+  "metadata_versions": {
+    "sandy-operation-api": 43,
+    "sandy-api-mcp": 21,
+    "sandy-provider-operation-api": 18,
+    "sandy-engineering-runtime": 13
+  }
+}

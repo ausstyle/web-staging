@@ -138,6 +138,7 @@ export const agendaContracts: Record<string, Record<string, unknown>> = {
       "Fixed existing Agenda action list with actual confirmed user session, matching portal/Agenda tenant and independent owned/shared-resource checks. Contract v1.0.0; submission, persisted state and verified external outcome remain distinct.",
   },
   "agenda.pins.list": {
+    "rpc": "sandy_api_agenda_list_pins",
     "handler": "sandy-agenda",
     "action": "pins-list",
     "is_mutation": false,
@@ -256,6 +257,7 @@ export const agendaContracts: Record<string, Record<string, unknown>> = {
     "description":
       "Fixed existing Agenda action pins-save with actual confirmed user session, matching portal/Agenda tenant and independent owned/shared-resource checks. Contract v1.0.0; submission, persisted state and verified external outcome remain distinct.",
     "rpc": "sandy_api_agenda_save_pins",
+    "rpc_arguments": { "p_task_ids": "task_ids" },
   },
   "agenda.access.revoke": {
     "handler": "sandy-agenda",

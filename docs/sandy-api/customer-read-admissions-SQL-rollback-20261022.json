@@ -1,0 +1,12 @@
+{
+  "observed_at": "2026-10-21T23:22:46.012782+00:00",
+  "real_PostgreSQL": true,
+  "normal_Auth_MCP_acceptance": false,
+  "all_effects_rolled_back": true,
+  "result": [
+    {
+      "assertions": 27,
+      "passed": true
+    }
+  ]
+}

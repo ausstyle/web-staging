@@ -1,3 +1,5 @@
+import { executionMetadataHeaders, transportInputSchema, unpackExecution } from "./generated/mcp-transport.mjs";
+export { executionMetadataHeaders } from "./generated/mcp-transport.mjs";
 import { AjvJsonSchemaValidator } from "@modelcontextprotocol/sdk/validation/ajv";
 
 // Compatibility names only. Contracts, permissions and executors belong to API.
@@ -28,18 +30,6 @@ export class DiscoveryFailure extends Error {
     this.status = status;
     this.code = code;
   }
-}
-
-export function executionMetadataHeaders(metadata) {
-  const headers = {};
-  for (const [key, header] of [["approvalId", "x-sandy-approval-id"], ["requestId", "x-sandy-request-id"]]) {
-    const value = metadata?.[key];
-    if (value !== undefined) {
-      if (typeof value !== "string" || !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value)) return null;
-      headers[header] = value;
-    }
-  }
-  return headers;
 }
 
 async function boundedText(response) {
@@ -87,30 +77,20 @@ export function createApiInvoker(projectRef, request = fetch, anon = "") {
     });
     const raw = await boundedText(response);
     if (raw === null) {
-      return { status: 502, result: { ok: false, error: "sandy_api_response_size_limit" } };
+      return { status: 502, result: { ok: false, error: "sandy_api_response_size_limit", executed: null, reconciliation_required: true } };
     }
     let result;
     try { result = JSON.parse(raw); }
-    catch { result = { ok: false, error: "invalid_sandy_api_response" }; }
+    catch { result = { ok: false, error: "invalid_sandy_api_response", executed: null, reconciliation_required: true }; }
     return { status: response.status, result };
   };
 }
 
-export async function discover(api, userToken, apiKey, metadata) {
-  let response;
-  try { response = await api(userToken, { action: "list" }, apiKey, metadata); }
-  catch { throw new DiscoveryFailure(503, "sandy_api_discovery_unavailable"); }
-  if (!object(response)) throw new DiscoveryFailure(503, "invalid_sandy_api_catalogue");
-  if (response.status === 401) throw new DiscoveryFailure(401, "invalid_identity");
-  if (response.status === 403) throw new DiscoveryFailure(403, "sandy_api_access_required");
-  const value = response.result;
-  if (response.status !== 200 || !object(value) || value.ok !== true || failed(value) ||
-      !Array.isArray(value.operations) || !/^[a-f0-9]{64}$/.test(value.catalogue_version ?? "")) {
-    throw new DiscoveryFailure(503, "invalid_sandy_api_catalogue");
-  }
+const catalogueCursor = value => typeof value === "string" && /^sc1\.[a-f0-9]{64}\.[1-9][0-9]{0,5}$/.test(value);
+function catalogue(entries, metadata, nextCursor, partial = false) {
   const operations = new Map();
   const duplicates = new Set();
-  for (const entry of value.operations) {
+  for (const entry of entries) {
     if (!object(entry) || !operationName(entry.operation) || entry.api_exposed !== true ||
         entry.ai_exposed !== true || entry.executable !== true ||
         !object(entry.input_schema) || entry.input_schema.type !== "object" ||
@@ -124,11 +104,13 @@ export async function discover(api, userToken, apiKey, metadata) {
     operations.set(entry.operation, entry);
   }
   const unavailableAliases = Object.entries(aliases).filter(([, operation]) => !operations.has(operation))
-    .map(([name, operation]) => ({ name, operation, reason: "canonical_operation_unavailable" }));
+    .map(([name, operation]) => ({ name, operation, reason: partial ? "not_in_this_catalogue_page" : "canonical_operation_unavailable" }));
   const toTool = (name, entry) => ({
     name,
     description: typeof entry.description === "string" ? entry.description : `Sandy API operation: ${entry.operation}`,
-    inputSchema: entry.input_schema,
+    inputSchema: entry.is_mutation === true || object(entry.error_contract) &&
+      (entry.error_contract.requires_approval === true || entry.error_contract.requires_grant === true)
+      ? transportInputSchema(entry.input_schema) : entry.input_schema,
     outputSchema: entry.output_schema,
     _meta: { sandy_operation: entry.operation }
   });
@@ -140,11 +122,53 @@ export async function discover(api, userToken, apiKey, metadata) {
   return {
     operations,
     tools,
+    ...(nextCursor ? { nextCursor } : {}),
     metadata: {
-      sandy_catalogue_version: value.catalogue_version,
+      ...metadata,
+      ...(partial ? { sandy_catalogue_page: true } : {}),
       sandy_unavailable_aliases: unavailableAliases
     }
   };
+}
+async function catalogueResponse(api, userToken, body, apiKey, metadata) {
+  let response;
+  try { response = await api(userToken, body, apiKey, metadata); }
+  catch { throw new DiscoveryFailure(503, "sandy_api_discovery_unavailable"); }
+  if (!object(response)) throw new DiscoveryFailure(503, "invalid_sandy_api_catalogue");
+  if (response.status === 401) throw new DiscoveryFailure(401, "invalid_identity");
+  if (response.status === 403) throw new DiscoveryFailure(403, "sandy_api_access_required");
+  if (response.status === 409 && response.result?.error === "catalogue_changed_restart_discovery")
+    throw new DiscoveryFailure(409, "catalogue_changed_restart_discovery");
+  return response;
+}
+export async function discover(api, userToken, apiKey, metadata, cursor) {
+  if (cursor !== undefined && !catalogueCursor(cursor)) throw new DiscoveryFailure(400, "invalid_catalogue_cursor");
+  const response = await catalogueResponse(api, userToken, { action: "list", channel: "mcp", limit: 100,
+    ...(cursor === undefined ? {} : { cursor }) }, apiKey, metadata);
+  const value = response.result;
+  if (response.status !== 200 || !object(value) || value.ok !== true || failed(value) ||
+      !Array.isArray(value.operations) || value.operations.length > 100 ||
+      !/^[a-f0-9]{64}$/.test(value.catalogue_version ?? "") ||
+      value.next_cursor != null && (!catalogueCursor(value.next_cursor) ||
+        !value.next_cursor.startsWith("sc1." + value.catalogue_version + ".")))
+    throw new DiscoveryFailure(503, "invalid_sandy_api_catalogue");
+  if (cursor && (cursor.split(".")[1] !== value.catalogue_version ||
+      value.next_cursor && Number(value.next_cursor.split(".")[2]) <= Number(cursor.split(".")[2])))
+    throw new DiscoveryFailure(409, "catalogue_changed_restart_discovery");
+  return catalogue(value.operations, { sandy_catalogue_version: value.catalogue_version }, value.next_cursor, !!cursor || !!value.next_cursor);
+}
+/** A call describes only its canonical operation, including late-page tools. */
+export async function describeTool(api, userToken, name, apiKey, metadata) {
+  if (!operationName(name)) throw new DiscoveryFailure(400, "invalid_tool_name");
+  const operation = Object.hasOwn(aliases, name) ? aliases[name] : name;
+  const response = await catalogueResponse(api, userToken, { action: "describe", channel: "mcp", operation }, apiKey, metadata);
+  if (response.status === 404) return catalogue([], {}, undefined, true);
+  const value = response.result, entry = object(value) ? value.operation : null;
+  if (response.status !== 200 || !object(value) || value.ok !== true || failed(value) || !object(entry) || entry.operation !== operation)
+    throw new DiscoveryFailure(503, "invalid_sandy_api_operation_contract");
+  const contract = entry.error_contract?.contract_sha256;
+  return catalogue([entry], { sandy_operation: operation,
+    ...(typeof contract === "string" && /^[a-f0-9]{64}$/.test(contract) ? { sandy_operation_contract: contract } : {}) }, undefined, true);
 }
 
 function validOutput(entry, payload) {
@@ -196,11 +220,13 @@ export async function callTool(api, userToken, catalogue, name, args = {}, apiKe
       missing_capability: { tool: name, operation, reason: "not_executable_or_not_mcp_exposed" }
     });
   }
+  const execution = unpackExecution(args, metadata);
+  if (!execution) return toolError(400, "invalid_execution_metadata", operation, catalogue.metadata);
   let response;
   try {
     response = await api(userToken, {
-      action: "execute", channel: "mcp", operation, arguments: args
-    }, apiKey, metadata);
+      action: "execute", channel: "mcp", operation, arguments: execution.arguments_
+    }, apiKey, execution.metadata);
   } catch {
     // The response was lost: the adapter cannot infer whether API executed work.
     return toolError(502, "sandy_api_outcome_unknown", operation, catalogue.metadata, {
@@ -217,13 +243,18 @@ export async function callTool(api, userToken, catalogue, name, args = {}, apiKe
     envelope.ok === true && envelope.executed === true && object(envelope.result) && !failed(envelope) &&
     envelope.operation === operation && validOutput(entry, envelope.result);
   // Successful admission is recorded work, never completed provider execution.
+  const canonicalAdmission = object(envelope) && object(envelope.result) &&
+    typeof envelope.admission_id === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(envelope.admission_id) &&
+    validOutput(entry, envelope.result);
+  const admissionPayload = canonicalAdmission ? envelope.result : envelope;
   const admission = response.status === 202 && object(envelope) && envelope.ok === true &&
-    envelope.accepted === true && envelope.executed === false && admissionReceipt(envelope) &&
-    envelope.operation === operation && !failed(envelope) && validOutput(entry, envelope);
-  const payload = synchronous ? envelope.result : admission ? envelope : null;
+    envelope.accepted === true && envelope.executed === false &&
+    (canonicalAdmission || admissionReceipt(envelope)) &&
+    envelope.operation === operation && !failed(envelope) && validOutput(entry, admissionPayload);
+  const payload = synchronous ? envelope.result : admission ? admissionPayload : null;
   const isError = payload === null;
   const legacy = synchronous ? legacySuccess(name, response.status, envelope, payload)
-    : admission ? { ...payload, http_status: response.status }
+    : admission ? { ...payload, http_status: response.status, accepted: true, executed: false }
     : { http_status: response.status, result: envelope, ok: false,
       error: object(envelope) && typeof envelope.error === "string" ? envelope.error : "sandy_api_operation_failed" };
   return {

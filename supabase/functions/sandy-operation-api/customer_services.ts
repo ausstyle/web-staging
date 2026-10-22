@@ -16,6 +16,7 @@ export type CustomerServiceContract = {
   consumes_model_resources: boolean;
   allow_shared_resources?: boolean;
   known_backend_dependency?: string;
+  rpc?: string;
 };
 export const customerServiceContracts = Object.freeze(
   sourceContracts,
@@ -133,7 +134,7 @@ export function buildCustomerServiceRequest(
     ? { ...args, op: c.action }
     : { ...args, action: c.action };
   return {
-    url: base.origin + "/functions/v1/" + c.handler,
+    url: base.origin + (c.rpc ? "/rest/v1/rpc/" + c.rpc : "/functions/v1/" + c.handler),
     init: {
       method: "POST",
       redirect: "error",
@@ -145,7 +146,7 @@ export function buildCustomerServiceRequest(
         apikey: deps.anon,
         "content-type": "application/json",
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(c.rpc ? {} : body),
     },
   };
 }

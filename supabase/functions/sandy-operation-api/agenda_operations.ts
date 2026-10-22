@@ -15,6 +15,7 @@ export type AgendaContract = {
   fixed?: Obj;
   argument_mapping?: Record<string, string>;
   rpc?: string;
+  rpc_arguments?: Record<string, string>;
 };
 export const agendaContracts = Object.freeze(
   sourceContracts,
@@ -115,7 +116,9 @@ export function buildAgendaRequest(
       ...(c.method === "POST"
         ? {
           body: JSON.stringify(
-            c.rpc ? { p_task_ids: args.task_ids } : { ...payload, ...c.fixed },
+            c.rpc
+              ? Object.fromEntries(Object.entries(c.rpc_arguments ?? {}).map(([parameter, argument]) => [parameter, args[argument]]))
+              : { ...payload, ...c.fixed },
           ),
         }
         : {}),

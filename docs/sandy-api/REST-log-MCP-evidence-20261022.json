@@ -1,0 +1,60 @@
+{
+  "evidence_readback_matches": true,
+  "verified_flag_unchanged": true,
+  "proof": {
+    "observed_at": "2026-10-21T23:05:43.378249+00:00",
+    "source_commit": "5f8464553b9fc78e83e35f166a046748a70c5984",
+    "gateway_deploy_version": 39,
+    "normal_Auth_MCP_client_schema_and_provider_verified": true,
+    "provider_log_event_delivery_verified": false,
+    "live_acceptance": {
+      "observed_at": "2026-10-21T22:52:48.181Z",
+      "passed": true,
+      "credentials_recorded": false,
+      "personal_Controller_token_used": false,
+      "service_key_used_as_customer_session": false,
+      "target": "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-api-mcp",
+      "normal_Auth_user_verified": true,
+      "controller_memberships": 0,
+      "token_expiry_utc": "2026-10-21T23:52:52.000Z",
+      "session_id": "2c6b3771-37c8-4ab1-8990-548b6e0af3d7",
+      "API_REST_discovery_pages": 4,
+      "API_REST_operations_observed": 16,
+      "API_REST_description_verified": true,
+      "duplicate_page_parameter_status": 400,
+      "out_of_scope_description_status": 403,
+      "server_info": {
+        "name": "sandy-api-mcp",
+        "version": "0.3.0"
+      },
+      "tools_discovered": 16,
+      "operation": "supabase.logs.query",
+      "provider_log_query_verified": true,
+      "provider_http_status": 200,
+      "admission_id": "8263dda8-1b69-41be-8629-c2176d3c92ed",
+      "matching_fixture_markers": 0,
+      "log_event_delivery_verified": false,
+      "wrong_log_source_API_status": 403,
+      "wrong_source_denied_before_admission": true,
+      "VM_diagnostics_performed": false,
+      "remote_command_executed": false,
+      "normal_Auth_session_retired": true
+    },
+    "independent_admission": [
+      {
+        "id": "8263dda8-1b69-41be-8629-c2176d3c92ed",
+        "operation": "supabase.logs.query",
+        "state": "succeeded",
+        "provider_http_status": 200
+      }
+    ],
+    "independent_session_retirement": [
+      {
+        "revoked": true,
+        "auth_session_removed": true
+      }
+    ],
+    "personal_Controller_session_used": false,
+    "VM_diagnostics_performed": false
+  }
+}

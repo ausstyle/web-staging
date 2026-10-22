@@ -36,6 +36,12 @@ function fixture() {
       if (state.discovery) return state.discovery();
       return Response.json({ ok: true, operations: state.entries, catalogue_version: state.revision });
     }
+    if (body.action === "describe") {
+      if (state.discovery) return state.discovery();
+      const operation = state.entries.find(row => row.operation === body.operation);
+      if (!operation?.api_exposed || !operation?.ai_exposed) return Response.json({ ok: false, error: "operation_not_mcp_exposed", executed: false }, { status: 404 });
+      return Response.json({ ok: true, operation });
+    }
     assert.equal(body.action, "execute");
     assert.equal(body.channel, "mcp");
     if (state.execution) return state.execution(body);
@@ -100,7 +106,7 @@ test("HTTP discovery preserves five aliases and their exact API schemas, plus ne
   const changed = await post("tools/list");
   assert.equal(changed.body.result._meta.sandy_catalogue_version, "b".repeat(64));
   assert.equal(changed.body.result.tools.find(row => row.name === "sandy_engineering_change_details").inputSchema.title, "Changed by API");
-  assert.deepEqual(f.calls, [{ action: "list" }, { action: "list" }]);
+  assert.deepEqual(f.calls, [{ action: "list", channel: "mcp", limit: 100 }, { action: "list", channel: "mcp", limit: 100 }]);
 });
 
 test("all five legacy tools execute only through authenticated API and retain MCP content/http_status with canonical evidence", async t => {
@@ -278,6 +284,9 @@ test("transport only accepts the fixed project URL and rejects oversized or inva
       return new Response(body);
     });
     await assert.rejects(discover(api, user));
+    const unknown = await api(user, { action: "execute" });
+    assert.equal(unknown.result.executed, null);
+    assert.equal(unknown.result.reconciliation_required, true);
   }
   const f = fixture();
   const catalogue = await discover(f.api, user);
@@ -306,7 +315,7 @@ test("an incoming API-key header travels unchanged with the user JWT on both dis
   assert.equal(called.body.result.isError, false);
   assert.equal(JSON.stringify(called.body).includes(opaque), false);
   assert.equal(JSON.stringify(called.body).includes(user), false);
-  assert.deepEqual(f.calls.map(row => row.action), ["list", "list", "execute"]);
+  assert.deepEqual(f.calls.map(row => row.action), ["list", "describe", "execute"]);
 });
 
 test("opaque bearer keys use only configured public anon gateway JWT and remain opaque to the adapter", async t => {
@@ -317,7 +326,7 @@ test("opaque bearer keys use only configured public anon gateway JWT and remain 
     const post = await http(t, f.api, publicAnon);
     const result = await post("tools/call", { name: "sandy_video_install_preflight", arguments: {} }, opaque);
     assert.equal(result.body.result.isError, false);
-    assert.deepEqual(f.calls.map(row => row.action), ["list", "execute"]);
+    assert.deepEqual(f.calls.map(row => row.action), ["describe", "execute"]);
     assert.equal(JSON.stringify(result.body).includes(opaque), false);
     assert.equal(JSON.stringify(result.body).includes(publicAnon), false);
     f.state.discovery = () => Response.json({ error: "invalid_api_key" }, { status: 401 });

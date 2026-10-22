@@ -1,132 +1,140 @@
 # Sandy API implementation status
 
-Updated 21 October 2026. This is the API/MCP foundation slice of SANDY-ENG-0005; the original 161 requirement families and customer-onboarding extension remain incomplete. Registry rows, deployed handler metadata and exposure flags are not execution evidence.
+Updated from production observations on 22 October 2026 UTC. This checkpoint covers the existing 161-family mandate; the programme is incomplete.
 
-The complete [161-family matrix](requirement-coverage-161.md) and its [operation/evidence JSON](requirement-coverage-161.json) now distinguish mandatory operation candidates, optional expansion, source contracts, active-handler metadata, exposure flags, actual MCP receipts and outstanding constituent review. Current evidence supports **11 partially verified families and 33 distinct successful MCP operations**. **0/161 whole families have all required constituent acceptance established**; this is an acceptance gap, not a claim that no implementation exists.
+- **0/161 families fully operational and accepted.** Representative operation successes do not certify whole wildcard families.
+- **33 families have reviewed implementation awaiting real whole-family acceptance.**
+- **128 families need software, integration or constituent reconciliation.** This does not mean all their existing code is missing.
+- **6 families have external dependencies, including 5 with permission denials and one entitlement.** These overlap implementation work.
+- **19 families have partial required-operation MCP evidence: 51 distinct positive operations and 18 operations with denial evidence.**
+- Production registry: **2,585 registered, 447 API flags, 430 AI flags, 46 verified flags**. No catalogue rows were added. Flags are not global executable or discoverable counts.
 
-The existing versioned provider engine serves **1,738 reviewed generated contracts** (Google Cloud 1,324; GitHub 336; Supabase 78). The 64 registry handler labels consolidate to 43 review groups, including internal workflow labels; neither number is a new task count or completed-adapter count. Shared authentication, authorization, validation, grants, idempotency, receipts and private custody remain in the existing API boundary. Per-operation schemas, permissions and risk controls are retained.
+The [complete matrix](requirement-coverage-161.md), [machine-readable evidence](requirement-coverage-161.json) and [reviewed operation disposition](scope-operation-disposition.json) distinguish code, deployed routes, exposure, authorized execution, real evidence and blockers. Global executable/MCP-discoverable coverage is not yet verified. Actual scoped discovery returned 63 tools for each synthetic customer and 16 for the engineering workload.
 
-Actual positive MCP evidence currently covers six shared handler groups: provider operation, provider gap, legacy compatibility, engineering control, customer provisioning and fixed-VM read-only diagnostics. Customer identity/workspace lifecycle and the bounded engineering release fixture are deployed and exercised. General provider lifecycle coverage and private VM SSH/WinRM are incomplete. Evidence is reused at its recorded release; no unchanged live test was rerun merely to increase a count.
+## Committed implementation and production delivery
 
-The [reviewed disposition](scope-operation-disposition.json) consolidates shared provider actions without declaring different permissions, schemas or targets interchangeable. Expanded maintenance simulations and similar extras are not separate approved-scope obligations. `video.install`, `video.restart`, `video.logs` and `video.verify_call` are not required standalone MCP tools. Existing canonical `supabase.logs.query` satisfies the engineering log capability; an alias-only registry entry is unnecessary. Wildcard families still require semantic review before other operations can be excluded.
+PR [#136](https://github.com/ausstyle/web-staging/pull/136) is open, draft and unmerged. Native Git writes and workflow dispatch work; repository write authorization is no longer the blocker. Current main `ad8685c` was merged into the API branch at `47695b1`. The latest verified releases are gateway 45 (`7a78ea5`), provider 22 and legacy 17 (`9c2b637`); every uploaded source is accounted for. Main-branch updates are preserved; PR #136 remains unmerged. Upstream Meetings/video code was preserved in source, not deployed by this task.
 
-Dependency-ordered planning ranges below are provisional engineering effort, not elapsed-time promises or operation-count multiplication. Existing code/evidence is reused; permission and entitlement waiting time is excluded. They require refinement as constituent review finds usable production implementations.
+| Service | Latest observed ACTIVE metadata version | Committed deployed source |
+| --- | ---: | --- |
+| sandy-operation-api | 45 | `7a78ea5c6d2d519499c1698ac4b78a80c626bfee` |
+| sandy-api-mcp | 21 | `a0078d526a0db94fb92857825b3b06040e084f0b` |
+| sandy-engineering-runtime | 13 | `97bd82578ec0816d72343d4b1d443793313ea861` |
+| sandy-provider-operation-api | 22 | `9c2b637d729b87297135ac1f17db43101b2fdf17` |
+| sandy-legacy-compatibility-api | 17 | `9c2b637d729b87297135ac1f17db43101b2fdf17` |
 
-| Component | Remaining functional milestone | Indicative effort |
-|---|---|---|
-| Shared contracts and release gates | Portable individual contract verification, green PR checks, approved scoped acceptance profiles and source-preserving release | 2–4 engineering days |
-| Provider adapters | Review mandatory wildcard constituents; close resource bindings, typed projections, provider-specific lifecycle and risk verification | 8–15 days |
-| VM access | Supported private/IAP transport, trusted host enrollment, OS Login credential lifecycle, SSH/WinRM output delivery and actual harmless command | 5–10 days |
-| Durable execution and source | Adopt reviewed worker/repository candidates, lease/revocation/cancellation/reconciliation and lost-ack recovery through the same API | 5–10 days |
-| Engineering lifecycle | General deployment verification and compensation beyond the already verified fixed Git/SQL/Edge fixtures | 4–8 days |
-| Customer provisioning | Organisation/verified link transfer, Google Drive/GCP adapters, OAuth onboarding and asynchronous reconciliation | 5–10 days |
-| Application families | Reconcile existing domain handlers and implement remaining required commerce, tenancy, memory and security capabilities | 10–20 days |
-| Acceptance and operations | Representative provider tests, independent high-risk readbacks, denied requests, rollback/canary and family certificates | 6–12 days, overlapping implementation |
+All current uploaded sources and JWT settings are independently accounted for.
+Gateway 45 also compacts a sixth committed, static contract module using the same
+pinned type-erasure/whitespace-only builder, after rejected uploads left v44
+unchanged. The compact artifact passed 119 gateway runtime tests. No runtime, VM,
+networking, LiveKit or media component was deployed. Source snapshots and compatible
+rollback preparations are retained. Historical customer/REST releases remain in
+[shared release evidence](shared-execution-release-evidence-20261022.json); current
+GitHub releases and actual acceptance are documented below.
 
-Confirmed independent dependencies: the existing Google service account receives **403** for `compute.subnetworks.setPrivateIpGoogleAccess` on the fixed default subnet; OS Config inventory receives **403** for `osconfig.inventories.get`. Neither establishes that every private/IAP transport is unavailable. Broader owner-only tests require a legitimately approved scoped delegation, rather than reusing an expired personal Controller token or widening the existing six-operation grant. Custom Domain entitlement remains separate and no plan purchase is authorized. No arbitrary URL executor or unrestricted provider tool is introduced.
+- **`b4177a5`** repairs existing `agenda.pins.list` and `calendar.client.timezone.get`. Deployed legacy backends lacked private-table SELECT permissions. Two typed, normal-JWT RPC projections restore the reads without granting table access or broadening roles. Migration **20261022010000**, SHA-256 `7f1ff1866ccb6b278b7cba668c21e7f6ebd067b72ffff04d4c55697a0f4079b2`, is present with exact source in the production ledger. [Migration evidence](customer-read-projections-migration-20261022.json); [SQL boundary checks](customer-read-projections-SQL-rollback-20261022.json).
+- **`e18c05a`** repairs bounded REST catalogue paging and removes a log-result projection field that violated its advertised MCP output schema. Queue acceptance remains distinct from completed execution, and possible truncation remains truthful.
+- **`5f84645`** confines execution-result redaction to execution, repairing REST log contract description. The failing regression reproduced HTTP 502 before the fix.
+- **`05fade9`** makes the real engineering test runner use configured GitHub CLI authorization, select independent components safely, and reject unexpected workload authority. It does not grant new provider permissions.
 
-The portable reviewed-schema foundation passed **277 offline Python tests** with management/GitHub/Controller credentials removed. Individual integrity/policy/Draft7 checks cover all **1,738 generated contracts**, using 25 exact public pinned schema/protobuf fixtures. On pushed commit `c679725`, all five applicable GitHub checks passed, including the separate VM protocol job; the production deployment job was skipped. These tests do not add registry verification flags.
+Source regression passed 400 checks before the first release; final API/MCP/candidate checks passed **325**, and final compact deployment artifact checks passed **322**. Thirteen real PostgreSQL boundary assertions ran inside ROLLBACK. CI at `c103bbf` passed API, native protocol, offline and applicable verification jobs. Mock/SQL boundary checks are not provider acceptance.
 
-The existing native VM candidate has been adopted as source with one shared receipt normalizer and an explicit unknown-outcome guard. A real PostgreSQL rollback test reproduced the previous false-completion path, then **53/53** assertions passed after repair. **27** loopback SSH/TLS WinRM tests and **2** shared receipt tests passed; the compiler invariants passed. Candidate migrations and protocol tools remain unapplied/unexposed; no remote VM execution is claimed. [Native receipt evidence](vm-native-receipt-evidence-20261021.json) records the baseline failure, correction and independently absent fixtures.
+## Real authenticated execution
 
-The universal computer-access extension adds a fixed-target authenticated IAP stream used by SSH and pinned TLS WinRM without requiring public VM addresses. The private diagnostic is deployed in backend **63** and all15 uploaded sources are accounted for. Real Google calls confirm both VM identities and Linux OS Login permission, but both tunnel attempts close with **4033**; IAP permission inspection returns **HTTP403**. No IAM, firewall, public IP or guest configuration was changed, and no command ran. The Windows guest agent's last heartbeat is over42 hours old; historical screenshots are not current acceptance.
+Two fresh normal Auth customer identities exercised **17 existing customer reads**, including task, calendar, Agenda, workspace, files, social and history paths. Initial real failures in pins/timezone led to the deployed fixes. A focused post-release run passed all **14 calls**, including nonempty own pin/timezone results, foreign-resource hiding and tenant-argument rejection. Independent cleanup verified no customer fixture, queue, Mission or calendar-outbox leftovers. Eight existing operations gained verified flags after nonempty resource assertions; nine other successful scoped reads retain unverified flags where nonempty business behavior was not demonstrated. [Customer MCP/registry proof](customer-service-MCP-evidence-20261022.json).
 
-Native execution contract1.1 now supports explicit, approval-bound stdout/stderr delivery through the same operation, with private capture and digest-bound receipts. **37** component/protocol tests, **3** compiler invariants and **55** real PostgreSQL rollback assertions pass. Those candidate migrations remain unapplied and VM tools remain closed. Authenticated MCP discovery using the dedicated renewable identity returns15 authorized tools; it does not expose SSH/WinRM under the fixture delegation. The registry records the actual failed provider observations with all counts/flags unchanged. **0/3 computer acceptance scenarios have passed**. See [computer acceptance evidence](computer-access-acceptance-20261021.json).
+A fresh renewable engineering session, with **zero Controller memberships**, passed official MCP client schema validation, four bounded REST pages, authorized description, duplicate-query HTTP 400 and out-of-scope description HTTP 403. `supabase.logs.query` reached the real provider with HTTP 200 and admission `8263dda8-1b69-41be-8629-c2176d3c92ed`, independently read back as `succeeded`. Wrong log source was denied before admission. The queried window had zero fixture markers: query execution is verified; event delivery is not. The session was independently confirmed retired. No VM diagnostic ran. [REST/log evidence](REST-log-MCP-evidence-20261022.json).
 
-Remaining implementation includes normal-caller/target-bound graphical session lifecycle, lease/resume/termination, scoped screenshot/artifact delivery, reviewed file-transfer and service/package workflows, and production VM activation. Provider IAP denial, dormant Windows guest access and additional scoped authorization are separate dependencies. This is not an assertion that all remaining work is externally blocked.
+Real MCP writes passed GitHub file update/content restoration, detached commit creation and an isolated Supabase migration up/down. Independent GitHub readback confirmed commit `785b7ace361e0cadec85b0790c63a1707a64717d`, its tree/parent and unchanged fixture branch. Independent database readback confirmed the test table was removed. Those historical admissions remained conservatively `accepted`. The new GitHub verification transition below explicitly settles only matching immutable provider readback; other mutation types retain their existing state. Fixture recovery is not general `engineering.rollback.execute` acceptance. No project-wide secret change or test-function redeployment was repeated. [Write/recovery evidence](engineering-write-MCP-evidence-20261022.json).
 
-The IAP blocker is now documented against the exact current principal, fixed VM identities and documented IAP resource paths. [Actual authority evidence and the minimal repair](iap-access-blocker-20261021.md) identify `iap.tunnelInstances.accessViaIAP` as the denied relay capability (`4033 = NOT_AUTHORIZED`). Both VM-specific IAP policy reads and permission inspection returnHTTP403; this prevents distinguishing a missing binding from an existing condition. Compute `setIamPolicy` permission is present but does not authorize IAP policy edits, so it was not used as a substitute. No blind policy write, IAM grant or networking/guest change was made. The applicable administrator must inspect the IAP policies and, if missing, add only this service-account member with `roles/iap.tunnelResourceAccessor` on the two IAP VM resources, restricted to22/5986.
+Earlier unchanged evidence is retained at its actual release: canonical GCP VM read, wrong-target denial, workload scope revocation, six engineering fixture operations (including isolated function/secret lifecycle), owner engineering reads and customer onboarding/workspace provisioning. No new GCP write/remote-execution claim is made. See [prior GCP evidence](canonical-vm-read-MCP-evidence-20261021.json), [scope denials](canonical-vm-read-denial-evidence-20261021.json) and Git history for earlier checkpoints.
 
-The private provisioning backend is now **66 ACTIVE**, committed source `1999fe2`, with all16 uploaded sources accounted for. Intermediate64 and65 also have source readbacks. Google documents zone names in IAP resource paths; numeric zone2101 is observed Compute metadata and is not an access repair. The final probe uses the documented named-zone path. The Windows VM is RUNNING; old guest reports and interactive-logon registration explain the recovery prerequisite, but do not establish the current process/session cause. Its metadata bootstrap has no PowerShell branch. No reboot, auto-login change or password reset was used to revive it.
 
-The programme has returned to the shared release/provider path while VM access waits for that precise authority. A fresh normal-workload MCP→Sandy API→Supabase log query passed withHTTP200/provider200/executed=true and one expected fixture marker, admission `5eaba260-b43f-402c-b40a-565a5bbf5d04`. This validates the current engineering execution path without claiming a new operation or complete log family. [MCP evidence](engineering-logs-mcp-regression-20261021.json) and [registry readback](iap-authority-registry-readback-20261021.json) retain the actual result; registry counts and verification flags did not change. Broader priorities remain repository source delivery, durable execution/recovery, reviewed provider bindings and domain services; these do not require IAP.
+**`c103bbf`** deploys reusable authenticated customer-read admission on gateway **43**. Migration **20261022020000**, SHA-256 `1c770ba22ea33d80fe3772676bedc790fe6212a99e8f2130537c9e64961f2a71`, adds two normal-JWT RPCs and one private policy helper, with no new tables or role memberships; only the scoped authenticated RPC execution grants are added. Owner, workload, customer-key and provider admission checks retain their existing behavior. This release passed **408** source checks, **326** compact-artifact runtime checks and **27** real PostgreSQL assertions inside ROLLBACK. Type checking runs on the readable TypeScript; artifact runtime checks exercise the five pinned JavaScript transformations.
 
-## Published source and production
+Post-release **28/28 real customer MCP calls passed**. Independent SQL found **22 settled receipts: 18 succeeded and four failed foreign-resource lookups**, each with three audit events. Same-request replay and changed-operation reuse were denied; invalid tenant arguments were rejected before admission. All eight verified operations retained their existing registry flags. The normal engineering workload also passed strict MCP schema/REST/log/provider regression with independent successful admission and retired-session readback. [Customer receipt evidence](customer-read-receipt-MCP-evidence-20261022.json); [provider regression](gateway43-shared-log-registry-evidence-20261022.json).
 
-GitHub write authorization works. The engineering branch is pushed through `c679725`; its five applicable checks pass. Source, CI and production are separate states. [PR #136](https://github.com/ausstyle/web-staging/pull/136) remains a draft. No new merge is established.
+A deeper fixture cleanup check found six derived temporal facts across this session's three customer-read runs. Exact synthetic markers, retained fixture IDs or the original run window, INSERT provenance and absent customer/task records established ownership. Only those synthetic facts/links were removed; execution/audit history was retained. The harness now removes and independently checks these records. [Cleanup evidence](customer-service-temporal-cleanup-20261022.json). All normal test users/sessions and ten business-fixture categories independently read back as empty.
 
-A fresh [authenticated read-only production checkpoint](production-checkpoint-20261021-1718.json) returned the correct project as `ACTIVE_HEALTHY` and confirmed the counts/versions below. No credentials are included.
+The matrix reconciler also rejects a claimed family certificate when any reviewed required operation lacks execution evidence. A live metadata refresh also retains previously reconciled source-family candidates instead of silently dropping them when the database omits source-derived links. These changes close reporting gaps without increasing family completion figures. Full-family completion remains **0/161**.
 
-The current gateway is **31 ACTIVE**, from source `c480e3b`. The customer provisioning handler is **3 ACTIVE**, from `e46fe92`. Both preserve `verify_jwt=true`; every uploaded source was accounted for in production readback. Five gateway modules use reproducible type erasure/whitespace compaction with original Git source and artifact digests preserved. The initial larger gateway upload returned HTTP 413, leaving gateway 28 and its source unchanged; the compact candidate then deployed with HTTP 201.
+## GitHub platform milestone — 22 October 2026
 
-Other last observed metadata versions: MCP **14**, private engineering runtime **4**, engineering control **43**, provider operation API **12**, provider gap API **7**, isolated engineering Edge Function fixture **9**. Prior test secret creation/removal advanced these metadata versions without changing their deployed sources. Gateway, MCP and provider JWT verification remain enabled. The private engineering runtime authenticates its revocable Vault bootstrap before obtaining a genuine normal Auth workload session; it returns no credentials.
+**Operational:** the existing authorized GitHub engineering fixture now works through
+normal Auth → Sandy MCP → Sandy API → GitHub with independently settled execution
+receipts. A file update, content restoration and detached commit all returned
+`succeeded` plus verification hashes. Independent provider reads confirmed the file
+bytes, tree, parent and unchanged branch after detached commit creation. The three
+admissions and deployment jobs are `succeeded`; all 12 audit events and hash links
+verify. Repeating verification reused the receipts without another event or write.
 
-## Dedicated engineering identity and verified execution
+Commits **883ba5f, e4ac156, 7a78ea5, d17a11c and 9c2b637** are pushed to PR #136.
+Production: **sandy-operation-api 45**, **sandy-provider-operation-api 22**,
+**sandy-legacy-compatibility-api 17**, all ACTIVE with JWT verification enabled.
+Source readback accounts for every uploaded module. MCP/runtime remain versions
+21/13; the MCP adapter gained no provider execution logic. Migration
+**20261022030000** adds a bounded proof column and a service-only verification
+transition on the existing ledger. No new operation, role or wider delegation.
+The ordinary provider output contract still describes the original acceptance;
+MCP/API envelope metadata carries the later, durable verification receipt.
 
-The permanent engineering test identity has no Controller membership. It obtains fresh short-lived Supabase Auth sessions and does not read or reuse `SANDY_CONTROLLER_ACCESS_TOKEN`. Its owner-authorized fixture policy permits six existing tools. Normal Auth verification, current owner authority, immutable exact approvals and provider grants remain enforced.
+Two real acceptance failures exposed a decoder rejecting GitHub's trailing newline
+after padded base64. Each failure left the write pending and restored the original
+file through MCP. Later administrative reconciliation verified the immutable
+original commits without replay. The decoder repair now passes the full live run.
+Immutable GET retries are bounded; mutation retries remain disabled. Wrong branch,
+path, malformed input and retired-session request replay were denied before
+admission and preserved the fixture. The initial boundary harness classified a
+runtime-level denial incorrectly; its correction retained the five completed MCP
+checks and retried only the explicitly refused, unadmitted request.
 
-All six were discovered with schemas and executed through MCP → Sandy API → providers:
+**GitHub as a whole is still incomplete.** The standing workload grant does not
+permit standalone repository/source reads, refs, PRs, Actions or administration.
+Actual `github.repos.get` returned runtime **HTTP 403
+`engineering_operation_scope_denied`** before MCP. Native repository push/admin
+permissions are available, so this is a workload authority boundary, not missing
+Git credentials. General immutable source capture/private delivery and
+MCP-driven production verification/rollback also need completion; private source
+candidates were preserved rather than published as working operations. Organisation
+repositories, Discussions, packages, audit, security and environment-secret families
+have no whole-family acceptance. Their existing contracts are not execution proof.
 
-- `github.files.update`: isolated branch contents updated, read back and restored through MCP.
-- `github.commit`: detached commit created and checked; this operation does not advance a branch.
-- `supabase.db.migrations.apply`: isolated RLS fixture table created, marker checked and table removed through a forward rollback migration.
-- `supabase.functions.secrets.set`: noncredential fixture value set, provider digest checked and fixture secret removed.
-- `supabase.deploy_edge_function`: reviewed fixture version two deployed, then preserved version one redeployed. Restored source returned its expected response to a normal Auth session.
-- `supabase.logs.query`: real fixture console marker retrieved; unrelated project log entries are filtered out for this workload.
+The two existing GitHub registry rows now carry the actual scoped MCP/provider,
+receipt and audit evidence, preserving all operation and exposure flags. Original
+family completion remains **0/161**; these are improvements within partial families
+117/118. The next platform remains GitHub. Supabase, GCP and Sandy service evidence
+is retained; no new large provider workstream or VM/video deployment began.
 
-Live session retirement caused fresh authenticated sessions. Credential rotation advanced epoch/generation to two, denied the old bootstrap with HTTP 403 and accepted the replacement. Invalid credentials and out-of-scope operations were denied. Natural expiry is covered by clock-based tests; the live renewal test explicitly retired sessions rather than waiting an hour. After gateway 29 deployed, scoped discovery still returned exactly six tools and real-provider MCP log retrieval passed again.
+Source regression, compact gateway runtime tests and PostgreSQL boundary checks
+passed. The official MCP client also passed normal-session, schema, REST and real
+provider-log regression; no new log event delivery is claimed. Previous gateway
+43/provider 18/legacy 13 artifacts and committed source were preserved for rollback.
+To recover, restore those reviewed function sources under the same lease and
+source/version guards, with JWT verification retained. Keep the additive proof
+column/function and audit history; this is not a destructive schema rollback.
+Actual fixture recovery is verified; production-function rollback and
+`engineering.rollback.execute` through MCP are **not** claimed tested. The three
+component leases were released after final source and receipt checks.
 
-The requested identifiers `supabase.functions.logs`, `engineering.deploy.verify` and `engineering.rollback.execute` remain absent. Actual logs use `supabase.logs.query`. Concrete source, migration and function rollback was demonstrated; a generic recovery operation is not claimed. [Engineering evidence](engineering-workload-evidence-20261021.json) preserves the earlier exact deployment and execution records.
+A subsequent real stale-SHA write confirmed an error-propagation defect: GitHub
+409 was exposed as API 502. Commit `9c2b637` preserves provider conflict (409) and
+precondition failure (412) through the shared adapter. Provider 22 / legacy 17
+source readbacks match that commit. The targeted real MCP retry now returns
+`provider_conflict`, API/provider 409, an independently failed admission/job and
+three audit events, with no file or branch change. HTTP 412 is covered by shared
+regression, not a claimed real-provider test. The successful file/commit receipt
+path was verified on provider 21 / legacy 16 and is unchanged in this error-only
+follow-up; those successful mutations were not repeated.
 
-## Customer identity and onboarding
+[Actual GitHub execution, recovery and limitations](github-platform-MCP-evidence-20261022.json). [Real provider conflict before/after](github-provider-conflict-evidence-20261022.json).
 
-Three new operations are deployed and verified through MCP:
+## Remaining work and external dependencies
 
-- `customer.onboarding.ensure`
-- `customer.onboarding.update`
-- `customer.identity.get`
+1. **Shared execution durability:** eight existing task/calendar/Agenda reads now use normal-JWT admission, one-use grants, rate limits, settled shared receipts and digest-only audit. Other legacy customer reads still need adoption. General mutation settlement, provider polling, cancellation/retry, recovery and independently verified compensation remain incomplete.
+2. **Source/release delivery:** finish immutable general source delivery and production verification/rollback through Sandy API/MCP. Cloud Run's source candidate is not deployed. The prior protected-environment approval attempt returned HTTP 403 `Resource not accessible by integration`; authorized review through `sandy-production` is required. Do not bypass it. The older waiting run was cancelled because its acceptance still invoked VM diagnostics; the replacement acceptance uses bounded logs. [Replacement run 39692384698](https://github.com/ausstyle/web-staging/actions/runs/39692384698) is waiting for protected review; its source is `e49eca5`. No production traffic was promoted.
+3. **Provider and service completion:** reconcile minimum wildcard constituents on existing typed versioned adapters, and test under genuinely approved target-specific authority. Three explicit required contract gaps remain `supabase.projects.list`, `supabase.projects.create` and `supabase.functions.invoke`. Current fixture/optional VM grants do not authorize every provider operation. Do not fabricate owner approvals or give the workload global Controller ownership.
+4. **Generic computer access:** SSH/IAP/WinRM candidate code exists but production transport activation, files/packages/services, guest enrollment and isolated graphical/browser session lifecycle remain incomplete. Acceptance is **0/3**. IAP relay **4033 NOT_AUTHORIZED**, and target policy reads HTTP 403, require a legitimate IAP policy administrator to inspect current policies/etags and grant only missing VM-specific tunnel access to `sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com` on ports 22/5986. [Precise blocker](iap-access-blocker-20261021.md). Windows heartbeat is stale and listener/credential/host-certificate execution remains unverified. Do not repeat the same denied investigation, add public IPs or weaken host controls.
+5. **Separate provider dependencies:** the default-subnet Private Google Access change returned HTTP 403 for `compute.subnetworks.setPrivateIpGoogleAccess`; this is not a universal prerequisite for private access. Custom Domain entitlement is unavailable; no provider plan purchase is authorized. These do not block unrelated software work.
+6. **Whole-family acceptance:** finish positive/denied authenticated MCP execution, higher-risk independent verification and constituent reconciliation. Working token issuance/renewal is distinct from target authorization. Registry exposure/counts remain evidence-neutral.
 
-They reuse canonical `email_customers`, unique normalized email addresses, portal accounts and existing verified WhatsApp links. Verified Auth email ownership is required; existing revocation is checked before receipt replay. Unverified email/WhatsApp/voice observations remain provisional and grant no account access. Profile updates use optimistic concurrency. An organisation name is metadata and grants no organisation membership. Onboarding alone provisions no provider resources and does not enable memory learning or proactive activity.
-
-[Onboarding acceptance](customer-onboarding-evidence-20261021.json): **20 real checks passed** using two normal password Auth sessions. Discovery before enrollment, deduplication, cross-customer input, stale writes and revoked replay were tested. Fixtures were deleted and independently checked absent. The earlier result-propagation defect is retained as failed evidence; the additive execution-metadata migration corrected it before successful MCP verification.
-
-Trusted email (`incoming`) and WhatsApp (`inbound`) storage now feed the existing deduplicated provisional-contact service. A service-only resolver checks current verified email records and fresh WhatsApp links on every lookup; revoked/expired links stop matching. Matches are routing hints and grant no authorization, create no customers and perform no identity merging. Customer writes are excluded from trusted ingress. Voice caller ID remains provisional. [Production database checks](customer-ingress-evidence-20261021.json) passed **27/27**, existing onboarding checks **31/31**, and all fixtures were independently absent after rollback. These are actual database integration checks; signed external email/WhatsApp delivery was not exercised and no message was sent.
-
-The existing WhatsApp email-code linker now completes atomically in webhook **156 ACTIVE**, from `41e030c`, with all five deployed sources verified. Actual production version 155 source was preserved in `259c914`, including functionality absent from the checkout. Proof consumption, binding and audit commit together. Wrong attempts are serialized and bounded, current email ownership is rechecked, cross-customer reassignment is refused, and existing narrower scopes are preserved. [Acceptance evidence](customer-channel-link-evidence-20261021.json): **33 real database checks**, **9 handler tests**, concurrent REST completion with one success/one rejected replay and one audit, and **3 actual webhook authentication/method denials** passed. Fixtures were removed and read back absent. External Meta delivery and actual emailed OTPs remain unverified; no message was sent. This change creates no new catalogue operations or verification flags.
-
-## Actual resource provisioning and lifecycle
-
-Twelve additional operations are deployed and verified through MCP:
-
-- `customer.provisioning.features.list`, `customer.provisioning.templates.list`
-- `customer.provisioning.plan`, `customer.provisioning.execute`, `customer.provisioning.jobs.get`
-- `customer.resources.list`, `customer.resources.reconcile`, `customer.resources.recover`, `customer.resources.decommission`
-- `customer.workspace.records.get`, `customer.workspace.records.upsert`, `customer.workspace.records.delete`
-
-The first installed adapter is `supabase.workspace`. It creates an actual isolated Postgres table in the existing project, configures RLS and direct-access restrictions, and verifies real provider metadata before returning a completed persisted job. Feature definitions/templates and versioned customer policies live in Supabase; permissions reuse existing commerce entitlements. Execution revalidates the immutable five-minute plan, current entitlements, policy versions, resource limits and storage/purchase budgets. Duplicate plan execution reuses the job. Record updates enforce optimistic concurrency and current logical-storage limits. Unreported actual provider billing stays null.
-
-Reconciliation records actual drift and blocks access to a drifted resource. Recovery restores security configuration only on the exact owned existing resource. Decommission requires explicit data deletion and a matching resource version, verifies physical absence and retains a truthful job. Failed transactional attempts roll back provider effects and retain a failed job/audit record. Unknown transport outcomes remain unknown and are not automatically replayed. This adapter executes synchronously in one database transaction; a general asynchronous provider worker is not claimed.
-
-[Provisioning acceptance](customer-provisioning-evidence-20261021.json): **64 real checks passed** using two normal customer sessions. All twelve operations succeeded through MCP. The completed acceptance run created **two actual workspace tables**, one through the direct API preflight and one through MCP; both were removed. The failed-job test left no resource/orphan. Cross-tenant access, quota denial, actual security drift/recovery and verified decommissioning were demonstrated. Test users, customers, receipts, resources, jobs, plans, policies and entitlements were independently confirmed absent; temporary feature settings were disabled again. Earlier interrupted API-only fixtures were also administratively removed and are not counted as MCP acceptance.
-
-Source regressions passed **192/192**; the exact compact artifacts passed **211/211**, including schema validation. Strict PostgreSQL rollback checks passed **47/47** for provisioning and **31/31** for onboarding. Existing normal-customer regressions passed **23/23**, engineering nonowner denials **8/8**, and authenticated engineering discovery/log regression passed after deployment. These overlapping suites are not operation counts.
-
-## Fixed VM diagnostic verification
-
-The existing provisioning backend is now **66 ACTIVE**, from `1999fe2`, extending the read-only computer/IAP readiness probe with exact target-policy and Windows diagnosis. Its preceding network-repair release was60 from `d61bdd3`; its original production source was preserved before changes. Gateway 31 fixes service authentication headers and safe propagation of upstream errors. The backend repairs OS Config policy discovery to the official v1 zonal endpoint and inspects Private Google Access without changing networks. Exact deployed source readback passed for both. Source regressions passed **213/213** and exact compact artifacts **232/232**.
-
-[Actual diagnostic evidence](sandy-video-diagnostic-evidence-20261021.json) verifies seven of nine existing diagnostic operations through fresh workload Auth → MCP → Sandy API → Google. Optional scope revocation removes the tools and denies execution with HTTP 403. The fixed VM is running with OS Login and blocked project SSH keys; it has no external IP, Cloud NAT or Private Google Access. Google denied inventory reads with `osconfig.inventories.get` and denied project IAM-policy reads. The latter does not establish that IAP/OS Login execution permissions are absent. OS Config policy listing now succeeds. These checks do not demonstrate remote shell execution, LiveKit installation or conferencing.
-
-The bounded network prerequisite is implemented in backend **60**, with **20 handler tests**, **24 database authorization/audit checks**, full backend type checking and exact production source readback. The genuine existing owner-approved network scope admits only enabling Private Google Access on the fixed VM's current subnet. [Actual provider attempt](vm-network-preparation-evidence-20261021.json) reached Google using the existing audited Vault worker transport, then returned **HTTP 403**: `Required 'compute.subnetworks.setPrivateIpGoogleAccess' permission for 'projects/elaborate-haven-511518-a5/regions/europe-west1/subnetworks/default'`. Google did not accept the change. No IAM, public IP, NAT, firewall or paid resource changed. The missing permission belongs to the existing `sandy-computer` service account. No automatic retry is performed. This remains a separate external dependency, not a completed VM-execution family. Per the clarified scope, further work targets reusable VM discovery/access/execution rather than specialised video or software-installation MCP tools.
-
-## Database changes
-
-Applied and ledger-read back against exact committed sources:
-
-- `20261021120000`, `20261021121000`: dedicated Auth workload policy, sessions, revocable Vault bootstrap delivery, scoped execution authorization and audit.
-- `20261021130000`, `20261021130010`, `20261021131000`: canonical onboarding, provisional contacts, receipts/audit and typed API/MCP contracts; truthful execution metadata correction.
-- `20261021162000`: current-owner-approved fixed-VM network admission and typed administrative provider-observation audit; no new catalogue operation.
-- `20261021161000`: atomic existing WhatsApp linking, bounded attempts, current ownership checks, service-only channel audit and explicit refusal of identity transfers.
-- `20261021160000`: trusted email/WhatsApp observation triggers and service-only current-record matching, preserving existing ingestion/authentication and requiring no new catalogue operations.
-- `20261021150000`: separately revocable, fixed-target read-only VM delegation, credential-epoch binding and audit; no shell, IAM, network or installation writes.
-- `20261021140000`, `20261021140010`: provisioning features/templates, customer policies, immutable plans, owned resource registry, persisted jobs/receipts/audit, transactional workspace adapter and typed contracts.
-
-## Actual coverage and remaining work
-
-Latest production registry: **2,585 registered**, **447 API exposure flags**, **430 AI exposure flags**, **37 verified flags**. This session has genuine MCP end-to-end evidence for **33 distinct operations**: eleven engineering/provider/control operations, three onboarding operations, twelve workspace/lifecycle operations and seven read-only VM diagnostics. The dedicated engineering identity discovers fifteen while its separately revocable, 24-hour VM diagnostic scope is active; its base fixture scope remains six. These figures do not certify global executable/discoverable coverage or complete wildcard families. **Zero complete original requirement families are newly certified**; every incomplete constituent remains outstanding.
-
-Google Cloud VM/disk provisioning, authenticated remote guest administration, Google Drive folder/permission/file provisioning, integration authorization/initialization, verified new channel linking, organisation membership and the broader asynchronous provisioning worker remain unfinished. Existing provider/identity services are being inspected for reuse. Reusable remote administration of `sandy-video` remains unverified. The current task explicitly excludes video-conferencing deployment; software-specific installation/restart/log/test tools are not additional required MCP operations.
-
-Runtime Google egress, Controller/owner authorization outside the dedicated fixture delegation, and Custom Domain provider entitlement remain separate dependencies. No provider plan purchase or upgrade is authorized. Repository source delivery, SSH/WinRM, remaining durable execution/lifecycle work, and full 161-family reconciliation continue independently. Uncommitted future adapters are excluded from production claims.
-
-The [05:12 historical report](implementation-status-20261021-0512.md) is retained for chronology; its Git-write blocker and zero newly verified operations are superseded by the actual evidence above.
+LiveKit is already deployed and is excluded from infrastructure changes. Existing operational video APIs remain in scope. No LiveKit installation, VM repair or repeated sandy-video diagnostic is part of this release.

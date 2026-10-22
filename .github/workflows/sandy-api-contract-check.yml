@@ -11,6 +11,10 @@ on:
       - 'supabase/functions/sandy-auto-improve/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
       - 'supabase/functions/_shared/sandy_finish_receipt*'
+      - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'supabase/functions/_shared/sandy_engineering_session*'
+      - 'supabase/functions/sandy-engineering-runtime/**'
+      - 'scripts/sandy/verify_mcp_candidate*'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
@@ -26,6 +30,10 @@ on:
       - 'supabase/functions/sandy-auto-improve/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
       - 'supabase/functions/_shared/sandy_finish_receipt*'
+      - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'supabase/functions/_shared/sandy_engineering_session*'
+      - 'supabase/functions/sandy-engineering-runtime/**'
+      - 'scripts/sandy/verify_mcp_candidate*'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
@@ -54,6 +62,10 @@ jobs:
           supabase/functions/sandy-auto-improve/
           supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_profiles_test.ts
           supabase/functions/_shared/sandy_finish_receipt_test.ts
+          supabase/functions/_shared/sandy_engineering_session_test.ts
+          supabase/functions/_shared/sandy_engineering_session_client_test.ts
+          supabase/functions/sandy-engineering-runtime/
+          scripts/sandy/verify_mcp_candidate_test.ts
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -72,12 +84,29 @@ jobs:
         with:
           deno-version: '2.9.6'
       - name: Test native protocols against isolated loopback fixtures
-        run: >-
-          deno test
-          --import-map=scripts/sandy/testing/edge_types_import_map.json
-          --allow-read=/tmp --allow-write=/tmp
-          --allow-run=openssl --allow-net=127.0.0.1
-          --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE
-          supabase/functions/sandy-vm-protocol-api/
+        run: |
+          set -euo pipefail
+          if deno test \
+            --import-map=scripts/sandy/testing/edge_types_import_map.json \
+            --allow-read=/tmp --allow-write=/tmp \
+            --allow-run=openssl --allow-net=127.0.0.1 \
+            --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE \
+            supabase/functions/sandy-vm-protocol-api/ \
+            > "$RUNNER_TEMP/sandy-vm-contract.log" 2>&1; then
+            cat "$RUNNER_TEMP/sandy-vm-contract.log"
+          else
+            cat "$RUNNER_TEMP/sandy-vm-contract.log"
+            # These isolated fixture tests have no production credentials.
+            # Keep a bounded failure annotation available through the normal
+            # GitHub API when the signed Actions log host is unreachable.
+            python3 - <<'PYERROR'
+          import os, pathlib, re
+          text = (pathlib.Path(os.environ['RUNNER_TEMP']) / 'sandy-vm-contract.log').read_text()
+          text = re.sub(r'\x1b\[[0-9;]*m', '', text)[-12000:]
+          escaped = text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
+          print('::error title=Isolated VM protocol regression::' + escaped)
+          PYERROR
+            exit 1
+          fi
       - name: Check closed contract compiler invariants
         run: python3 supabase/functions/sandy-vm-protocol-api/compiler_test.py

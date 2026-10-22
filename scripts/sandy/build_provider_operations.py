@@ -483,7 +483,7 @@ def projected_result(spec, raw, schemas):
             "ssl_validation_records": {"type": "array", "maxItems": 100, "items": object_schema({"txt_name": {"type": "string"}, "txt_value": {"type": "string"}})},
             "validation_error_count": {"type": "integer", "minimum": 0}}, ["status", "custom_hostname", "ownership_verification", "ssl_validation_records", "validation_error_count"])
     elif spec["kind"] == "file_content":
-        result = object_schema({"path": {"type": "string", "pattern": "^docs/sandy-api/compensation-fixtures/"}, "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "size": {"type": "integer", "minimum": 0, "maximum": 65536}, "encoding": {"const": "base64"}, "content": {"type": "string", "maxLength": 87384, "pattern": "^[A-Za-z0-9+/]*={0,2}$"}, "type": {"const": "file"}}, ["path", "sha", "size", "encoding", "content", "type"])
+        result = object_schema({"path": {"type": "string", "pattern": "^(?!\\.)(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*$"}, "sha": {"type": "string", "pattern": "^[a-f0-9]{40}$"}, "size": {"type": "integer", "minimum": 0, "maximum": 65536}, "encoding": {"const": "base64"}, "content": {"type": "string", "maxLength": 87384, "pattern": "^[A-Za-z0-9+/]*={0,2}$"}, "type": {"const": "file"}}, ["path", "sha", "size", "encoding", "content", "type"])
     elif spec["kind"] in {"mutation_metadata", "empty"}:
         result = object_schema({"accepted": {"const": True}, "effect_confirmed": {"const": False},
             **{key: {"type": ["string", "number", "boolean", "null"]} for key in ["id", "number", "name", "ref", "sha", "state", "status", "url", "content_sha", "commit_sha", "path"]}}, ["accepted", "effect_confirmed"])
@@ -567,7 +567,7 @@ def compile_route(spec, document, source):
             if location == "query" and value.get("type") == "string":
                 value.setdefault("maxLength", 4096)
             if spec["kind"] == "file_content" and location == "path" and name == "path":
-                value["pattern"] = "^docs/sandy-api/compensation-fixtures/[A-Za-z0-9_./-]+$"
+                value["pattern"] = "^(?!\\.)(?:[A-Za-z0-9_-][A-Za-z0-9_.-]*/)*[A-Za-z0-9_-][A-Za-z0-9_.-]*$"
             fields[name] = value
             if parameter.get("required"):
                 needed.append(name)
@@ -606,6 +606,8 @@ def compile_route(spec, document, source):
             body_schema["properties"]["sha"] = {"type": "string", "pattern": "^[a-f0-9]{40}$"}
         else:
             body_schema["not"] = {"required": ["sha"]}
+    if spec["kind"] == "file_content":
+        properties["range"] = object_schema({"offset": {"type": "integer", "minimum": 0, "maximum": 8388608}, "max_bytes": {"type": "integer", "minimum": 1, "maximum": 65536}}, [])
     input_schema["required"] = list(required)
     # The provider's actual JSON response is validated before any projection.
     response_schemas = {}
@@ -621,6 +623,8 @@ def compile_route(spec, document, source):
     # Request and response refs share a closed, pinned definition set.
     input_schema["$defs"] = schema.defs
     result_schema, public_defs = projected_result(spec, raw_response, Schemas(document, None if spec.get("strict_metadata_projection") else set(GCP_FIELDS + ["type", "severity", "category", "resource", "resourceName", "resourceType", "reason", "code", "message", "lastTransitionTime", "email", "uniqueId", "role", "members", "condition", "expression", "title", "disabled", "retentionPeriod", "retentionPolicy", "count", "valueType", "metricKind", "unit", "priority", "direction", "action", "sourceRanges", "destinationRanges", "IPProtocol", "ports", "ttl", "rrdatas", "recordType", "backup", "backupType", "resourceProperties"]) if spec["provider"] == "gcp" else None, strict_metadata=spec.get("strict_metadata_projection", False)))
+    if spec["kind"] == "file_content":
+        result_schema["properties"].update({"offset": {"type":"integer","minimum":0,"maximum":8388608}, "total_size": {"type":"integer","minimum":0,"maximum":8388608}, "next_offset": {"type":["integer","null"],"minimum":0,"maximum":8388608}, "content_sha256": {"type":"string","pattern":"^[a-f0-9]{64}$"}, "source_sha256": {"type":"string","pattern":"^[a-f0-9]{64}$"}})
     mutation = spec["method"] not in {"GET", "HEAD"} and spec["operation"] != "supabase.network.bans.list" and not spec.get("semantic_read")
     # Variable values can contain secrets; they require approval even though GET.
     needs_grant = mutation or spec["sensitive"] or spec["requires_cost_approval"]

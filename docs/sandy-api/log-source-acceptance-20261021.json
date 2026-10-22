@@ -1,0 +1,64 @@
+{
+  "tested_at_utc": "2026-10-21T19:36:04.009097+00:00",
+  "route": "authorized Supabase Management API read-only; not an MCP test",
+  "window_seconds": 60,
+  "limit_per_source": 1,
+  "credential_values_recorded": false,
+  "customer_log_contents_recorded": false,
+  "tests": [
+    {
+      "source": "edge_logs",
+      "http_status": 200,
+      "provider_error": false,
+      "result_array": true,
+      "entry_count": 1,
+      "source_scope_match": true,
+      "response_sha256": "a203334881cef4a419d29dbab36195600ae2a2e3af6e838471d33daab7111747"
+    },
+    {
+      "source": "postgres_logs",
+      "http_status": 200,
+      "provider_error": false,
+      "result_array": true,
+      "entry_count": 0,
+      "source_scope_match": true,
+      "response_sha256": "0157919069c7c67969781dc254ef3bf2ee21aa2e1c818f05ff9afb5cb9715e0a"
+    },
+    {
+      "source": "auth_logs",
+      "http_status": 200,
+      "provider_error": false,
+      "result_array": true,
+      "entry_count": 0,
+      "source_scope_match": true,
+      "response_sha256": "0157919069c7c67969781dc254ef3bf2ee21aa2e1c818f05ff9afb5cb9715e0a"
+    },
+    {
+      "source": "realtime_logs",
+      "http_status": 200,
+      "provider_error": false,
+      "result_array": true,
+      "entry_count": 0,
+      "source_scope_match": true,
+      "response_sha256": "0157919069c7c67969781dc254ef3bf2ee21aa2e1c818f05ff9afb5cb9715e0a"
+    },
+    {
+      "source": "storage_logs",
+      "http_status": 200,
+      "provider_error": false,
+      "result_array": true,
+      "entry_count": 1,
+      "source_scope_match": true,
+      "response_sha256": "b9f1025894ecb8bad9abf121979a49f1103b0e3d6add4384cb867c30abd5e66f"
+    },
+    {
+      "source": "function_logs",
+      "http_status": 200,
+      "provider_error": false,
+      "result_array": true,
+      "entry_count": 1,
+      "source_scope_match": true,
+      "response_sha256": "5416576b77b60b73d1030bf550285e21bb2ea508043faa624ac048a5afe9e4fb"
+    }
+  ]
+}

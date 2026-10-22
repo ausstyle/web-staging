@@ -72,6 +72,16 @@ Each numbered entry is a **requirement or function family**, not necessarily one
 45. gcp.compute.instanceGroups.*
 46. gcp.compute.templates.*
 
+The existing IAM/access obligations include IAP tunnel policy inspection and
+target-specific tunnel authorization under #17, #22 and #35–37. Private
+connectivity is supported; a public IP is not a prerequisite. Master Scope v1.1
+also requires authenticated interactive graphical/browser control, session
+isolation, resume/termination and observable artifacts in the reusable
+computer-access layer. These are implementation obligations within this
+programme, not optional software-specific MCP projects. Record missing code,
+deployment, MCP exposure, authority and actual acceptance separately; an IAP
+permission denial does not complete the corresponding software work.
+
 ## Google Cloud platform (47–74)
 47. gcp.vpc.networks.*
 48. gcp.vpc.subnets.*

@@ -144,7 +144,7 @@ function setup(overrides: Partial<ProviderDependencies> = {}) {
         value = fixture(op.$defs["content-file"], op.$defs);
         Object.assign(value, {
           path: "docs/sandy-api/compensation-fixtures/legacy.txt",
-          sha: SHA,
+          sha: "f2ba8f84ab5c1bce84a7b441cb1959cfc7093b7f",
           size: 3,
           encoding: "base64",
           content: "YWJj",
@@ -357,4 +357,43 @@ Deno.test("compatibility transport ambiguity and lost receipts return unknown wi
     assert.equal(h.consumed.length, 1);
     assert.ok(h.urls.length <= 1);
   }
+});
+
+Deno.test("legacy commit reuses canonical immutable verification after acceptance and preserves its published output contract", async () => {
+  const args = await argsFor("github.commit");
+  let reads = 0, recorded = 0;
+  const h = setup({
+    fetch: (async (_url, init) => {
+      const raw = fixture(
+        legacyProviderContracts["github.commit"].response_schemas["201"],
+        legacyProviderContracts["github.commit"].$defs,
+      );
+      Object.assign(raw, {
+        sha: SHA,
+        tree: { ...raw.tree, sha: SHA },
+        parents: [{
+          sha: SHA,
+          url: "https://api.github.com/fixture",
+          html_url: "https://github.com/fixture",
+        }],
+        message: args.body.message,
+      });
+      if (init?.method === "GET") reads++;
+      return Response.json(raw, { status: init?.method === "GET" ? 200 : 201 });
+    }) as typeof fetch,
+    verifyGithubMutation: async (r) => {
+      recorded++;
+      assert.equal(r.admission_id, ADMISSION);
+      assert.equal(r.proof.kind, "github_commit");
+      return { allowed: true, verification_sha256: "f".repeat(64) };
+    },
+  });
+  const response = await h.call("github.commit", args);
+  assert.equal(response.status, 200);
+  const output = await response.json();
+  assert.equal(output.request_state, "accepted");
+  assert.equal(output.result.effect_confirmed, false);
+  assert.ok(response.headers.get("x-sandy-verified-execution"));
+  assert.equal(reads, 1);
+  assert.equal(recorded, 1);
 });

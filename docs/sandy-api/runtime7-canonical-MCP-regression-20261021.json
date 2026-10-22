@@ -1,0 +1,29 @@
+{
+  "observed_at": "2026-10-21T21:40:21.760373+00:00",
+  "operation": "gcp.compute.instances.get",
+  "arguments": {
+    "path": {
+      "instance": "sandy-video"
+    }
+  },
+  "authenticated_MCP_proof": true,
+  "identity_kind": "dedicated_nonowner_workload",
+  "scope": "existing owner-delegated fixed VM read only",
+  "remote_command_executed": false,
+  "discovered_tools": 16,
+  "all_discovered_input_schemas_valid": true,
+  "result": {
+    "http_status": 200,
+    "MCP_is_error": false,
+    "API_status": 200,
+    "executed": true,
+    "admission_id": "c4366ef4-e5b0-4aff-8a87-9aeeaeccc27a",
+    "request_id": "be7e2ee6-f211-4b00-9330-c50b1ac163e5",
+    "provider_http_status": 200,
+    "provider_instance_id": "6831598645020395570",
+    "provider_instance_name": "sandy-video",
+    "provider_instance_status": "RUNNING",
+    "passed": true
+  },
+  "response_sha256": "de9319cc55f63dd6251fa3236fd391531d6d03075f0091e787cc4a60ec7ab663"
+}

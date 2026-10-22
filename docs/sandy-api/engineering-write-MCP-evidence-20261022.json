@@ -1,0 +1,168 @@
+{
+  "evidence_readback_matches": true,
+  "verified_flags_unchanged": true,
+  "operation_evidence": {
+    "github.files.update": {
+      "source_commit": "5f8464553b9fc78e83e35f166a046748a70c5984",
+      "gateway_deploy_version": 39,
+      "operation": "github.files.update",
+      "normal_Auth_MCP_to_Sandy_API_provider": true,
+      "successful_calls": [
+        {
+          "operation": "github.files.update",
+          "request_id": "b786e3d0-ccf4-49fc-993d-e6cfe60c2b97",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "7cb16ac9-11ab-455a-9781-b9f6b64c24a6",
+          "provider_http_status": 200,
+          "response_sha256": "9f7357a81ffccbd6d79795f304c587da065460139892763d7db8bf5b5cc4b840"
+        },
+        {
+          "operation": "github.files.update",
+          "request_id": "5b824de2-987e-4258-ab57-eb47f40d1421",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "fbe98df0-12ee-4b65-87f3-739ea01bbd73",
+          "provider_http_status": 200,
+          "response_sha256": "6bc9f2f59ee7a516afd357e53406157ff7f12df614eaa3c614e9a87a07bbeb7d"
+        }
+      ],
+      "independent_provider_readbacks": {
+        "detached_commit_sha": "785b7ace361e0cadec85b0790c63a1707a64717d",
+        "tree_sha": "06a95551da6bf6264288faea87f113790dce0812",
+        "parent_sha": "597be71b0c4f7dba0fb91089ecb85efa8658b254",
+        "branch_sha_unchanged_by_detached_commit": true,
+        "fixture_file_content_restored": true,
+        "fixture_migration_table_absent": true
+      },
+      "independent_durable_receipts": [
+        {
+          "id": "7cb16ac9-11ab-455a-9781-b9f6b64c24a6",
+          "operation": "github.files.update",
+          "state": "accepted",
+          "provider_http_status": 200
+        },
+        {
+          "id": "fbe98df0-12ee-4b65-87f3-739ea01bbd73",
+          "operation": "github.files.update",
+          "state": "accepted",
+          "provider_http_status": 200
+        }
+      ],
+      "fixture_recovery_verified": true,
+      "general_engineering_rollback_operation_verified": false,
+      "personal_Controller_session_used": false,
+      "direct_connectors_used_for_execution": false,
+      "independent_GitHub_and_Management_reads_used_for_verification": true,
+      "VM_diagnostics_performed": false
+    },
+    "github.commit": {
+      "source_commit": "5f8464553b9fc78e83e35f166a046748a70c5984",
+      "gateway_deploy_version": 39,
+      "operation": "github.commit",
+      "normal_Auth_MCP_to_Sandy_API_provider": true,
+      "successful_calls": [
+        {
+          "operation": "github.commit",
+          "request_id": "cfd068f5-dd93-4d5e-875d-b3515ebdeb09",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "a5af80a7-f4a9-4b3b-a6b1-98fa5018fc00",
+          "provider_http_status": 201,
+          "response_sha256": "720c2464dec34a2fba7f36364df968fca890c794d36b0dbebc86cc42841ad7e3"
+        }
+      ],
+      "independent_provider_readbacks": {
+        "detached_commit_sha": "785b7ace361e0cadec85b0790c63a1707a64717d",
+        "tree_sha": "06a95551da6bf6264288faea87f113790dce0812",
+        "parent_sha": "597be71b0c4f7dba0fb91089ecb85efa8658b254",
+        "branch_sha_unchanged_by_detached_commit": true,
+        "fixture_file_content_restored": true,
+        "fixture_migration_table_absent": true
+      },
+      "independent_durable_receipts": [
+        {
+          "id": "a5af80a7-f4a9-4b3b-a6b1-98fa5018fc00",
+          "operation": "github.commit",
+          "state": "accepted",
+          "provider_http_status": 201
+        }
+      ],
+      "fixture_recovery_verified": true,
+      "general_engineering_rollback_operation_verified": false,
+      "personal_Controller_session_used": false,
+      "direct_connectors_used_for_execution": false,
+      "independent_GitHub_and_Management_reads_used_for_verification": true,
+      "VM_diagnostics_performed": false
+    },
+    "supabase.db.migrations.apply": {
+      "source_commit": "5f8464553b9fc78e83e35f166a046748a70c5984",
+      "gateway_deploy_version": 39,
+      "operation": "supabase.db.migrations.apply",
+      "normal_Auth_MCP_to_Sandy_API_provider": true,
+      "successful_calls": [
+        {
+          "operation": "supabase.db.migrations.apply",
+          "request_id": "f38a79c6-1c96-4f90-b16d-9e5350b9e15e",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "7184440e-31f3-49ff-85dc-c3593e96d18e",
+          "provider_http_status": 200,
+          "response_sha256": "aa51ea9b7ff8caf9c9cc9a257933a57f1088f715eb52c881e05d77231a3f87c2"
+        },
+        {
+          "operation": "supabase.db.migrations.apply",
+          "request_id": "8ec4c972-d242-45d5-954a-0adfc56c4141",
+          "verified": true,
+          "http_status": 200,
+          "is_error": false,
+          "api_status": 200,
+          "executed": true,
+          "admission_id": "7dc7e683-5f92-4926-a9a4-5e816ef1e0c1",
+          "provider_http_status": 200,
+          "response_sha256": "901128a8519bc3d4af060876b4574af90c16ca4d62c9669578c1ae5e1519e83d"
+        }
+      ],
+      "independent_provider_readbacks": {
+        "detached_commit_sha": "785b7ace361e0cadec85b0790c63a1707a64717d",
+        "tree_sha": "06a95551da6bf6264288faea87f113790dce0812",
+        "parent_sha": "597be71b0c4f7dba0fb91089ecb85efa8658b254",
+        "branch_sha_unchanged_by_detached_commit": true,
+        "fixture_file_content_restored": true,
+        "fixture_migration_table_absent": true
+      },
+      "independent_durable_receipts": [
+        {
+          "id": "7184440e-31f3-49ff-85dc-c3593e96d18e",
+          "operation": "supabase.db.migrations.apply",
+          "state": "accepted",
+          "provider_http_status": 200
+        },
+        {
+          "id": "7dc7e683-5f92-4926-a9a4-5e816ef1e0c1",
+          "operation": "supabase.db.migrations.apply",
+          "state": "accepted",
+          "provider_http_status": 200
+        }
+      ],
+      "fixture_recovery_verified": true,
+      "general_engineering_rollback_operation_verified": false,
+      "personal_Controller_session_used": false,
+      "direct_connectors_used_for_execution": false,
+      "independent_GitHub_and_Management_reads_used_for_verification": true,
+      "VM_diagnostics_performed": false
+    }
+  }
+}

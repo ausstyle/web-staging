@@ -13,6 +13,11 @@ import { operationRequestPath } from "./request_path.ts";
 import { requestReadJobRetry } from "./retry_read_job.ts";
 import { createCredentialResolver } from "./gateway_credentials.ts";
 import { governedExecution } from "./governed_execution.ts";
+import { readVerifiedExecution } from "../_shared/sandy_execution_receipt_transport.ts";
+import {
+  admittedCustomerReads,
+  governedCustomerRead,
+} from "./customer_read_admission.ts";
 import { parseApiJobRoute, resolveApiJobRoute } from "./api_job_routes.ts";
 import {
   buildCustomerKeyReadRequest,
@@ -79,6 +84,7 @@ import {
 import {
   captureLifecyclePreimage,
   executeProviderLifecycle,
+  isProviderLifecycleOperation,
   type LifecycleContext,
 } from "./provider_lifecycle.ts";
 import {
@@ -522,17 +528,19 @@ function ownerOnly(operation: string) {
 function executionAvailability(
   entry: Record<string, unknown>,
   config?: ProviderConfig,
+  authorizedByStandingPolicy = false,
 ) {
   const extension = extensionAvailability(
     String(entry.operation),
     entry,
     config?.verifiedBindings,
+    authorizedByStandingPolicy,
   );
   if (extension) return extension;
   const provider = providerOperations[String(entry.operation)];
   if (
     (entry.is_mutation === true || provider?.requires_grant) &&
-    entry.verified !== true
+    entry.verified !== true && !authorizedByStandingPolicy
   ) {
     return {
       executable: false,
@@ -612,6 +620,15 @@ async function upstreamResult(
     executed: preserveExecutionClaim ? (ok ? result.executed : null) : true,
     upstream_status: upstreamStatus,
     result,
+    ...(ok && readVerifiedExecution(response, operation, result.admission_id)
+      ? {
+        execution_receipt: readVerifiedExecution(
+          response,
+          operation,
+          result.admission_id,
+        ),
+      }
+      : {}),
     ...(preserveExecutionClaim && ok
       ? {
         request_state: result.request_state,
@@ -701,8 +718,29 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       // Classification follows actual authentication below; the URL never
       // chooses durable/legacy scope or supplies an execution identity.
     } else if (request.method === "GET") {
-      if (path === "/v1/capabilities") routedBody = { action: "list" };
-      else if (describePath) {
+      if (path === "/v1/capabilities") {
+        const limit = url.searchParams.get("limit") ?? "100";
+        if (
+          !/^[1-9][0-9]{0,2}$/.test(limit) || Number(limit) > 100 ||
+          [...url.searchParams.keys()].some((key) =>
+            !["limit", "cursor"].includes(key) ||
+            url.searchParams.getAll(key).length !== 1
+          )
+        ) {
+          return reply(400, {
+            error: "invalid_catalogue_page",
+            executed: false,
+          });
+        }
+        routedBody = {
+          action: "list",
+          channel: "api",
+          limit: Number(limit),
+          ...(url.searchParams.has("cursor")
+            ? { cursor: url.searchParams.get("cursor") }
+            : {}),
+        };
+      } else if (describePath) {
         routedBody = { action: "describe", operation: describePath[1] };
       } else if (executionReceiptPath) {
         routedBody = {
@@ -917,6 +955,28 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               enabledEntry(entry) && discoverableContract(entry),
             argumentsValid: (schema, args) =>
               schemaValid(schema, args) === true,
+            executionScope: async (operation, args) => {
+              const scope = extensionKind(operation)
+                ? await extensionExecutionScope(
+                  operation,
+                  args,
+                  data.user!.id,
+                  async () => null,
+                  {
+                    restoreBindings: dependencies.packageRestoreBindings,
+                    providerBindings: dependencies.providerConfig
+                      ?.verifiedBindings,
+                  },
+                )
+                : providerExecutionScope(
+                  operation,
+                  dependencies.providerConfig,
+                );
+              if (!isObject(scope)) {
+                throw Error("provider_scope_configuration_required");
+              }
+              return scope;
+            },
             delegate: (forwarded, scopedCredential) =>
               createOperationHandler({
                 ...dependencies,
@@ -929,7 +989,16 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                     },
               })(forwarded),
           },
-          request,
+          // The verified workload uses the same normalized route contract as
+          // ordinary users. Its delegation layer accepts canonical JSON only;
+          // a GET must not lose its already validated pagination or operation.
+          routedBody && request.method === "GET"
+            ? new Request(`${base}/functions/v1/sandy-operation-api`, {
+              method: "POST",
+              headers: request.headers,
+              body: JSON.stringify(routedBody),
+            })
+            : request,
           data.user as unknown as Record<string, unknown>,
           bearer,
         );
@@ -1130,7 +1199,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         )
         .map((entry) => ({
           ...entry,
-          ...executionAvailability(entry, dependencies.providerConfig),
+          ...executionAvailability(
+            entry,
+            dependencies.providerConfig,
+            engineeringProofFor(delegation)?.standingOperations?.includes(
+              String(entry.operation),
+            ) === true,
+          ),
         }));
       const bytes = new TextEncoder().encode(JSON.stringify(operations));
       const digest = new Uint8Array(
@@ -1275,7 +1350,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         ok: true,
         operation: {
           ...entry,
-          ...executionAvailability(entry, dependencies.providerConfig),
+          ...executionAvailability(
+            entry,
+            dependencies.providerConfig,
+            engineeringProofFor(delegation)?.standingOperations?.includes(
+              String(entry.operation),
+            ) === true,
+          ),
         },
       });
     }
@@ -1321,7 +1402,8 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     if (
       (entry.is_mutation === true ||
         providerOperations[operation]?.requires_grant === true) &&
-      entry.verified !== true
+      entry.verified !== true &&
+      !engineeringProofFor(delegation)?.standingOperations?.includes(operation)
     ) {
       return reply(424, {
         error: "operation_requires_live_verification",
@@ -1332,6 +1414,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       operation,
       entry,
       dependencies.providerConfig?.verifiedBindings,
+      engineeringProofFor(delegation)?.standingOperations?.includes(
+        operation,
+      ) === true,
     );
     if (extensionReady && !extensionReady.executable) {
       return reply(424, {
@@ -1395,9 +1480,22 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     }
     const dispatchUser = user;
     const originalChannel = body.channel === "mcp" ? "mcp" : "api";
+    const lifecycleEngineeringProof = engineeringProofFor(delegation);
+    const lifecycleKind = lifecycleEngineeringProof
+      ? "user"
+      : delegation?.kind ?? "user";
     const lifecycleContext = (requestId: string): LifecycleContext => ({
       actorId: dispatchUser.id,
-      kind: delegation?.kind ?? "user",
+      kind: lifecycleKind,
+      ...(lifecycleEngineeringProof
+        ? {
+          engineering: {
+            userId: lifecycleEngineeringProof.machineUserId,
+            sessionId: lifecycleEngineeringProof.sessionId,
+            epoch: lifecycleEngineeringProof.epoch,
+          },
+        }
+        : {}),
       requestId,
       originalChannel,
       ...(request.headers.get("x-sandy-approval-id")
@@ -1411,7 +1509,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     ): Promise<Response> => {
       if (
         context.actorId !== dispatchUser.id ||
-        context.kind !== (delegation?.kind ?? "user") ||
+        context.kind !== lifecycleKind ||
         context.originalChannel !== originalChannel ||
         !validOperation(childOperation)
       ) {
@@ -1434,7 +1532,15 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       if (context.kind === "user") {
         // The existing verified user's real JWT is forwarded, not replaced by
         // the internal platform/service credential.
-        canonical = createOperationHandler(dependencies);
+        canonical = createOperationHandler({
+          ...dependencies,
+          // A standing parent's one-request credential must never be inherited
+          // by a different child. Forward its real workload JWT through Auth
+          // and current policy again; no replacement Owner session is created.
+          resolveCredential: lifecycleEngineeringProof
+            ? undefined
+            : dependencies.resolveCredential,
+        });
         childRequest = new Request(`${base}/functions/v1/sandy-operation-api`, {
           method: "POST",
           headers,
@@ -1747,6 +1853,23 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             verifySession: async (token) => {
               const { data, error } = await db.auth.getUser(token);
               return !error && data.user ? { id: data.user.id } : null;
+            },
+            ownsEngineeringReceipt: async (receiptRequestId) => {
+              const proof = engineeringProofFor(delegation);
+              if (
+                !proof?.standingOperations?.includes("system.execution.get")
+              ) return false;
+              const { data, error } = await db.rpc(
+                "sandy_engineering_owns_execution",
+                {
+                  p_user_id: proof.machineUserId,
+                  p_session_id: proof.sessionId,
+                  p_epoch: proof.epoch,
+                  p_request_id: receiptRequestId,
+                },
+              );
+              return !error && isObject(data) && data.ok === true &&
+                data.owned === true;
             },
           },
           {
@@ -2260,11 +2383,35 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       return upstreamResult(operation, response, entry.output_schema);
     };
     if (
+      dependencies.executionPolicy && !delegation && !customerKey &&
+      admin?.role !== "owner" && admittedCustomerReads.includes(operation) &&
+      entry.is_mutation === false
+    ) {
+      const authenticatedDb = dependencies.authenticatedDb
+        ? dependencies.authenticatedDb(bearer)
+        : createClient(base, anon, {
+          global: { headers: { Authorization: `Bearer ${bearer}` } },
+          auth: { persistSession: false },
+        });
+      return governedCustomerRead(
+        db,
+        authenticatedDb,
+        dispatchUser.id,
+        operation,
+        body.arguments ?? {},
+        request.headers.get("x-sandy-request-id") ?? crypto.randomUUID(),
+        await executionContractDigest(entry),
+        originalChannel,
+        () => dispatch(),
+      );
+    }
+    if (
       dependencies.executionPolicy && admin?.role === "owner" &&
       !extensionOwnsUserAdmission(operation) &&
       (entry.is_mutation === false || !!providerOperations[operation] ||
         extensionOwnsGrant(operation)) &&
-      !isPolicyOperation(operation)
+      !isPolicyOperation(operation) &&
+      !(lifecycleEngineeringProof && isProviderLifecycleOperation(operation))
     ) {
       const contractSha256 = await executionContractDigest(entry);
       let scope: unknown;
