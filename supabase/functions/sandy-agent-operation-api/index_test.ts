@@ -2,6 +2,7 @@ import { createAgentOperationHandler } from "./index.ts";
 import { agentOperationContracts } from "../_shared/sandy-agent-operations/contracts.ts";
 import { authenticatePortalUser, authenticateRuntime, bindRuntimeTask, AgentPrincipal } from "../_shared/sandy-agent-operations/identity.ts";
 import { AgentServices, executeAgentOperation, executeRuntimeOperation } from "../_shared/sandy-agent-operations/service.ts";
+import {bindRuntimeConnectionPreflight} from "../_shared/sandy-agent-operations/runtime_connection_preflight.ts";
 
 const CUSTOMER = "10000000-0000-4000-8000-000000000001";
 const FOREIGN = "10000000-0000-4000-8000-000000000002";
@@ -107,6 +108,15 @@ Deno.test("a revoked voice source prevents the next operation even after princip
   const principal=await bindRuntimeTask(proof,db,{taskId:TASK,customerId:CUSTOMER,channel:"voice",requestId:"request_123456"});assert(principal);
   const result=await executeAgentOperation(principal,"gmail.messages.search",{query:"test"},services(db));
   equal(result.status,403);equal(result.body.error,"voice_source_authorization_expired_or_revoked");equal(result.body.executed,false);equal(db.tables.sandy_agent_operation_audit.length,0);
+});
+Deno.test("read-only runtime connection inspection reaches the provider but never schedules discrepancy repair",async()=>{
+ const db=new Db();db.tables.sandy_agent_tasks[0].plan={execution_mode:"read_only_assessment"};const principal=await runtime(db);
+ const cap=bindRuntimeConnectionPreflight(principal,{channel:"web",requestId:"request_123456",connections:[{connected_account_id:"acct_mine",toolkit_slug:"gmail",company_id:null,status:"ACTIVE"}],workspaceNames:new Map(),connectionError:null,requestedService:null});
+ let calls=0;const deps=services(db,(async()=>{calls++;return Response.json({items:[],next_cursor:null});}) as typeof fetch);
+ deps.connectionPreflight=cap;deps.autoImproveKey="fixture";deps.defer=()=>{throw Error("must not schedule diagnosis");};
+ const result=await executeRuntimeOperation(principal,"agent.runtime.connections.inspect",{},deps,"inspect-fixture");
+ equal(calls,1);equal(result.mismatches,1);equal(result.findings_recorded,0);equal(result.diagnosis_requests_scheduled,0);equal(db.tables.sandy_supervisor_findings?.length||0,0);
+ equal(db.tables.sandy_agent_operation_audit.length,1);
 });
 
 Deno.test("forged principals, serialized worker grants and mismatched task tenants cannot execute", async () => {
