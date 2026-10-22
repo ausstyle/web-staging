@@ -1,0 +1,60 @@
+{
+  "observed_at": "2026-10-22T17:43:43.286782+00:00",
+  "evidence_file": "docs/sandy-api/bounded-guest-policy-release-evidence-20261022.json",
+  "evidence_sha256": "e0a9bcb4fc874a3232e7d1b1ebc0363d7f5e96d7bc2662eec25496912e55198b",
+  "independent_GitHub_content_match": true,
+  "operations": [
+    {
+      "operation": "github.repos.get",
+      "handler": "sandy-provider-operation-api",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "verified": true,
+      "last_verified_at": "2026-10-22 17:43:41.929589+00",
+      "evidence": {
+        "admission_ids": [
+          "ec5fbd68-f621-45c2-b70a-03d685a3038f"
+        ],
+        "evidence_file": "docs/sandy-api/bounded-guest-policy-release-evidence-20261022.json",
+        "evidence_sha256": "e0a9bcb4fc874a3232e7d1b1ebc0363d7f5e96d7bc2662eec25496912e55198b",
+        "handler_version": 29,
+        "observation_type": "independently_matched_GitHub_repository_read",
+        "control_migration": "20261022173000",
+        "independent_readback": true,
+        "VM_execution_verified": false,
+        "whole_family_accepted": false,
+        "evidence_source_commit": "f20642530a96dd2f30e3a6763664ca83ab04eb7b",
+        "control_release_source_commit": "11636b525119327ce794f87975c291c24232db35",
+        "MCP_end_to_end_execution_verified": true
+      }
+    },
+    {
+      "operation": "gcp.vm.agent.status",
+      "handler": "sandy-guest-operation-api",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "verified": true,
+      "last_verified_at": "2026-10-22 17:43:43.178034+00",
+      "evidence": {
+        "admission_ids": [
+          "324480a6-92a6-4f38-8c07-98666a5b7cb5",
+          "1e250d79-5c59-44dd-ba1d-9f8628f407cf"
+        ],
+        "evidence_file": "docs/sandy-api/bounded-guest-policy-release-evidence-20261022.json",
+        "evidence_sha256": "e0a9bcb4fc874a3232e7d1b1ebc0363d7f5e96d7bc2662eec25496912e55198b",
+        "handler_version": 17,
+        "observation_type": "independently_matched_Sandy_enrollment_read",
+        "control_migration": "20261022173000",
+        "independent_readback": true,
+        "VM_execution_verified": false,
+        "whole_family_accepted": false,
+        "evidence_source_commit": "f20642530a96dd2f30e3a6763664ca83ab04eb7b",
+        "control_release_source_commit": "11636b525119327ce794f87975c291c24232db35",
+        "MCP_end_to_end_execution_verified": true
+      }
+    }
+  ],
+  "flags_promoted": false,
+  "new_registry_operations": 0,
+  "VM_acceptance": false
+}

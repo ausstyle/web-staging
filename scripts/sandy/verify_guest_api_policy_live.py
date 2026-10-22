@@ -7,7 +7,7 @@ prints or persists an access token, refresh token, OTP or service credential.
 """
 from pathlib import Path
 import argparse, base64, datetime, hashlib, json, uuid
-from engineering_runtime import EngineeringRuntime, BASE, EMAIL
+from engineering_runtime import EngineeringRuntime, BASE, EMAIL, MANAGEMENT
 
 def main():
     parser = argparse.ArgumentParser(description='Verify isolated normal Auth session expiry and renewal through production Sandy MCP; no VM commands.')
@@ -21,11 +21,20 @@ def main():
     anon = r._api_keys()['anon']
     service = r._api_keys()['service_role']
     sessions = []
-    d = {'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'deployment_migration': '20261022170000', 'source_commit': 'b183486fdd64209eeedfb007b7cc37b07cdc4ed9', 'normal_Supabase_Auth': True, 'personal_Controller_token_used': False, 'service_key_used_as_MCP_session': False, 'calls': [], 'complete': False, 'VM_commands_executed': 0}
+    d = {'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'minimum_fix_migration': '20261022170000', 'fix_origin_source_commit': 'b183486fdd64209eeedfb007b7cc37b07cdc4ed9', 'normal_Supabase_Auth': True, 'personal_Controller_token_used': False, 'service_key_used_as_MCP_session': False, 'calls': [], 'complete': False, 'VM_commands_executed': 0}
+
+    status, metadata = r._http('GET', MANAGEMENT + '/functions/sandy-guest-operation-api', r._management)
+    assert status == 200 and metadata.get('status') == 'ACTIVE' and metadata.get('verify_jwt') is True
+    d['observed_guest_release'] = {key: metadata[key] for key in ('version', 'status', 'verify_jwt')}
+    d['observed_SQL_sources'] = r._sql(
+        "SELECT proname,encode(extensions.digest(prosrc,'sha256'),'hex') source_sha256 FROM pg_proc "
+        "WHERE pronamespace='public'::regnamespace AND proname IN "
+        "('sandy_guest_admission_current','sandy_engineering_resolve_identity') ORDER BY proname", True)
+    assert len(d['observed_SQL_sources']) == 2
 
     def save():
         path.write_text(json.dumps(d, indent=2) + '\n')
-        path.chmod(384)
+        path.chmod(0o600)
 
     def rpc(name, body):
         status, data = r._http('POST', BASE + '/rest/v1/rpc/' + name, service, body, service)

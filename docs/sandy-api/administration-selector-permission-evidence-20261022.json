@@ -1,0 +1,21 @@
+{
+  "observations": [
+    {
+      "attempted_operation": "GET /repos/ausstyle/web-staging/actions/variables",
+      "HTTP_status": 403,
+      "error_message": "Resource not accessible by integration",
+      "read_succeeded": false,
+      "credential_values_printed": false
+    },
+    {
+      "attempted_operation": "GET /repos/ausstyle/web-staging/environments/sandy-production/variables",
+      "HTTP_status": 403,
+      "error_message": "Resource not accessible by integration",
+      "read_succeeded": false,
+      "credential_values_printed": false
+    }
+  ],
+  "no_GCP_identity_inferred_from_unreadable_configuration": true,
+  "channel": "authenticated_native_GitHub_CLI_administrative_configuration_inspection",
+  "MCP_execution_evidence": false
+}

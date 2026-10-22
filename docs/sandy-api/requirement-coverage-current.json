@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-22T15:59:08.624649+00:00",
+  "generated_at_utc": "2026-10-22T17:34:13.070078+00:00",
   "summary": {
     "original_families": 161,
     "fully_accepted_families": 0,
@@ -32,7 +32,7 @@
   "parts": [
     {
       "file": "requirement-coverage-current-part-1.json",
-      "sha256": "8dc5c46a93b974e516e66a7cef24640d5d50b6150360834389325ca0ddc06470",
+      "sha256": "ace43e6e31d23514ba15bf0a4d92b68c914de76f1521621881705c9f8b44ab45",
       "rows": 54
     },
     {
@@ -47,8 +47,8 @@
     }
   ],
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
-  "scope_disposition_sha256": "f0b4607612262bf9cad60c1e8510a05403b7d76da9386eebfa8ad8b3650e1500",
-  "full_reconciliation_snapshot_sha256": "265ffb065ffa2b97f6ddb832694777f4189c994dda12166ec094b21a5e198cd0",
+  "scope_disposition_sha256": "383def6880536468de9ca0011e339679984dc5f82f5d20c17694d9608816531f",
+  "full_reconciliation_snapshot_sha256": "4c397cf22fe5cd3ef96bb0d431042a840074cdb214625d9a6901245557c9b485",
   "original_required_mapping_archive": "requirement-coverage-161.json",
   "required_mapping_archive_is_historical_metadata": true,
   "current_MCP_evidence_files": [
@@ -115,5 +115,11 @@
       "required_authority": "An authorized repository/GitHub App administrator must inspect required repository Secrets:read permission and any organization restrictions, granting only a missing permission where authorized. The exact cause beyond the genuine provider403 has not been independently inspected. Expired shell GH_TOKEN is separate; verified MCP source publication continues.",
       "software_work_remains": true
     }
-  ]
+  ],
+  "latest_control_release_evidence": {
+    "file": "bounded-guest-policy-release-evidence-20261022.json",
+    "sha256": "e0a9bcb4fc874a3232e7d1b1ebc0363d7f5e96d7bc2662eec25496912e55198b",
+    "guest_API_version": 17,
+    "whole_family_acceptance": false
+  }
 }
