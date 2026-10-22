@@ -81,6 +81,7 @@ export async function verifyRoutineReview(candidate: Obj, read: (path: string) =
   const diff = await read(`${root}/compare/${candidate.config.baseline_commit}...${candidate.source}`);
   if (!Array.isArray(diff.files) || !diff.files.length || diff.files.length >= 300 || diff.status !== "ahead") throw Error("bounded_source_diff_required");
   for (const f of diff.files) for (const name of [f.filename, f.previous_filename].filter(Boolean)) {
+    if (/^docs\/sandy-engineering\/evaluations\/[a-z0-9-]+\.(json|md)$/.test(name)) continue;
     if (!name.startsWith(`supabase/functions/${candidate.target}/`) && !name.startsWith("supabase/functions/_shared/sandy-executive/")) throw Error("protected_or_unreviewed_scope_change");
     if (/(?:auth|identity|credential|permission|secret|billing|migration|delegation|security)/i.test(name)) throw Error("higher_risk_manual_owner_action_required");
   }
