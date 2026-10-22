@@ -9,7 +9,6 @@ on:
       - 'scripts/sandy/verify_mcp_candidate*'
       - 'supabase/functions/_shared/sandy_engineering_session*'
       - 'supabase/functions/sandy-engineering-runtime/**'
-      - '.github/workflows/sandy-engineering-mcp-deploy.yml'
   pull_request:
     paths:
       - 'services/sandy-engineering-mcp/**'
@@ -26,6 +25,16 @@ on:
         required: true
         default: true
         type: boolean
+      reuse_run_id:
+        description: Existing release run to accept without building or deploying another candidate
+        required: false
+        default: ''
+        type: string
+      reuse_run_attempt:
+        description: Attempt that deployed the existing candidate
+        required: false
+        default: ''
+        type: string
 permissions:
   contents: read
   id-token: write
@@ -48,6 +57,8 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           python3 ../../scripts/sandy/sync_mcp_transport.py --check
           npm test
+      - name: Validate existing-candidate reconciliation guards
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_mcp_candidate_reconciliation.py' -v
   deploy:
     if: ${{ github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && !inputs.dry_run) }}
     needs: verify
@@ -55,9 +66,40 @@ jobs:
     environment: sandy-production
     permissions:
       contents: read
+      actions: read
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate candidate reuse inputs
+        env:
+          SOURCE_RUN_ID: ${{ inputs.reuse_run_id }}
+          SOURCE_RUN_ATTEMPT: ${{ inputs.reuse_run_attempt }}
+        run: |
+          python3 - <<'PY'
+          import os
+          if bool(os.environ['SOURCE_RUN_ID']) != bool(os.environ['SOURCE_RUN_ATTEMPT']):
+              raise SystemExit('Both existing release run and attempt are required together')
+          PY
+      - name: Select the preserved release artifact
+        id: existing
+        if: ${{ inputs.reuse_run_id != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ inputs.reuse_run_id }}
+          SOURCE_RUN_ATTEMPT: ${{ inputs.reuse_run_attempt }}
+        run: >-
+          python3 scripts/sandy/reconcile_mcp_candidate.py select
+          --output-dir "$RUNNER_TEMP/sandy-mcp-source"
+      - uses: actions/download-artifact@v4
+        if: ${{ inputs.reuse_run_id != '' }}
+        with:
+          artifact-ids: ${{ steps.existing.outputs.artifact_id }}
+          run-id: ${{ inputs.reuse_run_id }}
+          github-token: ${{ github.token }}
+          path: ${{ runner.temp }}/sandy-mcp-release
+          merge-multiple: true
       - name: Validate release configuration
         env:
           DEPLOYMENT_ENABLED: ${{ vars.PRODUCTION_DEPLOYMENT_ENABLED }}
@@ -75,7 +117,17 @@ jobs:
           workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
           service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
+      - name: Reconcile existing candidate against Google Cloud without mutation
+        if: ${{ inputs.reuse_run_id != '' }}
+        env:
+          SOURCE_RUN_ID: ${{ inputs.reuse_run_id }}
+          SOURCE_RUN_ATTEMPT: ${{ inputs.reuse_run_attempt }}
+        run: >-
+          python3 scripts/sandy/reconcile_mcp_candidate.py verify
+          --output-dir "$RUNNER_TEMP/sandy-mcp-source"
+          --release-dir "$RUNNER_TEMP/sandy-mcp-release"
       - name: Preserve current revision and deploy a candidate without changing traffic
+        if: ${{ inputs.reuse_run_id == '' }}
         env:
           PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
         run: |
@@ -152,7 +204,8 @@ jobs:
           deno-version: '2.9.6'
       - name: Verify candidate through normal Auth, MCP and the real provider
         env:
-          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          GITHUB_SHA: ${{ steps.existing.outputs.source_commit || github.sha }}
         run: >-
           deno run --allow-env --allow-net --allow-read --allow-write
           scripts/sandy/verify_mcp_candidate.ts
