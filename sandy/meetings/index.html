@@ -47,7 +47,7 @@ const db=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable
 const idle=installSandyIdleLock(db.auth,{redirect:"../app/?locked=1"});
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-video-api";
 const $=id=>document.getElementById(id);
-let room=null,meetingId=null,owner=false,inviteToken=null;const decoder=new TextDecoder();let previewStream=null,pendingJoin=null;let recognizer=null;let captionsOn=false;let transcriptOn=false;let sandyPeer=null,sandyInput=null,sandyOutput=null,sandyPublished=null,sandyAudio=null,sandyEvents=null;let sandyWorkspaceAllowed=false;
+let room=null,meetingId=null,owner=false,inviteToken=null;const decoder=new TextDecoder();let previewStream=null,pendingJoin=null;let recognizer=null;let captionsOn=false;let transcriptOn=false;let sandyPeer=null,sandyInput=null,sandyOutput=null,sandyPublished=null,sandyAudio=null,sandyEvents=null;let sandyWorkspaceAllowed=false;let sandyMixer=null,sandyMixDestination=null;const sandyConsents=new Set();const sandyAudioSources=new Map();
 const hash=new URLSearchParams(location.hash.replace(/^#/,""));
 const guestMeeting=hash.get("meeting"),guestInvite=hash.get("invite"),hostMeeting=hash.get("host"),sandyRecipientMeeting=hash.get("user");const inCallWindow=new URLSearchParams(location.search).has("call");let transferWindow=null;
 function notice(v){const text=String(v||"");$("status").textContent=text==="livekit_credentials_not_configured"?"Video connection requires administrator configuration. The LiveKit API key and secret must be set in Sandy Supabase Edge Function secrets. Meeting records are available, but joining is temporarily unavailable.":text;$("status").classList.toggle("error",Boolean(text));if(text==="livekit_credentials_not_configured"){$("serviceStatus").textContent="Setup required";$("serviceStatus").classList.add("offline")}}
@@ -100,9 +100,17 @@ function message(name,value,mine=false){
 function attachParticipant(participant){
  for(const publication of participant.trackPublications.values()){if(publication.track)attachTrack(publication.track,participant.identity);}
 }
+function addConsentedAudio(track,identity){
+ if(!sandyMixer||!sandyMixDestination||!sandyConsents.has(identity)||!track?.mediaStreamTrack||track.kind!==Track.Kind.Audio||track.isLocal||sandyAudioSources.has(track.sid))return;
+ try{const src=sandyMixer.createMediaStreamSource(new MediaStream([track.mediaStreamTrack]));src.connect(sandyMixDestination);sandyAudioSources.set(track.sid,src)}catch(e){console.warn("Sandy audio mix unavailable",e)}
+}
+async function askRoomConsent(){
+ if(!room)return;
+ for(const peer of room.remoteParticipants.values()){if(!sandyConsents.has(peer.identity))await room.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"sandy_ai_consent_request"})),{reliable:true,destinationIdentities:[peer.identity]})}
+}
 function attachTrack(track,identity){
  if(track.kind!==Track.Kind.Video && track.kind!==Track.Kind.Audio)return;
- if(track.kind===Track.Kind.Audio){if(!track.isLocal){const audio=track.attach();audio.autoplay=true;$("tiles").append(audio)}return;}
+ if(track.kind===Track.Kind.Audio){if(!track.isLocal){const audio=track.attach();audio.autoplay=true;$("tiles").append(audio);addConsentedAudio(track,identity)}return;}
  const id="track-"+identity+"-"+track.sid;
  if(document.getElementById(id))return;
  const box=document.createElement("div");box.className="tile";box.id=id;const video=track.attach();video.autoplay=true;video.playsInline=true;const name=document.createElement("label");name.textContent=identity.startsWith("host-")?"Host":"Participant";box.append(video,name);$("tiles").append(box);if(!track.isLocal&&track.setVideoQuality)track.setVideoQuality("high");
@@ -139,10 +147,10 @@ async function join(id,isOwner,invite,display_name){
  meetingId=id;owner=isOwner;inviteToken=invite||null;$("end").classList.toggle("hide",!isOwner);$("invite").classList.toggle("hide",!isOwner);$("copyLink").classList.toggle("hide",!isOwner);$("whatsappInvite").classList.toggle("hide",!isOwner);$("transcriptToggle").classList.toggle("hide",!isOwner);$("summary").classList.toggle("hide",!isOwner);$("sandyAI").classList.toggle("hide",!isOwner);$("listing").classList.add("hide");$("guest").classList.add("hide");$("call").classList.remove("hide");$("create").classList.add("hide");document.body.classList.add("joining-meeting");requestAnimationFrame(()=>window.scrollTo(0,0));$("calltitle").textContent=response.title;
  room=new Room({adaptiveStream:true,dynacast:true,videoCaptureDefaults:{resolution:{width:1280,height:720},frameRate:30},publishDefaults:{simulcast:true,videoCodec:"vp8",videoEncoding:{maxBitrate:2500000,maxFramerate:30},stopMicTrackOnMute:false}});
  room.on(RoomEvent.TrackSubscribed,(track,publication,participant)=>attachTrack(track,participant.identity));
- room.on(RoomEvent.TrackUnsubscribed,track=>track.detach().forEach(el=>el.remove()));
- room.on(RoomEvent.ParticipantConnected,p=>{attachParticipant(p);roster()});
- room.on(RoomEvent.ParticipantDisconnected,()=>roster());
- room.on(RoomEvent.DataReceived,(payload,participant)=>{try{const m=JSON.parse(decoder.decode(payload));if(m.type==="chat"&&typeof m.text==="string"&&m.text.length<=1000)message(participant?.name||"Participant",m.text)}catch{}});
+ room.on(RoomEvent.TrackUnsubscribed,track=>{track.detach().forEach(el=>el.remove());const source=sandyAudioSources.get(track.sid);if(source){source.disconnect();sandyAudioSources.delete(track.sid)}});
+ room.on(RoomEvent.ParticipantConnected,p=>{attachParticipant(p);roster();if(sandyPeer)void askRoomConsent()});
+ room.on(RoomEvent.ParticipantDisconnected,p=>{sandyConsents.delete(p.identity);roster()});
+ room.on(RoomEvent.DataReceived,(payload,participant)=>{try{const m=JSON.parse(decoder.decode(payload));if(m.type==="sandy_ai_consent_request"){void (async()=>{const consent=await modal({title:"Allow Sandy AI to hear you?",description:"The host has invited Sandy AI to this room. If you consent, your microphone audio will be sent to OpenAI for live conversation and transcription. You can decline and remain in the meeting.",confirm:"I consent",input:false});await room?.localParticipant.publishData(new TextEncoder().encode(JSON.stringify({type:"sandy_ai_consent_reply",consent:!!consent})),{reliable:true,destinationIdentities:[participant.identity]})})();return}if(m.type==="sandy_ai_consent_reply"&&owner&&sandyPeer){if(m.consent===true){sandyConsents.add(participant.identity);for(const pub of participant.trackPublications.values()){if(pub.track)addConsentedAudio(pub.track,participant.identity)}$("callStatus").textContent=participant.name+" consented to Sandy AI listening."}else{$("callStatus").textContent=participant.name+" declined Sandy AI listening."}return}if(m.type==="chat"&&typeof m.text==="string"&&m.text.length<=1000)message(participant?.name||"Participant",m.text)}catch{}});
  room.on(RoomEvent.Disconnected,()=>{$("callStatus").textContent="Disconnected from meeting"});room.on(RoomEvent.ConnectionQualityChanged,()=>updateQuality());
  try{
  await room.connect(response.server_url,response.token);
@@ -160,7 +168,7 @@ async function stopSandyAI(){
  sandyPublished=null;
  try{sandyEvents?.close()}catch{}sandyEvents=null;sandyWorkspaceAllowed=false;try{peer?.close()}catch{}
  try{sandyInput?.getTracks().forEach(t=>t.stop())}catch{}
- sandyInput=null;
+ sandyInput=null;for(const x of sandyAudioSources.values()){try{x.disconnect()}catch{}}sandyAudioSources.clear();sandyConsents.clear();try{await sandyMixer?.close()}catch{}sandyMixer=null;sandyMixDestination=null;
  try{sandyOutput?.getTracks().forEach(t=>t.stop())}catch{}
  sandyOutput=null;
  try{sandyAudio?.remove()}catch{}
@@ -171,7 +179,7 @@ async function stopSandyAI(){
 async function startSandyAI(){
  if(sandyPeer){await stopSandyAI();$("callStatus").textContent="Sandy AI left the call.";return}
  if(!owner||!room){$("callStatus").textContent="The host must join the room before inviting Sandy AI.";return}
- const consent=await modal({title:"Invite Sandy AI into this call?",description:"Sandy will hear your microphone and respond in real time. Other participants can hear her. With your permission Sandy may also read your current workspace overview to answer questions about your Sandy tasks and activity. She cannot send messages, modify records or execute infrastructure changes through this call. OpenAI processes the voice and any requested workspace context.",confirm:"Invite Sandy AI",input:false});
+ const consent=await modal({title:"Invite Sandy AI into this call?",description:"Sandy will hear your microphone and respond in real time. Other participants will be individually asked for consent before their audio is shared with Sandy. Other participants can hear her. With your permission Sandy may also read your current workspace overview to answer questions about your Sandy tasks and activity. She cannot send messages, modify records or execute infrastructure changes through this call. OpenAI processes the voice and any requested workspace context.",confirm:"Invite Sandy AI",input:false});
  if(!consent)return;
  sandyWorkspaceAllowed=true;
  const button=$("sandyAI");button.disabled=true;button.textContent="Connecting Sandy…";
@@ -179,6 +187,7 @@ async function startSandyAI(){
   const session=await api("sandy_live_session",{meeting_id:meetingId,consent:true});
   const audioStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   sandyInput=audioStream;
+  sandyMixer=new AudioContext();sandyMixDestination=sandyMixer.createMediaStreamDestination();sandyMixer.createMediaStreamSource(audioStream).connect(sandyMixDestination);await sandyMixer.resume();
   const peer=new RTCPeerConnection();sandyPeer=peer;
   sandyEvents=peer.createDataChannel("oai-events");
   const liveLines=new Map();
@@ -235,7 +244,8 @@ async function startSandyAI(){
   sandyEvents.onopen=()=>{$("callStatus").textContent="Sandy connected · live transcript starting";
     sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"}}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
   };
-  for(const track of audioStream.getAudioTracks())peer.addTrack(track,audioStream);
+  for(const track of sandyMixDestination.stream.getAudioTracks())peer.addTrack(track,sandyMixDestination.stream);
+  await askRoomConsent();
   peer.ontrack=async event=>{
    const track=event.track;
    const stream=new MediaStream([track]);sandyOutput=stream;
