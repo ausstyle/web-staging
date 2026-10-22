@@ -223,14 +223,22 @@ async function startSandyAI(){
       sandyEvents.send(JSON.stringify({type:"response.create"}));
     }
   }
+  let sandyBusy=false;
   sandyEvents.onmessage=event=>{
     let msg;try{msg=JSON.parse(event.data)}catch{return}
     const type=String(msg.type||"");
-    if(type==="response.function_call_arguments.done"){void handleSandyTool(msg);
+    if(type==="response.created"){sandyBusy=true;}else if(type==="response.done"){sandyBusy=false;}else if(type==="response.function_call_arguments.done"){void handleSandyTool(msg);
     }else if(type==="conversation.item.input_audio_transcription.delta"){
       renderLive("host-"+(msg.item_id||"current"),"Room audio",String(msg.delta||""),true);
     }else if(type==="conversation.item.input_audio_transcription.completed"){
-      renderLive("host-"+(msg.item_id||crypto.randomUUID()),"Room audio",String(msg.transcript||""));
+      const speech=String(msg.transcript||"");
+      renderLive("host-"+(msg.item_id||crypto.randomUUID()),"Room audio",speech);
+      // Do not answer ordinary meeting discussion; only direct invocations.
+      const directlyAddressed=/(?:^|[.!?;,\\s])(?:hey\\s+|hi\\s+|okay\\s+|ok\\s+)?sandy\\b[,:!?\\s-]*/i.test(speech);
+      if(directlyAddressed&&!sandyBusy&&sandyEvents?.readyState==="open"){
+        sandyBusy=true;
+        sandyEvents.send(JSON.stringify({type:"response.create",response:{instructions:"The preceding request addressed Sandy explicitly. Reply briefly and directly in a brisk natural speaking style."}}));
+      }
     }else if(type==="conversation.item.input_audio_transcription.failed"){
       $("callStatus").textContent="Sandy transcription: "+String(msg.error?.message||"Unable to transcribe speech");
     }else if(type==="response.output_audio_transcript.delta"||type==="response.audio_transcript.delta"){
@@ -242,7 +250,7 @@ async function startSandyAI(){
     }
   };
   sandyEvents.onopen=()=>{$("callStatus").textContent="Sandy connected · live transcript starting";
-    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"}}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
+    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{speed:1.2}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
   };
   for(const track of sandyMixDestination.stream.getAudioTracks())peer.addTrack(track,sandyMixDestination.stream);
   await askRoomConsent();
