@@ -732,3 +732,21 @@ Deno.test("bulk secrets preserve the exact approved JSON array and accept the re
   const result = await response.text();
   assertEquals(result.includes("fixture-value-not-a-credential"), false);
 });
+
+Deno.test("shared projection accepts nullable arrays while retaining nested credential suppression and bounds", () => {
+  const schema = {
+    type: ["array", "null"],
+    maxItems: 1,
+    items: {
+      type: "object",
+      properties: { id: { type: "integer" } },
+      additionalProperties: false,
+    },
+  };
+  assertEquals(
+    projectValue([{ id: 1, secret: "PRIVATE" }, { id: 2 }], schema, {}),
+    [{ id: 1 }],
+  );
+  assertEquals(projectValue(null, schema, {}), null);
+  assertThrows(() => projectValue([], { type: "object", properties: {} }, {}));
+});

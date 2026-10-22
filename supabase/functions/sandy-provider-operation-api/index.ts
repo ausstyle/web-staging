@@ -274,7 +274,10 @@ export function projectValue(
   }
   if (raw === null) return null;
   if (Array.isArray(raw)) {
-    if (schema.type !== "array") {
+    if (
+      schema.type !== "array" &&
+      !(Array.isArray(schema.type) && schema.type.includes("array"))
+    ) {
       throw new Error("provider_projection_mismatch");
     }
     return raw.slice(0, Math.min(schema.maxItems ?? 100, 100)).map((v) =>
