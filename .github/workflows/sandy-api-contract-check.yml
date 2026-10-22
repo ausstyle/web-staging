@@ -16,6 +16,8 @@ on:
       - 'supabase/functions/sandy-engineering-runtime/**'
       - 'supabase/functions/sandy-engineering-control/gcp_admin_read*'
       - 'scripts/sandy/verify_mcp_candidate*'
+      - 'scripts/sandy/existing_mcp_candidate*'
+      - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
@@ -36,6 +38,8 @@ on:
       - 'supabase/functions/sandy-engineering-runtime/**'
       - 'supabase/functions/sandy-engineering-control/gcp_admin_read*'
       - 'scripts/sandy/verify_mcp_candidate*'
+      - 'scripts/sandy/existing_mcp_candidate*'
+      - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
@@ -69,6 +73,7 @@ jobs:
           supabase/functions/sandy-engineering-runtime/
           supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts
           scripts/sandy/verify_mcp_candidate_test.ts
+          scripts/sandy/existing_mcp_candidate_test.ts
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
