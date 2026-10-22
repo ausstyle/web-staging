@@ -16,7 +16,7 @@ export async function loadAmendmentRelease(fetcher=fetch){
   await sha256(d.standing_declaration)!==d.declaration_sha256)throw Error('Amendment B release pins are invalid.');
  const file=await fetcher(d.manifest_url,{cache:'no-store',redirect:'error'});
  if(!file.ok)throw Error('Pinned Amendment B manifest is unavailable.');
- const text=await file.text();if(await sha256(text)!==d.manifest_sha256||JSON.parse(text).source_commit!==d.source_commit)throw Error('Pinned Amendment B manifest does not match.');
+ const text=await file.text(),manifest=JSON.parse(text);if(await sha256(text)!==d.manifest_sha256||manifest.source_commit!==d.source_commit||manifest.standing_declaration_sha256!==d.declaration_sha256)throw Error('Pinned Amendment B manifest does not match.');
  return d;
 }
 export async function registerAmendment(transport,d){

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {sha256,loadAmendmentRelease,registerAmendment,approveAmendment} from './amendment-b-approval.mjs';
 const owner='10000000-0000-4000-8000-000000000001',id='20000000-0000-4000-8000-000000000002';
 async function fixture(){
- const manifest=JSON.stringify({source_commit:'a'.repeat(40)}),decl='{"bounded":true}',source='a'.repeat(40),pin=await sha256(manifest),declarationHash=await sha256(decl);
+ const decl='{"bounded":true}',source='a'.repeat(40),declarationHash=await sha256(decl),manifest=JSON.stringify({source_commit:source,standing_declaration_sha256:declarationHash}),pin=await sha256(manifest);
  const request={action:'register',risk:'high',title:'Install Amendment B standing engineering policy authorization',idempotency_key:'sandy-amendment-b-'+source.slice(0,12),expected_behavior:`Release ${source}; manifest ${pin}`,scope:['sandy-engineering-control','security:standing-engineering-delegation'],regression_rules:['Standing-policy declaration: '+decl]};
  const descriptor={source_commit:source,manifest_sha256:pin,declaration_sha256:declarationHash,standing_declaration:decl,request,manifest_url:'https://raw.githubusercontent.com/ausstyle/web-staging/'+source+'/docs/sandy-engineering/evaluations/p0-amendment-b-source-manifest.json'};
  let account=owner;const current={change:{id,status:'proposed',...request},events:[]},calls=[];
