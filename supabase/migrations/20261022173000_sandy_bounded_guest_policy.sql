@@ -220,6 +220,18 @@ DO $install$ DECLARE definition text; BEGIN
  END IF;');
  EXECUTE definition;
 END $install$;
+-- An exact standing canary is executable evidence-in-progress, not a verified
+-- operation. Keep the legacy approval path closed until actual verification.
+DO $canary$ DECLARE definition text;old text:='AND r.api_exposed=true AND r.verified=true'; BEGIN
+ IF (SELECT encode(extensions.digest(prosrc,'sha256'),'hex') FROM pg_proc
+  WHERE oid='public.sandy_guest_admission_current(uuid,uuid,text,text)'::regprocedure)
+  IS DISTINCT FROM '3a380a9775860261922bbeec00a4cf7cd77e4d9abb84c967a3b1820a59313c47' THEN
+  RAISE EXCEPTION 'standing_guest_canary_preimage_changed';END IF;
+ definition:=pg_get_functiondef('public.sandy_guest_admission_current(uuid,uuid,text,text)'::regprocedure);
+ IF length(definition)-length(replace(definition,old,''))<>length(old) THEN RAISE EXCEPTION 'standing_guest_canary_exact_patch_required';END IF;
+ definition:=replace(definition,old,'AND r.api_exposed=true AND (r.verified=true OR public.sandy_engineering_authorized_admission(a.id,''consumed''))');
+ EXECUTE definition;
+END $canary$;
 DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='gcp.vm.files.download' AND handler='sandy-guest-operation-api' AND is_mutation=false AND error_contract->>'contract_sha256'='50c9490e3ab0d4fba287595c992ee709190950021c82550fcf3b9589be0504f2') THEN RAISE EXCEPTION 'reviewed_guest_contract_required';END IF;END $$;
 INSERT INTO public.sandy_engineering_operation_classes SELECT * FROM jsonb_populate_record(NULL::public.sandy_engineering_operation_classes,'{"operation":"gcp.vm.files.download","provider":"gcp","operation_class":"guest_read","method":"GET","path":"/sandy/guest/files","is_mutation":false,"contract_sha256":"50c9490e3ab0d4fba287595c992ee709190950021c82550fcf3b9589be0504f2","source_path":"supabase/functions/sandy-guest-operation-api/contracts.json"}'::jsonb);
 DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='gcp.vm.files.upload' AND handler='sandy-guest-operation-api' AND is_mutation=true AND error_contract->>'contract_sha256'='32b66e724903eac8058c8e3e1beea78038cc1a23f16c13be13d1500c27b7d392') THEN RAISE EXCEPTION 'reviewed_guest_contract_required';END IF;END $$;

@@ -81,7 +81,7 @@ BEGIN
  VALUES(sid,uid,clock_timestamp(),clock_timestamp(),clock_timestamp()+interval '30 minutes');
  PERFORM public.sandy_engineering_register_session(uid,sid,epoch,clock_timestamp()+interval '30 minutes');
  -- Only component fixtures temporarily expose the source-matched operation.
- UPDATE public.sandy_operation_registry SET api_exposed=true,ai_exposed=true,verified=true WHERE operation='gcp.vm.files.upload';
+ UPDATE public.sandy_operation_registry SET api_exposed=true,ai_exposed=true,verified=false WHERE operation='gcp.vm.files.upload';
  SELECT error_contract->>'contract_sha256' INTO contract FROM public.sandy_operation_registry WHERE operation='gcp.vm.files.upload';
  hash:=encode(extensions.digest(args,'sha256'),'hex');
  result:=public.sandy_engineering_prepare_delegated(uid,sid,epoch,req,'gcp.vm.files.upload',args,contract,scope);

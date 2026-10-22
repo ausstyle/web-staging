@@ -1,14 +1,14 @@
 {
-  "observed_at": "2026-10-22T17:06:01.783529+00:00",
+  "observed_at": "2026-10-22T17:11:05.257947+00:00",
   "kind": "database_boundary_fixtures_full_rollback",
-  "migration_sha256": "09b13a1217ff607c765a8d635758d52b8e5cdafaeba70238ebbbed4cef6275aa",
+  "migration_sha256": "418d82f6a4e787c4affa049b07231b5132057cae19fdfb2157e5f1b29ae29c13",
   "candidate_installed_inside_rollback": true,
   "provider_execution": false,
   "VM_acceptance": false,
   "suites": [
     {
       "name": "sandy_bounded_guest_policy_rollback",
-      "source_sha256": "358edffb3f64b16e4b3f9e9eca700f98a97cd6a41e45538c74bff60e3f5f522d",
+      "source_sha256": "fcc984e57091a54282e26a1a04ed6dcb21297aad795909e97eca5601ea18fe4e",
       "HTTP_status": 201,
       "passed": true,
       "database_assertions": 55,

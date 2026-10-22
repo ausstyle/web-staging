@@ -37,11 +37,18 @@ export function guestRegistryReady(
   row: ObjectValue | null,
   op: GuestOperation,
   ownerVerified: boolean,
+  authorizedByStandingPolicy = false,
 ): boolean {
   return ownerVerified && row?.handler === "sandy-guest-operation-api" &&
     row.api_exposed === true && obj(row.error_contract) &&
     row.error_contract.contract_sha256 === op.contract_sha256 &&
-    (row.verified === true || (op.kind === "status" && op.is_mutation === false));
+    (row.verified === true ||
+      (op.kind === "status" && op.is_mutation === false) ||
+      authorizedByStandingPolicy && (
+          op.kind === "task_status" || op.kind === "queue" &&
+            /^gcp\.vm\.(files\.(upload|download)|packages\.(install|update|remove)|services\.(start|stop|restart|status))$/
+              .test(op.operation)
+        ));
 }
 export type GuestVm = {
   vm_name: string;
@@ -855,11 +862,26 @@ if (import.meta.main) {
           "handler,api_exposed,verified,error_contract",
         ).eq("operation", op.operation).maybeSingle(),
       ]);
+      let standing = false;
+      if (
+        !owner.error && owner.data && !registry.error &&
+        registry.data?.verified !== true && uuid(context.admission_id)
+      ) {
+        // This is an existing server-side policy proof, never a client flag.
+        // Exact actor/request/arguments/scope/contract are checked again by
+        // grant consumption before any task, provider or enrollment effect.
+        const proof = await db.rpc("sandy_engineering_authorized_admission", {
+          p_admission_id: context.admission_id,
+          p_expected_state: "admitted",
+        });
+        standing = !proof.error && proof.data === true;
+      }
       return {
         allowed: !registry.error && guestRegistryReady(
           registry.data,
           op,
           !owner.error && !!owner.data,
+          standing,
         ),
         error: "guest_verified_approval_required",
         http_status: 403,

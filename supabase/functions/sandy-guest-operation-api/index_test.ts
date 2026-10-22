@@ -59,6 +59,32 @@ Deno.test("guest status can be observed before certification; mutations and unau
     );
   }
 });
+Deno.test("only typed standing guest canaries can run before certification", () => {
+  for (const op of Object.values(guestOperations)) {
+    const row = {
+      handler: "sandy-guest-operation-api",
+      api_exposed: true,
+      verified: false,
+      error_contract: { contract_sha256: op.contract_sha256 },
+    };
+    const expected = op.kind === "status" || op.kind === "task_status" ||
+      op.kind === "queue" && /\.(files|packages|services)\./.test(op.operation);
+    assert.equal(
+      guestRegistryReady(row, op, true, true),
+      expected,
+      op.operation,
+    );
+    assert.equal(guestRegistryReady(row, op, false, true), false, op.operation);
+    assert.equal(
+      guestRegistryReady({ ...row, api_exposed: false }, op, true, true),
+      false,
+    );
+    assert.equal(
+      guestRegistryReady({ ...row, error_contract: {} }, op, true, true),
+      false,
+    );
+  }
+});
 const actor = "10000000-0000-4000-8000-000000000001",
   request = "10000000-0000-4000-8000-000000000002",
   grant = "10000000-0000-4000-8000-000000000003",
