@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { candidateUrl, verify, verifyRestCatalogue } from "./verify_mcp_candidate.ts";
+import { candidateUrl, managementRequest, type ManagementEvidence, verify, verifyRestCatalogue } from "./verify_mcp_candidate.ts";
 
 Deno.test("release acceptance uses only the tagged endpoint of the exact preserved Sandy service", () => {
   const before = { service: "sandy-engineering-mcp", project: "elaborate-haven-511518-a5", source_commit_candidate: "a".repeat(40),
@@ -72,4 +72,41 @@ Deno.test("REST acceptance rejects a server that ignores page limits and checks 
     assert.equal(proof.API_REST_operations_observed, 6);
     assert.equal(proof.out_of_scope_description_status, 403);
   } finally { globalThis.fetch = original; }
+});
+
+Deno.test("Management acceptance records exact endpoint and status without provider bodies or credentials", async () => {
+  const credential = "synthetic-secret-never-record", providerSecret = "private-provider-data";
+  for (const [status, message, classification] of [
+    [401, "Invalid access token " + providerSecret, "token_invalid_expired_or_revoked"],
+    [403, "Forbidden " + providerSecret, "authorization_denied"],
+    [429, providerSecret, "rate_limited"], [503, providerSecret, "provider_unavailable"],
+    [400, "column i.missing does not exist " + providerSecret, "database_column_missing"],
+  ] as const) {
+    const evidence: ManagementEvidence[] = [];
+    const transport = (async (url, init) => {
+      assert.equal(url, "https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/api-keys");
+      assert.equal(init?.redirect, "error");
+      assert.equal((init?.headers as Record<string, string>).authorization, "Bearer " + credential);
+      return Response.json({ message, code: providerSecret }, { status });
+    }) as typeof fetch;
+    await assert.rejects(() => managementRequest("/api-keys", credential, evidence, undefined, transport), /engineering_management_request_failed/);
+    assert.equal(evidence[0].http_status, status); assert.equal(evidence[0].classification, classification);
+    assert.equal(JSON.stringify(evidence).includes(credential), false); assert.equal(JSON.stringify(evidence).includes(providerSecret), false);
+  }
+});
+Deno.test("Management acceptance preserves read-only SQL, successful receipts and rejects other paths", async () => {
+  const evidence: ManagementEvidence[] = [];
+  const transport = (async (_url, init) => {
+    assert.equal(init?.method, "POST"); assert.equal(JSON.parse(String(init.body)).read_only, true);
+    return Response.json([{ fixture: true }], { status: 201 });
+  }) as typeof fetch;
+  assert.deepEqual(await managementRequest("/database/query", "synthetic", evidence, { read_only: true, query: "SELECT 1" }, transport), [{ fixture: true }]);
+  assert.equal(evidence[0].classification, "success"); assert.equal(evidence[0].http_status, 201);
+  await assert.rejects(() => managementRequest("/database/query", "synthetic", [], { query: "SELECT 1" }, transport), /contract_invalid/);
+  await assert.rejects(() => managementRequest("/outside" as any, "synthetic", [], undefined, transport), /contract_invalid/);
+  const errors: ManagementEvidence[] = [];
+  await assert.rejects(() => managementRequest("/api-keys", "synthetic", errors, undefined,
+    (async () => { throw Error("synthetic-private-error"); }) as typeof fetch), /engineering_management_request_failed/);
+  assert.equal(errors[0].classification, "transport_unavailable");
+  assert.equal(JSON.stringify(errors).includes("synthetic-private-error"), false);
 });
