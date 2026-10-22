@@ -64,5 +64,31 @@
     "production_shared_session_client_preserved_byte_for_byte": true,
     "published_git_source_commit_not_established": true,
     "all_7_original_module_hashes_captured_privately": true
+  },
+  "controller_publication": {
+    "commit": "54d6d262c9709c33adad139c917241392a68f585",
+    "pages_build_status": "built",
+    "pages_build_checked_at": "2026-10-22T02:35:58Z",
+    "url": "https://ausstyle.github.io/web-staging/sandy/controller/#changes",
+    "actual_owner_registration_observed": false,
+    "registration_occurs_in_real_owner_session_when_panel_opens": true,
+    "normal_owner_click_not_yet_exercised": true,
+    "direct_asset_http_from_runner": "blocked by runner network policy; GitHub Pages build independently verified"
+  },
+  "independent_ci": {
+    "run": "https://github.com/ausstyle/web-staging/actions/runs/39712269318",
+    "head_sha": "a436f39affae41e27f3c26a687da4044d5aee0ab",
+    "status": "completed",
+    "conclusion": "success",
+    "deployment": "skipped in ci_only mode"
+  },
+  "github_mergeability_inconsistency": {
+    "reported_base": "81bb9c7dd8fa3e7df1d05c4718af314a6c00dbde",
+    "local_and_github_compare_behind_by": 0,
+    "github_compare_status": "ahead",
+    "mergeability": "dirty",
+    "normal_update_branch_response": 422,
+    "normal_update_branch_message": "merge conflict between base and head",
+    "no_force_push_or_provider_protection_bypass": true
   }
 }

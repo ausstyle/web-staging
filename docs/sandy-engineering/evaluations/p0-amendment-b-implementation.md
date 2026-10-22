@@ -49,3 +49,18 @@ The newer deployed engineering runtime 14 was independently source-reconciled an
 preserved, including its shared renewable-session client and canonical API routing.
 The new package extends its Control action list without restoring the older runtime
 13 source. The release requires its exact current bundle hash before upload.
+
+The one-click action was published by GitHub Pages at main commit
+`54d6d262c9709c33adad139c917241392a68f585` (build status `built`). The exact latest
+package passed independent [GitHub CI run 39712269318](https://github.com/ausstyle/web-staging/actions/runs/39712269318)
+on `a436f39affae41e27f3c26a687da4044d5aee0ab`; deployment was skipped in CI-only mode.
+No actual Amendment B record was observed before the owner opens the panel.
+The authenticated panel performs that registration automatically, then exposes
+one approval click. This runner does not impersonate that owner to pre-register
+an otherwise out-of-grant high-risk change.
+
+The source branch contains the reported PR base with zero commits behind, also
+confirmed by GitHub Compare. GitHub nevertheless reports `dirty` and its normal
+update-branch API returns HTTP 422 “merge conflict between base and head”. This
+service-state inconsistency is recorded; no history rewrite, force push or
+protection bypass was used to make the flag appear green.

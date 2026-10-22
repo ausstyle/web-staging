@@ -145,12 +145,23 @@
   },
   "current_standing_policy_blockers": [
     {
-      "operation": "authorize_release",
+      "operation": "initial owner approval of the separately scoped Amendment B security change",
+      "status": "ready_in_published_controller",
+      "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+      "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
+      "user_action": "Approve Amendment B in the existing engineering-change panel; registration uses that normal owner session automatically.",
+      "new_secrets_requested": false,
+      "individual_substep_approvals_required": false
+    },
+    {
+      "operation": "existing protected GitHub deployment",
+      "status": "provider_permission_blocked",
+      "workflow": "https://github.com/ausstyle/web-staging/actions/runs/39708487801",
       "http_status": 403,
-      "error": "engineering_control_scope_denied",
-      "reason": "Live workload grant has metadata actions only; no self-expansion permitted. Legitimate administrator policy provisioning is not available to this runner.",
-      "per_change_owner_approval_requested": false,
-      "new_secret_requested": false
+      "provider_error": "Resource not accessible by integration",
+      "source": "GitHub sandy-production environment review and configuration APIs",
+      "intrinsically_mandatory_manual_gate": false,
+      "one_time_administrative_permission_or_policy_change_can_remove_recurring_intervention": true
     }
   ],
   "latest_deadline_source_and_functional_release": "p0-web-deadlines-production-evidence.json",
