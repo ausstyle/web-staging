@@ -95,6 +95,34 @@ Deno.test("GitHub readback mismatch, failure and unsafe target do not verify or 
   assert.equal(refused.verified, false);
   assert.equal(calls, 0);
 });
+Deno.test("GitHub padded base64 with provider trailing newlines verifies actual bytes", async () => {
+  for (
+    const text of [
+      "one!",
+      "two!!",
+      "Sandy engineering fixture machine verified\n",
+    ]
+  ) {
+    const encoded = btoa(text);
+    const result = await verifyGithubReadback(
+      "github.files.update",
+      { ...args, body: { ...args.body, content: encoded } },
+      raw,
+      "PRIVATE",
+      (async () =>
+        Response.json({
+          path,
+          sha: blob,
+          size: text.length,
+          type: "file",
+          encoding: "base64",
+          content: encoded + "\n",
+        })) as typeof fetch,
+    );
+    assert.equal(result.verified, true);
+    if (result.verified) assert.equal(result.proof.byte_length, text.length);
+  }
+});
 Deno.test("GitHub detached commit verification binds message, tree and ordered parents", async () => {
   const args = {
     body: { tree, parents: [parent], message: "isolated fixture" },

@@ -22,13 +22,13 @@ class ReadbackError extends Error {
   }
 }
 function bytes(value: unknown): Uint8Array | null {
-  if (
-    typeof value !== "string" || value.length > 100000 ||
-    !/^[A-Za-z0-9+/\s]*={0,2}$/.test(value)
-  ) return null;
+  if (typeof value !== "string" || value.length > 100000) return null;
+  // GitHub wraps base64 and appends a newline after padding as well as data.
+  const normalized = value.replace(/\s/g, "");
+  if (!/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)) return null;
   try {
     const b = Uint8Array.from(
-      atob(value.replace(/\s/g, "")),
+      atob(normalized),
       (c) => c.charCodeAt(0),
     );
     return b.length <= 65536 ? b : null;
