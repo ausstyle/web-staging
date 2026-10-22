@@ -44,6 +44,17 @@ jobs:
           run-id: '39849886412'
           path: ${{ runner.temp }}/sandy-original-candidate
           merge-multiple: true
+      - name: Retain existing scoped deployment identity restrictions
+        env:
+          PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
+          WIF_PROVIDER: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          DEPLOYER: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test "$PROJECT" = elaborate-haven-511518-a5
+          test -n "$WIF_PROVIDER"
+          test -n "$DEPLOYER"
+          test "$DEPLOYER" != sandy-cloud-administrator@elaborate-haven-511518-a5.iam.gserviceaccount.com
       - uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}

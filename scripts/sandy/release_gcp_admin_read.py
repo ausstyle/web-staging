@@ -53,16 +53,19 @@ def load():
 
 class Installer:
     def __init__(self,out):
-        self.out=out;self.holder='gcp-admin-read-'+uuid.uuid4().hex
+        self.out=out;self.holder='gcp-admin-read-'+uuid.uuid4().hex;self.stage='preflight';self.last_request=None
         self.opener=urllib.request.build_opener(NoRedirect())
     def api(self,method,path,data=None,mime='application/json'):
+        self.last_request={'method':method,'path':path,'http_status':None}
         request=urllib.request.Request(BASE+path,method=method,data=data,headers={'authorization':'Bearer '+os.environ['SANDY_SUPABASE_MANAGEMENT_TOKEN'],'content-type':mime})
         try:
             with self.opener.open(request,timeout=90) as r:
+                self.last_request['http_status']=r.status
                 raw=r.read(32*1024*1024+1)
                 if len(raw)>32*1024*1024:raise Blocked('management_response_size_limit')
                 return raw
         except urllib.error.HTTPError as e:
+            self.last_request['http_status']=e.code
             raise Blocked("management_http_"+str(e.code)+"_no_automatic_retry") from None
         except Exception as e:
             if isinstance(e,Blocked):raise
@@ -109,6 +112,7 @@ def run(r,m,helper,migration,contract,deploy=False):
         private_write(r.out,slug+'.before.body',body);private_write(r.out,slug+'.before.json',json.dumps(meta).encode())
     # A proposed tracking record is not an Owner approval or a standing grant.
     # Authorization is the explicit task + protected GitHub deployment review.
+    r.stage="tracking_record"
     rows=r.sql("""INSERT INTO public.sandy_engineering_changes(title,problem,expected_behavior,change_purpose,feature_improvement,scope,regression_rules,acceptance_criteria,risk,requested_by,idempotency_key,status)
     SELECT 'Install existing protected GCP administrator read path','Existing candidate is accepted but protected API admission is not installed',%s,'SANDY-ENG-0001/0005 source-preserving authorized release','Enable fixed read-only administrator preflight without IAM changes',
     '["sandy-operation-api","sandy-engineering-control"]'::jsonb,'["Preserve all existing modules, Auth checks and grants"]'::jsonb,'["Independent token issuance and fixed IAP policy reads; no promotion before acceptance"]'::jsonb,'high',i.user_id,'gcp-admin-read-release-20261023-v1','proposed'
@@ -126,6 +130,7 @@ def run(r,m,helper,migration,contract,deploy=False):
     try:
         r.sql(f"INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{change}','protected_admin_read_install_started',NULL,{quote(json.dumps({'source_commit':source,'manifest_sha256':digest(MANIFEST.read_bytes()),'github_run_id':os.environ.get('GITHUB_RUN_ID'),'authorization_basis':'explicit_owner_task_and_protected_GitHub_deployment_review','Owner_impersonation':False,'standing_grant_changes':0}))}::jsonb)")
         inspect(r,m,helper)
+        r.stage='install_migrations'
         statements=["BEGIN; SELECT pg_advisory_xact_lock(hashtext('sandy-gcp-admin-read-install')); "]
         for version,name,sql in [('20261022201500','sandy_gcp_admin_read_admission',migration),('20261023001000','sandy_gcp_admin_read_contract',contract)]:
             core=sql.decode().strip();core=core[core.index('BEGIN;')+len('BEGIN;'):]
@@ -135,6 +140,7 @@ def run(r,m,helper,migration,contract,deploy=False):
         r.sql('\n'.join(statements+['COMMIT;']))
         # Additive RPCs remain inert without the authenticated Owner route.
         for slug in [CONTROL,GATEWAY]:
+            r.stage='deploy_'+slug
             r.read(slug,m['functions'][slug])
             held=r.sql(f"SELECT count(*)::integer AS held FROM public.sandy_engineering_component_leases WHERE holder='{r.holder}' AND change_id='{change}' AND expires_at>clock_timestamp()",True)
             if held!=[{'held':2}]:raise Blocked('source_lease_lost')
@@ -142,6 +148,7 @@ def run(r,m,helper,migration,contract,deploy=False):
             meta=json.loads(r.api('GET','/functions/'+slug));body=r.api('GET','/functions/'+slug+'/body')
             private_write(r.out,slug+'.after.json',json.dumps(meta).encode());private_write(r.out,slug+'.after.body',body)
             if meta.get('version')!=m['functions'][slug]['version']+1 or meta.get('verify_jwt')!=m['functions'][slug]['verify_jwt'] or meta.get('status')!='ACTIVE' or original_sources(body)!=files[slug]:raise Blocked('deployment_unknown_outcome_reconcile_no_retry')
+        r.stage='worker_binding'
         # Recheck absence immediately before the one configuration write.
         if any(x.get('name')=='SANDY_GCP_ADMIN_WORKER_URL' for x in json.loads(r.api('GET','/secrets'))):raise Blocked('worker_binding_changed_before_dispatch')
         r.api('POST','/secrets',json.dumps([{'name':'SANDY_GCP_ADMIN_WORKER_URL','value':WORKER}]).encode())
@@ -166,7 +173,7 @@ def verify_fixture(r):
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--deploy',action='store_true');parser.add_argument('--evidence-dir',type=Path,required=True);a=parser.parse_args()
     try:
-        m,h,sql,contract=load();print(json.dumps(run(Installer(a.evidence_dir),m,h,sql,contract,a.deploy)));return 0
+        m,h,sql,contract=load();installer=Installer(a.evidence_dir);result=run(installer,m,h,sql,contract,a.deploy);print("::notice title=Protected administrator source release::"+json.dumps(result));return 0
     except Exception as error:
-        print(json.dumps({'ok':False,'error':str(error) if isinstance(error,Blocked) else 'admin_read_install_blocked_or_unknown_outcome','automatic_retry':False,'functional_admin_acceptance_verified':False}));return 1
+        print('::error title=Protected administrator release stopped::'+json.dumps({'ok':False,'error':str(error) if isinstance(error,Blocked) else 'admin_read_install_blocked_or_unknown_outcome','stage':installer.stage if 'installer' in locals() else 'manifest','last_management_request':installer.last_request if 'installer' in locals() else None,'automatic_retry':False,'functional_admin_acceptance_verified':False}));return 1
 if __name__=='__main__':raise SystemExit(main())
