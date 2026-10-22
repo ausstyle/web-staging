@@ -1,25 +1,56 @@
 name: Sandy engineering-control repair
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [ci_only, deploy]
+        default: ci_only
+        required: true
 permissions:
   contents: read
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Latest source regression and isolated SQL checks
+        run: |
+          deno test --allow-read --allow-env supabase/functions/_shared/sandy-executive/ supabase/functions/sandy-engineering-control/routine_delegation_test.ts supabase/functions/sandy-engineering-control/autonomous_release_test.ts supabase/functions/sandy-engineering-runtime/index_test.ts supabase/functions/sandy-engineering-control/workload_test.ts sandy/controller/session-transport.test.mjs sandy/controller/engineering-releases.test.mjs sandy/controller/authorized-deadline-action.test.mjs sandy/controller/authorized-auth-repair-action.test.mjs sandy/controller/amendment-b-approval.test.mjs
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_delegated_runtime_release.py
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_owner_delegation_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/sandy/test_autonomous_delegation_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+      - name: Verify exact approved modules and migration
+        run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -c 'from release_owner_session_repair import candidate; m,files,sql=candidate(); print("Pinned modules verified:",len(files))'
   deploy:
+    concurrency:
+      group: sandy-engineering-control-approved-repair
+      cancel-in-progress: false
+    if: ${{ inputs.mode == 'deploy' }}
+    needs: checks
     runs-on: ubuntu-latest
     environment: sandy-production
     steps:
       - uses: actions/checkout@v4
-      - uses: denoland/setup-deno@v2
         with:
-          deno-version: v2.x
-      - name: Validate source
-        run: deno fmt --check supabase/functions/sandy-engineering-control/index.ts
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Deploy to Sandy
+          fetch-depth: 0
+      - name: Release only the genuinely approved repair
         env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SANDY_SUPABASE_ACCESS_TOKEN }}
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_ACCESS_TOKEN }}
         run: |
-          test -n "$SUPABASE_ACCESS_TOKEN" || { echo "Missing Sandy deployment credential"; exit 1; }
-          supabase functions deploy sandy-engineering-control --project-ref zmqlyygzqoidkcwdysok --no-verify-jwt
+          test -n "$SANDY_SUPABASE_MANAGEMENT_TOKEN" || { echo 'Missing existing deployment credential'; exit 1; }
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 scripts/sandy/release_owner_session_repair.py --deploy --evidence-dir "$RUNNER_TEMP/sandy-approved-owner-repair"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: owner-repair-redacted-receipt
+          path: ${{ runner.temp }}/sandy-approved-owner-repair/redacted-receipt.json
