@@ -197,6 +197,21 @@ Deno.serve(async(req)=>{
   if(error)throw error;if(!data)return reply(409,{error:"invitation_not_pending"},origin);
   return reply(200,{ok:true,meeting_id:data.meeting_id,status},origin);
  }
+ if(action==="sandy_live_session"){
+  const meetingId=String(body.meeting_id||"");
+  if(!/^[a-f0-9-]{36}$/i.test(meetingId))return reply(400,{error:"invalid_meeting"},origin);
+  const {data:meeting,error:meetingError}=await db.from("sandy_video_meetings").select("owner_id,state,title").eq("id",meetingId).maybeSingle();
+  if(meetingError)throw meetingError;
+  if(!meeting||meeting.owner_id!==userId||meeting.state!=="scheduled")return reply(403,{error:"meeting_host_required"},origin);
+  if(body.consent!==true)return reply(403,{error:"explicit_audio_consent_required"},origin);
+  const openai=Deno.env.get("OPENAI_API_KEY");
+  if(!openai)return reply(503,{error:"openai_realtime_not_configured"},origin);
+  const identityHash=await sha(userId!);
+  const response=await fetch("https://api.openai.com/v1/realtime/client_secrets",{method:"POST",headers:{"authorization":"Bearer "+openai,"content-type":"application/json","OpenAI-Safety-Identifier":identityHash},body:JSON.stringify({expires_after:{anchor:"created_at",seconds:90},session:{type:"realtime",model:"gpt-realtime",output_modalities:["audio"],instructions:"You are Sandy, the user's thoughtful, conversational AI assistant joining a live Sandy Rooms meeting by invitation. You are participating via a browser audio bridge. Be concise, natural, helpful, and transparent that you only hear the host's microphone in this initial version. Do not claim to hear other room participants. You must not pretend to have accessed Sandy memory, calendar, or tools you have not been given. Never record or store meeting content."}}),signal:AbortSignal.timeout(12000)});
+  const result=await response.json().catch(()=>({}));
+  if(!response.ok||!result.value)return reply(502,{error:"openai_realtime_session_failed",http:response.status},origin);
+  return reply(200,{ok:true,client_secret:result.value,expires_at:result.expires_at,model:"gpt-realtime"},origin);
+ }
  if(action==="list"){
   const {data,error}=await db.from("sandy_video_meetings").select("id,title,state,starts_at,created_at").eq("owner_id",userId!).order("created_at",{ascending:false}).limit(50);
   if(error)throw error;
