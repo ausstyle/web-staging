@@ -1,0 +1,244 @@
+{
+  "observed_at": "2026-10-22T19:12:25.155062+00:00",
+  "immutable_GitHub_evidence_bytes_match": true,
+  "evidence_commit": "f239b6e05ce326944fcca0d6fdcc5da268d44e5a",
+  "evidence_sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+  "all_verification_flags_and_timestamps_preserved": true,
+  "new_operation_rows": 0,
+  "OS_execution_receipts": [],
+  "operations": [
+    {
+      "operation": "cloud.vm.exec",
+      "api_exposed": false,
+      "ai_exposed": false,
+      "verified": false,
+      "evidence": {
+        "outcome": "deployed_closed_no_MCP_invocation",
+        "evidence_file": "docs/sandy-api/native-transport-foundation-evidence-20261022.json",
+        "guest_version": 18,
+        "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+        "native_version": 1,
+        "evidence_commit": "f239b6e05ce326944fcca0d6fdcc5da268d44e5a",
+        "evidence_sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+        "gateway_version": 57,
+        "actual_MCP_calls": [],
+        "native_discovery": "closed_and_not_delegated",
+        "delegation_version": 6,
+        "OS_execution_verified": false,
+        "whole_family_acceptance": false,
+        "verification_flag_promotion": false,
+        "command_level_authorization_verified": false
+      }
+    },
+    {
+      "operation": "gcp.vm.agent.status",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "verified": true,
+      "evidence": {
+        "outcome": "enrollment_database_observation_verified",
+        "evidence_file": "docs/sandy-api/native-transport-foundation-evidence-20261022.json",
+        "guest_version": 18,
+        "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+        "native_version": 1,
+        "evidence_commit": "f239b6e05ce326944fcca0d6fdcc5da268d44e5a",
+        "evidence_sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+        "gateway_version": 57,
+        "actual_MCP_calls": [
+          {
+            "audit": [
+              {
+                "phase": "admission",
+                "outcome": "admitted",
+                "hash_valid": true
+              },
+              {
+                "phase": "grant",
+                "outcome": "consumed",
+                "hash_valid": true
+              },
+              {
+                "phase": "execution",
+                "outcome": "succeeded",
+                "hash_valid": true
+              }
+            ],
+            "error": null,
+            "executed": true,
+            "arguments": {
+              "vm_name": "sandy-video"
+            },
+            "operation": "gcp.vm.agent.status",
+            "API_status": 200,
+            "admissions": [
+              {
+                "id": "6ce3b2bd-0dba-4be7-8ffc-5ed74434ef20",
+                "state": "succeeded",
+                "operation": "gcp.vm.agent.status",
+                "job_status": "succeeded",
+                "approved_at": null,
+                "approved_by": null,
+                "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+                "delegation_version": 6,
+                "provider_http_status": 200
+              }
+            ],
+            "request_id": "af7826db-e62c-4767-834a-f71af0fa3a95",
+            "remote_OS_execution": false,
+            "result_digest_matches": true,
+            "enrollment_database_match": true
+          }
+        ],
+        "native_discovery": "current_scoped_MCP_read",
+        "delegation_version": 6,
+        "OS_execution_verified": false,
+        "whole_family_acceptance": false,
+        "verification_flag_promotion": false,
+        "command_level_authorization_verified": false
+      }
+    },
+    {
+      "operation": "gcp.vm.ssh.exec",
+      "api_exposed": false,
+      "ai_exposed": false,
+      "verified": false,
+      "evidence": {
+        "outcome": "operation_scope_denied_before_admission",
+        "evidence_file": "docs/sandy-api/native-transport-foundation-evidence-20261022.json",
+        "guest_version": 18,
+        "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+        "native_version": 1,
+        "evidence_commit": "f239b6e05ce326944fcca0d6fdcc5da268d44e5a",
+        "evidence_sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+        "gateway_version": 57,
+        "actual_MCP_calls": [
+          {
+            "error": "engineering_operation_scope_denied",
+            "executed": false,
+            "arguments": {
+              "command": "whoami",
+              "vm_name": "sandy-video",
+              "include_output": true
+            },
+            "operation": "gcp.vm.ssh.exec",
+            "API_status": 403,
+            "admissions": [],
+            "request_id": "6fef3eb1-b830-49b8-a7e0-aee98bfd97b6"
+          }
+        ],
+        "native_discovery": "closed_and_not_delegated",
+        "delegation_version": 6,
+        "OS_execution_verified": false,
+        "whole_family_acceptance": false,
+        "verification_flag_promotion": false,
+        "command_level_authorization_verified": false
+      }
+    },
+    {
+      "operation": "gcp.vm.winrm.exec",
+      "api_exposed": false,
+      "ai_exposed": false,
+      "verified": false,
+      "evidence": {
+        "outcome": "operation_scope_denied_before_admission",
+        "evidence_file": "docs/sandy-api/native-transport-foundation-evidence-20261022.json",
+        "guest_version": 18,
+        "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+        "native_version": 1,
+        "evidence_commit": "f239b6e05ce326944fcca0d6fdcc5da268d44e5a",
+        "evidence_sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+        "gateway_version": 57,
+        "actual_MCP_calls": [
+          {
+            "error": "engineering_operation_scope_denied",
+            "executed": false,
+            "arguments": {
+              "command": "whoami",
+              "vm_name": "sandy-windows",
+              "include_output": true
+            },
+            "operation": "gcp.vm.winrm.exec",
+            "API_status": 403,
+            "admissions": [],
+            "request_id": "4642707d-6aaf-4422-8f5e-db3594e37480"
+          }
+        ],
+        "native_discovery": "closed_and_not_delegated",
+        "delegation_version": 6,
+        "OS_execution_verified": false,
+        "whole_family_acceptance": false,
+        "verification_flag_promotion": false,
+        "command_level_authorization_verified": false
+      }
+    },
+    {
+      "operation": "github.repos.get",
+      "api_exposed": true,
+      "ai_exposed": true,
+      "verified": true,
+      "evidence": {
+        "outcome": "provider_read_independently_verified",
+        "evidence_file": "docs/sandy-api/native-transport-foundation-evidence-20261022.json",
+        "guest_version": 18,
+        "source_commit": "5cb524a860d161c66cab6a1f6831d2e669dc826b",
+        "native_version": 1,
+        "evidence_commit": "f239b6e05ce326944fcca0d6fdcc5da268d44e5a",
+        "evidence_sha256": "d423fa6f0bd2799ceb2edf5276c2bb48304155f30f1147f94d014a940ff69587",
+        "gateway_version": 57,
+        "actual_MCP_calls": [
+          {
+            "audit": [
+              {
+                "phase": "admission",
+                "outcome": "admitted",
+                "hash_valid": true
+              },
+              {
+                "phase": "grant",
+                "outcome": "consumed",
+                "hash_valid": true
+              },
+              {
+                "phase": "execution",
+                "outcome": "succeeded",
+                "hash_valid": true
+              }
+            ],
+            "error": null,
+            "executed": true,
+            "arguments": {},
+            "operation": "github.repos.get",
+            "API_status": 200,
+            "admissions": [
+              {
+                "id": "297c86a6-2241-40f9-8704-2e81378b3687",
+                "state": "succeeded",
+                "operation": "github.repos.get",
+                "job_status": "succeeded",
+                "approved_at": null,
+                "approved_by": null,
+                "result_sha256": "358d852441f72ec1a68e50fa79a37fbe39a201ff70661526da5977412d0daeb8",
+                "delegation_version": 6,
+                "provider_http_status": 200
+              }
+            ],
+            "request_id": "993390b9-2f53-48f2-8a59-67bddd8547dd",
+            "provider_HTTP_status": 200,
+            "result_digest_matches": true,
+            "independent_GitHub_readback": {
+              "id": 1416227508,
+              "name": "web-staging",
+              "full_name": "ausstyle/web-staging"
+            }
+          }
+        ],
+        "native_discovery": "current_scoped_MCP_read",
+        "delegation_version": 6,
+        "OS_execution_verified": false,
+        "whole_family_acceptance": false,
+        "verification_flag_promotion": false,
+        "command_level_authorization_verified": false
+      }
+    }
+  ]
+}
