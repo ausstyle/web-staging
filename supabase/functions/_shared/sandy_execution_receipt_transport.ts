@@ -1,5 +1,6 @@
 /** Metadata around a validated provider response, not a replacement output
  * contract. Only fixed authenticated backend responses supply this header. */
+import { githubMutationSemantics } from "./sandy_github_mutation_semantics.ts";
 export const verifiedExecutionHeader = "x-sandy-verified-execution";
 export type GithubReadbackReason =
   | "github_readback_unsupported"
@@ -49,9 +50,7 @@ export function readVerifiedExecution(
   admission: unknown,
 ): VerifiedExecution | null {
   if (
-    !["github.files.create", "github.files.update", "github.commit"].includes(
-      operation,
-    ) || !uuid(admission)
+    !Object.hasOwn(githubMutationSemantics, operation) || !uuid(admission)
   ) return null;
   const header = response.headers.get(verifiedExecutionHeader);
   if (!header || header.length > 512) return null;

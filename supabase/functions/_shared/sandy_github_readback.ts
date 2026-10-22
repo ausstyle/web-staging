@@ -2,16 +2,15 @@
  * this neither authorizes an operation nor retries a mutation. */
 import { argumentDigest } from "./sandy_api_protocol.ts";
 import type { GithubReadbackReason } from "./sandy_execution_receipt_transport.ts";
+import { githubMutationSemantics } from "./sandy_github_mutation_semantics.ts";
 type Obj = Record<string, unknown>;
 const object = (v: unknown): v is Obj =>
   !!v && typeof v === "object" && !Array.isArray(v);
 const sha = (v: unknown): v is string =>
   typeof v === "string" && /^[a-f0-9]{40}$/.test(v);
-export const githubReadbackOperations = new Set([
-  "github.files.create",
-  "github.files.update",
-  "github.commit",
-]);
+export const githubReadbackOperations = new Set(
+  Object.keys(githubMutationSemantics),
+);
 export type GithubReadback = { verified: true; proof: Obj } | {
   verified: false;
   reason: GithubReadbackReason;
@@ -142,9 +141,53 @@ export async function verifyGithubReadback(
     !githubReadbackOperations.has(operation) || !object(raw) ||
     !object(args.body)
   ) return { verified: false, reason: "github_readback_unsupported" };
-  const body = args.body;
+  const body = { ...args.body };
+  if (
+    githubMutationSemantics[operation] === "commit" &&
+    body.parents === undefined
+  ) body.parents = [];
   try {
-    if (operation === "github.commit") {
+    if (githubMutationSemantics[operation] === "ref") {
+      const ref = typeof body.ref === "string"
+        ? body.ref
+        : object(args.path)
+        ? args.path.ref
+        : null;
+      if (
+        typeof ref !== "string" ||
+        !/^(refs\/)?heads\/engineering\/[A-Za-z0-9_./-]+$/.test(ref) ||
+        /(^|\/)\.{1,2}(\/|$)/.test(ref) || !sha(body.sha) || body.force === true
+      ) throw Error();
+      const normalized = ref.replace(/^refs\//, "");
+      if (
+        raw.ref !== "refs/" + normalized || !object(raw.object) ||
+        raw.object.sha !== body.sha
+      ) throw Error();
+      const observed = await read(
+        request,
+        `https://api.github.com/repos/ausstyle/web-staging/git/ref/${
+          normalized.split("/").map(encodeURIComponent).join("/")
+        }`,
+        token,
+      );
+      if (
+        !object(observed) || observed.ref !== raw.ref ||
+        !object(observed.object) || observed.object.sha !== body.sha ||
+        observed.object.type !== "commit"
+      ) throw Error();
+      return {
+        verified: true,
+        proof: {
+          version: 1,
+          kind: "github_ref",
+          repository: "ausstyle/web-staging",
+          ref: raw.ref,
+          commit_sha: body.sha,
+          read_http_status: 200,
+        },
+      };
+    }
+    if (githubMutationSemantics[operation] === "commit") {
       if (
         !sha(raw.sha) || !sha(body.tree) || !Array.isArray(body.parents) ||
         body.parents.length > 10 || !body.parents.every(sha) ||

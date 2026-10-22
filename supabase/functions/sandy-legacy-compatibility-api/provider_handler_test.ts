@@ -144,7 +144,7 @@ function setup(overrides: Partial<ProviderDependencies> = {}) {
         value = fixture(op.$defs["content-file"], op.$defs);
         Object.assign(value, {
           path: "docs/sandy-api/compensation-fixtures/legacy.txt",
-          sha: SHA,
+          sha: "f2ba8f84ab5c1bce84a7b441cb1959cfc7093b7f",
           size: 3,
           encoding: "base64",
           content: "YWJj",

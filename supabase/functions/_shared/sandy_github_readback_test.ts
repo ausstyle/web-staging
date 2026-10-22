@@ -240,3 +240,63 @@ Deno.test("verified receipt metadata binds admission and operation; pending veri
     pending,
   );
 });
+Deno.test("reviewed commit aliases share immutable readback while engineering refs require exact non-forced target observation", async () => {
+  for (const operation of ["github.commit", "github.git.commits.create"]) {
+    const r = await verifyGithubReadback(
+      operation,
+      { body: { tree, parents: [parent], message: "canary" } },
+      { sha: commit },
+      "PRIVATE",
+      (async () =>
+        Response.json({
+          sha: commit,
+          tree: { sha: tree },
+          parents: [{ sha: parent }],
+          message: "canary",
+        })) as typeof fetch,
+    );
+    assert.equal(r.verified, true);
+  }
+  for (const operation of ["github.refs.create", "github.refs.update"]) {
+    for (const matches of [true, false]) {
+      const ref = "refs/heads/engineering/canary";
+      const args = operation.endsWith("create")
+        ? { body: { ref, sha: commit } }
+        : {
+          path: { ref: "heads/engineering/canary" },
+          body: { sha: commit, force: false },
+        };
+      const result = await verifyGithubReadback(
+        operation,
+        args,
+        { ref, object: { sha: commit } },
+        "PRIVATE",
+        (async (url, init) => {
+          assert.equal(
+            String(url),
+            "https://api.github.com/repos/ausstyle/web-staging/git/ref/heads/engineering/canary",
+          );
+          assert.equal(init?.method, "GET");
+          return Response.json({
+            ref,
+            object: { sha: matches ? commit : parent, type: "commit" },
+          });
+        }) as typeof fetch,
+      );
+      assert.equal(result.verified, matches);
+    }
+  }
+  let dispatched = false;
+  const denied = await verifyGithubReadback(
+    "github.refs.update",
+    { path: { ref: "heads/main" }, body: { sha: commit, force: true } },
+    {},
+    "PRIVATE",
+    (async () => {
+      dispatched = true;
+      return Response.json({});
+    }) as typeof fetch,
+  );
+  assert.equal(denied.verified, false);
+  assert.equal(dispatched, false);
+});
