@@ -1,5 +1,5 @@
 {
-  "source_commit": "9fa56e8824c3c258588880c6d288ff662b9baa80",
+  "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
   "risk": "high",
   "purpose": "One authenticated owner approval installs the exact Amendment B foundation and an explicitly declared durable, revocable grant; no workload self-authorization.",
   "prerequisite": {
@@ -29,7 +29,7 @@
       "files": {
         "sandy-engineering-control/index.ts": "922f94c4b8b9dfd44136642909db3d367715e30a8373edf8c6547662599422be",
         "sandy-engineering-control/autonomous_release.ts": "aed7994b54ac31db389e1a6ecdcbb47d45ad373e9de9f7b57d7101cf339082fc",
-        "sandy-engineering-control/routine_delegation.ts": "c1924e739c0f61ef3313ccf34a8c8dced360a33b073429e8779a9a740fc65b98",
+        "sandy-engineering-control/routine_delegation.ts": "d06627c6ba93b433e0f1357a329bd33ae2aa65436a425333b493618da6dc2544",
         "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
         "sandy-engineering-control/canonical_request.ts": "ab5ff8342026e4511c27b521ec661ef236326518d914a8716bc1563ad45815aa",
         "sandy-operation-api/registry_schema_validator.ts": "21f60f0dd14de49e38b8fc021346fc35b9eca5a0a6fbc97736447f8bfe557cfe",
@@ -39,12 +39,13 @@
     },
     {
       "slug": "sandy-engineering-runtime",
-      "expected_prior_version": 13,
-      "prior_bundle_sha256": "80765269aae5affd9e6817b81a46597a202b9115f11ad7ca89336e9f984538d2",
+      "expected_prior_version": 14,
+      "prior_bundle_sha256": "392f7feca414f0e19ccc4d17989bcce4ef5ae68f7dffbb002a80c775bd52ed59",
       "verify_jwt": false,
       "files": {
-        "sandy-engineering-runtime/index.ts": "d738bd3c80702c960a76da6f41f735096a9a369aeb8115de54293f87b81be3f4",
+        "sandy-engineering-runtime/index.ts": "108b0fceab2407f384d8e49b66687daba112103a2c3b34fdbd79309aff90840c",
         "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+        "_shared/sandy_engineering_session_client.ts": "9d1bf341ddce755063c2e4aa1f3ed65464a40995debe533f15b60c1eb8529b4a",
         "_shared/sandy_engineering_session.ts": "9fcbc86fe7bd067d224dc7d0f398e731534b0a1605d0008b4437a9444da2fbe4",
         "sandy-operation-api/engineering_identity_policy.json": "01407020d4c182f86cbe2048bd2a7fb02f4d04a33b8ba1396b9cd2b7275edd38",
         "sandy-operation-api/engineering_vm_read_policy.json": "cb3f9bd1095371c643894cadd675996632254efbad4e24caf204560ea09a9c25",
@@ -71,9 +72,9 @@
     "scripts/sandy/engineering_control_client.py": "4b587a8c9949e7078e4748f4cb05d28896ed092dc0561f9cf9fc93e0755e2bc1"
   },
   "workflow": {
-    ".github/workflows/sandy-runtime-release-checks.yml": "b67fc58b5ae60802828e3fd05c5c11002c4a1e9ed3fd581e587a9a725e29d354",
-    ".github/workflows/sandy-amendment-b-release.yml": "38646af8d34ded3b4f18478191b263e6cdb7d67a04a3fac6182d344dbdc4f77a",
-    ".github/workflows/sandy-engineering-control-repair.yml": "3776b79c9fd0ff9b1e9b5c92f86a1dfea32143e8b2632315644bb8ae6300d4fb"
+    ".github/workflows/sandy-runtime-release-checks.yml": "2eda353916fd8c6c88eb2cd00a179708bef39fc61b2e9312ebe975ee9ce03ad0",
+    ".github/workflows/sandy-amendment-b-release.yml": "821e09374f6aff9dcbd39194cc331b81fc5ecd2ae5143ddd5c1466b0320ececa",
+    ".github/workflows/sandy-engineering-control-repair.yml": "1b203dca038d3da8385b896a3fe2018532623c4ac942ce127d522eb2e1ff0499"
   },
   "rollback": "Capture exact prior Control/runtime bundles and schema function bodies privately under both component locks. Preserve the approved owner-repair migration. On failure stop new dispatch, revoke the standing grant through legitimate administration, restore source-compatible prior code under fresh version/source guards, and retain every approval, execution and revocation event. Prefer forward schema repair; never drop customer data or rewrite approval history."
 }

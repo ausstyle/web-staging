@@ -1,10 +1,10 @@
 {
-  "source_commit": "9fa56e8824c3c258588880c6d288ff662b9baa80",
-  "manifest_sha256": "88907173e82f0fc8e0bb3a8f3f22ac7da6c5a8cbe364064ae26fa91db13745a9",
+  "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+  "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
   "standing_declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
   "status": "prepared_for_one_owner_action_not_deployed",
   "tests": {
-    "composed": 196,
+    "composed": 214,
     "isolated_postgresql_assertions": 31,
     "release_transport": 5
   },
@@ -43,7 +43,7 @@
   },
   "actual_current_versions": {
     "sandy-engineering-control": 51,
-    "sandy-engineering-runtime": 13,
+    "sandy-engineering-runtime": 14,
     "sandy-agent-runtime-v4": 30,
     "sandy-workspace": 46
   },
@@ -56,5 +56,13 @@
     "Pinned prerequisite repair, Amendment B deployment, actual grant and normal-session renewal verification",
     "Two real unattended routine releases and mandatory denial/rollback tests",
     "Remaining SANDY-ENG-0001 four-channel customer acceptance"
-  ]
+  ],
+  "preserved_newer_runtime": {
+    "version": 14,
+    "bundle_sha256": "392f7feca414f0e19ccc4d17989bcce4ef5ae68f7dffbb002a80c775bd52ed59",
+    "production_index_preserved_byte_for_byte": true,
+    "production_shared_session_client_preserved_byte_for_byte": true,
+    "published_git_source_commit_not_established": true,
+    "all_7_original_module_hashes_captured_privately": true
+  }
 }

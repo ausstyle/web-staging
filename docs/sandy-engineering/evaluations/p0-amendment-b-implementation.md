@@ -1,7 +1,7 @@
 # Amendment B — one owner action, then standing authority
 
-Source `9fa56e8824c3c258588880c6d288ff662b9baa80`, manifest
-`88907173e82f0fc8e0bb3a8f3f22ac7da6c5a8cbe364064ae26fa91db13745a9`.
+Source `2994c411bf84d5e9b31f0a403c722c7f07565238`, manifest
+`c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b`.
 
 The existing Controller engineering-change panel now has **Approve Amendment B**.
 On opening the panel as a signed-in owner, it idempotently registers a separate
@@ -34,13 +34,18 @@ configuration and deployment-review APIs returned HTTP 403 for this integration.
 The Amendment B release checks the exact repair bundle and schema as a prerequisite;
 it cannot silently substitute its newer source under the older approval.
 
-Current Control/runtime remain 51/13; V4/workspace remain 30/46. No V4 overdue
+Current Control/runtime are 51/14; V4/workspace remain 30/46. No V4 overdue
 probe was repeated and no customer records, channel processing, memory ingestion
 or pilot allowlist were changed. The old manual token-copy UI was removed.
 
-Local verification: 196 composed tests, 31 isolated PostgreSQL assertions and five
+Local verification: 214 composed tests, 31 isolated PostgreSQL assertions and five
 release-transport tests. Actual grant activation, two unattended production release
 cycles and the four-channel SANDY-ENG-0001 acceptance still require production
 verification. See [observed exceptions](p0-authority-exceptions.json); optional
 customer confirmations are not declared legally mandatory merely because they
 exist in historical code.
+
+The newer deployed engineering runtime 14 was independently source-reconciled and
+preserved, including its shared renewable-session client and canonical API routing.
+The new package extends its Control action list without restoring the older runtime
+13 source. The release requires its exact current bundle hash before upload.
