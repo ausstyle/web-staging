@@ -13,6 +13,7 @@ import {confirmationOutcome} from "../_shared/sandy-executive/outcome.ts";
 import {loadTemporalContext} from "../_shared/sandy-executive/temporal_context.ts";
 import {taskDeadlineEvidence} from "../_shared/sandy-executive/task_deadlines.ts";
 import {runtimeRequestInput} from "../_shared/sandy-executive/assessment.ts";
+import {currentVoiceSource} from "../_shared/sandy-agent-operations/voice_source.ts";
 import {executingBuild,getVersionAwareness,needsVersionInspection,versionInstructions,versionFactsForModel} from "./version-awareness.js";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2";
@@ -44,6 +45,8 @@ Deno.serve(async req=>{
  input=runtimeRequestInput(input);if(!input)return json(400,{error:"invalid request"});
  const channel=String(input.channel||"test"),requestId=String(input.request_id||""),prompt=String(input.request||"");
  const readOnlyAssessment=input.execution_mode==="read_only_assessment";
+ const voiceSessionId=input.voice_session_id;
+ if(voiceSessionId!==undefined&&(!runtimeProof.serviceCaller||channel!=="voice"||typeof voiceSessionId!=="string"||!/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(voiceSessionId)))return json(403,{error:"voice_source_binding_invalid"});
  if(!["email","whatsapp","voice","web","internal","test"].includes(channel)||!/^[-a-zA-Z0-9_]{12,110}$/.test(requestId)||prompt.length<2||prompt.length>12000)return json(400,{error:"invalid request"});
  const tzInput=typeof input.timezone==="string"?input.timezone.slice(0,80):"UTC";
  let timezone="UTC";try{new Intl.DateTimeFormat("en-US",{timeZone:tzInput});timezone=tzInput}catch{}
@@ -57,11 +60,12 @@ Deno.serve(async req=>{
  const {data:channelCapabilities,error:capabilityError}=await db.from("sandy_channel_capabilities").select("capability,state,requires_consent,constraints").eq("channel",channel);
  const effectiveChannelCapabilities=capabilityError?[]:(channelCapabilities||[]);
  const runtimeIdentity=executingBuild("sandy-agent-runtime-v4",Deno.env.get("DENO_DEPLOYMENT_ID")||"");
- const {data:existing,error:reserved}=await db.from("sandy_agent_tasks").insert({channel,request_id:requestId,customer_id:customerId,user_request:prompt,status:"queued",plan:{runtime_identity:runtimeIdentity,...(readOnlyAssessment?{execution_mode:"read_only_assessment"}:{})}}).select("id").maybeSingle();
+ const {data:existing,error:reserved}=await db.from("sandy_agent_tasks").insert({channel,request_id:requestId,customer_id:customerId,user_request:prompt,status:"queued",plan:{runtime_identity:runtimeIdentity,...(readOnlyAssessment?{execution_mode:"read_only_assessment"}:{}),...(voiceSessionId?{voice_session_id:voiceSessionId}:{})}}).select("id").maybeSingle();
  if(reserved?.code==="23505")return json(409,{error:"duplicate request_id"});
  if(reserved||!existing)return json(500,{error:"task reservation failed",code:reserved?.code});
  const id=existing.id;
  const operationPrincipal=customerId?await bindRuntimeTask(runtimeProof,db,{taskId:id,customerId,channel,requestId}):null;
+ if(voiceSessionId&&(!customerId||!operationPrincipal||!await currentVoiceSource(db,voiceSessionId,customerId))){await db.from("sandy_agent_tasks").update({status:"failed",failure:"voice_source_authorization_expired_or_revoked"}).eq("id",id);return json(403,{error:"voice_source_authorization_expired_or_revoked"});}
  const operationServices={db,base:url,composioKey:Deno.env.get("COMPOSIO_API_KEY")||"",openaiKey:aiKey,integrationToken:Deno.env.get("SANDY_INTEGRATION_API_TOKEN")||"",runtimeContext:undefined as RuntimeOperationalContext|undefined,connectionPreflight:undefined as RuntimeConnectionPreflight|undefined,autoImproveKey:Deno.env.get("SANDY_AUTO_IMPROVE_KEY")||Deno.env.get("EMAIL_AI_INTERNAL_KEY")||"",defer:(work:Promise<unknown>)=>EdgeRuntime.waitUntil(work)};
  const runOperation=(operation:string,args:any,step:string)=>executeRuntimeOperation(operationPrincipal,operation,args,operationServices,step);
 
@@ -118,7 +122,7 @@ Deno.serve(async req=>{
    return json(200,{ok:true,task_id:id,response:checked.response,tools_used:toolTrace});
  }
  const {complex,model}=await selectRuntimeModel(snapshotIdentity,db,{mode:v2ModelMode,prompt,requestId});
- await update({status:"running",model,plan:{strategy:complex?"reasoning":"fast",tools:["search_history"],runtime_identity:runtimeIdentity,...(readOnlyAssessment?{execution_mode:"read_only_assessment"}:{})}});
+ await update({status:"running",model,plan:{strategy:complex?"reasoning":"fast",tools:["search_history"],runtime_identity:runtimeIdentity,...(readOnlyAssessment?{execution_mode:"read_only_assessment"}:{}),...(voiceSessionId?{voice_session_id:voiceSessionId}:{})}});
  const trace:any[]=[];
  if(customerId)trace.push({tool:"v2_operational_read",success:communicationFacts.status!=="unavailable",
    scope:"customer_scoped",coverage:communicationFacts.status,source_count:4,verified_web:activityFacts.status==="verified"});

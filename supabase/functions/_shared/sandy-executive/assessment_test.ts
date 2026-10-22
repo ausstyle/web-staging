@@ -11,3 +11,9 @@ Deno.test("normal runtime requests keep their contract and malformed envelopes a
   const normal = { request: "Hello", channel: "web" }; assert.equal(runtimeRequestInput(normal), normal);
   for (const value of [null, [], "text", { assessment: null }, { assessment: [] }]) assert.equal(runtimeRequestInput(value), null);
 });
+Deno.test("verified voice envelope rejects legacy dispatch and cannot select another channel",()=>{
+  const envelope={verified_voice_turn:{voice_session_id:"session",channel:"web",request:"Continue"}};
+  assert.equal(Object.hasOwn(envelope,"request"),false);
+  assert.equal(runtimeRequestInput(envelope)?.channel,"voice");
+  assert.equal(runtimeRequestInput({verified_voice_turn:{request:"forged"}}),null);
+});

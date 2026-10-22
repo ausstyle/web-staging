@@ -1,6 +1,7 @@
 import { prepareConnectedGmail, confirmConnectedGmail } from "./connected-gmail.ts";
 import { agentOperationContracts, validAgentInput, validAgentOutput } from "./contracts.ts";
 import { AgentDb, AgentPrincipal, isAgentPrincipal } from "./identity.ts";
+import { currentVoiceSource } from "./voice_source.ts";
 import { isBoundLegacyRuntimeProfile, legacyRuntimeResponses, type LegacyRuntimeProfile } from "./runtime_profiles.ts";
 import { internalRuntimeRecordContracts, validRuntimeRecordInput, validRuntimeRecordOutput } from "./runtime_record_contracts.ts";
 import { runtimeRecordOperation } from "./runtime_records.ts";
@@ -231,6 +232,7 @@ export async function executeAgentOperation(
   const refused = (status: number, error: string, extra: Obj = {}): AgentOutcome => ({ status,
     body: { ok: false, operation, error, executed: false, ...extra }, legacy: { error, ...extra } });
   if (!isAgentPrincipal(context)) return refused(403, "agent_principal_required");
+  if (context.voiceSessionId && !await currentVoiceSource(deps.db,context.voiceSessionId,context.customerId)) return refused(403,"voice_source_authorization_expired_or_revoked");
   if (deps.legacyRuntimeProfile && !isBoundLegacyRuntimeProfile(deps.legacyRuntimeProfile, context))
     return refused(403, "runtime_transport_profile_denied");
   const record = internalRuntimeRecordContracts[operation];
@@ -271,7 +273,8 @@ export async function executeAgentOperation(
     providerAttempted = true;
     return fetcher(input, init);
   }) as typeof fetch };
-  try { legacy = await rawOperation(context, operation, args, observed); }
+  try { legacy = context.voiceSessionId&&!await currentVoiceSource(deps.db,context.voiceSessionId,context.customerId)
+    ? failure("voice_source_authorization_expired_or_revoked") : await rawOperation(context, operation, args, observed); }
   catch { legacy = failure("agent_operation_interrupted"); }
   const candidate = { ...(internal ? { result: legacy } : legacy), ok: true, contract_version: "1.0.0",
     principal_kind: context.kind, task_id: context.taskId };

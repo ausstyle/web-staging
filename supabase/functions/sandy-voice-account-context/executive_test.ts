@@ -4,6 +4,7 @@ const session = { id: "10000000-0000-4000-8000-000000000001", owner_customer_id:
 const turnId = "30000000-0000-4000-8000-000000000003";
 const broker = { base: "https://zmqlyygzqoidkcwdysok.supabase.co", credential: "fixture-service", timezone: "UTC" };
 function fixture(patch: Record<string, unknown> = {}) {
+  const authorization={revoked:false};
   const calls: { table: string; filters: unknown[][] }[] = [];
   const responses = [
     { data: { id: turnId, role: "user", text: "Continue that task", created_at: "2026-10-22T10:00:00Z" } },
@@ -13,17 +14,19 @@ function fixture(patch: Record<string, unknown> = {}) {
   Object.assign(responses, patch);
   const db = { from(table: string) {
     const call = { table, filters: [] as unknown[][] }; calls.push(call);
-    const result = responses.shift();
+    const result = table==="sandy_voice_call_sessions"?{data:{...session,created_at:new Date().toISOString(),link_id:"link"}}:
+      table==="sandy_voice_call_links"?{data:{id:"link",revoked_at:authorization.revoked?"now":null}}:
+      table==="sandy_voice_private_auth"?{data:{verified_at:"verified"}}:responses.shift();
     const q: any = { then: (ok: any) => Promise.resolve(result).then(ok), maybeSingle: async () => result };
     for (const method of ["select", "eq", "lt", "order", "limit"]) q[method] = (...args: unknown[]) => { call.filters.push([method, ...args]); return q; };
     return q;
   }};
-  return { db, calls };
+  return { db, calls,authorization };
 }
 Deno.test("voice uses the existing Executive with owner-scoped stored transcript and bounded history", async () => {
   const f = fixture(); let received: any;
   const out = await voiceExecutiveTurn(f.db, session, turnId, broker, async (url, init) => {
-    assert.equal(url, broker.base + "/functions/v1/sandy-agent-runtime"); received = JSON.parse(String(init?.body));
+    assert.equal(url, broker.base + "/functions/v1/sandy-agent-runtime"); const envelope=JSON.parse(String(init?.body));assert.equal(envelope.request,undefined);received=envelope.verified_voice_turn;
     assert.equal(new Headers(init?.headers).get("authorization"), "Bearer fixture-service");
     return Response.json({ ok: true, task_id: "task", response: "Actual runtime answer", completion_state: "answered", completion_verified: true });
   });
@@ -65,4 +68,14 @@ Deno.test("receipt and history outages fail closed before runtime execution", as
     const out = await voiceExecutiveTurn(fixture(patch).db, session, turnId, broker, () => { throw Error("must not dispatch"); });
     assert.equal(out.status, 503);
   }
+});
+Deno.test("revocation during an Executive turn suppresses its private response",async()=>{
+  const f=fixture();
+  const out=await voiceExecutiveTurn(f.db,session,turnId,broker,async()=>{f.authorization.revoked=true;return Response.json({ok:true,response:"Private result"});});
+  assert.equal(out.status,403);assert.equal(JSON.stringify(await out.json()).includes("Private result"),false);
+});
+Deno.test("an interrupted recorded turn retains its useful partial answer without executing again",async()=>{
+  const f=fixture({1:{data:{id:"partial-task",status:"failed",result:{text:"Useful verified partial result",completion_state:"partial",completion_verified:false,continuation_scheduled:false}}}});
+  const out=await voiceExecutiveTurn(f.db,session,turnId,broker,()=>{throw Error("must not execute twice");});
+  assert.equal(out.status,200);const result=await out.json();assert.equal(result.completion_state,"partial");assert.equal(result.completion_verified,false);assert.equal(result.response,"Useful verified partial result");
 });

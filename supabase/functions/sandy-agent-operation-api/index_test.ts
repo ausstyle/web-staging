@@ -97,6 +97,17 @@ Deno.test("persisted read-only assessment mode rejects every mutation before pro
   const forged = { ...context, readOnly: false } as AgentPrincipal;
   equal((await executeAgentOperation(forged, "gmail.messages.search", { query: "test" }, services(db))).status, 403);
 });
+Deno.test("a revoked voice source prevents the next operation even after principal binding",async()=>{
+  const db=new Db();const sid="50000000-0000-4000-8000-000000000001";
+  db.tables.sandy_agent_tasks[0].channel="voice";db.tables.sandy_agent_tasks[0].plan={voice_session_id:sid};
+  db.tables.sandy_voice_call_sessions=[{id:sid,owner_customer_id:CUSTOMER,link_id:"link",created_at:new Date().toISOString(),state:"connected"}];
+  db.tables.sandy_voice_call_links=[{id:"link",owner_customer_id:CUSTOMER,revoked_at:"now"}];
+  db.tables.sandy_voice_private_auth=[{session_id:sid,owner_customer_id:CUSTOMER,verified_at:"verified"}];
+  const proof=await authenticateRuntime(request({},"worker-secret"),db,"worker-secret");assert(proof);
+  const principal=await bindRuntimeTask(proof,db,{taskId:TASK,customerId:CUSTOMER,channel:"voice",requestId:"request_123456"});assert(principal);
+  const result=await executeAgentOperation(principal,"gmail.messages.search",{query:"test"},services(db));
+  equal(result.status,403);equal(result.body.error,"voice_source_authorization_expired_or_revoked");equal(result.body.executed,false);equal(db.tables.sandy_agent_operation_audit.length,0);
+});
 
 Deno.test("forged principals, serialized worker grants and mismatched task tenants cannot execute", async () => {
   const db = new Db();

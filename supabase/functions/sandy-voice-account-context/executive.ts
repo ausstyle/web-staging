@@ -1,5 +1,6 @@
 import { pairedChannelHistory } from "../_shared/sandy-executive/history.ts";
 import { runtimeReplyOutcome } from "../_shared/sandy-executive/outcome.ts";
+import { currentVoiceSource } from "../_shared/sandy-agent-operations/voice_source.ts";
 
 type Session = { id: string; owner_customer_id: string; ended_at?: string | null; state?: string };
 const uuid = (v: unknown): v is string => typeof v === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(v);
@@ -15,6 +16,7 @@ export async function voiceExecutiveTurn(db: any, session: Session, turnId: unkn
     return reply(403, { error: "active_verified_voice_turn_required" });
   if (broker.base !== "https://zmqlyygzqoidkcwdysok.supabase.co" || !broker.credential)
     return reply(503, { error: "runtime_binding_unavailable" });
+  if (!await currentVoiceSource(db,session.id,session.owner_customer_id)) return reply(403,{error:"voice_source_authorization_expired_or_revoked"});
   const turn = await db.from("sandy_voice_transcript_turns").select("id,role,text,created_at")
     .eq("id", turnId).eq("session_id", session.id).eq("owner_customer_id", session.owner_customer_id).eq("role", "user").maybeSingle();
   if (turn.error) return reply(503, { error: "voice_source_unavailable" });
@@ -26,7 +28,8 @@ export async function voiceExecutiveTurn(db: any, session: Session, turnId: unkn
   if (existing.error) return reply(503, { error: "runtime_receipt_unavailable" });
   if (existing.data) {
     if (["queued", "running"].includes(existing.data.status)) return reply(202, { task_id: existing.data.id, completion_state: "pending", completion_verified: false, reused: true, delivery_verified: false });
-    if (existing.data.status !== "completed") return reply(409, { task_id: existing.data.id, error: "recorded_voice_turn_not_completed", completion_verified: false, reused: true, automatic_retry: false });
+    const partial=existing.data.status==="failed"&&["partial","unknown_outcome"].includes(existing.data.result?.completion_state);
+    if (existing.data.status !== "completed"&&!partial) return reply(409, { task_id: existing.data.id, error: "recorded_voice_turn_not_completed", completion_verified: false, reused: true, automatic_retry: false });
     const outcome = runtimeReplyOutcome(true, { ok: true, response: existing.data.result?.text, ...existing.data.result });
     return reply(200, { ok: outcome.delivered, response: outcome.response, task_id: existing.data.id, ...outcome.metadata, reused: true, delivery_verified: false });
   }
@@ -38,10 +41,11 @@ export async function voiceExecutiveTurn(db: any, session: Session, turnId: unkn
   try {
     const response = await request(broker.base + "/functions/v1/sandy-agent-runtime", {
       method: "POST", headers: { authorization: "Bearer " + broker.credential, "content-type": "application/json" },
-      body: JSON.stringify({ channel: "voice", customer_id: session.owner_customer_id, request_id: requestId, request: turn.data.text, history: turns, timezone: broker.timezone }),
+      body: JSON.stringify({ verified_voice_turn:{channel: "voice", voice_session_id:session.id, customer_id: session.owner_customer_id, request_id: requestId, request: turn.data.text, history: turns, timezone: broker.timezone} }),
       signal: AbortSignal.timeout(110000),
     });
     const body = await response.json();
+    if (!await currentVoiceSource(db,session.id,session.owner_customer_id)) return reply(403,{error:"voice_source_authorization_expired_or_revoked",completion_verified:false,delivery_verified:false});
     if (response.status === 409) return reply(202, { completion_state: "pending", completion_verified: false, reconciliation_required: true, automatic_retry: false, delivery_verified: false });
     const outcome = runtimeReplyOutcome(response.ok, body);
     if (!outcome.delivered) return reply(502, { error: "voice_runtime_not_completed", completion_verified: false, automatic_retry: false });

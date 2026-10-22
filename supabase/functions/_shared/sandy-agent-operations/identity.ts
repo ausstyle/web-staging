@@ -9,6 +9,7 @@ export type AgentPrincipal = Readonly<{
   controllerOwner: boolean;
   requestText: string;
   readOnly?: boolean;
+  voiceSessionId?: string | null;
 }>;
 type RuntimeProof = Readonly<{ serviceCaller: boolean }>;
 const runtimeProofs = new WeakSet<object>();
@@ -77,9 +78,11 @@ export async function bindRuntimeTask(
     data.customer_id !== expected.customerId || data.channel !== expected.channel ||
     data.request_id !== expected.requestId ||
     !["queued", "running"].includes(data.status)) return null;
+  const voiceSessionId=data.plan?.voice_session_id;
+  if (voiceSessionId !== undefined && (!proof.serviceCaller || expected.channel !== "voice" || !uuid(voiceSessionId))) return null;
   return principal({ kind: "trusted_runtime", customerId: data.customer_id,
     authUserId: null, taskId: data.id, controllerOwner: false,
-    requestText: String(data.user_request || ""), readOnly: data.plan?.execution_mode === "read_only_assessment" });
+    requestText: String(data.user_request || ""), readOnly: data.plan?.execution_mode === "read_only_assessment", voiceSessionId:voiceSessionId||null });
 }
 
 /** An internal conversation can have no customer, exactly as the original
