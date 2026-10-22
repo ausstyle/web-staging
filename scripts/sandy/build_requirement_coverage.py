@@ -30,6 +30,38 @@ def successful_call(call):
             and call.get("executed") is True and not call.get("error"))
 
 
+def guest_status_execution_evidence(report, verification, evidence_sha256):
+    """Enrollment observation evidence never certifies remote OS execution."""
+    filename = "guest-status-MCP-evidence-20261022.json"
+    operation = "gcp.vm.agent.status"
+    row = next((r for r in verification.get("operations", []) if r.get("operation") == operation), {})
+    calls = report.get("verified_status_observations", [])
+    if (report.get("complete") is not True or verification.get("evidence_sha256") != evidence_sha256
+            or row.get("verified") is not True or row.get("evidence", {}).get("evidence_sha256") != evidence_sha256
+            or report.get("normal_Auth_nonowner_initiator") is not True
+            or report.get("deployment", {}).get("all_uploaded_sources_accounted_for") is not True
+            or len(calls) != 2 or {c.get("vm_name") for c in calls} != {"sandy-video", "sandy-windows"}):
+        return {}, {}
+    for call in calls:
+        admission, audit = call.get("admission", {}), call.get("audit", [])
+        result_sha = hashlib.sha256(json.dumps(call.get("data"), ensure_ascii=False,
+                                               sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+        if (call.get("api_status") != 200 or call.get("MCP_isError") is not False
+                or call.get("executed") is not True or call.get("independent_enrollment_match") is not True
+                or admission.get("id") != call.get("admission_id") or admission.get("operation") != operation
+                or admission.get("state") != "succeeded" or admission.get("result_sha256") != result_sha
+                or not audit or any(e.get("hash_valid") is not True for e in audit)):
+            return {}, {}
+    positive = {operation: [{"file": filename, "level": "standing_Auth_MCP_enrollment_heartbeat_readback",
+                             "independent_VM_execution": False, "whole_family_acceptance": False}]}
+    denial = report.get("denial", {})
+    denied = {"gcp.vm.agent.install": [{"file": filename, "level": "standing_Auth_guest_install_denied_before_admission"}]} if (
+        denial.get("http_status") == 200 and denial.get("api_status") == 403
+        and denial.get("MCP_isError") is True and denial.get("executed") is False
+        and denial.get("execution_admissions") == 0) else {}
+    return positive, denied
+
+
 def standing_execution_evidence(report, verification, evidence_sha256):
     """Accept operation-specific MCP evidence only with matching registry readback.
 
@@ -252,6 +284,14 @@ def execution_evidence(docs=DOCS):
                     value = {"file": filename, "level": "standing_Auth_source_or_workflow_write_denied_before_provider"}
                     if value not in denied[call["operation"]]:
                         denied[call["operation"]].append(value)
+    filename = "guest-status-MCP-evidence-20261022.json"
+    verification = docs / "guest-status-registry-verification-20261022.json"
+    if (docs / filename).exists() and verification.exists():
+        actual, refusals = guest_status_execution_evidence(load(docs / filename), load(verification), digest(docs / filename))
+        for operation, evidence in actual.items():
+            positive[operation].extend(evidence)
+        for operation, evidence in refusals.items():
+            denied[operation].extend(evidence)
     return dict(positive), dict(denied)
 
 

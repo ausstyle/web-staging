@@ -1,0 +1,39 @@
+{
+  "evidence_sha256": "4b23c2c53e28a391a15bcbdbc205425f76275920cf846b2cf7835133a2992cc1",
+  "operations": [
+    {
+      "operation": "gcp.vm.agent.status",
+      "verified": true,
+      "api_exposed": true,
+      "ai_exposed": true,
+      "evidence": {
+        "admission_ids": [
+          "8663da05-1916-4e1f-9f5c-455c9ec5373e",
+          "144ba791-9413-4cea-ad54-4845e62176bf"
+        ],
+        "evidence_file": "guest-status-MCP-evidence-20261022.json",
+        "source_commit": "353e87bd275648798923d6a2036e7f4a6c98c285",
+        "evidence_sha256": "4b23c2c53e28a391a15bcbdbc205425f76275920cf846b2cf7835133a2992cc1",
+        "denied_operation": "gcp.vm.agent.install",
+        "function_version": 16,
+        "observation_source": "Sandy managed-agent enrollment and last authenticated heartbeat",
+        "successful_fixtures": [
+          "sandy-video",
+          "sandy-windows"
+        ],
+        "MCP_end_to_end_verified": true,
+        "whole_family_acceptance": false,
+        "independent_VM_execution": false,
+        "denied_execution_admissions": 0
+      }
+    }
+  ],
+  "counts": [
+    {
+      "registered": 2585,
+      "api_flags": 460,
+      "ai_flags": 443,
+      "verified_flags": 79
+    }
+  ]
+}

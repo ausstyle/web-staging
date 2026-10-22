@@ -2,7 +2,7 @@
 
 Generated from production metadata and recorded execution evidence. Flags and active functions do not prove execution. Shared-adapter coverage is reused; expanded rows are not separate implementation projects.
 
-**0/161 families fully accepted**; **37 families have partial required-operation MCP evidence**. **83 distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.
+**0/161 families fully accepted**; **38 families have partial required-operation MCP evidence**. **84 distinct operations** have documented positive MCP evidence. All remaining families require constituent acceptance; unknowns are not labelled external blockers.
 
 **33 explicit families have reviewed code awaiting real family acceptance**; **128 need software, integration or constituent reconciliation**. **7 have documented external dependencies**, including **6 with permission denials**. External dependencies overlap the implementation counts; they do not certify completion or explain every missing function.
 
@@ -54,7 +54,7 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 40 | gcp.vm.services.start/stop/restart/status | 6 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 41 | gcp.vm.reboot | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 42 | gcp.vm.firewallGuest.manage | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 43 | gcp.vm.agent.install/update/status | 5 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 43 | gcp.vm.agent.install/update/status | 5 | 1/1 | 1 | implementation_or_constituent_reconciliation_required | none established |
 | 44 | gcp.vm.bootstrap.getLogs | 2 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 45 | gcp.compute.instanceGroups.* | 87 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 46 | gcp.compute.templates.* | 12 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
