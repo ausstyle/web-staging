@@ -49,9 +49,9 @@ Only explicit reviewed mappings are definitive required sets. Unreviewed wildcar
 | 35 | gcp.vm.access.bootstrap/rotate/revoke | 5 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | iap_policy_authority |
 | 36 | gcp.vm.ssh.exec | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | iap_policy_authority |
 | 37 | gcp.vm.winrm.exec | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | iap_policy_authority |
-| 38 | gcp.vm.files.upload/download | 2 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 39 | gcp.vm.packages.install/update/remove | 3 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
-| 40 | gcp.vm.services.start/stop/restart/status | 6 | 1/1 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 38 | gcp.vm.files.upload/download | 2 | 2/2 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 39 | gcp.vm.packages.install/update/remove | 3 | 3/3 | 0 | implementation_or_constituent_reconciliation_required | none established |
+| 40 | gcp.vm.services.start/stop/restart/status | 6 | 6/6 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 41 | gcp.vm.reboot | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 42 | gcp.vm.firewallGuest.manage | 1 | 0/0 | 0 | implementation_or_constituent_reconciliation_required | none established |
 | 43 | gcp.vm.agent.install/update/status | 5 | 1/1 | 1 | implementation_or_constituent_reconciliation_required | none established |
