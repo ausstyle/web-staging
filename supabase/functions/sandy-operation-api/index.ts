@@ -964,6 +964,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                   async () => null,
                   {
                     restoreBindings: dependencies.packageRestoreBindings,
+                    getProtocolBindings: async (actorId: string) => {
+                      const selected = await db.rpc(
+                        "sandy_vm_protocol_public_bindings",
+                        { p_actor: actorId },
+                      );
+                      return selected.error ? undefined : selected.data;
+                    },
                     providerBindings: dependencies.providerConfig
                       ?.verifiedBindings,
                   },
@@ -2436,6 +2443,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             },
             {
               restoreBindings: dependencies.packageRestoreBindings,
+              getProtocolBindings: async (actorId: string) => {
+                const selected = await db.rpc(
+                  "sandy_vm_protocol_public_bindings",
+                  { p_actor: actorId },
+                );
+                return selected.error ? undefined : selected.data;
+              },
               providerBindings: dependencies.providerConfig?.verifiedBindings,
             },
           )
@@ -2452,7 +2466,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
               (/^verified_[a-z_]+_scope_binding_required$/.test(
                 error.message,
               ) ||
-                ["verified_credential_target_required", "fixed_vm_required"]
+                [
+                  "verified_credential_target_required",
+                  "verified_vm_protocol_binding_required",
+                  "fixed_vm_required",
+                ]
                   .includes(error.message))
             ? error.message
             : "provider_scope_configuration_required",

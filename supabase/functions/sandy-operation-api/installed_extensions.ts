@@ -97,6 +97,18 @@ import {
 } from "../sandy-system-metadata-api/gateway.ts";
 import { canonicalJson } from "../_shared/sandy_api_protocol.ts";
 import {
+  parseBindings as parseVmProtocolBindings,
+  protocolExecutionScope,
+  protocolOperations,
+} from "../sandy-vm-protocol-api/gateway.ts";
+// Only existing execution IDs join the external API catalogue. The candidate
+// metadata/enrollment descriptors remain private until separately authorized.
+const nativeExecutionOperations = Object.fromEntries(
+  Object.entries(protocolOperations).filter(([id]) =>
+    ["gcp.vm.ssh.exec", "gcp.vm.winrm.exec", "cloud.vm.exec"].includes(id)
+  ),
+);
+import {
   gapExecutionScope,
   gapGatewayOperations,
   type ScopeBinding,
@@ -141,6 +153,7 @@ export type ExtensionKind =
   | "memory"
   | "agent"
   | "guest"
+  | "vm_protocol"
   | "database"
   | "credential"
   | "supabase_service"
@@ -250,6 +263,11 @@ export const extensionContracts: Readonly<Record<string, ExtensionContract>> =
       "sandy-legacy-compatibility-api",
     ),
     ...grouped(
+      nativeExecutionOperations,
+      "vm_protocol",
+      "sandy-vm-protocol-api",
+    ),
+    ...grouped(
       composioReadOperations,
       "composio_customer",
       "sandy-composio-read-api",
@@ -317,6 +335,7 @@ export const extensionNeedsAgenda = (operation: string) =>
 export const extensionOwnsGrant = (operation: string) =>
   [
     "guest",
+    "vm_protocol",
     "database",
     "credential",
     "supabase_service",
@@ -386,6 +405,7 @@ export function extensionHasAccess(
         (!agentOperationContracts[operation].owner_only ||
           principal.controllerOwner);
     case "guest":
+    case "vm_protocol":
     case "database":
     case "credential":
     case "lifecycle":
@@ -419,6 +439,17 @@ export function extensionContractMatches(
   if (!c) return false;
   if (c.kind === "onboarding") {
     return onboardingContractMatches(operation, entry);
+  }
+  if (c.kind === "vm_protocol") {
+    if (
+      !object(entry.error_contract) ||
+      entry.error_contract.requires_approval !== true ||
+      entry.error_contract.requires_grant !== true ||
+      entry.error_contract.requires_real_user_session !== true ||
+      entry.error_contract.api_key_delegable !== false ||
+      canonicalJson(entry.input_schema) !== canonicalJson(c.input_schema) ||
+      canonicalJson(entry.output_schema) !== canonicalJson(c.output_schema)
+    ) return false;
   }
   if (c.kind === "agent") return agentContractMatches(operation, entry);
   if (c.kind === "lifecycle") {
@@ -577,11 +608,19 @@ export async function extensionExecutionScope(
   options?: {
     restoreBindings?: ScopeBinding[];
     providerBindings?: VerifiedProviderBindings;
+    getProtocolBindings?: (actorId: string) => Promise<unknown>;
   },
 ): Promise<unknown> {
   const kind = extensionKind(operation);
   if (kind === "system_metadata") {
     return systemMetadataExecutionScope(operation, args);
+  }
+  if (kind === "vm_protocol") {
+    const raw = await options?.getProtocolBindings?.(actorId);
+    const bindings = raw === undefined
+      ? undefined
+      : parseVmProtocolBindings(JSON.stringify(raw));
+    return protocolExecutionScope(operation, args, bindings);
   }
   if (kind === "database") return databaseExecutionScope(operation);
   if (kind === "supabase_service") return serviceExecutionScope(operation);
