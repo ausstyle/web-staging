@@ -1,13 +1,13 @@
 {
-  "source_commit": "9fa56e8824c3c258588880c6d288ff662b9baa80",
-  "manifest_sha256": "88907173e82f0fc8e0bb3a8f3f22ac7da6c5a8cbe364064ae26fa91db13745a9",
+  "source_commit": "2994c411bf84d5e9b31f0a403c722c7f07565238",
+  "manifest_sha256": "c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b",
   "declaration_sha256": "79f705b413c12802d5fbc847132bd49e990d45de476104890d93ec0b4ac2d320",
-  "manifest_url": "https://raw.githubusercontent.com/ausstyle/web-staging/b8228d5d301c52f17f864d26b4d410256c3aec68/docs/sandy-engineering/evaluations/p0-amendment-b-source-manifest.json",
+  "manifest_url": "https://raw.githubusercontent.com/ausstyle/web-staging/8ef62132680a87c6e9dba66eb197f4afb16f6b0f/docs/sandy-engineering/evaluations/p0-amendment-b-source-manifest.json",
   "request": {
     "action": "register",
     "title": "Install Amendment B standing engineering policy authorization",
     "problem": "Normal engineering repeatedly stalls on per-change owner approval and exported personal sessions. The current renewable workload is valid but has metadata-only authority; it must not invent its own release grant.",
-    "expected_behavior": "Release 9fa56e8824c3c258588880c6d288ff662b9baa80; manifest 88907173e82f0fc8e0bb3a8f3f22ac7da6c5a8cbe364064ae26fa91db13745a9. Install only the pinned Control/runtime and additive security migrations after the separately approved owner-session repair. Apply the frozen standing-policy declaration through the protected authenticated administrative installer after genuine owner approval. No further owner browser or per-change Controller approval is required for eligible routine work.",
+    "expected_behavior": "Release 2994c411bf84d5e9b31f0a403c722c7f07565238; manifest c37cc7b377c4f7284ac6c81e032464583dd7388b096b8681a6c32f655efa100b. Install only the pinned Control/runtime and additive security migrations after the separately approved owner-session repair. Apply the frozen standing-policy declaration through the protected authenticated administrative installer after genuine owner approval. No further owner browser or per-change Controller approval is required for eligible routine work.",
     "change_purpose": "Implement the owner-directed permanent autonomous authority policy through legitimate, durable, scoped and revocable standing delegation.",
     "feature_improvement": "Automatically admit eligible routine releases using normal renewable workload Auth, exact source and CI, budget and scope checks, audit, component locks, rollback and independent source readback.",
     "scope": [
@@ -18,7 +18,7 @@
       "security:standing-engineering-delegation"
     ],
     "risk": "high",
-    "idempotency_key": "sandy-amendment-b-9fa56e8824c3",
+    "idempotency_key": "sandy-amendment-b-2994c411bf84",
     "regression_rules": [
       "Standing-policy declaration: {\"version\":\"amendment-b-standing-v1\",\"identity_authorization_ref\":\"engineering_change:ca1e72bb-b604-4f5e-b259-acf30ca830d8\",\"repository\":\"ausstyle/web-staging\",\"project\":\"zmqlyygzqoidkcwdysok\",\"environment\":\"canary\",\"branch\":\"engineering/sandy-unified-intelligence-20261021\",\"targets\":[\"sandy-agent-runtime-v4\",\"sandy-workspace\"],\"risk_ceiling\":\"normal\",\"max_releases_per_day\":10,\"maximum_cost_units\":0,\"baseline\":\"approved_source_commit\",\"workflow\":\"approved_workflow_sha256\",\"expiry_mode\":\"until_revoked\",\"identity_binding_sha256\":\"8f864a36dfdfdadebe1817ede42d2f26792d600737ff0405217c655583aeeede\"}",
       "The executing workload cannot create or expand its own authority. Only the protected Management installer may apply the exact declaration already approved by the real owner.",
@@ -28,7 +28,7 @@
       "Initial authority: existing bound engineering identity only; V4/workspace canary; low/normal risk; until revoked or the parent grant expires; at most ten releases/day; no new resource spending. Normal Auth sessions and release admissions remain short-lived."
     ],
     "acceptance_criteria": [
-      "196 composed tests, 31 isolated PostgreSQL assertions and five release-transport tests pass.",
+      "214 composed tests, 31 isolated PostgreSQL assertions and five release-transport tests pass.",
       "Verify the genuine owner approval and declaration digest before administrative provisioning; verify actual deployed source and grant revision afterwards.",
       "Certify two unattended production cycles, expiry/revocation, target/risk/source denials and rollback before claiming operational autonomy.",
       "Do not mark SANDY-ENG-0001 complete before all four channels and the required quality cohort pass."

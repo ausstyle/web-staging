@@ -36,7 +36,7 @@ jobs:
           deno test --allow-read --allow-env
           supabase/functions/_shared/sandy-executive/
           supabase/functions/sandy-engineering-control/routine_delegation_test.ts
-          supabase/functions/sandy-engineering-control/autonomous_release_test.ts
+          supabase/functions/sandy-engineering-control/autonomous_release_test.ts supabase/functions/sandy-engineering-runtime/index_test.ts
           supabase/functions/sandy-engineering-control/workload_test.ts
           sandy/controller/session-transport.test.mjs
           sandy/controller/engineering-releases.test.mjs
