@@ -1,6 +1,6 @@
 {
   "function": "sandy-agent-runtime-v4",
-  "source_commit": "1e08fe32727d9fe57812736d8003a8ac9058e82a",
+  "source_commit": "d32a28d768ed4b5a9ed5c9ff5e36f4e13631a79a",
   "change_id": "7edbee5b-4185-4f6b-b7b1-b41899d4dfc8",
   "branch": "engineering/sandy-unified-intelligence-20261021",
   "risk": "normal",
