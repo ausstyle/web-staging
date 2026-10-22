@@ -227,7 +227,7 @@ export async function verifyRestCatalogue(token: string, anon: string) {
     API_REST_description_verified: true, duplicate_page_parameter_status: 400, out_of_scope_description_status: 403 };
 }
 
-export async function verify(target: string, token: string, anon: string) {
+export async function verify(target: string, token: string, anon: string, requireLogEvent = false) {
   const rpc = async (method: string, params: Obj, requestId = crypto.randomUUID()) => {
     const response = await request(target, { method: "POST", redirect: "error",
       headers: { authorization: `Bearer ${token}`, apikey: anon, "content-type": "application/json",
@@ -256,7 +256,17 @@ export async function verify(target: string, token: string, anon: string) {
   // Acceptance uses the existing read-only engineering fixture. It must not
   // depend on optional VM access or revisit the working LiveKit installation.
   const tool = tools.get("supabase.logs.query"); requireThat(tool, "candidate_log_fixture_scope_unavailable");
-  const now = Date.now(), args = { source: "function_logs", start: new Date(now - 60000).toISOString(), end: new Date(now).toISOString(), limit: 5 };
+  const now = Date.now(), args = { source: "function_logs", start: new Date(now - 60000).toISOString(), end: new Date(now).toISOString(), limit: requireLogEvent ? 100 : 5 };
+  if (requireLogEvent) {
+    // The protected release verifies the fixture source digest immediately before
+    // this harmless GET. The same normal customer Auth session is retained.
+    const emitted = await request(`${base}/functions/v1/${policy.function_slug}`, {
+      redirect: "error", headers: { authorization: `Bearer ${token}`, apikey: anon, "cache-control": "no-store" },
+    });
+    const marker = await json(emitted) as Obj;
+    requireThat(emitted.status === 200 && marker.fixture === "sandy_engineering_execution_fixture_20261021" &&
+      [1, 2].includes(marker.version), "candidate_log_fixture_invocation_failed");
+  }
   const validator = new AjvJsonSchemaValidator();
   requireThat(validator.getValidator(tool.inputSchema)(args).valid, "candidate_log_input_schema_mismatch");
   const envelope = (body: unknown) => {
@@ -264,13 +274,21 @@ export async function verify(target: string, token: string, anon: string) {
     if (object(body.result._meta?.sandy_api)) return body.result._meta.sandy_api;
     try { return JSON.parse(body.result.content[0].text); } catch { throw new Failure("candidate_missing_API_envelope"); }
   };
-  const positive = await rpc("tools/call", { name: tool.name, arguments: args }), api = envelope(positive.body);
-  const result = (positive.body as Obj).result, payload = result.structuredContent;
+  let positive: any, api: Obj = {}, payload: Obj = {};
+  let logAttempts = 0;
+  for (const wait of (requireLogEvent ? [0, 5000, 15000, 30000] : [0])) {
+    if (wait) await new Promise(resolve => setTimeout(resolve, wait));
+    if (requireLogEvent) args.end = new Date(Date.now()).toISOString();
+    logAttempts++;
+    positive = await rpc("tools/call", { name: tool.name, arguments: args }); api = envelope(positive.body);
+    const result = (positive.body as Obj).result; payload = result.structuredContent;
   requireThat(positive.status === 200 && result.isError === false && api.status === 200 && api.result?.executed === true &&
     typeof api.result.admission_id === "string" && /^[a-f0-9]{8}-[a-f0-9-]{27}$/.test(api.result.admission_id) &&
     payload?.provider_http_status === 200 && Array.isArray(payload.result?.entries) &&
     payload.result.entries.every((entry: Obj) => typeof entry.message === "string" && policy.function_console_markers.includes(entry.message.trim())) &&
     validator.getValidator(tool.outputSchema)(payload).valid, "candidate_provider_execution_not_verified");
+    if (!requireLogEvent || payload.result.entries.length > 0) break;
+  }
   const denied = await rpc("tools/call", { name: tool.name, arguments: { ...args, source: "auth_logs" } }), denial = envelope(denied.body);
   requireThat(denied.status === 200 && (denied.body as Obj).result.isError === true && denial.status === 403 &&
     denial.result?.executed === false && !denial.result?.admission_id, "candidate_wrong_log_source_not_denied");
@@ -278,6 +296,7 @@ export async function verify(target: string, token: string, anon: string) {
     operation: tool.name, provider_log_query_verified: true, provider_http_status: 200,
     admission_id: api.result.admission_id, matching_fixture_markers: payload.result.entries.length,
     log_event_delivery_verified: payload.result.entries.length > 0,
+    fixture_invoked: requireLogEvent, log_read_attempts: logAttempts,
     wrong_log_source_API_status: 403, wrong_source_denied_before_admission: true,
     VM_diagnostics_performed: false, remote_command_executed: false };
 }
@@ -330,7 +349,8 @@ if (import.meta.main) {
     report.acceptance_stage = "api_rest_catalogue";
     Object.assign(report, await verifyRestCatalogue(issued.token, anon));
     report.acceptance_stage = "mcp_candidate";
-    Object.assign(report, await verify(target, issued.token, anon));
+    Object.assign(report, await verify(target, issued.token, anon, Deno.args.includes("--require-log-event")));
+    requireThat(!Deno.args.includes("--require-log-event") || report.log_event_delivery_verified === true, "candidate_log_event_delivery_unverified");
     report.acceptance_stage = "complete"; report.passed = true;
   } catch (error) {
     // Copy before retirement sends its own requests and overwrites the tracker.

@@ -1,0 +1,137 @@
+name: Release protected Sandy administrator read connection
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [prepare, deploy]
+        required: true
+        default: prepare
+permissions:
+  contents: read
+  actions: read
+  id-token: write
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: sandy-production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Test administrator, Auth and release boundaries
+        run: |
+          deno test scripts/sandy/verify_gcp_admin_candidate_test.ts scripts/sandy/verify_mcp_candidate_test.ts supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_gcp_api_admin_release.py -v
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const repo={owner:context.repo.owner,repo:context.repo.repo};
+            const {data:a}=await github.rest.actions.getArtifact({...repo,artifact_id:12460309247});
+            if(a.expired || a.workflow_run.id!==39849886412 || a.workflow_run.head_sha!=='45054252f4e4b824163ae2683615b96095398c34' || a.workflow_run.repository_id!==1416227508)
+              throw Error('original_candidate_artifact_required');
+      - uses: actions/download-artifact@v4
+        with:
+          artifact-ids: '12460309247'
+          github-token: ${{ github.token }}
+          run-id: '39849886412'
+          path: ${{ runner.temp }}/sandy-original-candidate
+          merge-multiple: true
+      - name: Retain existing scoped deployment identity restrictions
+        env:
+          PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
+          WIF_PROVIDER: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          DEPLOYER: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test "$PROJECT" = elaborate-haven-511518-a5
+          test -n "$WIF_PROVIDER"
+          test -n "$DEPLOYER"
+          test "$DEPLOYER" != sandy-cloud-administrator@elaborate-haven-511518-a5.iam.gserviceaccount.com
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Independently preserve exact running candidate and production traffic
+        env:
+          SANDY_CANDIDATE_SOURCE: '45054252f4e4b824163ae2683615b96095398c34'
+          SANDY_RELEASE_RUN: '39849886412'
+          SANDY_RELEASE_ATTEMPT: '4'
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/sandy-admin-acceptance"
+          gcloud run services describe sandy-engineering-mcp --project elaborate-haven-511518-a5 --region europe-west1 --format='json(status.traffic,status.url,spec.template.spec.serviceAccountName)' > "$RUNNER_TEMP/sandy-admin-acceptance/live-service.json"
+          gcloud run revisions describe sandy-engineering-mcp-api-39849886412-4 --project elaborate-haven-511518-a5 --region europe-west1 --format='json(metadata.name,metadata.labels,spec.serviceAccountName,status.conditions,status.imageDigest)' > "$RUNNER_TEMP/sandy-admin-acceptance/live-revision.json"
+          deno run --allow-env --allow-read --allow-write scripts/sandy/existing_mcp_candidate.ts verify "$RUNNER_TEMP/sandy-original-candidate" "$RUNNER_TEMP/sandy-admin-acceptance"
+      - name: Install only reviewed source patches, migrations and worker binding
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          PYTHONDONTWRITEBYTECODE: '1'
+          PYTHONPATH: scripts/sandy
+        run: |
+          set -euo pipefail
+          args=()
+          if [ "$RELEASE_MODE" = deploy ]; then args+=(--deploy); fi
+          python3 scripts/sandy/release_gcp_admin_read.py "${args[@]}" --evidence-dir "$RUNNER_TEMP/sandy-admin-source-release"
+      - name: Independently test normal Owner Auth, runtime token issuance and both IAP reads
+        id: admin
+        if: ${{ inputs.mode == 'deploy' }}
+        continue-on-error: true
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          SANDY_CONTROLLER_ACCESS_TOKEN: ${{ secrets.SANDY_CONTROLLER_ACCESS_TOKEN }}
+        run: >-
+          deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_gcp_admin_candidate.ts
+          --output "$RUNNER_TEMP/sandy-admin-acceptance/administrator-acceptance.json"
+      - name: Pin approved harmless log fixture before invocation
+        if: ${{ inputs.mode == 'deploy' }}
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+          PYTHONPATH: scripts/sandy
+        run: >-
+          python3 -c 'from pathlib import Path; from release_gcp_admin_read import Installer,verify_fixture; import json; print(json.dumps(verify_fixture(Installer(Path("/tmp")))))'
+      - name: Verify customer MCP regression and actual fixture log delivery
+        id: logs
+        if: ${{ inputs.mode == 'deploy' }}
+        continue-on-error: true
+        env:
+          SANDY_ACCEPTANCE_PRIMARY_BINDING: SANDY_SUPABASE_MANAGEMENT_TOKEN
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: >-
+          deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_mcp_candidate.ts
+          --release-dir "$RUNNER_TEMP/sandy-original-candidate"
+          --source-commit 45054252f4e4b824163ae2683615b96095398c34 --require-log-event
+          --output "$RUNNER_TEMP/sandy-admin-acceptance/log-delivery-acceptance.json"
+      - name: Record bounded evidence and enforce both acceptance gates
+        if: ${{ always() && inputs.mode == 'deploy' }}
+        env:
+          ADMIN_OUTCOME: ${{ steps.admin.outcome }}
+          LOG_OUTCOME: ${{ steps.logs.outcome }}
+        run: |
+          python3 - <<'PY'
+          import os,json,pathlib
+          root=pathlib.Path(os.environ['RUNNER_TEMP'])/'sandy-admin-acceptance'
+          p=root/'log-delivery-acceptance.json'
+          if p.exists():
+              r=json.loads(p.read_text()); keys=['passed','error','normal_Auth_user_verified','normal_Auth_session_retired','tools_discovered','provider_log_query_verified','provider_http_status','admission_id','matching_fixture_markers','log_event_delivery_verified','wrong_source_denied_before_admission','fixture_invoked','log_read_attempts']
+              print('::notice title=Actual fixture log delivery::'+json.dumps({k:r[k] for k in keys if k in r}))
+          if os.environ['ADMIN_OUTCOME']!='success' or os.environ['LOG_OUTCOME']!='success':raise SystemExit('administrator_or_log_delivery_acceptance_not_verified_no_promotion')
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-admin-read-release-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/sandy-admin-source-release/
+            ${{ runner.temp }}/sandy-admin-acceptance/
+          retention-days: 7

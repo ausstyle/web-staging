@@ -16,6 +16,10 @@ on:
       - 'supabase/functions/sandy-engineering-runtime/**'
       - 'supabase/functions/sandy-engineering-control/gcp_admin_read*'
       - 'scripts/sandy/verify_mcp_candidate*'
+      - 'scripts/sandy/verify_gcp_admin_candidate*'
+      - 'scripts/sandy/release_gcp_admin_read.py'
+      - '.github/workflows/sandy-gcp-admin-read-release.yml'
+      - 'docs/sandy-engineering/evaluations/gcp-admin-read-release.json'
       - 'scripts/sandy/probe_mcp_management*'
       - 'scripts/sandy/existing_mcp_candidate*'
       - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
@@ -39,6 +43,10 @@ on:
       - 'supabase/functions/sandy-engineering-runtime/**'
       - 'supabase/functions/sandy-engineering-control/gcp_admin_read*'
       - 'scripts/sandy/verify_mcp_candidate*'
+      - 'scripts/sandy/verify_gcp_admin_candidate*'
+      - 'scripts/sandy/release_gcp_admin_read.py'
+      - '.github/workflows/sandy-gcp-admin-read-release.yml'
+      - 'docs/sandy-engineering/evaluations/gcp-admin-read-release.json'
       - 'scripts/sandy/probe_mcp_management*'
       - 'scripts/sandy/existing_mcp_candidate*'
       - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
@@ -58,25 +66,25 @@ jobs:
         with:
           deno-version: '2.9.6'
       - name: Test API, MCP and deployment evidence boundaries
-        run: >-
-          deno test
-          --import-map=scripts/sandy/testing/edge_types_import_map.json
-          --allow-read=supabase/functions/sandy-operation-api/registry_schema_ajv_reference_test_support.ts,supabase/functions/sandy-mission-runner/legacy-policy-source.json,supabase/functions/sandy-auto-improve/legacy-policy-source.json
-          supabase/functions/sandy-operation-api/
-          supabase/functions/sandy-api-mcp/
-          supabase/functions/sandy-deployment-api/
-          supabase/functions/sandy-provider-read-api/
-          supabase/functions/sandy-mission-runner/
-          supabase/functions/sandy-auto-improve/
-          supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_profiles_test.ts
-          supabase/functions/_shared/sandy_finish_receipt_test.ts
-          supabase/functions/_shared/sandy_engineering_session_test.ts
-          supabase/functions/_shared/sandy_engineering_session_client_test.ts
-          supabase/functions/sandy-engineering-runtime/
-          supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts
-          scripts/sandy/verify_mcp_candidate_test.ts
-          scripts/sandy/probe_mcp_management_test.ts
-          scripts/sandy/existing_mcp_candidate_test.ts
+        run: |
+          set +e
+          deno test --import-map=scripts/sandy/testing/edge_types_import_map.json --allow-read=supabase/functions/sandy-operation-api/registry_schema_ajv_reference_test_support.ts,supabase/functions/sandy-mission-runner/legacy-policy-source.json,supabase/functions/sandy-auto-improve/legacy-policy-source.json supabase/functions/sandy-operation-api/ supabase/functions/sandy-api-mcp/ supabase/functions/sandy-deployment-api/ supabase/functions/sandy-provider-read-api/ supabase/functions/sandy-mission-runner/ supabase/functions/sandy-auto-improve/ supabase/functions/_shared/sandy-agent-operations/worker_mission_planning_profiles_test.ts supabase/functions/_shared/sandy_finish_receipt_test.ts supabase/functions/_shared/sandy_engineering_session_test.ts supabase/functions/_shared/sandy_engineering_session_client_test.ts supabase/functions/sandy-engineering-runtime/ supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts scripts/sandy/verify_mcp_candidate_test.ts scripts/sandy/verify_gcp_admin_candidate_test.ts scripts/sandy/probe_mcp_management_test.ts scripts/sandy/existing_mcp_candidate_test.ts > "$RUNNER_TEMP/sandy-api-deno.log" 2>&1
+          test_status=$?
+          cat "$RUNNER_TEMP/sandy-api-deno.log"
+          if [ "$test_status" -ne 0 ]; then
+            python3 - <<'PYERROR'
+          import os,pathlib,re
+          # Isolated contract tests have no production credentials. Retain a
+          # bounded error annotation when the signed Actions log host is blocked.
+          text=(pathlib.Path(os.environ['RUNNER_TEMP'])/'sandy-api-deno.log').read_text()
+          text=re.sub(r'\x1b\[[0-9;]*m','',text)
+          start=text.find(' ERRORS ')
+          detail=(text[start:] if start>=0 else text[-4000:])[:4000]
+          detail=detail.replace('%','%25').replace('\r','%0D').replace('\n','%0A')
+          print('::error title=API contract regression failure::'+detail)
+          PYERROR
+          fi
+          exit "$test_status"
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'

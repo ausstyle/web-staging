@@ -47,10 +47,15 @@ Deno.test("release acceptance uses only the tagged endpoint of the exact preserv
 
 Deno.test("protected MCP acceptance needs no VM grant and distinguishes an empty provider log window from event delivery", async () => {
   const original = globalThis.fetch;
-  const calls: string[] = [];
+  const calls: string[] = []; let logEventMode = false;
   const tool = { name: "supabase.logs.query", inputSchema: { type: "object", required: ["source", "start", "end", "limit"] },
     outputSchema: { type: "object", required: ["provider_http_status", "result"] } };
   globalThis.fetch = (async (_url: unknown, init: RequestInit) => {
+    if (String(_url).endsWith("/sandy-engineering-execution-fixture")) {
+      calls.push("fixture_GET");
+      assert.equal(init.method, undefined);
+      return Response.json({fixture:"sandy_engineering_execution_fixture_20261021",version:1});
+    }
     const message = JSON.parse(String(init.body)); calls.push(message.method);
     let result;
     if (message.method === "initialize") result = { serverInfo: { name: "fixture", version: "test" } };
@@ -58,13 +63,13 @@ Deno.test("protected MCP acceptance needs no VM grant and distinguishes an empty
     else {
       assert.equal(message.params.name, "supabase.logs.query");
       const args = message.params.arguments;
-      assert.equal(args.limit, 5);
-      assert.ok(Date.parse(args.end) - Date.parse(args.start) <= 60000);
+      assert.equal(args.limit, logEventMode ? 100 : 5);
+      assert.ok(Date.parse(args.end) - Date.parse(args.start) <= (logEventMode ? 900000 : 60000));
       const denied = args.source !== "function_logs";
       result = { isError: denied, content: [],
         _meta: { sandy_api: { status: denied ? 403 : 200, result: denied ? { executed: false } : {
           executed: true, admission_id: "11111111-1111-4111-8111-111111111111",
-        } } }, structuredContent: denied ? {} : { provider_http_status: 200, result: { entries: [] } } };
+        } } }, structuredContent: denied ? {} : { provider_http_status: 200, result: { entries: logEventMode ? [{message:"sandy_engineering_execution_fixture_20261021_v1"}] : [] } } };
     }
     return Response.json({ jsonrpc: "2.0", id: message.id, result });
   }) as typeof fetch;
@@ -76,13 +81,18 @@ Deno.test("protected MCP acceptance needs no VM grant and distinguishes an empty
     assert.equal(proof.VM_diagnostics_performed, false);
     assert.equal(proof.wrong_source_denied_before_admission, true);
     assert.deepEqual(calls, ["initialize", "tools/list", "tools/call", "tools/call"]);
+    logEventMode = true; calls.length = 0;
+    const delivery = await verify("https://fixed-fixture.invalid/mcp", "synthetic.user", "synthetic.anon", true);
+    assert.equal(delivery.log_event_delivery_verified, true); assert.equal(delivery.fixture_invoked, true);
+    assert.equal(delivery.matching_fixture_markers, 1);
+    assert.deepEqual(calls, ["initialize", "tools/list", "fixture_GET", "tools/call", "tools/call"]);
   } finally { globalThis.fetch = original; }
 });
 
 Deno.test("REST acceptance rejects a server that ignores page limits and checks an advancing authorized catalogue", async () => {
   const original = globalThis.fetch;
   let ignoreLimit = true;
-  const records = Array.from({ length: 5 }, (_, i) => ({ operation: "fixture.read." + i }));
+  const records = Array.from({ length: 100 }, (_, i) => ({ operation: "fixture.read." + i }));
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = new URL(String(input));
     if (url.pathname.endsWith("/supabase.logs.query")) return Response.json({ ok: true,
@@ -92,14 +102,14 @@ Deno.test("REST acceptance rejects a server that ignores page limits and checks 
     return Response.json({ ok: true, catalogue_version: "a".repeat(64),
       operations: ignoreLimit ? [...records, { operation: "supabase.logs.query" }]
         : url.searchParams.has("cursor") ? [{ operation: "supabase.logs.query" }] : records,
-      ...(!ignoreLimit && !url.searchParams.has("cursor") ? { next_cursor: "sc1." + "a".repeat(64) + ".5" } : {}) });
+      ...(!ignoreLimit && !url.searchParams.has("cursor") ? { next_cursor: "sc1." + "a".repeat(64) + ".100" } : {}) });
   }) as typeof fetch;
   try {
     await assert.rejects(() => verifyRestCatalogue("synthetic.user", "synthetic.anon"), /API_REST_catalogue_page_invalid/);
     ignoreLimit = false;
     const proof = await verifyRestCatalogue("synthetic.user", "synthetic.anon");
     assert.equal(proof.API_REST_discovery_pages, 2);
-    assert.equal(proof.API_REST_operations_observed, 6);
+    assert.equal(proof.API_REST_operations_observed, 101);
     assert.equal(proof.out_of_scope_description_status, 403);
   } finally { globalThis.fetch = original; }
 });
