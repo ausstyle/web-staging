@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-10-22T17:34:13.070078+00:00",
+  "generated_at_utc": "2026-10-22T18:13:29.907063+00:00",
   "summary": {
     "original_families": 161,
     "fully_accepted_families": 0,
@@ -11,8 +11,8 @@
     "documented_distinct_MCP_success_operations": 84,
     "documented_distinct_MCP_denial_operations": 24,
     "registry_rows": 2585,
-    "api_flags": 460,
-    "ai_flags": 443,
+    "api_flags": 470,
+    "ai_flags": 453,
     "verified_flags": 79,
     "missing_required_registry_operation_ids": [
       "supabase.functions.invoke",
@@ -32,7 +32,7 @@
   "parts": [
     {
       "file": "requirement-coverage-current-part-1.json",
-      "sha256": "ace43e6e31d23514ba15bf0a4d92b68c914de76f1521621881705c9f8b44ab45",
+      "sha256": "dadcfd8eb27a1c7f84031e737dfa460a2ba56cc92929dfe9f89b3439d5d4f7ac",
       "rows": 54
     },
     {
@@ -47,8 +47,8 @@
     }
   ],
   "scope_markdown_sha256": "8a33c2b32554b61498ff81e4d29ba15c48301d1bf4b7c06a09fae5e36939cab4",
-  "scope_disposition_sha256": "383def6880536468de9ca0011e339679984dc5f82f5d20c17694d9608816531f",
-  "full_reconciliation_snapshot_sha256": "4c397cf22fe5cd3ef96bb0d431042a840074cdb214625d9a6901245557c9b485",
+  "scope_disposition_sha256": "871ef5c08e6657a333457fef6ff21a40d543fb7fa1f87c6da97e6a88faa4e530",
+  "full_reconciliation_snapshot_sha256": "1cf635610478db31a86cb0b9299c0735694050b5b8a12ac3504049407d6c466f",
   "original_required_mapping_archive": "requirement-coverage-161.json",
   "required_mapping_archive_is_historical_metadata": true,
   "current_MCP_evidence_files": [
@@ -117,9 +117,11 @@
     }
   ],
   "latest_control_release_evidence": {
-    "file": "bounded-guest-policy-release-evidence-20261022.json",
-    "sha256": "e0a9bcb4fc874a3232e7d1b1ebc0363d7f5e96d7bc2662eec25496912e55198b",
-    "guest_API_version": 17,
-    "whole_family_acceptance": false
+    "file": "approved-computer-canary-execution-evidence-20261022.json",
+    "provider_or_OS_acceptance_inferred": false,
+    "source_commit": "3553daaeb091536cc25c65ea134fa98db7ab7bae",
+    "guest_API_version": 18,
+    "delegation_version": 6,
+    "sha256": "d08a9f82e0fbfef5d0882ce2f3eb76da9b017385312558d5c5b6667a909261f9"
   }
 }

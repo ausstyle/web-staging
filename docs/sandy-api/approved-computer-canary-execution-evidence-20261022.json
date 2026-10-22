@@ -1,0 +1,1052 @@
+{
+  "observed_at": "2026-10-22T18:12:31.619787+00:00",
+  "source_commit": "3553daaeb091536cc25c65ea134fa98db7ab7bae",
+  "scope": "SANDY-ENG-0001/0005 bounded computer canary authorization and failure receipts",
+  "approved_delegation": {
+    "approval": "Explicit user approval of exact immutable proposal in this session; protected Management administration, not workload self-authorization or interactive Owner Auth approval.",
+    "proposal_commit": "11636b525119327ce794f87975c291c24232db35",
+    "proposal_path": "docs/sandy-engineering/policies/engineering-computer-canary-proposal.json",
+    "proposal_file_sha256": "5dcbbe945e63fa00d1eecb089d3ad9085bc88e148b3ed51934402360b9f1be1f",
+    "policy_sha256": "71451e7b0a092b28e99b60075711d879c29f4134a1b2473ab0c8998be72b2555",
+    "policy_hash_encoding": "UTF-8 JSON sort_keys=True separators=(comma,colon), no newline",
+    "observed_at": "2026-10-22T18:02:43.443228+00:00",
+    "before_version": 5,
+    "after_delegation": {
+      "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+      "id": "da36e501-f8c5-4e11-ba79-44d5ba2be289",
+      "version": 6,
+      "owner_authority_id": "ffba8e24-f452-44c8-ba9d-228b8657e3cc",
+      "policy": {
+        "classes": {
+          "gcp": [
+            "metadata_read",
+            "guest_read",
+            "guest_files_write",
+            "guest_services_write",
+            "guest_packages_write"
+          ],
+          "github": [
+            "metadata_read",
+            "source_read",
+            "code_write",
+            "git_write",
+            "pull_request_write"
+          ],
+          "supabase": [
+            "metadata_read"
+          ]
+        },
+        "version": "standing-engineering-v1",
+        "computer": {
+          "targets": {
+            "sandy-video": {
+              "zone": "europe-west1-b",
+              "packages": {
+                "names": [
+                  "hello"
+                ],
+                "manager": "apt"
+              },
+              "services": [
+                "sandy-engineering-canary"
+              ],
+              "project_id": "elaborate-haven-511518-a5",
+              "instance_id": "6831598645020395570",
+              "file_prefixes": [
+                "sandy-engineering-canary/"
+              ]
+            },
+            "sandy-windows": {
+              "zone": "europe-west1-b",
+              "packages": {
+                "names": [
+                  "7zip.7zip"
+                ],
+                "manager": "winget"
+              },
+              "services": [
+                "SandyEngineeringCanary"
+              ],
+              "project_id": "elaborate-haven-511518-a5",
+              "instance_id": "8120150462304566315",
+              "file_prefixes": [
+                "sandy-engineering-canary/"
+              ]
+            }
+          }
+        },
+        "resources": {
+          "gcp": [
+            "elaborate-haven-511518-a5"
+          ],
+          "github": [
+            "ausstyle/web-staging"
+          ],
+          "supabase": [
+            "zmqlyygzqoidkcwdysok"
+          ]
+        },
+        "environments": [
+          "test",
+          "production"
+        ],
+        "risk_ceiling": "routine",
+        "requests_per_minute": 30,
+        "declared_unit_budget": 0
+      },
+      "tenant_id": null,
+      "source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+      "source_sha256": "71451e7b0a092b28e99b60075711d879c29f4134a1b2473ab0c8998be72b2555",
+      "established_by": "postgres",
+      "established_at": "2026-10-22 18:02:11.860777+00",
+      "engineering_change_id": "fa703b39-eca6-4089-bfe8-59018cc6a0e0",
+      "expires_at": "2026-11-21 09:51:26.753549+00",
+      "revoked_at": null
+    },
+    "independent_readback_match": true,
+    "unchanged_enrollment_registry_identity_and_setter": true,
+    "privileges": [
+      {
+        "role": "postgres",
+        "can_execute": true
+      },
+      {
+        "role": "anon",
+        "can_execute": false
+      },
+      {
+        "role": "authenticated",
+        "can_execute": false
+      },
+      {
+        "role": "service_role",
+        "can_execute": false
+      }
+    ],
+    "audit": [
+      {
+        "actor_kind": "management_administration",
+        "event_type": "scope_authorized",
+        "detail": {
+          "mode": "standing_policy_administration",
+          "policy": {
+            "classes": {
+              "gcp": [
+                "metadata_read",
+                "guest_read",
+                "guest_files_write",
+                "guest_services_write",
+                "guest_packages_write"
+              ],
+              "github": [
+                "metadata_read",
+                "source_read",
+                "code_write",
+                "git_write",
+                "pull_request_write"
+              ],
+              "supabase": [
+                "metadata_read"
+              ]
+            },
+            "version": "standing-engineering-v1",
+            "computer": {
+              "targets": {
+                "sandy-video": {
+                  "zone": "europe-west1-b",
+                  "packages": {
+                    "names": [
+                      "hello"
+                    ],
+                    "manager": "apt"
+                  },
+                  "services": [
+                    "sandy-engineering-canary"
+                  ],
+                  "project_id": "elaborate-haven-511518-a5",
+                  "instance_id": "6831598645020395570",
+                  "file_prefixes": [
+                    "sandy-engineering-canary/"
+                  ]
+                },
+                "sandy-windows": {
+                  "zone": "europe-west1-b",
+                  "packages": {
+                    "names": [
+                      "7zip.7zip"
+                    ],
+                    "manager": "winget"
+                  },
+                  "services": [
+                    "SandyEngineeringCanary"
+                  ],
+                  "project_id": "elaborate-haven-511518-a5",
+                  "instance_id": "8120150462304566315",
+                  "file_prefixes": [
+                    "sandy-engineering-canary/"
+                  ]
+                }
+              }
+            },
+            "resources": {
+              "gcp": [
+                "elaborate-haven-511518-a5"
+              ],
+              "github": [
+                "ausstyle/web-staging"
+              ],
+              "supabase": [
+                "zmqlyygzqoidkcwdysok"
+              ]
+            },
+            "environments": [
+              "test",
+              "production"
+            ],
+            "risk_ceiling": "routine",
+            "requests_per_minute": 30,
+            "declared_unit_budget": 0
+          },
+          "version": 6,
+          "tenant_id": null,
+          "expires_at": "2026-11-21T09:51:26.753549+00:00",
+          "administrator": "postgres",
+          "delegation_id": "da36e501-f8c5-4e11-ba79-44d5ba2be289",
+          "source_commit": "384b07258a99db03fd5e41fd5cf7ee5c356045c7",
+          "source_sha256": "71451e7b0a092b28e99b60075711d879c29f4134a1b2473ab0c8998be72b2555",
+          "interactive_owner_approval": false
+        },
+        "occurred_at": "2026-10-22 18:02:11.86616+00"
+      }
+    ],
+    "VM_commands_executed": 0,
+    "provider_execution_verified": false
+  },
+  "exposure_release": {
+    "observed_at": "2026-10-22T18:06:22.210469+00:00",
+    "PR": 184,
+    "source_commit": "85893956615c782d3dc449dba2baa67f2bca3bfd",
+    "merge_commit": "5971ea2aa628fdcf8d5134e6713d787099cf0563",
+    "deployment_channel": "authorized_Supabase_Management",
+    "migration": {
+      "version": "20261022183000",
+      "name": "sandy_guest_canary_exposure",
+      "migration_sha256": "9b43f53ad527bef23fe71f83c042afc8215c00e3c1fd5d7e90eb0142da5d3a2c"
+    },
+    "checks": [
+      {
+        "id": 119996960161,
+        "name": "api-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119996959894,
+        "name": "vm-protocol-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "exact_ten_exposure_pairs_changed": true,
+    "verification_flags_or_timestamps_changed": false,
+    "new_operations": 0,
+    "source_Edge_deployments_changed": false,
+    "guest_API_version": 17,
+    "changes": [
+      {
+        "before": {
+          "operation": "gcp.vm.files.download",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.files.download",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.files.upload",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.files.upload",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.packages.install",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.packages.install",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.packages.remove",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.packages.remove",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.packages.update",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.packages.update",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.services.restart",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.services.restart",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.services.start",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.services.start",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.services.status",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.services.status",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.services.stop",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.services.stop",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      },
+      {
+        "before": {
+          "operation": "gcp.vm.tasks.get",
+          "api_exposed": false,
+          "ai_exposed": false,
+          "verified": false,
+          "last_verified_at": null
+        },
+        "after": {
+          "operation": "gcp.vm.tasks.get",
+          "api_exposed": true,
+          "ai_exposed": true,
+          "verified": false,
+          "last_verified_at": null
+        }
+      }
+    ]
+  },
+  "receipt_release": {
+    "change_id": "281bf476-e1e8-4756-b5cd-3d78cae0cb8d",
+    "source_commit": "3553daaeb091536cc25c65ea134fa98db7ab7bae",
+    "merge_commit": "3219c278166bff21c4eb7ad692aeff21110d81bf",
+    "before_version": 17,
+    "candidate_version": 18,
+    "before_body_sha256": "491b5685651b478305f97deb0677b656046de8440db3f43af77f0a8e679e082e",
+    "CI_checks": [
+      {
+        "id": 119999777758,
+        "name": "api-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119999777277,
+        "name": "examiner-evidence-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119999777164,
+        "name": "vm-protocol-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      },
+      {
+        "id": 119999776827,
+        "name": "offline-contract-tests",
+        "status": "completed",
+        "conclusion": "success"
+      }
+    ],
+    "rollback": "Preserved exact source-attested guest17 bundle and JWT metadata. If guest18 regresses, restore reviewed 11636b5 source as a new version after component/version checks. Preserve delegation6, registry exposure and append-only receipts; never replay uncertain guest mutations.",
+    "observed_at": "2026-10-22T18:11:30.773643+00:00",
+    "PR": 185,
+    "verify_jwt": true,
+    "all_uploaded_sources_accounted_for": true,
+    "deployment_channel": "authorized_Supabase_Management",
+    "delegation_enrollment_registry_flags_unchanged": true,
+    "VM_commands_executed": 0,
+    "provider_execution_verified": false
+  },
+  "discovery": {
+    "tools": 243,
+    "pages": 3,
+    "canary_tools": [
+      "gcp.vm.files.download",
+      "gcp.vm.files.upload",
+      "gcp.vm.packages.install",
+      "gcp.vm.packages.remove",
+      "gcp.vm.packages.update",
+      "gcp.vm.services.restart",
+      "gcp.vm.services.start",
+      "gcp.vm.services.status",
+      "gcp.vm.services.stop",
+      "gcp.vm.tasks.get"
+    ],
+    "exact_typed_schemas": true,
+    "restricted_operations_absent": true
+  },
+  "normal_renewable_workload_Auth": true,
+  "personal_Controller_token_used": false,
+  "initial_allowed_dependency_probes": [
+    {
+      "operation": "gcp.vm.files.upload",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "path": "sandy-engineering-canary/probe-a26bb43d6cc4419b984e1653a8df23c3.txt",
+        "content_base64": "U2FuZHkgYXV0aG9yaXplZCBjb21wdXRlciBjYW5hcnkK",
+        "sha256": "f31a381e94d3e7222500bf6a52fb3b7fab57dba62b6e061b4aa87815a2826f5b"
+      },
+      "request_id": "949d66b6-f29e-4d57-91b3-628a2384b912",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "f6d97982-0020-4def-a900-2a485496b91c",
+          "state": "consumed",
+          "provider_http_status": null,
+          "result_sha256": null,
+          "delegation_version": 6,
+          "job_status": "running",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.packages.install",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "manager": "apt",
+        "packages": [
+          "hello"
+        ]
+      },
+      "request_id": "ec5b3307-56a2-488b-9f43-93fb13c412be",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "2dda8f60-7915-4ddd-b9d0-51afc7c87e74",
+          "state": "consumed",
+          "provider_http_status": null,
+          "result_sha256": null,
+          "delegation_version": 6,
+          "job_status": "running",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.services.status",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "service": "sandy-engineering-canary"
+      },
+      "request_id": "b6cc740b-d91e-438a-bb8d-94c363c4a599",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "46dc1cab-7681-4cb0-9c90-3dc2f7352695",
+          "state": "consumed",
+          "provider_http_status": null,
+          "result_sha256": null,
+          "delegation_version": 6,
+          "job_status": "running",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.files.upload",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "path": "sandy-engineering-canary/probe-9c6df56929cb4c359d827a88e5bdc801.txt",
+        "content_base64": "U2FuZHkgYXV0aG9yaXplZCBjb21wdXRlciBjYW5hcnkK",
+        "sha256": "f31a381e94d3e7222500bf6a52fb3b7fab57dba62b6e061b4aa87815a2826f5b"
+      },
+      "request_id": "67dc175b-4a3f-4475-8947-7712110d568b",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "b9f6de5d-a859-454b-94a3-958797594f80",
+          "state": "consumed",
+          "provider_http_status": null,
+          "result_sha256": null,
+          "delegation_version": 6,
+          "job_status": "running",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.packages.install",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "manager": "winget",
+        "packages": [
+          "7zip.7zip"
+        ]
+      },
+      "request_id": "021fffe9-b6ef-43fe-95a8-1e36ab074478",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "2f778a4c-c8aa-4ba6-a990-996dc56682ff",
+          "state": "consumed",
+          "provider_http_status": null,
+          "result_sha256": null,
+          "delegation_version": 6,
+          "job_status": "running",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.services.status",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "service": "SandyEngineeringCanary"
+      },
+      "request_id": "62d52e99-c2c1-4ddb-a705-81b54dddc504",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "f9f47ad7-1249-4403-aad8-20798c0d0267",
+          "state": "consumed",
+          "provider_http_status": null,
+          "result_sha256": null,
+          "delegation_version": 6,
+          "job_status": "running",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": []
+    }
+  ],
+  "boundary_denials": [
+    {
+      "operation": "gcp.vm.files.download",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "path": "outside-canary/probe.txt"
+      },
+      "request_id": "7f2874c9-04d7-42ce-95e1-eb8a4bde474c",
+      "API_status": 403,
+      "error": "engineering_policy_blocked",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.packages.install",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "manager": "apt",
+        "packages": [
+          "not-authorized-canary-package"
+        ]
+      },
+      "request_id": "55115ccf-7ee5-4f58-b66d-45e5a30c7020",
+      "API_status": 403,
+      "error": "engineering_policy_blocked",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.services.restart",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "service": "NotAuthorizedCanaryService"
+      },
+      "request_id": "d316e2d8-3dff-43b5-b7d8-e0039967df77",
+      "API_status": 403,
+      "error": "engineering_policy_blocked",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.files.download",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "path": "outside-canary/probe.txt"
+      },
+      "request_id": "c9db12a9-f6d9-427d-9dc2-044273ab6107",
+      "API_status": 403,
+      "error": "engineering_policy_blocked",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.packages.install",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "manager": "winget",
+        "packages": [
+          "not-authorized-canary-package"
+        ]
+      },
+      "request_id": "02f305cd-f596-4afb-bf84-aa36eb2339e7",
+      "API_status": 403,
+      "error": "engineering_policy_blocked",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    },
+    {
+      "operation": "gcp.vm.services.restart",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "service": "NotAuthorizedCanaryService"
+      },
+      "request_id": "a807d89f-290c-4803-9e9b-73acefde0a54",
+      "API_status": 403,
+      "error": "engineering_policy_blocked",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    }
+  ],
+  "known_rejection_reconciliation": {
+    "observed_at": "2026-10-22T18:12:06.928487+00:00",
+    "administration_channel": "protected_Management_reconciliation_of_observed_prequeue_rejections",
+    "actual_dispatches_replayed": 0,
+    "guest_jobs_created": 0,
+    "provider_results_claimed": false,
+    "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+    "admissions": [
+      {
+        "id": "2dda8f60-7915-4ddd-b9d0-51afc7c87e74",
+        "state": "failed",
+        "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+        "provider_http_status": null,
+        "job_status": "failed"
+      },
+      {
+        "id": "2f778a4c-c8aa-4ba6-a990-996dc56682ff",
+        "state": "failed",
+        "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+        "provider_http_status": null,
+        "job_status": "failed"
+      },
+      {
+        "id": "46dc1cab-7681-4cb0-9c90-3dc2f7352695",
+        "state": "failed",
+        "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+        "provider_http_status": null,
+        "job_status": "failed"
+      },
+      {
+        "id": "b9f6de5d-a859-454b-94a3-958797594f80",
+        "state": "failed",
+        "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+        "provider_http_status": null,
+        "job_status": "failed"
+      },
+      {
+        "id": "f6d97982-0020-4def-a900-2a485496b91c",
+        "state": "failed",
+        "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+        "provider_http_status": null,
+        "job_status": "failed"
+      },
+      {
+        "id": "f9f47ad7-1249-4403-aad8-20798c0d0267",
+        "state": "failed",
+        "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+        "provider_http_status": null,
+        "job_status": "failed"
+      }
+    ],
+    "audit": [
+      {
+        "admission_id": "2dda8f60-7915-4ddd-b9d0-51afc7c87e74",
+        "phase": "admission",
+        "outcome": "admitted",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "2dda8f60-7915-4ddd-b9d0-51afc7c87e74",
+        "phase": "grant",
+        "outcome": "consumed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "2dda8f60-7915-4ddd-b9d0-51afc7c87e74",
+        "phase": "execution",
+        "outcome": "failed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "2f778a4c-c8aa-4ba6-a990-996dc56682ff",
+        "phase": "admission",
+        "outcome": "admitted",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "2f778a4c-c8aa-4ba6-a990-996dc56682ff",
+        "phase": "grant",
+        "outcome": "consumed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "2f778a4c-c8aa-4ba6-a990-996dc56682ff",
+        "phase": "execution",
+        "outcome": "failed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "46dc1cab-7681-4cb0-9c90-3dc2f7352695",
+        "phase": "admission",
+        "outcome": "admitted",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "46dc1cab-7681-4cb0-9c90-3dc2f7352695",
+        "phase": "grant",
+        "outcome": "consumed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "46dc1cab-7681-4cb0-9c90-3dc2f7352695",
+        "phase": "execution",
+        "outcome": "failed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "b9f6de5d-a859-454b-94a3-958797594f80",
+        "phase": "admission",
+        "outcome": "admitted",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "b9f6de5d-a859-454b-94a3-958797594f80",
+        "phase": "grant",
+        "outcome": "consumed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "b9f6de5d-a859-454b-94a3-958797594f80",
+        "phase": "execution",
+        "outcome": "failed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "f6d97982-0020-4def-a900-2a485496b91c",
+        "phase": "admission",
+        "outcome": "admitted",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "f6d97982-0020-4def-a900-2a485496b91c",
+        "phase": "grant",
+        "outcome": "consumed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "f6d97982-0020-4def-a900-2a485496b91c",
+        "phase": "execution",
+        "outcome": "failed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "f9f47ad7-1249-4403-aad8-20798c0d0267",
+        "phase": "admission",
+        "outcome": "admitted",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "f9f47ad7-1249-4403-aad8-20798c0d0267",
+        "phase": "grant",
+        "outcome": "consumed",
+        "hash_valid": true
+      },
+      {
+        "admission_id": "f9f47ad7-1249-4403-aad8-20798c0d0267",
+        "phase": "execution",
+        "outcome": "failed",
+        "hash_valid": true
+      }
+    ]
+  },
+  "post_release_MCP": [
+    {
+      "operation": "gcp.vm.files.upload",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "path": "sandy-engineering-canary/receipt-8e49975fc77b45e48270baae7f76a9e0.txt",
+        "content_base64": "eA==",
+        "sha256": "2d711642b726b04401627ca9fbac32f5c8530fb1903cc4db02258717921a4881"
+      },
+      "request_id": "45545dbe-cfe4-4c36-b3c7-96a5ea21caea",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "7fc95112-e515-42fb-ab10-652a2c76c231",
+          "operation": "gcp.vm.files.upload",
+          "state": "failed",
+          "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+          "provider_http_status": null,
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "delegation_version": 6,
+          "job_status": "failed",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": [],
+      "audit": [
+        {
+          "phase": "admission",
+          "outcome": "admitted",
+          "hash_valid": true
+        },
+        {
+          "phase": "grant",
+          "outcome": "consumed",
+          "hash_valid": true
+        },
+        {
+          "phase": "execution",
+          "outcome": "failed",
+          "hash_valid": true
+        }
+      ],
+      "terminal_failed_receipt": true,
+      "result_sha256_matches": true,
+      "provider_request_not_attempted": true
+    },
+    {
+      "operation": "gcp.vm.services.status",
+      "arguments": {
+        "vm_name": "sandy-windows",
+        "service": "SandyEngineeringCanary"
+      },
+      "request_id": "2cbea737-ec84-48bc-a590-ee0675674a6a",
+      "API_status": 424,
+      "error": "guest_enrollment_required",
+      "executed": false,
+      "admissions": [
+        {
+          "id": "48cf5dcd-a0ff-4a42-a03e-1a750095bba0",
+          "operation": "gcp.vm.services.status",
+          "state": "failed",
+          "result_sha256": "57603b8bbf743f1f802789dd65072b8e9e02175b3317ba8c719a2af95bcef720",
+          "provider_http_status": null,
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "delegation_version": 6,
+          "job_status": "failed",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": [],
+      "audit": [
+        {
+          "phase": "admission",
+          "outcome": "admitted",
+          "hash_valid": true
+        },
+        {
+          "phase": "grant",
+          "outcome": "consumed",
+          "hash_valid": true
+        },
+        {
+          "phase": "execution",
+          "outcome": "failed",
+          "hash_valid": true
+        }
+      ],
+      "terminal_failed_receipt": true,
+      "result_sha256_matches": true,
+      "provider_request_not_attempted": true
+    },
+    {
+      "operation": "gcp.vm.agent.status",
+      "arguments": {
+        "vm_name": "sandy-video"
+      },
+      "request_id": "49035feb-3f35-4619-a7c0-852a08c871b8",
+      "API_status": 200,
+      "error": null,
+      "executed": true,
+      "admissions": [
+        {
+          "id": "18f779be-1a21-45ec-a5a7-5e02f5162ded",
+          "operation": "gcp.vm.agent.status",
+          "state": "succeeded",
+          "result_sha256": "735d0bf53e10c4e66f7f42d7ad418e17cdc8c99462d9f51398b199632dd0eeb1",
+          "provider_http_status": 200,
+          "identity_user_id": "7a519da9-2ee3-4edf-adec-42697da5a560",
+          "delegation_version": 6,
+          "job_status": "succeeded",
+          "approved_by": null,
+          "approved_at": null
+        }
+      ],
+      "guest_jobs": [],
+      "audit": [
+        {
+          "phase": "admission",
+          "outcome": "admitted",
+          "hash_valid": true
+        },
+        {
+          "phase": "grant",
+          "outcome": "consumed",
+          "hash_valid": true
+        },
+        {
+          "phase": "execution",
+          "outcome": "succeeded",
+          "hash_valid": true
+        }
+      ],
+      "enrollment_database_readback_matches": true,
+      "remote_OS_execution": false
+    },
+    {
+      "operation": "gcp.vm.agent.install",
+      "arguments": {
+        "vm_name": "sandy-video",
+        "expected_metadata_fingerprint": "not-a-provider-fingerprint"
+      },
+      "request_id": "93029c09-8fbc-4069-908a-804f8e556885",
+      "API_status": 403,
+      "error": "engineering_operation_scope_denied",
+      "executed": false,
+      "admissions": [],
+      "guest_jobs": []
+    }
+  ],
+  "registry_verification_promotions": 0,
+  "new_registry_operations": 0,
+  "VM_commands_executed": 0,
+  "provider_effects_verified": false,
+  "fully_accepted_infrastructure_scenarios": 0,
+  "Linux_Windows_graphical_accepted": 0,
+  "limitations": [
+    "Both managed agents remain disabled generation0/no heartbeat; authorized guest requests return424 guest_enrollment_required.",
+    "Approved canary delegation explicitly excludes enrollment, installer, IAM, native commands and graphical sessions.",
+    "IAP4033 NOT_AUTHORIZED and unreadable policy HTTP403 are historical unchanged external dependencies; no repeated provider probes or IAM/network changes.",
+    "Native transport activation/trusted bindings and graphical lifecycle remain software work.",
+    "Ten typed tools are discoverable; this is not ten functional provider verifications. Only actual attempted calls have execution evidence."
+  ],
+  "initial_receipt_defect": "Six known no-dispatch rejections left consumed admissions/running jobs on guest17. Guest18 closes fresh pre-queue rejection; six old attempts reconciled through existing standard finish function without redispatch."
+}
