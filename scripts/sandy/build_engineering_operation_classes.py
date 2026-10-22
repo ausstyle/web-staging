@@ -31,7 +31,9 @@ def classify(op):
             return 'metadata_read'
         if '/contents/' in path and method in ('PUT', 'DELETE'):
             return 'code_write'
-        if '/git/' in path and method in ('POST', 'PATCH', 'DELETE'):
+        # Ref deletion has no provider compare-and-swap or preserved old head.
+        # It needs a separately reviewed destructive/recovery policy.
+        if '/git/' in path and method in ('POST', 'PATCH'):
             return 'git_write'
         if path == '/repos/{owner}/{repo}/pulls' and method == 'POST':
             return 'pull_request_write'
