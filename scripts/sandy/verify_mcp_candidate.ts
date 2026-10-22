@@ -281,8 +281,11 @@ if (import.meta.main) {
     sessions = createEngineeringSessionClient(base, service, request); issued = await sessions.get(workload); privateValues.push(issued.token);
     report.normal_Auth_user_verified = true; report.controller_memberships = 0;
     report.token_expiry_utc = new Date(issued.expiresAt).toISOString(); report.session_id = issued.sessionId;
+    report.acceptance_stage = "api_rest_catalogue";
     Object.assign(report, await verifyRestCatalogue(issued.token, anon));
-    Object.assign(report, await verify(target, issued.token, anon)); report.passed = true;
+    report.acceptance_stage = "mcp_candidate";
+    Object.assign(report, await verify(target, issued.token, anon));
+    report.acceptance_stage = "complete"; report.passed = true;
   } catch (error) {
     report.error = error instanceof Failure ? error.code : error instanceof Error && /^engineering_(auth|workload|credential)_[a-z_]+$/.test(error.message)
       ? error.message : "candidate_verification_failed";
