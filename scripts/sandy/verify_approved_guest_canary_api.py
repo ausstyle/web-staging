@@ -97,6 +97,8 @@ def verify(output: Path, resume_discovery=False):
         if admitted:
             assert admissions[0]["delegation_version"] == 6
             assert admissions[0]["approved_by"] is None and admissions[0]["approved_at"] is None
+            assert admissions[0]["state"] == "failed" and admissions[0]["job_status"] == "failed"
+            assert admissions[0]["provider_http_status"] is None and admissions[0]["result_sha256"]
         print(json.dumps(result["proof"]), flush=True)
 
     fixture = b"Sandy authorized computer canary\n"
