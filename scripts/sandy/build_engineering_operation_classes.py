@@ -12,6 +12,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SOURCES = ['sandy-provider-operation-api/contracts.json',
            'sandy-provider-operation-api/expansion_contracts.json',
            'sandy-legacy-compatibility-api/provider_contracts.json']
+GUEST_SOURCE = 'sandy-guest-operation-api/contracts.json'
 
 
 def classify(op):
@@ -60,6 +61,18 @@ def build():
                 'operation_class': classify(op), 'method': op['method'], 'path': op['path'],
                 'is_mutation': op['is_mutation'], 'contract_sha256': op['contract_sha256'],
                 'source_path': 'supabase/functions/' + source}
+    # Existing installed read model, not a new provider URL or operation. Its
+    # distinct scope is bound to the enrolled project/zone/instance in SQL.
+    guest = json.loads((ROOT / 'supabase/functions' / GUEST_SOURCE).read_text())
+    for op in guest['operations']:
+        if op['kind'] == 'status' and op['is_mutation'] is False:
+            rows[op['operation']] = {
+                'operation': op['operation'], 'provider': 'gcp',
+                'operation_class': 'metadata_read', 'method': 'GET',
+                'path': '/sandy/guest/agent-status', 'is_mutation': False,
+                'contract_sha256': op['contract_sha256'],
+                'source_path': 'supabase/functions/' + GUEST_SOURCE,
+            }
     return sorted(rows.values(), key=lambda r: r['operation'])
 
 

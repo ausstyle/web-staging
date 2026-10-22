@@ -29,6 +29,20 @@ export const guestOperations = Object.freeze(
 );
 export type GuestOperation = typeof manifest.operations[number];
 type ObjectValue = Record<string, unknown>;
+/** Read-only enrollment observations can be verified by their first real call.
+ * Writes and task-result reads retain their existing verification prerequisite.
+ * The caller must still have a real owner authority and consume its exact grant.
+ */
+export function guestRegistryReady(
+  row: ObjectValue | null,
+  op: GuestOperation,
+  ownerVerified: boolean,
+): boolean {
+  return ownerVerified && row?.handler === "sandy-guest-operation-api" &&
+    row.api_exposed === true && obj(row.error_contract) &&
+    row.error_contract.contract_sha256 === op.contract_sha256 &&
+    (row.verified === true || (op.kind === "status" && op.is_mutation === false));
+}
 export type GuestVm = {
   vm_name: string;
   instance_id: string;
@@ -842,11 +856,11 @@ if (import.meta.main) {
         ).eq("operation", op.operation).maybeSingle(),
       ]);
       return {
-        allowed: !owner.error && !registry.error && !!owner.data &&
-          registry.data?.handler === "sandy-guest-operation-api" &&
-          registry.data.api_exposed === true &&
-          registry.data.verified === true &&
-          registry.data.error_contract?.contract_sha256 === op.contract_sha256,
+        allowed: !registry.error && guestRegistryReady(
+          registry.data,
+          op,
+          !owner.error && !!owner.data,
+        ),
         error: "guest_verified_approval_required",
         http_status: 403,
       };

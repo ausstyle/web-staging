@@ -17,5 +17,12 @@ class OperationClasses(unittest.TestCase):
         self.assertEqual(len(rows),len({r['operation'] for r in rows}))
         self.assertTrue(all(len(r['contract_sha256'])==64 for r in rows))
         self.assertTrue(all(r['source_path'].startswith('supabase/functions/') for r in rows))
+    def test_guest_observation_reuses_metadata_authority_without_mutation_grants(self):
+        rows={r['operation']:r for r in build()}
+        row=rows['gcp.vm.agent.status']
+        self.assertEqual((row['provider'],row['operation_class'],row['is_mutation']),('gcp','metadata_read',False))
+        self.assertEqual(row['path'],'/sandy/guest/agent-status')
+        for name in ['gcp.vm.access.bootstrap','gcp.vm.access.rotate','gcp.vm.agent.install','gcp.vm.ssh.exec','gcp.vm.winrm.exec']:
+            self.assertNotIn(name,rows)
 
 if __name__=='__main__':unittest.main()

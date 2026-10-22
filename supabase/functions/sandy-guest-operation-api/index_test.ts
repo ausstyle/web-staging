@@ -7,6 +7,7 @@ import {
   type GuestDependencies,
   guestExecutionScope,
   guestOperations,
+  guestRegistryReady,
   guestVms,
   type SigningConfig,
   signingKeys,
@@ -18,6 +19,46 @@ import {
 } from "../_shared/sandy_api_protocol.ts";
 import { installMetadata, WORKER_SHA256 } from "./installer.ts";
 import { ConsumerCredentialError } from "../_shared/sandy_credential_consumer.ts";
+Deno.test("guest status can be observed before certification; mutations and unauthorised contexts stay closed", () => {
+  const status = guestOperations["gcp.vm.agent.status"];
+  const row = {
+    handler: "sandy-guest-operation-api",
+    api_exposed: true,
+    verified: false,
+    error_contract: { contract_sha256: status.contract_sha256 },
+  };
+  assert.equal(guestRegistryReady(row, status, true), true);
+  assert.equal(guestRegistryReady(row, status, false), false);
+  assert.equal(
+    guestRegistryReady({ ...row, api_exposed: false }, status, true),
+    false,
+  );
+  assert.equal(
+    guestRegistryReady({ ...row, handler: "unassigned" }, status, true),
+    false,
+  );
+  assert.equal(
+    guestRegistryReady({ ...row, error_contract: {} }, status, true),
+    false,
+  );
+  for (
+    const name of [
+      "gcp.vm.agent.install",
+      "gcp.vm.access.bootstrap",
+      "gcp.vm.tasks.get",
+    ]
+  ) {
+    const op = guestOperations[name];
+    assert.equal(
+      guestRegistryReady(
+        { ...row, error_contract: { contract_sha256: op.contract_sha256 } },
+        op,
+        true,
+      ),
+      false,
+    );
+  }
+});
 const actor = "10000000-0000-4000-8000-000000000001",
   request = "10000000-0000-4000-8000-000000000002",
   grant = "10000000-0000-4000-8000-000000000003",
