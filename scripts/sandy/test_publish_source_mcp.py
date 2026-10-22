@@ -79,3 +79,40 @@ class SourcePublicationTests(unittest.TestCase):
             self.assertIsNone(tree_args["body"]["tree"][0]["sha"])
             self.assertTrue(removed[0]["removed"])
             self.assertRegex(removed[0]["previous_blob_sha"], r"^[a-f0-9]{40}$")
+
+    def test_proven_predispatch_failure_resumes_the_same_nonce(self):
+        from engineering_runtime import RuntimePreDispatchError
+        class Runtime:
+            ids = []
+            def invoke(self, body):
+                self.ids.append(body["id"])
+                if len(self.ids) == 1:
+                    raise RuntimePreDispatchError("runtime_auth_configuration_unavailable_http_503")
+                return 200, {"result": {"isError": False, "content": [{"text": json.dumps({"status": 200, "result": {"result": {"sha": "a" * 40}}})}]}}
+        runtime = Runtime()
+        with tempfile.TemporaryDirectory() as folder:
+            p = SourcePublisher(runtime, Path(folder) / "checkpoint.json", "a" * 40, "engineering/test")
+            with self.assertRaises(RuntimePreDispatchError):
+                p.call("source-tree", "github.git.trees.create", {})
+            p.call("source-tree", "github.git.trees.create", {})
+            self.assertEqual(len(runtime.ids), 2)
+            self.assertEqual(runtime.ids[0], runtime.ids[1])
+
+    def test_only_known_unadmitted_gateway_refusal_resumes_the_same_nonce(self):
+        class Runtime:
+            ids = []
+            def invoke(self, body):
+                self.ids.append(body['id'])
+                if len(self.ids) == 1:
+                    payload = {'status': 503, 'result': {'error': 'engineering_policy_unavailable', 'executed': False}}
+                else:
+                    payload = {'status': 200, 'result': {'result': {'sha': 'a' * 40}}}
+                return 200, {'result': {'isError': len(self.ids) == 1, 'content': [{'text': json.dumps(payload)}]}}
+        runtime = Runtime()
+        with tempfile.TemporaryDirectory() as folder:
+            p = SourcePublisher(runtime, Path(folder) / 'checkpoint.json', 'a' * 40, 'engineering/test')
+            with self.assertRaisesRegex(RuntimeError, 'refused_or_uncertain'):
+                p.call('source-tree', 'github.git.trees.create', {})
+            self.assertTrue(p.report['calls']['source-tree']['not_dispatched'])
+            p.call('source-tree', 'github.git.trees.create', {})
+            self.assertEqual(runtime.ids[0], runtime.ids[1])

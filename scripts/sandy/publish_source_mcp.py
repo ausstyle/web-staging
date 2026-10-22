@@ -20,7 +20,7 @@ from pathlib import Path
 import re
 import subprocess
 import uuid
-from engineering_runtime import EngineeringRuntime
+from engineering_runtime import EngineeringRuntime, RuntimePreDispatchError
 
 
 def git(*args):
@@ -95,26 +95,45 @@ class SourcePublisher:
         if prior:
             if prior.get('operation') != operation or prior.get('input_sha256') != input_sha256:
                 raise ValueError('checkpoint_operation_or_input_mismatch')
-            if not prior.get('complete'):
+            if prior.get('complete'):
+                return prior
+            if prior.get('not_dispatched') is not True:
                 raise RuntimeError('uncertain_checkpoint_requires_receipt_reconciliation:' + label)
-            return prior
-        rid = str(uuid.uuid4())
-        record = {'operation': operation, 'request_id': rid, 'complete': False,
-                  'input_sha256': input_sha256}
-        self.report['calls'][label] = record
+            record = prior
+            rid = record['request_id']
+        else:
+            rid = str(uuid.uuid4())
+            record = {'operation': operation, 'request_id': rid, 'complete': False,
+                      'input_sha256': input_sha256}
+            self.report['calls'][label] = record
+        record.pop('not_dispatched', None)
         self.save()  # Persist nonce before dispatch. Never automatically replay a mutation.
-        status, response = self.runtime.invoke({'jsonrpc': '2.0', 'id': rid, 'method': 'tools/call',
-            'params': {'name': operation, 'arguments': {'__sandy_execution': {'request_id': rid}, 'arguments': arguments}}})
+        try:
+            status, response = self.runtime.invoke({'jsonrpc': '2.0', 'id': rid, 'method': 'tools/call',
+                'params': {'name': operation, 'arguments': {'__sandy_execution': {'request_id': rid}, 'arguments': arguments}}})
+        except RuntimePreDispatchError as error:
+            record['not_dispatched'] = True
+            record.setdefault('pre_dispatch_errors', []).append(str(error))
+            self.save()
+            raise
         result = response.get('result', {})
         envelope = json.loads(result.get('content', [{}])[0].get('text', '{}'))
         body = envelope.get('result', {})
         payload = result.get('structuredContent', body)
         record.update(http_status=status, API_status=envelope.get('status'), MCP_isError=result.get('isError'),
             admission_id=payload.get('admission_id', body.get('admission_id')),
-            result=payload.get('result'), error=body.get('error'), execution_receipt=body.get('execution_receipt'),
+            result=payload.get('result'), error=body.get('error'), executed=body.get('executed',payload.get('executed')), execution_receipt=body.get('execution_receipt'),
             response_sha256=hashlib.sha256(json.dumps(response, sort_keys=True).encode()).hexdigest())
         self.save()
         if status != 200 or envelope.get('status') != 200 or result.get('isError') is not False:
+            # This fixed gateway refusal occurs before provider admission. Reuse
+            # its nonce after policy lookup recovers; every other outcome stays
+            # uncertain until the durable receipt is independently reconciled.
+            if (record['API_status'] == 503 and record['error'] == 'engineering_policy_unavailable'
+                    and record.get('executed') is False and not record.get('admission_id')):
+                record['not_dispatched'] = True
+                record.setdefault('pre_dispatch_errors', []).append('engineering_policy_unavailable')
+                self.save()
             raise RuntimeError('source_publication_refused_or_uncertain:' + label)
         record['complete'] = True
         self.save()
