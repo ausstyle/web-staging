@@ -154,6 +154,7 @@ async function standingHarness(
               operations: [
                 "github.repos.get",
                 "github.files.update",
+                "github.git.trees.create",
                 "system.execution.get",
               ],
             }
@@ -194,7 +195,12 @@ Deno.test("standing authorization reaches the same canonical delegate with polic
   );
   assert.deepEqual(
     (h.state.proof as { standingOperations: string[] }).standingOperations,
-    ["github.repos.get", "github.files.update", "system.execution.get"],
+    [
+      "github.repos.get",
+      "github.files.update",
+      "github.git.trees.create",
+      "system.execution.get",
+    ],
   );
 });
 Deno.test("inactive or policy-refused standing authority cannot use the old fixture grant for broader execution", async () => {
@@ -798,4 +804,27 @@ Deno.test("expired and revoked standing policy cannot fall back to a historical 
       false,
     );
   }
+});
+
+Deno.test("nested Git source text is scanned before tree admission, including quoted credential JSON", async () => {
+  const h = await standingHarness();
+  const response = await h.call(req(msg("github.git.trees.create", {
+    body: {
+      tree: [{
+        path: "engineering/test.json",
+        mode: "100644",
+        type: "blob",
+        content: JSON.stringify({
+          client_secret:
+            "synthetic-private-material-that-must-not-be-published",
+        }),
+      }],
+    },
+  })));
+  assert.equal(response.status, 403);
+  assert.equal(h.state.delegated, 0);
+  assert.equal(
+    h.calls.some((c) => c.name === "sandy_engineering_prepare_delegated"),
+    false,
+  );
 });

@@ -325,3 +325,44 @@ Deno.test("file deletion verifies commit visibility before accepting an immutabl
     }
   }
 });
+
+Deno.test("GitHub's single terminal message newline normalization retains exact requested proof binding", async () => {
+  for (
+    const [requested, observed, expected] of [
+      ["reviewed source\n", "reviewed source", true],
+      ["reviewed source\n\n", "reviewed source", false],
+      ["reviewed source\n", "different source", false],
+    ] as const
+  ) {
+    const result = await verifyGithubReadback(
+      "github.git.commits.create",
+      { body: { tree, parents: [parent], message: requested } },
+      { sha: commit },
+      "PRIVATE",
+      (() =>
+        Promise.resolve(
+          Response.json({
+            sha: commit,
+            tree: { sha: tree },
+            parents: [{ sha: parent }],
+            message: observed,
+          }),
+        )) as typeof fetch,
+    );
+    assert.equal(result.verified, expected);
+    if (result.verified) {
+      assert.equal(
+        result.proof.message_sha256,
+        await argumentDigestForText(requested),
+      );
+    }
+  }
+});
+async function argumentDigestForText(text: string) {
+  return Array.from(
+    new Uint8Array(
+      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text)),
+    ),
+    (x) => x.toString(16).padStart(2, "0"),
+  ).join("");
+}

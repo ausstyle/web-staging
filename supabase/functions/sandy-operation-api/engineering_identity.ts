@@ -324,6 +324,13 @@ export async function engineeringRequest(
                 : "base64",
             );
           }
+          if (Array.isArray(inputBody.tree)) {
+            for (const item of inputBody.tree) {
+              if (object(item) && typeof item.content === "string") {
+                repositoryText(item.content, "utf-8");
+              }
+            }
+          }
         } catch {
           return deny(403, "repository_source_material_refused");
         }

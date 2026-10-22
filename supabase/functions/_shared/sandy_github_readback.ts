@@ -201,7 +201,10 @@ export async function verifyGithubReadback(
       if (
         !object(observed) || observed.sha !== raw.sha ||
         !object(observed.tree) || observed.tree.sha !== body.tree ||
-        observed.message !== body.message || !Array.isArray(observed.parents) ||
+        !(observed.message === body.message ||
+          (body.message.endsWith("\n") &&
+            observed.message === body.message.slice(0, -1))) ||
+        !Array.isArray(observed.parents) ||
         observed.parents.length !== body.parents.length ||
         observed.parents.some((p, i) =>
           !object(p) || p.sha !== (body.parents as string[])[i]
