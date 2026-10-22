@@ -92,7 +92,7 @@ Deno.test("protected MCP acceptance needs no VM grant and distinguishes an empty
 Deno.test("REST acceptance rejects a server that ignores page limits and checks an advancing authorized catalogue", async () => {
   const original = globalThis.fetch;
   let ignoreLimit = true;
-  const records = Array.from({ length: 5 }, (_, i) => ({ operation: "fixture.read." + i }));
+  const records = Array.from({ length: 100 }, (_, i) => ({ operation: "fixture.read." + i }));
   globalThis.fetch = (async (input: string | URL | Request) => {
     const url = new URL(String(input));
     if (url.pathname.endsWith("/supabase.logs.query")) return Response.json({ ok: true,
@@ -102,14 +102,14 @@ Deno.test("REST acceptance rejects a server that ignores page limits and checks 
     return Response.json({ ok: true, catalogue_version: "a".repeat(64),
       operations: ignoreLimit ? [...records, { operation: "supabase.logs.query" }]
         : url.searchParams.has("cursor") ? [{ operation: "supabase.logs.query" }] : records,
-      ...(!ignoreLimit && !url.searchParams.has("cursor") ? { next_cursor: "sc1." + "a".repeat(64) + ".5" } : {}) });
+      ...(!ignoreLimit && !url.searchParams.has("cursor") ? { next_cursor: "sc1." + "a".repeat(64) + ".100" } : {}) });
   }) as typeof fetch;
   try {
     await assert.rejects(() => verifyRestCatalogue("synthetic.user", "synthetic.anon"), /API_REST_catalogue_page_invalid/);
     ignoreLimit = false;
     const proof = await verifyRestCatalogue("synthetic.user", "synthetic.anon");
     assert.equal(proof.API_REST_discovery_pages, 2);
-    assert.equal(proof.API_REST_operations_observed, 6);
+    assert.equal(proof.API_REST_operations_observed, 101);
     assert.equal(proof.out_of_scope_description_status, 403);
   } finally { globalThis.fetch = original; }
 });
