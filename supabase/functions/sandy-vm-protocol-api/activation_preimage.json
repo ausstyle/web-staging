@@ -1,0 +1,206 @@
+[
+  {
+    "operation": "cloud.vm.exec",
+    "handler": "unassigned",
+    "permission_scope": "infrastructure:execute",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "project_id",
+        "zone",
+        "instance",
+        "command_ref"
+      ],
+      "properties": {
+        "zone": {
+          "type": "string"
+        },
+        "instance": {
+          "type": "string"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "command_ref": {
+          "type": "string"
+        }
+      }
+    },
+    "output_schema": {
+      "type": "object"
+    },
+    "error_contract": {},
+    "api_exposed": false,
+    "ai_exposed": false,
+    "ui_exposed": false,
+    "verified": false,
+    "last_verified_at": null
+  },
+  {
+    "operation": "gcp.vm.ssh.exec",
+    "handler": "sandy-guest-operation-api",
+    "permission_scope": "infrastructure:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "vm_name",
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "maxLength": 4096,
+          "minLength": 1
+        },
+        "vm_name": {
+          "enum": [
+            "sandy-windows",
+            "sandy-video"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "accepted",
+        "executed",
+        "request_state",
+        "result"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "result": {
+          "type": "object"
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "executed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "operation": {
+          "const": "gcp.vm.ssh.exec"
+        },
+        "request_state": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        }
+      },
+      "additionalProperties": false
+    },
+    "error_contract": {
+      "transport": "unsupported_ssh",
+      "requirement": 36,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "contract_sha256": "da6fb096e30db977a7f942c502572777fe815dd3dd08085730d530fce3986f1d",
+      "api_key_delegable": false,
+      "requires_approval": true,
+      "specification_family": "gcp.vm.ssh.exec",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "key_configuration_required": true
+    },
+    "api_exposed": false,
+    "ai_exposed": false,
+    "ui_exposed": false,
+    "verified": false,
+    "last_verified_at": null
+  },
+  {
+    "operation": "gcp.vm.winrm.exec",
+    "handler": "sandy-guest-operation-api",
+    "permission_scope": "infrastructure:write",
+    "is_mutation": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "vm_name",
+        "command"
+      ],
+      "properties": {
+        "command": {
+          "type": "string",
+          "maxLength": 4096,
+          "minLength": 1
+        },
+        "vm_name": {
+          "enum": [
+            "sandy-windows",
+            "sandy-video"
+          ],
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "required": [
+        "ok",
+        "operation",
+        "contract_version",
+        "accepted",
+        "executed",
+        "request_state",
+        "result"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "result": {
+          "type": "object"
+        },
+        "accepted": {
+          "type": "boolean"
+        },
+        "executed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "operation": {
+          "const": "gcp.vm.winrm.exec"
+        },
+        "request_state": {
+          "type": "string"
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        }
+      },
+      "additionalProperties": false
+    },
+    "error_contract": {
+      "transport": "unsupported_winrm",
+      "requirement": 37,
+      "worker_sha256": "a1a2cadde9a72cac49f9c495aa237d4c7d338259f7a3a9a9aa250aa5a847b21c",
+      "contract_sha256": "c743978bc5e1c59d442e4d4476486ebded8ec0ed35d547ad8476956f21cb37bf",
+      "api_key_delegable": false,
+      "requires_approval": true,
+      "specification_family": "gcp.vm.winrm.exec",
+      "provider_source_sha256": "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
+      "key_configuration_required": true
+    },
+    "api_exposed": false,
+    "ai_exposed": false,
+    "ui_exposed": false,
+    "verified": false,
+    "last_verified_at": null
+  }
+]

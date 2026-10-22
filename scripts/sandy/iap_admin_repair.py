@@ -1,0 +1,200 @@
+"""Fixed-target IAP repair through a selected, configured GCP administrator.
+
+Plan first, then apply exactly that saved plan after fresh policy/etag readback.
+No fallback identity, impersonation, public address or host/network changes.
+"""
+from __future__ import annotations
+import argparse
+import copy
+import hashlib
+import json
+import os
+from pathlib import Path
+import subprocess
+import urllib.error
+import urllib.request
+
+PROJECT = "elaborate-haven-511518-a5"
+NUMBER = "1030223524306"
+ZONE = "europe-west1-b"
+MEMBER = "serviceAccount:sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com"
+TARGETS = {"sandy-video": ("6831598645020395570", 22), "sandy-windows": ("8120150462304566315", 5986)}
+ROLE = "roles/iap.tunnelResourceAccessor"
+
+
+class RepairError(RuntimeError):
+    pass
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def candidate(policy, name):
+    """Never rewrite another binding or guess how an existing condition works."""
+    if name not in TARGETS or not isinstance(policy, dict) or not policy.get("etag"):
+        raise RepairError("target_policy_etag_required")
+    if set(policy) - {"version", "etag", "bindings", "auditConfigs"}:
+        raise RepairError("unreviewed_policy_fields")
+    bindings = policy.get("bindings", [])
+    if not isinstance(bindings, list):
+        raise RepairError("invalid_policy_bindings")
+    _, port = TARGETS[name]
+    expression = f"destination.port == {port}"
+    expected = {"role": ROLE, "members": [MEMBER], "condition": {
+        "title": "sandy-fixed-" + name + "-port-" + str(port),
+        "description": "Authorized Sandy access to this immutable VM and port only",
+        "expression": expression}}
+    for binding in bindings:
+        if not isinstance(binding, dict) or not isinstance(binding.get("members", []), list):
+            raise RepairError("invalid_policy_binding")
+        if binding.get("role") != ROLE or MEMBER not in binding.get("members", []):
+            continue
+        condition = binding.get("condition")
+        if isinstance(condition, dict) and condition.get("expression") == expression:
+            return copy.deepcopy(policy), False
+        # An unconditional grant cannot explain a missing target binding. A
+        # different condition may deliberately restrict access; do not bypass it.
+        raise RepairError("existing_principal_binding_requires_administrator_review")
+    result = copy.deepcopy(policy)
+    result["version"] = 3
+    result["bindings"] = copy.deepcopy(bindings) + [expected]
+    return result, True
+
+
+def connection_env(alias, manifest):
+    if not isinstance(manifest, dict) or manifest.get("version") != 1:
+        raise RepairError("supported_identity_manifest_required")
+    matches = [c for c in manifest.get("connections", []) if c.get("alias") == alias]
+    if len(matches) != 1 or matches[0].get("provider_kind") != "gcp":
+        raise RepairError("configured_GCP_administrator_connection_required")
+    connection = matches[0]
+    required = ("config_dir", "configuration_name", "credentials_file")
+    if not all(isinstance(connection.get(k), str) and connection[k] for k in required):
+        raise RepairError("GCP_connection_selectors_incomplete")
+    env = dict(os.environ)
+    for key, field in [("CLOUDSDK_CONFIG", "config_dir"), ("CLOUDSDK_ACTIVE_CONFIG_NAME", "configuration_name"), ("GOOGLE_APPLICATION_CREDENTIALS", "credentials_file")]:
+        env[key] = connection[field]
+    return env
+
+
+class Admin:
+    def __init__(self, alias):
+        manifest = os.environ.get("OIC_MANIFEST_PATH")
+        if not manifest:
+            raise RepairError("configured_GCP_administrator_connection_required")
+        env = connection_env(alias, json.loads(Path(manifest).read_text()))
+        self.alias = alias
+        # stdout is held only in memory; no token or raw CLI error is printed.
+        try:
+            account = subprocess.run(["gcloud", "auth", "list", "--filter=status:ACTIVE", "--format=json"], env=env, capture_output=True, timeout=30)
+            if account.returncode:
+                raise RepairError("GCP_administrator_identity_unavailable")
+            users = json.loads(account.stdout)
+            if len(users) != 1 or not isinstance(users[0].get("account"), str):
+                raise RepairError("single_GCP_administrator_identity_required")
+            self.principal = users[0]["account"]
+            if self.principal == MEMBER.split(":", 1)[1]:
+                raise RepairError("separate_GCP_administrator_identity_required")
+            token = subprocess.run(["gcloud", "auth", "print-access-token"], env=env, capture_output=True, timeout=30)
+            if token.returncode or not token.stdout.strip():
+                raise RepairError("GCP_administrator_token_unavailable")
+            self._token = token.stdout.decode().strip()
+        except (OSError, subprocess.TimeoutExpired, ValueError):
+            raise RepairError("GCP_administrator_setup_unavailable") from None
+
+    def request(self, method, url, body=None):
+        # Every URL is constructed from fixed constants in this module.
+        request = urllib.request.Request(url, method=method,
+            headers={"Authorization": "Bearer " + self._token, "Content-Type": "application/json"},
+            data=None if body is None else json.dumps(body).encode())
+        class NoRedirect(urllib.request.HTTPRedirectHandler):
+            def redirect_request(self, *args, **kwargs):
+                return None
+        try:
+            with urllib.request.build_opener(NoRedirect()).open(request, timeout=30) as response:
+                data = response.read(262145)
+                if len(data) > 262144:
+                    raise RepairError("administrator_response_limit")
+                return json.loads(data)
+        except urllib.error.HTTPError as error:
+            # Error bodies may contain credential material; expose status only.
+            raise RepairError("administrator_request_HTTP_" + str(error.code)) from None
+        except (OSError, ValueError):
+            raise RepairError("administrator_request_unavailable") from None
+
+    def identity(self, name):
+        value = self.request("GET", f"https://compute.googleapis.com/compute/v1/projects/{PROJECT}/zones/{ZONE}/instances/{name}")
+        if str(value.get("id")) != TARGETS[name][0] or value.get("name") != name:
+            raise RepairError("immutable_VM_identity_changed")
+
+    def url(self, name):
+        return f"https://iap.googleapis.com/v1/projects/{NUMBER}/iap_tunnel/zones/{ZONE}/instances/{TARGETS[name][0]}"
+
+    def policy(self, name):
+        return self.request("POST", self.url(name) + ":getIamPolicy", {"options": {"requestedPolicyVersion": 3}})
+
+
+def plan(admin, name):
+    if name not in TARGETS:
+        raise RepairError("fixed_target_required")
+    admin.identity(name)
+    before = admin.policy(name)
+    after, changed = candidate(before, name)
+    return {"schema": "sandy-fixed-IAP-repair-v1", "administrator_alias": admin.alias,
+        "administrator_principal": admin.principal, "project": PROJECT, "vm_name": name,
+        "instance_id": TARGETS[name][0], "port": TARGETS[name][1], "member": MEMBER,
+        "before": before, "before_sha256": digest(before), "candidate": after,
+        "candidate_sha256": digest(after), "change_required": changed}
+
+
+def apply(admin, saved, evidence_path):
+    name = saved.get("vm_name")
+    if name not in TARGETS or saved.get("schema") != "sandy-fixed-IAP-repair-v1":
+        raise RepairError("reviewed_fixed_target_plan_required")
+    if evidence_path.exists():
+        raise RepairError("existing_attempt_reconcile_before_retry")
+    # Fresh full readback also checks administrator identity and immutable VM.
+    fresh = plan(admin, name)
+    if fresh != saved:
+        raise RepairError("administrator_or_policy_preimage_changed")
+    evidence = {"plan_sha256": digest(saved), "administrator": admin.principal,
+                "vm_name": name, "instance_id": saved["instance_id"], "port": saved["port"],
+                "attempted": False, "outcome": "not_started", "rollback_policy": saved["before"]}
+    evidence_path.write_text(json.dumps(evidence, indent=2) + "\n")
+    evidence_path.chmod(0o600)
+    if saved["change_required"]:
+        evidence.update(attempted=True, outcome="unknown_reconcile_before_retry")
+        evidence_path.write_text(json.dumps(evidence, indent=2) + "\n")
+        admin.request("POST", admin.url(name) + ":setIamPolicy", {"policy": saved["candidate"]})
+    observed = admin.policy(name)
+    # etag legitimately changes, all other fields must match the exact candidate.
+    if {k:v for k,v in observed.items() if k != "etag"} != {k:v for k,v in saved["candidate"].items() if k != "etag"}:
+        raise RepairError("IAP_policy_readback_requires_reconciliation")
+    evidence.update(outcome="policy_readback_verified", observed_policy=observed,
+                    tunnel_execution_verified=False, host_or_network_changes=0)
+    evidence_path.write_text(json.dumps(evidence, indent=2) + "\n")
+    return evidence
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--administrator-alias", required=True)
+    sub = parser.add_subparsers(dest="action", required=True)
+    p = sub.add_parser("plan"); p.add_argument("--vm", choices=TARGETS, required=True); p.add_argument("--output", type=Path, required=True)
+    p = sub.add_parser("apply"); p.add_argument("--plan", type=Path, required=True); p.add_argument("--evidence", type=Path, required=True)
+    args = parser.parse_args()
+    try:
+        admin = Admin(args.administrator_alias)
+        if args.action == "plan":
+            if args.output.exists():
+                raise RepairError("existing_plan_requires_review")
+            result = plan(admin, args.vm)
+            args.output.write_text(json.dumps(result, indent=2) + "\n"); args.output.chmod(0o600)
+            print(json.dumps({"plan_created": True, "vm_name": args.vm, "change_required": result["change_required"], "no_mutation": True}))
+        else:
+            result = apply(admin, json.loads(args.plan.read_text()), args.evidence)
+            print(json.dumps({"vm_name": result["vm_name"], "outcome": result["outcome"], "tunnel_execution_verified": False}))
+    except RepairError as error:
+        print(json.dumps({"ok": False, "error": str(error)}))
+        raise SystemExit(1)

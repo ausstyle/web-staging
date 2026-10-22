@@ -3119,12 +3119,13 @@ function extensionRow(operation: string, verified = false): Row {
           "provider_bound",
           "provider_artifact",
           "legacy_owner",
+          "vm_protocol",
         ]
           .includes(c.kind)
         ? {
           requires_approval: true,
           requires_grant: true,
-          ...(c.kind === "legacy_owner"
+          ...(["legacy_owner", "vm_protocol"].includes(c.kind)
             ? { requires_real_user_session: true }
             : {}),
           api_key_delegable: false,
@@ -3615,8 +3616,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 567 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 567);
+Deno.test("all 568 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 568);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -5027,6 +5028,7 @@ Deno.test("sensitive reads and unavailable SSH stay closed before grants, provid
   }
   const ssh = harness({
     actorId: extensionActor,
+    executionPolicy: true,
     rows: [extensionRow("gcp.vm.ssh.exec", true)],
   });
   const response = await ssh.request({
@@ -5034,10 +5036,10 @@ Deno.test("sensitive reads and unavailable SSH stay closed before grants, provid
     operation: "gcp.vm.ssh.exec",
     arguments: { vm_name: "sandy-video", command: "true" },
   });
-  assert.equal(response.status, 424);
+  assert.equal(response.status, 424, await response.clone().text());
   assert.equal(
     (await response.json()).error,
-    "guest_ssh_transport_unavailable",
+    "verified_vm_protocol_binding_required",
   );
   assert.equal(ssh.calls.length, 0);
 });
@@ -5154,7 +5156,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2556);
+  assert.equal(installedOperationIds.length, 2557);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);
