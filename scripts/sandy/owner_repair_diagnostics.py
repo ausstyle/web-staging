@@ -57,7 +57,11 @@ function_metadata function_source migration_history migration_columns migration_
 migration_event_table component_lease release_events'''.split())
 def github_annotation(result):
     """Expose bounded codes in check-run annotations when log downloads are unavailable."""
-    if result.get('ok') is False:
+    if result.get('mode')=='management_access_diagnostics':
+        from management_access_diagnostics import safe_annotation
+        summary=safe_annotation(result.get('management_access',{}))
+        kind='notice' if result.get('ok') is True else 'error'
+    elif result.get('ok') is False:
         summary={k:result[k] for k in ('failure_code','http_status','sqlstate','read_only') if k in result}
         summary['stage']=result.get('stage') if result.get('stage') in STAGES else 'reconciliation'
         summary['probe_failures']={stage:{k:value[k] for k in ('failure_code','http_status','sqlstate') if k in value}

@@ -206,15 +206,23 @@ def emit(result):
     if os.environ.get('GITHUB_ACTIONS')=='true':print(github_annotation(result))
 
 def main(argv=None):
-    p = argparse.ArgumentParser(description=__doc__);mode=p.add_mutually_exclusive_group();mode.add_argument('--deploy', action='store_true');mode.add_argument('--reconcile',action='store_true');p.add_argument('--evidence-dir', type=Path); args = p.parse_args(argv)
+    p = argparse.ArgumentParser(description=__doc__);mode=p.add_mutually_exclusive_group();mode.add_argument('--deploy', action='store_true');mode.add_argument('--reconcile',action='store_true');mode.add_argument('--diagnose-access',action='store_true');p.add_argument('--evidence-dir', type=Path); args = p.parse_args(argv)
     out = (args.evidence_dir or Path('/tmp') / ('owner-repair-' + uuid.uuid4().hex)).resolve()
     r=None;stage='candidate_verification'
     try:
         if out.is_relative_to(ROOT):
             raise Blocked('rollback_outside_repository_required')
-        if args.deploy or args.reconcile:
+        if args.deploy or args.reconcile or args.diagnose_access:
             out.mkdir(mode=0o700)
-        m, files, sql = candidate();r=Repair(out);result=reconcile(r,m,files,sql) if args.reconcile else run(r,m,files,sql,args.deploy)
+        m, files, sql = candidate();r=Repair(out)
+        if args.diagnose_access:
+            from management_access_diagnostics import diagnose_access
+            r.stage='management_access_diagnostics';access=diagnose_access()
+            result={'ok':access['ok'],'read_only':True,'mode':'management_access_diagnostics',
+                'management_access':access,'source_commit':SOURCE,'manifest_sha256':PIN,
+                'approval_written':False,'migration_dispatched':False,'function_upload_dispatched':False}
+            private_write(out,'redacted-access.json',json.dumps(result,indent=2).encode())
+        else:result=reconcile(r,m,files,sql) if args.reconcile else run(r,m,files,sql,args.deploy)
         if args.deploy:
             private_write(out, 'redacted-receipt.json', json.dumps(result, indent=2).encode())
         if args.reconcile:private_write(out,'redacted-reconciliation.json',json.dumps(result,indent=2).encode())
@@ -226,7 +234,7 @@ def main(argv=None):
                 'function_upload_dispatched':getattr(r,'function_upload_dispatched',False),
                 'read_only':not args.deploy}
         if getattr(r,'cleanup_failure',None):result['cleanup_failure']=r.cleanup_failure
-        if (args.deploy or args.reconcile) and out.is_dir():
+        if (args.deploy or args.reconcile or args.diagnose_access) and out.is_dir():
             try:private_write(out,'redacted-failure.json',json.dumps(result,indent=2).encode())
             except OSError:result['failure_artifact_saved']=False
         emit(result); return 1
