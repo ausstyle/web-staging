@@ -12,6 +12,16 @@ function fixture() {
     revision: { metadata: { name, labels: { "serving.knative.dev/service": "sandy-engineering-mcp" } }, spec: { serviceAccountName: identity }, status: { conditions: [{ type: "Ready", status: "True" }], imageDigest: "image@sha256:fixture" } }, source };
 }
 const check = (f: ReturnType<typeof fixture>, promoted = false) => validate(f.before, f.after, f.live, f.revision, f.source, "39849886412", "4", promoted);
+Deno.test("original release artifacts can omit region while wrong region and identity still fail", () => {
+  const f = fixture();
+  delete (f.before as any).region;
+  assert.equal(check(f).runtime_identity, f.before.verified_runtime_identity);
+  (f.before as any).region = "us-central1";
+  assert.throws(() => check(f), /preserved_identity_mismatch/);
+  delete (f.before as any).region;
+  f.live.spec.template.spec.serviceAccountName = "unrelated@example.invalid";
+  assert.throws(() => check(f), /live_service_identity_mismatch/);
+});
 Deno.test("existing candidate requires live exact source, tag, identity, readiness and preserved traffic", () => {
   assert.equal(check(fixture()).production_promoted, false);
   const mutations = [
