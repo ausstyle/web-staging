@@ -28,7 +28,7 @@ jobs:
           node-version: '22'
       - name: Latest source regression and isolated SQL checks
         run: |
-          deno test --allow-read --allow-env supabase/functions/_shared/sandy-executive/ supabase/functions/sandy-engineering-control/routine_delegation_test.ts supabase/functions/sandy-engineering-control/autonomous_release_test.ts supabase/functions/sandy-engineering-control/workload_test.ts sandy/controller/session-transport.test.mjs sandy/controller/engineering-releases.test.mjs sandy/controller/authorized-deadline-action.test.mjs sandy/controller/authorized-auth-repair-action.test.mjs
+          deno test --allow-read --allow-env supabase/functions/_shared/sandy-executive/ supabase/functions/sandy-engineering-control/routine_delegation_test.ts supabase/functions/sandy-engineering-control/autonomous_release_test.ts supabase/functions/sandy-engineering-control/workload_test.ts sandy/controller/session-transport.test.mjs sandy/controller/engineering-releases.test.mjs sandy/controller/authorized-deadline-action.test.mjs sandy/controller/authorized-auth-repair-action.test.mjs sandy/controller/amendment-b-approval.test.mjs
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_delegated_runtime_release.py
           npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
           node scripts/sandy/test_owner_delegation_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"

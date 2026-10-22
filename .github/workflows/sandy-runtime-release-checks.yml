@@ -41,7 +41,7 @@ jobs:
           sandy/controller/session-transport.test.mjs
           sandy/controller/engineering-releases.test.mjs
           sandy/controller/authorized-deadline-action.test.mjs
-          sandy/controller/authorized-auth-repair-action.test.mjs
+          sandy/controller/authorized-auth-repair-action.test.mjs sandy/controller/amendment-b-approval.test.mjs
       - name: Test delegated release transport and fault handling
         run: PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_delegated_runtime_release.py
       - name: Test isolated PostgreSQL owner and audit transactions

@@ -40,7 +40,7 @@ BEGIN
  IF p_config IS NOT NULL THEN
   expiry:=(p_config->>'expires_at')::timestamptz;
   IF NOT coalesce(g.enabled AND g.revoked_at IS NULL AND g.expires_at>clock_timestamp()
-    AND expiry>clock_timestamp() AND expiry<=clock_timestamp()+interval '30 days'
+    AND ((expiry='infinity'::timestamptz AND p_config->>'expiry_mode'='until_revoked') OR (expiry>clock_timestamp() AND expiry<=clock_timestamp()+interval '30 days'))
     AND p_config->>'repository'='ausstyle/web-staging' AND p_config->>'project'='zmqlyygzqoidkcwdysok'
     AND p_config->>'environment'='canary' AND p_config->>'branch' ~ '^engineering/[a-z0-9-]+$'
     AND p_config->>'baseline_commit' ~ '^[a-f0-9]{40}$' AND p_config->>'workflow_sha256' ~ '^[a-f0-9]{64}$'

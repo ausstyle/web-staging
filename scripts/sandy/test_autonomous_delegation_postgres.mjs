@@ -38,5 +38,32 @@ await check('audit failure cannot leave a grant decision or status change',async
 await check('expired identity cannot be admitted',async()=>{const id=await task(9);await db.exec("UPDATE sandy_engineering_test_identities SET active_session_expires_at=now()-interval '1 second'");await assert.rejects(authorize(id));await db.exec("UPDATE sandy_engineering_test_identities SET active_session_expires_at=now()+interval '1 hour'");});
 await check('expired policy and stale revision fail closed',async()=>{const id=await task(10);await assert.rejects(authorize(id,proof,0));await db.exec("UPDATE sandy_engineering_control_grants SET autonomous_config=jsonb_set(autonomous_config,'{expires_at}',to_jsonb((now()-interval '1 second')::text))");await assert.rejects(authorize(id));});
 await check('revocation invalidates existing and future authorizations',async()=>{await provision(owner,null);await assert.rejects(authorize(await task(11),proof,2));assert.equal((await db.query("SELECT count(*)::int n FROM sandy_engineering_release_authorizations WHERE state<>'revoked'")).rows[0].n,0);});
+// A protected administrative installer may apply only a genuine owner-approved
+// security declaration. The workload still has no grant-management endpoint.
+await db.exec(`ALTER TABLE auth.users ADD COLUMN raw_app_meta_data jsonb DEFAULT '{}';
+UPDATE auth.users SET raw_app_meta_data='{"sandy_engineering_test":true}' WHERE id='${actor}';
+CREATE TABLE sandy_controller_admins(auth_user_id uuid,enabled boolean,role text);
+INSERT INTO sandy_controller_admins VALUES('${owner}',true,'owner'),('${actor}',true,'owner');
+ALTER TABLE sandy_engineering_changes ADD COLUMN regression_rules jsonb DEFAULT '[]';
+UPDATE sandy_engineering_control_grants SET scope_prefixes=scope_prefixes||ARRAY['sandy-workspace'];
+ALTER TABLE sandy_engineering_control_grants ADD COLUMN authorization_ref text DEFAULT 'engineering_change:ca1e72bb-b604-4f5e-b259-acf30ca830d8';
+ALTER TABLE sandy_engineering_change_events ADD COLUMN id uuid DEFAULT gen_random_uuid();
+ALTER TABLE sandy_engineering_change_events ADD COLUMN occurred_at timestamptz DEFAULT clock_timestamp();`);
+await db.exec(await readFile(new URL('../../supabase/migrations/20261022030000_sandy_owner_approved_standing_install.sql',import.meta.url),'utf8'));
+const fixtureDeclaration=JSON.parse(await readFile(new URL('../../docs/sandy-engineering/evaluations/p0-amendment-b-standing-declaration.json',import.meta.url),'utf8'));
+fixtureDeclaration.identity_binding_sha256=(await db.query("SELECT encode(sha256(convert_to($1,'UTF8')),'hex') h",[actor])).rows[0].h;
+const declaration=JSON.stringify(fixtureDeclaration);
+const declarationHash=(await db.query("SELECT encode(sha256(convert_to($1,'UTF8')),'hex') h",[declaration])).rows[0].h;
+const security=await task(12);
+await db.query("UPDATE sandy_engineering_changes SET status='approved',risk='high',scope=scope||'\"security:standing-engineering-delegation\"'::jsonb,regression_rules=jsonb_build_array('Standing-policy declaration: '||$2::text) WHERE id=$1",[security,declaration]);
+const install=async(d=declaration)=>db.query('SELECT sandy_engineering_install_approved_policy($1,$2,$3,$4,$5) result',[security,source,manifest,d,cfg.workflow_sha256]);
+const approvalReason=`Release ${source}; manifest ${manifest}; standing-policy declaration ${declarationHash}`;
+await check('administrative installer cannot invent missing owner approval',async()=>{await assert.rejects(install());});
+await db.query("INSERT INTO sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES($1,'status_changed',$2,$3)",[security,actor,JSON.stringify({to:'approved',reason:approvalReason})]);
+await check('workload actor cannot masquerade as owner through misleading membership',async()=>{await assert.rejects(install());});
+await db.query("INSERT INTO sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES($1,'status_changed',$2,$3)",[security,owner,JSON.stringify({to:'approved',reason:approvalReason})]);
+await check('authenticated workload SQL role cannot call administrative installer',async()=>{await db.exec('SET ROLE authenticated');try{await assert.rejects(install());}finally{await db.exec('RESET ROLE');}});
+await check('one genuine owner declaration enables bounded policy with distinct installer audit',async()=>{const before=(await db.query("SELECT count(*)::int n FROM sandy_engineering_change_events WHERE change_id=$1 AND actor=$2",[security,owner])).rows[0].n;const a=(await install()).rows[0].result;assert.equal(a.ok,true);const after=(await db.query("SELECT count(*)::int n FROM sandy_engineering_change_events WHERE change_id=$1 AND actor=$2",[security,owner])).rows[0].n;assert.equal(after,before);const event=(await db.query("SELECT actor,detail FROM sandy_engineering_change_events WHERE change_id=$1 AND event_type='standing_policy_installed'",[security])).rows[0];assert.equal(event.actor,null);assert.equal(event.detail.owner_auth_event_created,false);const again=(await install()).rows[0].result;assert.equal(again.reused,true);assert.equal(again.expires_at,a.expires_at);});
+await check('changed declaration or revoked identity remains denied',async()=>{await assert.rejects(install(declaration.replace('until_revoked','invalid')));await db.exec('UPDATE sandy_engineering_control_grants SET enabled=false');await assert.rejects(install());});
 console.log(JSON.stringify({test_class:'isolated_postgresql_wasm',assertions,passed:true,production_database_used:false,production_release_cycles:0}));
 }finally{await db.close();}

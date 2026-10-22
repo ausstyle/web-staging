@@ -8,19 +8,19 @@ const sha = (s: unknown, n: number) => typeof s === "string" && new RegExp(`^[a-
 const uuid = (s: unknown) => typeof s === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(s);
 export const autonomousTargets = ["sandy-agent-runtime-v4", "sandy-workspace", "sandy-email-runtime-canary", "email-ai-generate-draft", "sandy-whatsapp-webhook", "sandy-voice-account-context"];
 export function autonomousConfig(c: Obj, now = Date.now()): Obj {
+  const durable=c?.expires_at === "infinity" && c?.expiry_mode === "until_revoked";
   if (!c || c.repository !== "ausstyle/web-staging" || c.project !== "zmqlyygzqoidkcwdysok" || c.environment !== "canary" ||
     !/^engineering\/[a-z0-9-]+$/.test(c.branch || "") || !Array.isArray(c.targets) || !c.targets.length || c.targets.length > 6 ||
     c.targets.some((x: unknown) => !autonomousTargets.includes(String(x))) || !sha(c.baseline_commit, 40) || !sha(c.workflow_sha256, 64) ||
-    !Number.isFinite(Date.parse(c.expires_at)) || Date.parse(c.expires_at) <= now || Date.parse(c.expires_at) > now + 30 * 86400000 ||
+    (!durable && (!Number.isFinite(Date.parse(c.expires_at)) || Date.parse(c.expires_at) <= now || Date.parse(c.expires_at) > now + 30 * 86400000)) ||
     c.maximum_cost_units !== 0 || !Number.isSafeInteger(c.max_releases_per_day) || c.max_releases_per_day < 1 || c.max_releases_per_day > 10) throw Error("bounded_autonomous_policy_required");
   return { repository:c.repository, project:c.project, environment:c.environment, branch:c.branch,
     targets:[...new Set(c.targets)], baseline_commit:c.baseline_commit, workflow_sha256:c.workflow_sha256,
-    expires_at:c.expires_at, maximum_cost_units:0, max_releases_per_day:c.max_releases_per_day };
+    expires_at:c.expires_at, ...(durable?{expiry_mode:"until_revoked"}:{}), maximum_cost_units:0, max_releases_per_day:c.max_releases_per_day };
 }
 export function autonomousCandidate(change: Obj, tests: Obj[], grant: Obj, actor: string, now = Date.now()) {
   if (!uuid(actor) || grant.identity_user_id !== actor || change.requested_by !== actor || grant.enabled !== true || grant.revoked_at ||
-    !grant.autonomous_config || !Number.isFinite(Date.parse(grant.autonomous_config.expires_at)) ||
-    Date.parse(grant.autonomous_config.expires_at) <= now || !(grant.expires_at === "infinity" || Date.parse(grant.expires_at) > now) ||
+    !grant.autonomous_config || (!(grant.autonomous_config.expires_at === "infinity" && grant.autonomous_config.expiry_mode === "until_revoked") && (!Number.isFinite(Date.parse(grant.autonomous_config.expires_at)) || Date.parse(grant.autonomous_config.expires_at) <= now)) || !(grant.expires_at === "infinity" || Date.parse(grant.expires_at) > now) ||
     !grant.allowed_actions?.includes("authorize_release") || !["low","normal"].includes(change.risk) || !grant.allowed_risks?.includes(change.risk) ||
     !["proposed","approved","authorized_by_policy"].includes(change.status)) throw Error("policy_blocked");
   const config=autonomousConfig(grant.autonomous_config,now);
