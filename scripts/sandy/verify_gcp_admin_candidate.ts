@@ -41,13 +41,15 @@ if (import.meta.main) {
     if(typeof anon!=="string"||typeof service!=="string")throw Error("project_Auth_configuration_unavailable");
     const read=async(query:string)=>{
       const response=await request("https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/database/query",{method:"POST",headers:{authorization:"Bearer "+management,"content-type":"application/json"},body:JSON.stringify({query,read_only:true})});
+      report.authority_readback_stage=query.includes("Owner_session_fingerprint")?"Owner_delegation_evidence":"workload_identity";
+      report.authority_readback_http_status=response.status;
       if(!response.ok)throw Error("delegation_authority_readback_unavailable");return await response.json();
     };
     const identities=await read(engineeringIdentityQuery);
     if(identities.length!==1||identities[0].controller_memberships!==0)throw Error("distinct_nonowner_workload_required");
     const identity=identities[0];
     const grant=await read(`SELECT g.admin_read_revision,g.admin_read_policy,g.enabled,g.revoked_at,g.expires_at>clock_timestamp() base_active,
-      public.sandy_api_current_owner(g.authorized_by) current_owner, g.authorized_by<>g.identity_user_id distinct_identities,
+      EXISTS(SELECT 1 FROM public.sandy_controller_admins a WHERE a.auth_user_id=g.authorized_by AND a.enabled=true AND a.role='owner') current_owner, g.authorized_by<>g.identity_user_id distinct_identities,
       e.id owner_event_id,e.occurred_at owner_event_at,e.detail->>'Owner_session_fingerprint' owner_session_fingerprint
       FROM public.sandy_engineering_control_grants g LEFT JOIN LATERAL (
       SELECT * FROM public.sandy_engineering_identity_events e WHERE e.identity_user_id=g.identity_user_id AND e.owner_authority_id=g.authorized_by
