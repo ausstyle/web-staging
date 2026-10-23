@@ -196,6 +196,7 @@ jobs:
           deno test supabase/functions/sandy-engineering-control/iap_repair_jobs_test.ts
           python3 -m unittest scripts/sandy/test_iap_transport_source.py -v
           python3 -m unittest scripts/sandy/test_iap_runtime_binding.py -v
+          python3 -m unittest scripts/sandy/test_iap_transport_release.py -v
           deno test scripts/sandy/verify_iap_closed_candidate_test.ts
           deno check scripts/sandy/submit_iap_repair_proposal.ts
           deno check supabase/functions/sandy-computer-worker/eligibility.ts
