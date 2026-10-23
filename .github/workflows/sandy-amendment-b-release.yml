@@ -50,7 +50,7 @@ jobs:
           fetch-depth: 0
       - name: Install the exact owner-approved Amendment B release and declaration
         env:
-          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           SANDY_ENGINEERING_CHANGE_ID: ${{ inputs.change_id }}
         run: |
           test -n "$SANDY_SUPABASE_MANAGEMENT_TOKEN" || { echo 'Missing existing deployment credential'; exit 1; }
