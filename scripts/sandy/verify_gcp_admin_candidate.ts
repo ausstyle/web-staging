@@ -79,6 +79,7 @@ if (import.meta.main) {
     const initialized=await rpc("initialize",{protocolVersion:"2025-03-26",capabilities:{},clientInfo:{name:"sandy-admin-read-acceptance",version:"1"}});
     if (!initialized.result?.serverInfo) throw Error("workload_MCP_initialization_failed");
     const routine=await rpc("tools/call",{name:"github.repos.get",arguments:{}});
+    report.routine_workload_MCP_http_status=report.MCP_http_status;
     const routineEnvelope=routine.result?._meta?.sandy_api,routineProof=routine.result?.structuredContent;
     report.routine_workload_API_status=routineEnvelope?.status??null;
     report.routine_workload_provider_http_status=routineProof?.provider_http_status??null;
@@ -88,7 +89,7 @@ if (import.meta.main) {
     report.routine_workload_provider_verified=true;report.routine_workload_admission_id=routineProof.admission_id;
     if(!approved){
       const denied=await rpc("tools/call",{name:"engineering.preflight",arguments:{connection:"sandy-gcp-admin"}});
-      const status=denied.result?._meta?.sandy_api?.status;
+      const status=denied.result?._meta?.sandy_api?.status??report.MCP_http_status;
       report.ungranted_administrator_execution_denied=status===403;
       throw Error("administrator_read_delegation_not_established");
     }
