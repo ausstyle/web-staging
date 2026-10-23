@@ -55,9 +55,9 @@ def verify(r,sql,require_active=True):
   guard_sql=(ROOT/GUARD_MIGRATION).read_text()
   if guard!=[{'statements':[guard_sql]}]:raise Blocked('installed_transport_guard_source_mismatch')
   reviewed=dict(re.findall(r'CREATE (?:OR REPLACE )?FUNCTION public\.(\w+)\([^$]*?AS \$\$(.*?)\$\$;',guard_sql,re.S))
-  expected['sandy_orch_worker_bind_transport']=reviewed['sandy_orch_worker_bind_transport']
- actual=r.sql("SELECT proname,prosrc,prosecdef,proconfig FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND proname IN('sandy_orch_worker_tick','sandy_orch_worker_bind_transport')",True)
- if len(actual)!=2 or any(x['prosrc']!=expected[x['proname']] or not x['prosecdef'] or x['proconfig']!=['search_path=pg_catalog, pg_temp'] for x in actual):raise Blocked('installed_private_worker_source_mismatch')
+  expected.update(reviewed)
+ actual=r.sql("SELECT proname,prosrc,prosecdef,proconfig FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND proname IN ("+','.join(quote(name) for name in expected)+")",True)
+ if len(actual)!=len(expected) or any(x['prosrc']!=expected[x['proname']] or not x['prosecdef'] or x['proconfig']!=['search_path=pg_catalog, pg_temp'] for x in actual):raise Blocked('installed_private_worker_source_mismatch')
  state=r.sql("SELECT enabled,transport_secret_id IS NOT NULL credential_bound,release_change_id,source_commit FROM public.sandy_orch_worker_control WHERE singleton",True)
  if len(state)!=1:raise Blocked('private_timer_configuration_missing')
  if require_active and (not state[0]['enabled'] or not state[0]['credential_bound'] or not state[0]['release_change_id'] or not re.fullmatch('[a-f0-9]{40}',str(state[0]['source_commit']))):raise Blocked('private_timer_not_activated')
@@ -65,7 +65,7 @@ def verify(r,sql,require_active=True):
  if cron!=[{'jobname':'sandy-orchestration-dispatch-every-minute','schedule':'* * * * *','command':'SELECT public.sandy_orch_worker_tick()','active':True}]:raise Blocked('fixed_credential_free_schedule_mismatch')
  acl=r.sql("SELECT has_function_privilege('anon','public.sandy_orch_worker_tick()','EXECUTE') anon_tick,has_function_privilege('authenticated','public.sandy_orch_worker_tick()','EXECUTE') user_tick,has_function_privilege('service_role','public.sandy_orch_worker_tick()','EXECUTE') service_tick,has_table_privilege('service_role','public.sandy_orch_worker_control','UPDATE') service_configuration,has_function_privilege('authenticated','public.sandy_orch_worker_bind_transport(text)','EXECUTE') user_credential_binding",True)
  if acl!=[{'anon_tick':False,'user_tick':False,'service_tick':False,'service_configuration':False,'user_credential_binding':False}]:raise Blocked('private_timer_privileges_mismatch')
- return {'installed_source_verified':True,'timer_active':state[0]['enabled'],'transport_bound':state[0]['credential_bound'],'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
+ return {'installed_source_verified':True,'timer_active':state[0]['enabled'],'transport_bound':state[0]['credential_bound'],'transport_guard_verified':bool(guard),'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
 def install_transport_guard(r):
  if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main':raise Blocked('protected_main_release_required')
@@ -97,6 +97,7 @@ def configure_existing(r,sql,change,source,bind_transport=True):
   # The exposed Management API legacy key is not necessarily the actual private
   # worker environment binding. Never substitute or overwrite that credential.
   raise Blocked('trusted_runtime_transport_binding_required')
+ if state.get('transport_guard_verified') is not True:raise Blocked('independent_transport_guard_required')
  if state.get('transport_bound') is not True:raise Blocked('trusted_runtime_transport_not_bound')
  # Only the trusted existing OIDC bridge may establish and test this transport;
  # activation reads non-secret state and never exports or rotates credentials.

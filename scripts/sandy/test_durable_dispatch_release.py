@@ -14,7 +14,7 @@ class DurableDispatchRecoveryTests(unittest.TestCase):
     if query.startswith('SELECT EXISTS('):return [{'verified':True}]
     return []
    def api(self,*args):return b'[{"name":"service_role","api_key":"synthetic-private-transport"}]'
-  with patch('release_durable_dispatch_schedule.verify',side_effect=[{'timer_active':False,'transport_bound':True},{'timer_active':True}]),patch('release_durable_dispatch_schedule.inspect_worker'),patch('release_durable_dispatch_schedule.private_rpc') as binding:
+  with patch('release_durable_dispatch_schedule.verify',side_effect=[{'timer_active':False,'transport_bound':True,'transport_guard_verified':True},{'timer_active':True}]),patch('release_durable_dispatch_schedule.inspect_worker'),patch('release_durable_dispatch_schedule.private_rpc') as binding:
    result=configure_existing(Fixture(),'synthetic-migration','10000000-0000-4000-8000-000000000001','a'*40,bind_transport=False)
   binding.assert_not_called();self.assertTrue(result['configuration_only']);self.assertFalse(result['migrations_reapplied'])
   text=str(calls);self.assertNotIn('synthetic-private-transport',text);self.assertNotIn('CREATE ',text);self.assertNotIn('schema_migrations',text);self.assertNotIn('INSERT INTO public.sandy_engineering_changes(',text)
