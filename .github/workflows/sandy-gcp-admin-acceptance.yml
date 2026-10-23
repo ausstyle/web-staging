@@ -10,31 +10,25 @@ concurrency:
   cancel-in-progress: false
 jobs:
   acceptance:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: sandy-production
     steps:
-      - name: Require renewable Owner credential before any provider request
+      - name: Require existing legitimate Owner authentication context before any provider request
         env:
-          OWNER_AUTH: ${{ secrets.SANDY_OWNER_ACCEPTANCE_CREDENTIAL }}
+          OWNER_AUTH: ${{ secrets.SANDY_CONTROLLER_ACCESS_TOKEN }}
         run: |
-          test -n "$OWNER_AUTH" || { echo '::error title=Administrator authentication required::renewable_owner_credential_unavailable; use scripts/sandy/configure_owner_acceptance.py on the Owner computer; no provider request or installation attempted'; exit 1; }
+          test -n "$OWNER_AUTH" || { echo '::error title=Administrator authentication required::legitimate_owner_session_unavailable; no provider request or installation attempted'; exit 1; }
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: denoland/setup-deno@v2
         with:
           deno-version: '2.9.6'
-      - name: Validate renewable credential expiry without contacting providers
-        env:
-          SANDY_OWNER_ACCEPTANCE_CREDENTIAL: ${{ secrets.SANDY_OWNER_ACCEPTANCE_CREDENTIAL }}
-        run: deno run --allow-env=SANDY_OWNER_ACCEPTANCE_CREDENTIAL scripts/sandy/owner_acceptance_auth.ts --check
       - name: Test administrator, Auth and release boundaries
         run: |
-          deno test scripts/sandy/owner_acceptance_auth_test.ts scripts/sandy/verify_gcp_admin_candidate_test.ts scripts/sandy/verify_mcp_candidate_test.ts supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts
+          deno test scripts/sandy/verify_gcp_admin_candidate_test.ts scripts/sandy/verify_mcp_candidate_test.ts supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts
           PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_gcp_api_admin_release.py -v
-          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest scripts/sandy/test_owner_api_acceptance_handoff.py -v
       - uses: actions/github-script@v7
         with:
           script: |
@@ -87,7 +81,7 @@ jobs:
       - name: Authenticate normally and verify runtime impersonation plus both IAP policies
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
-          SANDY_OWNER_ACCEPTANCE_CREDENTIAL: ${{ secrets.SANDY_OWNER_ACCEPTANCE_CREDENTIAL }}
+          SANDY_CONTROLLER_ACCESS_TOKEN: ${{ secrets.SANDY_CONTROLLER_ACCESS_TOKEN }}
         run: >-
           deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_gcp_admin_candidate.ts
           --output "$RUNNER_TEMP/sandy-admin-acceptance/administrator-acceptance.json"

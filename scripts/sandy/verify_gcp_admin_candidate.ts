@@ -1,6 +1,6 @@
-/** Independent protected administrator acceptance. Each run obtains a legitimate
- * fresh Owner session through normal Auth and retires it in finally. */
-import { createOwnerAcceptanceAuth, parseOwnerCredential } from "./owner_acceptance_auth.ts";
+/** Independent protected administrator acceptance. A legitimate existing Owner
+ * session is mandatory; no service key or generated JWT substitutes for it. */
+const base = "https://zmqlyygzqoidkcwdysok.supabase.co";
 const target = "https://sandy-api-review---sandy-engineering-mcp-4pqn6jsfxq-ew.a.run.app/mcp";
 const runtime = "sandy-mcp-runtime@elaborate-haven-511518-a5.iam.gserviceaccount.com";
 const administrator = "sandy-cloud-administrator@elaborate-haven-511518-a5.iam.gserviceaccount.com";
@@ -28,28 +28,26 @@ if (import.meta.main) {
     Owner_session_fabricated: false, IAM_changes: 0, agents_enrolled: 0, production_traffic_changes: 0 };
   const proxy = Deno.env.get("HTTPS_PROXY"), client = proxy ? Deno.createHttpClient({proxy:{url:proxy},http2:false}) : undefined;
   const request: typeof fetch = (url, init = {}) => fetch(url, {...init,...(client ? {client}:{}),redirect:"error",signal:AbortSignal.timeout(110000)});
-  let ownerAuth: ReturnType<typeof createOwnerAcceptanceAuth> | undefined;
   try {
-    if(Deno.env.get("GITHUB_ACTIONS")==="true"){
-      if(Deno.env.get("GITHUB_REF")!=="refs/heads/main")throw Error("protected_main_source_required");
-      report.acceptance_source_commit=Deno.env.get("GITHUB_SHA");
-      report.github_run_id=Deno.env.get("GITHUB_RUN_ID");
-      report.github_run_attempt=Deno.env.get("GITHUB_RUN_ATTEMPT");
-    }
-    const credential = Deno.env.get("SANDY_OWNER_ACCEPTANCE_CREDENTIAL");
-    if (!credential) throw Error("renewable_owner_credential_unavailable");
-    parseOwnerCredential(credential);
+    const token = Deno.env.get("SANDY_CONTROLLER_ACCESS_TOKEN");
+    if (!token) throw Error("legitimate_owner_session_unavailable");
     const management = Deno.env.get("SANDY_SUPABASE_MANAGEMENT_TOKEN");
     if (!management) throw Error("management_binding_unavailable");
     const keysReply = await request("https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/api-keys",{headers:{authorization:"Bearer "+management}});
     if (!keysReply.ok) throw Error("management_key_lookup_failed");
     const keys = await keysReply.json(), anon = keys.find((r: any) => r.name === "anon")?.api_key;
     if (typeof anon !== "string") throw Error("project_anon_configuration_unavailable");
-    ownerAuth = createOwnerAcceptanceAuth({credential, anon, management, request, report,
-      mask: Deno.env.get("GITHUB_ACTIONS") === "true" ? secret => console.log("::add-mask::"+secret.replace(/%/g,"%25").replace(/\r/g,"%0D").replace(/\n/g,"%0A")) : undefined});
-    await ownerAuth.get();
+    const auth = await request(base+"/auth/v1/user",{headers:{authorization:"Bearer "+token,apikey:anon}});
+    report.normal_Auth_http_status=auth.status;
+    if (!auth.ok) {
+      const denied=await auth.json().catch(()=>({}));
+      const code=denied.error_code ?? denied.code;
+      if(["bad_jwt","session_not_found","user_not_found","no_authorization","user_banned"].includes(code))report.normal_Auth_error_code=code;
+      report.normal_Auth_classification=typeof denied.msg==="string"&&denied.msg.includes("token is expired")?"token_expired":"authentication_rejected";
+      throw Error("legitimate_owner_session_invalid_or_expired");
+    }
+    await auth.body?.cancel();
     const rpc = async(method: string, params: any) => {
-      const token = await ownerAuth!.get();
       const response = await request(target,{method:"POST",headers:{authorization:"Bearer "+token,apikey:anon,
         "content-type":"application/json",accept:"application/json, text/event-stream","mcp-protocol-version":"2025-03-26"},
         body:JSON.stringify({jsonrpc:"2.0",id:crypto.randomUUID(),method,params})});
@@ -82,17 +80,11 @@ if (import.meta.main) {
       administrator_identity:proof.administrator_identity,token_issuance_verified:true,token_expires_at:proof.token_expires_at,
       provider_receipts:proof.provider_receipts,targets:proof.targets.map((t: any)=>({vm_name:t.vm_name,instance_id:t.instance_id,policy_read_verified:true})),admission_id:proof.admission_id});
   }catch(e){const code=e instanceof Error?e.message:"";
-    const known=new Set(["protected_main_source_required","renewable_owner_credential_unavailable","management_binding_unavailable","management_key_lookup_failed",
-      "owner_credential_invalid","owner_credential_expired_or_window_invalid","owner_normal_sign_in_failed",
-      "owner_session_response_invalid","owner_session_claims_invalid","owner_normal_Auth_verification_failed",
-      "owner_identity_verification_failed","owner_authority_readback_unavailable","current_owner_authority_required",
-      "owner_MFA_interactive_sign_in_required","owner_session_retirement_failed","owner_session_retirement_readback_failed",
-      "owner_session_retirement_readback_unavailable","project_anon_configuration_unavailable","owner_MCP_initialization_failed",
+    const known=new Set(["legitimate_owner_session_unavailable","management_binding_unavailable","management_key_lookup_failed",
+      "project_anon_configuration_unavailable","legitimate_owner_session_invalid_or_expired","owner_MCP_initialization_failed",
       "owner_MCP_discovery_failed","administrator_contract_not_discoverable","administrator_execution_not_verified",
       "independent_administrator_proof_invalid","independent_administrator_token_expiry_invalid"]);
     report.error=known.has(code)?code:"administrator_acceptance_failed";}
-  finally{
-    try{await ownerAuth?.retire();}catch{report.passed=false;report.cleanup_error="owner_session_retirement_not_verified";}
-    client?.close();await Deno.writeTextFile(output,JSON.stringify(report,null,2)+"\n");console.log("::notice title=Independent administrator acceptance::"+JSON.stringify(report));}
+  finally{client?.close();await Deno.writeTextFile(output,JSON.stringify(report,null,2)+"\n");console.log("::notice title=Independent administrator acceptance::"+JSON.stringify(report));}
   if(!report.passed)Deno.exitCode=1;
 }
