@@ -1,0 +1,29 @@
+{
+  "scope": "SANDY-ENG-0006",
+  "function": "sandy-operation-api",
+  "before_version": 60,
+  "verify_jwt": true,
+  "before_bundle_sha256": "cac24e2c1b64c39dd2e0d1b31fbf09ad741d9cd6333180c7cb3df02eec4b63f6",
+  "changed_modules": {
+    "sandy-operation-api/customer_mutations.ts": {
+      "before_sha256": "96e816b344e5f93509b744784110dacb279efccd26e7e4133c176aa41c55be54",
+      "candidate_sha256": "20479918394e4a4a9c7574600e7ce70ba0212bb03b3ecfa9ab7ce1fb365cf9e0"
+    },
+    "sandy-operation-api/memory_operations.ts": {
+      "before_sha256": "7867b0e3f6ac3b4b6d9c0009f38d93e9121ad71c8765927d3886faff00c74545",
+      "candidate_sha256": "d1fe9c1b196e65f1b75e9a9318605413caad4dcb9d80a91c24bae033bd638a31"
+    },
+    "sandy-operation-api/memory_contracts.ts": {
+      "before_sha256": "4f5da532c159d6045b47da34418128e0b49548b1f009c562e0ee9f22919c2979",
+      "candidate_sha256": "790e817a659bf9738cbe4872492e126c5dc00dcd79b649215e6277dfe955b3dd"
+    }
+  },
+  "migration": "supabase/migrations/20261024004100_sandy_memory_correction_receipt.sql",
+  "flags_enabled": false,
+  "customer_or_MCP_acceptance_verified": false,
+  "new_catalogue_operations": 0,
+  "new_tables": 0,
+  "migration_sha256": "edf1ffdb213db848470dd69c100c6197b470353c8695fa8a1772ca1feac9bd1a",
+  "shared_rpc_before_prosrc_sha256": "8113c2c2b53c21933a6ba6140c5d742798e79509bdf1d14c5fa6e115a81ec95d",
+  "shared_rpc_candidate_prosrc_sha256": "f05b010393795666bdb9233f2cd1f88620be80a567d88b35af5e271f1ea4a4f1"
+}

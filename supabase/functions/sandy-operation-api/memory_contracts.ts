@@ -1,3 +1,4 @@
+import { memoryCorrectionMutationContract } from "./customer_mutations.ts";
 // Remaining actual Memory Portal branches; baseline five passive reads stay separate.
 export const memoryOperationContracts: Record<string, Record<string, unknown>> =
   {
@@ -1448,3 +1449,12 @@ export const memoryOperationContracts: Record<string, Record<string, unknown>> =
       "forgets_indexed_copy_only": true,
     },
   };
+
+// Canonical API/MCP correction uses the same existing database action with an
+// atomic receipt. The original Memory Centre UI action remains compatible.
+Object.assign(memoryOperationContracts["memory.fact_correct"], {
+  input_schema: memoryCorrectionMutationContract.input_schema,
+  output_schema: memoryCorrectionMutationContract.output_schema,
+  description:
+    "Correct or reject one own active profile fact using a genuine portal session, explicit confirmation and stable idempotency receipt; verify supersession and rejection provenance. No caller-supplied customer or identity.",
+});
