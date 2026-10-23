@@ -65,11 +65,16 @@ Deno.test('protected IAP custody is durable, one-use, grant-bound and fail-close
   await assert.rejects(finish(apply,{phase:'completed'}),/both_independent_readbacks_required/);
   await db.exec('UPDATE public.sandy_engineering_control_grants SET enabled=false,revision=2');
   await assert.rejects(start(apply,1),/current_independent_repair_grant_required/);
+  const timedOutJob='10000000-0000-4000-8000-000000000009';
+  await db.query("INSERT INTO public.sandy_deployment_jobs(id,engineering_change_id,status,payload) VALUES($1,$2,'running',jsonb_build_object('admission_id',$3::text))",[timedOutJob,proposal,apply.admission_id]);
+  await db.query("UPDATE public.sandy_api_execution_admissions SET effect_verification=jsonb_set(effect_verification,'{job_id}',to_jsonb($2::text)) WHERE id=$1",[apply.admission_id,timedOutJob]);
   assert.equal((await finish(apply,{phase:'failed_or_unknown',reconciliation_required:false})).state,'unknown');
   await finish(apply,{phase:'target_verified',mode:'apply',revision:1,vm_name:names[0],instance_id:ids[0],before:plans[0].before,observed_after:{...plans[0].candidate,etag:'late-observed'},proof:{change_required:true,expires_at:fixtureExpiry}});
   assert.equal(await val('SELECT state v FROM public.sandy_api_execution_admissions WHERE id=$1',[apply.admission_id]),'unknown');
   assert.equal(await val("SELECT result_sha256=encode(extensions.digest(effect_verification::text,'sha256'),'hex') v FROM public.sandy_api_execution_admissions WHERE id=$1",[apply.admission_id]),true);
   await assert.rejects(finish(apply,{phase:'target_verified',mode:'apply',revision:1,vm_name:names[1],instance_id:ids[1],before:plans[1].before,observed_after:plans[1].candidate,proof:{change_required:true,expires_at:fixtureExpiry}}),/receipt_refused/);
+  assert.equal(await val("SELECT j.status='unknown_outcome' AND j.result->>'result_sha256'=a.result_sha256 v FROM public.sandy_deployment_jobs j JOIN public.sandy_api_execution_admissions a ON a.id=$1 WHERE j.id=$2",[apply.admission_id,timedOutJob]),true);
+  assert.equal(await val("SELECT count(*)::int v FROM public.sandy_engineering_change_events WHERE event_type='iap_repair_late_target_receipt' AND detail->>'admission_id'=$1 AND detail->>'new_dispatch'='false'",[apply.admission_id]),1);
   assert.equal(await val("SELECT effect_verification->'target_receipts'->'sandy-video'->'observed_after'->>'etag' v FROM public.sandy_api_execution_admissions WHERE id=$1",[apply.admission_id]),'late-observed');
   await assert.rejects(finish(apply,{phase:'completed'}),/receipt_refused/);
   await db.exec('UPDATE public.sandy_engineering_control_grants SET enabled=true,revision=1');

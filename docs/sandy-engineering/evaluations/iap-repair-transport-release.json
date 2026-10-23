@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "reviewed_source_commit": "9055e425d6a8e68bc04b657753c33cafdb28cbd7",
+  "reviewed_source_commit": "3feaaec9b0a9675caccad9f173bfeb6af2348983",
   "existing_proposal_id": "52d56740-59c8-4db1-b7e6-a137c7699b86",
   "functions": {
     "sandy-engineering-control": {
@@ -17,16 +17,16 @@
         "sandy-engineering-control/workload.ts": "9bc3f2889bbadd8a8414ced9d28772981b24b1c98091f8cd79b6b13a24470f7b"
       },
       "candidate_files": {
-        "sandy-engineering-control/index.ts": "bbdc82d9e7cfce2bc52ba5193e25150336c93ea6f89fe8d540b4dc38147421e8",
+        "sandy-engineering-control/index.ts": "95a1ea717dc969a8d1a645985045eb0593a52c074525d0275fb3447095d206eb",
         "sandy-engineering-control/gcp_admin_read.ts": "a3720756118055284e22ecf662be68c2735ce12593295c3687bf6086a8bc5955",
         "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
         "sandy-engineering-control/canonical_request.ts": "ab5ff8342026e4511c27b521ec661ef236326518d914a8716bc1563ad45815aa",
         "sandy-operation-api/registry_schema_validator.ts": "21f60f0dd14de49e38b8fc021346fc35b9eca5a0a6fbc97736447f8bfe557cfe",
         "sandy-operation-api/registry_schema_interpreter.ts": "b6e47ffddec8b45ab466e1a4843e9d2d3d56934673da1e7d4c03a0e1719414bd",
         "sandy-engineering-control/workload.ts": "9bc3f2889bbadd8a8414ced9d28772981b24b1c98091f8cd79b6b13a24470f7b",
-        "sandy-engineering-control/iap_repair.ts": "6472ba628f3403c8d051f48a7185550922a890252aa9460e8fff2422b13b3c15",
-        "sandy-engineering-control/iap_repair_jobs.ts": "0a78e75b17f7a5452ecef15a73201b5682a86dbe0cec80f640b65f2b3d901867",
-        "_shared/sandy_iap_repair_contract.ts": "4b64a5b1d6ee5de11c361a41ba8d27feb6de9515114bafb291c9529f6e298b4d"
+        "sandy-engineering-control/iap_repair.ts": "ee579c6404ac7a61efe07d5ca9d30a93aef3bc6bf4e3d764e593b2f9ff04e0e4",
+        "sandy-engineering-control/iap_repair_jobs.ts": "8c7fbf41c834dfd981aa2d5380b8d6680cdb8b17561af5543a8ab434bef5de58",
+        "_shared/sandy_iap_repair_contract.ts": "b76773eb1f1b62158f1a17acf9aa8639e043e558512ae160f17519962662e204"
       }
     },
     "sandy-operation-api": {
@@ -161,7 +161,7 @@
       },
       "candidate_files": {
         "sandy-operation-api/index.ts": "aefd069c16046ec9cc9dd8166792e0ead3fec4c8d847ded6fec8d5ebbbf1d806",
-        "sandy-operation-api/engineering_identity.ts": "09e6ee7d77769a5aa7e2badaed3b857c7f7f0f803cc4196bfad5624a2f47300d",
+        "sandy-operation-api/engineering_identity.ts": "64022d207d797adda623fc084fbb8823b7208172a5adab8704ce9cee3bcb0509",
         "sandy-operation-api/engineering_identity_policy.json": "7f34bc9c6034f9d21f9bc815811b1c58bd040d8593c726eb5064321b30e9a285",
         "sandy-operation-api/engineering_vm_read_policy.json": "3f20e2a5cd8f3a6757652b6fc54e567b3793a2597169f95dbd593cc93e855994",
         "_shared/sandy_repository_text.ts": "bab5787ff458750db856ac809e3e46abc921fc518106e4986de69aa1df09e248",
@@ -284,19 +284,19 @@
         "sandy-orchestration-api/index.ts": "fcfcf09aa2f5cd2b76e95efdc1dd70213170dcceda9db395e21ef0c81e10de54",
         "sandy-orchestration-api/contracts.ts": "25ac7d21c761e2217b5ea88ba6381acd6b6e48e849b94bb88c1a3882f6d46729",
         "sandy-operation-api/engineering_read.ts": "1452111e8a19b8bb467f3e8bb4ba8fa7a109fb04f3fb72f1b4494b2f64b6bd3e",
-        "sandy-operation-api/iap_repair_authorization.ts": "c74f11d655775e7d7142b09ed2e50ae01cff510667814faca9710af4a24a4efb",
-        "_shared/sandy_iap_repair_contract.ts": "4b64a5b1d6ee5de11c361a41ba8d27feb6de9515114bafb291c9529f6e298b4d"
+        "sandy-operation-api/iap_repair_authorization.ts": "fffba342c2b11057e08e8c942791e0408eb2f33a061f42a78a04763e2e4c2f78",
+        "_shared/sandy_iap_repair_contract.ts": "b76773eb1f1b62158f1a17acf9aa8639e043e558512ae160f17519962662e204"
       }
     }
   },
   "migration": "supabase/migrations/20261024006000_sandy_iap_repair_custody.sql",
-  "migration_sha256": "adb037e350f590952e5da05251d0f2b78cdcda6e73a5248676d60bfa773da498",
+  "migration_sha256": "ea270447538cd9f8fce8ce6bd4ec7a5275d2a8700a38d57d3a90244d0d05f121",
   "rpc_source_sha256": {
-    "sandy_iap_repair_admit": "fa9a5832b7170f296837a31e94ac7ce14a8878c3d63d4e1c2d54e341d233badf",
+    "sandy_iap_repair_admit": "416e8f30bf1cdbc7e3972f3cb58f8b8fbedaba648990f896b47c9761a6e33289",
     "sandy_iap_repair_context": "8e5cc5d08c5cf3d7ef5013881fe76d16f47cb7adea8694d7a1cf3a4197a00ad8",
     "sandy_iap_repair_claim": "80f0ebad04e01d07fae2dc02600b776da6eb2f376f8fd1173b686b16adec2d89",
     "sandy_iap_repair_write_started": "6806c1e5704e2de5a9bce4cf4a06caf550b4eee3c404cf4043e741c4e048e302",
-    "sandy_iap_repair_finish": "d54cc304da2109f6fc017382b3c676989635c3a9bd36747d47334256667f380a",
+    "sandy_iap_repair_finish": "298aab9b35b6e2668ffda9928de1b42b08bee67fac5e1227e06d34074d43489c",
     "sandy_iap_repair_prepare_job": "661b522712f5b577904b0f558fff8b3cedb7eb99f1bcf07735410f3f05598755",
     "sandy_iap_repair_job_context": "fc543fbaf58d18c908c3b9c57134e28856fb1c0c1e50a5f6caf189dff83e7fdb",
     "sandy_iap_repair_job_admit": "077acc1f1f9f54361a91de839b8f653f9c417aa6b268a01e74bb6ebd5222ae0d",
