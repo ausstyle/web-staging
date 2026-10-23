@@ -71,6 +71,38 @@ class AutoDispatchTests(unittest.TestCase):
         runs=[dict(run(1,created="2026-10-17T17:50:00Z"),conclusion="failure") for _ in range(3)]
         self.assertIsNone(choose([issue(1)],runs,now,lambda _:True))
 
+
+    def test_success_is_not_replayed_after_comment_or_source_repair(self):
+        successful = dict(run(1, created="2026-10-15T12:00:00Z"), conclusion="success")
+        self.assertIsNone(choose([issue(1)], [successful], NOW, lambda _: True))
+
+    def test_issue_budget_only_reduces_attempts(self):
+        task = issue(1)
+        task["body"] += "\n<!-- sandy-dispatch-budget:1 -->"
+        failed = dict(run(1, created="2026-10-15T12:00:00Z"), conclusion="failure")
+        self.assertIsNone(choose([task], [failed], NOW, lambda _: True))
+        self.assertEqual(dispatcher.attempt_budget(task), 1)
+        for marker, expected in (("99", 3), ("0", 0), ("one", 0), ("1 --><!-- sandy-dispatch-budget:2", 0)):
+            task["body"] = f"<!-- sandy-dispatch-budget:{marker} -->"
+            self.assertEqual(dispatcher.attempt_budget(task), expected)
+        task["body"] = "<!-- sandy-dispatch-budget:1"
+        self.assertEqual(dispatcher.attempt_budget(task), 0)
+
+    def test_dependencies_require_completed_same_repository_evidence(self):
+        dependency = {"number": 7, "state": "closed", "state_reason": "completed",
+                      "repository_url": f"https://api.github.com/repos/{dispatcher.REPO}"}
+        with patch.object(dispatcher, "pages", return_value=[dependency]):
+            self.assertTrue(dispatcher.dependencies_ready(issue(1)))
+        for changes in ({"state": "open"}, {"state_reason": "not_planned"},
+                        {"state_reason": None}, {"number": True}, {"repository_url": "other"}):
+            with patch.object(dispatcher, "pages", return_value=[dict(dependency, **changes)]):
+                self.assertFalse(dispatcher.dependencies_ready(issue(1)))
+        for error in (ValueError("bad"), subprocess.CalledProcessError(1, "gh", stderr="HTTP 403 SECRET")):
+            with patch.object(dispatcher, "pages", side_effect=error), redirect_stdout(io.StringIO()) as output:
+                self.assertFalse(dispatcher.dependencies_ready(issue(1)))
+                self.assertIn("dependency_evidence_unavailable", output.getvalue())
+                self.assertNotIn("SECRET", output.getvalue())
+
     def test_requires_opt_in_and_title(self):
         self.assertIsNone(choose([issue(1, labels=[]), issue(2, title="Unrelated")], [], NOW))
 
@@ -128,6 +160,8 @@ class FakeGitHub:
                       {"workflow_runs": self.runs[1:], "total_count": len({r['id'] for r in self.runs})}]
         elif endpoint.startswith("issues?"):
             result = [[], copy.deepcopy(self.issues)]
+        elif "/dependencies/blocked_by?" in endpoint:
+            result = [[]]
         elif "/comments?" in endpoint:
             result = [[], copy.deepcopy(self.comments)]
         elif endpoint.startswith("labels?"):
@@ -151,6 +185,28 @@ class EscalationTests(unittest.TestCase):
         with patch.object(dispatcher, "gh", self.api), patch.dict(os.environ, {
                 "GITHUB_REPOSITORY": dispatcher.REPO, "SANDY_DISPATCH_DRY_RUN": "1" if dry else "0"}), redirect_stdout(self.output):
             dispatcher.main()
+
+
+    def test_blocked_dependency_does_not_block_independent_task(self):
+        self.api.issues, self.api.runs = [issue(1, priority_value=99), issue(2)], []
+        original = self.api
+        def api(*args, **kwargs):
+            if any("issues/1/dependencies/" in arg for arg in args):
+                raise subprocess.CalledProcessError(1, "gh", stderr="HTTP 403 SECRET")
+            return original(*args, **kwargs)
+        with patch.object(dispatcher, "gh", api), patch.dict(os.environ, {
+                "GITHUB_REPOSITORY": dispatcher.REPO, "SANDY_DISPATCH_DRY_RUN": "0"}), redirect_stdout(self.output):
+            dispatcher.main()
+        self.assertEqual(self.api.writes[0][1]["inputs"], {"issue_number": "2"})
+        self.assertIn("dependency_evidence_unavailable", self.output.getvalue())
+
+    def test_lower_budget_exhaustion_escalates_once(self):
+        self.api.issues[0]["body"] += "\n<!-- sandy-dispatch-budget:1 -->"
+        self.api.runs = self.api.runs[:1]
+        self.execute(); self.execute()
+        self.assertEqual(len(self.api.comments), 1)
+        self.assertIn("bounded scheduler attempt budget", self.api.comments[0]["body"])
+        self.assertFalse(any("/dispatches" in endpoint for endpoint, _ in self.api.writes))
 
     def test_repeated_runs_publish_once_and_preserve_labels(self):
         self.execute(); self.execute()
