@@ -41,7 +41,8 @@ if (import.meta.main) {
     report.normal_Auth_http_status=auth.status;
     if (!auth.ok) {
       const denied=await auth.json().catch(()=>({}));
-      if(["bad_jwt","session_not_found","user_not_found","no_authorization","user_banned"].includes(denied.code))report.normal_Auth_error_code=denied.code;
+      const code=denied.error_code ?? denied.code;
+      if(["bad_jwt","session_not_found","user_not_found","no_authorization","user_banned"].includes(code))report.normal_Auth_error_code=code;
       report.normal_Auth_classification=typeof denied.msg==="string"&&denied.msg.includes("token is expired")?"token_expired":"authentication_rejected";
       throw Error("legitimate_owner_session_invalid_or_expired");
     }
