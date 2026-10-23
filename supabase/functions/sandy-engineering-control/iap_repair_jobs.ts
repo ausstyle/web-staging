@@ -8,6 +8,14 @@ const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f
 const hash=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 export async function handleIapRepairJob(db:any,user:Obj,token:string,b:Obj,activation:Activation,request=fetch):Promise<Response>{
  const binding=iapRepairWorkloadBinding(user,token);if(!binding)return fail('normal_engineering_workload_session_required');
+ if(b.action==='job_status'){
+  if(Object.keys(b).length!==3||b.change_id!==iapRepairProposal||!uuid(b.job_id))return fail('fixed_iap_repair_job_contract_required',400);
+  try{
+   const r=await db.rpc('sandy_iap_repair_job_context',{...binding,p_job:b.job_id});
+   if(r.error||r.data?.ok!==true||r.data.job?.id!==b.job_id||r.data.job.engineering_change_id!==b.change_id)return fail('scoped_iap_repair_job_required');
+   return Response.json({job:r.data.job});
+  }catch{return fail('iap_repair_job_status_unavailable',503);}
+ }
  if(!activation||!hash(activation.source_sha256)||!/^sandy-engineering-mcp-[a-z0-9-]{1,90}$/.test(activation.worker_revision)||
   !/^https:\/\/(?:(?:sandy-api-review|sandy-iap-repair-review)---)?sandy-engineering-mcp-(?:[a-z0-9]+-ew\.a|1030223524306\.europe-west1)\.run\.app$/.test(activation.url))return fail('protected_repair_activation_required',424);
  const rpc=async(name:string,args:Obj)=>{try{const r=await db.rpc(name,args);return !r.error&&r.data?.ok!==false?r.data:null;}catch{return null;}};

@@ -15,11 +15,11 @@ export async function resolveIapRepairScope(deps:Obj,user:Obj,jwt:Obj,resolved:O
 }
 export async function authorizeIapRepairExecution(deps:Obj,user:Obj,jwt:Obj,operation:string,args:unknown,entry:unknown,headers:Headers,channel:unknown){
  const deny=(status:number,error:string)=>({ok:false as const,status,error});
- if(!object(entry)||!deps.contractMatches(entry)||entry.api_exposed!==true||entry.ai_exposed!==true||entry.handler!=='sandy-engineering-control'||entry.is_mutation!==true||
+ if(!object(entry)||!deps.contractMatches(entry)||entry.api_exposed!==true||entry.ai_exposed!==true||entry.handler!=='sandy-engineering-control'||entry.is_mutation!==(operation!=='engineering.job.status')||
   !object(args)||args.change_id!==iapRepairProposal||!deps.argumentsValid(entry.input_schema,args))return deny(400,'fixed_iap_repair_job_contract_required');
  if(operation==='engineering.implementation.request'){
   if(!iapRepairJobInput(args))return deny(400,'fixed_iap_repair_job_contract_required');
- }else if(operation==='engineering.job.execute'){
+ }else if(operation==='engineering.job.execute'||operation==='engineering.job.status'){
   if(Object.keys(args).length!==2||!uuid(args.job_id))return deny(400,'fixed_iap_repair_job_contract_required');
   const scoped=await rpc(deps.db,'sandy_iap_repair_job_context',{p_actor:user.id,p_session:jwt.session_id,p_epoch:jwt.app_metadata.sandy_engineering_epoch,p_job:args.job_id});
   if(scoped?.ok!==true||!object(scoped.job)||scoped.job.id!==args.job_id||scoped.job.engineering_change_id!==iapRepairProposal)return deny(403,'scoped_iap_repair_job_required');

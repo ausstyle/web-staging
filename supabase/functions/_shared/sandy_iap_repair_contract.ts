@@ -1,7 +1,7 @@
 /** Three fixed Engineering job variants, not new operation catalogue entries. */
 export const iapRepairProposal='52d56740-59c8-4db1-b7e6-a137c7699b86';
 export const iapRepairTarget='sandy-iap-repair:elaborate-haven-511518-a5:sandy-video+sandy-windows';
-export const iapRepairOperations=['engineering.implementation.request','engineering.job.execute'] as const;
+export const iapRepairOperations=['engineering.implementation.request','engineering.job.execute','engineering.job.status'] as const;
 export const iapRepairJobSchemas=['plan','apply','rollback'].map(mode=>({
  type:'object',required:['change_id','provider','operation','target','idempotency_key','payload'],additionalProperties:false,
  properties:{change_id:{type:'string',const:iapRepairProposal},provider:{type:'string',const:'google_cloud'},

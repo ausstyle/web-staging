@@ -39,3 +39,7 @@ Deno.test('unknown dispatch is retained without automatic retry; no grant means 
  const f=fixture();f.lost();const r=await f.run();assert.equal(r.status,424);const value=await r.json();assert.equal(value.executed,null);assert.equal(value.reconciliation_required,true);assert.equal(f.requests(),1);
  const g=fixture();g.deny();assert.equal((await g.run()).status,403);assert.equal(g.requests(),0);
 });
+Deno.test('own durable job status stays readable when worker transport configuration is unavailable',async()=>{
+ const f=fixture();const r=await f.run({action:'job_status',change_id:iapRepairProposal,job_id:job},{...activation,url:''});assert.equal(r.status,200);assert.equal((await r.json()).job.id,job);assert.equal(f.requests(),0);assert.equal(f.calls.length,1);assert.equal(f.calls[0].name,'sandy_iap_repair_job_context');
+ const denied=fixture();denied.deny();assert.equal((await denied.run({action:'job_status',change_id:iapRepairProposal,job_id:job})).status,403);
+});

@@ -27,7 +27,7 @@ Deno.serve(async req=>{
     worker_revision:Deno.env.get("SANDY_IAP_REPAIR_WORKER_REVISION")||""
    })}catch{return respond({ok:false,error:"protected_repair_custody_unavailable",executed:null,reconciliation_required:true},503)}
   }
-  if(user.app_metadata?.sandy_engineering_test===true&&((action==="implementation_request"&&b.provider==="google_cloud")||action==="execute_job")){
+  if(user.app_metadata?.sandy_engineering_test===true&&((action==="implementation_request"&&b.provider==="google_cloud")||["execute_job","job_status"].includes(action))){
    try{return await handleIapRepairJob(db,user,token,b,{
     url:Deno.env.get("SANDY_IAP_REPAIR_WORKER_URL")||"",
     source_sha256:Deno.env.get("SANDY_IAP_REPAIR_SOURCE_SHA256")||"",
