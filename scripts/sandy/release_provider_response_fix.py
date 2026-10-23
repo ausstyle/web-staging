@@ -27,6 +27,7 @@ PRIOR_BUNDLE_SHA = '896a964ff35577f62e6d49c590ce1d2262bddda3eb24d39f3bc59aaf1394
 CHECKS = {'provider-response-contract-tests', 'api-contract-tests',
           'supabase-gap-contract-tests', 'vm-protocol-contract-tests',
           'examiner-evidence-tests', 'offline-contract-tests'}
+BACKUP_CHUNK_BYTES = 128 * 1024
 
 
 def sha(value):
@@ -148,11 +149,55 @@ def inspect(r, manifest, restored=False):
     return metadata, before, files
 
 
+def store_recovery(r, manifest, change, version, body, pin):
+    """Keep one private recovery row; bound every Management request and verify
+    the complete compressed bytes in PostgreSQL before permitting dispatch.
+    A partial/uncertain append never authorizes an upload or an automatic retry.
+    """
+    packed = gzip.compress(body, mtime=0)
+    encoded = base64.b64encode(packed).decode()
+    recovery = {'kind': 'private-provider-release-rollback-v1', 'manifest_sha256': pin,
+                'bundle_gzip_base64': '', 'bundle_transfer_state': 'writing',
+                'compressed_sha256': sha(packed), 'compressed_base64_bytes': len(encoded)}
+    r.stage = 'private_recovery_create'
+    rows = r.sql(f"""INSERT INTO public.sandy_engineering_artifacts
+      (change_id,artifact_type,target,before_ref,rollback_strategy,rollback_notes,metadata)
+      VALUES('{change}','edge_function','{TARGET}','version:{version}',
+      'redeploy_prior',{quote(manifest['rollback'])},{quote(json.dumps(recovery))}::jsonb) RETURNING id""")
+    if len(rows) != 1:
+        raise Blocked('private_recovery_row_not_confirmed_no_upload')
+    artifact = str(uuid.UUID(rows[0]['id']))
+    for offset in range(0, len(encoded), BACKUP_CHUNK_BYTES):
+        chunk = encoded[offset:offset + BACKUP_CHUNK_BYTES]
+        r.stage = 'private_recovery_append'
+        rows = r.sql(f"""UPDATE public.sandy_engineering_artifacts SET metadata=jsonb_set(
+          metadata,'{{bundle_gzip_base64}}',to_jsonb((metadata->>'bundle_gzip_base64')||{quote(chunk)}))
+          WHERE id='{artifact}' AND change_id='{change}' AND target='{TARGET}'
+          AND metadata->>'manifest_sha256'='{pin}' AND metadata->>'bundle_transfer_state'='writing'
+          AND length(metadata->>'bundle_gzip_base64')={offset} RETURNING id""")
+        if rows != [{'id': artifact}]:
+            raise Blocked('private_recovery_append_not_confirmed_no_upload')
+    r.stage = 'private_recovery_verify'
+    rows = r.sql(f"""UPDATE public.sandy_engineering_artifacts SET metadata=jsonb_set(
+      metadata,'{{bundle_transfer_state}}','"complete"'::jsonb)
+      WHERE id='{artifact}' AND change_id='{change}' AND target='{TARGET}'
+      AND metadata->>'manifest_sha256'='{pin}' AND metadata->>'bundle_transfer_state'='writing'
+      AND length(metadata->>'bundle_gzip_base64')={len(encoded)}
+      AND encode(extensions.digest(decode(metadata->>'bundle_gzip_base64','base64'),'sha256'),'hex')='{sha(packed)}'
+      RETURNING id""")
+    if rows != [{'id': artifact}]:
+        raise Blocked('private_recovery_digest_not_verified_no_upload')
+    return artifact
+
+
 def release(r, manifest, change, rollback_artifact=None):
     pin = validate_manifest(manifest)
     change = str(uuid.UUID(change))
+    r.stage = 'independent_source_ci'
     github_ci()
+    r.stage = 'owner_approval_verification'
     owner_admission(r, change, pin)
+    r.stage = 'component_lease_acquire'
     r.sql(f"""DO $$ BEGIN INSERT INTO public.sandy_engineering_component_leases
       (component,holder,change_id,expected_source_sha256,expires_at)
       VALUES('{TARGET}',{quote(r.holder)},'{change}','{manifest['prior_bundle_sha256']}',clock_timestamp()+interval '10 minutes')
@@ -161,6 +206,7 @@ def release(r, manifest, change, rollback_artifact=None):
       WHERE public.sandy_engineering_component_leases.expires_at<=clock_timestamp();
       IF NOT FOUND THEN RAISE EXCEPTION 'component already leased';END IF;END $$;""")
     try:
+        r.stage = 'live_source_verification'
         meta, body, files = inspect(r, manifest, bool(rollback_artifact))
         dispatch_key = sha(canonical({'change': change, 'manifest': pin,
                                      'mode': 'rollback' if rollback_artifact else 'deploy'}))
@@ -173,6 +219,8 @@ def release(r, manifest, change, rollback_artifact=None):
             if len(rows) != 1 or rows[0]['metadata'].get('manifest_sha256') != pin:
                 raise Blocked('private_recovery_artifact_required')
             recovery = rows[0]['metadata']
+            if recovery.get('bundle_transfer_state') not in (None, 'complete'):
+                raise Blocked('private_recovery_incomplete_no_rollback')
             packed = base64.b64decode(recovery['bundle_gzip_base64'], validate=True)
             import io
             with gzip.GzipFile(fileobj=io.BytesIO(packed)) as stream:
@@ -188,14 +236,9 @@ def release(r, manifest, change, rollback_artifact=None):
                 raise Blocked('candidate_source_mismatch')
             # Keep full source recovery material in the existing private database,
             # never in public Git or GitHub Actions artifacts. No new store/key.
-            recovery = {'kind': 'private-provider-release-rollback-v1', 'manifest_sha256': pin,
-                        'bundle_gzip_base64': base64.b64encode(gzip.compress(body, mtime=0)).decode()}
-            rows = r.sql(f"""INSERT INTO public.sandy_engineering_artifacts
-              (change_id,artifact_type,target,before_ref,rollback_strategy,rollback_notes,metadata)
-              VALUES('{change}','edge_function','{TARGET}','version:{meta['version']}',
-              'redeploy_prior',{quote(manifest['rollback'])},{quote(json.dumps(recovery))}::jsonb) RETURNING id""")
-            artifact = str(uuid.UUID(rows[0]['id']))
+            artifact = store_recovery(r, manifest, change, meta['version'], body, pin)
         # Revalidate authority, exact live source and lease immediately at dispatch.
+        r.stage = 'dispatch_guard_verification'
         owner_admission(r, change, pin)
         inspect(r, manifest, bool(rollback_artifact))
         held = r.sql(f"SELECT count(*)::integer held FROM public.sandy_engineering_component_leases WHERE component='{TARGET}' AND holder={quote(r.holder)} AND change_id='{change}' AND expires_at>clock_timestamp()", True)
@@ -204,9 +247,12 @@ def release(r, manifest, change, rollback_artifact=None):
         intent = {'dispatch_key': dispatch_key, 'manifest_sha256': pin,
                   'source_commit': SOURCE, 'recovery_artifact_id': artifact,
                   'actor_kind': 'protected_release_service', 'mode': 'rollback' if rollback_artifact else 'deploy'}
+        r.stage = 'durable_upload_intent'
         r.sql(f"INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{change}','provider_response_fix_upload_started',NULL,{quote(json.dumps(intent))}::jsonb)")
+        r.stage = 'function_upload'
         receipt = r.upload(TARGET, candidate, manifest['verify_jwt'])
         private_write(r.out, 'provider-upload-receipt.json', receipt)
+        r.stage = 'post_upload_source_verification'
         observed = json.loads(r.api('GET', '/functions/' + TARGET))
         installed = original_sources(r.api('GET', '/functions/' + TARGET + '/body'))
         if (observed.get('version') != meta['version'] + 1 or observed.get('status') != 'ACTIVE'
@@ -223,6 +269,13 @@ def release(r, manifest, change, rollback_artifact=None):
                   'github_run_id': os.environ.get('GITHUB_RUN_ID')}
         r.sql(f"INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{change}','{event}',NULL,{quote(json.dumps(detail))}::jsonb)")
         return result
+    except Exception:
+        # Lease cleanup is another request; preserve the original safe failure
+        # metadata before it can replace last_request with a successful DELETE.
+        r.failure_stage = r.stage
+        last = getattr(r, 'last_request', None)
+        r.failure_request = dict(last) if isinstance(last, dict) else None
+        raise
     finally:
         r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE component='{TARGET}' AND holder={quote(r.holder)} AND change_id='{change}'")
 
@@ -284,8 +337,15 @@ def main():
         return 0
     except (Blocked, OSError, ValueError, KeyError, TypeError, subprocess.CalledProcessError) as error:
         code = str(error) if isinstance(error, Blocked) else 'provider_release_blocked_or_unknown_outcome'
-        print(json.dumps({'ok': False, 'error': code, 'automatic_retry': False,
-                          'approval_status_written': False, 'functional_acceptance_passed': False}))
+        failure = {'ok': False, 'error': code, 'automatic_retry': False,
+                   'stage': getattr(r, 'failure_stage', r.stage) if 'r' in locals() else 'configuration',
+                   'last_management_request': getattr(r, 'failure_request', r.last_request) if 'r' in locals() else None,
+                   'approval_status_written': False, 'functional_acceptance_passed': False}
+        print(json.dumps(failure))
+        if os.environ.get('GITHUB_ACTIONS') == 'true':
+            # Check annotations remain readable when signed log downloads are
+            # unavailable. Only fixed codes, stage and endpoint/status are used.
+            print('::error title=Protected provider release stopped::' + json.dumps(failure))
         return 1
 
 
