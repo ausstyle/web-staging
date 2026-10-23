@@ -1,4 +1,5 @@
-import copy,json,unittest
+import copy,json,subprocess,tempfile,unittest
+from pathlib import Path
 from unittest import mock
 import release_admin_delegation as r
 
@@ -21,7 +22,22 @@ class DelegationReleaseTests(unittest.TestCase):
         with self.assertRaises(r.Blocked):r.patch(r.GATEWAY,out)
 
     def test_checked_in_manifest_pins_only_two_existing_functions(self):
-        m=r.load();self.assertEqual(set(m['functions']),{r.CONTROL,r.GATEWAY})
+        # This accepted release is historical: subsequent reviewed work may
+        # legitimately change current handlers. Exercise the unchanged strict
+        # loader against the immutable source actually approved for that release.
+        approved='50c17dcce68334f198f06e591c763e435fd616d0'
+        manifest=json.loads(r.MANIFEST.read_text())
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory)
+            for path in manifest['reviewed_files']:
+                target=root/path;target.parent.mkdir(parents=True,exist_ok=True)
+                target.write_bytes(subprocess.check_output(['git','show',approved+':'+path],cwd=r.ROOT))
+            with mock.patch.object(r,'ROOT',root):
+                m=r.load()
+                # Preserve the production validator's drift rejection, too.
+                (root/'supabase/functions/sandy-operation-api/engineering_identity.ts').write_text('unreviewed source')
+                with self.assertRaisesRegex(r.Blocked,'reviewed_source_changed'):r.load()
+        self.assertEqual(set(m['functions']),{r.CONTROL,r.GATEWAY})
         self.assertEqual(m['functions'][r.CONTROL]['version'],53)
         self.assertEqual(m['functions'][r.GATEWAY]['version'],59)
         self.assertFalse(m['functions'][r.CONTROL]['verify_jwt']);self.assertTrue(m['functions'][r.GATEWAY]['verify_jwt'])
