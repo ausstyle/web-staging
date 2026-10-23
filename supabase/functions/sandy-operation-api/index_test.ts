@@ -3635,8 +3635,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 568 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 568);
+Deno.test("all 571 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 571);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -5175,7 +5175,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2557);
+  assert.equal(installedOperationIds.length, 2560);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);

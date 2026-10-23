@@ -31,6 +31,7 @@ import {
 import { parsePackageRestoreBindings } from "./scope.ts";
 export { parsePackageRestoreBindings } from "./scope.ts";
 import { executeGithub, executeSerial, executeSupabase } from "./providers.ts";
+import { executeProjectFunction } from "./project_functions.ts";
 export { gapContracts } from "./contracts.ts";
 export {
   type Dependencies,
@@ -187,11 +188,22 @@ export function createGapHandler(
       }
       if (!token!) fail("provider_credential_unavailable", 424);
       calls = new Calls(deps, token!, op.provider);
-      const value = op.provider === "supabase"
-        ? await executeSupabase(op, args, calls, (deps.now ?? Date.now)())
-        : op.provider === "gcp"
-        ? await executeSerial(args, calls)
-        : await executeGithub(op, args, calls, deps, context, admission);
+      const value =
+        ["project_list", "project_create", "function_invoke"].includes(op.kind)
+          ? await executeProjectFunction(
+            op,
+            args,
+            calls,
+            deps,
+            context,
+            admission,
+            req.headers.get("x-sandy-user-session"),
+          )
+          : op.provider === "supabase"
+          ? await executeSupabase(op, args, calls, (deps.now ?? Date.now)())
+          : op.provider === "gcp"
+          ? await executeSerial(args, calls)
+          : await executeGithub(op, args, calls, deps, context, admission);
       const last = (op.is_mutation ? calls.mutationReceipt : calls.last) ??
         fail("provider_receipt_missing", 502);
       const output = {
@@ -290,6 +302,39 @@ if (import.meta.main) {
   };
   Deno.serve(createGapHandler({
     service,
+    functionAnonKey: Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+    validateInvocationSession: async (session, actor) => {
+      const { data, error } = await db.auth.getUser(session);
+      if (
+        error || data.user?.id !== actor || !data.user.email_confirmed_at ||
+        data.user.is_anonymous || data.user.role !== "authenticated" ||
+        data.user.app_metadata?.sandy_engineering_test === true
+      ) return false;
+      try {
+        const claims = JSON.parse(
+          atob(session.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
+        );
+        return claims.role === "authenticated" && claims.sub === actor &&
+          claims.aud === "authenticated" &&
+          typeof claims.session_id === "string" &&
+          UUID.test(claims.session_id) && claims.exp > Date.now() / 1000;
+      } catch {
+        return false;
+      }
+    },
+    projectCreationMaterial: async (admission, args) => {
+      const { data, error } = await db.rpc(
+        "sandy_supabase_project_creation_material",
+        {
+          p_admission: admission,
+          p_canonical_arguments: canonicalJson(args),
+        },
+      );
+      if (error || typeof data !== "string") {
+        fail("project_creation_custody_or_budget_refused", 403);
+      }
+      return data;
+    },
     packageRestoreBindings: parsePackageRestoreBindings(
       Deno.env.get("SANDY_GITHUB_PACKAGE_RESTORE_BINDINGS_JSON"),
     ),

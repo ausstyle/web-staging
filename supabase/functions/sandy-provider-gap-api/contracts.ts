@@ -13,6 +13,7 @@ export type GapContract = {
   permission_scope: "infrastructure:read" | "infrastructure:write";
   is_mutation: boolean;
   requires_approval: boolean;
+  requires_cost_approval?: boolean;
   api_key_delegable: boolean;
   input_schema: Obj;
   output_schema: Obj;
@@ -162,6 +163,10 @@ const sourceInfo = {
     "https://raw.githubusercontent.com/supabase/supabase/f5b00a5237155603efc708b08ece7d8c6aacf763/apps/docs/spec/api_v1_openapi.json",
     "a322345cd8bcaab5f22dc615600b3ae1e1a1f37c9534b7a9839971a66cde9434",
   ],
+  supabase_functions: [
+    "https://registry.npmjs.org/@supabase/functions-js/-/functions-js-2.4.6.tgz#package/src/FunctionsClient.ts",
+    "36458f0becec05f760137a4352b962270b2b5d7a2166c343ac39194c2f6380c6",
+  ],
   github: [
     "https://raw.githubusercontent.com/github/rest-api-description/755ee33b4a81d51f6f07a902cce26cbec3b822f2/descriptions/api.github.com/api.github.com.json",
     "3177ad6a86ca04c57a9bef3fc24e28a339efb8eb040c6f950af3d3ed2fee7fa3",
@@ -229,6 +234,86 @@ function define(
     provider_operation_id: providerId,
   };
 }
+define(
+  "supabase.projects.list",
+  "project_list",
+  "supabase",
+  [76],
+  object({}),
+  object({
+    projects: array(
+      object({
+        ref: str(20),
+        name: str(256),
+        region: str(100),
+        status: str(100),
+      }),
+    ),
+    project_ref: { const: PROJECT },
+    complete_for_bound_project: { const: true },
+    other_projects_disclosed: { const: false },
+  }),
+  false,
+  false,
+  "v1-list-all-projects",
+  "List metadata only for the already authorised bound project; no account-wide inventory disclosure.",
+);
+define(
+  "supabase.projects.create",
+  "project_create",
+  "supabase",
+  [76],
+  object({
+    name: { type: "string", pattern: "^sandy-eng-[a-z0-9][a-z0-9-]{2,50}$" },
+    region: enumeration(
+      "eu-west-1",
+      "eu-west-2",
+      "eu-west-3",
+      "eu-central-1",
+      "eu-central-2",
+      "eu-north-1",
+      "us-east-1",
+      "us-west-1",
+      "us-west-2",
+      "ap-southeast-2",
+    ),
+  }),
+  object({
+    accepted: { const: true },
+    effect_confirmed: { const: false },
+    project_ref: str(20),
+    name: str(256),
+    status: str(100),
+    organization_relationship_verified: { const: true },
+  }),
+  true,
+  true,
+  "v1-create-a-project",
+  "Create a separately authorised engineering project in the bound project's organisation. Existing custodied per-project database password and positive cost admission required; no secret input/output or automatic retry.",
+);
+definitions["supabase.projects.create"].requires_cost_approval = true;
+define(
+  "supabase.functions.invoke",
+  "function_invoke",
+  "supabase",
+  [83],
+  object({
+    slug: { type: "string", pattern: "^[a-z][a-z0-9-]{2,90}$" },
+    body: { type: "object", maxProperties: 100 },
+  }),
+  object({
+    accepted: { const: true },
+    effect_confirmed: { const: false },
+    function_slug: str(91),
+    response_sha256: { type: "string", pattern: "^[a-f0-9]{64}$" },
+    response_content_disclosed: { const: false },
+  }),
+  true,
+  true,
+  "FunctionsClient.invoke",
+  "Invoke an installed JWT-protected function using the same independently authenticated caller session. Return a bounded response digest, never provider or service credentials or arbitrary response content.",
+  "supabase_functions",
+);
 define(
   "gcp.compute.instances.serial_output",
   "serial",

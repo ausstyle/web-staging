@@ -377,9 +377,14 @@ const argsFor = (kind: string): Obj =>
     : kind.startsWith("comment_") || kind === "reply_list"
     ? { number: 2, comment_id: "DC_123" }
     : { number: 2 };
-Deno.test("all 35 exact contracts compile, hash source pins, and have executable provider transports", async () => {
-  assert.equal(validateGapContracts(), 35);
-  for (const op of Object.values(gapContracts)) {
+Deno.test("38 exact contracts compile and the original 35 provider transports retain their regression coverage", async () => {
+  assert.equal(validateGapContracts(), 38);
+  // The three new transports have separate session/custody/security fixtures.
+  for (
+    const op of Object.values(gapContracts).filter((op) =>
+      !["project_list", "project_create", "function_invoke"].includes(op.kind)
+    )
+  ) {
     assert.match(op.source_sha256, /^[a-f0-9]{64}$/);
     const h = harness();
     const r = await h.handler(requestFor(op.operation, argsFor(op.kind)));
@@ -888,9 +893,28 @@ Deno.test("redaction covers quoted JSON credentials and nondelegable metadata st
   assert.equal(h.seen.length, 0);
 });
 Deno.test("real Management UTC log timestamps without zone normalize to the public RFC3339 contract", async () => {
-  for (const timestamp of ["2026-10-20T23:59:30.123456", "2026-10-20T23:59:30.123Z", 1792540770123456]) {
-    const h = harness({}, () => json({ result: [{ id: "fixture-log", timestamp, source: "edge_logs", event_message: "sandy-fixture" }] }));
-    const r = await h.handler(requestFor("supabase.logs.query", argsFor("logs")));
+  for (
+    const timestamp of [
+      "2026-10-20T23:59:30.123456",
+      "2026-10-20T23:59:30.123Z",
+      1792540770123456,
+    ]
+  ) {
+    const h = harness(
+      {},
+      () =>
+        json({
+          result: [{
+            id: "fixture-log",
+            timestamp,
+            source: "edge_logs",
+            event_message: "sandy-fixture",
+          }],
+        }),
+    );
+    const r = await h.handler(
+      requestFor("supabase.logs.query", argsFor("logs")),
+    );
     assert.equal(r.status, 200);
     const v = await r.json();
     assert.equal(v.result.entries[0].timestamp, "2026-10-20T23:59:30.123Z");
