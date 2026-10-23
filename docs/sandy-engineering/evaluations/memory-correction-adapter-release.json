@@ -312,5 +312,25 @@
     "supabase/migrations/20261024004100_sandy_memory_correction_receipt.sql": "2533b4d428f63a29e1ac6942d33fc86f8bbeeb0854b141f0cd05f8d4aa40b21a",
     "supabase/migrations/20261024004200_sandy_memory_private_certification.sql": "f4827b97e30d76ec2e7e848d0df50362a0ec4ff6609712b95e433485777fb465"
   },
-  "shared_rpc_after_private_readiness_prosrc_sha256": "768d5f47faf9e2f60efd52bde80b0cff9fb343d9d2e1662b60deb40450eb50db"
+  "shared_rpc_after_private_readiness_prosrc_sha256": "768d5f47faf9e2f60efd52bde80b0cff9fb343d9d2e1662b60deb40450eb50db",
+  "private_schema_sources": [
+    {
+      "proname": "sandy_api_memory_private_readiness",
+      "sha": "62f4e382b31cdbf94110dc629df9bbe3a73f847ed637043148ca0ac07c9c3c98",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "owner": "postgres"
+    },
+    {
+      "proname": "sandy_guard_memory_private_readiness_event",
+      "sha": "d89802db201bb22ba0cf684dd7dfe72a832809b3d141d91e4acde89087de6cfc",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "owner": "postgres"
+    }
+  ]
 }

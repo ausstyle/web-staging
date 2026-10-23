@@ -82,12 +82,17 @@ def schema(r,m,installed=False):
         raise Blocked('shared_RPC_source_or_security_drift')
     private=r.sql("SELECT encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha FROM pg_proc WHERE oid='sandy_private.correct_customer_fact(uuid,uuid,text)'::regprocedure",True)
     if private!=[{'sha':CONFIDENCE}]:raise Blocked('confidence_repair_precondition_not_met')
-    history=r.sql("SELECT version FROM supabase_migrations.schema_migrations WHERE version IN('20261024004100','20261024004200') ORDER BY version",True)
-    if history!=([{'version':v} for v in VERSIONS] if installed else []):
+    history=r.sql("SELECT version,statements FROM supabase_migrations.schema_migrations WHERE version IN('20261024004100','20261024004200') ORDER BY version",True)
+    expected_history=[{'version':Path(p).name.split('_')[0],'statements':[(ROOT/p).read_text()]} for p in sorted(m['migrations'])] if installed else []
+    if history!=expected_history:
         raise Blocked('migration_state_requires_reconciliation_no_reinstall')
     flags=r.sql("SELECT api_exposed,ai_exposed,verified FROM public.sandy_operation_registry WHERE operation='memory.fact_correct'",True)
     if flags!=[{'api_exposed':False,'ai_exposed':False,'verified':False}]:raise Blocked('private_certification_must_not_change_global_exposure')
     if installed:
+        protected_sources=r.sql("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid IN('public.sandy_guard_memory_private_readiness_event()'::regprocedure,'public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)'::regprocedure) ORDER BY proname",True)
+        if protected_sources!=m['private_schema_sources']:raise Blocked('private_readiness_source_or_owner_drift')
+        trigger=r.sql("SELECT tgenabled,tgtype::int type,tgisinternal internal,tgfoid='public.sandy_guard_memory_private_readiness_event()'::regprocedure fixed_guard FROM pg_trigger WHERE tgrelid='public.sandy_engineering_change_events'::regclass AND tgname='sandy_memory_private_readiness_event_guard'",True)
+        if trigger!=[{'tgenabled':'O','type':31,'internal':False,'fixed_guard':True}]:raise Blocked('private_readiness_guard_trigger_drift')
         security=r.sql("SELECT has_function_privilege('authenticated','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') customer,has_function_privilege('anon','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') anon,has_function_privilege('service_role','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') service",True)
         if security!=[{'customer':True,'anon':False,'service':False}]:raise Blocked('readiness_RPC_ACL_drift')
     return row

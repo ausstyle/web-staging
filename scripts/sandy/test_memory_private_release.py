@@ -25,6 +25,26 @@ class MemoryPrivateReleaseTests(unittest.TestCase):
             with patch.dict(os.environ,env,clear=True),self.assertRaisesRegex(Blocked,'protected_committed_main_release_required'):
                 release.source_check({})
 
+    def schema_rows(self):
+        m,_=release.load()
+        rows=[{'sha':m['shared_rpc_after_private_readiness_prosrc_sha256'],'prosecdef':True,'proconfig':['search_path=pg_catalog, pg_temp'],'customer':True,'anon':False,'service':False}]
+        history=[{'version':Path(p).name.split('_')[0],'statements':[(release.ROOT/p).read_text()]} for p in sorted(m['migrations'])]
+        return m,[rows,[{'sha':release.CONFIDENCE}],history,[{'api_exposed':False,'ai_exposed':False,'verified':False}],m['private_schema_sources'],[{'tgenabled':'O','type':31,'internal':False,'fixed_guard':True}],[{'customer':True,'anon':False,'service':False}]]
+
+    def test_installed_readback_checks_original_statements_and_guard_sources(self):
+        m,rows=self.schema_rows();r=Mock();r.sql.side_effect=rows
+        release.schema(r,m,True)
+        self.assertTrue(all(c.args[1] is True for c in r.sql.call_args_list))
+
+    def test_changed_stored_statement_is_not_evidence_of_reviewed_installation(self):
+        m,rows=self.schema_rows();rows[2][0]['statements']=['different SQL'];r=Mock();r.sql.side_effect=rows
+        with self.assertRaisesRegex(Blocked,'migration_state_requires_reconciliation_no_reinstall'):release.schema(r,m,True)
+
+    def test_changed_readiness_body_or_disabled_guard_blocks_acceptance(self):
+        for index,replacement,error in [(4,[],'private_readiness_source_or_owner_drift'),(5,[],'private_readiness_guard_trigger_drift')]:
+            m,rows=self.schema_rows();rows[index]=replacement;r=Mock();r.sql.side_effect=rows
+            with self.assertRaisesRegex(Blocked,error):release.schema(r,m,True)
+
     def test_preflight_never_uploads_or_writes(self):
         r=Mock()
         with patch.object(release,'functions',return_value={}),patch.object(release,'schema'),patch.object(release,'candidate'):

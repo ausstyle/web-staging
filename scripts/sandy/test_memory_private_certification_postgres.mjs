@@ -26,6 +26,11 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
     "utf8",
   );
   await db.exec(sql);
+  const manifest=JSON.parse(await readFile(new URL("../../docs/sandy-engineering/evaluations/memory-correction-adapter-release.json",import.meta.url),"utf8"));
+  const sourceRows=(await db.query("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid IN('public.sandy_guard_memory_private_readiness_event()'::regprocedure,'public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)'::regprocedure) ORDER BY proname")).rows;
+  assert.deepEqual(sourceRows,manifest.private_schema_sources);passed++;
+  assert.deepEqual((await db.query("SELECT tgenabled,tgtype::int type,tgisinternal internal,tgfoid='public.sandy_guard_memory_private_readiness_event()'::regprocedure fixed_guard FROM pg_trigger WHERE tgrelid='public.sandy_engineering_change_events'::regclass AND tgname='sandy_memory_private_readiness_event_guard'")).rows,[{tgenabled:'O',type:31,internal:false,fixed_guard:true}]);passed++;
+
   assert.equal(
     (await db.query(
       "SELECT has_function_privilege('service_role','sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') service,has_function_privilege('anon','sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') anon",
