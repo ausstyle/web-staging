@@ -7,6 +7,7 @@ on:
       - 'supabase/functions/sandy-api-mcp/**'
       - 'supabase/functions/sandy-deployment-api/**'
       - 'supabase/functions/sandy-provider-read-api/**'
+      - 'supabase/functions/sandy-provider-operation-api/**'
       - 'supabase/functions/sandy-provider-gap-api/**'
       - 'supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql'
       - 'scripts/sandy/*supabase*'
@@ -69,6 +70,16 @@ on:
 permissions:
   contents: read
 jobs:
+  provider-response-contract-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Test provider projection, credentials and response boundaries
+        run: deno test --allow-env --allow-read supabase/functions/sandy-provider-operation-api/index_test.ts
   supabase-gap-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
