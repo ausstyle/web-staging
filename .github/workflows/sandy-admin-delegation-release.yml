@@ -1,0 +1,47 @@
+name: Release Owner-approved workload administrator delegation
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Validate Owner boundary, workload identity and preserved source
+        run: |
+          deno test scripts/sandy/verify_gcp_admin_candidate_test.ts supabase/functions/sandy-engineering-control/gcp_admin_read_test.ts supabase/functions/sandy-operation-api/engineering_identity_test.ts
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_admin_api_delegation_release.py scripts/sandy/test_gcp_api_admin_release.py -v
+      - name: Install only reviewed forward delegation change with no grant establishment
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_admin_delegation.py --deploy --evidence-dir "$RUNNER_TEMP/admin-delegation-release"
+      - name: Independently test separate Owner authorization and delegated execution
+        id: acceptance
+        continue-on-error: true
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_gcp_admin_candidate.ts --output "$RUNNER_TEMP/admin-delegation-release/administrator-acceptance.json"
+      - name: Report acceptance separately from source installation
+        if: always()
+        env:
+          ACCEPTANCE_OUTCOME: ${{ steps.acceptance.outcome }}
+        run: echo "::notice title=Independent administrator acceptance outcome::$ACCEPTANCE_OUTCOME; source installation does not establish Owner authority or prove provider execution"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-admin-delegation-${{ github.run_id }}
+          path: ${{ runner.temp }}/admin-delegation-release/
+          retention-days: 14

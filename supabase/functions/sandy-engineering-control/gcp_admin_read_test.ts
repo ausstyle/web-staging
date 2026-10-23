@@ -11,6 +11,25 @@ const body = { action: "preflight", connection: "sandy-gcp-admin" };
 const worker =
   "https://sandy-api-review---sandy-engineering-mcp-fixture-ew.a.run.app";
 
+Deno.test("delegated runtime callback retains workload actor and rechecks session authority before any provider request",async()=>{
+ const user={id:owner.id,app_metadata:{sandy_engineering_test:true,sandy_engineering_epoch:2}};
+ const token="verified."+btoa(JSON.stringify({sub:user.id,role:"authenticated",aud:"authenticated",session_id:ticket.request_id,app_metadata:user.app_metadata,exp:Date.now()/1000+3600}))+".signature";
+ for(const granted of [false,true]){
+  const calls:string[]=[];
+  const db={rpc:async(name:string,args:any)=>{
+   calls.push(name);assert.equal(args.p_actor,user.id);
+   if(name==="sandy_engineering_resolve_admin_read")return {data:{ok:granted,identity_user_id:user.id,session_id:ticket.request_id}};
+   assert.equal(name,"sandy_gcp_admin_delegated_claim");assert.equal(args.p_session,ticket.request_id);assert.equal(args.p_epoch,2);
+   return {data:{ok:true,admission_id:ticket.admission_id}};
+  }};
+  const result=await handleGcpAdminRead(db,user,{role:"engineering"},token,{action:"gcp_admin_read_claim",...ticket,worker_identity:"google-signed"},worker,
+    async()=>{throw Error("claim must not call provider");},async()=>true);
+  assert.equal(result.status,granted?200:403);assert.equal(calls.length,granted?2:1);
+ }
+ const invalid=await handleGcpAdminRead({rpc:()=>{throw Error("must not resolve invalid claims");}},user,{role:"engineering"},"invalid",body,worker);
+ assert.equal(invalid.status,403);
+});
+
 Deno.test("successful administrator proof requires fixed provider reads and rejects unexpected credential fields", async () => {
   const runtime =
     "sandy-mcp-runtime@elaborate-haven-511518-a5.iam.gserviceaccount.com";

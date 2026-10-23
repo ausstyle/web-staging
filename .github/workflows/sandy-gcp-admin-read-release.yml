@@ -88,7 +88,6 @@ jobs:
         continue-on-error: true
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
-          SANDY_OWNER_ACCEPTANCE_CREDENTIAL: ${{ secrets.SANDY_OWNER_ACCEPTANCE_CREDENTIAL }}
         run: >-
           deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_gcp_admin_candidate.ts
           --output "$RUNNER_TEMP/sandy-admin-acceptance/administrator-acceptance.json"

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><title>Sandy — Engineering delegation</title>
+<style>body{font:16px/1.5 system-ui;background:#fafafa;color:#171717}main{max-width:640px;margin:7vh auto;padding:30px;background:white;border:1px solid #ddd;border-radius:16px}button,input{font:inherit;padding:10px;margin:6px 0}button{cursor:pointer}#status{white-space:pre-wrap}small{color:#555}</style></head>
+<body><main><h1>Engineering delegation</h1>
+<p>Allow Sandy’s existing engineering identity to verify its Google Cloud administrator connection. It remains a separate workload identity.</p>
+<p>This delegation permits short-lived impersonation and policy reads for <strong>sandy-video</strong> and <strong>sandy-windows</strong> in <strong>elaborate-haven-511518-a5</strong>. It allows no IAM changes, agent enrolment, provisioning or production traffic changes.</p>
+<p>Limits: two requests per minute, zero declared cost units, expiry within 30 days. You can revoke it here. Existing canary permissions remain unchanged.</p>
+<section id="login" hidden><label>Existing Sandy email<br><input id="email" type="email" autocomplete="email"></label><br><button id="send">Email me a sign-in link</button><p>Use your existing Owner account. No password or JWT is handed to GitHub.</p></section>
+<section id="controls" hidden><p id="current"></p><label>Expiry<br><input id="expiry" type="datetime-local"></label><br><button id="enable">Establish or renew read delegation</button><br><button id="revoke">Revoke read delegation</button></section>
+<p id="status" role="status">Checking your Sandy session…</p><small>Creating or expanding a delegation requires genuine Owner authentication. Routine workload execution does not require another Owner sign-in.</small></main>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const el=id=>document.getElementById(id);let revision=0;
+const status=s=>{el("status").textContent=s};
+async function load(){
+ const {data,error}=await sb.auth.getUser();
+ if(error||!data.user){el("login").hidden=false;status("Sign in with your existing Owner account.");return}
+ const {data:current,error:readError}=await sb.rpc("sandy_engineering_get_admin_read_delegation");
+ if(readError){status("Owner delegation read failed. The release must be installed and your account must be a current Owner.");return}
+ if(!Number.isSafeInteger(current?.revision))throw Error("Invalid delegation state.");
+ revision=current.revision;el("login").hidden=true;el("controls").hidden=false;
+ el("current").textContent=`Revision ${revision}. ${current.enabled?"Enabled until "+new Date(current.expires_at).toLocaleString():"No active administrator-read delegation."}`;
+ const d=new Date(Date.now()+7*86400000);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el("expiry").value=d.toISOString().slice(0,16);
+ status("Signed in normally. Review the fixed scope before establishing or renewing it.");
+}
+async function change(enabled){
+ el("enable").disabled=el("revoke").disabled=true;
+ try{
+  const expires=enabled?new Date(el("expiry").value).toISOString():null;
+  const {data,error}=await sb.rpc("sandy_engineering_set_admin_read_delegation",{p_enabled:enabled,p_expires_at:expires,p_expected_revision:revision});
+  if(error||data?.ok!==true)throw Error("Delegation was not changed. Check Owner authority, expiry and current revision; reload before retrying.");
+  await load();status(`${enabled?"Delegation established":"Delegation revoked"}. Revision ${data.revision}; audit event ${data.audit_event_id}. No provider operation was executed.`);
+ }catch(e){status(e.message||"Delegation outcome unavailable; reload before retrying.")}
+ finally{el("enable").disabled=el("revoke").disabled=false}
+}
+el("send").onclick=async()=>{el("send").disabled=true;const {error}=await sb.auth.signInWithOtp({email:el("email").value.trim(),options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});status(error?"Sign-in request failed; try your normal Sandy sign-in.":"Check your email and open the sign-in link on this device.");el("send").disabled=false};
+el("enable").onclick=()=>change(true);el("revoke").onclick=()=>change(false);
+load().catch(()=>status("Unable to check delegation. No success claimed."));
+</script></body></html>

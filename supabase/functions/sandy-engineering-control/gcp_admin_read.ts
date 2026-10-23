@@ -1,5 +1,5 @@
-/** Owner-only read connection within the existing canonical preflight operation.
- * Runtime callbacks require both normal Owner Auth and Google's signed identity.
+/** Owner read or explicitly Owner-delegated workload read. Workload identity
+ * stays distinct, and callback rechecks its session, policy and Google identity.
  */
 import { createRemoteJWKSet, jwtVerify } from "npm:jose@5.10.0";
 import { argumentDigest } from "../_shared/sandy_api_protocol.ts";
@@ -46,9 +46,20 @@ export async function handleGcpAdminRead(
   request = fetch,
   verify = verifyRuntime,
 ): Promise<Response> {
-  if (
-    admin.role !== "owner" || user.app_metadata?.sandy_engineering_test === true
-  ) return fail("administrator_read_owner_authority_required");
+  const workload = user.app_metadata?.sandy_engineering_test === true;
+  let binding: Obj | undefined;
+  if (workload) {
+    try {
+      const c = JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")));
+      if(c.sub!==user.id || c.role!=="authenticated" || c.aud!=="authenticated" || !uuid(c.session_id) ||
+        c.app_metadata?.sandy_engineering_test!==true || !Number.isSafeInteger(c.app_metadata.sandy_engineering_epoch) ||
+        c.app_metadata.sandy_engineering_epoch!==user.app_metadata.sandy_engineering_epoch || c.exp*1000<=Date.now())throw Error();
+      binding={p_actor:user.id,p_session:c.session_id,p_epoch:c.app_metadata.sandy_engineering_epoch};
+      const resolved=await db.rpc("sandy_engineering_resolve_admin_read",binding);
+      if(resolved.error || resolved.data?.ok!==true || resolved.data.identity_user_id!==user.id || resolved.data.session_id!==c.session_id)
+        return fail("administrator_read_delegation_required");
+    } catch { return fail("administrator_read_delegation_required"); }
+  } else if (admin.role!=="owner") return fail("administrator_read_owner_authority_required");
   if (b.action === "gcp_admin_read_claim") {
     if (
       Object.keys(b).some((k) =>
@@ -65,8 +76,8 @@ export async function handleGcpAdminRead(
     } catch {
       return fail("expected_google_runtime_identity_required");
     }
-    const { data, error } = await db.rpc("sandy_gcp_admin_read_claim", {
-      p_actor: user.id,
+    const { data, error } = await db.rpc(workload ? "sandy_gcp_admin_delegated_claim" : "sandy_gcp_admin_read_claim", {
+      ...(binding ?? {p_actor: user.id}),
       p_admission: b.admission_id,
       p_grant: b.grant_id,
       p_request: b.request_id,
@@ -87,9 +98,7 @@ export async function handleGcpAdminRead(
   ) {
     return fail("fixed_administrator_worker_configuration_required", 424);
   }
-  const { data: admitted, error } = await db.rpc("sandy_gcp_admin_read_admit", {
-    p_actor: user.id,
-  });
+  const { data: admitted, error } = await db.rpc(workload ? "sandy_gcp_admin_delegated_admit" : "sandy_gcp_admin_read_admit", binding ?? {p_actor:user.id});
   if (error || !uuid(admitted?.admission_id)) {
     return fail("administrator_read_admission_unavailable", 503);
   }
@@ -205,7 +214,7 @@ export async function handleGcpAdminRead(
       reconciliation_required: true,
     };
   }
-  const saved = await db.rpc("sandy_gcp_admin_read_finish", {
+  const saved = await db.rpc(workload ? "sandy_gcp_admin_delegated_finish" : "sandy_gcp_admin_read_finish", {
     p_actor: user.id,
     p_admission: admitted.admission_id,
     p_succeeded: result.ok === true,

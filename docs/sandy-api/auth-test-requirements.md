@@ -1,13 +1,10 @@
 # Authentication requirements for Sandy integration tests
 
-**Owner acceptance update, 23 October 2026:** the protected administrator
-acceptance tooling now supports fresh normal Owner sign-in and per-run session
-retirement without a manually copied JWT. See the
-[secure Owner handoff, bounded renewal and revocation runbook](owner-acceptance-authentication.md).
-This is separate from the dedicated engineering identity below and does not
-give that identity Owner membership or administrator-read authority. Deployment
-of tooling alone does not prove that an Owner credential is configured or that
-administrator impersonation/IAP acceptance has passed.
+**23 October 2026:** administrator acceptance uses separately verified genuine
+Owner delegation and the existing renewable non-Owner workload identity. Personal
+Owner-password/JWT custody is prohibited. See the [Owner authorization and
+workload acceptance runbook](owner-acceptance-authentication.md). Installation does
+not establish a grant or prove administrator/IAP execution.
 
 Current checkpoint: 21 October 2026 UTC. The permanent dedicated engineering identity
 uses source `97bd825` (latest observed metadata runtime **13**), normal Supabase Auth verification and renewable short-lived

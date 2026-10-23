@@ -2366,7 +2366,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
           executed: false,
         });
       }
-      if (administratorRead && admin?.role !== "owner") {
+      if (administratorRead && (engineeringProofFor(delegation)
+        ? engineeringProofFor(delegation)?.administratorRead !== true
+        : admin?.role !== "owner")) {
         return reply(403, { error: "administrator_read_owner_authority_required", executed: false });
       }
       let response: Response;
