@@ -561,9 +561,11 @@ Deno.test("history, connection and narrow record reads preserve customer scope a
   ];
   const files = await executeRuntimeOperation(principal, "agent.runtime.context.files.find", { query: "file" }, deps, "files");
   assert.deepEqual(files.records.map((item: Obj) => item.display_name), ["Owned file"]);
+  db.tables.sandy_memory_settings = [{ customer_id: CUSTOMER, enabled: true, consent_at: "2026-10-20T00:00:00Z", updated_at: "2026-10-20T00:00:00Z" }];
+  db.tables.sandy_memory_rejected_facts = [];
   db.tables.sandy_memory_archive = [
-    { id: DRAFT, owner_customer_id: CUSTOMER, state: "active", channel: "web", content: "needle " + "x".repeat(1500) },
-    { id: FOREIGN, owner_customer_id: FOREIGN, state: "active", channel: "web", content: "needle foreign" },
+    { id: DRAFT, owner_customer_id: CUSTOMER, state: "active", channel: "manual", content: "needle " + "x".repeat(1500), occurred_at: "2026-10-20T00:00:00Z" },
+    { id: FOREIGN, owner_customer_id: FOREIGN, state: "active", channel: "manual", content: "needle foreign", occurred_at: "2026-10-20T00:00:00Z" },
   ];
   const memory = await executeRuntimeOperation(principal, "agent.runtime.context.memory.search", { query: "needle" }, deps, "memory");
   assert.equal(memory.records.length, 1); assert.equal(memory.records[0].content.length, 900);
