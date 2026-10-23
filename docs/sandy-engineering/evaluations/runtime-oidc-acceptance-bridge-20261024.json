@@ -1,0 +1,25 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-engineering-oidc-ingest",
+  "version": 92,
+  "verify_jwt": false,
+  "body_sha256": "443e98a8781efc63ac68abdd9fa7f07f3ff4444d63eefdac03dbf4a851e2e55c",
+  "source_layout": "reviewed-flat-index-to-namespaced-v1",
+  "before_files": {
+    "index.ts": "6cd282ed683c476bbd105129f720e9ebc552abe44b6b88467ec9c52a25f0530c"
+  },
+  "replacements": {
+    "sandy-engineering-oidc-ingest/index.ts": "f999810fc6dbd55fee21dc86f08335bc99bde74edf53c3b3fc4478fe9543aab2",
+    "sandy-engineering-oidc-ingest/examiner_scope.ts": "893ae2f71c6ccc709fe901e4e0ce6401ef1708c89fd3c680782b51eff675556d"
+  },
+  "scope": [
+    "SANDY-ENG-0001",
+    "SANDY-ENG-0003"
+  ],
+  "regression_rules": [
+    "Keep all livev92 code and existing OIDC issuer/audience/repository/workflow/main checks",
+    "No workerkey export orrotation, customercall, grants or IAM changes",
+    "Existingfullassessment default preserved; focusedsubset cannot assertfullacceptance"
+  ],
+  "rollback": "Restore captured exactv92 index underfreshsourceguard; neverreplayqueuedwork orerasejudgments"
+}

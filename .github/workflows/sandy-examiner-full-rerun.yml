@@ -1,10 +1,12 @@
 name: Sandy Examiner full assessment rerun
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/sandy-examiner-full-rerun.yml'
+    inputs:
+      focused_regression:
+        description: 'Only fixed failed/review clock/task/evidence cases; not full acceptance'
+        type: boolean
+        default: false
+        required: true
 permissions:
   contents: read
   id-token: write
@@ -19,12 +21,15 @@ jobs:
       - name: Launch authenticated full Examiner assessment
         env:
           PROJECT: zmqlyygzqoidkcwdysok
+          FOCUSED_REGRESSION: ${{ inputs.focused_regression }}
         shell: bash
         run: |
           set -euo pipefail
           AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
           CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
           TOKEN="$(curl --fail --silent --show-error --max-time 15 -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${CLAIM_URL}" | jq -er '.value')"
-          RESPONSE="$(curl --fail --silent --show-error --max-time 60 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data '{"operation":"v2_full_examiner_rerun"}')"
+          PAYLOAD="$(jq -cn --argjson focused "${FOCUSED_REGRESSION}" '{operation:"v2_full_examiner_rerun",focused_regression:$focused}')"
+          RESPONSE="$(curl --fail --silent --show-error --max-time 60 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data "${PAYLOAD}")"
           echo "${RESPONSE}" | jq '{ok,run_key,status,mode,synthetic_target,thread_review_required,reason}'
-          echo "${RESPONSE}" | jq -e '.ok == true and .status == "running" and .thread_review_required == true' >/dev/null
+          echo "${RESPONSE}" | jq -e --argjson focused "${FOCUSED_REGRESSION}" '.ok == true and .status == "running" and .thread_review_required == ($focused|not) and .synthetic_target == (if $focused then 3 else 12 end)' >/dev/null
+          printf '::notice title=Examiner acceptance launch::%s\n' "$(echo "${RESPONSE}" | jq -c '{ok,run_key,status,mode,synthetic_target,thread_review_required,reason}')"
