@@ -49,6 +49,9 @@ class MemoryCorrectionAcceptance(RuntimeMemoryAcceptance):
         changed = [r for r in rows if r.get('supersedes_fact_id') == self.fact_id]
         self.check('independent_original_is_superseded', len(old) == 1 and old[0]['status'] == 'superseded' and old[0]['fact_value'] == self.old)
         self.check('independent_correction_is_active_and_explicit', len(changed) == 1 and changed[0]['status'] == 'active' and changed[0]['confidence'] == 'explicit' and changed[0]['fact_value'] == self.new)
+        rejected = self.r._sql('SELECT original_fact_id,rejected_value,corrected_value,reason FROM public.sandy_memory_rejected_facts WHERE customer_id=' + q(fixture['customer']) + ' AND original_fact_id=' + q(self.fact_id), True)
+        self.check('independent_correction_rejection_ledger', len(rejected) == 1 and rejected[0]['rejected_value'] == self.old and rejected[0]['corrected_value'] == self.new and rejected[0]['reason'] == 'customer_corrected')
+        self.report['independent_rejection_ledger_sha256'] = hashlib.sha256(json.dumps(rejected, sort_keys=True).encode()).hexdigest()
         self.report['independent_fact_readback'] = [{k: v for k, v in row.items() if k != 'fact_value'} for row in rows]
         self.report['independent_fact_readback_sha256'] = hashlib.sha256(json.dumps(rows, sort_keys=True).encode()).hexdigest()
         before_foreign = self.r._sql('SELECT id,status,confidence,fact_value FROM public.email_ai_profile_facts WHERE id=' + q(changed[0]['id']), True)
