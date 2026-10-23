@@ -23,6 +23,8 @@ Deno.test("model telemetry extends terminal receipts while preserving immutable 
  await assert.rejects(db.query(`UPDATE sandy_runtime_conversation_audit SET state='succeeded',provider_response_id='fixture',response_sha256='fixture',finished_at=now(),model_metrics=$1,selected_model='wrong-model'`,[metrics]),/scope_immutable/);
  await assert.rejects(db.query(`UPDATE sandy_runtime_conversation_audit SET state='succeeded',provider_response_id='fixture',response_sha256='fixture',finished_at=now(),model_metrics=$1`,[{...metrics,provider_effect_verified:true}]),/check constraint/);
  await assert.rejects(db.query(`UPDATE sandy_runtime_conversation_audit SET state='succeeded',provider_response_id='fixture',response_sha256='fixture',finished_at=now(),model_metrics=$1`,[{...metrics,schema_version:null}]),/check constraint/);
+ for(const malformed of [{...metrics,request_duration_ms:-1},{...metrics,usage:{...metrics.usage,secret:'must-not-store'}},{...metrics,estimated_cost_usd:0},{...metrics,usage:{...metrics.usage,cached_input_tokens:101}}])
+  await assert.rejects(db.query(`UPDATE sandy_runtime_conversation_audit SET state='succeeded',provider_response_id='fixture',response_sha256='fixture',finished_at=now(),model_metrics=$1`,[malformed]),/check constraint/);
  await db.query(`UPDATE sandy_runtime_conversation_audit SET state='succeeded',provider_response_id='fixture',response_sha256='fixture',finished_at=now(),model_metrics=$1`,[metrics]);
  await assert.rejects(db.query(`UPDATE sandy_runtime_conversation_audit SET model_metrics=NULL`),/transition_denied/);
  const rows=await db.query(`SELECT model_metrics->>'cost_basis' AS basis,model_metrics->'usage'->>'input_tokens' AS tokens FROM sandy_runtime_conversation_audit`);
