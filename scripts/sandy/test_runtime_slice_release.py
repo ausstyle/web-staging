@@ -75,6 +75,17 @@ class ReleaseTests(unittest.TestCase):
         with patch.dict(s.os.environ,{'GITHUB_ACTIONS':'true','GITHUB_REF':'refs/heads/main','GITHUB_SHA':'a'*40}):
             with self.assertRaises(s.Blocked): s.source_check(self.m,Path('/tmp/unreviewed.json'))
 
+    def test_flat_channels_preserve_their_existing_auth_settings(self):
+        for slug in ['sandy-email-runtime-canary','sandy-voice-account-context']:
+            m={**self.m,'function':slug,'version':s.FLAT_REVISIONS[slug][0],
+               'verify_jwt':False,'source_layout':s.FLAT_INDEX_LAYOUT,
+               'before_files':{'index.ts':'a'*64},
+               'replacements':{p:'b'*64 for p in s.MODULES[slug]}}
+            s.validate(m)
+            self.assertNotIn('index.ts',s.installed_hashes(m))
+            m['verify_jwt']=True
+            with self.assertRaises(s.Blocked):s.validate(m)
+
 
 class GraphicalFlatReleaseTests(unittest.TestCase):
     def setUp(self):

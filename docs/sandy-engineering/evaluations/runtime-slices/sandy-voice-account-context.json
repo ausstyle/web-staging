@@ -1,0 +1,20 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-voice-account-context",
+  "version": 20,
+  "verify_jwt": false,
+  "body_sha256": "4e789d8f128641466185bb2b6cae7df23ed38f7d17ac421b398c4b7dcdba2dd6",
+  "before_files": {
+    "index.ts": "42bc5f63127468a24a0e2ce5eaa1dfbe74b38ae86dc49120d6df9f298268cb44"
+  },
+  "replacements": {
+    "_shared/sandy-agent-operations/voice_source.ts": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04",
+    "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+    "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+    "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+    "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
+    "sandy-voice-account-context/executive.ts": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee",
+    "sandy-voice-account-context/index.ts": "bc8970c26dcda925e72b7e58a1e1485ae7cc4013b6ab184029c9834cec8c45a5"
+  },
+  "source_layout": "reviewed-flat-index-to-namespaced-v1"
+}

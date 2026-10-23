@@ -15,7 +15,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [all, runtime, examiner, native, graphical]
+        options: [all, runtime, examiner, native, graphical, channels, acceptance-bridge]
 permissions:
   contents: read
 concurrency:
@@ -35,7 +35,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py -v
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py -v
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -54,6 +54,11 @@ jobs:
           deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
           deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
           deno test supabase/functions/sandy-master-computer/index_test.ts
+          deno test --allow-read --allow-env --import-map=scripts/sandy/testing/voice_import_map.json scripts/sandy/voice_context_handler_test.ts
+          deno test supabase/functions/sandy-email-runtime-canary/history_test.ts supabase/functions/sandy-email-runtime-canary/outcome_test.ts supabase/functions/sandy-voice-account-context/executive_test.ts
+          deno check supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
+          deno test supabase/functions/sandy-engineering-oidc-ingest/examiner_scope_test.ts
+          deno check supabase/functions/sandy-engineering-oidc-ingest/index.ts
       - name: Exercise WinRM timeout and cleanup against pinned loopback TLS
         run: >-
           deno test --import-map=scripts/sandy/testing/edge_types_import_map.json
@@ -87,7 +92,8 @@ jobs:
           import os, subprocess, sys
           options={'runtime':'sandy-agent-runtime-v4','examiner':'sandy-examiner-full-cycle','native':'sandy-vm-protocol-api'}
           # Preserve the original batch; graphical is an explicit separate release.
-          selected=list(options.values()) if os.environ['COMPONENT']=='all' else ['sandy-master-computer'] if os.environ['COMPONENT']=='graphical' else [options[os.environ['COMPONENT']]]
+          extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
+          selected=list(options.values()) if os.environ['COMPONENT']=='all' else extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
           for slug in selected:
               manifest='docs/sandy-engineering/evaluations/runtime-slices/'+slug+'.json'
               out=os.path.join(os.environ['RUNNER_TEMP'],'runtime-slices',slug)

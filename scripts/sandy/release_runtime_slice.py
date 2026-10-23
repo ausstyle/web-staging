@@ -37,13 +37,32 @@ MODULES = {
         'sandy-master-computer/index.ts',
         '_shared/sandy-agent-operations/worker_computer_identity.ts',
     },
+    'sandy-email-runtime-canary': {
+        'sandy-email-runtime-canary/index.ts', 'sandy-email-runtime-canary/outcome.ts',
+        'sandy-email-runtime-canary/history.ts', '_shared/sandy-executive/outcome.ts',
+        '_shared/sandy-executive/history.ts', '_shared/sandy-executive/assessment.ts',
+    },
+    'sandy-voice-account-context': {
+        'sandy-voice-account-context/index.ts', 'sandy-voice-account-context/executive.ts',
+        '_shared/sandy-executive/rollout.ts', '_shared/sandy-executive/history.ts',
+        '_shared/sandy-executive/outcome.ts', '_shared/sandy-agent-operations/voice_source.ts',
+        '_shared/sandy-executive/temporal_context.ts',
+    },
+    'sandy-engineering-oidc-ingest': {
+        'sandy-engineering-oidc-ingest/index.ts',
+        'sandy-engineering-oidc-ingest/examiner_scope.ts',
+    },
 }
 
 # These inspected legacy services have exactly one flat source module. Only
 # separately allowlisted modules and reviewed manifests can activate a target.
 # This is not arbitrary entrypoint rewriting or permission to lose other files.
-NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context'}
+NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context', 'sandy-engineering-oidc-ingest'}
 FLAT_INDEX_LAYOUT = 'reviewed-flat-index-to-namespaced-v1'
+FLAT_REVISIONS = {'sandy-master-computer': (27, True),
+                  'sandy-email-runtime-canary': (18, False),
+                  'sandy-voice-account-context': (20, False),
+                  'sandy-engineering-oidc-ingest': (92, False)}
 
 
 def hashes(files):
@@ -70,8 +89,7 @@ def validate(m):
         raise Blocked('reviewed_bounded_runtime_manifest_required')
     if slug in NORMALIZED_TARGETS:
         if (m.get('source_layout') != FLAT_INDEX_LAYOUT
-                or slug == 'sandy-master-computer' and m['version'] != 27
-                or m['verify_jwt'] is not True
+                or (m['version'], m['verify_jwt']) != FLAT_REVISIONS[slug]
                 or set(m['before_files']) != {'index.ts'}
                 or set(m['replacements']) != MODULES[slug]):
             raise Blocked('exact_reviewed_flat_source_layout_required')
