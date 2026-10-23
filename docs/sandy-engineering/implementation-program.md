@@ -26,8 +26,11 @@ These are engineering specifications, not evidence that the software is complete
 | [0009](tasks/SANDY-ENG-0009-customer-experience-portal.md) | Customer Experience and Portal | P2; P0 defect fixes | Stable UI, evidence-backed views, scope management and customer interactions |
 | [0010](tasks/SANDY-ENG-0010-commercial-infrastructure-readiness.md) | Commercial Infrastructure and Readiness | P3; immediate safety baseline | Tenant lifecycle, entitlements, usage, support and production readiness |
 | [0011](tasks/SANDY-ENG-0011-browser-workflow-learning.md) | Passive & Active Browser Learning and Verified Skill Execution | P1; P0 foundations | Chrome opt-in observation, discovery, Skill IR and versioning, active teaching and learning from verified browser execution |
+| [0012](tasks/SANDY-ENG-0012-sandy-cloud-drive-backup.md) | Sandy Cloud — Drive, Computer Backup and Intelligent Files | P2; safety gates from day one | File storage/sync, independent snapshots, restore and ACL-filtered AI; design in [Sandy Cloud architecture](../sandy-cloud/architecture.md) |
 
 Scope 0011 depends on 0002 for isolated computer execution, 0004 for durable Missions/receipts, 0005 for authorization/provider paths and 0009 for the user experience. It does not create independent versions of these services. Observation/compilation fixtures may progress independently without delaying P0 runtime fixes. No learned candidate is automatically an approved, verified action.
+
+Scope 0012 is a new, separate product workstream. Its file/backup data-plane owner is 0012, while it reuses 0005 API identity and release boundaries, 0004 receipts, 0006 knowledge, 0009 customer UI and 0010 billing. It does **not** displace the P0 runtime program or claim Cloud SQL/GCS production availability; its current Supabase Files service and stored references remain authoritative until a tested, approved cutover.
 
 The API scope remains a separate parent-level technical specification, not an eleventh independent product task. Its 161 requirement families may map to many concrete operations. Scope 0005 owns their execution reconciliation; scope 0001 owns whether Sandy can actually use relevant operations intelligently.
 
