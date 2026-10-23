@@ -1,0 +1,19 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-email-runtime-canary",
+  "version": 18,
+  "verify_jwt": false,
+  "body_sha256": "edb4403951438f0737ed92efee55a3655082782205d3cbbde641d4d3a444f0db",
+  "before_files": {
+    "index.ts": "0a42ec2fc2de66ba164903433dd75f86c5adb5078ab39eb8e7a58b8bbc04569f"
+  },
+  "replacements": {
+    "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
+    "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+    "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+    "sandy-email-runtime-canary/history.ts": "b25969e08277e041edb124dbe790b364e0475aa328811c32ad0e52c223ebf672",
+    "sandy-email-runtime-canary/index.ts": "dbd7bd47711072e8d3b175065ce64ce6b9dc1979533430d6bb7c1c29d8e51a8b",
+    "sandy-email-runtime-canary/outcome.ts": "fe7b1560eb29501464577d6f6e540ed1c195ea390b03c31fc391d376d2313c04"
+  },
+  "source_layout": "reviewed-flat-index-to-namespaced-v1"
+}

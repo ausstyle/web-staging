@@ -22,6 +22,9 @@ MODULES = {
         '_shared/sandy-agent-operations/runtime_records.ts',
         '_shared/sandy-agent-operations/runtime_memory.ts',
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
+        '_shared/sandy-agent-operations/identity.ts',
+        '_shared/sandy-agent-operations/runtime_conversation.ts',
+        '_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts',
     },
     'sandy-examiner-full-cycle': {
         'sandy-examiner-full-cycle/index.ts',
@@ -33,7 +36,39 @@ MODULES = {
         '_shared/sandy-executive/assessment.ts',
     },
     'sandy-vm-protocol-api': {'sandy-vm-protocol-api/winrm.ts'},
+    'sandy-master-computer': {
+        'sandy-master-computer/index.ts',
+        '_shared/sandy-agent-operations/worker_computer_identity.ts',
+    },
+    'sandy-email-runtime-canary': {
+        'sandy-email-runtime-canary/index.ts', 'sandy-email-runtime-canary/outcome.ts',
+        'sandy-email-runtime-canary/history.ts', '_shared/sandy-executive/outcome.ts',
+        '_shared/sandy-executive/history.ts', '_shared/sandy-executive/assessment.ts',
+    },
+    'sandy-voice-account-context': {
+        'sandy-voice-account-context/index.ts', 'sandy-voice-account-context/executive.ts',
+        '_shared/sandy-executive/rollout.ts', '_shared/sandy-executive/history.ts',
+        '_shared/sandy-executive/outcome.ts', '_shared/sandy-agent-operations/voice_source.ts',
+        '_shared/sandy-executive/temporal_context.ts',
+    },
+    'sandy-engineering-oidc-ingest': {
+        'sandy-engineering-oidc-ingest/index.ts',
+        'sandy-engineering-oidc-ingest/examiner_scope.ts',
+        'sandy-engineering-oidc-ingest/email_fixture.ts',
+        'sandy-engineering-oidc-ingest/worker_transport.ts',
+        '_shared/sandy-executive/email_shadow_fixture.ts',
+    },
 }
+
+# These inspected legacy services have exactly one flat source module. Only
+# separately allowlisted modules and reviewed manifests can activate a target.
+# This is not arbitrary entrypoint rewriting or permission to lose other files.
+NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context', 'sandy-engineering-oidc-ingest'}
+FLAT_INDEX_LAYOUT = 'reviewed-flat-index-to-namespaced-v1'
+FLAT_REVISIONS = {'sandy-master-computer': (27, True),
+                  'sandy-email-runtime-canary': (18, False),
+                  'sandy-voice-account-context': (20, False),
+                  'sandy-engineering-oidc-ingest': (92, False)}
 
 
 def hashes(files):
@@ -56,8 +91,15 @@ def validate(m):
             or not isinstance(m.get('body_sha256'), str)
             or not re.fullmatch('[a-f0-9]{64}', m['body_sha256'])
             or not valid_map(m.get('before_files')) or not valid_map(m.get('replacements'))
-            or not set(m['replacements']) <= MODULES[slug]
-            or slug + '/index.ts' not in m['before_files']):
+            or not set(m['replacements']) <= MODULES[slug]):
+        raise Blocked('reviewed_bounded_runtime_manifest_required')
+    if slug in NORMALIZED_TARGETS:
+        if (m.get('source_layout') != FLAT_INDEX_LAYOUT
+                or (m['version'], m['verify_jwt']) != FLAT_REVISIONS[slug]
+                or set(m['before_files']) != {'index.ts'}
+                or set(m['replacements']) != MODULES[slug]):
+            raise Blocked('exact_reviewed_flat_source_layout_required')
+    elif m.get('source_layout') is not None or slug + '/index.ts' not in m['before_files']:
         raise Blocked('reviewed_bounded_runtime_manifest_required')
     if any(m['before_files'].get(p) == h for p, h in m['replacements'].items()):
         raise Blocked('unchanged_module_not_a_release')
@@ -69,6 +111,8 @@ def candidate(m, before):
     if hashes(before) != m['before_files']:
         raise Blocked('all_original_modules_must_match')
     result = dict(before)
+    if m['function'] in NORMALIZED_TARGETS:
+        del result['index.ts']
     for p, pin in m['replacements'].items():
         raw = (ROOT / 'supabase/functions' / p).read_bytes()
         if digest(raw) != pin:
@@ -77,12 +121,19 @@ def candidate(m, before):
     return result
 
 
+def installed_hashes(m):
+    result = dict(m['before_files'])
+    if m['function'] in NORMALIZED_TARGETS:
+        del result['index.ts']
+    return {**result, **m['replacements']}
+
+
 def inspect(r, m, installed=False):
     slug = validate(m)
     meta = json.loads(r.api('GET', '/functions/' + slug))
     body = r.api('GET', '/functions/' + slug + '/body')
     files = original_sources(body)
-    expected = {**m['before_files'], **m['replacements']} if installed else m['before_files']
+    expected = installed_hashes(m) if installed else m['before_files']
     if (meta.get('slug') != slug or meta.get('status') != 'ACTIVE'
             or meta.get('verify_jwt') != m['verify_jwt']
             or meta.get('version') != m['version'] + int(installed)
@@ -149,7 +200,9 @@ def release(r, m, deploy=False, manifest_path=None):
     private_write(r.out, 'manifest.json', json.dumps(m, sort_keys=True).encode())
     private_write(r.out, 'rollback.json', json.dumps({
         'function': slug, 'restore': 'before.body', 'verify_jwt': m['verify_jwt'],
-        'only_if_current_modules_equal': hashes(after), 'no_automatic_retry': True}).encode())
+        'only_if_current_modules_equal': hashes(after), 'no_automatic_retry': True,
+        'original_files': m['before_files'], 'source_layout': m.get('source_layout'),
+        'original_metadata': 'before.json'}).encode())
     change = track(r, m, source)
     r.sql(f"""DO $$ BEGIN INSERT INTO public.sandy_engineering_component_leases
       (component,holder,change_id,expected_source_sha256,expires_at)
