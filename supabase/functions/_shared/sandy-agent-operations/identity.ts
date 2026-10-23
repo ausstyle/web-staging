@@ -22,6 +22,7 @@ export type RuntimeConversationTask = Readonly<{
   channel: string;
   requestId: string;
   requestText: string;
+  readOnlyAssessment: boolean;
 }>;
 const conversationTasks = new WeakSet<object>();
 export const isRuntimeConversationTask = (value: unknown): value is RuntimeConversationTask =>
@@ -96,14 +97,15 @@ export async function bindRuntimeConversationTask(
   if (!runtimeProofs.has(proof) || !uuid(expected.taskId) ||
     (expected.customerId !== null && !uuid(expected.customerId))) return null;
   const { data, error } = await db.from("sandy_agent_tasks")
-    .select("id,customer_id,channel,request_id,status,user_request")
+    .select("id,customer_id,channel,request_id,status,user_request,plan")
     .eq("id", expected.taskId).maybeSingle();
   if (error || !data || data.id !== expected.taskId ||
     data.customer_id !== expected.customerId || data.channel !== expected.channel ||
     data.request_id !== expected.requestId || !["queued", "running"].includes(data.status)) return null;
   const capability = Object.freeze({ kind: "trusted_runtime" as const,
     customerId: data.customer_id, authUserId: null, taskId: data.id,
-    channel: data.channel, requestId: data.request_id, requestText: String(data.user_request || "") });
+    channel: data.channel, requestId: data.request_id, requestText: String(data.user_request || ""),
+    readOnlyAssessment: data.channel === "test" || data.plan?.execution_mode === "read_only_assessment" });
   conversationTasks.add(capability);
   return capability;
 }

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { setRuntimeDatabase } from "./testing/fallback_client.ts";
 import { authenticateRuntime, authenticatePortalUser, bindRuntimeTask, bindRuntimeConversationTask, isAgentPrincipal, type RuntimeConversationTask } from "../../supabase/functions/_shared/sandy-agent-operations/identity.ts";
-import { bindV2RuntimeConversation, bindV1BackupRuntimeConversation, executeRuntimeConversation, type RuntimeConversation } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation.ts";
+import { bindV2RuntimeConversation, bindV1BackupRuntimeConversation, bindV4RuntimeConversation, executeRuntimeConversation, type RuntimeConversation } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation.ts";
 import { executeAgentOperation, executeRuntimeOperation } from "../../supabase/functions/_shared/sandy-agent-operations/service.ts";
 import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
 import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts";
@@ -739,4 +739,39 @@ Deno.test("connection preflight cannot reach a provider without persisted audit 
   db.failAgentAudit = false; db.tables.sandy_agent_tasks[0].request_id = "different-request";
   assert.equal((await executeRuntimeOperation(principal, runtimeConnectionPreflightOperationName, {}, deps, "refused-task")).error, "runtime_connection_preflight_task_mismatch");
   assert.equal(calls, 0);
+});
+
+Deno.test("active v4 executes the source-bound read-only email assessment through its normal conversation broker", async () => {
+  const db = new Database(), requests: Recorded[] = [], app = await runtime("sandy-agent-runtime-v4", db, requests);
+  try {
+    const result = await app.invoke("Ignored outer request", { assessment: { channel: "email", request_id: "fixture-email-assessment", customer_id: CUSTOMER, request: "Reply with this harmless fixture response" } });
+    assert.equal(result.status, 200, db.tables.sandy_agent_tasks[0]?.failure);
+    assert.equal(result.body.response, "Fixture conversation complete.");
+    assert.equal(requests.length, 1);
+    assert.deepEqual(requests[0].body.tools.map((t: Obj) => t.name), ["sandy_context_lookup", "list_tasks", "search_history", "search_connected_gmail", "list_connected_services", "inspect_sandy_operational_state"]);
+    assert.equal(db.tables.sandy_agent_tasks[0].channel, "email");
+    assert.equal(db.tables.sandy_agent_tasks[0].plan.execution_mode, "read_only_assessment");
+  } finally { app.close(); }
+});
+
+Deno.test("read-only conversation profile cannot be caller-selected, altered or reused after persisted mode changes", async () => {
+  const db = new Database(), requests: Recorded[] = [], app = await runtime("sandy-agent-runtime-v4", db, requests);
+  try {
+    const assessment = { channel: "email", request_id: "fixture-persisted-assessment", customer_id: CUSTOMER, request: "A harmless source-bound read-only assessment" };
+    assert.equal((await app.invoke("Ignored outer request", { assessment })).status, 200);
+    const row = db.tables.sandy_agent_tasks[0]; row.status = "running";
+    const proof = await authenticateRuntime(new Request("https://internal.invalid", { headers: { authorization: "Bearer fixture-runtime-service" } }), db, "fixture-runtime-service");
+    assert.ok(proof);
+    const task = await bindRuntimeConversationTask(proof, db, { taskId: row.id, customerId: CUSTOMER, channel: row.channel, requestId: row.request_id });
+    assert.ok(task); assert.equal(task.readOnlyAssessment, true); assert(Object.isFrozen(task));
+    const initial = requests[0].body;
+    await assert.rejects(() => (bindV4RuntimeConversation as any)(task, { ...initial, tools: initial.tools.slice(1) }, false), /tool_profile_invalid/);
+    await assert.rejects(() => bindV4RuntimeConversation({ ...task, readOnlyAssessment: false }, initial), /task_required/);
+    const capability = await bindV4RuntimeConversation(task, initial);
+    row.plan.execution_mode = "normal";
+    let providerCalls = 0;
+    const auditCount = db.tables.sandy_runtime_conversation_audit.length;
+    const result = await executeRuntimeConversation(capability, { round: 0, tool_results: [] }, { db, openaiKey: "fixture-key", v4Broker: { base: fixtures.SUPABASE_URL, serviceCredential: fixtures.SUPABASE_SERVICE_ROLE_KEY, integrationToken: fixtures.SANDY_INTEGRATION_API_TOKEN }, fetch: async () => { providerCalls++; throw Error("must not dispatch"); } });
+    assert.equal(result.status, 403); assert.equal(providerCalls, 0); assert.equal(db.tables.sandy_runtime_conversation_audit.length, auditCount);
+  } finally { app.close(); }
 });
