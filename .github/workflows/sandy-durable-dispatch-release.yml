@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
     inputs:
       resume_change_id:
-        description: 'Existing timer tracking UUID for configuration-only recovery; never reinstall migration'
+        description: 'Existing timer UUID after trusted runtime transport acceptance; never reinstall migration'
         required: false
         type: string
 permissions:
@@ -32,13 +32,13 @@ jobs:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_durable_dispatch_schedule.py --deploy --evidence-dir "$RUNNER_TEMP/durable-dispatch-install"
-      - name: Resume configuration of the independently reconciled existing installation
+      - name: Activate independently verified trusted-runtime transport binding
         if: inputs.resume_change_id != ''
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           SANDY_EXISTING_TIMER_CHANGE: ${{ inputs.resume_change_id }}
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 scripts/sandy/release_durable_dispatch_schedule.py --resume-configuration "$SANDY_EXISTING_TIMER_CHANGE" --evidence-dir "$RUNNER_TEMP/durable-dispatch-install"
+        run: python3 scripts/sandy/release_durable_dispatch_schedule.py --activate-bound-transport "$SANDY_EXISTING_TIMER_CHANGE" --evidence-dir "$RUNNER_TEMP/durable-dispatch-install"
       - name: Independently read back migration, private privileges, source and timer
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
