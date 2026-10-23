@@ -1,3 +1,4 @@
+import {bindPrivateWorkerTransport} from "./worker_transport.ts";
 import {invokeEmailShadowFixture} from "./email_fixture.ts";
 import {examinerLaunchScope} from "./examiner_scope.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
@@ -54,6 +55,13 @@ Deno.serve(async(req:Request)=>{
 
 
   if(fullRerunFlow){
+    if(body.operation==="runtime_worker_transport_bind"){
+      if(Object.keys(body).length!==1)return fail("worker_transport_operation_restricted",403);
+      const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+      if(url!=="https://zmqlyygzqoidkcwdysok.supabase.co"||!key)return fail("worker_transport_runtime_binding_unavailable",503);
+      try{const result=await bindPrivateWorkerTransport(createClient(url,key,{auth:{persistSession:false}}),key,{sourceCommit:String(claims.sha||""),runId:String(claims.run_id||"")});return json(result.body,result.status);}
+      catch{return fail("worker_transport_configuration_unverified",503);}
+    }
     if(body.operation==="runtime_email_shadow_fixture"){
       if(Object.keys(body).length!==1)return fail("email_fixture_operation_restricted",403);
       const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
