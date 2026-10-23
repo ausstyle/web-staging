@@ -6,6 +6,8 @@ on:
       - 'supabase/functions/sandy-customer-provisioning-api/**'
       - 'supabase/migrations/202610240100*.sql'
       - 'scripts/sandy/test_hosting_accounts*'
+      - 'scripts/sandy/*hosting_release_candidate.py'
+      - 'docs/sandy-engineering/evaluations/hosting-logical-account-release-candidate.json'
       - 'scripts/sandy/build_hosting_scope_coverage.py'
       - 'docs/sandy-cloud-hosting-architecture-engineering-scope-v1.md'
       - 'docs/sandy-engineering/evaluations/hosting-architecture-coverage.json'
@@ -18,12 +20,16 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: denoland/setup-deno@v2
         with:
           deno-version: v2.5.6
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Verify bounded release candidate without deployment
+        run: PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_hosting_release_candidate.py -v
       - name: Verify source scope coverage
         run: |
           python scripts/sandy/build_hosting_scope_coverage.py
