@@ -93,13 +93,16 @@ def validate(m):
             or not valid_map(m.get('before_files')) or not valid_map(m.get('replacements'))
             or not set(m['replacements']) <= MODULES[slug]):
         raise Blocked('reviewed_bounded_runtime_manifest_required')
-    if slug in NORMALIZED_TARGETS:
-        if (m.get('source_layout') != FLAT_INDEX_LAYOUT
+    if m.get('source_layout') == FLAT_INDEX_LAYOUT:
+        if (slug not in NORMALIZED_TARGETS
                 or (m['version'], m['verify_jwt']) != FLAT_REVISIONS[slug]
                 or set(m['before_files']) != {'index.ts'}
                 or set(m['replacements']) != MODULES[slug]):
             raise Blocked('exact_reviewed_flat_source_layout_required')
-    elif m.get('source_layout') is not None or slug + '/index.ts' not in m['before_files']:
+    elif (m.get('source_layout') is not None or slug + '/index.ts' not in m['before_files']
+          or 'index.ts' in m['before_files']
+          or slug in NORMALIZED_TARGETS and (m['version'] <= FLAT_REVISIONS[slug][0]
+                                             or m['verify_jwt'] != FLAT_REVISIONS[slug][1])):
         raise Blocked('reviewed_bounded_runtime_manifest_required')
     if any(m['before_files'].get(p) == h for p, h in m['replacements'].items()):
         raise Blocked('unchanged_module_not_a_release')
@@ -111,7 +114,7 @@ def candidate(m, before):
     if hashes(before) != m['before_files']:
         raise Blocked('all_original_modules_must_match')
     result = dict(before)
-    if m['function'] in NORMALIZED_TARGETS:
+    if m.get('source_layout') == FLAT_INDEX_LAYOUT:
         del result['index.ts']
     for p, pin in m['replacements'].items():
         raw = (ROOT / 'supabase/functions' / p).read_bytes()
@@ -123,7 +126,7 @@ def candidate(m, before):
 
 def installed_hashes(m):
     result = dict(m['before_files'])
-    if m['function'] in NORMALIZED_TARGETS:
+    if m.get('source_layout') == FLAT_INDEX_LAYOUT:
         del result['index.ts']
     return {**result, **m['replacements']}
 
