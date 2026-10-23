@@ -1,0 +1,38 @@
+name: Sandy hosting control-plane checks
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/sandy-hosting/**'
+      - 'supabase/functions/sandy-customer-provisioning-api/**'
+      - 'supabase/migrations/202610240100*.sql'
+      - 'scripts/sandy/test_hosting_accounts*'
+      - 'scripts/sandy/build_hosting_scope_coverage.py'
+      - 'docs/sandy-cloud-hosting-architecture-engineering-scope-v1.md'
+      - 'docs/sandy-engineering/evaluations/hosting-architecture-coverage.json'
+      - '.github/workflows/sandy-hosting-control-check.yml'
+permissions:
+  contents: read
+jobs:
+  offline-control:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify source scope coverage
+        run: |
+          python scripts/sandy/build_hosting_scope_coverage.py
+          git diff --exit-code -- docs/sandy-engineering/evaluations/hosting-architecture-coverage.json
+      - name: Test read-only DNS plans and guarded inverses
+        run: node --test supabase/functions/_shared/sandy-hosting/dns_plan.test.mjs
+      - name: Test existing Auth transport and hosting account contract
+        run: deno test --allow-read --allow-env supabase/functions/sandy-customer-provisioning-api/index_test.ts supabase/functions/sandy-customer-provisioning-api/hosting_accounts_test.ts
+      - name: Test shared gateway compatibility
+        run: deno test --allow-read --allow-env supabase/functions/sandy-operation-api/index_test.ts
+      - name: Test isolated PostgreSQL identity and atomicity
+        run: python scripts/sandy/test_hosting_accounts_postgres.py

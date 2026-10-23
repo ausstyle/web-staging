@@ -1,0 +1,2110 @@
+{
+  "scope_source": "docs/sandy-cloud-hosting-architecture-engineering-scope-v1.md",
+  "scope_source_sha256": "7f128d35b984682dd2f5f49da3da44d6634dea00b25551e768bca7df8b58d7be",
+  "scope_pr": 234,
+  "scope_head": "c318e66508243fb756ee159f1eb6ad3db865e4cd",
+  "coverage_kind": "all_non_heading_blocks_including_context_not_a_completion_count",
+  "all_live_acceptance_passed": false,
+  "rows": [
+    {
+      "id": "HOST-S0-01",
+      "section": "0",
+      "section_title": "Scope metadata",
+      "source_lines": [
+        3,
+        8
+      ],
+      "text": "**Status:** Proposed engineering baseline; **not deployed or production accepted**  \n**Date:** 24 October 2026  \n**Repository:** `ausstyle/web-staging`  \n**Sandy control plane:** Supabase `zmqlyygzqoidkcwdysok`  \n**Target Google Cloud project:** `elaborate-haven-511518-a5` (initial operator project; customer project topology to be decided)  \n**Related:** PR #203 (initial hosting API contracts), Issue #226 (DNS rollout), engineering change `20a92691-558e-4939-8b61-6d777375c765`, `docs/sandy-engineering/architecture-contracts.md`, SANDY-ENG-0005/0010.",
+      "text_sha256": "ee25bb8c2638468977700494007f82e84ea3b59e7528f6970f24835bffe25f2f",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S0-02",
+      "section": "0",
+      "section_title": "Scope metadata",
+      "source_lines": [
+        10,
+        10
+      ],
+      "text": "> This document is a specification, not evidence of deployed APIs, IAM grants, DNS delegations, TLS certificates, customer accounts, or operational readiness. Implementations must independently verify deployed sources and real provider state. Existing protected release and Owner approval requirements remain binding.",
+      "text_sha256": "95258f6febd61c5f00d86ad406bdc1885d8c565c2f81451ff8c2d12c27892121",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S1-01",
+      "section": "1",
+      "section_title": "1. Product mission and boundaries",
+      "source_lines": [
+        14,
+        14
+      ],
+      "text": "Build a scalable, multi-tenant, API-first customer website hosting business, controlled through Sandy Cloud and its assistant. Customers can provision websites, databases, object storage, custom domains and HTTPS, deploy content, observe usage, manage bills, make backups and recover prior releases. Sandy acts as the service operator through governed APIs and durable jobs; it is not a separate privilege path.",
+      "text_sha256": "af79357ef62557c69bd50813d4826d9ccc22c581fa2cefd9ba5791ff1ca68fdd",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S1-02",
+      "section": "1",
+      "section_title": "1. Product mission and boundaries",
+      "source_lines": [
+        16,
+        16
+      ],
+      "text": "**Decisions:** Google Cloud Run for containerized sites and applications; Google Cloud SQL for relational databases; Cloud Storage for files/artifacts/backups; Google Cloud DNS for authoritative managed zones; external Application Load Balancer and Certificate Manager for production custom-domain HTTPS; Sandy's existing Supabase for control-plane customer data, jobs, receipts and permissions. No Firebase Hosting and no customer-site Supabase databases in the initial design. These are design choices, not verified service enablement.",
+      "text_sha256": "e7bbfd9355a41f44784cb5dd88a76c0daf3e5682e433d2d17b51edc23c0fd946",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S1-03",
+      "section": "1",
+      "section_title": "1. Product mission and boundaries",
+      "source_lines": [
+        18,
+        18
+      ],
+      "text": "**Out of v1 scope:** full email hosting, domain registrar accreditation, reseller registrar purchase/transfer until supported integration, generic VM/VPS and shell root access, custom white-label authoritative NS, unlimited compute/storage, guaranteed global active-active SQL writes. Sandy Mail may consume DNS automation later but operates under a separate product boundary.",
+      "text_sha256": "be26ed400fe3bcf4eea13c98d79545406304f40bdc7517d78c364ec112766382",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S2-01",
+      "section": "2",
+      "section_title": "2. Reference architecture",
+      "source_lines": [
+        22,
+        35
+      ],
+      "text": "```text\nCustomer UI / Sandy Assistant / Public REST API / MCP\n           |\nSandy API gateway (Auth, policy, tenant, entitlements, rate limits)\n           |\nHosting domain service (desired-state objects + versioning)\n           |\nDurable admission / outbox / leased provisioning worker / audit / receipts\n           |\nShort-lived Google Workload Identity / narrowly scoped provider adapters\n           |\nGoogle Cloud: Cloud DNS | Certificate Manager | HTTPS Load Balancer\n              Cloud Run | Cloud SQL | Cloud Storage | Cloud Logging/Monitoring\n```",
+      "text_sha256": "896579ca74dac0742f941c3841af4cc943a9ce0cdfdced5f2f95f9595b260a47",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S2-02",
+      "section": "2",
+      "section_title": "2. Reference architecture",
+      "source_lines": [
+        37,
+        37
+      ],
+      "text": "The existing Sandy API gateway is the only external operation boundary. MCP only adapts the protocol; it never owns cloud credentials. Existing shared engineering contracts SC-01 (verified actor), SC-04 (operation/result), SC-05 (effect evidence), SC-07 (delegated authority) and protected releases govern all work. Reuse canonical relations and release admission infrastructure after schema inspection; avoid parallel ledgers.",
+      "text_sha256": "83c4283ded6de20de7f7b57d3e1c9ddb6870f75bba9e60cccf2c0d39531f2f3a",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S2-03",
+      "section": "2",
+      "section_title": "2. Reference architecture",
+      "source_lines": [
+        41,
+        41
+      ],
+      "text": "- **Control plane:** Sandy Supabase keeps tenant/account relationships, domains, desired-state manifests, service plan entitlements, change requests, deploy job state, provider resource IDs, usage, invoice references, reconciliation results, audit and rollback artifacts. Do not store Cloud SQL passwords, Google long-lived keys or raw DNS API credentials in browser or ordinary rows.",
+      "text_sha256": "b5427976a47f604924453980a2e8302d53b853dcf5af52d7a2f7d46e3a40afcc",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S2-04",
+      "section": "2",
+      "section_title": "2. Reference architecture",
+      "source_lines": [
+        42,
+        42
+      ],
+      "text": "- **Data plane:** Google Cloud handles public HTTPS requests, customer workloads, database transactions and object delivery. Hosting jobs must not depend on the customer application being healthy.",
+      "text_sha256": "63b8d4b6781c6ac775e86e80984e2940b5bb3fe615317392efa2e79f4c0e028e",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S2-05",
+      "section": "2",
+      "section_title": "2. Reference architecture",
+      "source_lines": [
+        43,
+        43
+      ],
+      "text": "- **Provider execution:** workload-identity credentials bound to a verified operator/worker and target service account; per-action least-privilege authorization and explicit immutable release provenance. Cloud project Owner role is not a default requirement and is not to be granted as a shortcut.",
+      "text_sha256": "13814c362deb65852ae96c4ada113a1852e5c9d822893f79042d5b36bddd4e82",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S3-01",
+      "section": "3",
+      "section_title": "3. Tenancy and physical isolation",
+      "source_lines": [
+        47,
+        47
+      ],
+      "text": "**Initial preferred topology:** shared control plane with a per-tenant resource namespace, quotas, separate Cloud Run services and per-tenant Cloud SQL database/user within guarded SQL instances; separate buckets or prefix/IAM boundaries per tenant as appropriate. Shared managed SQL instances reduce cost but introduce noisy-neighbour/connection and blast-radius risks. Enforce tenant-scoped connection pools, per-database users, backups, limits and admission checks. Premium isolation tier can use dedicated SQL instances, projects, VPC networks or dedicated LBs after economics and IAM are verified.",
+      "text_sha256": "449bd72c391acead84964a76ee3d72649b5fbbe465e35de429ef8e051f6360c3",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "C"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S3-02",
+      "section": "3",
+      "section_title": "3. Tenancy and physical isolation",
+      "source_lines": [
+        49,
+        49
+      ],
+      "text": "A customer-supplied tenant ID is never sufficient authorization. Resolve authenticated identity and membership server side. Validate ownership of every target resource at dispatch, before mutation and during reconciliation. Reject cross-tenant listing, guessing of service IDs, domain takeover, stale versions and shared resource alteration. Separate environments (dev, staging, production), encryption keys, service identities and budgets. Define explicit customer deletion and export/grace policies.",
+      "text_sha256": "8b838dab46f64a9ad76c1ce65279ee9846d2d7fb0704418318f011ee6ce1c992",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "C"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S4-01",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        53,
+        53
+      ],
+      "text": "1. Customer creates a site with region, runtime/template, resource caps and entitlement.",
+      "text_sha256": "b382aa01bc7a6cf1822dee01c709a419968610ceef9181af4f878acb815220ae",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-02",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        54,
+        54
+      ],
+      "text": "2. Control plane persists request and idempotency key, validates payment/quotas and reserves capacity.",
+      "text_sha256": "58a3e17faf2535f30b95c480c312b5371d3aecbb3e1960ead8c2a1c3cf8be964",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-03",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        55,
+        55
+      ],
+      "text": "3. Build uploads/imports Git source or an approved artifact; isolates build; runs malware/dependency scanning, SBOM/provenance checks and secrets detection; stores immutable artifact digest in Artifact Registry/Cloud Storage.",
+      "text_sha256": "a03877e21a7cd710d5d9aa859655ca00c1d4170f8e829bbbef1dc9e96df881bc",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-04",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        56,
+        56
+      ],
+      "text": "4. Provisioning worker creates/updates Cloud Run service using an immutable digest, service-specific identity, constrained CPU/memory/concurrency, request timeout, autoscaling max instances and egress policy. Reject privileged containers and unapproved container capability.",
+      "text_sha256": "08d8e619ba6ee29556568b2cc4affec187323b332284f85625ac6d42c2c604a1",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-05",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        57,
+        57
+      ],
+      "text": "5. Worker observes Google Cloud service revision, health checks, traffic split, logs and metrics before reporting VERIFIED_SUCCESS.",
+      "text_sha256": "0a50d835dd27e858c7006b6c22630b7d3c41ac8f8e2cfa65576401647e2f29a6",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-06",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        58,
+        58
+      ],
+      "text": "6. Customer obtains a default Sandy subdomain on a controlled parent zone; custom-domain flow described below.",
+      "text_sha256": "a66e1fc1b73273943780cea583645eb1305a0f68d474db47b27e014833009723",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-07",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        59,
+        59
+      ],
+      "text": "7. Rollouts use staged revisions, optional traffic-split canary and forward rollback to last-known-good digest, with readback and receipts. Never silently replay uncertain cloud writes.",
+      "text_sha256": "31ec92730089ea4c46661d494fd0bd773e16fa02b2edf8dead491f4d96705788",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S4-08",
+      "section": "4",
+      "section_title": "4. Website and deployment pipeline",
+      "source_lines": [
+        61,
+        61
+      ],
+      "text": "Support static sites via a minimal immutable web container or a dedicated static-serving strategy evaluated for cost; do not force every static asset through expensive always-on instances.",
+      "text_sha256": "c2f550072ee8e3d00156e015f3fab7ddb3161b2db10c3290726854bd312353ac",
+      "implementation_sources": [
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "B",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+    },
+    {
+      "id": "HOST-S5-01",
+      "section": "5",
+      "section_title": "5. Cloud SQL and object storage",
+      "source_lines": [
+        65,
+        65
+      ],
+      "text": "Cloud SQL PostgreSQL is the v1 relational offering; database engine/version, instance sharing policy, region and HA tier are plan-specific. Provision dedicated roles and databases, use IAM database authentication where feasible, private connectivity, TLS and Secret Manager for credentials. Never expose database superuser credentials or public SQL network ingress to tenants. Limit max connections and concurrent provisioned tenants per shared instance; design instance sharding/capacity migration before hitting quotas. Test backup restore at database granularity and document point-in-time recovery eligibility/cost.",
+      "text_sha256": "12f3eca3cf6f923807c4b6c73cdeb814f84c72c685241b86d9334a5cee81d37f",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "C"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S5-02",
+      "section": "5",
+      "section_title": "5. Cloud SQL and object storage",
+      "source_lines": [
+        67,
+        67
+      ],
+      "text": "Cloud Storage holds application objects, customer uploads, backup artifacts and deployment artifacts with distinct buckets or IAM-isolated namespaces. Short-lived signed upload/download URLs, type/size validation, retention, object versioning where purchased, lifecycle rules, deletion protection and regional/data residency controls. Storage encryption, egress and backup costs are billable inputs. No claim of end-to-end zero-knowledge encryption.",
+      "text_sha256": "9b34fbd3ba7dabe8d74665f7c30fe2e844fa56de1a7e11b39d21238f2a6b1c9e",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "C"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S6-01",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        72,
+        72
+      ],
+      "text": "1. Sandy-managed public Google Cloud DNS zone: create managed zone for a customer-owned domain only after ownership verification; return the **actual four allocated Google Cloud NS hostnames** and instruct registrar delegation.",
+      "text_sha256": "806d20012af71c29355f12979ff1a685287cfb511b8e188c0170484f25a4c783",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S6-02",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        73,
+        73
+      ],
+      "text": "2. External DNS provider: generate required records, or execute via customer-authorized registrar/DNS integration with scoped token, confirmation and reconciliation; do not demand nameserver transfer.",
+      "text_sha256": "92fe3e6c7daf027fa36adc4a91d14df085edb81f4ea999af21973cc48ef7fa54",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S6-03",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        74,
+        74
+      ],
+      "text": "3. Sandy default subdomains: assign under a separately controlled zone and avoid collisions, stale CNAME takeover and claim races.",
+      "text_sha256": "6e0abb30ff3fb53be398b1be66aa757a7a5dbffd960f2b49bbae9c25be6b638b",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S6-04",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        76,
+        76
+      ],
+      "text": "**Vanity nameservers:** `ns1.sandy.chat` CNAME aliases to Google-assigned NS are **not** an acceptable delegation design. Branded NS require a supported white-label authoritative DNS arrangement or Sandy-operated authoritative nameservers and separate evaluation. Do not advertise branded NS at launch.",
+      "text_sha256": "48502c6c0b15b01620f85a1a85a726f40c6d577861519c46bcc4f68d200e22d2",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S6-05",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        79,
+        79
+      ],
+      "text": "Ownership challenge (TXT/appropriate provider verification) \u2192 read and snapshot existing RRsets/NS/SOA/DNSSEC state \u2192 show full diff (especially MX/SPF/DKIM/DMARC and CAA) \u2192 authorised change with expected version and idempotency \u2192 provider operation \u2192 authoritative DNS readback \u2192 delegation checks against parent zone and multiple resolvers \u2192 observe propagation/TTL \u2192 report verified, partial or pending. Distinguish provider acceptance from global resolver propagation. Preserve email routing during zone migration and never overwrite unrelated records.",
+      "text_sha256": "91e4e92d5615ed1e16b6416841a69ec37c446b3eba51550dc90f30c9a440fe46",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S6-06",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        81,
+        81
+      ],
+      "text": "Support A, AAAA, CNAME, TXT, MX, CAA, SRV, NS where supported, TTL editing, DNSSEC lifecycle and safe record deletions; validate apex CNAME constraints, CNAME coexistence, MX targets, SPF consistency, duplicate/challenge conflicts and customer-specific domain bindings. Record every old value and rollback conditions. For DNSSEC, follow DS delegation order and prevent stale-DS outages.",
+      "text_sha256": "e3ce3516dfb1ed1db940a746bbb6ae3439337a38d832f42fe3219b441f2275db",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S6-07",
+      "section": "6",
+      "section_title": "6. Domains, authoritative DNS and email safety",
+      "source_lines": [
+        84,
+        84
+      ],
+      "text": "Prefer global external Application Load Balancer with serverless NEGs for Cloud Run, host-based routing and Cloud Armor protections as warranted, paired with Google Certificate Manager (managed DNS authorisation or supported load-balancer validation). Confirm quota and certificate map limits; use sharding/multi-LB topology when supported limits demand it. Do not report HTTPS live until actual handshake, hostname, SAN, expiry and serving backend pass verification. Support apex and www routing with explicit redirects; preflight CAA, ownership and conflicting bindings.",
+      "text_sha256": "8d404605743f22d53caa234e6fa911d49809f40845cdf9a307924d719feb9764",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "D",
+        "E"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+    },
+    {
+      "id": "HOST-S7-01",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        88,
+        88
+      ],
+      "text": "Illustrative logical endpoints, **not claims of existing published routes**:",
+      "text_sha256": "e92eea1683b62c981d5c400b54040a306c80bf455585cb2ea06308b890818f24",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-02",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        90,
+        90
+      ],
+      "text": "| Capability | Proposed operation | Change class |",
+      "text_sha256": "83b80387aefce2773608498d92797e4b8a45b87be1ba9f8cbceaad7441a48aad",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-03",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        92,
+        92
+      ],
+      "text": "| Accounts | `hosting.accounts.create/get/suspend/close` | mixed |",
+      "text_sha256": "4a4452bbaf0d5672c7faa152bc10d302086370fdeefc0be33cc33fef3abe6d53",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-04",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        93,
+        93
+      ],
+      "text": "| Sites | `hosting.sites.create/get/list/update/delete` | mixed |",
+      "text_sha256": "9506c3433e0239b41627f76864d8632502083330c8c206274b0a24126042141b",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-05",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        94,
+        94
+      ],
+      "text": "| Builds/releases | `hosting.deployments.create/get/rollback` | mixed |",
+      "text_sha256": "8b87414730be3ddf0045178ba093262396985336d6a39709602c2aa04a6e73eb",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-06",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        95,
+        95
+      ],
+      "text": "| Databases | `hosting.databases.create/get/credentials.rotate/backup.restore` | privileged |",
+      "text_sha256": "0c8e7c411bf76d78284a97642273799dbd36262bf5435ce2d57d82af2b05c66f",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-07",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        96,
+        96
+      ],
+      "text": "| Storage | `hosting.storage.create/usage.get/object-sign` | mixed |",
+      "text_sha256": "d71b60185f330f27cd023a227d9a076a7d1866b05e12ee8a6362e0bf387c720e",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-08",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        97,
+        97
+      ],
+      "text": "| Domains | `hosting.domains.claim/verify/bind/unbind` | mixed |",
+      "text_sha256": "1a01753abcd42f76aa93f179cb28163bc37ba3293f5973f13ad07cf20caa70df",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-09",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        98,
+        98
+      ],
+      "text": "| DNS zones | `hosting.dns.zones.create/get/list/delete` | mixed |",
+      "text_sha256": "4ca3badd767e249b4fa56e609c3d053b796f143ddd7f1a0db23bc27a86d1b5cc",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-10",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        99,
+        99
+      ],
+      "text": "| DNS RRsets | `hosting.dns.records.list/plan/apply/revert` | mixed |",
+      "text_sha256": "df357ea03fa8d39bcbab7348f11c95c9969687ec3f497c5e78293211eaed1a84",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-11",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        100,
+        100
+      ],
+      "text": "| TLS | `hosting.tls.certificates.request/get/reconcile` | mixed |",
+      "text_sha256": "da7020ee51f7d0b1cd5e8a457ab0a97203f02b9d369d9a483295ca7f39fd84fc",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-12",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        101,
+        101
+      ],
+      "text": "| Routing | `hosting.routing.backends.bind/get` | mixed |",
+      "text_sha256": "13503700e1839068c412f3d41873145f39588d157de9baf7ef26d0fc10249673",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-13",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        102,
+        102
+      ],
+      "text": "| Billing | `hosting.usage.get/limits.update/invoices.list` | mixed |",
+      "text_sha256": "9355aff4219e79a8d3c27a8c4eb4a3c691ef6bc64693771c56a75023addce6a4",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-14",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        103,
+        103
+      ],
+      "text": "| Jobs | `hosting.jobs.get/events.list/reconcile` | read + restricted |",
+      "text_sha256": "d6ceb635853748e42547c8728b32ee9157c3220274e2f5d36f6e734999f71077",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-15",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        105,
+        105
+      ],
+      "text": "Every mutation carries versioned JSON schemas; tenant and target resolution; risk class; idempotency key; expected state version; rate/cost estimates; provider retry policy; durable job/receipt; approval or standing delegation; and a server-owned handler manifest. Return states such as REJECTED, ADMITTED, RUNNING, WAITING_ON_PROVIDER, VERIFYING, VERIFIED_SUCCESS, FAILED, and RECONCILIATION_REQUIRED; an HTTP 202 or queued job never means deployed.",
+      "text_sha256": "e0990c99dc6d0de5fd5ac53408a4bb8efc5459e548458a167805add0afca88c8",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S7-16",
+      "section": "7",
+      "section_title": "7. API and operation design",
+      "source_lines": [
+        107,
+        107
+      ],
+      "text": "Do not expose executable or verified registry flags until the actual handler is deployed and provider-level acceptance has passed. Read-only diagnostics and mutation capabilities need separate grants.",
+      "text_sha256": "04b7c38285fe244479518c2ea41765b84edab1053c38aeb279868e7b8e5b013d",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S8-01",
+      "section": "8",
+      "section_title": "8. Authorization, safety and security",
+      "source_lines": [
+        111,
+        111
+      ],
+      "text": "- Authenticate users with Sandy's existing identity system. Enforce tenant owner/admin/developer/billing/viewer roles and separately scoped support staff access. Maintain immutable audit references and allow revocation.",
+      "text_sha256": "f7ea98bab995a32aa6e5c9425f7d28cfb75a78ce98db2cead4c39756e050a38d",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S8-02",
+      "section": "8",
+      "section_title": "8. Authorization, safety and security",
+      "source_lines": [
+        112,
+        112
+      ],
+      "text": "- Provisioning mutations require target-bound permission, bounded spending, quotas and per-tenant abuse limits. Dangerous domain takeover, deletion, transfer, restoration and broad infrastructure changes need distinct elevated grant/approval.",
+      "text_sha256": "6b084f1ee1b6636d4349e665010bf8c9598ed3803f9d5eb5b7f38a2c8bddbffa",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S8-03",
+      "section": "8",
+      "section_title": "8. Authorization, safety and security",
+      "source_lines": [
+        113,
+        113
+      ],
+      "text": "- Use Google service accounts with least privilege per project, workload identity or signed short-lived token. Do not use static JSON keys in repo/CI. Inspect actual IAM APIs, organization policies, project/host billing authority and DNS ownership before enabling.",
+      "text_sha256": "30c7e40ea1fec4682f28151be2dbb6edad6a74949a177cb9f3891689208b0b4f",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S8-04",
+      "section": "8",
+      "section_title": "8. Authorization, safety and security",
+      "source_lines": [
+        114,
+        114
+      ],
+      "text": "- Keep customer build containers sandboxed; restrict network/egress and service identities; defend SSRF/metadata exfiltration, malicious upload, supply-chain compromise, crypto-mining and abuse.",
+      "text_sha256": "28ddac50c928ae5518c2daedabd856c94cfdcea5691a32b7ed1663d7a4ab6ec9",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S8-05",
+      "section": "8",
+      "section_title": "8. Authorization, safety and security",
+      "source_lines": [
+        115,
+        115
+      ],
+      "text": "- Shield public frontends with TLS, WAF/rate limits where justified, DDoS protections, log scrubbing, vulnerability patching and incident runbooks.",
+      "text_sha256": "738c97e123f0df87c93fd895b3e3724e8e115106060d7adf03b8720104f5fff9",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S8-06",
+      "section": "8",
+      "section_title": "8. Authorization, safety and security",
+      "source_lines": [
+        116,
+        116
+      ],
+      "text": "- Maintain separate audit for user request, policy check, admission, provider effect, independently observed state and rollback. No fabricated confirmations.",
+      "text_sha256": "1e3e1290e205913d6343f551d8acb686820d6af894b3542ee06224c0dc281b0f",
+      "implementation_sources": [
+        "supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json",
+        "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql"
+      ],
+      "implementation_status": "partial_source_only",
+      "live_acceptance_categories": [
+        "A",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Logical create/get only; no paid provisioning, role expansion or lifecycle."
+    },
+    {
+      "id": "HOST-S9-01",
+      "section": "9",
+      "section_title": "9. Reliability and disaster recovery",
+      "source_lines": [
+        120,
+        120
+      ],
+      "text": "SLOs are **targets for pricing and operational validation, not current SLAs**. Proposed standard paid tier: 99.9% monthly application availability excluding stated customer code failures and exclusions; premium offers higher availability only after multi-zone service design, tests and cost modelling. Use regional Cloud Run with appropriate instance scaling, regional Cloud SQL HA on qualifying plans, Cloud DNS authoritative redundancy, health checks and monitored critical-path dependencies. Database is not globally active-active by default.",
+      "text_sha256": "3b59c714b5dd2ebc42d139d7f2431ddb245e86b0dfa8b5b6cb2ce3514ca40d26",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "C",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S9-02",
+      "section": "9",
+      "section_title": "9. Reliability and disaster recovery",
+      "source_lines": [
+        122,
+        122
+      ],
+      "text": "Define and measure RPO/RTO by plan: baseline daily backups with clearly stated restore window; premium PITR/HA with documented tested restore; regular isolated restore drills. Separate infrastructure platform failure from DNS delegation error, certificate outage, code release failure and customer billing lapse. Alert on failed provisioning, certificate expiry, DNS drift, SQL saturation, quota exhaustion, 5xx rates, backup failures and uncontrolled spend. Use automatic circuit breakers and blast-radius boundaries rather than unbounded replay.",
+      "text_sha256": "70e0025876e9efadfb203feca6bc204d46fd8ccc94179f0707d5d48094336d7a",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "C",
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S10-01",
+      "section": "10",
+      "section_title": "10. Commercial model and metering",
+      "source_lines": [
+        126,
+        126
+      ],
+      "text": "**Proposed marketing anchors, not validated prices:** Starter USD 5/month and Plus USD 10/month, subject to real cloud unit economics, regions, billing currency, tax, payment and support costs. These cannot promise unlimited compute, Cloud SQL per-site instances, storage or bandwidth. Define clear hard/soft quotas for request CPU, memory, instance count, SQL database storage/connections, Cloud Storage GB, egress, builds, backups and domains. A free tier, if offered, must be strictly capped with abuse controls.",
+      "text_sha256": "643144d57983bb4263375f6ce6ef80219f6700edfdae458c3253ec5eaeb21c2d",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S10-02",
+      "section": "10",
+      "section_title": "10. Commercial model and metering",
+      "source_lines": [
+        128,
+        128
+      ],
+      "text": "Sandy records provider usage, cost allocation per tenant and service, price plan version, overage policy, taxes, invoices, trial/failed-payment lifecycle, proration, refunds, suspensions and data export before deletion. Require budgets and alert thresholds at tenant and operator levels. During provisioning estimate incremental worst-case cost and reject unsupported products/regions/quotas. Validate profitability at realistic low utilization and peak burst scenarios before launching price claims.",
+      "text_sha256": "eb0896360502a71ada9fe0cc5c8e99e2b2237828aeff3d944d188bae7826243d",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S11-01",
+      "section": "11",
+      "section_title": "11. Customer experience",
+      "source_lines": [
+        132,
+        132
+      ],
+      "text": "Dashboard: sites and their revision/health; attach domain; DNS editor with preview and records; certificates; databases and access rotation; file/storage browser; builds/deployments, logs and rollback; usage/billing; backup/restore; team invitations and roles; audit history; support. Sandy assistant can interpret natural-language requests but must translate them into typed, policy-authorised operations and display consequences and receipts. Provide contextual setup for GoDaddy/other registrars and external DNS; avoid exposing dangerous raw cloud permissions.",
+      "text_sha256": "cfd5d932b95ff577e4189d4567b6848895ef93abfac80571b390722a4c4d3383",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-01",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        136,
+        136
+      ],
+      "text": "| Phase | Deliverable | Exit gate |",
+      "text_sha256": "158eab5c0e7080866a18151e85662dcf77b5b34fe05c6b5e713ddaddd9d2369c",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-02",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        138,
+        138
+      ],
+      "text": "| P0 Discovery | Live source/registry parity, IAM/billing/API quota inventory, exact operator identity, cost baseline | Signed evidence and blockers |",
+      "text_sha256": "0fe4c311a841047b4c461f46265d5aee7dbf0de663d943b0a7aa6e49c6990392",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-03",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        139,
+        139
+      ],
+      "text": "| P1 Control plane | Tenant resources, plans, desired-state DB, auth/RLS, admission, durable jobs, audit, reconciliation | Multi-tenant negative tests |",
+      "text_sha256": "db0b907041d75ec29c5024436bd23cc642993d0067f64170974d0f95ab9fa7ff",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-04",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        140,
+        140
+      ],
+      "text": "| P2 Provider core | Cloud Run, Cloud SQL, Cloud Storage adapters and workload identity | Real restricted provider read/write/readback |",
+      "text_sha256": "fc751831a5660e4cde72417e21bdc01b440a942288d72e35b738fa01e659b7aa",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-05",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        141,
+        141
+      ],
+      "text": "| P3 DNS/TLS | Cloud DNS zones/RRsets, ownership, safe import, LB and managed certs | Verified test-domain delegation and HTTPS |",
+      "text_sha256": "6aa1104945b999802ae678a56ecb29a54dd3f85dc8a2891c4b5a618dc2f351e0",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-06",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        142,
+        142
+      ],
+      "text": "| P4 UI/API | User dashboard, public typed endpoints, MCP discovery and troubleshooting | End-to-end customer journey |",
+      "text_sha256": "490e5d602d03898f2deeecab7f18e52fb8a129fe98189af4c43453a7098d9008",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-07",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        143,
+        143
+      ],
+      "text": "| P5 Commerce & ops | Metering, invoicing, quotas, support, monitoring, restore drills | Measured unit economics and incident drills |",
+      "text_sha256": "ccd87711b37254075ed0e8364664b111862ef51dd2d96cab5c5ad2f56f0cf934",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-08",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        144,
+        144
+      ],
+      "text": "| P6 Canary/release | Protected build, approved release, one real isolated customer/demo deployment | Independent evidence and reversible rollout |",
+      "text_sha256": "7570c906f8a52387fd08fb35a4d99806c2e55fd997e556bf7c84f509c48f302a",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-09",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        146,
+        146
+      ],
+      "text": "Critical path: API mutation release authority \u2192 provider identity/permissions \u2192 durable verified workers \u2192 real resource canary \u2192 DNS/TLS \u2192 customer launch. PR #203 is an initial contract only. Issue #226 and the October 2026 engineering change record DNS work; neither is proof of deployment.",
+      "text_sha256": "4cb1f2888f93bff3014f617b90f8c44a666a38dd938062b9d1b20dc0b32ffd75",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-10",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        149,
+        149
+      ],
+      "text": "- **Sandy API (0005):** operation contracts, provider boundary, permissions, release controls and receipts.",
+      "text_sha256": "5cf99297740b4de4741d3f507844ddc7600f2e672bdc490bd701c82b47900d93",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-11",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        150,
+        150
+      ],
+      "text": "- **Sandy commercial readiness (0010):** plans, customer onboarding, billing, support and acceptance.",
+      "text_sha256": "f1ea9901919310028ab1ed6a53f01f070f85f7ac852c11a6bf34e9cce0183128",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-12",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        151,
+        151
+      ],
+      "text": "- **Sandy operations/mission infrastructure:** long-running job orchestration, lease handling, verification, compensation and monitoring.",
+      "text_sha256": "c8f8d8a7e82f9812d55aac9cd8dffc5fdd059c8dc27eae87448f6625bee5f25e",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-13",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        152,
+        152
+      ],
+      "text": "- **Customer UI:** dashboard and guided domain/DNS experiences.",
+      "text_sha256": "a3ab780b6cb30a5f6a411112290712b66b4e2f5209b6aec862148c61df371860",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S12-14",
+      "section": "12",
+      "section_title": "12. Delivery phases and engineering work packages",
+      "source_lines": [
+        153,
+        153
+      ],
+      "text": "Any allocation must follow existing workstream owners and avoid duplicate operation systems.",
+      "text_sha256": "a41633582b6bcee5d132c38d6f9c7accf2a0d1b6a8848e823f0683c134357673",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-01",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        157,
+        157
+      ],
+      "text": "**A. Authorization:** human tenant owner can operate own test site; other tenant, read-only user, unauthenticated user and expired delegated token denied before provider effect. Verify no credential leak and no broad project privilege.",
+      "text_sha256": "54f17e580b87ee18767a5bb584ea649bc5c8181b528902b8743103a3eec7e33c",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-02",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        159,
+        159
+      ],
+      "text": "**B. Provisioning:** one API request creates one durable job and Cloud Run site, matching immutable image and service identity; replay with same key returns same receipt; mismatched replay conflicts; timeout/unknown state reconciles before retry.",
+      "text_sha256": "159c96f53f2e5a72e152c787423ea469ef67e32c3584805379493bf8289adda5",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-03",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        161,
+        161
+      ],
+      "text": "**C. SQL/storage:** isolated DB/user and storage resource; cross-tenant data reads denied; quota/connection limits demonstrated; backup creation and actual restore readback tested.",
+      "text_sha256": "fc7ecc5e116d53be3948b1b84ad569e69f4966ec5fb79a393fb0a912415c7d74",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-04",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        163,
+        163
+      ],
+      "text": "**D. DNS:** domain claim challenge; zone creation; actual allocated NS returned; parent-zone NS verification; A/AAAA/CNAME/TXT/MX/CAA plan/apply/readback; conflict/TTL/DNSSEC negative tests; no unrelated MX/SPF/DKIM/DMARC changes; rollback respects concurrent changes.",
+      "text_sha256": "db85577530a6821bea89c671ae10b41817438a46d74d6948675af6c65df5d0fa",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-05",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        165,
+        165
+      ],
+      "text": "**E. Routing/TLS:** domain binding and load balancer; active certificate readback; public HTTPS test validates domain/SAN/chain; correct tenant backend, redirects, revoke/unbind and stale takeover prevention.",
+      "text_sha256": "e586d25f24dce66d7d506d5d621dd732cc60b83ef15634ff66cb21cbe9988c38",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-06",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        167,
+        167
+      ],
+      "text": "**F. Operations:** release revision/source hashes, protected approval record, deployment receipts, alert test, quota failure, automatic reconciliation after provider uncertainty, recovery from failed deployment, tested restore and cost dashboard.",
+      "text_sha256": "a05d632f7ad79eb74213a5d40b732b9c08cdb2bddaae109f36c28be9935845ed",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-07",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        169,
+        169
+      ],
+      "text": "**G. Customer journey:** signup \u2192 payment eligibility \u2192 create site \u2192 upload/deploy \u2192 attach domain \u2192 DNS + TLS verified \u2192 observe usage \u2192 rollback \u2192 export/delete. No claims of completion without independent observation.",
+      "text_sha256": "6a4db8a3de0d0aa168fe0ba12a9b58cc11f6004961cb63d0d478d119206b1a65",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S13-08",
+      "section": "13",
+      "section_title": "13. Test and production acceptance matrix",
+      "source_lines": [
+        171,
+        171
+      ],
+      "text": "**Required evidence:** immutable action/job IDs, provider request/response digests, observed resource names/versions, audit timestamps, tenant-bound identity, test case outputs, source digest, live registered operation status, negative control results, rollback results and documented residual risks. All seven test categories must pass for production acceptance.",
+      "text_sha256": "7452c3f800c59bd335273dc13f2f2fa48b44a24d69b34bcc2f8492d5c3597536",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S14-01",
+      "section": "14",
+      "section_title": "14. Release and change management",
+      "source_lines": [
+        175,
+        175
+      ],
+      "text": "Build from reviewed source under `ausstyle/web-staging`. Require automated lint/typecheck/unit/security and integration tests; real provider canary with bounded test domain/project; approved exact release manifest with source digest, function/deployment target and rollback; protected CI environment/one-use authorization; source-to-production and post-release provider readback. Use existing Sandy protected release control, not ad-hoc mutation via MCP registry or unreviewed Supabase function publication. Production DNS delegation or nameserver change always needs customer domain authority and planned safety checks.",
+      "text_sha256": "5b73e9f4151d7f2e4bf6d84f42732dbc377b59e7ee87b1575a9c471dc1783b07",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S14-02",
+      "section": "14",
+      "section_title": "14. Release and change management",
+      "source_lines": [
+        177,
+        177
+      ],
+      "text": "Do not claim deployment when a PR is merged, operation registered, job queued or policy approved. Verify output and retain reproducible receipts. If release authority is unavailable, leave implementation staged and report exact missing approval.",
+      "text_sha256": "5a88a220fdcd2fdd9c45763e01315ef241b9be7649123c08f3b72ef42e3b15a3",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-01",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        181,
+        181
+      ],
+      "text": "1. Shared Cloud SQL architecture: database-per-tenant on shared instances versus dedicated tier, along with minimum profitable plans.",
+      "text_sha256": "dc67f71b6dec80293537cd516b698426af97e78d290c5bb2733ca97865775b9a",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-02",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        182,
+        182
+      ],
+      "text": "2. Customer Google Cloud project isolation level, region/data sovereignty and whether operator project may host billable customer resources.",
+      "text_sha256": "641933cbfda640b265db81de0e63523b8fa29b3864e5ce8637838463e8a0b899",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-03",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        183,
+        183
+      ],
+      "text": "3. API resource names, permanent schema/migration names and compatibility with the canonical Sandy operation registry.",
+      "text_sha256": "efa2b9451fbeefcb117e56395dd2c666fcfc17645bfcf5955e656be77e891c2b",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-04",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        184,
+        184
+      ],
+      "text": "4. External registrar partner and supported DNS APIs; ownership transfer and renewal policy.",
+      "text_sha256": "fe8815f47d7f001ab4830cae4a35872792163f95199e83e672758517ad846480",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-05",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        185,
+        185
+      ],
+      "text": "5. Default Sandy subdomain namespace, abuse prevention and platform domain posture.",
+      "text_sha256": "7639a2ccc79836e2aaeb29b3e97e1d634fae147ad2847e3f6dc9e56862e40d4f",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-06",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        186,
+        186
+      ],
+      "text": "6. Cloud Load Balancer routing/certificate architecture and per-project quota/sharding calculations.",
+      "text_sha256": "992f1533e9140e38743ec71e2d87396c4ada0252421cb2b2de64079c0a6acb62",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-07",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        187,
+        187
+      ],
+      "text": "7. Tax/currency/geography, pricing, payments and SLA terms.",
+      "text_sha256": "b9af10243ac0733b93e7133d3b92233af4b429812c06cf32ca2db6f50d87a5df",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S15-08",
+      "section": "15",
+      "section_title": "15. Open decisions requiring explicit design records",
+      "source_lines": [
+        188,
+        188
+      ],
+      "text": "8. Tenant data retention, incident notification, export and deletion policies.",
+      "text_sha256": "8fb61dd7f0eec1aa8b6cb964cfdfcd544874a00f454b61038961c0de7049b578",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "G"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S16-01",
+      "section": "16",
+      "section_title": "16. Current evidence and truth status (24 October 2026)",
+      "source_lines": [
+        192,
+        192
+      ],
+      "text": "- V2 MCP operation discovery and registered `sandy-deploy` VM were observed working; VM was RUNNING in `europe-west1-b`. Registered target is not a production DNS executor.",
+      "text_sha256": "2bd77848bbe2160f2299ec4bc5ec1851ef5ef46c73e01ce231346d4e97887704",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S16-02",
+      "section": "16",
+      "section_title": "16. Current evidence and truth status (24 October 2026)",
+      "source_lines": [
+        193,
+        193
+      ],
+      "text": "- Live operation discovery showed no customer hosting or DNS provider-domain operations.",
+      "text_sha256": "0082591e3b44eabb99588cbcfcba996c321b7a8fefd447ab393c3e1a700de2ab",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S16-03",
+      "section": "16",
+      "section_title": "16. Current evidence and truth status (24 October 2026)",
+      "source_lines": [
+        194,
+        194
+      ],
+      "text": "- PR #203 defines bounded Cloud Run/Cloud SQL hosting API contracts and expressly does not implement or deploy provisioning.",
+      "text_sha256": "66f42b2ed8bbfa78af1587766e866794bab0c7391c6695300c6b5542abf78839",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S16-04",
+      "section": "16",
+      "section_title": "16. Current evidence and truth status (24 October 2026)",
+      "source_lines": [
+        195,
+        195
+      ],
+      "text": "- Issue #226 tracks DNS automation work. Engineering change `20a92691-558e-4939-8b61-6d777375c765` was **proposed**, not approved or released.",
+      "text_sha256": "adda18f3b90fd2f6c024158e7224803f20fe378666a2c0b4804f53def618246a",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S16-05",
+      "section": "16",
+      "section_title": "16. Current evidence and truth status (24 October 2026)",
+      "source_lines": [
+        196,
+        196
+      ],
+      "text": "- No actual Cloud DNS assigned nameserver set, tenant website deployment, TLS certificate or production DNS change was verified for customer hosting.",
+      "text_sha256": "20ffc598c4ce80bca730c6703dda702906617a677abad27a6eb53290df098aeb",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    },
+    {
+      "id": "HOST-S16-06",
+      "section": "16",
+      "section_title": "16. Current evidence and truth status (24 October 2026)",
+      "source_lines": [
+        198,
+        198
+      ],
+      "text": "**Next action:** reconcile this scope with the existing SANDY-ENG-0005 and 0010 work plans; complete P0 source/IAM discovery, then implement P1\u2013P3 on a protected engineering branch and demonstrate the first real test-domain canary with release receipts.",
+      "text_sha256": "46d1ac4218b18b462f50c0b8fb5a3ad8f6dd1e5a33c28c4cd54d031966b0d0b4",
+      "implementation_sources": [],
+      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "live_acceptance_categories": [
+        "F"
+      ],
+      "live_acceptance_status": "not_verified",
+      "provider_receipts": [],
+      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+    }
+  ]
+}

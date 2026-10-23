@@ -11,7 +11,7 @@ export const HOSTING_REGION = "europe-west8" as const;
 export const hostingOperationDefinitions = {
   "hosting.accounts.create": {
     method: "POST", path: "/v1/hosting/accounts", mutation: true,
-    permission: "hosting:accounts:create", costApprovalRequired: true,
+    permission: "hosting:accounts:create", costApprovalRequired: false,
     required: ["plan", "idempotency_key"],
     description: "Create a logical customer hosting account only; never provision billable GCP resources on account creation."
   },
