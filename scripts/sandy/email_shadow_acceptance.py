@@ -117,6 +117,12 @@ class EmailShadowAcceptance(RuntimeMemoryAcceptance):
         q = self.r._quote
         if self.fixtures and self.fixtures[0].get('customer'):
             customer = q(self.fixtures[0]['customer'])
+            owned = self.r._sql('SELECT display_name,google_drive_folder_status FROM public.email_customers WHERE id=' + customer, True)
+            if owned != [{'display_name': 'Isolated Sandy API service acceptance', 'google_drive_folder_status': 'excluded'}]:
+                raise RuntimeError('email_fixture_cleanup_ownership_not_proved')
+            source = self.r._sql('SELECT subject,sender_address,direction,body_text FROM public.email_messages WHERE id=' + q(self.source_id) + ' AND customer_id=' + customer, True)
+            if source and source != [{'subject': SUBJECT, 'sender_address': SENDER, 'direction': 'incoming', 'body_text': BODY}]:
+                raise RuntimeError('email_fixture_cleanup_source_not_proved')
             # Restrict removal to IDs generated for this isolated fixture; no
             # provider retry, historical audit deletion or trigger disabling.
             self.r._sql('BEGIN;DELETE FROM public.sandy_email_runtime_canary WHERE source_message_id=' + q(self.source_id) + ' AND customer_id=' + customer
