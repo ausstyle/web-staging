@@ -20,7 +20,14 @@ BEGIN
  IF p_mode<>'plan' THEN
   SELECT * INTO parent FROM public.sandy_api_execution_admissions WHERE id=p_parent FOR SHARE;
   IF parent.id IS NULL OR parent.actor_id IS DISTINCT FROM p_actor OR parent.state IS DISTINCT FROM 'succeeded'
-  OR parent.contract_sha256 IS DISTINCT FROM h OR parent.scope_sha256 IS DISTINCT FROM r->>'scope_sha256'
+  OR parent.contract_sha256 IS DISTINCT FROM h
+  -- Parent custody survives legitimate session renewal, but never a changed
+  -- actor, epoch, Owner grant or policy. Rebuild its original session-bound
+  -- resolver hash from the current independently authorised policy.
+  OR parent.effect_verification->>'epoch' IS DISTINCT FROM p_epoch::text
+  OR parent.effect_verification->>'revision' IS DISTINCT FROM r->>'revision'
+  OR parent.scope_sha256 IS DISTINCT FROM encode(extensions.digest(jsonb_build_array(
+    p_actor,(parent.effect_verification->>'session_id')::uuid,p_epoch,(r->>'revision')::integer,r->'policy')::text,'sha256'),'hex')
   OR parent.effect_verification->>'phase' IS DISTINCT FROM 'completed'
   OR parent.effect_verification->>'mode' IS DISTINCT FROM (CASE WHEN p_mode='apply' THEN 'plan' ELSE 'apply' END)
   OR parent.effect_verification->>'source_sha256' IS DISTINCT FROM p_source_sha256
@@ -136,7 +143,13 @@ BEGIN
  -- are never hidden. No new provider dispatch can use this terminal callback.
  a:=public.sandy_iap_repair_context(p_actor,p_session,p_epoch,p_admission,p_grant,p_request,false);c:=a->'effect_verification';
  IF p_payload IS NULL OR jsonb_typeof(p_payload)<>'object' OR octet_length(p_payload::text)>180000
- OR (a->>'state' IS DISTINCT FROM 'consumed' OR c->>'phase' IS DISTINCT FROM 'claimed') AND NOT (phase='failed_or_unknown' AND a->>'state'='admitted' AND c->>'phase'='admitted')
+ OR (a->>'state' IS DISTINCT FROM 'consumed' OR c->>'phase' IS DISTINCT FROM 'claimed')
+  AND NOT (phase='failed_or_unknown' AND a->>'state'='admitted' AND c->>'phase'='admitted')
+  -- A timed-out caller cannot discard independent late readback. Preserve
+  -- append-only custody for a previously reserved target without re-opening
+  -- admission, scheduling writes, changing the terminal outcome or retrying.
+  AND NOT (phase='target_verified' AND a->>'state'='unknown'
+    AND c->>'phase'='failed_or_unknown' AND c->'write_started' ? name)
  OR phase IS NULL OR phase NOT IN('target_verified','plan_preserved','completed','failed_or_unknown')
  THEN RAISE EXCEPTION 'protected_repair_receipt_refused';END IF;
  IF phase='target_verified' THEN
@@ -146,6 +159,7 @@ BEGIN
   OR c->>'mode' NOT IN('apply','rollback') OR c->'target_receipts' ? name
   OR jsonb_typeof(p_payload->'before') IS DISTINCT FROM 'object' OR jsonb_typeof(p_payload->'observed_after') IS DISTINCT FROM 'object'
   OR jsonb_typeof(p_payload->'proof') IS DISTINCT FROM 'object'
+  OR (p_payload->'proof'->>'expires_at')::timestamptz IS DISTINCT FROM (c->>'expires_at')::timestamptz
   OR (p_payload->'proof'->>'change_required'='true' AND NOT c->'write_started' ? name)
   OR (idx=1 AND NOT c->'target_receipts' ? 'sandy-video')
   THEN RAISE EXCEPTION 'fixed_target_receipt_refused';END IF;
@@ -155,14 +169,30 @@ BEGIN
    OR ((p_payload->'observed_after')-'etag') IS DISTINCT FROM ((c->'plans'->idx->'before')-'etag'))
   THEN RAISE EXCEPTION 'effect_does_not_match_protected_preimage';END IF;
   receipt:=p_payload-'worker_identity';
-  UPDATE public.sandy_api_execution_admissions SET effect_verification=jsonb_set(c,ARRAY['target_receipts',name],receipt) WHERE id=p_admission;
+  c:=jsonb_set(c,ARRAY['target_receipts',name],receipt);
+  UPDATE public.sandy_api_execution_admissions SET effect_verification=c,
+   result_sha256=CASE WHEN state='unknown' THEN encode(extensions.digest(c::text,'sha256'),'hex') ELSE result_sha256 END
+   WHERE id=p_admission;
+  IF a->>'state'='unknown' THEN
+   h:=encode(extensions.digest(c::text,'sha256'),'hex');
+   IF c->>'job_id' IS NOT NULL THEN
+    UPDATE public.sandy_deployment_jobs SET result=jsonb_set(result,'{result_sha256}',to_jsonb(h)),updated_at=clock_timestamp()
+     WHERE id=(c->>'job_id')::uuid;
+   END IF;
+   INSERT INTO public.sandy_engineering_change_events(change_id,actor,event_type,detail)
+    VALUES((c->>'change_id')::uuid,p_actor,'iap_repair_late_target_receipt',jsonb_build_object('boundary','gcp_iap_repair',
+     'admission_id',p_admission,'late_target',name,'state','unknown','result_sha256',h,'new_dispatch',false));
+  END IF;
   RETURN jsonb_build_object('ok',true,'admission_id',p_admission,'target_preserved',name);
  END IF;
  IF phase='plan_preserved' THEN
   plans:=p_payload->'plans';
-  IF c->>'mode' IS DISTINCT FROM 'plan' OR jsonb_typeof(plans) IS DISTINCT FROM 'array' OR jsonb_array_length(plans)<>2
+  IF c->>'mode' IS DISTINCT FROM 'plan' OR p_payload->>'mode' IS DISTINCT FROM 'plan' OR p_payload->>'revision' IS DISTINCT FROM c->>'revision'
+  OR jsonb_typeof(plans) IS DISTINCT FROM 'array' OR jsonb_array_length(plans)<>2
   OR plans->0->>'vm_name' IS DISTINCT FROM 'sandy-video' OR plans->1->>'vm_name' IS DISTINCT FROM 'sandy-windows'
   OR plans->0->>'instance_id' IS DISTINCT FROM '6831598645020395570' OR plans->1->>'instance_id' IS DISTINCT FROM '8120150462304566315'
+  OR (plans->0->>'expires_at')::timestamptz IS DISTINCT FROM (c->>'expires_at')::timestamptz
+  OR (plans->1->>'expires_at')::timestamptz IS DISTINCT FROM (c->>'expires_at')::timestamptz
   OR c->'write_started' IS DISTINCT FROM '{}'::jsonb THEN RAISE EXCEPTION 'fixed_plan_custody_required';END IF;
   c:=jsonb_set(c,'{plans}',plans);outcome:='succeeded';
  ELSIF phase='completed' THEN

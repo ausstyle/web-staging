@@ -2,6 +2,17 @@
 export const iapRepairProposal='52d56740-59c8-4db1-b7e6-a137c7699b86';
 export const iapRepairTarget='sandy-iap-repair:elaborate-haven-511518-a5:sandy-video+sandy-windows';
 export const iapRepairOperations=['engineering.implementation.request','engineering.job.execute','engineering.job.status'] as const;
+/** Generic Engineering names also serve unrelated providers. Specialization is
+ * permitted only for this proposal; never replace their ordinary policy path. */
+export function isIapRepairOperationRequest(operation:unknown,args:unknown){
+ return typeof operation==='string'&&iapRepairOperations.includes(operation as any)&&!!args&&typeof args==='object'&&!Array.isArray(args)&&
+  (args as Record<string,unknown>).change_id===iapRepairProposal;
+}
+export function isIapRepairControlRequest(body:unknown){
+ return !!body&&typeof body==='object'&&!Array.isArray(body)&&
+  (body as Record<string,unknown>).change_id===iapRepairProposal&&
+  ['implementation_request','execute_job','job_status'].includes(String((body as Record<string,unknown>).action));
+}
 export const iapRepairJobSchemas=['plan','apply','rollback'].map(mode=>({
  type:'object',required:['change_id','provider','operation','target','idempotency_key','payload'],additionalProperties:false,
  properties:{change_id:{type:'string',const:iapRepairProposal},provider:{type:'string',const:'google_cloud'},

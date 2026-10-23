@@ -1,7 +1,7 @@
 import {handleAutonomousRelease} from "./autonomous_release.ts";
 import {handleGcpAdminRead} from "./gcp_admin_read.ts";
 import {handleIapRepairCallback} from "./iap_repair.ts";
-import {handleIapRepairJob} from "./iap_repair_jobs.ts";
+import {handleIapRepairJob,isIapRepairControlRequest} from "./iap_repair_jobs.ts";
 import { isCanonicalEngineeringOperation, prepareCanonicalEngineeringRequest, sameCanonicalRequest } from "./canonical_request.ts";
 import {authorizeWorkloadControl,workloadRegistrationAllowed} from "./workload.ts";
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
@@ -27,7 +27,7 @@ Deno.serve(async req=>{
     worker_revision:Deno.env.get("SANDY_IAP_REPAIR_WORKER_REVISION")||""
    })}catch{return respond({ok:false,error:"protected_repair_custody_unavailable",executed:null,reconciliation_required:true},503)}
   }
-  if(user.app_metadata?.sandy_engineering_test===true&&((action==="implementation_request"&&b.provider==="google_cloud")||["execute_job","job_status"].includes(action))){
+  if(user.app_metadata?.sandy_engineering_test===true&&isIapRepairControlRequest(b)){
    try{return await handleIapRepairJob(db,user,token,b,{
     url:Deno.env.get("SANDY_IAP_REPAIR_WORKER_URL")||"",
     source_sha256:Deno.env.get("SANDY_IAP_REPAIR_SOURCE_SHA256")||"",

@@ -1,13 +1,13 @@
 /** Narrow addition to the existing engineering identity policy. These job
  * classes are authorized solely by the independent protected IAP grant. */
-import {iapRepairJobInput,iapRepairOperations,iapRepairProposal} from '../_shared/sandy_iap_repair_contract.ts';
+import {iapRepairJobInput,iapRepairOperations,iapRepairProposal,isIapRepairOperationRequest} from '../_shared/sandy_iap_repair_contract.ts';
 import {argumentDigest} from '../_shared/sandy_api_protocol.ts';
 type Obj=Record<string,any>;
 const object=(v:unknown):v is Obj=>!!v&&typeof v==='object'&&!Array.isArray(v);
 const uuid=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(v);
 const rpc=async(db:any,name:string,args:Obj)=>{try{const r=await db.rpc(name,args);return !r.error&&object(r.data)?r.data:null;}catch{return null;}};
 export async function resolveIapRepairScope(deps:Obj,user:Obj,jwt:Obj,resolved:Obj,body:Obj){
- if(!deps.executionScope||(body.action!=='list'&&!iapRepairOperations.includes(body.operation)))return false;
+ if(!deps.executionScope||!(body.action==='list'||body.action==='describe'&&iapRepairOperations.includes(body.operation)||isIapRepairOperationRequest(body.operation,body.arguments)))return false;
  const repair=await rpc(deps.db,'sandy_engineering_resolve_iap_repair',{p_actor:user.id,p_session:jwt.session_id,p_epoch:jwt.app_metadata.sandy_engineering_epoch});
  return repair?.ok===true&&repair.identity_user_id===user.id&&repair.session_id===jwt.session_id&&
   repair.owner_authority_id===resolved.owner_authority_id&&Number.isSafeInteger(repair.revision)&&repair.revision>0&&

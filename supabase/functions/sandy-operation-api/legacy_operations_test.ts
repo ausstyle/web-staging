@@ -1,3 +1,4 @@
+import {isIapRepairControlRequest,isIapRepairOperationRequest} from '../_shared/sandy_iap_repair_contract.ts';
 import {
   buildLegacyOperationRequest,
   executeLegacyOperation,
@@ -618,4 +619,19 @@ Deno.test('fixed IAP job variants reuse the Engineering request operation and re
  }
  for(const args of [{...fixed,operation:'setIamPolicy'},{...fixed,target:'other-vm'},{...fixed,payload:{url:'https://evil.invalid'}},{...fixed,change_id:change}])equal(buildLegacyOperationRequest(dependencies,userToken,'engineering.implementation.request',args),null);
  equal(Object.keys(legacyOperationContracts).length,66,'job variants must not expand operation catalogue');
+});
+
+Deno.test('GitHub and Supabase normal engineering jobs retain canonical dispatch without IAP delegation',async()=>{
+ for(const provider of ['github','supabase']){
+  const h=harness({job:{id:job,engineering_change_id:change,status:'succeeded'},job_id:job,execution:'completed'});
+  const args={change_id:change,provider,operation:provider==='github'?'github.files.update':'supabase.deploy_edge_function',target:provider==='github'?'ausstyle/web-staging':'zmqlyygzqoidkcwdysok',idempotency_key:'fixture-normal-job',payload:{}};
+  for(const [operation,input] of [['engineering.implementation.request',args],['engineering.job.execute',{change_id:change,job_id:job}]] as const){
+   assert(!isIapRepairOperationRequest(operation,input));assert(!isIapRepairControlRequest({action:'job_status',change_id:change,job_id:job}));
+   const request=buildLegacyOperationRequest(h.dependencies,userToken,operation,input);assert(request);
+   const sent=JSON.parse(String(request.init.body));assert(!isIapRepairControlRequest(sent));
+   equal(sent.change_id,change);if(operation==='engineering.implementation.request')equal(sent.provider,provider);
+   const result=await executeLegacyOperation(h.dependencies,userToken,operation,input);equal(result.status,200);
+   equal(h.calls.at(-1)?.url,'https://project.supabase.co/functions/v1/sandy-engineering-control');
+  }
+ }
 });

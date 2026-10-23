@@ -58,7 +58,7 @@ export function iapRepairWorkloadBinding(user:Obj,token:string):Obj|undefined{
   const c=JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
   if(user.app_metadata?.sandy_engineering_test!==true||c.sub!==user.id||c.role!=='authenticated'||c.aud!=='authenticated'||
    !uuid(c.session_id)||c.app_metadata?.sandy_engineering_test!==true||!Number.isSafeInteger(c.app_metadata.sandy_engineering_epoch)||
-   c.app_metadata.sandy_engineering_epoch!==user.app_metadata.sandy_engineering_epoch||c.exp*1000<=Date.now())throw Error();
+   c.app_metadata.sandy_engineering_epoch!==user.app_metadata.sandy_engineering_epoch||c.is_anonymous===true||typeof c.exp!=='number'||!Number.isFinite(c.exp)||c.exp*1000<=Date.now())throw Error();
   return {p_actor:user.id,p_session:c.session_id,p_epoch:c.app_metadata.sandy_engineering_epoch};
  }catch{return undefined;}
 }

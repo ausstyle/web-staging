@@ -882,9 +882,16 @@ Deno.test('IAP jobs require independent fixed proposal delegation and never inhe
    return {data:{ok:false},error:null};
   }}});
   const r=await h.call(req(msg('engineering.implementation.request',args)));assert.equal(r.status,active?200:403);
-  if(active){assert.equal((h.state.proof as any).iapRepair,true);assert.equal((h.state.proof as any).machineUserId,MACHINE);assert.ok((h.state.proof as any).standingOperations.includes('engineering.job.execute'));assert.equal(h.state.headers.has('x-sandy-approval-id'),false);
-   for(const bad of [{...args,provider:'github'},{...args,change_id:OWNER},{...args,payload:{url:'https://evil.invalid'}}])assert.equal((await h.call(req(msg('engineering.implementation.request',bad)))).status,400);
+  if(active){assert.notEqual((await h.call(req(msg('engineering.implementation.request',{...args,change_id:OWNER})))).status,200);assert.equal((h.state.proof as any).iapRepair,true);assert.equal((h.state.proof as any).machineUserId,MACHINE);assert.ok((h.state.proof as any).standingOperations.includes('engineering.job.execute'));assert.equal(h.state.headers.has('x-sandy-approval-id'),false);
+   for(const bad of [{...args,provider:'github'},{...args,payload:{url:'https://evil.invalid'}}])assert.equal((await h.call(req(msg('engineering.implementation.request',bad)))).status,400);
    assert.equal((await h.call(req(msg('engineering.job.execute',{change_id:proposal,job_id:APPROVAL})))).status,403);
   }else assert.equal(h.state.delegated,0);
  }
+});
+
+Deno.test('normal standing GitHub execution never consults an unrelated IAP grant',async()=>{
+ const h=await standingHarness();
+ const r=await h.call(req(msg('github.repos.get',{})));assert.equal(r.status,200);
+ assert.equal(h.calls.some(c=>c.name==='sandy_engineering_resolve_iap_repair'),false);
+ assert.equal(h.state.delegated,1);
 });

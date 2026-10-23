@@ -12,14 +12,14 @@ from release_web_canary import ROOT,Blocked,original_sources,private_write
 SLUG='sandy-engineering-control'
 MODULE=SLUG+'/iap_repair.ts'
 MIGRATION='supabase/migrations/20261024006000_sandy_iap_repair_custody.sql'
-IMPORT='import {handleIapRepairCallback} from "./iap_repair.ts";\nimport {handleIapRepairJob} from "./iap_repair_jobs.ts";\n'
+IMPORT='import {handleIapRepairCallback} from "./iap_repair.ts";\nimport {handleIapRepairJob,isIapRepairControlRequest} from "./iap_repair_jobs.ts";\n'
 ROUTE='''  if(["gcp_iap_repair_claim","gcp_iap_repair_write_started","gcp_iap_repair_finish"].includes(action)){
    try{return await handleIapRepairCallback(db,user,token,b,{
     source_sha256:Deno.env.get("SANDY_IAP_REPAIR_SOURCE_SHA256")||"",
     worker_revision:Deno.env.get("SANDY_IAP_REPAIR_WORKER_REVISION")||""
    })}catch{return respond({ok:false,error:"protected_repair_custody_unavailable",executed:null,reconciliation_required:true},503)}
   }
-  if(user.app_metadata?.sandy_engineering_test===true&&((action==="implementation_request"&&b.provider==="google_cloud")||["execute_job","job_status"].includes(action))){
+  if(user.app_metadata?.sandy_engineering_test===true&&isIapRepairControlRequest(b)){
    try{return await handleIapRepairJob(db,user,token,b,{
     url:Deno.env.get("SANDY_IAP_REPAIR_WORKER_URL")||"",
     source_sha256:Deno.env.get("SANDY_IAP_REPAIR_SOURCE_SHA256")||"",
@@ -47,10 +47,10 @@ def patch_gateway(files,authorization,contract):
     identity='sandy-operation-api/engineering_identity.ts';legacy='sandy-operation-api/legacy_operations.ts'
     if 'sandy-operation-api/iap_repair_authorization.ts' in files:raise Blocked('existing_gateway_repair_reconcile_no_overwrite')
     s=files[identity].decode()
-    s='import {iapRepairOperations} from "../_shared/sandy_iap_repair_contract.ts";import {resolveIapRepairScope,authorizeIapRepairExecution} from "./iap_repair_authorization.ts";'+s
+    s='import {iapRepairOperations,isIapRepairOperationRequest} from "../_shared/sandy_iap_repair_contract.ts";import {resolveIapRepairScope,authorizeIapRepairExecution} from "./iap_repair_authorization.ts";'+s
     s=replace_once(s,'const allowedOperations=', 'const repairAuthorized=await resolveIapRepairScope(deps,user,jwt,resolved,body);const allowedOperations=')
     s=replace_once(s,'...adminReadAuthorized?["engineering.preflight"]:[]])]', '...adminReadAuthorized?["engineering.preflight"]:[],...repairAuthorized?iapRepairOperations:[]])]')
-    s=replace_once(s,'if(operation==="engineering.preflight"){','if(iapRepairOperations.includes(operation)){if(!repairAuthorized)return deny(403,"independent_iap_repair_grant_required");const authorized=await authorizeIapRepairExecution(deps,user,jwt,String(operation),args,entry,headers,body.channel);if(!authorized.ok)return deny(authorized.status,authorized.error);boundExecution=authorized.boundExecution;}else if(operation==="engineering.preflight"){')
+    s=replace_once(s,'if(operation==="engineering.preflight"){','if(isIapRepairOperationRequest(operation,args)){if(!repairAuthorized)return deny(403,"independent_iap_repair_grant_required");const authorized=await authorizeIapRepairExecution(deps,user,jwt,String(operation),args,entry,headers,body.channel);if(!authorized.ok)return deny(authorized.status,authorized.error);boundExecution=authorized.boundExecution;}else if(operation==="engineering.preflight"){')
     s=replace_once(s,'...standingAuthorized?{standingOperations:standing.operations}:{},', '...(standingAuthorized||repairAuthorized)?{standingOperations:[...new Set([...(standingAuthorized?standing.operations:[]),...(repairAuthorized?iapRepairOperations:[])])]}:{},')
     s=replace_once(s,'...adminReadAuthorized?{administratorRead:true}:{},','...adminReadAuthorized?{administratorRead:true}:{},...repairAuthorized?{iapRepair:true}:{},')
     l=files[legacy].decode()

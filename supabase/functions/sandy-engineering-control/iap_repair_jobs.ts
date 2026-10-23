@@ -1,5 +1,6 @@
 /** Normal Engineering job API -> protected worker. No provider execution here. */
 import { iapRepairJobInput, iapRepairProposal } from '../_shared/sandy_iap_repair_contract.ts';
+export {isIapRepairControlRequest} from '../_shared/sandy_iap_repair_contract.ts';
 import { iapRepairWorkloadBinding } from './iap_repair.ts';
 type Obj=Record<string,any>;
 type Activation={url:string;source_sha256:string;worker_revision:string};

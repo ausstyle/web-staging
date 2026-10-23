@@ -5,7 +5,7 @@ import policy from "./engineering_identity_policy.json" with { type: "json" };
 import vmReadPolicy from "./engineering_vm_read_policy.json" with {
   type: "json",
 };
-import {iapRepairOperations} from '../_shared/sandy_iap_repair_contract.ts';
+import {iapRepairOperations,isIapRepairOperationRequest} from '../_shared/sandy_iap_repair_contract.ts';
 import {resolveIapRepairScope,authorizeIapRepairExecution} from './iap_repair_authorization.ts';
 import {
   recognizableRepositoryCredential,
@@ -269,7 +269,7 @@ export async function engineeringRequest(
       vmReadPolicy.operations.includes(operation);
     const standingExecution = standingAuthorized &&
       (standing!.operations as string[]).includes(String(operation));
-    if(iapRepairOperations.includes(operation as any)){
+    if(isIapRepairOperationRequest(operation,args)){
       if(!repairAuthorized)return deny(403,'independent_iap_repair_grant_required');
       const authorized=await authorizeIapRepairExecution(deps,user,jwt,String(operation),args,entry,headers,body.channel);
       if(!authorized.ok)return deny(authorized.status,authorized.error);
