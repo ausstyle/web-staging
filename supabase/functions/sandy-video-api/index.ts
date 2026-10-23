@@ -1,7 +1,14 @@
 import {createClient} from "npm:@supabase/supabase-js@2.57.4";
 const ROOT=Deno.env.get("SUPABASE_URL")||"";
 const SERVICE=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
-const LIVEKIT_URL="wss://207-175-104-71.sslip.io";
+// A new Google Cloud media endpoint is opt-in. Keep the previously deployed
+// LiveKit service as the explicit rollback target until end-to-end media tests pass.
+const LEGACY_LIVEKIT_URL="wss://207-175-104-71.sslip.io";
+const configuredMediaUrl=(Deno.env.get("SANDY_GCP_LIVEKIT_URL")||"").trim();
+const useGcpMedia=Deno.env.get("SANDY_VIDEO_MEDIA_PROVIDER")==="gcp_livekit";
+const LIVEKIT_URL=useGcpMedia&&/^wss:\/\/[a-z0-9.-]+(?::443)?\/?$/i.test(configuredMediaUrl)
+  ? configuredMediaUrl : LEGACY_LIVEKIT_URL;
+
 const ALLOWED=new Set(["https://ausstyle.github.io"]);
 const enc=new TextEncoder();
 const b64=(data:Uint8Array)=>btoa(String.fromCharCode(...data)).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/g,"");
