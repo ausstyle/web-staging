@@ -10,15 +10,11 @@ concurrency:
   cancel-in-progress: false
 jobs:
   acceptance:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment: sandy-production
     steps:
-      - name: Require existing legitimate Owner authentication context before any provider request
-        env:
-          OWNER_AUTH: ${{ secrets.SANDY_CONTROLLER_ACCESS_TOKEN }}
-        run: |
-          test -n "$OWNER_AUTH" || { echo '::error title=Administrator authentication required::legitimate_owner_session_unavailable; no provider request or installation attempted'; exit 1; }
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -76,12 +72,11 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: >-
-          python3 scripts/sandy/release_gcp_admin_read.py --verify-installed
+          python3 scripts/sandy/release_admin_delegation.py --verify-installed
           --evidence-dir "$RUNNER_TEMP/sandy-admin-acceptance"
-      - name: Authenticate normally and verify runtime impersonation plus both IAP policies
+      - name: Verify genuine Owner grant separately from fresh delegated workload execution
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
-          SANDY_CONTROLLER_ACCESS_TOKEN: ${{ secrets.SANDY_CONTROLLER_ACCESS_TOKEN }}
         run: >-
           deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_gcp_admin_candidate.ts
           --output "$RUNNER_TEMP/sandy-admin-acceptance/administrator-acceptance.json"

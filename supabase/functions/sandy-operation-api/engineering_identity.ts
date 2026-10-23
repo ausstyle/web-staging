@@ -37,6 +37,7 @@ export type EngineeringProof = {
   policySha256: string;
   vmReadScopeSha256?: string;
   standingOperations?: string[];
+  administratorRead?: boolean;
 };
 const proofs = new WeakMap<object, EngineeringProof>();
 export const engineeringProofFor = (credential: unknown) =>
@@ -237,11 +238,17 @@ export async function engineeringRequest(
     Date.parse(vmScope.expires_at) > Date.now() &&
     JSON.stringify(vmScope.operations) ===
       JSON.stringify(vmReadPolicy.operations);
+  const adminRead = deps.executionScope && (body.action === "list" || operation === "engineering.preflight")
+    ? await rpc(deps.db,"sandy_engineering_resolve_admin_read",{p_actor:user.id,p_session:jwt.session_id,p_epoch:metadata.sandy_engineering_epoch}) : null;
+  const adminReadAuthorized = adminRead?.ok===true && adminRead.identity_user_id===user.id && adminRead.session_id===jwt.session_id &&
+    adminRead.owner_authority_id===resolved.owner_authority_id && Number.isSafeInteger(adminRead.revision) && Number(adminRead.revision)>0 &&
+    typeof adminRead.expires_at==="string" && Date.parse(adminRead.expires_at)>Date.now();
   const allowedOperations = [
     ...new Set([
       ...policy.operations,
       ...(vmAuthorized ? vmReadPolicy.operations : []),
       ...(standingAuthorized ? standing!.operations as string[] : []),
+      ...(adminReadAuthorized ? ["engineering.preflight"] : []),
     ]),
   ];
   if (
@@ -257,7 +264,14 @@ export async function engineeringRequest(
       vmReadPolicy.operations.includes(operation);
     const standingExecution = standingAuthorized &&
       (standing!.operations as string[]).includes(String(operation));
-    if (
+    if (operation === "engineering.preflight") {
+      if(!adminReadAuthorized)return deny(403,"administrator_read_delegation_required");
+      if(!entry || !deps.contractMatches(entry) || entry.api_exposed!==true || entry.ai_exposed!==true || entry.is_mutation!==false ||
+        !object(args) || Object.keys(args).length!==1 || args.connection!=="sandy-gcp-admin" || !deps.argumentsValid(entry.input_schema,args))
+        return deny(400,"invalid_administrator_read_request");
+      if(request.headers.has("x-sandy-declared-units") && request.headers.get("x-sandy-declared-units")!=="0")return deny(403,"engineering_cost_scope_denied");
+      headers.delete("x-sandy-approval-id");
+    } else if (
       standingExecution &&
       (operation === "system.execution.get" ||
         /^system\.lifecycle\.(get|verify|compensate)$/.test(String(operation)))
@@ -514,6 +528,7 @@ export async function engineeringRequest(
     sessionId: jwt.session_id,
     epoch: Number(metadata.sandy_engineering_epoch),
     policySha256: String(resolved.policy_sha256),
+    ...(adminReadAuthorized ? { administratorRead: true } : {}),
     ...(standingAuthorized
       ? { standingOperations: standing!.operations as string[] }
       : {}),

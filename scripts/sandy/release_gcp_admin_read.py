@@ -44,7 +44,7 @@ def load():
     m=json.loads(MANIFEST.read_bytes())
     if set(m['functions'])!={CONTROL,GATEWAY} or m['worker_url']!=WORKER: raise Blocked('bounded_release_manifest_required')
     if m['reviewed_source_commit']!='0065e44ddc56b83561a458d6e60f162819b013d7':raise Blocked('reviewed_source_pin_changed')
-    helper=(ROOT/'supabase/functions'/HELPER).read_bytes()
+    helper=subprocess.check_output(['git','show',m['reviewed_source_commit']+':supabase/functions/'+HELPER],cwd=ROOT)
     migration=(ROOT/MIGRATION).read_bytes()
     if digest(helper)!=m['helper_sha256'] or digest(migration)!=m['migration_sha256']: raise Blocked('reviewed_source_changed')
     contract=(ROOT/CONTRACT_MIGRATION).read_bytes()

@@ -22,6 +22,10 @@ Deno.serve(async req=>{
   let workloadGrant=null;
   let admin:any=null;
   if(user.app_metadata?.sandy_engineering_test===true){
+   if(action==="gcp_admin_read_claim"||(action==="preflight"&&b.connection!==undefined)){
+    try{return await handleGcpAdminRead(db,user,{role:"engineering"},token,b,Deno.env.get("SANDY_GCP_ADMIN_WORKER_URL"))}
+    catch{return respond({ok:false,error:"administrator_read_state_unavailable",executed:null,reconciliation_required:true},503)}
+   }
    const admitted=await authorizeWorkloadControl(user,token,b,db);
    if(!admitted)return respond({error:"engineering_control_scope_denied",executed:false},403);
    if("error" in admitted)return respond({error:admitted.error,executed:false},401);

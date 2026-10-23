@@ -18,6 +18,22 @@ const user = {
   id: MACHINE,
   app_metadata: { sandy_engineering_test: true, sandy_engineering_epoch: 1 },
 };
+Deno.test("administrator read discovery and execution require a separate current Owner-approved policy, never v6 metadata authority", async()=>{
+  for(const granted of [false,true]){
+    let calls=0;
+    const h=await harness({executionScope:()=>({}),entry:async(operation)=>({operation,is_mutation:false,api_exposed:true,ai_exposed:true,input_schema:{type:"object"}}),db:{rpc:async(name,args)=>{
+      if(name==="sandy_engineering_resolve_identity")return {data:{ok:true,identity_user_id:MACHINE,owner_authority_id:OWNER,session_id:SESSION,credential_epoch:1,policy_sha256:await argumentDigest(engineeringPolicy),operations:engineeringPolicy.operations},error:null};
+      if(name==="sandy_engineering_resolve_standing")return {data:{ok:false,policy_present:false},error:null};
+      if(name==="sandy_engineering_resolve_admin_read"){calls++;return {data:granted?{ok:true,identity_user_id:MACHINE,owner_authority_id:OWNER,session_id:SESSION,revision:1,expires_at:new Date(Date.now()+86400000).toISOString()}:{ok:false},error:null};}
+      return {data:{ok:true},error:null};
+    }}});
+    const r=await h.call(req(msg("engineering.preflight",{connection:"sandy-gcp-admin"})));
+    assert.equal(r.status,granted?200:403);assert.equal(calls,1);
+    if(granted){assert.equal((h.state.proof as any).administratorRead,true);assert.equal((h.state.proof as any).machineUserId,MACHINE);assert.equal(h.state.headers.get("authorization"),"Bearer actual.verified.workload");}
+    else assert.equal(h.state.delegated,0);
+    for(const args of [{},{connection:"other"},{connection:"sandy-gcp-admin",project:"other"}])assert.notEqual((await h.call(req(msg("engineering.preflight",args)))).status,200);
+  }
+});
 const token = (patch: Record<string, unknown> = {}) =>
   "verified-by-caller." +
   btoa(
