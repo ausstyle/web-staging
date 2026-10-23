@@ -33,5 +33,19 @@ class EmailShadowAcceptanceTests(unittest.TestCase):
         self.assertTrue(runner.r._http.call_args.args[1].endswith('/auth/v1/logout?scope=local'))
 
 
+    def test_restored_cleanup_checks_customer_and_source_before_any_delete(self):
+        for invalid in ('customer', 'source'):
+            runner = EmailShadowAcceptance.__new__(EmailShadowAcceptance)
+            runner.fixtures = [{'customer': 'fixture-customer'}]
+            runner.source_id = 'fixture-source'
+            runner.r = Mock(); runner.r._quote.side_effect = lambda v: "'" + v + "'"
+            runner.r._sql.side_effect = [[{'display_name': 'Existing customer', 'google_drive_folder_status': 'excluded'}]] if invalid == 'customer' else [[{'display_name': 'Isolated Sandy API service acceptance', 'google_drive_folder_status': 'excluded'}], [{'subject': 'Other source'}]]
+            with self.assertRaisesRegex(RuntimeError, 'email_fixture_cleanup_(ownership|source)_not_proved'):
+                runner.cleanup()
+            for call in runner.r._sql.call_args_list:
+                self.assertTrue(call.args[0].startswith('SELECT'))
+            runner.r._auth_admin.assert_not_called()
+
+
 if __name__ == '__main__':
     unittest.main()
