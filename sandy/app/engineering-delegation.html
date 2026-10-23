@@ -8,11 +8,16 @@
 <p>Limits: two requests per minute, zero declared cost units, expiry within 30 days. You can revoke it here. Existing canary permissions remain unchanged.</p>
 <section id="login" hidden><label>Existing Sandy email<br><input id="email" type="email" autocomplete="email"></label><br><button id="send">Email me a sign-in link</button><p>Use your existing Owner account. No password or JWT is handed to GitHub.</p></section>
 <section id="controls" hidden><p id="current"></p><label>Expiry<br><input id="expiry" type="datetime-local"></label><br><button id="enable">Establish or renew read delegation</button><br><button id="revoke">Revoke read delegation</button></section>
+<section id="iapControls" hidden><hr><h2>Separate IAP repair authorization</h2>
+<p>This is a separate high-risk authorization request. It permits only the reviewed Tunnel Resource Accessor bindings for <strong>sandy-video:22</strong> and <strong>sandy-windows:5986</strong>, for <strong>sandy-computer</strong> in the same project. It permits no commands, guest credentials, agent enrolment or graphical control.</p>
+<p>The expiry cannot exceed 30 October 2026, 21:17 UTC. Creating or revoking this Sandy grant does not itself change Google IAM. Any previously applied provider binding needs its own verified recovery action.</p>
+<p id="iapCurrent"></p><label>Repair grant expiry<br><input id="iapExpiry" type="datetime-local"></label><br>
+<button id="iapEnable" disabled>Authorize this fixed IAP repair</button><br><button id="iapRevoke" disabled>Revoke repair execution authority</button><p id="iapStatus" role="status"></p></section>
 <p id="status" role="status">Checking your Sandy session…</p><small>Creating or expanding a delegation requires genuine Owner authentication. Routine workload execution does not require another Owner sign-in.</small></main>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-const el=id=>document.getElementById(id);let revision=0;
+const el=id=>document.getElementById(id);let revision=0,repairRevision=0,repairChangeId=null;
 const status=s=>{el("status").textContent=s};
 async function load(){
  const {data,error}=await sb.auth.getUser();
@@ -24,6 +29,7 @@ async function load(){
  el("current").textContent=`Revision ${revision}. ${current.enabled?"Enabled until "+new Date(current.expires_at).toLocaleString():"No active administrator-read delegation."}`;
  const d=new Date(Date.now()+7*86400000);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el("expiry").value=d.toISOString().slice(0,16);
  status("Signed in normally. Review the fixed scope before establishing or renewing it.");
+ await loadRepair();
 }
 async function change(enabled){
  el("enable").disabled=el("revoke").disabled=true;
@@ -35,6 +41,26 @@ async function change(enabled){
  }catch(e){status(e.message||"Delegation outcome unavailable; reload before retrying.")}
  finally{el("enable").disabled=el("revoke").disabled=false}
 }
+async function loadRepair(){
+ const {data,error}=await sb.rpc("sandy_engineering_get_iap_repair_proposal");
+ el("iapControls").hidden=false;
+ if(error||!Number.isSafeInteger(data?.revision)){el("iapStatus").textContent="The separate proposal authorization service is not available. No grant has been changed.";return}
+ repairRevision=data.revision;repairChangeId=data.change_id;
+ el("iapCurrent").textContent=`Repair revision ${repairRevision}. ${data.enabled?"Enabled until "+new Date(data.expires_at).toLocaleString():"No active repair grant."} ${repairChangeId?"Independent review request: "+repairChangeId:"No submitted proposal."}`;
+ const d=new Date(data.proposal.expires_at);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());el("iapExpiry").value=d.toISOString().slice(0,16);
+ el("iapEnable").disabled=!repairChangeId;el("iapRevoke").disabled=!data.enabled;
+}
+async function changeRepair(enabled){
+ el("iapEnable").disabled=el("iapRevoke").disabled=true;
+ try{
+  const expires=enabled?new Date(el("iapExpiry").value).toISOString():null;
+  const {data,error}=await sb.rpc("sandy_engineering_set_iap_repair_delegation",{p_enabled:enabled,p_expires_at:expires,p_expected_revision:repairRevision,p_change_id:enabled?repairChangeId:null});
+  if(error||data?.ok!==true)throw Error("Repair grant was not confirmed. Reload to check Owner authority, expiry and revision before retrying.");
+  await loadRepair();el("iapStatus").textContent=`${enabled?"Separate repair grant established":"Repair grant revoked"}. Revision ${data.revision}; audit event ${data.audit_event_id}. No provider operation was executed.`;
+ }catch(e){el("iapStatus").textContent=e.message||"Outcome unavailable; reload before retrying."}
+ finally{await loadRepair()}
+}
+el("iapEnable").onclick=()=>changeRepair(true);el("iapRevoke").onclick=()=>changeRepair(false);
 el("send").onclick=async()=>{el("send").disabled=true;const {error}=await sb.auth.signInWithOtp({email:el("email").value.trim(),options:{shouldCreateUser:false,emailRedirectTo:location.origin+location.pathname}});status(error?"Sign-in request failed; try your normal Sandy sign-in.":"Check your email and open the sign-in link on this device.");el("send").disabled=false};
 el("enable").onclick=()=>change(true);el("revoke").onclick=()=>change(false);
 load().catch(()=>status("Unable to check delegation. No success claimed."));

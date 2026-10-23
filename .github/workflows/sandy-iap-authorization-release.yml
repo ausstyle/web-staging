@@ -1,0 +1,45 @@
+name: Install independent IAP proposal authorization
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Test separate proposal, Owner grant, expiry, revocation and audit boundary in isolated PostgreSQL
+        run: deno test --allow-read scripts/sandy/test_iap_repair_authorization.ts
+      - name: Install new authorization boundary without establishing a grant
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_iap_repair_authorization.py --deploy --evidence-dir "$RUNNER_TEMP/iap-authorization"
+      - name: Independently verify installed source and privileges
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_iap_repair_authorization.py --verify-installed --evidence-dir "$RUNNER_TEMP/iap-authorization-readback"
+      - name: Submit exact high-risk proposal using normal authenticated workload, verify denied self-authorization
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/submit_iap_repair_proposal.ts --output "$RUNNER_TEMP/iap-authorization/proposal-submission.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iap-authorization-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/iap-authorization/
+            ${{ runner.temp }}/iap-authorization-readback/
+          retention-days: 14
