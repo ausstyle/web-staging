@@ -9,6 +9,7 @@ import {
   bindProviderRequest,
   createProviderOperationHandler,
   type FinishRequest,
+  normalizeDeploymentStatusResponse,
   normalizeFinishReceipt,
   projectValue,
   type ProviderDependencies,
@@ -17,6 +18,59 @@ import {
   providerOutputSchema,
   validateAllContracts,
 } from "./index.ts";
+
+Deno.test("deployment status reads accept GitHub's unset optional environment URL", async () => {
+  const status = {
+    id: 123,
+    node_id: "DS_fixture",
+    state: "success",
+    creator: null,
+    description: "",
+    deployment_url:
+      "https://api.github.com/repos/ausstyle/web-staging/deployments/1",
+    target_url: "https://github.com/ausstyle/web-staging/actions/runs/1",
+    repository_url: "https://api.github.com/repos/ausstyle/web-staging",
+    url:
+      "https://api.github.com/repos/ausstyle/web-staging/deployments/1/statuses/123",
+    created_at: "2026-10-23T00:00:00Z",
+    updated_at: "2026-10-23T00:00:00Z",
+    environment_url: "",
+  };
+  const h = harness({ fetch: async () => Response.json([status]) });
+  const response = await h.call("github.deployments.statuses.list", {
+    path: { deployment_id: 1 },
+  });
+  assertEquals(response.status, 200);
+  const value = await response.json();
+  assertEquals(value.result[0].id, status.id);
+  assertEquals(Object.hasOwn(value.result[0], "environment_url"), false);
+  assertEquals(h.finishes[0].outcome, "succeeded");
+  assertEquals(status.environment_url, "", "provider input is not mutated");
+
+  for (
+    const changed of [
+      { environment_url: "not a URI" },
+      { target_url: "" },
+      { environment_url: null },
+    ]
+  ) {
+    const bad = harness({
+      fetch: async () => Response.json([{ ...status, ...changed }]),
+    });
+    assertEquals(
+      (await bad.call("github.deployments.statuses.list", {
+        path: { deployment_id: 1 },
+      })).status,
+      502,
+    );
+    assertEquals(bad.finishes[0].outcome, "failed");
+  }
+  const original = [status];
+  assertEquals(
+    normalizeDeploymentStatusResponse("github.deployments.get", original),
+    original,
+  );
+});
 const authSchema =
   (providerOperations["supabase.project.config.auth.get"].$defs as any)
     .AuthConfigResponse_Output;

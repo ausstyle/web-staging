@@ -253,6 +253,22 @@ function refusal(
 }
 const SENSITIVE =
   /(password|passwd|secret|credential|private.?key|api.?key|service.?role|signed.?url|access.?token|refresh.?token|authorization|connection.?string|encrypted.?value|cookie)/i;
+/** GitHub Actions emits an empty optional deployment environment URL when no
+ * environment URL was configured. Treat that sentinel as absent before URI
+ * validation. Required URLs and nonempty values retain the pinned validation. */
+export function normalizeDeploymentStatusResponse(
+  operation: string,
+  raw: unknown,
+): unknown {
+  if (operation !== "github.deployments.statuses.list" || !Array.isArray(raw)) {
+    return raw;
+  }
+  return raw.map((value) => {
+    if (!object(value) || value.environment_url !== "") return value;
+    const { environment_url: _empty, ...status } = value;
+    return status;
+  });
+}
 /** Apply only the published projection, including nested provider maps. */
 export function projectValue(
   raw: unknown,
@@ -1042,7 +1058,10 @@ export function createProviderOperationHandler(
     let raw: unknown;
     let result: unknown;
     try {
-      raw = text ? JSON.parse(text) : null;
+      raw = normalizeDeploymentStatusResponse(
+        op.operation,
+        text ? JSON.parse(text) : null,
+      );
       const schema = (op.response_schemas as Schema)[String(status)];
       if (Object.keys(op.response_schemas).length && !schema) {
         throw new Error("provider_response_contract_mismatch");
