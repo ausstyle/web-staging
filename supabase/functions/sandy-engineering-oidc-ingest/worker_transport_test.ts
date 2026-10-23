@@ -21,3 +21,19 @@ Deno.test("uncertain private dispatcher response never generates a verified rece
  const db=database();let calls=0;const result=await bindPrivateWorkerTransport(db,key,identity,()=>{calls++;throw Error("private detail");});
  assert.equal(calls,1);assert.equal(result.body.ok,false);assert.equal(db.events.length,0);assert.equal(JSON.stringify(result).includes("private detail"),false);
 });
+
+Deno.test("invalid transport preconditions are classified separately without custody or secret disclosure",async()=>{
+ for(const [credential,who,error] of [
+  [key,{...identity,sourceCommit:"not-a-reviewed-commit"},"worker_transport_source_invalid"],
+  [key,{...identity,runId:"not-a-github-run"},"worker_transport_run_invalid"],
+  ["short-private-fixture",identity,"worker_transport_credential_format_unsupported"],
+  ["x".repeat(8193),identity,"worker_transport_credential_format_unsupported"],
+ ] as const){
+  const db=database();let requests=0;
+  const result=await bindPrivateWorkerTransport(db,credential,who,()=>{requests++;throw Error("must not dispatch");});
+  assert.equal(result.status,403);assert.ok("error" in result.body);assert.equal(result.body.error,error);
+  assert.equal(result.body.automatic_retry,false);assert.equal(db.calls.length,0);
+  assert.equal(db.events.length,0);assert.equal(requests,0);
+  assert.equal(JSON.stringify(result).includes(credential),false);
+ }
+});
