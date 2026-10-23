@@ -15,7 +15,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [all, runtime, examiner, native]
+        options: [all, runtime, examiner, native, graphical]
 permissions:
   contents: read
 concurrency:
@@ -53,6 +53,7 @@ jobs:
           deno test supabase/functions/_shared/sandy-agent-operations/runtime_memory_test.ts supabase/functions/_shared/sandy-agent-operations/runtime_model_policy_test.ts
           deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
           deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
+          deno test supabase/functions/sandy-master-computer/index_test.ts
       - name: Exercise WinRM timeout and cleanup against pinned loopback TLS
         run: >-
           deno test --import-map=scripts/sandy/testing/edge_types_import_map.json
@@ -85,7 +86,8 @@ jobs:
           python3 - <<'PY'
           import os, subprocess, sys
           options={'runtime':'sandy-agent-runtime-v4','examiner':'sandy-examiner-full-cycle','native':'sandy-vm-protocol-api'}
-          selected=list(options.values()) if os.environ['COMPONENT']=='all' else [options[os.environ['COMPONENT']]]
+          # Preserve the original batch; graphical is an explicit separate release.
+          selected=list(options.values()) if os.environ['COMPONENT']=='all' else ['sandy-master-computer'] if os.environ['COMPONENT']=='graphical' else [options[os.environ['COMPONENT']]]
           for slug in selected:
               manifest='docs/sandy-engineering/evaluations/runtime-slices/'+slug+'.json'
               out=os.path.join(os.environ['RUNNER_TEMP'],'runtime-slices',slug)

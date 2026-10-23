@@ -76,4 +76,58 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(s.Blocked): s.source_check(self.m,Path('/tmp/unreviewed.json'))
 
 
+class GraphicalFlatReleaseTests(unittest.TestCase):
+    def setUp(self):
+        self.slug = 'sandy-master-computer'
+        self.before = {'index.ts': b'preserved-flat-master-v27'}
+        self.after = {p: (s.ROOT / 'supabase/functions' / p).read_bytes()
+                      for p in s.MODULES[self.slug]}
+        self.m = {'kind':'reviewed-runtime-slice-v1','function':self.slug,
+                  'version':27,'verify_jwt':True,'body_sha256':s.digest(b'flatbundle'),
+                  'source_layout':s.FLAT_MASTER_LAYOUT,
+                  'before_files':s.hashes(self.before),'replacements':s.hashes(self.after)}
+        self.meta = {'slug':self.slug,'version':27,'verify_jwt':True,'status':'ACTIVE'}
+
+    def test_only_exact_reviewed_flat_master_layout_is_permitted(self):
+        s.validate(self.m)
+        cases = [
+            {'source_layout':'arbitrary-layout'}, {'version':28}, {'verify_jwt':False},
+            {'before_files':{**self.m['before_files'],'extra.ts':'a'*64}},
+            {'before_files':{self.slug+'/index.ts':'a'*64}},
+            {'replacements':{self.slug+'/index.ts':'a'*64}},
+        ]
+        for change in cases:
+            with self.subTest(change=change), self.assertRaises(s.Blocked):
+                s.validate({**self.m,**change})
+
+    def test_packaging_transition_preserves_preimage_and_adds_only_reviewed_dependency(self):
+        before = dict(self.before)
+        candidate = s.candidate(self.m,before)
+        self.assertEqual(before,self.before)
+        self.assertEqual(candidate,self.after)
+        self.assertNotIn('index.ts',candidate)
+        self.assertEqual(s.hashes(candidate),s.installed_hashes(self.m))
+        with self.assertRaises(s.Blocked):
+            s.candidate(self.m,{'index.ts':b'unreviewed-live-change'})
+
+    def test_independent_installed_readback_refuses_leftover_flat_source_or_missing_dependency(self):
+        r=Fake({**self.meta,'version':28},b'candidatebundle')
+        with patch.object(s,'original_sources',return_value=self.after):
+            s.inspect(r,self.m,True)
+        for files in [{**self.before,**self.after},
+                      {self.slug+'/index.ts':self.after[self.slug+'/index.ts']}]:
+            with patch.object(s,'original_sources',return_value=files), self.assertRaises(s.Blocked):
+                s.inspect(r,self.m,True)
+
+    def test_flat_source_preflight_is_read_only_and_preserves_jwt_configuration(self):
+        r=Fake(self.meta,b'flatbundle')
+        with patch.object(s,'original_sources',return_value=self.before):
+            result=s.release(r,self.m)
+        self.assertTrue(result['preflight_passed'])
+        self.assertFalse(result['deployed'])
+        self.assertTrue(all(method=='GET' for method,_ in r.calls))
+        with patch.object(s,'original_sources',return_value=self.before), self.assertRaises(s.Blocked):
+            s.inspect(Fake({**self.meta,'verify_jwt':False},b'flatbundle'),self.m)
+
+
 if __name__=='__main__': unittest.main()
