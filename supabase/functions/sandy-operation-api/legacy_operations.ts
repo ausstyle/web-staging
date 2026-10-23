@@ -1,5 +1,6 @@
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
+import { iapRepairJobSchemas } from '../_shared/sandy_iap_repair_contract.ts';
 
 /** Installed compatibility executors. The live registry remains the catalogue.
  * These fixed requests call the existing application services, never MCP or a
@@ -231,6 +232,9 @@ eng(
   jobOutput,
   "Admit an implementation job through existing registry verification, scope, tests, rollback and delegation checks; admission is not execution.",
 );
+definitions['engineering.implementation.request'].input_schema={oneOf:[
+ definitions['engineering.implementation.request'].input_schema,...iapRepairJobSchemas,
+]};
 for (
   const [operation, action] of [["engineering.job.approve", "approve_job"], [
     "engineering.job.auto_approve",

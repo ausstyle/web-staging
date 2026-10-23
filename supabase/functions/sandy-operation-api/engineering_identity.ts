@@ -5,6 +5,8 @@ import policy from "./engineering_identity_policy.json" with { type: "json" };
 import vmReadPolicy from "./engineering_vm_read_policy.json" with {
   type: "json",
 };
+import {iapRepairOperations} from '../_shared/sandy_iap_repair_contract.ts';
+import {resolveIapRepairScope,authorizeIapRepairExecution} from './iap_repair_authorization.ts';
 import {
   recognizableRepositoryCredential,
   repositoryText,
@@ -38,6 +40,7 @@ export type EngineeringProof = {
   vmReadScopeSha256?: string;
   standingOperations?: string[];
   administratorRead?: boolean;
+  iapRepair?: boolean;
 };
 const proofs = new WeakMap<object, EngineeringProof>();
 export const engineeringProofFor = (credential: unknown) =>
@@ -243,12 +246,14 @@ export async function engineeringRequest(
   const adminReadAuthorized = adminRead?.ok===true && adminRead.identity_user_id===user.id && adminRead.session_id===jwt.session_id &&
     adminRead.owner_authority_id===resolved.owner_authority_id && Number.isSafeInteger(adminRead.revision) && Number(adminRead.revision)>0 &&
     typeof adminRead.expires_at==="string" && Date.parse(adminRead.expires_at)>Date.now();
+  const repairAuthorized=await resolveIapRepairScope(deps,user,jwt,resolved,body);
   const allowedOperations = [
     ...new Set([
       ...policy.operations,
       ...(vmAuthorized ? vmReadPolicy.operations : []),
       ...(standingAuthorized ? standing!.operations as string[] : []),
       ...(adminReadAuthorized ? ["engineering.preflight"] : []),
+      ...(repairAuthorized ? iapRepairOperations : []),
     ]),
   ];
   if (
@@ -264,7 +269,12 @@ export async function engineeringRequest(
       vmReadPolicy.operations.includes(operation);
     const standingExecution = standingAuthorized &&
       (standing!.operations as string[]).includes(String(operation));
-    if (operation === "engineering.preflight") {
+    if(iapRepairOperations.includes(operation as any)){
+      if(!repairAuthorized)return deny(403,'independent_iap_repair_grant_required');
+      const authorized=await authorizeIapRepairExecution(deps,user,jwt,String(operation),args,entry,headers,body.channel);
+      if(!authorized.ok)return deny(authorized.status,authorized.error);
+      boundExecution=authorized.boundExecution;
+    }else if (operation === "engineering.preflight") {
       if(!adminReadAuthorized)return deny(403,"administrator_read_delegation_required");
       if(!entry || !deps.contractMatches(entry) || entry.api_exposed!==true || entry.ai_exposed!==true || entry.is_mutation!==false ||
         !object(args) || Object.keys(args).length!==1 || args.connection!=="sandy-gcp-admin" || !deps.argumentsValid(entry.input_schema,args))
@@ -529,8 +539,9 @@ export async function engineeringRequest(
     epoch: Number(metadata.sandy_engineering_epoch),
     policySha256: String(resolved.policy_sha256),
     ...(adminReadAuthorized ? { administratorRead: true } : {}),
-    ...(standingAuthorized
-      ? { standingOperations: standing!.operations as string[] }
+    ...(repairAuthorized ? {iapRepair:true} : {}),
+    ...(standingAuthorized||repairAuthorized
+      ? { standingOperations: [...new Set([...(standingAuthorized?standing!.operations as string[]:[]),...(repairAuthorized?iapRepairOperations:[])])] }
       : {}),
     ...(vmAuthorized
       ? { vmReadScopeSha256: String((vmScope as Obj).policy_sha256) }

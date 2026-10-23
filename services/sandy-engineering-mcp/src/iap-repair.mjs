@@ -1,6 +1,6 @@
 // Fixed-target provider component for the protected Sandy API worker.
-// Not mounted by server.mjs: independent grant + durable claim/write-start/finish
-// callbacks must be installed and verified before a release may activate it.
+// Mounted only behind the protected release flag: independent grant + durable
+// claim/write-start/finish callbacks must pass before any provider request.
 import { createHash } from 'node:crypto';
 import { project, runtimeAccount, administratorAccount } from './gcp-admin-worker.mjs';
 const control='https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-engineering-control';
@@ -18,26 +18,29 @@ function expiry(value,now){const n=Date.parse(value);if(!Number.isFinite(n)||n<=
 export function candidateIapPolicy(policy,name,expiresAt,now=Date.now()){
  const target=targets.find(t=>t[0]===name);if(!target||!policy||typeof policy.etag!=='string'||!policy.etag||Object.keys(policy).some(k=>!['version','etag','bindings','auditConfigs'].includes(k))||!Array.isArray(policy.bindings??[]))throw new Refused('reviewed_policy_preimage_required');
  const expiration=expiry(expiresAt,now),expression=`destination.port == ${target[2]} && request.time < timestamp("${expiration}")`;
+ let existing=0;
  for(const b of policy.bindings??[]){
   if(!b||typeof b!=='object'||!Array.isArray(b.members)||typeof b.role!=='string')throw new Refused('reviewed_policy_preimage_required');
   if(b.role===role&&b.members.includes(member)){
-   if(b.condition?.expression===expression)return {policy:structuredClone(policy),changed:false};
-   throw new Refused('existing_principal_binding_requires_administrator_review');
+   if(b.condition?.expression!==expression||++existing>1)throw new Refused('existing_principal_binding_requires_administrator_review');
   }
  }
+ if(existing)return {policy:structuredClone(policy),changed:false};
  return {policy:{...structuredClone(policy),version:3,bindings:[...structuredClone(policy.bindings??[]),{role,members:[member],condition:{title:`sandy-fixed-${name}-port-${target[2]}`,description:'Authorized Sandy access to this immutable VM and port only',expression}}]},changed:true};
 }
-export function createProtectedIapRepairWorker({connect,request=fetch,now=Date.now}={}){
+export function createProtectedIapRepairWorker({connect,request=fetch,now=Date.now,
+ sourceSha256=process.env.SANDY_IAP_REPAIR_SOURCE_SHA256,workerRevision=process.env.K_REVISION}={}){
  return async(req,res)=>{
   const bearer=req.get('authorization'),body=req.body;
   if(!/^Bearer [A-Za-z0-9._~-]+$/.test(bearer??'')||!body||Object.keys(body).some(k=>!['admission_id','grant_id','request_id'].includes(k))||![body.admission_id,body.grant_id,body.request_id].every(uuid))return res.status(403).json({ok:false,error:'protected_API_admission_required',executed:false});
   let claimed=false,writeDispatched=false;const receipts=[];let connection,workerIdentity;
   const callback=async(action,extra={})=>{
-   const response=await request(control,{method:'POST',redirect:'error',signal:AbortSignal.timeout(15000),headers:{authorization:bearer,'content-type':'application/json'},body:JSON.stringify({action,...body,...extra,worker_identity:workerIdentity})});
+   const response=await request(control,{method:'POST',redirect:'error',signal:AbortSignal.timeout(15000),headers:{authorization:bearer,'content-type':'application/json'},body:JSON.stringify({action,...body,...extra,worker_identity:workerIdentity,source_sha256:sourceSha256,worker_revision:workerRevision})});
    const result=await response.json();if(!response.ok||result.ok!==true||result.admission_id!==body.admission_id)throw new Refused('protected_repair_admission_refused',403);return result;
   };
   try{
    if(typeof connect!=='function')throw new Refused('protected_administrator_connection_not_configured',503);
+   if(!/^[a-f0-9]{64}$/.test(sourceSha256??'')||!/^sandy-engineering-mcp-[a-z0-9-]{1,90}$/.test(workerRevision??''))throw new Refused('protected_repair_source_binding_required',503);
    connection=await connect();if(connection.principal!==runtimeAccount)throw new Refused('expected_runtime_identity_required',403);
    workerIdentity=await connection.identityToken(iapRepairAudience);
    const grant=await callback('gcp_iap_repair_claim');

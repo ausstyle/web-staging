@@ -51,6 +51,7 @@ async function body(response: Response): Promise<ObjectValue> {
 // Exercise every admitted contract, including optional keys which could otherwise
 // silently become unrestricted routing or target selectors in a thin adapter.
 function example(schema: ObjectValue, field = ""): unknown {
+  if(Array.isArray(schema.oneOf))return example(schema.oneOf[0],field);
   if (Object.hasOwn(schema, "const")) return schema.const;
   if (Array.isArray(schema.enum)) return schema.enum[0];
   if (schema.type === "object") {
@@ -607,4 +608,14 @@ Deno.test("provider denials retain the actual bounded error while scrubbing cred
   assert(!text.includes(service));
   assert(!text.includes(jwt));
   assert(!text.includes("eyJhbGci"));
+});
+Deno.test('fixed IAP job variants reuse the Engineering request operation and reject arbitrary Google requests',()=>{
+ const {dependencies}=harness();
+ const fixed={change_id:'52d56740-59c8-4db1-b7e6-a137c7699b86',provider:'google_cloud',operation:'iap.repair.plan',target:'sandy-iap-repair:elaborate-haven-511518-a5:sandy-video+sandy-windows',idempotency_key:'fixture-iap-job-001',payload:{}};
+ for(const mode of ['plan','apply','rollback']){
+  const args={...fixed,operation:'iap.repair.'+mode,payload:mode==='plan'?{}:{parent_admission_id:job}};
+  assert(buildLegacyOperationRequest(dependencies,userToken,'engineering.implementation.request',args));
+ }
+ for(const args of [{...fixed,operation:'setIamPolicy'},{...fixed,target:'other-vm'},{...fixed,payload:{url:'https://evil.invalid'}},{...fixed,change_id:change}])equal(buildLegacyOperationRequest(dependencies,userToken,'engineering.implementation.request',args),null);
+ equal(Object.keys(legacyOperationContracts).length,66,'job variants must not expand operation catalogue');
 });

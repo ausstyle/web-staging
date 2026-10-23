@@ -23,7 +23,7 @@ function fixture(mode='plan'){
   return Response.json({ok:true,admission_id:body.admission_id});
  };
  const connect=async()=>({principal:runtimeAccount,identityToken:async audience=>{assert.equal(audience,iapRepairAudience);return 'fixture-identity';},administrator:()=>admin});
- const run=async()=>{const res={status(n){this.code=n;return this;},json(v){this.value=v;return this;}};await createProtectedIapRepairWorker({connect,request,now:()=>now})({get:()=> 'Bearer fixture',body},res);return res;};
+ const run=async()=>{const res={status(n){this.code=n;return this;},json(v){this.value=v;return this;}};await createProtectedIapRepairWorker({connect,request,now:()=>now,sourceSha256:'f'.repeat(64),workerRevision:'sandy-engineering-mcp-fixture'})({get:()=> 'Bearer fixture',body},res);return res;};
  const plans=()=>policies.map((before,i)=>{const candidate=candidateIapPolicy(before,names[i],expiry,now).policy;return {vm_name:names[i],instance_id:ids[i],expires_at:expiry,before:structuredClone(before),observed_after:{...structuredClone(candidate),etag:'after'},before_sha256:policyDigest(before),candidate_sha256:policyDigest(candidate)};});
  return {calls,callbacks,policies,grant,run,plans,denyClaim:()=>denyClaim=true,denyWrite:()=>denyWrite=true,failWrite:()=>failWrite=true};
 }
@@ -50,4 +50,9 @@ test('uncertain write is never retried or silently rolled back',async()=>{
 test('rollback restores a preserved exact effect and refuses unrelated policy changes',async()=>{
  const f=fixture('rollback');f.grant.plans=f.plans();f.grant.plans.forEach((p,i)=>f.policies[i]=structuredClone(p.observed_after));const r=await f.run();assert.equal(r.code,200);assert.equal(r.value.policy_changes,2);assert.deepEqual(f.policies[0].bindings,base.bindings);
  const g=fixture('rollback');g.grant.plans=g.plans();g.grant.plans.forEach((p,i)=>g.policies[i]=structuredClone(p.observed_after));g.policies[0].bindings.push({role:'roles/viewer',members:['group:another@example.invalid']});const denied=await g.run();assert.equal(denied.value.error,'rollback_preimage_changed_requires_review');assert.ok(!g.calls.some(c=>c.url.endsWith(':setIamPolicy')));
+});
+test('an existing exact binding cannot mask a later broader binding for the same principal',()=>{
+ const exact=candidateIapPolicy(base,names[0],expiry,now).policy;
+ const broader={role:'roles/iap.tunnelResourceAccessor',members:['serviceAccount:sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com']};
+ assert.throws(()=>candidateIapPolicy({...exact,bindings:[...exact.bindings,broader]},names[0],expiry,now),/existing_principal_binding_requires_administrator_review/);
 });
