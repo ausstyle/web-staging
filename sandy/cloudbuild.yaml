@@ -1,0 +1,17 @@
+# Build only; submission requires the protected release and approved budget.
+substitutions:
+  _SOURCE_SHA: UNSET
+steps:
+  - name: 'gcr.io/cloud-builders/docker@sha256:0aca0f95e1ba8f9107263d3e9782d5ce99a5b60d35b3f8985e4534b65552636f'
+    entrypoint: sh
+    env: ['SOURCE_SHA=${_SOURCE_SHA}']
+    args:
+      - -ceu
+      - |
+        test "$${#SOURCE_SHA}" -eq 40
+        case "$$SOURCE_SHA" in *[!0-9a-f]*) exit 1;; esac
+  - name: 'gcr.io/cloud-builders/docker@sha256:0aca0f95e1ba8f9107263d3e9782d5ce99a5b60d35b3f8985e4534b65552636f'
+    args: ['build', '--platform=linux/amd64', '-f', 'Dockerfile', '--label', 'org.opencontainers.image.revision=${_SOURCE_SHA}', '-t', 'europe-west8-docker.pkg.dev/elaborate-haven-511518-a5/sandy-web/sandy-marketing:${_SOURCE_SHA}', '.']
+images: ['europe-west8-docker.pkg.dev/elaborate-haven-511518-a5/sandy-web/sandy-marketing:${_SOURCE_SHA}']
+options:
+  requestedVerifyOption: VERIFIED
