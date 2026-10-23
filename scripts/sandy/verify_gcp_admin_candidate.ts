@@ -78,7 +78,7 @@ if (import.meta.main) {
     };
     const initialized=await rpc("initialize",{protocolVersion:"2025-03-26",capabilities:{},clientInfo:{name:"sandy-admin-read-acceptance",version:"1"}});
     if (!initialized.result?.serverInfo) throw Error("workload_MCP_initialization_failed");
-    const routine=await rpc("tools/call",{name:"github.repos.get",arguments:{path:{owner:"ausstyle",repo:"web-staging"}}});
+    const routine=await rpc("tools/call",{name:"github.repos.get",arguments:{}});
     const routineEnvelope=routine.result?._meta?.sandy_api,routineProof=routine.result?.structuredContent;
     report.routine_workload_API_status=routineEnvelope?.status??null;
     report.routine_workload_provider_http_status=routineProof?.provider_http_status??null;
