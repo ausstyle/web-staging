@@ -6,7 +6,11 @@ const validState=(v:any)=>v?.ok===true&&v.enabled===false&&v.unactivated===true&
  v.tracking_verified===true&&v.tracking_change_id===change&&v.configuration_contract==="private-durable-worker-transport-v2"&&v.authority_expanded===false;
 export async function bindPrivateWorkerTransport(db:any,key:string,identity:{sourceCommit:string;runId:string},request:typeof fetch=fetch){
  const fail=(error:string,status=409)=>({status,body:{ok:false,error,automatic_retry:false}});
- if(key.length<100||key.length>8192||!/^[a-f0-9]{40}$/.test(identity.sourceCommit)||!/^\d{1,20}$/.test(identity.runId))return fail("worker_transport_identity_invalid",403);
+ // Distinguish non-sensitive failed preconditions without exporting credential
+ // material or changing the existing source, run or credential restrictions.
+ if(!/^[a-f0-9]{40}$/.test(identity.sourceCommit))return fail("worker_transport_source_invalid",403);
+ if(!/^\d{1,20}$/.test(identity.runId))return fail("worker_transport_run_invalid",403);
+ if(key.length<100||key.length>8192)return fail("worker_transport_credential_format_unsupported",403);
  const before=await db.rpc("sandy_orch_worker_transport_state");
  if(before.error||!validState(before.data))return fail("worker_transport_guard_unavailable_or_ineligible");
  const bound=await db.rpc("sandy_orch_worker_bind_transport",{p_secret:key});
