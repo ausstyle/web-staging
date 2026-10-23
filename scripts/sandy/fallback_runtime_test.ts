@@ -570,6 +570,13 @@ Deno.test("history, connection and narrow record reads preserve customer scope a
   const memory = await executeRuntimeOperation(principal, "agent.runtime.context.memory.search", { query: "needle" }, deps, "memory");
   assert.equal(memory.records.length, 1); assert.equal(memory.records[0].content.length, 900);
   assert.ok(audits(db).every(row => row.customer_id === CUSTOMER && row.task_id === RECORD_TASK && row.state === "succeeded"));
+  const audited = audits(db).length;
+  const unsupportedCacheKey = await executeAgentOperation(principal, "agent.runtime.context.memory.search", { query: "needle", idempotency_key: "unsupported-memory-cache-key" }, deps);
+  assert.equal(unsupportedCacheKey.status, 400); assert.equal(audits(db).length, audited);
+  db.tables.sandy_memory_settings[0].enabled = false;
+  const revokedRepeat = await executeRuntimeOperation(principal, "agent.runtime.context.memory.search", { query: "needle" }, deps, "memory");
+  assert.equal(revokedRepeat.error, "memory_disabled"); assert.equal(revokedRepeat.records, undefined);
+  assert.equal(audits(db).length, audited + 1); assert.equal(audits(db).at(-1)?.state, "failed");
 });
 
 for (const slug of slugs) Deno.test(`${slug}: common record tool loop calls central audited contracts without changing the outer runtime result`, async () => {
