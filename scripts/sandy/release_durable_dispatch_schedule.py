@@ -145,11 +145,11 @@ def accept_empty_queue(r):
  result=verify(r,(ROOT/MIGRATION).read_text())
  pending=r.sql("SELECT count(*) count FROM public.sandy_orch_jobs WHERE state IN('queued','leased','running')",True)
  if pending!=[{'count':0}]:raise Blocked('empty_queue_acceptance_requires_no_active_customer_or_owner_jobs')
- evidence=r.sql("SELECT id,created_at FROM public.sandy_engineering_change_events WHERE change_id="+quote(result['tracking_change_id'])+" AND event_type='durable_dispatch_private_transport_verified' AND detail->>'worker_http_status'='200' AND detail->>'jobs_claimed'='0' AND detail->>'worker_source_sha256'='"+SOURCE_FILES[SLUG+'/index.ts']+"' ORDER BY created_at DESC LIMIT 1",True)
+ evidence=r.sql("SELECT id,occurred_at FROM public.sandy_engineering_change_events WHERE change_id="+quote(result['tracking_change_id'])+" AND event_type='durable_dispatch_private_transport_verified' AND detail->>'worker_http_status'='200' AND detail->>'jobs_claimed'='0' AND detail->>'worker_source_sha256'='"+SOURCE_FILES[SLUG+'/index.ts']+"' ORDER BY occurred_at DESC LIMIT 1",True)
  if len(evidence)!=1:raise Blocked('independent_trusted_runtime_transport_evidence_required')
  tick=r.sql("SELECT public.sandy_orch_worker_tick() result")
  if tick!=[{'result':{'ok':True,'state':'idle','provider_executed':False}}]:raise Blocked('idle_timer_acceptance_not_verified')
- return {'private_worker_transport_verified':True,'private_worker_http_status':200,'transport_evidence_event':evidence[0]['id'],'transport_evidence_at':evidence[0]['created_at'],'runtime_key_exported':False,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
+ return {'private_worker_transport_verified':True,'private_worker_http_status':200,'transport_evidence_event':evidence[0]['id'],'transport_evidence_at':evidence[0]['occurred_at'],'runtime_key_exported':False,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
 if __name__=='__main__':
  p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--install-transport-guard',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');g.add_argument('--activate-bound-transport',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
