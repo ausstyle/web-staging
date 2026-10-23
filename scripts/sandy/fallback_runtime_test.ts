@@ -275,7 +275,7 @@ for (const slug of slugs) {
     const db = new Database(), requests: Recorded[] = [];
     db.tables.sandy_v2_runtime_policy.find(row => row.policy_key === "adaptive_model_routing")!.mode = "enabled";
     db.tables.ai_task_routes = [{ task_type: "general_assistance", primary_model: "fixture-approved-model", enabled: true }];
-    db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", eligibility: "approved", verified_at: new Date().toISOString() }];
+    db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", provider: "openai", eligibility: "approved", verified_at: new Date().toISOString() }];
     const app = await runtime(slug, db, requests);
     try {
       const result = await app.invoke("Hello Sandy", { customer_id: null, model: "caller-selected-model", tools: [{ name: "dangerous_unregistered_tool" }] });
@@ -634,7 +634,7 @@ Deno.test("actual NULL-customer snapshot reads global policy only and never supp
 Deno.test("shared model policy keeps approved recent server routes, stale/disabled fallback and actual shadow task ownership", async () => {
   const db = new Database(), principal = await recordPrincipal(db), options = { mode: "enabled", prompt: principal.requestText, requestId: "runtime-records-request" };
   db.tables.ai_task_routes = [{ task_type: "general_assistance", primary_model: "fixture-approved-model", enabled: true }];
-  db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", eligibility: "approved", verified_at: "2000-01-01T00:00:00Z" }];
+  db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", provider: "openai", eligibility: "approved", verified_at: "2000-01-01T00:00:00Z" }];
   assert.equal((await selectRuntimeModel(principal, db, options)).model, "gpt-4.1-mini");
   db.tables.ai_model_registry[0].verified_at = new Date().toISOString();
   assert.equal((await selectRuntimeModel(principal, db, { ...options, mode: "shadow" })).model, "gpt-4.1-mini");

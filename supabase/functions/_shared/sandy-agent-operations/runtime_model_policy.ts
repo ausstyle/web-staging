@@ -4,6 +4,19 @@ import {isAgentPrincipal,isRuntimeConversationTask,type AgentPrincipal,type Runt
  * dependency never calls a model and never accepts a customer/model from JSON.
  * Its shadow decision row retains the actual task request/customer association.
  */
+export function reviewedRuntimeRoute(route: unknown, registry: unknown, mode: string, now = Date.now()) {
+ const r=route as Record<string,unknown>|null, m=registry as Record<string,unknown>|null;
+ if(!r||r.enabled!==true||typeof r.primary_model!=="string"||!/^[a-z0-9][a-z0-9.-]{0,99}$/.test(r.primary_model))
+  return {model:null,reason:"v2_route_unavailable"};
+ if(mode!=="enabled")return {model:null,reason:"v2_shadow_or_not_recently_verified"};
+ if(!m||m.provider!=="openai"||m.eligibility!=="approved")return {model:null,reason:"v2_model_not_approved_for_transport"};
+ const verified=typeof m.verified_at==="string"?Date.parse(m.verified_at):NaN,age=now-verified;
+ // A future clock or malformed verification is not evidence of a usable model.
+ if(!Number.isFinite(now)||!Number.isFinite(age)||age<0||age>=14*86400000)
+  return {model:null,reason:"v2_shadow_or_not_recently_verified"};
+ return {model:r.primary_model,reason:"v2_approved_recently_verified"};
+}
+
 export async function selectRuntimeModel(identity:AgentPrincipal|RuntimeConversationTask,db:any,expected:{mode:string;prompt:string;requestId:string}){
  const customerBound=isAgentPrincipal(identity)&&identity.kind==="trusted_runtime"&&!!identity.taskId;
  const anonymous=isRuntimeConversationTask(identity)&&identity.customerId===null;
@@ -23,15 +36,18 @@ export async function selectRuntimeModel(identity:AgentPrincipal|RuntimeConversa
  let model=defaultModel;
  let routingReason="v1_fallback";
  try{
-  const {data:route}=await db.from("ai_task_routes").select("primary_model,enabled").eq("task_type",v2TaskType).maybeSingle();
-  if(route?.enabled&&route.primary_model){
-    const {data:registry}=await db.from("ai_model_registry").select("eligibility,verified_at").eq("model_id",route.primary_model).maybeSingle();
-    const age=registry?.verified_at?Date.now()-new Date(registry.verified_at).getTime():Infinity;
-    if(v2ModelMode==="enabled"&&registry?.eligibility==="approved"&&age<14*86400000){model=route.primary_model;routingReason="v2_approved_recently_verified";}
-    else routingReason="v2_shadow_or_not_recently_verified";
+  const {data:route,error:routeError}=await db.from("ai_task_routes").select("primary_model,enabled").eq("task_type",v2TaskType).maybeSingle();
+  let registry=null;
+  if(!routeError&&route?.enabled===true&&typeof route.primary_model==="string"){
+    const result=await db.from("ai_model_registry").select("provider,eligibility,verified_at").eq("model_id",route.primary_model).maybeSingle();
+    if(!result.error)registry=result.data;
   }
-  await db.from("sandy_v2_model_decisions").insert({customer_id:customerId,request_id:requestId,task_type:v2TaskType,selected_model:model,candidate_models:[{model_id:route?.primary_model||null}],policy_reason:routingReason});
- }catch(e){console.error("v2_model_routing_shadow_failed",String(e).slice(0,100));}
+  const reviewed=reviewedRuntimeRoute(routeError?null:route,registry,v2ModelMode);
+  if(reviewed.model)model=reviewed.model;
+  routingReason=reviewed.reason;
+  const {error:decisionError}=await db.from("sandy_v2_model_decisions").insert({customer_id:customerId,request_id:requestId,task_type:v2TaskType,selected_model:model,candidate_models:[{model_id:routeError?null:route?.primary_model||null}],policy_reason:routingReason});
+  if(decisionError)console.error("v2_model_decision_audit_unavailable");
+ }catch{console.error("v2_model_routing_shadow_failed");}
 
 
  return {complex,model};
