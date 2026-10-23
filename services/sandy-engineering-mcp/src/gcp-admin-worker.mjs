@@ -5,6 +5,7 @@ export const project = "elaborate-haven-511518-a5";
 export const runtimeAccount = `sandy-mcp-runtime@${project}.iam.gserviceaccount.com`;
 export const administratorAccount = `sandy-cloud-administrator@${project}.iam.gserviceaccount.com`;
 export const workerAudience = "sandy-gcp-admin-readonly-zmqlyygzqoidkcwdysok";
+const protectedAudiences = new Set([workerAudience, "sandy-gcp-iap-repair-zmqlyygzqoidkcwdysok"]);
 const control = "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-engineering-control";
 const uuid = v => typeof v === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(v);
 export class AdminReadFailure extends Error {
@@ -20,7 +21,10 @@ export function metadataConnection(request = fetch, source = new Compute(), impe
     if (!response.ok || response.headers.get("metadata-flavor") !== "Google") throw new AdminReadFailure("google_runtime_metadata_required");
     const principal = (await response.text()).trim();
     if (principal !== runtimeAccount) throw new AdminReadFailure("deployed_runtime_identity_mismatch");
-    return { principal, identityToken: () => source.fetchIdToken(workerAudience),
+    return { principal, identityToken: (audience = workerAudience) => {
+      if (!protectedAudiences.has(audience)) throw new AdminReadFailure("protected_worker_audience_required", 403);
+      return source.fetchIdToken(audience);
+    },
       administrator: () => impersonate({ sourceClient: source, targetPrincipal: administratorAccount,
         targetScopes: ["https://www.googleapis.com/auth/cloud-platform"], delegates: [], lifetime: 1800 }) };
   };

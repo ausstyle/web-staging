@@ -4,9 +4,12 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { ListToolsRequestSchema, CallToolRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { callTool, createApiInvoker, discover, describeTool, DiscoveryFailure, executionMetadataHeaders, isPublicAnonJwt } from "./api-adapter.mjs";
-import { createAdminReadWorker } from "./gcp-admin-worker.mjs";
+import { createAdminReadWorker, metadataConnection } from "./gcp-admin-worker.mjs";
+import { createProtectedIapRepairWorker } from "./iap-repair.mjs";
 
 export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
+  iapRepair = process.env.SANDY_IAP_REPAIR_ENABLED === "true"
+    ? createProtectedIapRepairWorker({ connect: metadataConnection() }) : null,
   api = createApiInvoker(
   process.env.SANDY_SUPABASE_PROJECT_REF || "zmqlyygzqoidkcwdysok",
   fetch,
@@ -21,6 +24,11 @@ export function createApp({ publicAnon = process.env.SANDY_SUPABASE_ANON_KEY || 
     next();
   });
   app.post("/internal/gcp-admin/preflight", createAdminReadWorker());
+  // Protected activation is a release binding, not an IAM authorization. Even
+  // enabled revisions cannot issue an administrator token without the distinct
+  // current workload + Google identity + Owner-grant + one-use custody claim.
+  app.post("/internal/gcp-admin/iap-repair", iapRepair ?? ((_req, res) =>
+    res.status(503).json({ ok: false, error: "protected_repair_transport_not_activated", executed: false })));
   app.post("/mcp", async (req, res) => {
     let userToken = (req.headers.authorization || "").match(/^Bearer ([A-Za-z0-9._~-]+)$/i)?.[1];
     if (!userToken) return res.status(401).json({ error: "bearer_token_required" });

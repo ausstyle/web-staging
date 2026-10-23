@@ -21,6 +21,8 @@ test("Health endpoint and MCP authentication boundaries", async (t)=>{
   await waitForServer();
   const health=await fetch(base+"/healthz");
   assert.equal(health.status,200);
+  const repair=await fetch(base+"/internal/gcp-admin/iap-repair",{method:"POST",headers:{"content-type":"application/json"},body:"{}"});
+  assert.equal(repair.status,503);assert.equal((await repair.json()).error,"protected_repair_transport_not_activated");
   const noAuth=await fetch(base+"/mcp",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"tools/list"})});
   assert.equal(noAuth.status,401);
   const malformed=await fetch(base+"/mcp",{method:"POST",headers:{"authorization":"Bearer bad token","content-type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:2,method:"tools/list"})});
