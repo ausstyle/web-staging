@@ -15,7 +15,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [all, runtime, examiner, native, graphical, channels, acceptance-bridge]
+        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge]
 permissions:
   contents: read
 concurrency:
@@ -91,10 +91,15 @@ jobs:
         run: |
           python3 - <<'PY'
           import os, subprocess, sys
-          options={'runtime':'sandy-agent-runtime-v4','examiner':'sandy-examiner-full-cycle','native':'sandy-vm-protocol-api'}
-          # Preserve the original batch; graphical is an explicit separate release.
+          options={'runtime':'sandy-agent-runtime-v4'}
+          # Previously installed Examiner/native slices are intentionally not
+          # deployment choices. Each new batch has exact fresh preimage guards.
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
-          selected=list(options.values()) if os.environ['COMPONENT']=='all' else extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
+          extra['runtime-programme']=['sandy-agent-runtime-v4','sandy-email-runtime-canary','sandy-voice-account-context','sandy-master-computer','sandy-engineering-oidc-ingest']
+          selected=extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
+          # Check every preimage before the first provider mutation.
+          for slug in selected:
+              subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py','docs/sandy-engineering/evaluations/runtime-slices/'+slug+'.json','--evidence-dir',os.path.join(os.environ['RUNNER_TEMP'],'runtime-slices',slug+'-preflight')],check=True)
           for slug in selected:
               manifest='docs/sandy-engineering/evaluations/runtime-slices/'+slug+'.json'
               out=os.path.join(os.environ['RUNNER_TEMP'],'runtime-slices',slug)
@@ -102,7 +107,7 @@ jobs:
               subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--verify-installed','--evidence-dir',out+'-readback'],check=True)
           PY
       - name: Verify Examiner sources; actual acceptance uses the protected OIDC workflow
-        if: inputs.component == 'all' || inputs.component == 'examiner'
+        if: inputs.component == 'runtime-programme'
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
