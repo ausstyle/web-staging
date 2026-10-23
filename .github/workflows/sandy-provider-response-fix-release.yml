@@ -1,0 +1,59 @@
+name: Release exact Owner-approved provider response fix
+on:
+  workflow_dispatch:
+    inputs:
+      owner_change_id:
+        description: Genuine Owner-approved record covering the exact function, source and manifest
+        required: true
+      candidate_change_id:
+        description: Existing engineering record holding the reviewed private release manifest
+        required: true
+      mode:
+        type: choice
+        options: [preflight, deploy, reconcile, rollback]
+        default: preflight
+      recovery_artifact_id:
+        description: Private recovery artifact ID, required only for rollback
+        required: false
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: sandy-provider-operation-api-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Test Owner boundary, source guards and unknown-outcome protection
+        run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_provider_response_release.py -v
+      - name: Execute only the exact scoped and audited Owner exception
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          OWNER_CHANGE_ID: ${{ inputs.owner_change_id }}
+          CANDIDATE_CHANGE_ID: ${{ inputs.candidate_change_id }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          RECOVERY_ARTIFACT_ID: ${{ inputs.recovery_artifact_id }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          flags=()
+          case "$RELEASE_MODE" in
+            preflight) ;;
+            deploy) flags+=(--deploy) ;;
+            reconcile) flags+=(--reconcile) ;;
+            rollback) test -n "$RECOVERY_ARTIFACT_ID"; flags+=(--rollback-artifact "$RECOVERY_ARTIFACT_ID") ;;
+            *) exit 1 ;;
+          esac
+          python3 scripts/sandy/release_provider_response_fix.py \
+            --change-id "$OWNER_CHANGE_ID" --candidate-change-id "$CANDIDATE_CHANGE_ID" \
+            --evidence-dir "$RUNNER_TEMP/provider-response-fix" "${flags[@]}"
+      # Full rollback source stays in the existing private Supabase artifact row.
+      # Do not upload production source or private infrastructure evidence here.
