@@ -57,9 +57,9 @@ def verify(r,sql,require_active=True):
  if cron!=[{'jobname':'sandy-orchestration-dispatch-every-minute','schedule':'* * * * *','command':'SELECT public.sandy_orch_worker_tick()','active':True}]:raise Blocked('fixed_credential_free_schedule_mismatch')
  acl=r.sql("SELECT has_function_privilege('anon','public.sandy_orch_worker_tick()','EXECUTE') anon_tick,has_function_privilege('authenticated','public.sandy_orch_worker_tick()','EXECUTE') user_tick,has_function_privilege('service_role','public.sandy_orch_worker_tick()','EXECUTE') service_tick,has_table_privilege('service_role','public.sandy_orch_worker_control','UPDATE') service_configuration,has_function_privilege('authenticated','public.sandy_orch_worker_bind_transport(text)','EXECUTE') user_credential_binding",True)
  if acl!=[{'anon_tick':False,'user_tick':False,'service_tick':False,'service_configuration':False,'user_credential_binding':False}]:raise Blocked('private_timer_privileges_mismatch')
- return {'installed_source_verified':True,'timer_active':state[0]['enabled'],'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
+ return {'installed_source_verified':True,'timer_active':state[0]['enabled'],'transport_bound':state[0]['credential_bound'],'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
-def configure_existing(r,sql,change,source):
+def configure_existing(r,sql,change,source,bind_transport=True):
  # Configuration-only recovery after an installation has already committed.
  # Never replay the migration, create a new tracking record or redeploy code.
  state=verify(r,sql,require_active=False)
@@ -67,23 +67,26 @@ def configure_existing(r,sql,change,source):
  change=str(uuid.UUID(change))
  tracking=r.sql("SELECT id FROM public.sandy_engineering_changes WHERE id="+quote(change)+" AND title='Activate existing durable read dispatcher timer' AND status='proposed' AND expected_behavior='Resume only already admitted fenced read jobs; no authority or job creation' AND requested_by IN(SELECT user_id FROM public.sandy_engineering_test_identities)",True)
  if tracking!=[{'id':change}]:raise Blocked('existing_exact_timer_tracking_record_required')
- # CREATE FUNCTION is already installed. Explicitly refresh the supported API
- # schema cache before binding; the secret never travels through SQL text.
- r.stage='refresh_installed_RPC_schema_cache';r.sql("NOTIFY pgrst,'reload schema'")
- rows=json.loads(r.api('GET','/api-keys'));key=next((x.get('api_key') for x in rows if x.get('name')=='service_role'),None)
- if not isinstance(key,str) or not key:raise Blocked('existing_private_worker_transport_unavailable')
- r.stage='bind_existing_private_transport';private_rpc(r,key,'sandy_orch_worker_bind_transport',{'p_secret':key});key=None
+ if bind_transport:
+  # The exposed Management API legacy key is not necessarily the actual private
+  # worker environment binding. Never substitute or overwrite that credential.
+  raise Blocked('trusted_runtime_transport_binding_required')
+ if state.get('transport_bound') is not True:raise Blocked('trusted_runtime_transport_not_bound')
+ # Only the trusted existing OIDC bridge may establish and test this transport;
+ # activation reads non-secret state and never exports or rotates credentials.
+ verified=r.sql("SELECT EXISTS(SELECT 1 FROM public.sandy_engineering_change_events WHERE change_id="+quote(change)+" AND event_type='durable_dispatch_private_transport_verified' AND detail->>'worker_http_status'='200' AND detail->>'jobs_claimed'='0' AND detail->>'worker_source_sha256'='"+SOURCE_FILES[SLUG+'/index.ts']+"') verified",True)
+ if verified!=[{'verified':True}]:raise Blocked('independent_trusted_runtime_transport_evidence_required')
  inspect_worker(r)
  r.stage='activate_existing_dispatcher_timer'
  r.sql(f"BEGIN;UPDATE public.sandy_orch_worker_control SET enabled=true,release_change_id='{change}',source_commit='{source}',updated_at=clock_timestamp() WHERE singleton AND NOT enabled;INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{change}','durable_dispatch_timer_activated',NULL,jsonb_build_object('source_commit','{source}','existing_worker_version',15,'jobs_created',0,'authority_expanded',false,'provider_execution_verified',false));COMMIT;")
  return {**verify(r,sql),'configuration_only':True,'migrations_reapplied':False,'Edge_deployments':0}
 
 
-def resume_configuration(r,change):
+def resume_configuration(r,change,activate_bound=False):
  if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main':raise Blocked('protected_main_release_required')
  source=os.environ.get('GITHUB_SHA','');sql=(ROOT/MIGRATION).read_text()
  if not re.fullmatch('[a-f0-9]{40}',source) or subprocess.check_output(['git','show',source+':'+MIGRATION],cwd=ROOT)!=sql.encode():raise Blocked('committed_migration_required')
- return configure_existing(r,sql,change,source)
+ return configure_existing(r,sql,change,source,bind_transport=not activate_bound)
 
 
 def run(r,deploy=False,installed=False):
@@ -132,9 +135,9 @@ def accept_empty_queue(r):
  return {'private_worker_transport_verified':True,'private_worker_http_status':status,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
 if __name__=='__main__':
- p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
+ p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');g.add_argument('--activate-bound-transport',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
  try:
-  result=resume_configuration(r,a.resume_configuration) if a.resume_configuration else accept_empty_queue(r) if a.accept_empty_queue else run(r,a.deploy,a.verify_installed)
+  result=resume_configuration(r,a.activate_bound_transport,activate_bound=True) if a.activate_bound_transport else resume_configuration(r,a.resume_configuration) if a.resume_configuration else accept_empty_queue(r) if a.accept_empty_queue else run(r,a.deploy,a.verify_installed)
   report.update(result,passed=True)
  except Exception as e:report.update(error=str(e) if isinstance(e,Blocked) else 'release_failed_or_unknown_reconcile_before_retry',stage=r.stage,last_management_request=r.last_request)
  root.mkdir(parents=True,exist_ok=True);private_write(root,'durable-dispatch-release.json',json.dumps(report,indent=2).encode());print('::notice title=Durable dispatcher timer release::'+json.dumps(report));raise SystemExit(0 if report['passed'] else 1)
