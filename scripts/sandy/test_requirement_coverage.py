@@ -3,6 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 import unittest
+import tempfile
 from build_requirement_coverage import reconcile, standing_execution_evidence, guest_status_execution_evidence
 
 
@@ -17,6 +18,57 @@ def operation(name):
 
 
 class RequirementCoverageTests(unittest.TestCase):
+    def test_family_certificate_requires_current_contract_deployment_and_evidence_bytes(self):
+        families = requirements()
+        families[0]["registered_operation_ids"] = ["fixture.read"]
+        row = {**operation("fixture.read"), "error_contract": {"contract_sha256": "a" * 64}}
+        live = {"name": "shared-adapter", "status": "ACTIVE", "version": 7, "verify_jwt": True}
+        certificate = {"all_required_constituents_reviewed": True,
+                       "shared_and_contract_tests_passed": True,
+                       "representative_provider_acceptance_passed": True,
+                       "higher_risk_independent_verification_passed": True,
+                       "evidence_files": ["proof.json"],
+                       "evidence_sha256": {"proof.json": hashlib.sha256(b"{}").hexdigest()},
+                       "operation_bindings": {"fixture.read": {
+                           "contract_sha256": "a" * 64, "handler": "shared-adapter",
+                           "version": 7, "verify_jwt": True}}}
+        policy = {"explicit_family_required_operations": {"1": ["fixture.read"]},
+                  "family_acceptance": {"1": certificate}}
+        positive = {"fixture.read": [{"file": "proof.json"}]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "proof.json").write_bytes(b"{}")
+            def accepted(p=policy, r=row, f=live):
+                return reconcile(families, [r], [f], p, positive, {}, evidence_root=root)[0]
+            self.assertTrue(accepted()["fully_accepted"])
+            for altered in [{**live, "version": 8}, {**live, "status": "REMOVED"},
+                            {**live, "verify_jwt": False}, {**live, "version": None}]:
+                self.assertFalse(accepted(f=altered)["fully_accepted"])
+            self.assertFalse(accepted(r={**row, "error_contract": {"contract_sha256": "b" * 64}})["fully_accepted"])
+            self.assertFalse(accepted(r={**row, "error_contract": {}})["fully_accepted"])
+            for field in ("operation_bindings", "evidence_sha256"):
+                altered = copy.deepcopy(policy)
+                del altered["family_acceptance"]["1"][field]
+                self.assertFalse(accepted(p=altered)["fully_accepted"])
+            for name in (str(root / "proof.json"), "../proof.json"):
+                altered = copy.deepcopy(policy)
+                cert = altered["family_acceptance"]["1"]
+                cert["evidence_files"] = [name]
+                cert["evidence_sha256"] = {name: hashlib.sha256(b"{}").hexdigest()}
+                self.assertFalse(accepted(p=altered)["fully_accepted"])
+            altered = copy.deepcopy(policy)
+            altered["family_acceptance"]["1"]["operation_bindings"]["unreviewed.read"] = {}
+            self.assertFalse(accepted(p=altered)["fully_accepted"])
+            altered = copy.deepcopy(policy)
+            del altered["explicit_family_required_operations"]
+            self.assertFalse(accepted(p=altered)["fully_accepted"])
+            (root / "proof.json").write_bytes(b"changed")
+            stale = accepted()
+            self.assertFalse(stale["fully_accepted"])
+            self.assertEqual(stale["actual_MCP_success_operation_ids"], ["fixture.read"])
+            (root / "proof.json").unlink()
+            self.assertFalse(accepted()["fully_accepted"])
+
     def test_guest_status_requires_actual_matching_receipts_and_never_certifies_VM_execution(self):
         docs = Path(__file__).resolve().parents[2] / "docs/sandy-api"
         path = docs / "guest-status-MCP-evidence-20261022.json"
