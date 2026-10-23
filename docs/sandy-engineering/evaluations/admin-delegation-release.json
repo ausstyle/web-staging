@@ -289,6 +289,6 @@
     "supabase/migrations/20261023170000_sandy_owner_admin_read_delegation.sql": "53358ee3f433945b9d7b9a2c186f2a84f66b30cfa0abcf570546eea935215633",
     "supabase/functions/sandy-engineering-control/gcp_admin_read.ts": "a3720756118055284e22ecf662be68c2735ce12593295c3687bf6086a8bc5955",
     "supabase/functions/sandy-operation-api/engineering_identity.ts": "710bbd535bea6caabbcd8372c0b7070eca6f0e64b3ddcd0179d1f283dd485599",
-    "scripts/sandy/release_admin_delegation.py": "7503b81899aec316603f31c326697d660078efba9199f8e9cf28e604a4a58364"
+    "scripts/sandy/release_admin_delegation.py": "d26b450b2787aa20f93520edb8cba21e37c19076e9f89300c1bd9f826701645a"
   }
 }
