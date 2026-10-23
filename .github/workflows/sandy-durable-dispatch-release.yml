@@ -2,6 +2,11 @@ name: Activate existing durable read dispatcher
 on:
   workflow_dispatch:
     inputs:
+      install_transport_guard:
+        description: 'Install additive private transport guard only; preserve existing timer migration'
+        required: false
+        default: false
+        type: boolean
       resume_change_id:
         description: 'Existing timer UUID after trusted runtime transport acceptance; never reinstall migration'
         required: false
@@ -27,24 +32,32 @@ jobs:
       - name: Verify isolated scheduler, credential isolation and cancellation semantics
         run: deno test --no-lock --allow-read scripts/sandy/test_durable_dispatch_schedule.ts
       - name: Activate source-attested existing dispatcher without creating jobs or authority
-        if: inputs.resume_change_id == ''
+        if: inputs.resume_change_id == '' && !inputs.install_transport_guard
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_durable_dispatch_schedule.py --deploy --evidence-dir "$RUNNER_TEMP/durable-dispatch-install"
       - name: Activate independently verified trusted-runtime transport binding
-        if: inputs.resume_change_id != ''
+        if: inputs.resume_change_id != '' && !inputs.install_transport_guard
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           SANDY_EXISTING_TIMER_CHANGE: ${{ inputs.resume_change_id }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_durable_dispatch_schedule.py --activate-bound-transport "$SANDY_EXISTING_TIMER_CHANGE" --evidence-dir "$RUNNER_TEMP/durable-dispatch-install"
+      - name: Install guarded private configuration over the existing disabled timer
+        if: inputs.install_transport_guard
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_durable_dispatch_schedule.py --install-transport-guard --evidence-dir "$RUNNER_TEMP/durable-dispatch-install"
       - name: Independently read back migration, private privileges, source and timer
+        if: ${{ !inputs.install_transport_guard }}
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_durable_dispatch_schedule.py --verify-installed --evidence-dir "$RUNNER_TEMP/durable-dispatch-readback"
       - name: Verify deployed private transport and idle tick without fabricated Owner jobs
+        if: ${{ !inputs.install_transport_guard }}
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'

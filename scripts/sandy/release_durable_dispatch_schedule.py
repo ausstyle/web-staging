@@ -140,26 +140,16 @@ def run(r,deploy=False,installed=False):
  finally:r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE component='{COMPONENT}' AND holder='{holder}'")
 
 def accept_empty_queue(r):
- # One harmless authenticated request proves the deployed worker transport. It
- # does not create a job or impersonate the Owner required by queue admission.
+ # Read back the real trusted-runtime HTTP acceptance, never substitute the
+ # unrelated Management API's legacy service binding or export runtime keys.
+ result=verify(r,(ROOT/MIGRATION).read_text())
  pending=r.sql("SELECT count(*) count FROM public.sandy_orch_jobs WHERE state IN('queued','leased','running')",True)
  if pending!=[{'count':0}]:raise Blocked('empty_queue_acceptance_requires_no_active_customer_or_owner_jobs')
- keys=json.loads(r.api('GET','/api-keys'));key=next((x.get('api_key') for x in keys if x.get('name')=='service_role'),None)
- if not isinstance(key,str) or not key:raise Blocked('existing_private_worker_transport_unavailable')
- req=urllib.request.Request('https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-orchestration-api',method='POST',data=b'{"action":"worker_run","arguments":{"limit":1,"lease_seconds":90}}',headers={'authorization':'Bearer '+key,'apikey':key,'content-type':'application/json'})
- try:
-  with urllib.request.build_opener(NoRedirect()).open(req,timeout=35) as response:
-   status=response.status;raw=response.read(32769)
-   if len(raw)>32768:raise Blocked('private_acceptance_response_limit')
-   body=json.loads(raw)
- except urllib.error.HTTPError as error:raise Blocked('private_worker_acceptance_http_'+str(error.code)) from None
- except Blocked:raise
- except Exception:raise Blocked('private_worker_acceptance_outcome_unknown') from None
- key=None
- if status!=200 or body.get('ok') is not True or body.get('claimed')!=0 or body.get('results')!=[]:raise Blocked('private_empty_queue_acceptance_not_verified')
+ evidence=r.sql("SELECT id,created_at FROM public.sandy_engineering_change_events WHERE change_id="+quote(result['tracking_change_id'])+" AND event_type='durable_dispatch_private_transport_verified' AND detail->>'worker_http_status'='200' AND detail->>'jobs_claimed'='0' AND detail->>'worker_source_sha256'='"+SOURCE_FILES[SLUG+'/index.ts']+"' ORDER BY created_at DESC LIMIT 1",True)
+ if len(evidence)!=1:raise Blocked('independent_trusted_runtime_transport_evidence_required')
  tick=r.sql("SELECT public.sandy_orch_worker_tick() result")
  if tick!=[{'result':{'ok':True,'state':'idle','provider_executed':False}}]:raise Blocked('idle_timer_acceptance_not_verified')
- return {'private_worker_transport_verified':True,'private_worker_http_status':status,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
+ return {'private_worker_transport_verified':True,'private_worker_http_status':200,'transport_evidence_event':evidence[0]['id'],'transport_evidence_at':evidence[0]['created_at'],'runtime_key_exported':False,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
 if __name__=='__main__':
  p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--install-transport-guard',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');g.add_argument('--activate-bound-transport',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
