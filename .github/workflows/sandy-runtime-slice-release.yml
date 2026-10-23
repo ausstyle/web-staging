@@ -1,0 +1,120 @@
+name: Release reviewed Runtime slices
+on:
+  pull_request:
+    paths:
+      - 'scripts/sandy/release_runtime_slice.py'
+      - 'scripts/sandy/test_runtime_slice_release.py'
+      - 'docs/sandy-engineering/evaluations/runtime-slices/**'
+      - '.github/workflows/sandy-runtime-slice-release.yml'
+      - 'supabase/migrations/2026102400*.sql'
+      - 'scripts/sandy/test_durable_dispatch_schedule.ts'
+      - 'scripts/sandy/test_memory_correction_postgres.mjs'
+  workflow_dispatch:
+    inputs:
+      component:
+        description: Reviewed component to install once (no IAM, grants or traffic changes)
+        required: true
+        type: choice
+        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge]
+permissions:
+  contents: read
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  validate-runtime-slices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Validate source preservation, uncertainty and bounded manifests
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          PYTHONPATH: scripts/sandy
+        run: |
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py -v
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from release_runtime_slice import validate, MODULES
+          from release_gcp_admin_read import digest
+          for slug in MODULES:
+              m=json.loads(Path('docs/sandy-engineering/evaluations/runtime-slices',slug+'.json').read_text())
+              validate(m)
+              for p,h in m['replacements'].items():
+                  assert digest(Path('supabase/functions',p).read_bytes())==h, p
+          PY
+      - name: Exercise real handler with isolated transport and privacy fixtures
+        run: |
+          deno test --allow-read --allow-env --import-map=scripts/sandy/testing/fallback_import_map.json scripts/sandy/fallback_runtime_test.ts
+          deno test supabase/functions/_shared/sandy-agent-operations/runtime_memory_test.ts supabase/functions/_shared/sandy-agent-operations/runtime_model_policy_test.ts
+          deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
+          deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
+          deno test supabase/functions/sandy-master-computer/index_test.ts
+          deno test --allow-read --allow-env --import-map=scripts/sandy/testing/voice_import_map.json scripts/sandy/voice_context_handler_test.ts
+          deno test supabase/functions/sandy-email-runtime-canary/history_test.ts supabase/functions/sandy-email-runtime-canary/outcome_test.ts supabase/functions/sandy-voice-account-context/executive_test.ts
+          deno check supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
+          deno test supabase/functions/sandy-engineering-oidc-ingest/examiner_scope_test.ts
+          deno test supabase/functions/sandy-engineering-oidc-ingest/email_fixture_test.ts supabase/functions/sandy-engineering-oidc-ingest/worker_transport_test.ts supabase/functions/_shared/sandy-executive/email_shadow_fixture_test.ts
+          deno check supabase/functions/sandy-engineering-oidc-ingest/index.ts
+      - name: Exercise WinRM timeout and cleanup against pinned loopback TLS
+        run: >-
+          deno test --import-map=scripts/sandy/testing/edge_types_import_map.json
+          --allow-read=/tmp --allow-write=/tmp --allow-run=openssl,deno
+          --allow-net=127.0.0.1 --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE
+          supabase/functions/sandy-vm-protocol-api/winrm_test.ts
+      - name: Verify existing-queue timer and private credential isolation
+        run: deno test --no-lock --allow-read scripts/sandy/test_durable_dispatch_schedule.ts scripts/sandy/test_superseded_architect_outcomes.ts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reproduce and repair existing memory correction domain in isolated PostgreSQL
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_memory_correction_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: validate-runtime-slices
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install exact reviewed slices with leases and private rollback artifacts
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          COMPONENT: ${{ inputs.component }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 - <<'PY'
+          import os, subprocess, sys
+          options={'runtime':'sandy-agent-runtime-v4'}
+          # Previously installed Examiner/native slices are intentionally not
+          # deployment choices. Each new batch has exact fresh preimage guards.
+          extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
+          extra['runtime-programme']=['sandy-agent-runtime-v4','sandy-email-runtime-canary','sandy-voice-account-context','sandy-master-computer','sandy-engineering-oidc-ingest']
+          selected=extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
+          # Check every preimage before the first provider mutation.
+          for slug in selected:
+              subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py','docs/sandy-engineering/evaluations/runtime-slices/'+slug+'.json','--evidence-dir',os.path.join(os.environ['RUNNER_TEMP'],'runtime-slices',slug+'-preflight')],check=True)
+          for slug in selected:
+              manifest='docs/sandy-engineering/evaluations/runtime-slices/'+slug+'.json'
+              out=os.path.join(os.environ['RUNNER_TEMP'],'runtime-slices',slug)
+              subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--deploy','--evidence-dir',out],check=True)
+              subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--verify-installed','--evidence-dir',out+'-readback'],check=True)
+          PY
+      - name: Verify Examiner sources; actual acceptance uses the protected OIDC workflow
+        if: inputs.component == 'runtime-programme'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/verify_examiner_receipt_context.py --output "$RUNNER_TEMP/runtime-slices/examiner-installed-source.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-slice-preimages-${{ github.run_id }}
+          path: ${{ runner.temp }}/runtime-slices/
+          retention-days: 14

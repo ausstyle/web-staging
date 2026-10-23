@@ -1,0 +1,41 @@
+name: Repair superseded Architect outcome custody
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-autonomous-engineering-cycle-events
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Verify exact cycle source, superseded audit and unchanged production gates
+        run: deno test --no-lock --allow-read scripts/sandy/test_superseded_architect_outcomes.ts
+      - name: Install only the source-pinned audit repair, preserving cycle permissions
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_superseded_architect_outcomes.py --deploy --evidence-dir "$RUNNER_TEMP/superseded-outcome-install"
+      - name: Independently verify installed RPC source without replaying any codegen or provider task
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_superseded_architect_outcomes.py --verify-installed --evidence-dir "$RUNNER_TEMP/superseded-outcome-readback"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: superseded-architect-outcomes-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/superseded-outcome-install/
+            ${{ runner.temp }}/superseded-outcome-readback/
+          retention-days: 14

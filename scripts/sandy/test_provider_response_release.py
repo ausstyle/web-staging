@@ -1,5 +1,7 @@
 import copy
 import json
+import random
+import re
 from pathlib import Path
 import tempfile
 import unittest
@@ -141,6 +143,53 @@ class ProviderRepairReleaseTests(unittest.TestCase):
                 with self.assertRaisesRegex(Blocked, 'no_upload'):
                     release.inspect(db, self.manifest())
             self.assertEqual(db.uploads, [])
+
+    def test_large_private_backup_stays_below_request_limit_and_reconstructs(self):
+        body = random.Random(222).randbytes(4 * 1024 * 1024)
+        class LimitedTransport:
+            def __init__(self): self.requests, self.saved, self.complete = [], '', False
+            def sql(self, query, read_only=False):
+                size = len(json.dumps({'query': query, 'read_only': read_only}).encode())
+                if size > 160 * 1024:
+                    raise Blocked('management_http_413_no_automatic_retry')
+                self.requests.append(size)
+                if 'INSERT INTO' in query:
+                    return [{'id': CHANGE}]
+                if 'to_jsonb' in query:
+                    offset = int(re.search(r'length\(metadata->>\'bundle_gzip_base64\'\)=(\d+)', query)[1])
+                    if len(self.saved) != offset: return []
+                    self.saved += re.search(r"\|\|'([A-Za-z0-9+/=]+)'", query)[1]
+                    return [{'id': CHANGE}]
+                actual = release.sha(release.base64.b64decode(self.saved, validate=True))
+                self.complete = actual in query
+                return [{'id': CHANGE}] if self.complete else []
+        db = LimitedTransport()
+        artifact = release.store_recovery(db, self.manifest(), CHANGE, 30, body, 'a' * 64)
+        self.assertEqual(artifact, CHANGE)
+        self.assertGreater(len(db.requests), 30)
+        self.assertTrue(db.complete)
+        self.assertEqual(release.gzip.decompress(release.base64.b64decode(db.saved)), body)
+
+    def test_unconfirmed_or_corrupted_backup_prevents_upload_intent(self):
+        for failure in ['append', 'digest', 'uncertain']:
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as out:
+                db = self.fake(out)
+                original = db.sql
+                def sql(query, read_only=False):
+                    if 'UPDATE public.sandy_engineering_artifacts' in query:
+                        if failure == 'uncertain':
+                            raise Blocked('management_request_failed_or_unknown_outcome_no_retry')
+                        if failure == 'append' and 'to_jsonb' in query: return []
+                        if failure == 'digest' and 'extensions.digest' in query: return []
+                    return original(query, read_only)
+                db.sql = sql
+                before = {release.ENTRY: b'old', '_shared/keep.ts': b'keep'}
+                with patch.object(release, 'github_ci'), patch.object(release, 'pinned_entry', return_value=b'new'), \
+                     patch.object(release, 'ENTRY_SHA', release.sha(b'new')), \
+                     patch.object(release, 'inspect', return_value=({'version':30}, b'before', before)):
+                    with self.assertRaises(Blocked): release.release(db, self.manifest(), CHANGE)
+                self.assertEqual(db.uploads, [])
+                self.assertFalse(any('provider_response_fix_upload_started' in q for q in db.writes))
 
     def test_rollback_uses_only_digest_verified_private_artifact(self):
         for corrupt in [False, True]:

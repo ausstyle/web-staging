@@ -1,10 +1,18 @@
 name: Sandy Examiner full assessment rerun
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/sandy-examiner-full-rerun.yml'
+    inputs:
+      operation:
+        description: 'Fixed protected Runtime acceptance action; no customer or target selectors'
+        type: choice
+        options: [v2_full_examiner_rerun, runtime_email_shadow_fixture, runtime_worker_transport_bind]
+        default: v2_full_examiner_rerun
+        required: true
+      focused_regression:
+        description: 'Only fixed failed/review clock/task/evidence cases; not full acceptance'
+        type: boolean
+        default: false
+        required: true
 permissions:
   contents: read
   id-token: write
@@ -19,12 +27,38 @@ jobs:
       - name: Launch authenticated full Examiner assessment
         env:
           PROJECT: zmqlyygzqoidkcwdysok
+          ACCEPTANCE_OPERATION: ${{ inputs.operation }}
+          FOCUSED_REGRESSION: ${{ inputs.focused_regression }}
         shell: bash
         run: |
           set -euo pipefail
           AUDIENCE="sandy-engineering-outcomes-${PROJECT}"
           CLAIM_URL="${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=${AUDIENCE}"
           TOKEN="$(curl --fail --silent --show-error --max-time 15 -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" "${CLAIM_URL}" | jq -er '.value')"
-          RESPONSE="$(curl --fail --silent --show-error --max-time 60 -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data '{"operation":"v2_full_examiner_rerun"}')"
-          echo "${RESPONSE}" | jq '{ok,run_key,status,mode,synthetic_target,thread_review_required,reason}'
-          echo "${RESPONSE}" | jq -e '.ok == true and .status == "running" and .thread_review_required == true' >/dev/null
+          PAYLOAD="$(jq -cn --arg operation "${ACCEPTANCE_OPERATION}" --argjson focused "${FOCUSED_REGRESSION}" 'if $operation == "v2_full_examiner_rerun" then {operation:$operation,focused_regression:$focused} else {operation:$operation} end')"
+          RESPONSE_FILE="$RUNNER_TEMP/sandy-protected-acceptance-response.json"
+          HTTP_STATUS="$(curl --silent --show-error --max-time 140 --max-filesize 65536 --output "$RESPONSE_FILE" --write-out '%{http_code}' -X POST "https://${PROJECT}.supabase.co/functions/v1/sandy-engineering-oidc-ingest" -H "Authorization: Bearer ${TOKEN}" -H "Content-Type: application/json" --data "${PAYLOAD}")"
+          if [[ "$HTTP_STATUS" != 2* ]]; then
+            python3 - "$RESPONSE_FILE" "$HTTP_STATUS" <<'PY'
+          import json,re,sys
+          from pathlib import Path
+          try: body=json.loads(Path(sys.argv[1]).read_text())
+          except Exception: body={}
+          code=body.get('error',body.get('reason','')) if isinstance(body,dict) else ''
+          if not isinstance(code,str) or not re.fullmatch('[a-z][a-z0-9_]{0,159}',code): code='unclassified_protected_http_failure'
+          print('::error title=Protected acceptance request::'+json.dumps({'http_status':sys.argv[2],'classification':code,'automatic_retry':False}))
+          Path(sys.argv[1]).unlink(missing_ok=True)
+          PY
+            exit 1
+          fi
+          RESPONSE="$(cat "$RESPONSE_FILE")"
+          rm -f "$RESPONSE_FILE"
+          echo "${RESPONSE}" | jq '{ok,run_key,status,mode,operation,worker_http_status,source_message_id,candidate_ready,sent,private_transport_bound,jobs_claimed,receipt_recorded,timer_enabled,authority_expanded,synthetic_target,thread_review_required,reason}'
+          if [[ "${ACCEPTANCE_OPERATION}" == 'v2_full_examiner_rerun' ]]; then
+            echo "${RESPONSE}" | jq -e --argjson focused "${FOCUSED_REGRESSION}" '.ok == true and .status == "running" and .thread_review_required == ($focused|not) and .synthetic_target == (if $focused then 3 else 12 end)' >/dev/null
+          elif [[ "${ACCEPTANCE_OPERATION}" == 'runtime_email_shadow_fixture' ]]; then
+            echo "${RESPONSE}" | jq -e '.ok == true and .operation == "runtime_email_shadow_fixture" and .worker_http_status == 200 and .candidate_ready == true and .sent == false' >/dev/null
+          else
+            echo "${RESPONSE}" | jq -e '.ok == true and .operation == "runtime_worker_transport_bind" and .private_transport_bound == true and .worker_http_status == 200 and .jobs_claimed == 0 and .receipt_recorded == true and .timer_enabled == false and .authority_expanded == false' >/dev/null
+          fi
+          printf '::notice title=Examiner acceptance launch::%s\n' "$(echo "${RESPONSE}" | jq -c '{ok,run_key,status,mode,operation,worker_http_status,source_message_id,candidate_ready,sent,private_transport_bound,jobs_claimed,receipt_recorded,timer_enabled,authority_expanded,synthetic_target,thread_review_required,reason}')"

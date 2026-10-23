@@ -1,7 +1,7 @@
 # Sandy engineering implementation program
 
-Version: 1.1 · 21 October 2026 (addition of 0011; P0 priority unchanged)  
-Governing design: [Master Scope v1.1](master-scope-v1.md), including amendment section 22  
+Version: 1.2 · 24 October 2026 (addition of 0012; P0 priority unchanged)  
+Governing design: [Master Scope v1.2](master-scope-v1.md), including amendment section 22  
 Shared implementation contracts: [architecture-contracts.md](architecture-contracts.md)  
 Source catalogue: [scopes.json](scopes.json)
 
@@ -9,7 +9,7 @@ Source catalogue: [scopes.json](scopes.json)
 
 Fix Sandy's current chat reasoning, context use, tool selection, truthful completion and continuity before expanding feature or operation counts. SANDY-ENG-0001 is the P0 acceptance program. The supporting implementations have distinct owners so Codex does not create duplicate orchestrators, mission queues or knowledge stores.
 
-These are engineering specifications, not evidence that the software is complete. DRAFT means the target design is published for as-built reconciliation and engineering review. Writing, committing or synchronizing a scope must not mark its implementation VERIFIED. The Master Scope remains v1.1; the filename `master-scope-v1.md` is retained for stable links.
+These are engineering specifications, not evidence that the software is complete. DRAFT means the target design is published for as-built reconciliation and engineering review. Writing, committing or synchronizing a scope must not mark its implementation VERIFIED. The Master Scope remains v1.2; the filename `master-scope-v1.md` is retained for stable links.
 
 ## 2. Complete scope index
 
@@ -26,10 +26,13 @@ These are engineering specifications, not evidence that the software is complete
 | [0009](tasks/SANDY-ENG-0009-customer-experience-portal.md) | Customer Experience and Portal | P2; P0 defect fixes | Stable UI, evidence-backed views, scope management and customer interactions |
 | [0010](tasks/SANDY-ENG-0010-commercial-infrastructure-readiness.md) | Commercial Infrastructure and Readiness | P3; immediate safety baseline | Tenant lifecycle, entitlements, usage, support and production readiness |
 | [0011](tasks/SANDY-ENG-0011-browser-workflow-learning.md) | Passive & Active Browser Learning and Verified Skill Execution | P1; P0 foundations | Chrome opt-in observation, discovery, Skill IR and versioning, active teaching and learning from verified browser execution |
+| [0012](tasks/SANDY-ENG-0012-sandy-cloud-drive-backup.md) | Sandy Cloud — Drive, Computer Backup and Intelligent Files | P2; safety gates from day one | File storage/sync, independent snapshots, restore and ACL-filtered AI; design in [Sandy Cloud architecture](../sandy-cloud/architecture.md) |
 
 Scope 0011 depends on 0002 for isolated computer execution, 0004 for durable Missions/receipts, 0005 for authorization/provider paths and 0009 for the user experience. It does not create independent versions of these services. Observation/compilation fixtures may progress independently without delaying P0 runtime fixes. No learned candidate is automatically an approved, verified action.
 
-The API scope remains a separate parent-level technical specification, not an eleventh independent product task. Its 161 requirement families may map to many concrete operations. Scope 0005 owns their execution reconciliation; scope 0001 owns whether Sandy can actually use relevant operations intelligently.
+Scope 0012 is a new, separate product workstream. Its file/backup data-plane owner is 0012, while it reuses 0005 API identity and release boundaries, 0004 receipts, 0006 knowledge, 0009 customer UI and 0010 billing. It does **not** displace the P0 runtime program or claim Cloud SQL/GCS production availability; its current Supabase Files service and stored references remain authoritative until a tested, approved cutover.
+
+The API scope remains a separate parent-level technical specification, not an independently numbered product task. Its 161 requirement families may map to many concrete operations. Scope 0005 owns their execution reconciliation; scope 0001 owns whether Sandy can actually use relevant operations intelligently.
 
 ## 3. Dependency design — no artificial all-or-nothing gate
 
@@ -82,7 +85,7 @@ Reconcile requirements, implementations and operational evidence separately. Nev
 
 ## 7. Shared sources and Supabase synchronization
 
-Canonical files are in GitHub; `scopes.json` contains the Master, API and ten engineering scope records. A source change merged to main triggers the existing OIDC-authenticated scope sync. The catalogue stores immutable source commit, content checksum and sync time. The latest successful sync is checked after this publication; it is not a deployment of the systems described here.
+Canonical files are in GitHub; `scopes.json` contains the Master, API and twelve engineering scope records. A source change merged to main triggers the existing OIDC-authenticated scope sync. The catalogue stores immutable source commit, content checksum and sync time. The latest successful sync is checked after this publication; it is not a deployment of the systems described here.
 
 Supporting architecture/program/template files are linked from each numbered scope. To reproduce a design, read those relative paths at the scope's same pinned Git commit, not arbitrary current main. No customer data or secrets belong in the documentation repository. Additional tasks use a new scope ID and manifest entry; do not clone a competing Master Scope.
 

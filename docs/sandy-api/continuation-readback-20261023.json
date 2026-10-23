@@ -1,0 +1,99 @@
+{
+  "observed_at_utc": "2026-10-23T23:41:43.621208+00:00",
+  "scope": "SANDY-ENG-0005 continuation; readback and denied acceptance attempts only",
+  "current_contract_successful_operations": 57,
+  "fully_accepted_families": 0,
+  "prior_handoff_positive_MCP_operations": 102,
+  "historical_positives_recounted": false,
+  "new_deployments": 0,
+  "production_registry_flags_changed": false,
+  "deployed_versions": [
+    {
+      "slug": "sandy-operation-api",
+      "version": 60,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792773104114
+    },
+    {
+      "slug": "sandy-api-mcp",
+      "version": 22,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792615952251
+    },
+    {
+      "slug": "sandy-provider-read-api",
+      "version": 18,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792550028954
+    },
+    {
+      "slug": "sandy-provider-operation-api",
+      "version": 31,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792798047083
+    },
+    {
+      "slug": "sandy-provider-gap-api",
+      "version": 14,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1792582419204
+    }
+  ],
+  "durable_prior_release_record": {
+    "id": "9c851892-9a51-41fb-bee9-fcb2e911a9b1",
+    "change_id": "fbcdd7f6-a29f-4063-9d1f-04c5608a9ceb",
+    "test_name": "PR222 production v31: exact source, private recovery reconstruction, deployment-status provider readback, negative checks and receipt recovery",
+    "outcome": "passed",
+    "evidence": {
+      "version": 31,
+      "function": "sandy-provider-operation-api",
+      "release_run": 40039377923,
+      "source_commit": "53556941f600c7ec625067a74d37bbcffa8bd400",
+      "owner_audit_id": 131,
+      "manifest_sha256": "b72099a290d0e69ec09aba33fc1f8ab2159de6985e9ae292c6626a1c9e42dc40",
+      "rollback_exercised": false,
+      "all_modules_verified": true,
+      "negative_admission_id": "c34f7302-5d46-41e9-bb48-805ee3e07904",
+      "whole_family_accepted": false,
+      "baseline_receipts_preserved": 56,
+      "private_rollback_bytes_verified": true,
+      "provider_acceptance_admission_id": "3800a02d-6fb1-4aa7-86b5-ede18f71bcc2",
+      "negative_and_recovery_cases_passed": 6
+    }
+  },
+  "active_component_leases_at_observation": [],
+  "prior_codex_task_status_independently_available": false,
+  "blocked_cases": [
+    {
+      "operation": "supabase.project.health",
+      "family": 86,
+      "request_id": "19026edb-04de-4f83-829a-f340cbfa6429",
+      "transport_http_status": 200,
+      "api_status": 403,
+      "error": "engineering_operation_scope_denied",
+      "executed": false,
+      "admissions": 0,
+      "required_input": "Existing genuinely authenticated Owner execution path, or separately authorized bounded delegation. Do not export a bearer token or self-expand access.",
+      "impact": "Read provider health or organization metadata through Sandy MCP/API; no provider mutation.",
+      "rollback": "No provider state changed; preserve denial evidence."
+    },
+    {
+      "operation": "supabase.orgs.list",
+      "family": 75,
+      "request_id": "b50e6785-2271-4df0-841e-c064a3e2769d",
+      "transport_http_status": 200,
+      "api_status": 403,
+      "error": "engineering_operation_scope_denied",
+      "executed": false,
+      "admissions": 0,
+      "required_input": "Existing genuinely authenticated Owner execution path, or separately authorized bounded delegation. Do not export a bearer token or self-expand access.",
+      "impact": "Read provider health or organization metadata through Sandy MCP/API; no provider mutation.",
+      "rollback": "No provider state changed; preserve denial evidence."
+    }
+  ]
+}

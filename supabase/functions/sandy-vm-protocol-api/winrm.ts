@@ -112,6 +112,10 @@ export async function winrmExecute(
     !Number.isSafeInteger(max) || max < 1 || max > 65536
   ) throw new ProtocolRefusal("bounded_winrm_transport_required");
   const started = performance.now();
+  // Cleanup is part of the admitted shell lifecycle, not permission to start
+  // another command. Reserve a separate, fixed budget so an exhausted execution
+  // deadline does not prevent retiring the shell we already created.
+  let cleanupDeadline: number | undefined;
   let shell: string | undefined,
     commandId: string | undefined,
     attempted = false,
@@ -121,7 +125,9 @@ export async function winrmExecute(
     deleteAttempted = false;
   const stdout: Uint8Array[] = [], stderr: Uint8Array[] = [];
   const request = async (kind: string, body: string) => {
-    const remaining = limit - (performance.now() - started);
+    const remaining = kind === "Delete" && cleanupDeadline !== undefined
+      ? cleanupDeadline - performance.now()
+      : limit - (performance.now() - started);
     if (remaining <= 0) {
       throw new ProtocolRefusal("winrm_execution_timeout", attempted);
     }
@@ -152,6 +158,7 @@ export async function winrmExecute(
   };
   const removeShell = async () => {
     deleteAttempted = true;
+    cleanupDeadline = performance.now() + 5000;
     await request("Delete", "");
     deleted = true;
   };

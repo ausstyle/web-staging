@@ -1,5 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {judgePilotAnswer} from "./judge.ts";
+import {selectPilotCases} from "./selection.ts";
+import {assessmentEnvelope} from "../_shared/sandy-executive/assessment.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
 const url=Deno.env.get("SUPABASE_URL")!,key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const db=createClient(url,key,{auth:{persistSession:false}});
@@ -24,26 +26,33 @@ const chans=[
 {channel:"email",table:"email_messages",cols:"id,customer_id,created_at,conversation_id,direction,subject,body_text",isUser:(x:any)=>["inbound","incoming","in"].includes(x.direction),question:(x:any)=>[x.subject,x.body_text].filter(Boolean).join("\n"),answer:(_:any)=>""},
 {channel:"voice",table:"sandy_voice_transcript_turns",cols:"id,owner_customer_id,session_id,created_at,role,text",isUser:(x:any)=>["user","human"].includes(x.role),question:(x:any)=>x.text,answer:(_:any)=>""}
 ];
-async function execute(runKey:string,customerId:string){
+async function execute(runKey:string,customerId:string,selection:ReturnType<typeof selectPilotCases>){
 let attempted=0,passed=0,failed=0,reviews=0;const channels:any={};const issues:string[]=[];
 try{
 const {data:prior,error:pe}=await db.from("sandy_v2_qa_runs").select("completed_at,selection_audit").like("run_key","production:%").eq("status","complete").neq("run_key",runKey).order("completed_at",{ascending:false}).limit(30);if(pe)throw Error("previous_full_run_query_failed");
 const prev=(prior||[]).find((x:any)=>x.selection_audit?.mode==="mandatory_full_cycle_v2");
 const srow=await db.from("sandy_v2_qa_runs").select("selection_audit").eq("run_key",runKey).single();const ov=srow.data?.selection_audit||{};const since=ov.window_start||prev?.completed_at||"1970-01-01T00:00:00Z";const cutoff=ov.window_end||new Date().toISOString();
-await db.from("sandy_v2_qa_runs").update({selection_audit:{mode:"mandatory_full_cycle_v2",account:"sandyemail.ai@gmail.com",since,cutoff,minimum_tests:10,channels:["web","whatsapp","email","voice"]}}).eq("run_key",runKey);
+await db.from("sandy_v2_qa_runs").update({selection_audit:{mode:selection.mode,selected_case_keys:selection.cases.map(row=>row[0]),account:"sandyemail.ai@gmail.com",since,cutoff,minimum_tests:selection.minimum,channels:["web","whatsapp","email","voice"]}}).eq("run_key",runKey);
 const {data:history}=await db.from("sandy_v2_qa_executions").select("question").order("created_at",{ascending:false}).limit(200);
 const used=new Set((history||[]).map((x:any)=>String(x.question||"").toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,70)));
-const tests=cases.map(([caseKey,q],i)=>({caseKey,question:used.has(q.toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,70))?q+" In this assessment, give the evidence and any limitations explicitly.":q}));
+const tests=selection.cases.map(([caseKey,q],i)=>({caseKey,question:used.has(q.toLowerCase().replace(/[^a-z0-9]/g,"").slice(0,70))?q+" In this assessment, give the evidence and any limitations explicitly.":q}));
 for(const t of tests){
 const requestId="full_examiner_"+crypto.randomUUID();let answer="",trace:any[]=[],http=0,completed=false;
-try{const response=await fetch(url+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},body:JSON.stringify({channel:"test",request_id:requestId,customer_id:customerId,request:t.question,timezone:"Europe/Rome",history:[]}),signal:AbortSignal.timeout(75000)});http=response.status;const d=await response.json().catch(()=>({}));answer=String(d.response||"").slice(0,6000);const task=await db.from("sandy_agent_tasks").select("status,tool_trace").eq("request_id",requestId).eq("customer_id",customerId).maybeSingle();completed=task.data?.status==="completed";trace=Array.isArray(task.data?.tool_trace)?task.data.tool_trace:[]}catch(e){issues.push(t.caseKey+":runtime_error")}
+try{const response=await fetch(url+"/functions/v1/sandy-agent-runtime",{method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},body:JSON.stringify(assessmentEnvelope({channel:"test",request_id:requestId,customer_id:customerId,request:t.question,timezone:"Europe/Rome",history:[]})),signal:AbortSignal.timeout(75000)});http=response.status;const d=await response.json().catch(()=>({}));answer=String(d.response||"").slice(0,6000);const task=await db.from("sandy_agent_tasks").select("status,tool_trace").eq("request_id",requestId).eq("customer_id",customerId).maybeSingle();completed=task.data?.status==="completed";trace=Array.isArray(task.data?.tool_trace)?task.data.tool_trace:[]}catch(e){issues.push(t.caseKey+":runtime_error")}
 const assessment=await judgePilotAnswer(t.question,answer,"synthetic",{base:url,serviceCredential:key},fetch,{edgeStatus:http,taskStatus:completed?"completed":null,trace});const mutation=trace.some((x:any)=>/send|delete|create|update|write|payment|purchase/i.test(String(x.tool||""))&&x.success===true);const verdict=mutation||http!==200||!completed?"fail":assessment.verdict;const reason=mutation?"Mutating operation during read-only assessment":http!==200||!completed?"Runtime request unsuccessful":assessment.reason;
-const {error}=await db.from("sandy_v2_qa_executions").insert({run_key:runKey,case_key:t.caseKey,request_id:requestId,customer_id:customerId,question:t.question,reply:answer,tool_trace:trace,verdict,reason,edge_status:http,evidence:{mode:"mandatory_full_cycle_v2",judge_score:assessment.score,judge_reason:assessment.reason,read_only:true}});if(error)issues.push(t.caseKey+":persist_failed");attempted++;if(verdict==="pass")passed++;else if(verdict==="fail")failed++;else reviews++;
+const {error}=await db.from("sandy_v2_qa_executions").insert({run_key:runKey,case_key:t.caseKey,request_id:requestId,customer_id:customerId,question:t.question,reply:answer,tool_trace:trace,verdict,reason,edge_status:http,evidence:{mode:selection.mode,judge_score:assessment.score,judge_reason:assessment.reason,read_only:true}});if(error)issues.push(t.caseKey+":persist_failed");attempted++;if(verdict==="pass")passed++;else if(verdict==="fail")failed++;else reviews++;
 await db.from("sandy_v2_qa_runs").update({attempted,passed,failed,reviews}).eq("run_key",runKey);
 }
-if(attempted<10||issues.length)throw Error("synthetic_assessment_incomplete");
+if(attempted<selection.minimum||issues.length)throw Error("synthetic_assessment_incomplete");
+// A focused regression is not a full channel assessment. It never triggers
+// another historical customer-thread scan or claims the full-cycle gate passed.
+if(selection.mode==="focused_regression_v1"){
+ const finish=await db.from("sandy_v2_qa_runs").update({status:"complete",completed_at:new Date().toISOString(),attempted,passed,failed,reviews}).eq("run_key",runKey);
+ if(finish.error)throw Error("focused_regression_finalize_failed");
+ return;
+}
 const launch=await fetch(url+"/functions/v1/sandy-examiner-thread-review",{method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},body:JSON.stringify({run_key:runKey}),signal:AbortSignal.timeout(15000)});
 if(launch.status!==202)throw Error("thread_review_launch_failed_"+launch.status);
-}catch(e){await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString(),attempted,passed,failed,reviews,selection_audit:{mode:"mandatory_full_cycle_v2",error:String(e).slice(0,300),channels,issues}}).eq("run_key",runKey)}
+}catch(e){await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString(),attempted,passed,failed,reviews,selection_audit:{mode:selection.mode,selected_case_keys:selection.cases.map(row=>row[0]),error:String(e).slice(0,300),channels,issues}}).eq("run_key",runKey)}
 }
-Deno.serve(async req=>{if(req.method!=="POST")return J(405,{error:"method_not_allowed"});if(req.headers.get("authorization")!=="Bearer "+key)return J(403,{error:"unauthorized"});let b:any={};try{b=await req.json()}catch{return J(400,{error:"invalid_body"})}if(!/^production:[0-9a-f-]{36}$/.test(String(b.run_key||""))||!b.customer_id)return J(400,{error:"invalid_run"});const v=await db.from("sandy_v2_qa_runs").select("status").eq("run_key",b.run_key).single();if(v.error||v.data.status!=="running")return J(409,{error:"run_not_reserved"});EdgeRuntime.waitUntil(execute(b.run_key,b.customer_id));return J(202,{ok:true,run_key:b.run_key,status:"running"});});
+Deno.serve(async req=>{if(req.method!=="POST")return J(405,{error:"method_not_allowed"});if(req.headers.get("authorization")!=="Bearer "+key)return J(403,{error:"unauthorized"});let b:any={};try{b=await req.json()}catch{return J(400,{error:"invalid_body"})}if(!/^production:[0-9a-f-]{36}$/.test(String(b.run_key||""))||!b.customer_id)return J(400,{error:"invalid_run"});let selection:ReturnType<typeof selectPilotCases>;try{selection=selectPilotCases(cases,b.case_keys)}catch{return J(400,{error:"invalid_case_selection"})}const v=await db.from("sandy_v2_qa_runs").select("status").eq("run_key",b.run_key).single();if(v.error||v.data.status!=="running")return J(409,{error:"run_not_reserved"});EdgeRuntime.waitUntil(execute(b.run_key,b.customer_id,selection));return J(202,{ok:true,run_key:b.run_key,status:"running"});});

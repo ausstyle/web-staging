@@ -1,0 +1,15 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-master-computer",
+  "version": 27,
+  "verify_jwt": true,
+  "body_sha256": "3412a768cd384ac1c6e6a74dd1a74486a9dd08bc579758c2b0e9c2ce9cfc0c9c",
+  "source_layout": "reviewed-flat-index-to-namespaced-v1",
+  "before_files": {
+    "index.ts": "0e9c65c6b97720721a01cd083892f0ecc3ba2151b5fde2fde1b496fc5172e1ca"
+  },
+  "replacements": {
+    "sandy-master-computer/index.ts": "82d6f70b371849d524fa9e1a92d1e9ef643fefc1226c3aca585422303d2632a1",
+    "_shared/sandy-agent-operations/worker_computer_identity.ts": "7b9cde01545f0a00614d7f03c1e74574b7660cfae21b54857aad005d6cbb5888"
+  }
+}

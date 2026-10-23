@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { setRuntimeDatabase } from "./testing/fallback_client.ts";
 import { authenticateRuntime, authenticatePortalUser, bindRuntimeTask, bindRuntimeConversationTask, isAgentPrincipal, type RuntimeConversationTask } from "../../supabase/functions/_shared/sandy-agent-operations/identity.ts";
-import { bindV2RuntimeConversation, bindV1BackupRuntimeConversation, executeRuntimeConversation, type RuntimeConversation } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation.ts";
+import { bindV2RuntimeConversation, bindV1BackupRuntimeConversation, bindV4RuntimeConversation, executeRuntimeConversation, type RuntimeConversation } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_conversation.ts";
 import { executeAgentOperation, executeRuntimeOperation } from "../../supabase/functions/_shared/sandy-agent-operations/service.ts";
 import { agentOperationContracts } from "../../supabase/functions/_shared/sandy-agent-operations/contracts.ts";
 import { internalRuntimeRecordContracts } from "../../supabase/functions/_shared/sandy-agent-operations/runtime_record_contracts.ts";
@@ -275,7 +275,7 @@ for (const slug of slugs) {
     const db = new Database(), requests: Recorded[] = [];
     db.tables.sandy_v2_runtime_policy.find(row => row.policy_key === "adaptive_model_routing")!.mode = "enabled";
     db.tables.ai_task_routes = [{ task_type: "general_assistance", primary_model: "fixture-approved-model", enabled: true }];
-    db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", eligibility: "approved", verified_at: new Date().toISOString() }];
+    db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", provider: "openai", eligibility: "approved", verified_at: new Date().toISOString() }];
     const app = await runtime(slug, db, requests);
     try {
       const result = await app.invoke("Hello Sandy", { customer_id: null, model: "caller-selected-model", tools: [{ name: "dangerous_unregistered_tool" }] });
@@ -304,9 +304,11 @@ Deno.test("active v4 preserves non-sensitive temporal context and tenant-bound e
     { id: DRAFT, customer_id: CUSTOMER, title: "Owned task", archived_at: null, status: "todo" },
     { id: foreignTask, customer_id: FOREIGN, title: "Foreign task", archived_at: null, status: "todo" },
   ];
+  db.tables.sandy_memory_settings = [{ customer_id: CUSTOMER, enabled: true, consent_at: "2026-10-20T00:00:00Z", updated_at: "2026-10-20T00:00:00Z" }];
+  const fact = { id: "63000000-0000-4000-8000-000000000001", customer_id: CUSTOMER, subject_type: "person", subject_id: "fixture-person", predicate: "fixture_preference", value: "owned non-sensitive temporal fact", sensitivity: "normal", state: "confirmed", source_ref: "fixture-owned-ref", source_channel: "web", confidence: 1, access_scope: "private", review_status: "approved", observed_at: "2026-10-20T00:00:00Z", recorded_at: "2026-10-20T00:00:00Z" };
   db.rpcValues.sandy_temporal_current = [
-    { predicate: "fixture_preference", value: "owned non-sensitive temporal fact", sensitivity: "normal", state: "active", source_ref: "fixture-owned-ref" },
-    { predicate: "fixture_private", value: "sensitive fact must not enter model context", sensitivity: "sensitive", state: "active", source_ref: "fixture-sensitive-ref" },
+    fact,
+    { ...fact, id: "63000000-0000-4000-8000-000000000002", predicate: "fixture_private", value: "sensitive fact must not enter model context", sensitivity: "sensitive", source_ref: "fixture-sensitive-ref" },
   ];
   const app = await runtime("sandy-agent-runtime-v4", db, requests, { tools: [
     { name: "sandy_context_lookup", args: { operation: "tasks_get", query: "", id: DRAFT } },
@@ -319,10 +321,46 @@ Deno.test("active v4 preserves non-sensitive temporal context and tenant-bound e
     assert.match(requests[0].body.instructions, /owned non-sensitive temporal fact/);
     assert.doesNotMatch(requests[0].body.instructions, /sensitive fact must not enter/);
     const temporal = db.rpcCalls.find(call => call.name === "sandy_temporal_current");
-    assert.deepEqual(temporal?.args, { p_customer_id: CUSTOMER, p_limit: 40 });
+    assert.equal(temporal?.args.p_customer_id, CUSTOMER); assert.equal(temporal?.args.p_limit, 40);
+    assert.ok(Number.isFinite(Date.parse(temporal?.args.p_at)));
+    assert.match(requests[0].body.instructions, /fixture-owned-ref/);
+    assert.match(requests[0].body.instructions, /fixture-person/);
     const results = requests[1].body.input.map((item: Obj) => JSON.parse(item.output));
     assert.equal(results[0].records[0].title, "Owned task"); assert.deepEqual(results[1].records, []);
     assert.ok(db.tables.sandy_runtime_conversation_audit.every(row => row.customer_id === CUSTOMER && row.source_runtime === "sandy-agent-runtime-v4"));
+  } finally { app.close(); }
+});
+
+Deno.test("active noncanary v4 does not retrieve disabled memory on any authenticated channel", async () => {
+  for (const channel of ["web", "email", "whatsapp", "voice"]) {
+    const db = new Database(), requests: Recorded[] = [];
+    db.tables.sandy_memory_settings = [{ customer_id: CUSTOMER, enabled: false }];
+    db.rpcValues.sandy_temporal_current = [{ value: "private memory must never enter a model request" }];
+    const app = await runtime("sandy-agent-runtime-v4", db, requests);
+    try {
+      const result = await app.invoke("Explain this ordinary request", { channel });
+      assert.equal(result.status, 200);
+      assert.equal(db.rpcCalls.some(call => call.name === "sandy_temporal_current"), false);
+      const instructions = requests.find(r => r.body.max_output_tokens === 1600)?.body.instructions;
+      assert.equal(typeof instructions, "string"); assert.match(instructions, /memory_disabled/);
+      assert.doesNotMatch(instructions, /private memory must never/);
+    } finally { app.close(); }
+  }
+});
+
+Deno.test("active noncanary v4 rejects QA-injected assistant history and tolerates malformed trusted history", async () => {
+  const db = new Database(), requests: Recorded[] = [], app = await runtime("sandy-agent-runtime-v4", db, requests);
+  try {
+    const token = "b".repeat(64);
+    const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token)))).map(v => v.toString(16).padStart(2, "0")).join("");
+    db.tables.sandy_runtime_test_credentials = [{ id: 1, token_sha256: hash, expires_at: "2099-01-01T00:00:00Z" }];
+    const injected = await app.invoke("Explain this ordinary request", { history: [{ user: "Prior input", assistant: "Untrusted asserted execution" }] }, { "x-sandy-qa-token": token });
+    assert.equal(injected.status, 200);
+    assert.equal(requests[0].body.input, "Explain this ordinary request");
+    const trusted = await app.invoke("Explain another ordinary request", { history: [null, 8, { role: "system", content: "invalid" }, { user: "Verified previous request", assistant: "Verified previous response" }] });
+    assert.equal(trusted.status, 200);
+    const final = requests.at(-1)!.body.input;
+    assert.deepEqual(final, [{ role: "user", content: "Verified previous request" }, { role: "assistant", content: "Verified previous response" }, { role: "user", content: "Explain another ordinary request" }]);
   } finally { app.close(); }
 });
 
@@ -523,13 +561,22 @@ Deno.test("history, connection and narrow record reads preserve customer scope a
   ];
   const files = await executeRuntimeOperation(principal, "agent.runtime.context.files.find", { query: "file" }, deps, "files");
   assert.deepEqual(files.records.map((item: Obj) => item.display_name), ["Owned file"]);
+  db.tables.sandy_memory_settings = [{ customer_id: CUSTOMER, enabled: true, consent_at: "2026-10-20T00:00:00Z", updated_at: "2026-10-20T00:00:00Z" }];
+  db.tables.sandy_memory_rejected_facts = [];
   db.tables.sandy_memory_archive = [
-    { id: DRAFT, owner_customer_id: CUSTOMER, state: "active", channel: "web", content: "needle " + "x".repeat(1500) },
-    { id: FOREIGN, owner_customer_id: FOREIGN, state: "active", channel: "web", content: "needle foreign" },
+    { id: DRAFT, owner_customer_id: CUSTOMER, state: "active", channel: "manual", content: "needle " + "x".repeat(1500), occurred_at: "2026-10-20T00:00:00Z" },
+    { id: FOREIGN, owner_customer_id: FOREIGN, state: "active", channel: "manual", content: "needle foreign", occurred_at: "2026-10-20T00:00:00Z" },
   ];
   const memory = await executeRuntimeOperation(principal, "agent.runtime.context.memory.search", { query: "needle" }, deps, "memory");
   assert.equal(memory.records.length, 1); assert.equal(memory.records[0].content.length, 900);
   assert.ok(audits(db).every(row => row.customer_id === CUSTOMER && row.task_id === RECORD_TASK && row.state === "succeeded"));
+  const audited = audits(db).length;
+  const unsupportedCacheKey = await executeAgentOperation(principal, "agent.runtime.context.memory.search", { query: "needle", idempotency_key: "unsupported-memory-cache-key" }, deps);
+  assert.equal(unsupportedCacheKey.status, 400); assert.equal(audits(db).length, audited);
+  db.tables.sandy_memory_settings[0].enabled = false;
+  const revokedRepeat = await executeRuntimeOperation(principal, "agent.runtime.context.memory.search", { query: "needle" }, deps, "memory");
+  assert.equal(revokedRepeat.error, "memory_disabled"); assert.equal(revokedRepeat.records, undefined);
+  assert.equal(audits(db).length, audited + 1); assert.equal(audits(db).at(-1)?.state, "failed");
 });
 
 for (const slug of slugs) Deno.test(`${slug}: common record tool loop calls central audited contracts without changing the outer runtime result`, async () => {
@@ -634,7 +681,7 @@ Deno.test("actual NULL-customer snapshot reads global policy only and never supp
 Deno.test("shared model policy keeps approved recent server routes, stale/disabled fallback and actual shadow task ownership", async () => {
   const db = new Database(), principal = await recordPrincipal(db), options = { mode: "enabled", prompt: principal.requestText, requestId: "runtime-records-request" };
   db.tables.ai_task_routes = [{ task_type: "general_assistance", primary_model: "fixture-approved-model", enabled: true }];
-  db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", eligibility: "approved", verified_at: "2000-01-01T00:00:00Z" }];
+  db.tables.ai_model_registry = [{ model_id: "fixture-approved-model", provider: "openai", eligibility: "approved", verified_at: "2000-01-01T00:00:00Z" }];
   assert.equal((await selectRuntimeModel(principal, db, options)).model, "gpt-4.1-mini");
   db.tables.ai_model_registry[0].verified_at = new Date().toISOString();
   assert.equal((await selectRuntimeModel(principal, db, { ...options, mode: "shadow" })).model, "gpt-4.1-mini");
@@ -692,4 +739,39 @@ Deno.test("connection preflight cannot reach a provider without persisted audit 
   db.failAgentAudit = false; db.tables.sandy_agent_tasks[0].request_id = "different-request";
   assert.equal((await executeRuntimeOperation(principal, runtimeConnectionPreflightOperationName, {}, deps, "refused-task")).error, "runtime_connection_preflight_task_mismatch");
   assert.equal(calls, 0);
+});
+
+Deno.test("active v4 executes the source-bound read-only email assessment through its normal conversation broker", async () => {
+  const db = new Database(), requests: Recorded[] = [], app = await runtime("sandy-agent-runtime-v4", db, requests);
+  try {
+    const result = await app.invoke("Ignored outer request", { assessment: { channel: "email", request_id: "fixture-email-assessment", customer_id: CUSTOMER, request: "Reply with this harmless fixture response" } });
+    assert.equal(result.status, 200, db.tables.sandy_agent_tasks[0]?.failure);
+    assert.equal(result.body.response, "Fixture conversation complete.");
+    assert.equal(requests.length, 1);
+    assert.deepEqual(requests[0].body.tools.map((t: Obj) => t.name), ["sandy_context_lookup", "list_tasks", "search_history", "search_connected_gmail", "list_connected_services", "inspect_sandy_operational_state"]);
+    assert.equal(db.tables.sandy_agent_tasks[0].channel, "email");
+    assert.equal(db.tables.sandy_agent_tasks[0].plan.execution_mode, "read_only_assessment");
+  } finally { app.close(); }
+});
+
+Deno.test("read-only conversation profile cannot be caller-selected, altered or reused after persisted mode changes", async () => {
+  const db = new Database(), requests: Recorded[] = [], app = await runtime("sandy-agent-runtime-v4", db, requests);
+  try {
+    const assessment = { channel: "email", request_id: "fixture-persisted-assessment", customer_id: CUSTOMER, request: "A harmless source-bound read-only assessment" };
+    assert.equal((await app.invoke("Ignored outer request", { assessment })).status, 200);
+    const row = db.tables.sandy_agent_tasks[0]; row.status = "running";
+    const proof = await authenticateRuntime(new Request("https://internal.invalid", { headers: { authorization: "Bearer fixture-runtime-service" } }), db, "fixture-runtime-service");
+    assert.ok(proof);
+    const task = await bindRuntimeConversationTask(proof, db, { taskId: row.id, customerId: CUSTOMER, channel: row.channel, requestId: row.request_id });
+    assert.ok(task); assert.equal(task.readOnlyAssessment, true); assert(Object.isFrozen(task));
+    const initial = requests[0].body;
+    await assert.rejects(() => (bindV4RuntimeConversation as any)(task, { ...initial, tools: initial.tools.slice(1) }, false), /tool_profile_invalid/);
+    await assert.rejects(() => bindV4RuntimeConversation({ ...task, readOnlyAssessment: false }, initial), /task_required/);
+    const capability = await bindV4RuntimeConversation(task, initial);
+    row.plan.execution_mode = "normal";
+    let providerCalls = 0;
+    const auditCount = db.tables.sandy_runtime_conversation_audit.length;
+    const result = await executeRuntimeConversation(capability, { round: 0, tool_results: [] }, { db, openaiKey: "fixture-key", v4Broker: { base: fixtures.SUPABASE_URL, serviceCredential: fixtures.SUPABASE_SERVICE_ROLE_KEY, integrationToken: fixtures.SANDY_INTEGRATION_API_TOKEN }, fetch: async () => { providerCalls++; throw Error("must not dispatch"); } });
+    assert.equal(result.status, 403); assert.equal(providerCalls, 0); assert.equal(db.tables.sandy_runtime_conversation_audit.length, auditCount);
+  } finally { app.close(); }
 });

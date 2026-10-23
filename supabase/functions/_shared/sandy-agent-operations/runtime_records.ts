@@ -1,3 +1,4 @@
+import { loadRuntimeMemory } from "./runtime_memory.ts";
 import { isAgentPrincipal, type AgentPrincipal } from "./identity.ts";
 type Obj = Record<string, any>;
 
@@ -86,8 +87,7 @@ export async function runtimeRecordOperation(ctx: AgentPrincipal, operation: str
     return error ? { error: "lookup_failed" } : { records: (data || []).filter((x: Obj) => !["deleted", "archived"].includes(x.library_state)) };
   }
   if (operation === "agent.runtime.context.memory.search") {
-    const { data, error } = await db.from("sandy_memory_archive").select("id,channel,content,occurred_at").eq("owner_customer_id", customerId).eq("state", "active").ilike("content", "%" + args.query.replace(/[%_,]/g, "") + "%").limit(5);
-    return error ? { error: "lookup_failed" } : { records: (data || []).map((x: Obj) => ({ ...x, content: String(x.content || "").slice(0, 900) })) };
+    return await loadRuntimeMemory(customerId, args.query, db);
   }
   return { error: "runtime_record_operation_not_supported" };
 }

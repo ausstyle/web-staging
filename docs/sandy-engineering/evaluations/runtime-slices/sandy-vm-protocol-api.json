@@ -1,0 +1,36 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-vm-protocol-api",
+  "version": 2,
+  "verify_jwt": true,
+  "body_sha256": "f8a5e97c6369bd66b3895a8f337710f1f370d6d30739244cb7aa4a936f71ecb3",
+  "before_files": {
+    "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+    "_shared/sandy_approval_contract.ts": "30b10b4b032120b1878cff16428ac3b7cf5805646dfdd98643b1f07dc4092290",
+    "_shared/sandy_credential_consumer.ts": "a50574ee460d03cfa8ba1f8847c587c5b1b4a0ce43462a4557f4fa6854cd8e4f",
+    "_shared/sandy_finish_receipt.ts": "78d3ad771e9db3718b4923d8b9073afc1323dd3f5c714c07e21b0096c55ebf20",
+    "_shared/sandy_machine_identity.ts": "3ddd14f8bbba19131ffbf7d18c8e3e192500ac254e20186b030e55514bc2894e",
+    "sandy-credential-lifecycle-api/scope.ts": "04c44bdbd4a43e6c4f39144a5c6742ec9b2cd9cc32a78d725ab6e34e068dc45d",
+    "sandy-credential-lifecycle-api/types.ts": "8a4fba52a850eec53e9e1b5aec22b17e879d19a745f9291567652e4500cd5cae",
+    "sandy-provider-operation-api/configured_scopes.ts": "881f592b66b11f7b0edb9ba332fb3a8521a25a2d8fc1b5e02acbf6c95bc1c672",
+    "sandy-provider-operation-api/validator_cache.ts": "c977a9929d10bb5faa01c0e8390c8821d10cbe73a4fcb121344946930a86f25c",
+    "sandy-provider-supplement-api/contracts.ts": "3276f51681cb1908878d60ce3238d2cd4ace5a230c80a685c6fb80d45fad1671",
+    "sandy-provider-supplement-api/runtime.ts": "0394437936a0ee6a640745ceeaace74ccf20a3a5f4db6c8b868edbcdcf812823",
+    "sandy-provider-supplement-api/scope.ts": "5f8f357bbd0d8d5678de40d67b355c223bc1b9b97c167e05793b77641c9284fb",
+    "sandy-provider-supplement-api/scope_from_descriptor.ts": "c5a88e95478e10583be3b6028f828c5d7ef97a06309360c629d2605dfa91806e",
+    "sandy-vm-protocol-api/bindings.ts": "bfd99ea7401d31674379f5a9355885f7da02d90f5c44fde91eb14d0dad7e0698",
+    "sandy-vm-protocol-api/compute.ts": "b8ba6f49f6f9192cb577617ffabcb61d6e06e516203d65a22aa33c9c3d50195e",
+    "sandy-vm-protocol-api/contracts.ts": "fa133eae4d8f1b28b357dde46abaf6882080bc147780650d738def1c73f651a5",
+    "sandy-vm-protocol-api/errors.ts": "ec6a7f14345ecdcbe0d57fe14d6523919f829294ce1ca9760f6a2514b0c0b5fc",
+    "sandy-vm-protocol-api/executor.ts": "18d9fa4af312bcb52421ec48125a991cb41f4d9185361ae5d25c0964b80dff35",
+    "sandy-vm-protocol-api/iap.ts": "cee83ef2c7d6e1e22db04e408dae1b5f6e27b917a515bfcd48a6716b4176b088",
+    "sandy-vm-protocol-api/index.ts": "54296086ecf903665f6d3df631dc1b9c09ab1aaa1c1647b60d7171ee36e9af87",
+    "sandy-vm-protocol-api/oslogin.ts": "a8a3147f070556d78c8ff64f193ae19dafe350022e8a2401cb05524545b80568",
+    "sandy-vm-protocol-api/ssh.ts": "a3a126ae00bf73e682c9e3b4df58dd56e3931e13c90c1fd6795bf1868899c336",
+    "sandy-vm-protocol-api/tls_http.ts": "25b4e980fea36e3434925ffda16329c37958be5d09e7de2018e421347e2ce86c",
+    "sandy-vm-protocol-api/winrm.ts": "0d7ae5fbc1368bccf36704b4094904cdb000127361a163567c4db744007e3cc5"
+  },
+  "replacements": {
+    "sandy-vm-protocol-api/winrm.ts": "72b03b3c89b39412c7824c27581e2e4c78b80811359e95850586116656168aad"
+  }
+}
