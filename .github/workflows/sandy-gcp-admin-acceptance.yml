@@ -56,6 +56,7 @@ jobs:
           service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
       - uses: google-github-actions/setup-gcloud@v2
       - name: Independently preserve exact running candidate and production traffic
+        id: candidate_readback
         env:
           SANDY_CANDIDATE_SOURCE: '45054252f4e4b824163ae2683615b96095398c34'
           SANDY_RELEASE_RUN: '39849886412'
@@ -81,6 +82,7 @@ jobs:
           deno run --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_gcp_admin_candidate.ts
           --output "$RUNNER_TEMP/sandy-admin-acceptance/administrator-acceptance.json"
       - name: Verify production traffic remains unchanged after administrator acceptance
+        if: always() && steps.candidate_readback.outcome == 'success'
         env:
           SANDY_CANDIDATE_SOURCE: '45054252f4e4b824163ae2683615b96095398c34'
           SANDY_RELEASE_RUN: '39849886412'
