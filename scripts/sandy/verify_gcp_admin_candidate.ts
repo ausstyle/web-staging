@@ -41,13 +41,15 @@ if (import.meta.main) {
     if(typeof anon!=="string"||typeof service!=="string")throw Error("project_Auth_configuration_unavailable");
     const read=async(query:string)=>{
       const response=await request("https://api.supabase.com/v1/projects/zmqlyygzqoidkcwdysok/database/query",{method:"POST",headers:{authorization:"Bearer "+management,"content-type":"application/json"},body:JSON.stringify({query,read_only:true})});
+      report.authority_readback_stage=query.includes("Owner_session_fingerprint")?"Owner_delegation_evidence":"workload_identity";
+      report.authority_readback_http_status=response.status;
       if(!response.ok)throw Error("delegation_authority_readback_unavailable");return await response.json();
     };
     const identities=await read(engineeringIdentityQuery);
     if(identities.length!==1||identities[0].controller_memberships!==0)throw Error("distinct_nonowner_workload_required");
     const identity=identities[0];
     const grant=await read(`SELECT g.admin_read_revision,g.admin_read_policy,g.enabled,g.revoked_at,g.expires_at>clock_timestamp() base_active,
-      public.sandy_api_current_owner(g.authorized_by) current_owner, g.authorized_by<>g.identity_user_id distinct_identities,
+      EXISTS(SELECT 1 FROM public.sandy_controller_admins a WHERE a.auth_user_id=g.authorized_by AND a.enabled=true AND a.role='owner') current_owner, g.authorized_by<>g.identity_user_id distinct_identities,
       e.id owner_event_id,e.occurred_at owner_event_at,e.detail->>'Owner_session_fingerprint' owner_session_fingerprint
       FROM public.sandy_engineering_control_grants g LEFT JOIN LATERAL (
       SELECT * FROM public.sandy_engineering_identity_events e WHERE e.identity_user_id=g.identity_user_id AND e.owner_authority_id=g.authorized_by
@@ -74,14 +76,22 @@ if (import.meta.main) {
         body:JSON.stringify({jsonrpc:"2.0",id:crypto.randomUUID(),method,params})});
       report.MCP_http_status=response.status;return await response.json();
     };
+    const initialized=await rpc("initialize",{protocolVersion:"2025-03-26",capabilities:{},clientInfo:{name:"sandy-admin-read-acceptance",version:"1"}});
+    if (!initialized.result?.serverInfo) throw Error("workload_MCP_initialization_failed");
+    const routine=await rpc("tools/call",{name:"github.repos.get",arguments:{path:{owner:"ausstyle",repo:"web-staging"}}});
+    const routineEnvelope=routine.result?._meta?.sandy_api,routineProof=routine.result?.structuredContent;
+    report.routine_workload_API_status=routineEnvelope?.status??null;
+    report.routine_workload_provider_http_status=routineProof?.provider_http_status??null;
+    report.routine_workload_repository_verified=routineProof?.result?.full_name==="ausstyle/web-staging";
+    if(routineEnvelope?.status!==200 || routine.result?.isError!==false || routineProof?.provider_http_status!==200 || !report.routine_workload_repository_verified || typeof routineProof.admission_id!=="string")
+      throw Error("routine_delegated_workload_execution_unverified");
+    report.routine_workload_provider_verified=true;report.routine_workload_admission_id=routineProof.admission_id;
     if(!approved){
       const denied=await rpc("tools/call",{name:"engineering.preflight",arguments:{connection:"sandy-gcp-admin"}});
       const status=denied.result?._meta?.sandy_api?.status;
       report.ungranted_administrator_execution_denied=status===403;
       throw Error("administrator_read_delegation_not_established");
     }
-    const initialized=await rpc("initialize",{protocolVersion:"2025-03-26",capabilities:{},clientInfo:{name:"sandy-admin-read-acceptance",version:"1"}});
-    if (!initialized.result?.serverInfo) throw Error("owner_MCP_initialization_failed");
     let cursor: string|undefined, discovered=false;
     for(let page=0;page<100;page++){
       const listed=await rpc("tools/list",cursor?{cursor}:{});
@@ -107,7 +117,7 @@ if (import.meta.main) {
       administrator_identity:proof.administrator_identity,token_issuance_verified:true,token_expires_at:proof.token_expires_at,
       provider_receipts:proof.provider_receipts,targets:proof.targets.map((t: any)=>({vm_name:t.vm_name,instance_id:t.instance_id,policy_read_verified:true})),admission_id:proof.admission_id});
   }catch(e){const code=e instanceof Error?e.message:"";
-    const known=new Set(["administrator_read_delegation_not_established","delegation_authority_readback_unavailable","distinct_nonowner_workload_required","workload_self_authorization_denial_not_verified","management_binding_unavailable","management_key_lookup_failed",
+    const known=new Set(["administrator_read_delegation_not_established","routine_delegated_workload_execution_unverified","workload_MCP_initialization_failed","delegation_authority_readback_unavailable","distinct_nonowner_workload_required","workload_self_authorization_denial_not_verified","management_binding_unavailable","management_key_lookup_failed",
       "project_Auth_configuration_unavailable","legitimate_owner_session_invalid_or_expired","owner_MCP_initialization_failed",
       "owner_MCP_discovery_failed","administrator_contract_not_discoverable","administrator_execution_not_verified",
       "independent_administrator_proof_invalid","independent_administrator_token_expiry_invalid"]);
