@@ -1,0 +1,55 @@
+{
+  "status": "proposal_not_authorized_or_applied",
+  "preserved_acceptance": {
+    "run": 40026102410,
+    "delegation_revision": 1,
+    "Owner_audit": 1550,
+    "execution_admission": "3a6973db-c125-41fd-bbd3-fdbca5db0783",
+    "workload_audit": 1553
+  },
+  "project": "elaborate-haven-511518-a5",
+  "project_number": "1030223524306",
+  "zone": "europe-west1-b",
+  "proposed_IAP_additions": {
+    "member": "serviceAccount:sandy-computer@elaborate-haven-511518-a5.iam.gserviceaccount.com",
+    "role": "roles/iap.tunnelResourceAccessor",
+    "expires_at": "2026-10-30T21:17:00Z",
+    "targets": [
+      {
+        "vm": "sandy-video",
+        "instance_id": "6831598645020395570",
+        "resource": "projects/1030223524306/iap_tunnel/zones/europe-west1-b/instances/6831598645020395570",
+        "condition": "destination.port == 22 && request.time < timestamp(\"2026-10-30T21:17:00Z\")"
+      },
+      {
+        "vm": "sandy-windows",
+        "instance_id": "8120150462304566315",
+        "resource": "projects/1030223524306/iap_tunnel/zones/europe-west1-b/instances/8120150462304566315",
+        "condition": "destination.port == 5986 && request.time < timestamp(\"2026-10-30T21:17:00Z\")"
+      }
+    ],
+    "preconditions": [
+      "Separate explicit authorization; revision 1 is read-only",
+      "Protected administrator operation with independent admission; existing worker exposes reads only",
+      "Fresh full policy and immutable VM identity readback before any write",
+      "Preserve every unrelated binding, condition and audit configuration with etag concurrency",
+      "Single write attempt, independent provider readback and retained rollback preimage"
+    ],
+    "not_authorized": ["project-wide IAM", "public addresses", "firewall changes", "guest changes", "commands", "agent enrolment"]
+  },
+  "separate_command_authority_required": {
+    "operations": ["gcp.vm.ssh.exec", "gcp.vm.winrm.exec"],
+    "command": "whoami",
+    "targets": ["sandy-video", "sandy-windows"],
+    "maximum_seconds": 30,
+    "maximum_combined_output_bytes": 65536,
+    "include_output": true,
+    "requirements": [
+      "Owner-established target-bound delegation; workload cannot self-grant",
+      "Trusted public SSH host pin and Windows TLS CA/hostname/leaf binding",
+      "Existing authorized OS Login or securely provisioned version-bound technical guest credentials",
+      "Admission, actual output/exit code, disconnect and independent OS receipt"
+    ],
+    "does_not_authorize": ["arbitrary commands", "software installation", "agent enrolment", "graphical input"]
+  }
+}

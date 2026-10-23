@@ -36,7 +36,21 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
 
 
-def candidate(policy, name):
+def expiry_bound(expires_at):
+    """The IAM condition must expire independently of a Sandy session/grant."""
+    try:
+        expiry = datetime.datetime.strptime(expires_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=datetime.timezone.utc)
+        if expiry.strftime("%Y-%m-%dT%H:%M:%SZ") != expires_at:
+            raise ValueError()
+        remaining = (expiry - datetime.datetime.now(datetime.timezone.utc)).total_seconds()
+        if not 0 < remaining <= 30 * 86400:
+            raise ValueError()
+    except (ValueError, TypeError):
+        raise RepairError("future_UTC_expiry_within_30_days_required") from None
+    return expires_at
+
+
+def candidate(policy, name, expires_at):
     """Never rewrite another binding or guess how an existing condition works."""
     if name not in TARGETS or not isinstance(policy, dict) or not policy.get("etag"):
         raise RepairError("target_policy_etag_required")
@@ -45,8 +59,9 @@ def candidate(policy, name):
     bindings = policy.get("bindings", [])
     if not isinstance(bindings, list):
         raise RepairError("invalid_policy_bindings")
+    expires_at = expiry_bound(expires_at)
     _, port = TARGETS[name]
-    expression = f"destination.port == {port}"
+    expression = f'destination.port == {port} && request.time < timestamp("{expires_at}")'
     expected = {"role": ROLE, "members": [MEMBER], "condition": {
         "title": "sandy-fixed-" + name + "-port-" + str(port),
         "description": "Authorized Sandy access to this immutable VM and port only",
@@ -262,13 +277,14 @@ def verify_administrator(admin):
         "IAM_changes": 0, "agents_enrolled": 0, "software_installed": 0}
 
 
-def plan(admin, name):
+def plan(admin, name, expires_at):
+    expiry_bound(expires_at)
     if name not in TARGETS:
         raise RepairError("fixed_target_required")
     admin.identity(name)
     before = admin.policy(name)
-    after, changed = candidate(before, name)
-    return {"schema": "sandy-fixed-IAP-repair-v1", "administrator_alias": admin.alias,
+    after, changed = candidate(before, name, expires_at)
+    return {"schema": "sandy-fixed-IAP-repair-v2", "expires_at": expires_at, "administrator_alias": admin.alias,
         "administrator_principal": admin.principal, "project": PROJECT, "vm_name": name,
         "instance_id": TARGETS[name][0], "port": TARGETS[name][1], "member": MEMBER,
         "before": before, "before_sha256": digest(before), "candidate": after,
@@ -277,14 +293,15 @@ def plan(admin, name):
 
 def apply(admin, saved, evidence_path):
     name = saved.get("vm_name")
-    if name not in TARGETS or saved.get("schema") != "sandy-fixed-IAP-repair-v1":
+    if name not in TARGETS or saved.get("schema") != "sandy-fixed-IAP-repair-v2":
         raise RepairError("reviewed_fixed_target_plan_required")
+    expiry_bound(saved.get("expires_at"))
     if evidence_path.exists():
         raise RepairError("existing_attempt_reconcile_before_retry")
     if admin.alias == ADMIN_ALIAS and not verify_administrator(admin)["ok"]:
         raise RepairError("administrator_effective_IAP_permissions_required")
     # Fresh full readback also checks administrator identity and immutable VM.
-    fresh = plan(admin, name)
+    fresh = plan(admin, name, saved["expires_at"])
     if fresh != saved:
         raise RepairError("administrator_or_policy_preimage_changed")
     evidence = {"plan_sha256": digest(saved), "administrator": admin.principal,
@@ -311,7 +328,7 @@ if __name__ == "__main__":
     parser.add_argument("--administrator-alias", required=True)
     sub = parser.add_subparsers(dest="action", required=True)
     p = sub.add_parser("verify"); p.add_argument("--output", type=Path, required=True)
-    p = sub.add_parser("plan"); p.add_argument("--vm", choices=TARGETS, required=True); p.add_argument("--output", type=Path, required=True)
+    p = sub.add_parser("plan"); p.add_argument("--vm", choices=TARGETS, required=True); p.add_argument("--expires-at", required=True); p.add_argument("--output", type=Path, required=True)
     p = sub.add_parser("apply"); p.add_argument("--plan", type=Path, required=True); p.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args()
     admin = None
@@ -328,7 +345,7 @@ if __name__ == "__main__":
         elif args.action == "plan":
             if args.output.exists():
                 raise RepairError("existing_plan_requires_review")
-            result = plan(admin, args.vm)
+            result = plan(admin, args.vm, args.expires_at)
             args.output.write_text(json.dumps(result, indent=2) + "\n"); args.output.chmod(0o600)
             print(json.dumps({"plan_created": True, "vm_name": args.vm, "change_required": result["change_required"], "no_mutation": True}))
         else:
