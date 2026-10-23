@@ -1,3 +1,4 @@
+import { runWorkloadRead } from "./workload_reads.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.0";
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
@@ -584,6 +585,7 @@ export async function runWorker(
         !object(claim) || !uuid(claim.job_id) || !uuid(claim.lease_token) ||
         claim.worker_id !== workerId
       ) return { state: "invalid_claim", persisted: false };
+      if (claim.principal_kind === "engineering_workload") return await runWorkloadRead(dependencies, claim, workerId);
       let body: ObjectValue | undefined, httpStatus: number | null = null;
       try {
         const reply = await (dependencies.fetch ?? fetch)(
