@@ -34,6 +34,8 @@ type Mode =
   | "entities"
   | "wrong_command"
   | "overflow"
+  | "timeout"
+  | "timeout_delete_fail"
   | "delete_fail";
 async function fixture(mode: Mode = "success") {
   const dir = await Deno.makeTempDir({ prefix: "sandy-winrm-synthetic-" }),
@@ -97,7 +99,7 @@ async function fixture(mode: Mode = "success") {
         },
       });
     }
-    if (mode === "delete_fail" && kind === "Delete") {
+    if (["delete_fail", "timeout_delete_fail"].includes(mode) && kind === "Delete") {
       return new Response("synthetic private error body", { status: 500 });
     }
     let body = "";
@@ -117,6 +119,9 @@ async function fixture(mode: Mode = "success") {
       } else if (kind === "Receive") {
         assert(text.includes(`CommandId="${command}"`));
         receives++;
+        if (["timeout", "timeout_delete_fail"].includes(mode)) {
+          await new Promise((resolve) => setTimeout(resolve, 1700));
+        }
         const payload = Buffer.from(
             mode === "overflow"
               ? "x".repeat(100)
@@ -384,6 +389,24 @@ Deno.test("WinRM: foreign command/output overflow cleans shell once; failed Dele
       );
       assert.equal(f.commands.length, 1);
       assert.equal(f.requests.filter((x) => x === "Delete").length, 1);
+    } finally {
+      await f.close();
+    }
+  }
+});
+
+Deno.test("WinRM: command timeout retains unknown outcome but retires its shell with one independently bounded cleanup request", async () => {
+  for (const mode of ["timeout", "timeout_delete_fail"] as const) {
+    const f = await fixture(mode);
+    try {
+      await assert.rejects(
+        () => winrmExecute(f.endpoint, "whoami", { timeoutMs: 1500 }),
+        (e) => e instanceof ProtocolRefusal && e.mayHaveExecuted &&
+          e.code === "winrm_http_timeout" &&
+          e.cleanupRequired === (mode === "timeout_delete_fail"),
+      );
+      assert.deepEqual(f.commands, ["whoami"]);
+      assert.deepEqual(f.requests, ["Create", "Command", "Receive", "Delete"]);
     } finally {
       await f.close();
     }
