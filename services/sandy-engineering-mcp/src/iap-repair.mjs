@@ -33,7 +33,7 @@ export function createProtectedIapRepairWorker({connect,request=fetch,now=Date.n
  return async(req,res)=>{
   const bearer=req.get('authorization'),body=req.body;
   if(!/^Bearer [A-Za-z0-9._~-]+$/.test(bearer??'')||!body||Object.keys(body).some(k=>!['admission_id','grant_id','request_id'].includes(k))||![body.admission_id,body.grant_id,body.request_id].every(uuid))return res.status(403).json({ok:false,error:'protected_API_admission_required',executed:false});
-  let claimed=false,writeDispatched=false;const receipts=[];let connection,workerIdentity;
+  let claimed=false,writeDispatched=false,administratorTokenIssued=false;const receipts=[];let connection,workerIdentity;
   const callback=async(action,extra={})=>{
    const response=await request(control,{method:'POST',redirect:'error',signal:AbortSignal.timeout(15000),headers:{authorization:bearer,'content-type':'application/json'},body:JSON.stringify({action,...body,...extra,worker_identity:workerIdentity,source_sha256:sourceSha256,worker_revision:workerRevision})});
    const result=await response.json();if(!response.ok||result.ok!==true||result.admission_id!==body.admission_id)throw new Refused('protected_repair_admission_refused',403);return result;
@@ -47,7 +47,7 @@ export function createProtectedIapRepairWorker({connect,request=fetch,now=Date.n
    if(!['plan','apply','rollback'].includes(grant.mode)||!Number.isSafeInteger(grant.revision)||grant.revision<1||!/^[a-f0-9]{64}$/.test(grant.scope_sha256??''))throw new Refused('independent_repair_scope_required',403);
    const expiresAt=expiry(grant.expires_at,now());claimed=true;
    const admin=connection.administrator();
-   try{await admin.getAccessToken();}catch(e){throw new Refused('administrator_short_lived_token_issuance_failed',424,`https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${administratorAccount}:generateAccessToken`,Number.isInteger(e?.response?.status)?e.response.status:null);}
+   try{await admin.getAccessToken();administratorTokenIssued=true;}catch(e){throw new Refused('administrator_short_lived_token_issuance_failed',424,`https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/${administratorAccount}:generateAccessToken`,Number.isInteger(e?.response?.status)?e.response.status:null);}
    const remaining=Number(admin.credentials?.expiry_date)-now();if(!Number.isFinite(remaining)||remaining<60000||remaining>1810000)throw new Refused('short_lived_administrator_token_required',403);
    const call=async(url,data)=>{
     try{const r=await admin.request({url,method:data?'POST':'GET',...(data?{data}:{}),timeout:15000,retry:false,maxRedirects:0,maxContentLength:262144,responseType:'json'});receipts.push({endpoint:url,http_status:r.status});if(r.status!==200||!r.data||typeof r.data!=='object')throw new Refused('provider_response_unverified');return r.data;}
@@ -92,7 +92,7 @@ export function createProtectedIapRepairWorker({connect,request=fetch,now=Date.n
    return res.status(200).json({ok:true,admission_id:body.admission_id,mode:grant.mode,administrator_identity:administratorAccount,policy_changes:grant.mode==='plan'?0:verified.filter(t=>t.change_required).length,targets:grant.mode==='plan'?plans.map(({before,candidate,...p})=>p):verified,provider_receipts:receipts,token_recorded:false,tunnel_execution_verified:false,OS_commands:0});
   }catch(e){
    if(claimed){try{await callback('gcp_iap_repair_finish',{phase:'failed_or_unknown',reconciliation_required:writeDispatched,provider_receipts:receipts});}catch{/* Unknown durable state is surfaced; never retry a provider write. */}}
-   return res.status(e instanceof Refused?e.status:503).json({ok:false,error:e instanceof Refused?e.message:'protected_repair_connection_unavailable',executed:writeDispatched?null:false,reconciliation_required:writeDispatched,provider_http_status:e instanceof Refused?e.providerStatus:null,provider_endpoint:e instanceof Refused?e.endpoint:null,admission_id:body.admission_id,provider_receipts:receipts,token_recorded:false,OS_commands:0});
+   return res.status(e instanceof Refused?e.status:503).json({ok:false,error:e instanceof Refused?e.message:'protected_repair_connection_unavailable',executed:writeDispatched?null:false,reconciliation_required:writeDispatched,provider_http_status:e instanceof Refused?e.providerStatus:null,provider_endpoint:e instanceof Refused?e.endpoint:null,admission_id:body.admission_id,provider_receipts:receipts,administrator_token_issued:administratorTokenIssued,token_recorded:false,OS_commands:0});
   }
  };
 }
