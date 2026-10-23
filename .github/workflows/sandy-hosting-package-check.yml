@@ -1,0 +1,33 @@
+name: Sandy hosting packaging checks
+on:
+  pull_request:
+    paths:
+      - 'sandy/Dockerfile'
+      - 'sandy/.dockerignore'
+      - 'sandy/index.html'
+      - 'sandy/cloud-run-nginx.conf'
+      - 'sandy/cloudbuild.yaml'
+      - 'scripts/sandy/check_hosting_preview.py'
+      - 'scripts/sandy/test_hosting_packaging.py'
+      - '.github/workflows/sandy-hosting-package-check.yml'
+permissions:
+  contents: read
+jobs:
+  local-preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release inputs
+        run: python3 -m unittest discover -s scripts/sandy -p test_hosting_packaging.py
+      - name: Build preserved marketing page
+        run: docker build --platform linux/amd64 -t sandy-hosting-local sandy
+      - name: Check real nginx preview and private-route exclusion
+        run: |
+          docker run -d --name sandy-hosting-preview -p 127.0.0.1:8080:8080 sandy-hosting-local
+          trap 'docker rm -f sandy-hosting-preview' EXIT
+          for attempt in $(seq 1 20); do
+            if curl --fail --silent http://127.0.0.1:8080/healthz; then break; fi
+            sleep 1
+          done
+          python3 scripts/sandy/check_hosting_preview.py http://127.0.0.1:8080
