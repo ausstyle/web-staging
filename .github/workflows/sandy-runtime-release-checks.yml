@@ -11,6 +11,8 @@ on:
       - 'docs/sandy-engineering/evaluations/**'
       - 'scripts/sandy/release_delegated_runtime.py'
       - 'scripts/sandy/test_delegated_runtime_release.py'
+      - 'scripts/sandy/test_v4_read_only_conversation_profile.py'
+      - 'supabase/functions/_shared/sandy-agent-operations/runtime_conversation*.ts'
       - 'scripts/sandy/test_autonomous_delegation_postgres.mjs'
       - 'supabase/migrations/2026102211*.sql'
       - '.github/workflows/sandy-runtime-release-checks.yml'
@@ -42,6 +44,8 @@ jobs:
           sandy/controller/engineering-releases.test.mjs
           sandy/controller/authorized-deadline-action.test.mjs
           sandy/controller/authorized-auth-repair-action.test.mjs sandy/controller/amendment-b-approval.test.mjs
+      - name: Verify independently pinned full and read-only V4 tool profiles
+        run: python -m unittest scripts/sandy/test_v4_read_only_conversation_profile.py
       - name: Test delegated release transport and fault handling
         run: PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_delegated_runtime_release.py
       - name: Test isolated PostgreSQL owner and audit transactions

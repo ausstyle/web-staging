@@ -6,6 +6,8 @@ export const v4RuntimeConversationSource = Object.freeze({
   runtime: "sandy-agent-runtime-v4" as const,
   sourceSha256: "3aadfb520f651e9a6807cbb24b5d4409fcfbb25fb69fe5d72036916e44db8679",
   toolSchemaSha256: "3a6f4b1d9e3a600739d68013842bf119ec65e11f87fb4a308733befe4bbd2d6b",
+  // Exact read-only Examiner/test tool subset; never accept an arbitrary caller-selected subset.
+  readOnlyToolSchemaSha256: "b828d6b1747cbdf6036f0d749283d9f42c8b3d01947b7d83747b166347d2a633",
 });
 export type V4ConversationBroker = {
   base: string;

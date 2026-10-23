@@ -57,7 +57,7 @@ function initialInputMatches(input: unknown, prompt: string) {
  * instructions are captured from that runtime's existing server policy; neither
  * is accepted by the named operation's JSON input. Tool-schema hashes pin the
  * original source rather than granting a caller an arbitrary tool executor. */
-async function bind(task: RuntimeConversationTask, runtime: Runtime, firstRequest: Obj): Promise<RuntimeConversation> {
+async function bind(task: RuntimeConversationTask, runtime: Runtime, firstRequest: Obj, readOnlyAssessment = false): Promise<RuntimeConversation> {
   if (!isRuntimeConversationTask(task)) throw Error("runtime_conversation_task_required");
   const allowed = ["model", "instructions", "input", "tools", "tool_choice", "max_output_tokens"];
   if (!object(firstRequest) || Object.keys(firstRequest).some(k => !allowed.includes(k)) ||
@@ -67,7 +67,11 @@ async function bind(task: RuntimeConversationTask, runtime: Runtime, firstReques
     !Array.isArray(firstRequest.tools) || JSON.stringify(firstRequest).length > 4 * 1024 * 1024) {
     throw Error("runtime_conversation_source_contract_invalid");
   }
-  if (task.customerId === null ? firstRequest.tools.length !== 0 : await sha256(stable(firstRequest.tools)) !== profiles[runtime].tools) {
+  // The QA/runtime test channel must retain a pinned read-only subset. The normal
+  // production profile remains unchanged and arbitrary or mutating subsets fail closed.
+  const expectedToolHash = runtime === "sandy-agent-runtime-v4" && readOnlyAssessment
+    ? v4RuntimeConversationSource.readOnlyToolSchemaSha256 : profiles[runtime].tools;
+  if (task.customerId === null ? firstRequest.tools.length !== 0 : await sha256(stable(firstRequest.tools)) !== expectedToolHash) {
     throw Error("runtime_conversation_tool_profile_invalid");
   }
   if (firstRequest.tool_choice !== undefined) {
@@ -82,7 +86,7 @@ async function bind(task: RuntimeConversationTask, runtime: Runtime, firstReques
 }
 export const bindV2RuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj) => bind(task, "sandy-agent-runtime-v2", firstRequest);
 export const bindV1BackupRuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj) => bind(task, "sandy-agent-runtime-v1-backup-r50", firstRequest);
-export const bindV4RuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj) => bind(task, "sandy-agent-runtime-v4", firstRequest);
+export const bindV4RuntimeConversation = (task: RuntimeConversationTask, firstRequest: Obj, readOnlyAssessment = false) => bind(task, "sandy-agent-runtime-v4", firstRequest, readOnlyAssessment);
 
 async function responseJson(response: Response): Promise<Obj | null> {
   const reader = response.body?.getReader();
