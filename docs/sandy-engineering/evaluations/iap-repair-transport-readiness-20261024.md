@@ -1,0 +1,11 @@
+# Guarded IAP provider transport — source readiness
+
+`services/sandy-engineering-mcp/src/iap-repair.mjs` is a Sandy API provider-worker component, not MCP execution logic. It reuses the existing trusted runtime/administrator identities and accepts only one-use admission identifiers. No caller can choose a provider URL, project, VM, role, principal or port. No catalogue entries are added.
+
+The component supports fixed-target plan/apply/rollback through protected claim, write-start and finish callbacks. Each mutation requires a new successful durable write-start decision after current-policy readback. It preserves unrelated policy bindings/audit configuration, uses etag concurrency, enforces the independently granted expiry in IAM itself, verifies provider readback and does not retry uncertain mutations. Rollback requires the exact preserved effect and refuses unrelated administrator changes. Full policy preimages go only to protected control custody; results expose hashes and statuses. No token is recorded.
+
+Seven isolated provider fixtures cover denied admission, read-only planning, expiry, source policy preservation, revocation immediately before mutation, stale preimages, verified apply/readback, uncertain outcomes without replay and guarded rollback. These are not real-provider acceptance.
+
+**Not activated:** `server.mjs` does not import or mount this component. No candidate, IAM or traffic change is included. The dedicated Google identity-token audience, durable admission/custody/write-start/finish callbacks and versioned API job routing must be installed and tested before an authorized runtime release can activate it. The existing read-only candidate remains unchanged. Independent Owner grant revision remains 0 until established through the separate protected process; proposal submission alone is insufficient.
+
+Production progress from this session is separate: worker v59 eligibility enforcement and authorization migration `20261024001000` are installed. Submission request `52d56740-59c8-4db1-b7e6-a137c7699b86` is high-risk/proposed, not approved. Linux/Windows/graphical execution remains unverified. Host trust, command authority, guest credentials and agent enrolment remain separately constrained.
