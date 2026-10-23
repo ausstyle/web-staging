@@ -40,6 +40,7 @@ jobs:
           supabase/functions/sandy-engineering-control/workload_test.ts
           sandy/controller/session-transport.test.mjs
           sandy/controller/engineering-releases.test.mjs
+          sandy/controller/provider-response-approval.test.mjs
           sandy/controller/authorized-deadline-action.test.mjs
           sandy/controller/authorized-auth-repair-action.test.mjs sandy/controller/amendment-b-approval.test.mjs
       - name: Test delegated release transport and fault handling

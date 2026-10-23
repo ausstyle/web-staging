@@ -72,6 +72,7 @@ h1{font-size:clamp(29px,3.5vw,43px);letter-spacing:-.055em;margin:30px 0 1px}h2{
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {createControllerTransport} from "./session-transport.mjs";
 import {showAutonomousPolicyControls} from "./autonomous-policy.mjs";
+import {showProviderResponseApproval} from "./provider-response-approval.mjs";
 import {showAmendmentBApproval} from "./amendment-b-approval.mjs?v=2";
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-controller-api";
@@ -213,6 +214,7 @@ async function refreshEngineeringChanges(){
  finally{engineeringChangesBusy=false;render()}
 }
 function showEngineeringChanges(c){
+ if(data?.role==="owner")showProviderResponseApproval(c,controllerTransport);
  if(data?.role==="owner")showAmendmentBApproval(c,controllerTransport);
  const p=panel("Engineering changes · authorization and evidence");
  txt(p,"Routine engineering is admitted automatically by standing policy after identity, source, tests and rollback checks. Inspect recorded authorization and execution evidence here.","small muted");
