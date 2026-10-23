@@ -1,3 +1,4 @@
+import { functionInvocationSessionHeaders } from "./function_invocation_session.ts";
 import {
   engineeringProofFor,
   engineeringRequest,
@@ -1732,6 +1733,9 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                   authorization: `Bearer ${service}`,
                   apikey: service,
                   "content-type": "application/json",
+                  ...functionInvocationSessionHeaders(
+                    operation, bearer, dispatchUser.id, credential,
+                  ),
                 },
                 body: JSON.stringify({
                   operation,

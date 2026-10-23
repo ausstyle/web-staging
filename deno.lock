@@ -9,7 +9,8 @@
     "npm:@supabase/supabase-js@2.57.4": "2.57.4",
     "npm:@supabase/supabase-js@2.58.0": "2.58.0",
     "npm:ajv-formats@3.0.1": "3.0.1_ajv@8.17.1",
-    "npm:ajv@8.17.1": "8.17.1"
+    "npm:ajv@8.17.1": "8.17.1",
+    "npm:@electric-sql/pglite@0.3.14": "0.3.14"
   },
   "npm": {
     "@cfworker/json-schema@4.1.1": {
@@ -284,6 +285,9 @@
     },
     "ws@8.22.0": {
       "integrity": "sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg=="
+    },
+    "@electric-sql/pglite@0.3.14": {
+      "integrity": "sha512-3DB258dhqdsArOI1fIt7cb9RpUOgcDg5hXWVgVHAeqVQ/qxtFy605QKs4gx6mFq3jWsSPqDN8TgSEsqC3OfV9Q=="
     }
   },
   "workspace": {

@@ -62,6 +62,12 @@ export type Dependencies = {
     operation: GapContract,
     execution: { actorId: string; admissionId: string; operation: string },
   ) => Promise<string>;
+  functionAnonKey?: string;
+  validateInvocationSession?: (
+    session: string,
+    actor: string,
+  ) => Promise<boolean>;
+  projectCreationMaterial?: (admission: string, args: Obj) => Promise<string>;
   authorizeContext: (
     context: Context,
     operation: GapContract,
@@ -210,16 +216,29 @@ export class Calls {
     url: URL,
     method = "GET",
     payload?: Obj,
+    invocation?: { session: string; anonKey: string; requestId: string },
   ): Promise<ProviderReply> {
     const hosts = {
       supabase: "api.supabase.com",
       github: "api.github.com",
       gcp: "compute.googleapis.com",
     };
+    const functionHost = this.provider === "supabase" &&
+      invocation !== undefined;
     if (
-      url.protocol !== "https:" || url.host !== hosts[this.provider] ||
+      url.protocol !== "https:" ||
+      url.host !==
+        (functionHost ? `${PROJECT}.supabase.co` : hosts[this.provider]) ||
       url.username || url.password || url.hash
     ) fail("provider_scope_mismatch", 403);
+    if (
+      functionHost && (method !== "POST" || url.search ||
+        !/^\/functions\/v1\/[a-z][a-z0-9-]{2,90}$/.test(url.pathname) ||
+        !invocation!.session || !invocation!.anonKey ||
+        !UUID.test(invocation!.requestId))
+    ) {
+      fail("function_invocation_scope_mismatch", 403);
+    }
     const mutation = method !== "GET" &&
       !(this.provider === "github" && url.pathname === "/graphql" &&
         typeof payload?.query === "string" &&
@@ -230,7 +249,14 @@ export class Calls {
       r = await (this.deps.fetch ?? fetch)(url, {
         method,
         headers: {
-          authorization: `Bearer ${this.token}`,
+          authorization: `Bearer ${invocation?.session ?? this.token}`,
+          ...(invocation
+            ? {
+              apikey: invocation.anonKey,
+              "x-sandy-request-id": invocation.requestId,
+              "idempotency-key": invocation.requestId,
+            }
+            : {}),
           accept: "application/json",
           ...(this.provider === "github"
             ? { "x-github-api-version": "2022-11-28" }
@@ -300,7 +326,7 @@ export class Calls {
     }
     const raw = new TextDecoder().decode(bytes);
     let body: unknown = null;
-    if (raw) {
+    if (raw && !invocation) {
       try {
         body = JSON.parse(raw);
       } catch {
