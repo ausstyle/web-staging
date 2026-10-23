@@ -249,6 +249,8 @@ export const memoryCorrectionMutationContract = {
     },
   },
 } as const;
+export const memoryCorrectionContractSha256 =
+  "731b0f287fb36c073017f47fa7b5f4c4b525e3f7e04dfa6e73ace41c10a5cf6a";
 type ReceiptOperation = CustomerMutationOperation | "memory.fact_correct";
 const ajv = new Ajv({ strict: true, validateFormats: true, allErrors: false });
 for (const [name, format] of Object.entries(fullFormats)) {
@@ -333,6 +335,7 @@ export type CustomerMutationDb = {
   from(table: string): { select(columns: string): Query };
 };
 export type CustomerMutationDependencies = {
+  memoryCertification?: { id: string; apiDeploymentId: string };
   base: string;
   anon: string;
   // The concrete SDK carries recursive query generics. Keep that implementation
@@ -510,7 +513,10 @@ export async function executeCustomerMutation(
 /** A portal principal is a verified expectation, never the RPC's authority. The
  * actual user JWT is forwarded; SQL independently derives its current customer. */
 export async function executeMemoryCorrection(
-  dependencies: Pick<CustomerMutationDependencies, "base" | "anon" | "fetch">,
+  dependencies: Pick<
+    CustomerMutationDependencies,
+    "base" | "anon" | "fetch" | "memoryCertification"
+  >,
   userJwt: string,
   customer: string,
   args: unknown,
@@ -534,7 +540,10 @@ export async function executeMemoryCorrection(
   return result;
 }
 export function buildCustomerMutationReceiptRequest(
-  dependencies: Pick<CustomerMutationDependencies, "base" | "anon">,
+  dependencies: Pick<
+    CustomerMutationDependencies,
+    "base" | "anon" | "memoryCertification"
+  >,
   userJwt: string,
   operation: ReceiptOperation,
   args: Row,
@@ -556,6 +565,15 @@ export function buildCustomerMutationReceiptRequest(
     origin.protocol !== "https:" || origin.username || origin.password ||
     origin.pathname !== "/" || origin.search || origin.hash
   ) return null;
+  const certification = operation === "memory.fact_correct"
+    ? dependencies.memoryCertification
+    : undefined;
+  if (
+    certification &&
+    (!uuid(certification.id) ||
+      !/^zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_[1-9][0-9]{0,8}$/
+        .test(certification.apiDeploymentId))
+  ) return null;
   const { idempotency_key, ...fields } = args;
   return {
     url: `${origin.origin}/rest/v1/rpc/sandy_api_customer_mutation`,
@@ -566,6 +584,12 @@ export function buildCustomerMutationReceiptRequest(
         authorization: `Bearer ${userJwt}`,
         apikey: dependencies.anon,
         "content-type": "application/json",
+        ...(certification
+          ? {
+            "x-sandy-certification-id": certification.id,
+            "x-sandy-api-deployment-id": certification.apiDeploymentId,
+          }
+          : {}),
       },
       body: JSON.stringify({
         p_operation: operation,
@@ -577,7 +601,10 @@ export function buildCustomerMutationReceiptRequest(
   };
 }
 async function executeMutationReceipt(
-  dependencies: Pick<CustomerMutationDependencies, "base" | "anon" | "fetch">,
+  dependencies: Pick<
+    CustomerMutationDependencies,
+    "base" | "anon" | "fetch" | "memoryCertification"
+  >,
   userJwt: string,
   operation: ReceiptOperation,
   args: Row,

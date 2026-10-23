@@ -128,7 +128,8 @@ class ReleaseAdmissionTests(unittest.TestCase):
             source = b"unchanged JavaScript"
             header = section(name) + b"\0" + struct.pack(">IIII", 0, len(source), 0, 0) + b"\0"
             return b"ESZIP2.3" + section(bytes([0, 0, 1, 0])) + section(header) + section(b"") + section(source) + section(b"")
-        self.assertEqual(release.original_sources(bundle(b"source/version.js")), {"version.js": b"unchanged JavaScript"})
+        for name in ("version.js", "transport.mjs", "contract.json"):
+            self.assertEqual(release.original_sources(bundle(("source/" + name).encode())), {name: b"unchanged JavaScript"})
         with self.assertRaisesRegex(release.Blocked, "original_deployed_source_unavailable"):
             release.original_sources(bundle(b"source/index.ts"))
 
