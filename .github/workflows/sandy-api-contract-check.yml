@@ -31,6 +31,10 @@ on:
       - 'scripts/sandy/existing_mcp_candidate*'
       - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
       - 'supabase/functions/sandy-vm-protocol-api/**'
+      - 'supabase/functions/sandy-computer-worker/**'
+      - 'scripts/sandy/*computer*'
+      - 'scripts/sandy/fixtures/computer-worker-v58.ts'
+      - '.github/workflows/sandy-computer-eligibility-release.yml'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
       - 'scripts/sandy/iap_admin_repair.py'
@@ -67,6 +71,10 @@ on:
       - 'scripts/sandy/existing_mcp_candidate*'
       - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
       - 'supabase/functions/sandy-vm-protocol-api/**'
+      - 'supabase/functions/sandy-computer-worker/**'
+      - 'scripts/sandy/*computer*'
+      - 'scripts/sandy/fixtures/computer-worker-v58.ts'
+      - '.github/workflows/sandy-computer-eligibility-release.yml'
       - 'scripts/sandy/testing/**'
       - 'scripts/sandy/*api*'
       - 'scripts/sandy/iap_admin_repair.py'
@@ -173,7 +181,9 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_iap_admin_repair.py -v
+          python3 -m unittest scripts/sandy/test_iap_admin_repair.py scripts/sandy/test_computer_eligibility_release.py -v
+          deno check supabase/functions/sandy-computer-worker/eligibility.ts
+          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts
           deno test supabase/functions/_shared/sandy-agent-operations/worker_computer_lifecycle_test.ts
       - name: Test native protocols against isolated loopback fixtures
         run: |

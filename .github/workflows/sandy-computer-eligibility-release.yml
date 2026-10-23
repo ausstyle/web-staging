@@ -1,0 +1,57 @@
+name: Release reviewed computer eligibility enforcement
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Validate exact source, expiry and dispatch races
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+          PYTHONPATH: scripts/sandy
+        run: |
+          python3 -m unittest scripts/sandy/test_computer_eligibility_release.py scripts/sandy/test_iap_admin_repair.py -v
+          deno check supabase/functions/sandy-computer-worker/eligibility.ts
+          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts
+      - name: Preserve reviewed IAP expiry helper as a release artifact
+        run: |
+          mkdir -p "$RUNNER_TEMP/reviewed-iap-helper/scripts/sandy"
+          cp scripts/sandy/iap_admin_repair.py scripts/sandy/test_iap_admin_repair.py scripts/sandy/iap-admin-requirements.txt "$RUNNER_TEMP/reviewed-iap-helper/scripts/sandy/"
+          cp docs/sandy-engineering/evaluations/computer-execution-authority-20261023.json "$RUNNER_TEMP/reviewed-iap-helper/"
+          git rev-parse HEAD > "$RUNNER_TEMP/reviewed-iap-helper/source-commit.txt"
+          sha256sum "$RUNNER_TEMP/reviewed-iap-helper/scripts/sandy/"* > "$RUNNER_TEMP/reviewed-iap-helper/SHA256SUMS"
+      - name: Install eligibility checks with preserved preimages and source lease
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_computer_eligibility.py --deploy --evidence-dir "$RUNNER_TEMP/computer-eligibility"
+      - name: Independently verify installed sources without queue dispatch
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 scripts/sandy/release_computer_eligibility.py --verify-installed --evidence-dir "$RUNNER_TEMP/computer-eligibility-readback"
+          python3 scripts/sandy/verify_computer_eligibility_ingress.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: computer-eligibility-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/computer-eligibility/
+            ${{ runner.temp }}/computer-eligibility-readback/
+            ${{ runner.temp }}/reviewed-iap-helper/
+          retention-days: 14
