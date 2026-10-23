@@ -1,0 +1,23 @@
+name: Sandy Cloud integrity checks
+on:
+  pull_request:
+    paths:
+      - 'packages/sandy-cloud/**'
+      - 'docs/sandy-cloud/**'
+      - '.github/workflows/sandy-cloud-checks.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - run: deno fmt --check packages/sandy-cloud
+      - run: deno check packages/sandy-cloud/integrity.ts packages/sandy-cloud/restore.ts
+      - run: deno test packages/sandy-cloud/integrity_test.ts
+      - run: deno test --allow-read=/tmp --allow-write=/tmp packages/sandy-cloud/restore_disk_test.ts
