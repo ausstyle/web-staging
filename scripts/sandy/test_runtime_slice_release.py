@@ -84,7 +84,7 @@ class GraphicalFlatReleaseTests(unittest.TestCase):
                       for p in s.MODULES[self.slug]}
         self.m = {'kind':'reviewed-runtime-slice-v1','function':self.slug,
                   'version':27,'verify_jwt':True,'body_sha256':s.digest(b'flatbundle'),
-                  'source_layout':s.FLAT_MASTER_LAYOUT,
+                  'source_layout':s.FLAT_INDEX_LAYOUT,
                   'before_files':s.hashes(self.before),'replacements':s.hashes(self.after)}
         self.meta = {'slug':self.slug,'version':27,'verify_jwt':True,'status':'ACTIVE'}
 

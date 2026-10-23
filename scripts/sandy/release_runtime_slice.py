@@ -39,9 +39,11 @@ MODULES = {
     },
 }
 
-# The inspected v27 service has exactly one flat source module. This is a
-# reviewed one-time packaging transition, never arbitrary entrypoint rewriting.
-FLAT_MASTER_LAYOUT = 'master-computer-v27-flat-to-namespaced-v1'
+# These inspected legacy services have exactly one flat source module. Only
+# separately allowlisted modules and reviewed manifests can activate a target.
+# This is not arbitrary entrypoint rewriting or permission to lose other files.
+NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context'}
+FLAT_INDEX_LAYOUT = 'reviewed-flat-index-to-namespaced-v1'
 
 
 def hashes(files):
@@ -66,12 +68,13 @@ def validate(m):
             or not valid_map(m.get('before_files')) or not valid_map(m.get('replacements'))
             or not set(m['replacements']) <= MODULES[slug]):
         raise Blocked('reviewed_bounded_runtime_manifest_required')
-    if slug == 'sandy-master-computer':
-        if (m.get('source_layout') != FLAT_MASTER_LAYOUT
-                or m['version'] != 27 or m['verify_jwt'] is not True
+    if slug in NORMALIZED_TARGETS:
+        if (m.get('source_layout') != FLAT_INDEX_LAYOUT
+                or slug == 'sandy-master-computer' and m['version'] != 27
+                or m['verify_jwt'] is not True
                 or set(m['before_files']) != {'index.ts'}
                 or set(m['replacements']) != MODULES[slug]):
-            raise Blocked('exact_master_v27_source_layout_required')
+            raise Blocked('exact_reviewed_flat_source_layout_required')
     elif m.get('source_layout') is not None or slug + '/index.ts' not in m['before_files']:
         raise Blocked('reviewed_bounded_runtime_manifest_required')
     if any(m['before_files'].get(p) == h for p, h in m['replacements'].items()):
@@ -84,7 +87,7 @@ def candidate(m, before):
     if hashes(before) != m['before_files']:
         raise Blocked('all_original_modules_must_match')
     result = dict(before)
-    if m['function'] == 'sandy-master-computer':
+    if m['function'] in NORMALIZED_TARGETS:
         del result['index.ts']
     for p, pin in m['replacements'].items():
         raw = (ROOT / 'supabase/functions' / p).read_bytes()
@@ -96,7 +99,7 @@ def candidate(m, before):
 
 def installed_hashes(m):
     result = dict(m['before_files'])
-    if m['function'] == 'sandy-master-computer':
+    if m['function'] in NORMALIZED_TARGETS:
         del result['index.ts']
     return {**result, **m['replacements']}
 
