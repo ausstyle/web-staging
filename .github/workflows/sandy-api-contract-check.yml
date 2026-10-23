@@ -32,6 +32,7 @@ on:
       - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'supabase/functions/sandy-computer-worker/**'
+      - 'supabase/functions/sandy-master-computer/**'
       - 'scripts/sandy/*computer*'
       - 'scripts/sandy/fixtures/computer-worker-v58.ts'
       - '.github/workflows/sandy-computer-eligibility-release.yml'
@@ -76,6 +77,7 @@ on:
       - '.github/workflows/sandy-engineering-mcp-acceptance.yml'
       - 'supabase/functions/sandy-vm-protocol-api/**'
       - 'supabase/functions/sandy-computer-worker/**'
+      - 'supabase/functions/sandy-master-computer/**'
       - 'scripts/sandy/*computer*'
       - 'scripts/sandy/fixtures/computer-worker-v58.ts'
       - '.github/workflows/sandy-computer-eligibility-release.yml'
@@ -191,10 +193,18 @@ jobs:
         run: |
           python3 -m unittest scripts/sandy/test_iap_admin_repair.py scripts/sandy/test_computer_eligibility_release.py -v
           deno test --allow-read scripts/sandy/test_iap_repair_authorization.ts
+          deno test --allow-read scripts/sandy/test_iap_repair_custody.ts
+          deno test supabase/functions/sandy-engineering-control/iap_repair_test.ts
+          deno test supabase/functions/sandy-engineering-control/iap_repair_jobs_test.ts
+          python3 -m unittest scripts/sandy/test_iap_transport_source.py -v
+          python3 -m unittest scripts/sandy/test_iap_runtime_binding.py -v
+          python3 -m unittest scripts/sandy/test_iap_transport_release.py -v
+          deno test scripts/sandy/verify_iap_closed_candidate_test.ts
           deno check scripts/sandy/submit_iap_repair_proposal.ts
           deno check supabase/functions/sandy-computer-worker/eligibility.ts
           deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts
           deno test supabase/functions/_shared/sandy-agent-operations/worker_computer_lifecycle_test.ts
+          deno test supabase/functions/sandy-master-computer/index_test.ts
       - name: Test native protocols against isolated loopback fixtures
         run: |
           set -euo pipefail

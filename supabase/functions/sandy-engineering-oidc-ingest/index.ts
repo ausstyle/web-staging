@@ -1,3 +1,6 @@
+import {bindPrivateWorkerTransport} from "./worker_transport.ts";
+import {invokeEmailShadowFixture} from "./email_fixture.ts";
+import {examinerLaunchScope} from "./examiner_scope.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
 import {createRemoteJWKSet,jwtVerify} from "npm:jose@5.10.0";
@@ -14,6 +17,7 @@ const ENGINEERING_REF = REPO + "/.github/workflows/sandy-codex-engineering.yml@r
 const QA_REF = REPO + "/.github/workflows/sandy-v2-api-qa.yml@refs/heads/main";
 const DESIGN_REF = REPO + "/.github/workflows/sandy-v2-examiner-design.yml@refs/heads/main";
 const LIVE_REF = REPO + "/.github/workflows/sandy-examiner-live-review.yml@refs/heads/main";
+const FULL_RERUN_REF = REPO + "/.github/workflows/sandy-examiner-full-rerun.yml@refs/heads/main";
 const LAB_REF = REPO + "/.github/workflows/sandy-examiner-google-lab.yml@refs/heads/main";
 const keys = createRemoteJWKSet(new URL(ISSUER + "/.well-known/jwks"));
 const json = (body: unknown, status=200) => new Response(JSON.stringify(body), {
@@ -40,13 +44,55 @@ Deno.serve(async(req:Request)=>{
   const qaFlow=claims.workflow_ref===QA_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const designFlow=claims.workflow_ref===DESIGN_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   const liveFlow=claims.workflow_ref===LIVE_REF&&["push","schedule","workflow_dispatch","workflow_run"].includes(String(claims.event_name));
+  const fullRerunFlow=claims.workflow_ref===FULL_RERUN_REF&&["push","workflow_dispatch"].includes(String(claims.event_name));
   const labFlow=claims.workflow_ref===LAB_REF&&["push","schedule","workflow_dispatch"].includes(String(claims.event_name));
   if(claims.repository!==REPO || String(claims.repository_id)!==REPO_ID ||
-     (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow&&!liveFlow) || claims.ref!=="refs/heads/main")
+     (!observerFlow&&!inlineFlow&&!qaFlow&&!designFlow&&!labFlow&&!liveFlow&&!fullRerunFlow) || claims.ref!=="refs/heads/main")
     return fail("unauthorized_workflow",403);
 
   let body:Record<string,unknown>;
   try {body=await req.json();} catch {return fail("invalid_json");}
+
+
+  if(fullRerunFlow){
+    if(body.operation==="runtime_worker_transport_bind"){
+      if(Object.keys(body).length!==1)return fail("worker_transport_operation_restricted",403);
+      const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+      if(url!=="https://zmqlyygzqoidkcwdysok.supabase.co"||!key)return fail("worker_transport_runtime_binding_unavailable",503);
+      try{const result=await bindPrivateWorkerTransport(createClient(url,key,{auth:{persistSession:false}}),key,{sourceCommit:String(claims.sha||""),runId:String(claims.run_id||"")});return json(result.body,result.status);}
+      catch{return fail("worker_transport_configuration_unverified",503);}
+    }
+    if(body.operation==="runtime_email_shadow_fixture"){
+      if(Object.keys(body).length!==1)return fail("email_fixture_operation_restricted",403);
+      const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+      if(url!=="https://zmqlyygzqoidkcwdysok.supabase.co"||!key)return fail("email_fixture_runtime_binding_unavailable",503);
+      try{const result=await invokeEmailShadowFixture(createClient(url,key,{auth:{persistSession:false}}),key);return json(result.body,result.status);}
+      catch(error){const code=error instanceof Error?error.message:"";return fail(/^email_fixture_[a-z_]+$/.test(code)?code:"email_fixture_validation_failed",409);}
+    }
+    const launchScope=examinerLaunchScope(body);if(!launchScope)return fail("full_rerun_operation_restricted",403);
+    const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+    if(!url||!key)return fail("full_rerun_unconfigured",503);
+    const db=createClient(url,key,{auth:{persistSession:false}});
+    const {data:lab,error:le}=await db.from("sandy_examiner_lab_accounts").select("customer_id,expected_email").eq("id",1).single();
+    if(le||lab?.expected_email!=="sandyemail.ai@gmail.com")return fail("full_rerun_account_unverified",409);
+    const {data:identity,error:ie}=await db.from("email_customer_addresses").select("customer_id").eq("customer_id",lab.customer_id).eq("normalized_email",lab.expected_email).limit(1);
+    if(ie||!identity?.length)return fail("full_rerun_identity_mismatch",409);
+    const {data:active}=await db.from("sandy_v2_qa_runs").select("run_key,started_at").like("run_key","production:%").in("status",["running","reviewing_threads"]).order("started_at",{ascending:false}).limit(10);
+    const fresh=(active||[]).find((x:any)=>Date.now()-Date.parse(x.started_at)<12*60*1000);
+    if(fresh)return fail("full_rerun_already_active",409);
+    for(const old of active||[]){
+      await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString(),selection_audit:{mode:"mandatory_full_cycle_v2",failure_reason:"stale_abandoned_run_before_rerun"}}).eq("run_key",old.run_key);
+    }
+    const runKey="production:"+crypto.randomUUID();
+    const {error:re}=await db.from("sandy_v2_qa_runs").insert({run_key:runKey,status:"running",selection_audit:{mode:launchScope.mode,account:lab.expected_email,minimum_tests:launchScope.minimum,request_source:"verified_github_workflow_rerun",...(launchScope.caseKeys?{selected_case_keys:launchScope.caseKeys}:{})}});
+    if(re)return fail("full_rerun_reservation_failed",503);
+    try{
+      const rsp=await fetch(url+"/functions/v1/sandy-examiner-full-cycle",{method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},body:JSON.stringify({run_key:runKey,customer_id:lab.customer_id,...(launchScope.caseKeys?{case_keys:launchScope.caseKeys}:{})}),signal:AbortSignal.timeout(20000)});
+      const data=await rsp.json().catch(()=>({}));
+      if(rsp.status!==202){await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);return fail("full_rerun_worker_rejected_"+rsp.status,503)}
+      return json({ok:true,run_key:runKey,status:"running",mode:launchScope.mode,synthetic_target:launchScope.minimum,thread_review_required:launchScope.threadReviewRequired});
+    }catch{await db.from("sandy_v2_qa_runs").update({status:"failed",completed_at:new Date().toISOString()}).eq("run_key",runKey);return fail("full_rerun_worker_unreachable",503)}
+  }
 
 
   if(liveFlow){
@@ -473,7 +519,7 @@ Deno.serve(async(req:Request)=>{
           grounding_keys:grounds,execution_status:"shadow_not_executed",requires_current_production_retest:true});
       }
       if(accepted.length<2){
-        await finish("rejected",{snapshot_hash:snapshotHash,source_summary:summary,
+        await finish("rejected",{snapshot_hash:snapshotHash,
           rejection_reason:"insufficient_valid_read_only_grounded_tests",source_summary:{...summary,proposal_rejections:rejectionCounts,proposals_returned:data.tests.length,proposals_accepted:accepted.length}});
         return json({ok:true,status:"rejected",accepted:accepted.length,mode:policy.mode});
       }
@@ -542,7 +588,7 @@ Deno.serve(async(req:Request)=>{
       await db.from("sandy_v2_qa_runs").update({status:"complete",completed_at:new Date().toISOString()}).eq("run_key",runKey);
       return json({ok:false,reason:"rolling_24_hour_budget_exhausted",run_key:runKey,attempted:0,used:Number(used||0),limit:account.max_calls_per_day},429);
     }
-    const cases=[
+    const cases:Array<{key:string;prompts:string[];expect:string;design_run_key?:string}>=[
       {key:"clock",prompts:["What time is it?","Please tell me the current time."],expect:"verified_clock"},
       {key:"connections",prompts:["Hi, can you tell me which connected services I have with Sandy?","Which apps are connected to my Sandy account?"],expect:"no_test_customer_connections"},
       {key:"web_history",prompts:["How many web chat messages have I sent Sandy?","Can you count my Sandy web chat messages from your own records?"],expect:"web_scoped_count"},
@@ -1145,6 +1191,8 @@ Deno.serve(async(req:Request)=>{
   const action=decision==="BLOCKED"?"architect_blocked":"architect_ready";
   const result=await event(action,issueKey+":architect:"+runId+":"+decision,evidence);
   if(result.error) return fail("state_transition_rejected",409);
+  if(result.data?.superseded===true)
+    return json({ok:true,recorded:true,decision,pr_recorded:false,superseded:true,production_acceptance_inferred:false});
   if(pr!==null&&pr!==undefined){
     const resultPR=await event("engineering_pr_created",issueKey+":engineer:"+runId+":"+pr,{
       ...evidence,pr_number:String(pr),pr_url:"https://github.com/"+REPO+"/pull/"+pr,

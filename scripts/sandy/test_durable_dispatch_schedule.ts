@@ -5,7 +5,8 @@ Deno.test('existing durable dispatcher timer is fixed, private, bounded and disa
  const db=new PGlite();try{
  await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;CREATE SCHEMA vault;CREATE SCHEMA net;CREATE SCHEMA cron;
  CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql AS $$SELECT current_setting('fixture.role',true)$$;
- CREATE TABLE public.sandy_engineering_changes(id uuid PRIMARY KEY);
+ CREATE TABLE public.sandy_engineering_changes(id uuid PRIMARY KEY,title text,expected_behavior text,status text,requested_by uuid);
+ CREATE TABLE public.sandy_engineering_test_identities(user_id uuid);
  CREATE TABLE public.sandy_engineering_change_events(change_id uuid,event_type text,actor uuid,detail jsonb);
  CREATE TABLE public.sandy_orch_jobs(id uuid PRIMARY KEY,state text);
  CREATE TABLE public.sandy_orch_outbox(job_id uuid,available_at timestamptz,lease_until timestamptz);
@@ -31,7 +32,7 @@ Deno.test('existing durable dispatcher timer is fixed, private, bounded and disa
   await db.exec("SELECT set_config('fixture.role','authenticated',false)");await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',['fixture-secret-'.repeat(12)]),/private_worker_transport_binding_required/);
   await db.exec("SELECT set_config('fixture.role','service_role',false)");
   const result=await value('SELECT public.sandy_orch_worker_bind_transport($1) v',['fixture-secret-'.repeat(12)]);assert.deepEqual(result,{ok:true,bound:true,authority_expanded:false});
-  const change='10000000-0000-4000-8000-000000000001';await db.query('INSERT INTO public.sandy_engineering_changes VALUES($1)',[change]);
+  const change='10000000-0000-4000-8000-000000000001';await db.query('INSERT INTO public.sandy_engineering_changes(id) VALUES($1)',[change]);
   await db.query("UPDATE public.sandy_orch_worker_control SET enabled=true,release_change_id=$1,source_commit=repeat('a',40)",[change]);
   assert.equal((await value('SELECT public.sandy_orch_worker_tick() v')).state,'idle');assert.equal(await value('SELECT count(*)::integer v FROM net.fixture_requests'),0);
  });
@@ -50,6 +51,17 @@ Deno.test('existing durable dispatcher timer is fixed, private, bounded and disa
   await db.exec("UPDATE public.sandy_orch_jobs SET state='running';UPDATE public.sandy_orch_outbox SET lease_until=clock_timestamp()-interval '1 second'");assert.equal((await value('SELECT public.sandy_orch_worker_tick() v')).state,'dispatch_requested');
   await db.exec('UPDATE public.sandy_orch_worker_control SET enabled=false,last_requested_at=NULL');assert.equal((await value('SELECT public.sandy_orch_worker_tick() v')).state,'disabled');
   const cron=(await db.query('SELECT * FROM cron.job')).rows;assert.deepEqual(cron,[{jobname:'sandy-orchestration-dispatch-every-minute',schedule:'* * * * *',command:'SELECT public.sandy_orch_worker_tick()'}]);
+ });
+ await t.step('additive transport guard requires fixed unactivated timer and prevents replacement or enabled rebinding',async()=>{
+  await db.exec('UPDATE public.sandy_orch_worker_control SET enabled=false,release_change_id=NULL,source_commit=NULL,last_request_id=NULL,last_requested_at=NULL');
+  await db.exec("INSERT INTO public.sandy_engineering_test_identities VALUES('10000000-0000-4000-8000-000000000010');INSERT INTO public.sandy_engineering_changes(id,title,expected_behavior,status,requested_by) VALUES('740a56f8-a582-419f-a4d9-9440af5e57f9','Activate existing durable read dispatcher timer','Resume only already admitted fenced read jobs; no authority or job creation','proposed','10000000-0000-4000-8000-000000000010')");
+  await db.exec(await Deno.readTextFile('supabase/migrations/20261024003100_sandy_dispatch_transport_guard.sql'));
+  const status=await value('SELECT public.sandy_orch_worker_transport_state() v');assert.equal(status.unactivated,true);assert.equal(status.tracking_verified,true);assert.equal(status.credential_bound,true);assert.equal(JSON.stringify(status).includes('fixture-secret'),false);
+  assert.deepEqual(await value('SELECT public.sandy_orch_worker_bind_transport($1) v',['fixture-secret-'.repeat(12)]),{ok:true,bound:true,authority_expanded:false});
+  await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',['different-fixture-secret-'.repeat(12)]),/transport_replacement_requires_separate_configuration/);
+  await db.exec("UPDATE public.sandy_orch_worker_control SET enabled=true,release_change_id='740a56f8-a582-419f-a4d9-9440af5e57f9',source_commit=repeat('b',40)");
+  await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',['fixture-secret-'.repeat(12)]),/disabled_unactivated_existing_timer_required/);
+  await db.exec("SELECT set_config('fixture.role','authenticated',false)");await assert.rejects(db.query('SELECT public.sandy_orch_worker_transport_state()'),/private_worker_configuration_required/);
  });
  }finally{await db.close();}
 });

@@ -295,7 +295,51 @@ def execution_evidence(docs=DOCS):
     return dict(positive), dict(denied)
 
 
-def reconcile(requirements, registry, functions, disposition, positive, denied):
+def certificate_matches_snapshot(certificate, required, rows, live, evidence_root):
+    """Fence family promotion to reviewed evidence bytes and current bindings.
+
+    Historical operation successes remain useful, but cannot certify a different
+    contract or release. These pins supplement, rather than replace, independent
+    provider/permission/recovery review recorded by the family certificate.
+    """
+    bindings = certificate.get("operation_bindings")
+    files = certificate.get("evidence_files")
+    hashes = certificate.get("evidence_sha256")
+    if (not isinstance(bindings, dict) or set(bindings) != required
+            or not isinstance(files, list) or not files
+            or not all(isinstance(name, str) and name for name in files)
+            or not isinstance(hashes, dict) or set(hashes) != set(files)):
+        return False
+    root = evidence_root.resolve()
+    for name in files:
+        path = (root / name).resolve()
+        if not path.is_relative_to(root) or Path(name).is_absolute():
+            return False
+        try:
+            if not path.is_file() or digest(path) != hashes[name]:
+                return False
+        except OSError:
+            return False
+    for name in required:
+        row = rows.get(name, {})
+        binding = bindings[name]
+        metadata = live.get(row.get("handler"), {})
+        contract = (row.get("error_contract") or {}).get("contract_sha256")
+        if (not isinstance(binding, dict) or not isinstance(contract, str)
+                or len(contract) != 64 or any(c not in "0123456789abcdef" for c in contract)
+                or binding.get("contract_sha256") != contract
+                or binding.get("handler") != row.get("handler")
+                or metadata.get("status") != "ACTIVE"
+                or type(metadata.get("version")) is not int
+                or type(binding.get("version")) is not int
+                or binding["version"] != metadata["version"]
+                or type(metadata.get("verify_jwt")) is not bool
+                or binding.get("verify_jwt") is not metadata["verify_jwt"]):
+            return False
+    return True
+
+
+def reconcile(requirements, registry, functions, disposition, positive, denied, *, evidence_root=DOCS):
     ids = [row["requirement_id"] for row in requirements]
     if sorted(ids) != list(range(1, 162)):
         raise ValueError("exactly_one_row_for_each_original_requirement_required")
@@ -326,13 +370,15 @@ def reconcile(requirements, registry, functions, disposition, positive, denied):
         required_rows = [rows[name] for name in sorted(required) if name in rows]
         actual = sorted(required & set(positive))
         certified = disposition.get("family_acceptance", {}).get(str(ident), {})
-        complete = (certified.get("all_required_constituents_reviewed") is True
+        complete = (str(ident) in overrides
+                    and certified.get("all_required_constituents_reviewed") is True
                     and certified.get("shared_and_contract_tests_passed") is True
                     and certified.get("representative_provider_acceptance_passed") is True
                     and certified.get("higher_risk_independent_verification_passed") is True
                     and bool(certified.get("evidence_files")) and bool(required) and required <= set(positive)
                     and required <= rows.keys()
-                    and all(row.get("api_exposed") is True and row.get("ai_exposed") is True for row in required_rows))
+                    and all(row.get("api_exposed") is True and row.get("ai_exposed") is True for row in required_rows)
+                    and certificate_matches_snapshot(certified, required, rows, live, evidence_root))
         review = disposition.get("implementation_review", {}).get(str(ident), {})
         # Only an explicit constituent review can classify code as complete.
         # A deployed function, registry flags or a generated schema cannot do so.

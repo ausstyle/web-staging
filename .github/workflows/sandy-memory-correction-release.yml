@@ -1,0 +1,43 @@
+name: Repair existing memory correction confidence
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-memory-correction-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reproduce existing constraint failure and verify correction, rejection and unchanged authorization
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_memory_correction_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+      - name: Apply source-pinned schema-only repair
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_memory_correction.py --deploy --evidence-dir "$RUNNER_TEMP/memory-correction"
+      - name: Independently verify installed source and service-only permissions
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_memory_correction.py --verify-installed --evidence-dir "$RUNNER_TEMP/memory-correction-readback"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-correction-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/memory-correction/
+            ${{ runner.temp }}/memory-correction-readback/
+          retention-days: 14

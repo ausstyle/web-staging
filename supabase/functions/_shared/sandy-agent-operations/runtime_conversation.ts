@@ -67,7 +67,9 @@ async function bind(task: RuntimeConversationTask, runtime: Runtime, firstReques
     !Array.isArray(firstRequest.tools) || JSON.stringify(firstRequest).length > 4 * 1024 * 1024) {
     throw Error("runtime_conversation_source_contract_invalid");
   }
-  if (task.customerId === null ? firstRequest.tools.length !== 0 : await sha256(stable(firstRequest.tools)) !== profiles[runtime].tools) {
+  const expectedToolHash = runtime === "sandy-agent-runtime-v4" && task.readOnlyAssessment
+    ? v4RuntimeConversationSource.readOnlyToolSchemaSha256 : profiles[runtime].tools;
+  if (task.customerId === null ? firstRequest.tools.length !== 0 : await sha256(stable(firstRequest.tools)) !== expectedToolHash) {
     throw Error("runtime_conversation_tool_profile_invalid");
   }
   if (firstRequest.tool_choice !== undefined) {
@@ -129,11 +131,12 @@ export async function executeRuntimeConversation(
     return denied(503, "runtime_conversation_v4_broker_not_configured");
   }
   const { task } = session;
-  const current = await deps.db.from("sandy_agent_tasks").select("id,customer_id,channel,request_id,status,user_request")
+  const current = await deps.db.from("sandy_agent_tasks").select("id,customer_id,channel,request_id,status,user_request,plan")
     .eq("id", task.taskId).maybeSingle();
   if (current.error || !current.data || current.data.id !== task.taskId || current.data.customer_id !== task.customerId ||
     current.data.channel !== task.channel || current.data.request_id !== task.requestId ||
-    current.data.user_request !== task.requestText || !["queued", "running"].includes(current.data.status)) {
+    current.data.user_request !== task.requestText || !["queued", "running"].includes(current.data.status) ||
+    (current.data.channel === "test" || current.data.plan?.execution_mode === "read_only_assessment") !== task.readOnlyAssessment) {
     return denied(403, "runtime_conversation_persisted_task_mismatch");
   }
   const request: Obj = args.round === 0 ? structuredClone(session.initial) : {

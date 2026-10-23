@@ -23,6 +23,13 @@ jobs:
       actions: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reviewed offline contract dependencies
+        run: python3 -m pip install -r scripts/sandy/testing/offline-requirements.txt
       - name: Validate assignment and credentials
         env:
           ISSUE: ${{ inputs.issue_number }}
@@ -35,7 +42,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           ISSUE: ${{ inputs.issue_number }}
         run: gh issue view "$ISSUE" --json title,body,state > /tmp/sandy-issue.json
+      - name: Validate dependency handoff and registry contracts
+        run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
       - name: Software Architect — read-only
+        id: architect_model
         uses: openai/codex-action@v1
         with:
           allow-bots: true
@@ -73,8 +83,6 @@ jobs:
             identity_permissions, source_parity, other. Use exact source object names only;
             omit sensitive identifiers, customer data, credentials and tokens.
             The dependency list is evidence to gather, NEVER permission to bypass BLOCKED.
-      - name: Validate dependency handoff and registry contracts
-        run: python3 -m unittest discover -s scripts/sandy -p 'test_*.py' -v
       - name: Record deduplicated dependency handoff
         if: success()
         env:
@@ -83,6 +91,7 @@ jobs:
           ARCHITECT_REPORT: /tmp/sandy-architecture.md
         run: python3 scripts/sandy/architect_dependency_handoff.py
       - uses: actions/upload-artifact@v4
+        if: ${{ always() && steps.architect_model.outcome == 'success' }}
         with:
           name: sandy-architecture-${{ inputs.issue_number }}
           path: /tmp/sandy-architecture.md
@@ -97,6 +106,13 @@ jobs:
       issues: read
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install reviewed offline contract dependencies
+        run: python3 -m pip install -r scripts/sandy/testing/offline-requirements.txt
       - uses: actions/download-artifact@v4
         with:
           name: sandy-architecture-${{ inputs.issue_number }}
