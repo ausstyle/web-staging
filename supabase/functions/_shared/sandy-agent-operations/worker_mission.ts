@@ -1,6 +1,7 @@
 import { isMissionWorkProductJob, missionExecutorSource, type MissionWorkProductJob } from "./worker_mission_identity.ts";
 import { missionWorkProductOperation, missionWorkProductVersion, validMissionWorkProductInput, validMissionWorkProductOutput } from "./worker_mission_contract.ts";
 import { fixedRuntimeResponses } from "./runtime_responses_transport.ts";
+import { completedWorkerModelPayload } from "./worker_model_result.ts";
 type Obj = Record<string, any>;
 export type MissionWorkProductDependencies = { db: any; openaiKey: string; fetch?: typeof fetch };
 export type MissionWorkProductOutcome = { status: number; body: Obj; legacy: Obj };
@@ -49,7 +50,7 @@ export async function executeMissionWorkProduct(job: MissionWorkProductJob, args
       if (!object(claim.context) || typeof claim.context.project !== "string" || typeof claim.context.milestone !== "string") throw Error("mission_worker_context_unavailable");
       const response = await fixedRuntimeResponses(missionWorkProductRequest(claim.context), deps.openaiKey, 80000, deps.fetch ?? fetch, false);
       const payload = await providerJson(response);
-      if (!response.ok || !payload || !Array.isArray(payload.output) || payload.status === "incomplete" || payload.status === "failed" || payload.error != null || typeof payload.id !== "string" || !payload.id || payload.id.length > 512) throw Error("mission_model_outcome_unverified");
+      if (!response.ok || !completedWorkerModelPayload(payload)) throw Error("mission_model_outcome_unverified");
       responseId = payload.id; responseSha = await sha(JSON.stringify(payload));
       const raw = payload.output.flatMap((v: any) => (Array.isArray(v?.content) ? v.content : []).filter((c: any) => c?.type === "output_text").map((c: any) => c.text)).join("");
       let draft: Obj; try { draft = JSON.parse(raw); } catch { const match = raw.match(/\{[\s\S]*\}/); if (!match) throw Error("invalid_draft_json"); draft = JSON.parse(match[0]); }

@@ -122,7 +122,7 @@ Deno.test("lost admission or atomic final receipt and concurrent context changes
 });
 Deno.test("fenced legacy JSON draft normalizes original title/content/type bounds without external dispatch", async () => {
   const { db, job } = await setup(); const draft = { title: "x".repeat(300), content: content.repeat(100), content_type: "unsupported", questions: ["not an external action"] };
-  const result = await executeMissionWorkProduct(job, {}, deps(db, (async () => Response.json({ id: "resp_fenced", output: [{ content: [{ type: "output_text", text: "```json\n" + JSON.stringify(draft) + "\n```" }] }] })) as typeof fetch));
+  const result = await executeMissionWorkProduct(job, {}, deps(db, (async () => Response.json({ id: "resp_fenced", status: "completed", output: [{ content: [{ type: "output_text", text: "```json\n" + JSON.stringify(draft) + "\n```" }] }] })) as typeof fetch));
   assert.equal(result.status, 200); assert.equal(db.products[0].title.length, 240); assert.equal(db.products[0].content.length, 14000); assert.equal(db.products[0].content_type, "draft"); assert.equal(db.products[0].state, "pending_review"); assert.equal(db.reviews[0].assigned_to, "client");
 });
 
@@ -134,4 +134,15 @@ Deno.test("another queued run ID cannot repeat the same unresolved milestone out
   const proof = authenticateMissionExecutor(req(), "fixture-renewal-key"); assert.ok(proof);
   const next = await bindMissionWorkProductJob(proof, db, { runId: nextId, customerId: CUSTOMER, missionId: MISSION }); assert.ok(next);
   const result = await executeMissionWorkProduct(next, {}, service); assert.equal(result.status, 409); assert.equal(result.body.reconciliation_required, true); assert.equal(db.runs[1].state, "blocked"); assert.equal(calls, 1); assert.equal(db.audits.length, 1);
+});
+
+Deno.test("noncompleted model output cannot create a draft, review commitment or successful mission receipt",async()=>{
+ for(const status of ["cancelled","queued","in_progress","unknown_provider_state",undefined]){
+  const {db,job}=await setup();let calls=0;
+  const request=(async()=>{calls++;return Response.json({id:"resp_nonterminal_fixture",status,output:[{content:[{type:"output_text",text:JSON.stringify({title:"Plausible draft",content,content_type:"checklist"})}]}]});})as typeof fetch;
+  const result=await executeMissionWorkProduct(job,{},deps(db,request));
+  assert.equal(result.status,502);assert.equal(result.body.reconciliation_required,true);assert.equal(result.body.executed,null);
+  assert.equal(db.products.length,0);assert.equal(db.reviews.length,0);assert.equal(db.audits[0].state,"unknown");
+  assert.equal((await executeMissionWorkProduct(job,{},deps(db,request))).status,409);assert.equal(calls,1);
+ }
 });
