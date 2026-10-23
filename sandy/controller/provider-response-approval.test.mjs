@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {RELEASE,verifyReleaseChange,createReleaseApproval} from './provider-response-approval.mjs';
+import {RELEASE,verifyReleaseChange,createReleaseApproval,releaseApprovalFor} from './provider-response-approval.mjs';
 const request={"title":"One-off protected provider-executor release for PR222","problem":"The completed deployment-status response fix is not covered by the existing standing workload grant or runtime-only release target list. A genuine Owner-scoped exception is needed for this single existing function.","expected_behavior":"Release sandy-provider-operation-api from version 30, prior bundle 896a964ff35577f62e6d49c590ce1d2262bddda3eb24d39f3bc59aaf13941480, using source 53556941f600c7ec625067a74d37bbcffa8bd400 and exact release manifest b72099a290d0e69ec09aba33fc1f8ab2159de6985e9ae292c6626a1c9e42dc40. Execute only through the reviewed protected provider-response workflow with independent CI, exact source guards, lease, durable dispatch intent, private rollback artifact and post-deployment source verification. Permit bounded rollback to the captured original source; no standing grant change.","change_purpose":"Deploy the tested response correction needed to complete the failed SANDY-ENG-0001 GitHub deployment-status acceptance case.","feature_improvement":"Accept an empty optional environment URL while preserving all other deployed modules, credential and authentication behavior.","scope":["github:ausstyle/web-staging:engineering/api-log-acceptance-20261023","sandy-provider-operation-api"],"risk":"normal","idempotency_key":"owner-provider-response-b72099a290d0e69ec09aba33","acceptance_criteria":["Genuine current Controller Owner approval and matching Owner audit reason include source and release manifest pins.","Protected runner changes only the reviewed entrypoint and preserves all other modules and JWT configuration.","Rerun only the previously failed GitHub deployment-status case, with independent provider readback and negative verification."],"regression_rules":["No workload authority expansion, Owner impersonation, direct approval-status writes, IAM changes or production traffic changes.","No new candidate, customer record changes, credentials or changes to communications/memory.","Unknown upload outcomes require read-only source reconciliation; rollback material stays private."]};
 const owner='10000000-0000-4000-8000-000000000001';
 function fixture() {
@@ -41,4 +41,9 @@ Deno.test('uncertain mutation reply never causes an automatic or duplicate appro
 });
 Deno.test('concurrent approval clicks dispatch at most once',async()=>{
  const f=fixture(),a=createReleaseApproval(f.transport);const outcomes=await Promise.allSettled([a.approve(),a.approve()]);assert.equal(outcomes.filter(x=>x.status==='fulfilled').length,1);assert.equal(f.calls.filter(x=>x.action==='status').length,1);
+});
+
+Deno.test('Controller rerenders retain the same no-replay state after an uncertain mutation',async()=>{
+ const f=fixture(),send=f.transport.engineering;let count=0;f.transport.engineering=async body=>{if(body.action==='status'){count++;throw Error('uncertain');}return send(body);};
+ await assert.rejects(releaseApprovalFor(f.transport).approve());await assert.rejects(releaseApprovalFor(f.transport).approve(),/uncertain/);assert.equal(count,1);
 });

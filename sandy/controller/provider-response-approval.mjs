@@ -56,6 +56,11 @@ export function createReleaseApproval(transport) {
   }
   return { inspect, approve, canDispatch: () => !dispatched && !busy };
 }
+const approvalActions = new WeakMap();
+export function releaseApprovalFor(transport) {
+  if (!approvalActions.has(transport)) approvalActions.set(transport, createReleaseApproval(transport));
+  return approvalActions.get(transport);
+}
 export function showProviderResponseApproval(host, transport) {
   const el = (tag, text) => { const e = document.createElement(tag); e.textContent = text; return e; };
   const box = el('section', ''); box.className = 'panel'; box.id = 'pr222-release';
@@ -65,7 +70,7 @@ export function showProviderResponseApproval(host, transport) {
   const refresh = el('button', 'Refresh recorded approval'); refresh.className = 'btn';
   box.append(el('h2', 'PR #222 · one-off production release'),
     el('p', 'Approve the registered provider response correction and its bounded rollback using your existing Owner session. Approval is recorded separately from deployment; standing permissions remain unchanged.'), details, status, approve, refresh); host.append(box);
-  const action = createReleaseApproval(transport);
+  const action = releaseApprovalFor(transport);
   const read = async () => {
     approve.disabled = true;
     try {
