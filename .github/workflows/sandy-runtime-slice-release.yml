@@ -67,7 +67,7 @@ jobs:
           --allow-net=127.0.0.1 --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE
           supabase/functions/sandy-vm-protocol-api/winrm_test.ts
       - name: Verify existing-queue timer and private credential isolation
-        run: deno test --no-lock --allow-read scripts/sandy/test_durable_dispatch_schedule.ts
+        run: deno test --no-lock --allow-read scripts/sandy/test_durable_dispatch_schedule.ts scripts/sandy/test_superseded_architect_outcomes.ts
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
