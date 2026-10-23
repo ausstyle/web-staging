@@ -24,7 +24,7 @@ try {
   assert.equal((await db.query("SELECT status FROM email_ai_profile_facts WHERE id=$1", [id])).rows[0].status, "active"); passed++;
   assert.equal((await db.query("SELECT count(*)::integer n FROM sandy_memory_rejected_facts")).rows[0].n, 0); passed++;
   const beforeAcl = (await db.query("SELECT oid,proowner,proacl,prosecdef,proconfig FROM pg_proc WHERE oid='sandy_private.correct_customer_fact(uuid,uuid,text)'::regprocedure")).rows[0];
-  await db.exec(await readFile(new URL("../../supabase/migrations/20261024003000_sandy_memory_correction_confidence.sql", import.meta.url), "utf8"));
+  await db.exec(await readFile(new URL("../../supabase/migrations/20261024004000_sandy_memory_correction_confidence.sql", import.meta.url), "utf8"));
   assert.deepEqual((await db.query("SELECT oid,proowner,proacl,prosecdef,proconfig FROM pg_proc WHERE oid='sandy_private.correct_customer_fact(uuid,uuid,text)'::regprocedure")).rows[0], beforeAcl); passed++;
   await assert.rejects(db.query("SELECT sandy_private.correct_customer_fact($1,$2,'foreign change')", [other, id]), error => error.code === "P0002"); passed++;
   assert.equal((await db.query("SELECT sandy_private.correct_customer_fact($1,$2,'old fixture value') id", [customer, id])).rows[0].id, id); passed++;
