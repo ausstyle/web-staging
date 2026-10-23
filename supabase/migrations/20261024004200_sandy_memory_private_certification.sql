@@ -49,6 +49,8 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM auth.users u JOIN public.sandy_memory_portal_accounts p ON p.auth_user_id=u.id AND p.revoked_at IS NULL
   JOIN public.email_customer_addresses e ON e.customer_id=p.customer_id AND e.is_primary AND e.normalized_email=lower(u.email)
   WHERE u.id=(m->>'fixture_user_id')::uuid AND p.customer_id=(m->>'fixture_customer_id')::uuid AND u.email_confirmed_at IS NOT NULL
+  AND u.raw_user_meta_data->>'sandy_api_isolated_session_test'='true'
+  AND EXISTS(SELECT 1 FROM public.email_customers c JOIN public.sandy_memory_settings ms ON ms.customer_id=c.id WHERE c.id=p.customer_id AND c.display_name='Isolated Sandy API service acceptance' AND c.google_drive_folder_status='excluded' AND NOT ms.learning_enabled AND NOT ms.proactive_enabled)
   AND u.email ~ '^sandy-service-acceptance-[a-f0-9-]{36}@example[.]invalid$' AND u.created_at>=clock_timestamp()-interval '20 minutes'
   AND NOT EXISTS(SELECT 1 FROM public.sandy_controller_admins c WHERE c.auth_user_id=u.id))
   OR EXISTS(SELECT 1 FROM jsonb_array_elements_text(m->'fact_ids') x(id) LEFT JOIN public.email_ai_profile_facts f ON f.id=x.id::uuid AND f.customer_id=(m->>'fixture_customer_id')::uuid WHERE f.id IS NULL)
@@ -74,7 +76,8 @@ BEGIN
  IF a.id IS NULL OR a.artifact_type<>'runtime_private_certification' OR a.target<>'memory.fact_correct'
   OR m->>'operation'<>'memory.fact_correct' OR m->>'fixture_user_id' IS DISTINCT FROM actor::text OR m->>'fixture_customer_id' IS DISTINCT FROM tenant::text
   OR EXISTS(SELECT 1 FROM public.sandy_controller_admins c WHERE c.auth_user_id=actor)
-  OR NOT EXISTS(SELECT 1 FROM auth.users u WHERE u.id=actor AND u.email ~ '^sandy-service-acceptance-[a-f0-9-]{36}@example[.]invalid$' AND u.created_at>=a.created_at-interval '20 minutes')
+  OR NOT EXISTS(SELECT 1 FROM auth.users u WHERE u.id=actor AND u.email ~ '^sandy-service-acceptance-[a-f0-9-]{36}@example[.]invalid$' AND u.created_at>=a.created_at-interval '20 minutes' AND u.raw_user_meta_data->>'sandy_api_isolated_session_test'='true')
+  OR NOT EXISTS(SELECT 1 FROM public.email_customers c JOIN public.sandy_memory_settings ms ON ms.customer_id=c.id WHERE c.id=tenant AND c.display_name='Isolated Sandy API service acceptance' AND c.google_drive_folder_status='excluded' AND NOT ms.learning_enabled AND NOT ms.proactive_enabled)
   OR m->>'api_deployment_id' IS DISTINCT FROM p_api_deployment_id OR m->>'contract_sha256' IS DISTINCT FROM p_contract_sha256 OR p_contract_sha256<>'731b0f287fb36c073017f47fa7b5f4c4b525e3f7e04dfa6e73ace41c10a5cf6a'
   OR (m->>'expires_at')::timestamptz<=clock_timestamp() OR (m->>'expires_at')::timestamptz>a.created_at+interval '15 minutes'
   OR NOT m->'fact_ids' @> jsonb_build_array(p_fact_id::text)

@@ -7,6 +7,9 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
   let passed = 0;
   await db.exec(
     `DROP TRIGGER deny_fixture_audit ON sandy_memory_audit;DROP FUNCTION deny_fixture_audit();
+ ALTER TABLE auth.users ADD COLUMN raw_user_meta_data jsonb DEFAULT '{"sandy_api_isolated_session_test":true}'::jsonb;
+ CREATE TABLE email_customers(id uuid PRIMARY KEY,display_name text,google_drive_folder_status text);
+ CREATE TABLE sandy_memory_settings(customer_id uuid,learning_enabled boolean,proactive_enabled boolean);
  ALTER TABLE auth.users ADD COLUMN created_at timestamptz NOT NULL DEFAULT now();
  CREATE TABLE sandy_controller_admins(auth_user_id uuid,role text,enabled boolean);
  CREATE TABLE sandy_engineering_artifacts(id uuid PRIMARY KEY,change_id uuid NOT NULL,artifact_type text NOT NULL,target text NOT NULL,before_ref text,after_ref text,rollback_strategy text NOT NULL,rollback_notes text,metadata jsonb NOT NULL,created_at timestamptz NOT NULL DEFAULT now());
@@ -42,6 +45,8 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
   await db.query("UPDATE email_customer_addresses SET normalized_email=$1", [
     email,
   ]);
+  await db.query("INSERT INTO email_customers VALUES($1,'Isolated Sandy API service acceptance','excluded')",[customer]);
+  await db.query("INSERT INTO sandy_memory_settings VALUES($1,false,false)",[customer]);
   const contract = (await db.query(
     "SELECT error_contract->>'contract_sha256' sha FROM sandy_operation_registry",
   )).rows[0].sha;
@@ -108,10 +113,19 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
   await assert.rejects(install(), (e) => e.code === "42501");
   passed++;
   await claims(false);
+  for (const [disable,restore] of [
+    ["UPDATE auth.users SET raw_user_meta_data='{}'", "UPDATE auth.users SET raw_user_meta_data='{\"sandy_api_isolated_session_test\":true}'"],
+    ["UPDATE email_customers SET google_drive_folder_status='pending'", "UPDATE email_customers SET google_drive_folder_status='excluded'"],
+    ["UPDATE sandy_memory_settings SET learning_enabled=true", "UPDATE sandy_memory_settings SET learning_enabled=false"],
+  ]) {
+    await db.exec(disable);await assert.rejects(install(), /new isolated normal customer fixture required/);passed++;await db.exec(restore);
+  }
   await install();
   await claims();
   assert.equal((await proof()).ok, true);
   passed++;
+  await db.exec("UPDATE sandy_memory_settings SET proactive_enabled=true");assert.equal((await proof()).ok,false);passed++;
+  await db.exec("UPDATE sandy_memory_settings SET proactive_enabled=false");
   for (
     const fields of [
       [artifact, deployment.replace("_61", "_60"), foreign, key, contract],

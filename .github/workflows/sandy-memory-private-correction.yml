@@ -1,0 +1,86 @@
+name: Release and certify private memory correction
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-operation-api/**'
+      - 'supabase/functions/sandy-api-mcp/**'
+      - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
+      - 'supabase/migrations/20261024004[12]00*.sql'
+      - 'scripts/sandy/*memory*'
+      - 'docs/sandy-engineering/evaluations/memory-correction-adapter-release.json'
+      - '.github/workflows/sandy-memory-private-correction.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        required: true
+        description: Install once, or acceptance-only on the already installed exact sources
+        options: [preflight, install-and-certify, acceptance-only]
+permissions:
+  contents: read
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source, custody, normal-session and release safety contracts
+        env:
+          PYTHONPATH: scripts/sandy
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest scripts/sandy/test_memory_private_release.py -v
+      - name: Actual API/MCP handler and contract regressions
+        run: >-
+          deno test --no-lock --allow-read
+          --import-map=scripts/sandy/testing/edge_types_import_map.json
+          supabase/functions/sandy-operation-api/index_test.ts
+          supabase/functions/sandy-operation-api/customer_mutations_test.ts
+          supabase/functions/sandy-operation-api/memory_operations_test.ts
+          supabase/functions/sandy-operation-api/memory_correction_test.ts
+          supabase/functions/sandy-operation-api/memory_certification_test.ts
+          supabase/functions/sandy-api-mcp/index_test.ts
+      - name: Atomic original action and private rollout guard in isolated PostgreSQL
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_memory_private_certification_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: validate
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preserve exact source, install once or read back existing installation
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          RELEASE_ACTION: ${{ inputs.action }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          args=()
+          if [ "$RELEASE_ACTION" = install-and-certify ]; then args+=(--deploy); fi
+          if [ "$RELEASE_ACTION" = acceptance-only ]; then args+=(--verify-installed); fi
+          python3 scripts/sandy/release_memory_private_correction.py "${args[@]}" --evidence-dir "$RUNNER_TEMP/memory-correction/release"
+      - name: Independent source readback before normal customer MCP certification
+        if: inputs.action != 'preflight'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 scripts/sandy/release_memory_private_correction.py --verify-installed --evidence-dir "$RUNNER_TEMP/memory-correction/readback"
+          python3 scripts/sandy/verify_memory_private_mcp.py --output "$RUNNER_TEMP/memory-correction/normal-customer-MCP.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-correction-custody-${{ github.run_id }}
+          path: ${{ runner.temp }}/memory-correction/
+          retention-days: 14
