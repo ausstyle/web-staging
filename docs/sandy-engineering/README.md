@@ -19,6 +19,8 @@ GitHub holds version-controlled requirements. Supabase holds searchable referenc
 
 0001 owns runtime-quality acceptance; 0003 the orchestrator; 0004 durability/truth; 0005 API/MCP and release control; 0006 knowledge; 0007 calendar; 0008 video; 0009 UI; 0010 commercial readiness. 0002 coordinates autonomy and owns bounded computer/proactive work. The [ownership map](architecture-contracts.md) prevents duplicate implementations.
 
+Scope [0012 — Sandy Cloud](tasks/SANDY-ENG-0012-sandy-cloud-drive-backup.md) covers a new Drive, independent computer backup, file recovery and permissioned file intelligence product. Its [architecture](../sandy-cloud/architecture.md) is DRAFT and does not alter or certify the existing Sandy Files library. It belongs to P2 product expansion; its security and recovery gates apply before any pilot. The existing Supabase file service remains canonical until a separately verified storage cutover.
+
 Scope [0011](tasks/SANDY-ENG-0011-browser-workflow-learning.md) is a subordinate feature scope; merely observing a workflow does not confer execution permission or certify the skill.
 
 Each substantial task references Master sections, API requirements, existing source/deployed state, dependencies, risks, acceptance IDs, migrations/releases and evidence. Use the [task scope template](templates/engineering-task-scope.md) and [acceptance evidence template](templates/acceptance-evidence.md). Any architectural deviation requires an ADR and the applicable owner review. Do not change master completion status because a task PR is merged.
