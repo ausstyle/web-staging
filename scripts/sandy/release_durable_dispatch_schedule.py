@@ -29,13 +29,21 @@ def private_rpc(r,key,action,body):
    raw=response.read(32769)
    if len(raw)>32768:raise Blocked('private_binding_response_limit')
    value=json.loads(raw)
- except urllib.error.HTTPError as error:raise Blocked('private_binding_http_'+str(error.code)) from None
+ except urllib.error.HTTPError as error:
+  # Read only fixed PostgREST classification, never message/details/hint or a
+  # reflected request body. A 404 is conclusive non-dispatch, not a write retry.
+  classification=''
+  try:
+   code=json.loads(error.read(32768)).get('code','')
+   if isinstance(code,str) and re.fullmatch('PGRST[0-9]{3}',code):classification='_'+code
+  except Exception:pass
+  raise Blocked('private_binding_http_'+str(error.code)+classification) from None
  except Blocked:raise
  except Exception:raise Blocked('private_binding_outcome_unknown_reconcile_no_retry') from None
  if value!={'ok':True,'bound':True,'authority_expanded':False}:raise Blocked('private_binding_not_verified')
 
 
-def verify(r,sql):
+def verify(r,sql,require_active=True):
  inspect_worker(r)
  history=r.sql("SELECT statements FROM supabase_migrations.schema_migrations WHERE version='"+VERSION+"'",True)
  if history!=[{'statements':[sql]}]:raise Blocked('installed_migration_source_mismatch')
@@ -43,12 +51,40 @@ def verify(r,sql):
  actual=r.sql("SELECT proname,prosrc,prosecdef,proconfig FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND proname IN('sandy_orch_worker_tick','sandy_orch_worker_bind_transport')",True)
  if len(actual)!=2 or any(x['prosrc']!=expected[x['proname']] or not x['prosecdef'] or x['proconfig']!=['search_path=pg_catalog, pg_temp'] for x in actual):raise Blocked('installed_private_worker_source_mismatch')
  state=r.sql("SELECT enabled,transport_secret_id IS NOT NULL credential_bound,release_change_id,source_commit FROM public.sandy_orch_worker_control WHERE singleton",True)
- if len(state)!=1 or not state[0]['enabled'] or not state[0]['credential_bound'] or not state[0]['release_change_id'] or not re.fullmatch('[a-f0-9]{40}',str(state[0]['source_commit'])):raise Blocked('private_timer_not_activated')
+ if len(state)!=1:raise Blocked('private_timer_configuration_missing')
+ if require_active and (not state[0]['enabled'] or not state[0]['credential_bound'] or not state[0]['release_change_id'] or not re.fullmatch('[a-f0-9]{40}',str(state[0]['source_commit']))):raise Blocked('private_timer_not_activated')
  cron=r.sql("SELECT jobname,schedule,command,active FROM cron.job WHERE jobname='sandy-orchestration-dispatch-every-minute'",True)
  if cron!=[{'jobname':'sandy-orchestration-dispatch-every-minute','schedule':'* * * * *','command':'SELECT public.sandy_orch_worker_tick()','active':True}]:raise Blocked('fixed_credential_free_schedule_mismatch')
  acl=r.sql("SELECT has_function_privilege('anon','public.sandy_orch_worker_tick()','EXECUTE') anon_tick,has_function_privilege('authenticated','public.sandy_orch_worker_tick()','EXECUTE') user_tick,has_function_privilege('service_role','public.sandy_orch_worker_tick()','EXECUTE') service_tick,has_table_privilege('service_role','public.sandy_orch_worker_control','UPDATE') service_configuration,has_function_privilege('authenticated','public.sandy_orch_worker_bind_transport(text)','EXECUTE') user_credential_binding",True)
  if acl!=[{'anon_tick':False,'user_tick':False,'service_tick':False,'service_configuration':False,'user_credential_binding':False}]:raise Blocked('private_timer_privileges_mismatch')
- return {'installed_source_verified':True,'timer_active':True,'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
+ return {'installed_source_verified':True,'timer_active':state[0]['enabled'],'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
+
+def configure_existing(r,sql,change,source):
+ # Configuration-only recovery after an installation has already committed.
+ # Never replay the migration, create a new tracking record or redeploy code.
+ state=verify(r,sql,require_active=False)
+ if state['timer_active']:raise Blocked('timer_already_active_reconcile_no_replay')
+ change=str(uuid.UUID(change))
+ tracking=r.sql("SELECT id FROM public.sandy_engineering_changes WHERE id="+quote(change)+" AND title='Activate existing durable read dispatcher timer' AND status='proposed' AND expected_behavior='Resume only already admitted fenced read jobs; no authority or job creation' AND requested_by IN(SELECT user_id FROM public.sandy_engineering_test_identities)",True)
+ if tracking!=[{'id':change}]:raise Blocked('existing_exact_timer_tracking_record_required')
+ # CREATE FUNCTION is already installed. Explicitly refresh the supported API
+ # schema cache before binding; the secret never travels through SQL text.
+ r.stage='refresh_installed_RPC_schema_cache';r.sql("NOTIFY pgrst,'reload schema'")
+ rows=json.loads(r.api('GET','/api-keys'));key=next((x.get('api_key') for x in rows if x.get('name')=='service_role'),None)
+ if not isinstance(key,str) or not key:raise Blocked('existing_private_worker_transport_unavailable')
+ r.stage='bind_existing_private_transport';private_rpc(r,key,'sandy_orch_worker_bind_transport',{'p_secret':key});key=None
+ inspect_worker(r)
+ r.stage='activate_existing_dispatcher_timer'
+ r.sql(f"BEGIN;UPDATE public.sandy_orch_worker_control SET enabled=true,release_change_id='{change}',source_commit='{source}',updated_at=clock_timestamp() WHERE singleton AND NOT enabled;INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{change}','durable_dispatch_timer_activated',NULL,jsonb_build_object('source_commit','{source}','existing_worker_version',15,'jobs_created',0,'authority_expanded',false,'provider_execution_verified',false));COMMIT;")
+ return {**verify(r,sql),'configuration_only':True,'migrations_reapplied':False,'Edge_deployments':0}
+
+
+def resume_configuration(r,change):
+ if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main':raise Blocked('protected_main_release_required')
+ source=os.environ.get('GITHUB_SHA','');sql=(ROOT/MIGRATION).read_text()
+ if not re.fullmatch('[a-f0-9]{40}',source) or subprocess.check_output(['git','show',source+':'+MIGRATION],cwd=ROOT)!=sql.encode():raise Blocked('committed_migration_required')
+ return configure_existing(r,sql,change,source)
+
 
 def run(r,deploy=False,installed=False):
  sql=(ROOT/MIGRATION).read_text()
@@ -70,13 +106,7 @@ def run(r,deploy=False,installed=False):
   core=sql[sql.index('BEGIN;')+6:sql.rindex('COMMIT;')]
   r.stage='install_disabled_timer'
   r.sql("BEGIN;SELECT pg_advisory_xact_lock(hashtext('sandy-durable-dispatch-install'));"+core+"INSERT INTO supabase_migrations.schema_migrations(version,statements,name,created_by,idempotency_key) VALUES('"+VERSION+"',ARRAY["+quote(sql)+"],'sandy_durable_dispatch_schedule','protected_github_management_release','sandy-durable-dispatch-v1');COMMIT;")
-  rows=json.loads(r.api('GET','/api-keys'));key=next((x.get('api_key') for x in rows if x.get('name')=='service_role'),None)
-  if not isinstance(key,str) or not key:raise Blocked('existing_private_worker_transport_unavailable')
-  r.stage='bind_existing_private_transport';private_rpc(r,key,'sandy_orch_worker_bind_transport',{'p_secret':key});key=None
-  inspect_worker(r)
-  r.stage='activate_existing_dispatcher_timer'
-  r.sql(f"BEGIN;UPDATE public.sandy_orch_worker_control SET enabled=true,release_change_id='{cid}',source_commit='{source}',updated_at=clock_timestamp() WHERE singleton AND NOT enabled;INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{cid}','durable_dispatch_timer_activated',NULL,jsonb_build_object('source_commit','{source}','existing_worker_version',15,'jobs_created',0,'authority_expanded',false,'provider_execution_verified',false));COMMIT;")
-  return {**verify(r,sql),'rollback_prepared':True,'Edge_deployments':0}
+  return {**configure_existing(r,sql,cid,source),'rollback_prepared':True}
  finally:r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE component='{COMPONENT}' AND holder='{holder}'")
 
 def accept_empty_queue(r):
@@ -102,9 +132,9 @@ def accept_empty_queue(r):
  return {'private_worker_transport_verified':True,'private_worker_http_status':status,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
 if __name__=='__main__':
- p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
+ p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
  try:
-  result=accept_empty_queue(r) if a.accept_empty_queue else run(r,a.deploy,a.verify_installed)
+  result=resume_configuration(r,a.resume_configuration) if a.resume_configuration else accept_empty_queue(r) if a.accept_empty_queue else run(r,a.deploy,a.verify_installed)
   report.update(result,passed=True)
  except Exception as e:report.update(error=str(e) if isinstance(e,Blocked) else 'release_failed_or_unknown_reconcile_before_retry',stage=r.stage,last_management_request=r.last_request)
  root.mkdir(parents=True,exist_ok=True);private_write(root,'durable-dispatch-release.json',json.dumps(report,indent=2).encode());print('::notice title=Durable dispatcher timer release::'+json.dumps(report));raise SystemExit(0 if report['passed'] else 1)
