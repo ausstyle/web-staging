@@ -1,3 +1,4 @@
+import {invokeEmailShadowFixture} from "./email_fixture.ts";
 import {examinerLaunchScope} from "./examiner_scope.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import {createClient} from "npm:@supabase/supabase-js@2.58.0";
@@ -53,6 +54,13 @@ Deno.serve(async(req:Request)=>{
 
 
   if(fullRerunFlow){
+    if(body.operation==="runtime_email_shadow_fixture"){
+      if(Object.keys(body).length!==1)return fail("email_fixture_operation_restricted",403);
+      const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+      if(url!=="https://zmqlyygzqoidkcwdysok.supabase.co"||!key)return fail("email_fixture_runtime_binding_unavailable",503);
+      try{const result=await invokeEmailShadowFixture(createClient(url,key,{auth:{persistSession:false}}),key);return json(result.body,result.status);}
+      catch(error){const code=error instanceof Error?error.message:"";return fail(/^email_fixture_[a-z_]+$/.test(code)?code:"email_fixture_validation_failed",409);}
+    }
     const launchScope=examinerLaunchScope(body);if(!launchScope)return fail("full_rerun_operation_restricted",403);
     const url=Deno.env.get("SUPABASE_URL")||"",key=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
     if(!url||!key)return fail("full_rerun_unconfigured",503);

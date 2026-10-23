@@ -9,8 +9,10 @@
     "index.ts": "6cd282ed683c476bbd105129f720e9ebc552abe44b6b88467ec9c52a25f0530c"
   },
   "replacements": {
-    "sandy-engineering-oidc-ingest/index.ts": "f999810fc6dbd55fee21dc86f08335bc99bde74edf53c3b3fc4478fe9543aab2",
-    "sandy-engineering-oidc-ingest/examiner_scope.ts": "893ae2f71c6ccc709fe901e4e0ce6401ef1708c89fd3c680782b51eff675556d"
+    "sandy-engineering-oidc-ingest/index.ts": "7bb72d1f0b0954b87f7ed3b22bccbb865f45f66f0fe1b10e191fca9bbeff25d0",
+    "sandy-engineering-oidc-ingest/examiner_scope.ts": "893ae2f71c6ccc709fe901e4e0ce6401ef1708c89fd3c680782b51eff675556d",
+    "sandy-engineering-oidc-ingest/email_fixture.ts": "cc4f2cecbc7a79c1216069e6e84a6cc02bb7f10c246309bd327572e95ae17aa2",
+    "_shared/sandy-executive/email_shadow_fixture.ts": "80eb745281280ad7980c6f919a4bcd417b2242e6437bf6b15ebd3c4d82a979ef"
   },
   "scope": [
     "SANDY-ENG-0001",
