@@ -151,4 +151,24 @@ class GraphicalFlatReleaseTests(unittest.TestCase):
             s.inspect(Fake({**self.meta,'verify_jwt':False},b'flatbundle'),self.m)
 
 
+class MissionTruthReleaseTests(unittest.TestCase):
+    def test_mission_releases_cannot_replace_auth_entrypoint_or_provider_transport(self):
+        for slug, worker in [('sandy-mission-executor', 'worker_mission.ts'), ('sandy-mission-runner', 'worker_mission_planning.ts')]:
+            before = {slug+'/index.ts': b'private renewal authentication entrypoint',
+                      '_shared/sandy-agent-operations/runtime_responses_transport.ts': b'actual deployed transport differs from main',
+                      '_shared/sandy-agent-operations/'+worker: b'old worker'}
+            replacements = {p:s.digest((s.ROOT/'supabase/functions'/p).read_bytes()) for p in s.MODULES[slug]}
+            manifest = {'kind':'reviewed-runtime-slice-v1','function':slug,'version':21 if slug.endswith('executor') else 31,
+                        'verify_jwt':False,'body_sha256':s.digest(b'original bundle'),
+                        'before_files':s.hashes(before),'replacements':replacements}
+            candidate = s.candidate(manifest, before)
+            self.assertEqual(candidate[slug+'/index.ts'], before[slug+'/index.ts'])
+            self.assertEqual(candidate['_shared/sandy-agent-operations/runtime_responses_transport.ts'], before['_shared/sandy-agent-operations/runtime_responses_transport.ts'])
+            for module in [slug+'/index.ts', '_shared/sandy-agent-operations/runtime_responses_transport.ts']:
+                with self.assertRaises(s.Blocked):
+                    s.validate({**manifest,'replacements':{module:'a'*64}})
+            with self.assertRaises(s.Blocked):
+                s.candidate(manifest,{**before,'unreviewed-live-module.ts':b'new source'})
+
+
 if __name__=='__main__': unittest.main()
