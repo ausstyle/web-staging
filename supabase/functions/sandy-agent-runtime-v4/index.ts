@@ -157,7 +157,7 @@ Deno.serve(async req=>{
   if(!conversation){
    const task=await bindRuntimeConversationTask(runtimeProof,db,{taskId:id,customerId,channel,requestId});
    if(!task)throw Error("runtime_conversation_task_binding_failed");
-   conversation=await bindV4RuntimeConversation(task,body);
+   conversation=await bindV4RuntimeConversation(task,body,readOnlyAssessment);
   }
   const outcome=await executeRuntimeConversation(conversation,{round:conversationRound,tool_results:conversationRound===0?[]:body.input},{db,openaiKey:aiKey,v4Broker:{base:url,serviceCredential:key,integrationToken:Deno.env.get("SANDY_INTEGRATION_API_TOKEN")||""}});
   if(outcome.status!==200)throw Error(String(outcome.body.error||"runtime_conversation_failed"));
