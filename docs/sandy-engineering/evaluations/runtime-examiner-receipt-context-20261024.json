@@ -1,0 +1,33 @@
+{
+  "scope": "SANDY-ENG-0001/0003 Examiner receipt-context activation",
+  "function": "sandy-examiner-full-cycle",
+  "expected_prior_version": 20,
+  "prior_bundle_sha256": "ff1b86cd7f515fccf1bb54f503a7377b9261d22ee0928c9ad9f816494ec41c8f",
+  "verify_jwt": false,
+  "before_files": {
+    "sandy-examiner-full-cycle/judge.ts": "d55a98d0e3c3050f0a0390ce50abf999360cd36a3957bf8bf49378b5b76b349f",
+    "sandy-examiner-full-cycle/index.ts": "813a7212032c2b9433f02f9aca35b60b07d17288dde14e82994478838620d49f",
+    "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26"
+  },
+  "replacement_files": {
+    "sandy-examiner-full-cycle/index.ts": "99380aea3ba786d56b8276e30e112cc4a1125816489cda83dcf35a9790c85429",
+    "sandy-examiner-full-cycle/judge.ts": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab",
+    "sandy-examiner-full-cycle/evidence.ts": "3a0022cf9bf9a9ae6151d56b139f3310fb6c6318f6fa75d1d1bbbdc43e73b453",
+    "sandy-examiner-full-cycle/selection.ts": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc",
+    "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26",
+    "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+    "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+  },
+  "acceptance": {
+    "kind": "focused_regression_v1",
+    "case_keys": [
+      "current_time",
+      "task_overview",
+      "tool_evidence"
+    ],
+    "historical_passing_cases_repeated": false,
+    "customer_thread_scans": false,
+    "full_master_acceptance_claimed": false
+  },
+  "rollback": "Restore exact captured original3modules with fresh source/version guard; preserve all judgments and tasks."
+}
