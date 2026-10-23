@@ -2,7 +2,7 @@
 """Protected, source-preserving installation of the existing administrator read path.
 No IAM/grant edits, Owner impersonation, Cloud Run deployment or promotion.
 """
-import argparse, hashlib, json, os, subprocess, urllib.request, urllib.error, uuid
+import argparse, hashlib, json, os, re, subprocess, urllib.request, urllib.error, uuid
 from pathlib import Path
 from release_web_canary import Blocked, ROOT, NoRedirect, original_sources, private_write
 
@@ -162,6 +162,33 @@ def run(r,m,helper,migration,contract,deploy=False):
         private_write(r.out,'redacted-receipt.json',json.dumps(result,indent=2).encode());return result
     finally:r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE holder='{r.holder}' AND change_id='{change}'")
 
+def verify_installed(r,m,migration,contract):
+    """Reconcile an existing installation with reads only; never call install."""
+    result={'installed_source_verified':False,'functions':{},'mutations':0,'migrations_reapplied':False}
+    for slug in [CONTROL,GATEWAY]:
+        expected=m['functions'][slug];meta=json.loads(r.api('GET','/functions/'+slug));body=r.api('GET','/functions/'+slug+'/body')
+        # Configuration updates may advance a provider version without changing
+        # its sources. Exact module digests and Auth config remain mandatory.
+        if not isinstance(meta.get('version'),int) or meta['version']<=expected['version'] or meta.get('status')!='ACTIVE' or meta.get('verify_jwt')!=expected['verify_jwt'] or {n:digest(v) for n,v in original_sources(body).items()}!=expected['candidate_files']:
+            raise Blocked('installed_source_or_Auth_configuration_mismatch')
+        result['functions'][slug]={'version':meta['version'],'all_original_module_digests_verified':True,'verify_jwt':meta['verify_jwt']}
+    rows=r.sql("SELECT version,statements FROM supabase_migrations.schema_migrations WHERE version IN ('20261022201500','20261023001000') ORDER BY version",True)
+    expected_history={'20261022201500':digest(migration),'20261023001000':digest(contract)}
+    if len(rows)!=2 or any(not isinstance(x.get('statements'),list) or len(x['statements'])!=1 or digest(x['statements'][0].encode())!=expected_history.get(x['version']) for x in rows):
+        raise Blocked('installed_migration_history_mismatch')
+    definitions=r.sql("SELECT p.proname,p.prosrc,p.prosecdef,p.proconfig,has_function_privilege('anon',p.oid,'EXECUTE') AS anon_execute,has_function_privilege('authenticated',p.oid,'EXECUTE') AS authenticated_execute,has_function_privilege('service_role',p.oid,'EXECUTE') AS service_execute FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname LIKE 'sandy_gcp_admin_read_%' ORDER BY p.proname",True)
+    expected_bodies=dict(re.findall(r'CREATE FUNCTION public\.(sandy_gcp_admin_read_\w+)\([^$]*? AS \$\$(.*?)\$\$;',migration.decode(),re.S))
+    if len(expected_bodies)!=3 or len(definitions)!=3 or {x['proname'] for x in definitions}!=set(expected_bodies) or any(x['prosrc'].strip()!=expected_bodies[x['proname']].strip() or x['prosecdef'] is not True or x['anon_execute'] is not False or x['authenticated_execute'] is not False or x['service_execute'] is not True or [v.replace(' ','') for v in (x.get('proconfig') or [])]!=['search_path=pg_catalog,pg_temp'] for x in definitions):
+        raise Blocked('installed_admission_source_or_privilege_mismatch')
+    schema=r.sql("SELECT input_schema,handler,is_mutation,api_exposed,ai_exposed FROM public.sandy_operation_registry WHERE operation='engineering.preflight'",True)
+    expected_schema={'type':'object','properties':{'connection':{'type':'string','enum':['sandy-gcp-admin']}},'additionalProperties':False}
+    if len(schema)!=1 or schema[0]['input_schema']!=expected_schema or schema[0]['handler']!=CONTROL or schema[0]['is_mutation'] is not False or schema[0]['api_exposed'] is not True or schema[0]['ai_exposed'] is not True:
+        raise Blocked('installed_administrator_contract_mismatch')
+    secrets=json.loads(r.api('GET','/secrets'))
+    if not any(x.get('name')=='SANDY_GCP_ADMIN_WORKER_URL' and x.get('value')==digest(WORKER.encode()) for x in secrets):raise Blocked('installed_worker_binding_mismatch')
+    result.update({'installed_source_verified':True,'migration_history_verified':True,'admission_source_and_privileges_verified':True,'MCP_contract_verified':True,'worker_binding_verified':True,'functional_administrator_acceptance_verified':False})
+    return result
+
 def verify_fixture(r):
     policy=json.loads((ROOT/'supabase/functions/sandy-operation-api/engineering_identity_policy.json').read_text())
     slug=policy['function_slug'];meta=json.loads(r.api('GET','/functions/'+slug))
@@ -171,9 +198,9 @@ def verify_fixture(r):
     return {'approved_fixture_source_verified':True,'function':slug,'version':meta['version']}
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--deploy',action='store_true');parser.add_argument('--evidence-dir',type=Path,required=True);a=parser.parse_args()
+    parser=argparse.ArgumentParser();mode=parser.add_mutually_exclusive_group();mode.add_argument('--deploy',action='store_true');mode.add_argument('--verify-installed',action='store_true');parser.add_argument('--evidence-dir',type=Path,required=True);a=parser.parse_args()
     try:
-        m,h,sql,contract=load();installer=Installer(a.evidence_dir);result=run(installer,m,h,sql,contract,a.deploy);print("::notice title=Protected administrator source release::"+json.dumps(result));return 0
+        m,h,sql,contract=load();installer=Installer(a.evidence_dir);result=verify_installed(installer,m,sql,contract) if a.verify_installed else run(installer,m,h,sql,contract,a.deploy);print("::notice title=Protected administrator source release::"+json.dumps(result));return 0
     except Exception as error:
         print('::error title=Protected administrator release stopped::'+json.dumps({'ok':False,'error':str(error) if isinstance(error,Blocked) else 'admin_read_install_blocked_or_unknown_outcome','stage':installer.stage if 'installer' in locals() else 'manifest','last_management_request':installer.last_request if 'installer' in locals() else None,'automatic_retry':False,'functional_admin_acceptance_verified':False}));return 1
 if __name__=='__main__':raise SystemExit(main())

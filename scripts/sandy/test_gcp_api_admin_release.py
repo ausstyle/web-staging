@@ -41,3 +41,33 @@ class SourcePreservation(unittest.TestCase):
         m,h,sql,contract=r.load()
         with mock.object(r,'inspect',return_value=({},{})),mock.dict(os.environ,{'GITHUB_ACTIONS':'false'}):
             with self.assertRaisesRegex(r.Blocked,'protected_main'):r.run(Fake(),m,h,sql,contract,True)
+
+class AcceptanceOnly(unittest.TestCase):
+    def test_existing_installation_reconciliation_is_read_only_and_fails_on_drift(self):
+        import re,copy
+        real,helper,migration,contract=r.load()
+        bodies=dict(re.findall(r'CREATE FUNCTION public\.(sandy_gcp_admin_read_\w+)\([^$]*? AS \$\$(.*?)\$\$;',migration.decode(),re.S))
+        for failure in [None,'source','jwt','history','rpc','privilege','contract','binding']:
+            manifest=copy.deepcopy(real)
+            for expected in manifest['functions'].values():expected['candidate_files']={'module.ts':r.digest(b'accepted-source')}
+            calls=[]
+            class Fake:
+                def api(self,method,path,*args):
+                    self_outer=self;calls.append((method,path));assert method=='GET'
+                    if path=='/secrets':return json.dumps([{'name':'SANDY_GCP_ADMIN_WORKER_URL','value':r.digest((r.WORKER if failure!='binding' else 'other').encode())}]).encode()
+                    slug=path.split('/')[2]
+                    if path.endswith('/body'):return b'fixture-eszip'
+                    return json.dumps({'version':manifest['functions'][slug]['version']+2,'verify_jwt':not manifest['functions'][slug]['verify_jwt'] if failure=='jwt' else manifest['functions'][slug]['verify_jwt'],'status':'ACTIVE'}).encode()
+                def sql(self,query,read_only=False):
+                    calls.append(('readonly_SQL',query));assert read_only is True
+                    if 'schema_migrations' in query:return [] if failure=='history' else [{'version':'20261022201500','statements':[migration.decode()]},{'version':'20261023001000','statements':[contract.decode()]}]
+                    if 'pg_proc' in query:return [{'proname':name,'prosrc':body+('broken' if failure=='rpc' else ''),'prosecdef':True,'proconfig':['search_path=pg_catalog, pg_temp'],'anon_execute':failure=='privilege','authenticated_execute':False,'service_execute':True} for name,body in bodies.items()]
+                    return [{'input_schema':{} if failure=='contract' else {'type':'object','properties':{'connection':{'type':'string','enum':['sandy-gcp-admin']}},'additionalProperties':False},'handler':r.CONTROL,'is_mutation':False,'api_exposed':True,'ai_exposed':True}]
+            with mock.object(r,'original_sources',return_value={'module.ts':b'changed' if failure=='source' else b'accepted-source'}):
+                if failure:
+                    with self.assertRaises(r.Blocked):r.verify_installed(Fake(),manifest,migration,contract)
+                else:
+                    result=r.verify_installed(Fake(),manifest,migration,contract)
+                    self.assertTrue(result['installed_source_verified']);self.assertEqual(result['mutations'],0)
+                    self.assertFalse(result['functional_administrator_acceptance_verified'])
+            self.assertTrue(all(method in ['GET','readonly_SQL'] for method,path in calls))
