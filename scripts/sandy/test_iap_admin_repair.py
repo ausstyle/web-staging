@@ -6,6 +6,7 @@ from unittest.mock import patch
 from types import ModuleType, SimpleNamespace
 import json
 import datetime
+EXPIRY = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
 from iap_admin_repair import (Admin, MEMBER, ROLE, RepairError, apply, candidate, connection_env, plan,
     ADMIN_ALIAS, ADMIN_ACCOUNT, RUNTIME_ACCOUNT, TOKEN_LIFETIME, impersonation_credentials, verify_administrator)
 
@@ -136,17 +137,17 @@ class IapRepairTests(unittest.TestCase):
         policy["auditConfigs"] = [{"service": "allServices", "auditLogConfigs": [{"logType": "ADMIN_READ"}]}]
         before = copy.deepcopy(policy)
         for name, port in [("sandy-video", 22), ("sandy-windows", 5986)]:
-            after, changed = candidate(policy, name)
+            after, changed = candidate(policy, name, EXPIRY)
             self.assertTrue(changed); self.assertEqual(policy, before)
             self.assertEqual(after["bindings"][:-1], before["bindings"])
             self.assertEqual(after["auditConfigs"], before["auditConfigs"])
             self.assertEqual(after["etag"], before["etag"])
-            self.assertEqual(after["bindings"][-1]["condition"]["expression"], f"destination.port == {port}")
+            self.assertEqual(after["bindings"][-1]["condition"]["expression"], f'destination.port == {port} && request.time < timestamp("{EXPIRY}")')
             self.assertEqual(after["bindings"][-1]["members"], [MEMBER])
 
     def test_exact_existing_binding_is_idempotent(self):
-        after, _ = candidate(AdminFixture().value, "sandy-video")
-        again, changed = candidate(after, "sandy-video")
+        after, _ = candidate(AdminFixture().value, "sandy-video", EXPIRY)
+        again, changed = candidate(after, "sandy-video", EXPIRY)
         self.assertFalse(changed); self.assertEqual(after, again)
 
     def test_does_not_bypass_an_existing_restrictive_condition(self):
@@ -154,18 +155,33 @@ class IapRepairTests(unittest.TestCase):
             value = {"etag": "known", "bindings": [{"role": ROLE, "members": [MEMBER]}]}
             if condition: value["bindings"][0]["condition"] = condition
             with self.assertRaisesRegex(RepairError, "administrator_review"):
-                candidate(value, "sandy-video")
+                candidate(value, "sandy-video", EXPIRY)
 
     def test_requires_target_etag_and_supported_policy_shape(self):
         for name, policy in [("other", {"etag": "known"}), ("sandy-video", {}), ("sandy-video", {"etag": "known", "unexpected": True})]:
-            with self.assertRaises(RepairError): candidate(policy, name)
+            with self.assertRaises(RepairError): candidate(policy, name, EXPIRY)
+
+    def test_unbounded_expired_and_malformed_grants_never_reach_provider(self):
+        for expiry in [None, "", "2020-01-01T00:00:00Z", "not-a-time", '2026-10-30T21:17:00Z") || true',
+                       (datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(days=31)).strftime("%Y-%m-%dT%H:%M:%SZ")]:
+            admin = AdminFixture()
+            with self.assertRaisesRegex(RepairError, "future_UTC_expiry"):
+                plan(admin, "sandy-video", expiry)
+            self.assertEqual(admin.calls, [])
+
+    def test_expired_or_legacy_saved_plan_cannot_be_applied(self):
+        admin = AdminFixture(); saved = plan(admin, "sandy-video", EXPIRY);admin.calls=[]
+        for patch in [{"expires_at":"2020-01-01T00:00:00Z"},{"schema":"sandy-fixed-IAP-repair-v1"}]:
+            with tempfile.TemporaryDirectory() as directory:
+                with self.assertRaises(RepairError):apply(admin,{**saved,**patch},Path(directory)/"attempt.json")
+            self.assertEqual(admin.calls,[])
 
     def test_connection_must_be_explicit_without_fallback(self):
         for manifest in [{"version": 1, "connections": []}, {"version": 1, "connections": [{"provider_kind": "gcp", "alias": "different"}]}, {"version": 2}]:
             with self.assertRaises(RepairError): connection_env("authorized-admin", manifest)
 
     def test_apply_checks_preimage_before_any_write(self):
-        admin = AdminFixture(); saved = plan(admin, "sandy-video")
+        admin = AdminFixture(); saved = plan(admin, "sandy-video", EXPIRY)
         admin.value["etag"] = "changed"
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "attempt.json"
@@ -174,7 +190,7 @@ class IapRepairTests(unittest.TestCase):
         self.assertFalse(any(c[0] == "POST" for c in admin.calls))
 
     def test_apply_independently_reads_back_and_never_replays_saved_attempt(self):
-        admin = AdminFixture(); saved = plan(admin, "sandy-windows")
+        admin = AdminFixture(); saved = plan(admin, "sandy-windows", EXPIRY)
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "attempt.json"
             result = apply(admin, saved, output)
