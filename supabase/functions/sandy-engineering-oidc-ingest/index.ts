@@ -1191,6 +1191,8 @@ Deno.serve(async(req:Request)=>{
   const action=decision==="BLOCKED"?"architect_blocked":"architect_ready";
   const result=await event(action,issueKey+":architect:"+runId+":"+decision,evidence);
   if(result.error) return fail("state_transition_rejected",409);
+  if(result.data?.superseded===true)
+    return json({ok:true,recorded:true,decision,pr_recorded:false,superseded:true,production_acceptance_inferred:false});
   if(pr!==null&&pr!==undefined){
     const resultPR=await event("engineering_pr_created",issueKey+":engineer:"+runId+":"+pr,{
       ...evidence,pr_number:String(pr),pr_url:"https://github.com/"+REPO+"/pull/"+pr,

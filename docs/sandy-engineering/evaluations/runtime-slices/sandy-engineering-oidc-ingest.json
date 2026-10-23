@@ -1,28 +1,17 @@
 {
   "kind": "reviewed-runtime-slice-v1",
   "function": "sandy-engineering-oidc-ingest",
-  "version": 92,
+  "version": 94,
   "verify_jwt": false,
-  "body_sha256": "443e98a8781efc63ac68abdd9fa7f07f3ff4444d63eefdac03dbf4a851e2e55c",
-  "source_layout": "reviewed-flat-index-to-namespaced-v1",
+  "body_sha256": "29385cfa47f82af87723c725a4ad48a3c8065bbc460acdca694307a92b07c12c",
   "before_files": {
-    "index.ts": "6cd282ed683c476bbd105129f720e9ebc552abe44b6b88467ec9c52a25f0530c"
-  },
-  "replacements": {
-    "sandy-engineering-oidc-ingest/index.ts": "fc65882531ea5215dbdb7aa6066e5e51e1ac963b963ca2215e9b7d788116816f",
-    "sandy-engineering-oidc-ingest/examiner_scope.ts": "893ae2f71c6ccc709fe901e4e0ce6401ef1708c89fd3c680782b51eff675556d",
-    "sandy-engineering-oidc-ingest/email_fixture.ts": "cc4f2cecbc7a79c1216069e6e84a6cc02bb7f10c246309bd327572e95ae17aa2",
     "_shared/sandy-executive/email_shadow_fixture.ts": "80eb745281280ad7980c6f919a4bcd417b2242e6437bf6b15ebd3c4d82a979ef",
+    "sandy-engineering-oidc-ingest/email_fixture.ts": "cc4f2cecbc7a79c1216069e6e84a6cc02bb7f10c246309bd327572e95ae17aa2",
+    "sandy-engineering-oidc-ingest/examiner_scope.ts": "893ae2f71c6ccc709fe901e4e0ce6401ef1708c89fd3c680782b51eff675556d",
+    "sandy-engineering-oidc-ingest/index.ts": "9505741bf3e47cc27f818550a133c65d729063c5de2a45babecb52f791fc2656",
     "sandy-engineering-oidc-ingest/worker_transport.ts": "4ca4e09d0413d3066f752c2888699698ad52de0b349ef8a316fe92e9fca206cc"
   },
-  "scope": [
-    "SANDY-ENG-0001",
-    "SANDY-ENG-0003"
-  ],
-  "regression_rules": [
-    "Keep all livev92 code and existing OIDC issuer/audience/repository/workflow/main checks",
-    "No workerkey export orrotation, customercall, grants or IAM changes",
-    "Existingfullassessment default preserved; focusedsubset cannot assertfullacceptance"
-  ],
-  "rollback": "Restore captured exactv92 index underfreshsourceguard; neverreplayqueuedwork orerasejudgments"
+  "replacements": {
+    "sandy-engineering-oidc-ingest/worker_transport.ts": "b74e8d0510e58d0fc39684fd3ed2ba2c28064c4641e52dadf58b3875057f8402"
+  }
 }

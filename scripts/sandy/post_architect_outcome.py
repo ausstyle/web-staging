@@ -14,16 +14,33 @@ OUTCOME=Path("/tmp/sandy-engineering-outcome.json")
 
 
 def validate_outcome(obj):
-    if not isinstance(obj,dict) or not isinstance(obj.get("issue_number"),int) or not 1<=obj["issue_number"]<=999999:
+    if not isinstance(obj,dict) or set(obj)!={"issue_number","architecture_run_id","decision","pr_number"} or type(obj.get("issue_number")) is not int or not 1<=obj["issue_number"]<=999999:
         raise ValueError("Invalid issue number")
     if not isinstance(obj.get("architecture_run_id"),str) or not re.fullmatch(r"[1-9][0-9]{4,19}",obj["architecture_run_id"]):
         raise ValueError("Invalid Architect run id")
     if obj.get("decision") not in ("READY","BLOCKED"):
         raise ValueError("No validated Architect decision")
     pr=obj.get("pr_number")
-    if pr is not None and (obj["decision"]!="READY" or not isinstance(pr,int) or not 1<=pr<=9999999):
+    if pr is not None and (obj["decision"]!="READY" or type(pr) is not int or not 1<=pr<=9999999):
         raise ValueError("Unverified engineer PR")
     return obj
+
+
+def validate_acknowledgement(result, outcome):
+    # A generic successful HTTP response is not evidence that this exact
+    # signed observation was retained in the canonical engineering cycle.
+    if (not isinstance(result,dict) or result.get("ok") is not True
+            or result.get("recorded") is not True
+            or result.get("decision") != outcome["decision"]):
+        raise RuntimeError("Canonical engineering observation acknowledgement invalid")
+    if result.get("superseded") is True:
+        if (result.get("pr_recorded") is not False
+                or result.get("production_acceptance_inferred") is not False):
+            raise RuntimeError("Superseded engineering observation acknowledgement invalid")
+        return "superseded"
+    if result.get("pr_recorded") is not (outcome.get("pr_number") is not None):
+        raise RuntimeError("Engineering pull request acknowledgement mismatch")
+    return "recorded"
 
 
 def main():
@@ -55,9 +72,11 @@ def main():
         except (ValueError,UnicodeDecodeError):
             reason="invalid_response"
         raise RuntimeError(f"Signed engineering outcome rejected: HTTP {error.code}, reason={reason}") from None
-    if result.get("ok") is not True:
-        raise RuntimeError("Supabase rejected signed engineering observation")
-    print("Recorded verified engineering observation in Sandy's canonical Supabase cycle")
+    state=validate_acknowledgement(result,obj)
+    if state=="superseded":
+        print("Recorded superseded engineering observation; existing cycle state and acceptance preserved")
+    else:
+        print("Recorded signed engineering observation in the canonical cycle; no production acceptance inferred")
 
 
 if __name__=="__main__":

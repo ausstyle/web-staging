@@ -86,6 +86,16 @@ class ReleaseTests(unittest.TestCase):
             m['verify_jwt']=True
             with self.assertRaises(s.Blocked):s.validate(m)
 
+    def test_subsequent_namespaced_release_preserves_all_other_modules_and_auth(self):
+        slug='sandy-engineering-oidc-ingest'
+        m={**self.m,'function':slug,'version':93,'verify_jwt':False,
+           'before_files':{slug+'/index.ts':'a'*64,slug+'/examiner_scope.ts':'c'*64},
+           'replacements':{slug+'/index.ts':'b'*64}}
+        s.validate(m)
+        self.assertEqual(s.installed_hashes(m)[slug+'/examiner_scope.ts'],'c'*64)
+        m['verify_jwt']=True
+        with self.assertRaises(s.Blocked):s.validate(m)
+
 
 class GraphicalFlatReleaseTests(unittest.TestCase):
     def setUp(self):

@@ -61,6 +61,38 @@ def history_for(issue, runs):
                  and int(RUN.fullmatch(r["display_title"]).group(1)) == issue["number"]}.values())
 
 
+def attempt_budget(issue):
+    """Untrusted issue text may reduce the standing cap, never increase it."""
+    body = issue.get("body") or ""
+    markers = [m.strip() for m in re.findall(r"<!--\s*sandy-dispatch-budget:([^>]*)-->", body)]
+    if not markers:
+        return 0 if "sandy-dispatch-budget:" in body else MAX_ATTEMPTS
+    if len(markers) != 1 or not re.fullmatch(r"[1-9][0-9]{0,5}", markers[0]):
+        return 0
+    return min(MAX_ATTEMPTS, int(markers[0]))
+
+
+def dependencies_ready(issue):
+    """Unknown dependency evidence withholds this task, not independent work."""
+    number = issue["number"]
+    try:
+        dependencies = pages(f"issues/{number}/dependencies/blocked_by?per_page=100")
+        for dependency in dependencies:
+            if (type(dependency.get("number")) is not int
+                    or dependency.get("state") not in {"open", "closed"}
+                    or dependency.get("repository_url") != f"https://api.github.com/repos/{REPO}"):
+                raise ValueError("Invalid dependency")
+            if dependency["state"] != "closed" or dependency.get("state_reason") != "completed":
+                print(f"Issue #{number}: dependency_not_completed; dispatch withheld")
+                return False
+        return True
+    except (subprocess.CalledProcessError, OSError, ValueError, KeyError, TypeError) as error:
+        status = re.search(r"HTTP ([1-5][0-9]{2})\b", getattr(error, "stderr", "") or "")
+        classification = f"_http_{status[1]}" if status else ""
+        print(f"Issue #{number}: dependency_evidence_unavailable{classification}; dispatch withheld")
+        return False
+
+
 def choose(issues, runs, now, repair_verified=None):
     """Select one eligible issue; prevent duplicate, stale and unbounded work."""
     eligible = []
@@ -68,7 +100,7 @@ def choose(issues, runs, now, repair_verified=None):
         if not authorised(issue) or BLOCKED in labels(issue):
             continue
         history = history_for(issue, runs)
-        if len(history) >= MAX_ATTEMPTS:
+        if len(history) >= attempt_budget(issue) or any(r.get("conclusion") == "success" for r in history):
             continue
         if history:
             latest = max(history, key=lambda r: r.get("created_at", ""))
@@ -121,7 +153,7 @@ def marked(number):
 
 def reconcile(issue, history, marker, recorded, dry):
     number = issue["number"]
-    exhausted = len(history) >= MAX_ATTEMPTS and all(r["status"] == "completed" for r in history)
+    exhausted = len(history) >= attempt_budget(issue) and all(r["status"] == "completed" for r in history)
     if not (recorded or BLOCKED in labels(issue) or exhausted):
         return False
     if dry:
@@ -149,7 +181,7 @@ def reconcile(issue, history, marker, recorded, dry):
     if BLOCKED in labels(issue) and not recorded:
         raise ValueError("Incomplete escalation")
     if not recorded:
-        body = (f"{marker}\nThe three-attempt scheduler budget is exhausted. Automatic dispatch by this scheduler has stopped; operator review is required.\n\n"
+        body = (f"{marker}\nThe bounded scheduler attempt budget is exhausted. Automatic dispatch by this scheduler has stopped; operator review is required.\n\n"
                 "This count does not establish an engineering outcome.\n"
                 "Record the disposition and close this issue or remove its opt-in. For another bounded cycle, create a linked successor issue with explicit opt-in.\n\n")
         body += "\n".join(f"- https://github.com/{REPO}/actions/runs/{r['id']} ({r['status']})" for r in history)
@@ -194,7 +226,8 @@ def dispatch():
         seen[r["id"]] = r
     dry = os.environ.get("SANDY_DISPATCH_DRY_RUN") == "1"
     evidence = [(i, history_for(i, runs), *marked(i["number"])) for i in issues if authorised(i)]
-    available = [i for i, history, marker, recorded in evidence if not reconcile(i, history, marker, recorded, dry)]
+    available = [i for i, history, marker, recorded in evidence
+                 if not reconcile(i, history, marker, recorded, dry) and dependencies_ready(i)]
     issue = choose(available, runs, dt.datetime.now(dt.timezone.utc), verified_engineering_repair)
     if not issue:
         print("No authorised eligible issue; no dispatch")
@@ -205,7 +238,8 @@ def dispatch():
     if current["number"] != number:
         raise ValueError("Issue mismatch")
     marker, recorded = marked(number)
-    if not authorised(current) or reconcile(current, history_for(current, runs), marker, recorded, dry):
+    if (not authorised(current) or reconcile(current, history_for(current, runs), marker, recorded, dry)
+            or not dependencies_ready(current)):
         print(f"Issue #{number} no longer eligible; no dispatch")
         return
     if dry:
