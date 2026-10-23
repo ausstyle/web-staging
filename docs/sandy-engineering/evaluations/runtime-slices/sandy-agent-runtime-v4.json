@@ -1,18 +1,18 @@
 {
   "kind": "reviewed-runtime-slice-v1",
   "function": "sandy-agent-runtime-v4",
-  "version": 34,
+  "version": 35,
   "verify_jwt": false,
-  "body_sha256": "ac1399e700c4a23569d5c86dda75bcbad672f0637f6401fff08f56567a4722d9",
+  "body_sha256": "66c573d3a44965fe641f7d5fd502ae7b8ceb6c981c11df9a7dd645b289844cd6",
   "before_files": {
     "_shared/sandy-agent-operations/connected-gmail.ts": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
     "_shared/sandy-agent-operations/contracts.ts": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
-    "_shared/sandy-agent-operations/identity.ts": "f0be25140ac8afc7762d7e88239f843d21caf6612de8fdb9b5b8c99390a89d99",
+    "_shared/sandy-agent-operations/identity.ts": "ff41c2af6de1ebd96d8c477f8395f117b55d816448a729ee20fba851b449003a",
     "_shared/sandy-agent-operations/runtime_connection_preflight.ts": "5ce1a13576b9bf0a66c5d730d55822c037b75675722d15ff91645cf9997c90c6",
     "_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts": "f1753d179408b64f34009b37eb311ef71278662a25f08cbc1cda1cfc400de27e",
-    "_shared/sandy-agent-operations/runtime_conversation.ts": "7aea8453ce9c0b4fe04e6015c6945f2cba49d983fe96f7c8dfc53ccfa33c206a",
+    "_shared/sandy-agent-operations/runtime_conversation.ts": "aa7f43dcacb35f87a91f57d621438e79705801fe38f3d77bce08ca3752166c43",
     "_shared/sandy-agent-operations/runtime_conversation_contract.ts": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b",
-    "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts": "a61c9c726abb96b4afa52198c5d1b550dd2502ea41f85d74318fd771503c33dd",
+    "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts": "4e32c6ecbf8dcb6b7663dbf4c3121994f49ea6053ba82bfc8620f431aded4ca5",
     "_shared/sandy-agent-operations/runtime_memory.ts": "33613b766e500ec5f559dba312192cf4e45e39da0591ca3df957baf9aeb840f6",
     "_shared/sandy-agent-operations/runtime_model_policy.ts": "e81e6b878562e37e85c8e207f847fac815d03a7e761884d0f59fcf00b1211221",
     "_shared/sandy-agent-operations/runtime_operational.ts": "f5389d50afb4d98e57f448ee9bd8598f413bb2a3de9648cfdb50df37fef9e7f8",
@@ -38,8 +38,7 @@
     "sandy-agent-runtime-v4/version-awareness.js": "ee8ac38d54136ab291736f211f713f542bbc6c83af6460081f06a35782fe06c9"
   },
   "replacements": {
-    "_shared/sandy-agent-operations/identity.ts": "ff41c2af6de1ebd96d8c477f8395f117b55d816448a729ee20fba851b449003a",
-    "_shared/sandy-agent-operations/runtime_conversation.ts": "aa7f43dcacb35f87a91f57d621438e79705801fe38f3d77bce08ca3752166c43",
-    "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts": "4e32c6ecbf8dcb6b7663dbf4c3121994f49ea6053ba82bfc8620f431aded4ca5"
+    "_shared/sandy-agent-operations/runtime_conversation.ts": "bd32557109af7548df276d942263c6d4dea8ca3083cfeefd7d47156f4cdc786f",
+    "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f"
   }
 }
