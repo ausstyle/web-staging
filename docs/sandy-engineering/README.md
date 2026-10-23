@@ -4,7 +4,7 @@
 
 The governing target is **Master Software Scope v1.2**: the original baseline, Amendment A and Amendment B. Routine engineering uses standing, revocable policy authorization without a per-release owner click. The amendment itself does not provision a grant. The stable filename remains `master-scope-v1.md`.
 
-Read the [implementation program and eleven-scope index](implementation-program.md), then [shared architecture contracts](architecture-contracts.md) and the relevant numbered task. The [Sandy Learn browser skills scope](tasks/SANDY-ENG-0011-browser-workflow-learning.md) adds opt-in passive, explicit active and execution-based learning. **P0 is Sandy chat reasoning and runtime reliability**, not growing the API operation count. Eight detailed implementation scopes, 0003–0010, now complement 0001 and 0002 with explicit ownership, dependencies, API contracts, tests and recovery requirements.
+Read the [implementation program and twelve-scope index](implementation-program.md), then [shared architecture contracts](architecture-contracts.md) and the relevant numbered task. The [Sandy Learn browser skills scope](tasks/SANDY-ENG-0011-browser-workflow-learning.md) adds opt-in passive, explicit active and execution-based learning. **P0 is Sandy chat reasoning and runtime reliability**, not growing the API operation count. Eight detailed implementation scopes, 0003–0010, now complement 0001 and 0002 with explicit ownership, dependencies, API contracts, tests and recovery requirements.
 
 ## Sources of truth
 
@@ -18,6 +18,8 @@ Read the [implementation program and eleven-scope index](implementation-program.
 GitHub holds version-controlled requirements. Supabase holds searchable references, source hashes, status metadata and linked operational evidence. Do not edit the same document independently in both locations. Preserve existing customer state and working services; map existing implementation before adding tables, runtimes or queues.
 
 0001 owns runtime-quality acceptance; 0003 the orchestrator; 0004 durability/truth; 0005 API/MCP and release control; 0006 knowledge; 0007 calendar; 0008 video; 0009 UI; 0010 commercial readiness. 0002 coordinates autonomy and owns bounded computer/proactive work. The [ownership map](architecture-contracts.md) prevents duplicate implementations.
+
+Scope [0012 — Sandy Cloud](tasks/SANDY-ENG-0012-sandy-cloud-drive-backup.md) covers a new Drive, independent computer backup, file recovery and permissioned file intelligence product. Its [architecture](../sandy-cloud/architecture.md) is DRAFT and does not alter or certify the existing Sandy Files library. It belongs to P2 product expansion; its security and recovery gates apply before any pilot. The existing Supabase file service remains canonical until a separately verified storage cutover.
 
 Scope [0011](tasks/SANDY-ENG-0011-browser-workflow-learning.md) is a subordinate feature scope; merely observing a workflow does not confer execution permission or certify the skill.
 
