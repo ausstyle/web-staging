@@ -34,27 +34,9 @@ def request(body,credential):
 
 def start(r):
  if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main':raise Blocked('protected_main_workflow_required')
- commit=os.environ.get('GITHUB_SHA','')
- if not re.fullmatch('[a-f0-9]{40}',commit):raise Blocked('source_commit_required')
- readback=source(r)
- router_meta=json.loads(r.api('GET','/functions/sandy-agent-runtime'));router_body=r.api('GET','/functions/sandy-agent-runtime/body');router_files=original_sources(router_body)
- if set(router_files)!={'index.ts'} or 'sandy-agent-runtime-v4' not in router_files['index.ts'].decode() or r.sql("SELECT enabled,rollback_runtime FROM public.sandy_v4_release_control WHERE id=1",True)!=[{'enabled':True,'rollback_runtime':'sandy-agent-runtime-v2'}]:raise Blocked('existing_runtime_v4_route_not_active')
- readback['runtime_router']={'version':router_meta['version'],'bundle_sha256':hashlib.sha256(router_body).hexdigest(),'v4_enabled':True}
- # The existing consented pilot association must not be silently expanded.
- if r.sql(f"SELECT DISTINCT customer_id::text FROM public.sandy_v2_qa_executions WHERE run_key={quote(BASELINE)}",True)!=[{'customer_id':PILOT}]:raise Blocked('existing_pilot_association_changed')
- keys=json.loads(r.api('GET','/api-keys'));service=[row.get('api_key') for row in keys if row.get('name')=='service_role' and row.get('api_key')]
- if len(service)!=1:raise Blocked('existing_private_examiner_ingress_credential_unavailable')
- credential=service[0]
- # Negative auth and arbitrary-question selection must fail before any run/task.
- if request({'run_key':'production:'+str(uuid.uuid4()),'customer_id':PILOT,'case_keys':CASES},'invalid-examiner-credential')[0]!=403:raise Blocked('examiner_auth_boundary_failed')
- if request({'run_key':'production:'+str(uuid.uuid4()),'customer_id':PILOT,'case_keys':['arbitrary_question']},credential)[0]!=400:raise Blocked('examiner_fixed_case_boundary_failed')
- run='production:'+str(uuid.uuid4())
- detail={'mode':'focused_regression_v1','source_commit':commit,'baseline_run':BASELINE,'selected_case_keys':CASES,'window_start':'2026-10-24T00:00:00Z','window_end':'2026-10-24T00:00:00Z','full_master_acceptance':False}
- r.sql(f"INSERT INTO public.sandy_v2_qa_runs(run_key,status,selection_audit) VALUES({quote(run)},'running',{quote(json.dumps(detail))}::jsonb)")
- status,body=request({'run_key':run,'customer_id':PILOT,'case_keys':CASES},credential)
- credential=None;service.clear();keys.clear()
- if status!=202 or body.get('run_key')!=run or body.get('status')!='running':raise Blocked('examiner_launch_not_accepted_do_not_retry')
- return {**readback,'run_key':run,'launch_http_status':status,'negative_auth_http_status':403,'arbitrary_case_http_status':400,'selected_case_keys':CASES,'historical_thread_scan_requested':False,'full_master_acceptance':False}
+ # Private worker credentials belong to the trusted runtime, not Management's
+ # unrelated legacy key list. Use the existing signed, fixed-operation bridge.
+ raise Blocked('use_supported_OIDC_focused_acceptance_workflow')
 
 def inspect(r,run):
  if not re.fullmatch(r'production:[a-f0-9-]{36}',run):raise Blocked('invalid_run_key')

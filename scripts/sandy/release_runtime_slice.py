@@ -22,6 +22,9 @@ MODULES = {
         '_shared/sandy-agent-operations/runtime_records.ts',
         '_shared/sandy-agent-operations/runtime_memory.ts',
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
+        '_shared/sandy-agent-operations/identity.ts',
+        '_shared/sandy-agent-operations/runtime_conversation.ts',
+        '_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts',
     },
     'sandy-examiner-full-cycle': {
         'sandy-examiner-full-cycle/index.ts',
@@ -51,6 +54,9 @@ MODULES = {
     'sandy-engineering-oidc-ingest': {
         'sandy-engineering-oidc-ingest/index.ts',
         'sandy-engineering-oidc-ingest/examiner_scope.ts',
+        'sandy-engineering-oidc-ingest/email_fixture.ts',
+        'sandy-engineering-oidc-ingest/worker_transport.ts',
+        '_shared/sandy-executive/email_shadow_fixture.ts',
     },
 }
 

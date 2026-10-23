@@ -35,7 +35,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py -v
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py -v
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -58,6 +58,7 @@ jobs:
           deno test supabase/functions/sandy-email-runtime-canary/history_test.ts supabase/functions/sandy-email-runtime-canary/outcome_test.ts supabase/functions/sandy-voice-account-context/executive_test.ts
           deno check supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
           deno test supabase/functions/sandy-engineering-oidc-ingest/examiner_scope_test.ts
+          deno test supabase/functions/sandy-engineering-oidc-ingest/email_fixture_test.ts supabase/functions/sandy-engineering-oidc-ingest/worker_transport_test.ts supabase/functions/_shared/sandy-executive/email_shadow_fixture_test.ts
           deno check supabase/functions/sandy-engineering-oidc-ingest/index.ts
       - name: Exercise WinRM timeout and cleanup against pinned loopback TLS
         run: >-
@@ -100,12 +101,12 @@ jobs:
               subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--deploy','--evidence-dir',out],check=True)
               subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--verify-installed','--evidence-dir',out+'-readback'],check=True)
           PY
-      - name: Launch bounded receipt-aware Examiner regression after installed-source verification
+      - name: Verify Examiner sources; actual acceptance uses the protected OIDC workflow
         if: inputs.component == 'all' || inputs.component == 'examiner'
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 scripts/sandy/verify_examiner_receipt_context.py --start --output "$RUNNER_TEMP/runtime-slices/examiner-acceptance-launch.json"
+        run: python3 scripts/sandy/verify_examiner_receipt_context.py --output "$RUNNER_TEMP/runtime-slices/examiner-installed-source.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
