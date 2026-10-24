@@ -1,0 +1,49 @@
+name: Deploy delegated durable metadata reads
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-durable-dispatch-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Verify original queue compatibility, normal workload policy and receipt isolation
+        run: >-
+          deno test --no-lock --allow-read
+          scripts/sandy/test_delegated_durable_reads.ts
+          supabase/functions/sandy-orchestration-api/index_test.ts
+          supabase/functions/sandy-orchestration-api/workload_reads_test.ts
+      - name: Install source-preserved worker and additive delegated admission without expanding grants
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_delegated_durable_reads.py --deploy --evidence-dir "$RUNNER_TEMP/delegated-durable-install"
+      - name: Independently verify every installed module, RPC and unchanged authority
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_delegated_durable_reads.py --verify-installed --evidence-dir "$RUNNER_TEMP/delegated-durable-readback"
+      - name: Verify actual scheduled workload MCP to GitHub read after admitting-session retirement and cancellation
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: deno run --no-lock --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_delegated_durable_reads.ts --output "$RUNNER_TEMP/delegated-durable-install/provider-acceptance.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: delegated-durable-reads-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/delegated-durable-install/
+            ${{ runner.temp }}/delegated-durable-readback/
+          retention-days: 14

@@ -1,0 +1,52 @@
+name: Install protected IAP transport and durable job custody
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sandy-engineering-mcp-deploy
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify isolated custody, authorization and typed job regressions
+        run: |
+          deno test --allow-read scripts/sandy/test_iap_repair_custody.ts
+          deno test supabase/functions/sandy-engineering-control/iap_repair_test.ts supabase/functions/sandy-engineering-control/iap_repair_jobs_test.ts
+          deno test supabase/functions/sandy-operation-api/engineering_identity_test.ts supabase/functions/sandy-operation-api/legacy_operations_test.ts
+          PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_iap_transport_source.py scripts/sandy/test_iap_runtime_binding.py scripts/sandy/test_iap_transport_release.py -v
+      - name: Install reviewed additive schema and preserved Control/API sources only
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: >-
+          python3 scripts/sandy/release_iap_transport.py --deploy
+          --evidence-dir "$RUNNER_TEMP/iap-transport-install"
+      - name: Independently verify full module maps, SQL source, ACL and preserved authority
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: >-
+          python3 scripts/sandy/release_iap_transport.py --verify-installed
+          --evidence-dir "$RUNNER_TEMP/iap-transport-readback"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: iap-transport-install-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/iap-transport-install/
+            ${{ runner.temp }}/iap-transport-readback/
+          retention-days: 14

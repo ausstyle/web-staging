@@ -1,0 +1,22 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-mission-runner",
+  "version": 31,
+  "verify_jwt": false,
+  "body_sha256": "9a85791fd85a040282207e6b77c5f82ec8d3d1456d2c2d4dc27be730813d37b3",
+  "before_files": {
+    "sandy-mission-runner/index.ts": "c24eff172a72c540366d7c4f3ffffb52f20749ef1747c72bf09d577ca3810773",
+    "_shared/sandy-agent-operations/worker_mission_planning_identity.ts": "771fd8f08f57e29f6dd0bd32b240bea48c95839446d85d8a74968031f4535b30",
+    "_shared/sandy-agent-operations/worker_mission_planning.ts": "2df16ec2e9a86270c3b62ec01dc1cf37ab2fbd92fc090b3458f2458a44fe678e",
+    "_shared/sandy-agent-operations/worker_mission_planning_contract.ts": "41151acaba0c125f3d4cb4cd2a3f63e0b22095f0a51243947e17a99f6f082acc",
+    "_shared/sandy-agent-operations/worker_mission_planning_profiles.ts": "0cfd9a3121f3a4979fd8764c171e5ff8685b32be5530306ac9f3c08012ca8590",
+    "_shared/sandy-agent-operations/worker_mission_planning_records.ts": "5d2168d8f57901a55cd1eec611b72cbf2ec706ffcc87dc356e7cba2ae211f526",
+    "_shared/sandy-agent-operations/runtime_responses_transport.ts": "ff3bf6c81543d1d2e2d5b0d9aad4bf803e293281b76c7bf7dce53e756e53904b"
+  },
+  "replacements": {
+    "_shared/sandy-agent-operations/worker_mission_planning.ts": "d0baff2baf3da2a9fc4b7809dd75ba854bb946abba9dd03604eb225f5097a5d9",
+    "_shared/sandy-agent-operations/worker_model_result.ts": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
+  },
+  "scope": "SANDY-ENG-0004 MTR-06 and MTR-07; completed model envelope before durable plan/draft/clarification review",
+  "functional_acceptance_passed": false
+}

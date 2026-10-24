@@ -871,3 +871,27 @@ Deno.test("bounded Git blobs accept larger reviewed text and reject oversized or
     assert.equal(h.state.delegated, expected === 200 ? 1 : 0);
   }
 });
+Deno.test('IAP jobs require independent fixed proposal delegation and never inherit read-only or canary authority',async()=>{
+ const proposal='52d56740-59c8-4db1-b7e6-a137c7699b86';
+ const args={change_id:proposal,provider:'google_cloud',operation:'iap.repair.plan',target:'sandy-iap-repair:elaborate-haven-511518-a5:sandy-video+sandy-windows',idempotency_key:'fixture-iap-job-001',payload:{}};
+ for(const active of [false,true]){
+  const h=await harness({executionScope:()=>({}),entry:async(operation)=>({operation,handler:'sandy-engineering-control',is_mutation:true,api_exposed:true,ai_exposed:true,input_schema:{type:'object'}}),db:{rpc:async(name)=>{
+   if(name==='sandy_engineering_resolve_identity')return {data:{ok:true,identity_user_id:MACHINE,owner_authority_id:OWNER,session_id:SESSION,credential_epoch:1,policy_sha256:await argumentDigest(engineeringPolicy),operations:engineeringPolicy.operations},error:null};
+   if(name==='sandy_engineering_resolve_standing')return {data:{ok:false,policy_present:false},error:null};
+   if(name==='sandy_engineering_resolve_iap_repair')return {data:active?{ok:true,identity_user_id:MACHINE,owner_authority_id:OWNER,session_id:SESSION,revision:1,policy:{change_id:proposal,expires_at:new Date(Date.now()+3600000).toISOString()}}:{ok:false},error:null};
+   return {data:{ok:false},error:null};
+  }}});
+  const r=await h.call(req(msg('engineering.implementation.request',args)));assert.equal(r.status,active?200:403);
+  if(active){assert.notEqual((await h.call(req(msg('engineering.implementation.request',{...args,change_id:OWNER})))).status,200);assert.equal((h.state.proof as any).iapRepair,true);assert.equal((h.state.proof as any).machineUserId,MACHINE);assert.ok((h.state.proof as any).standingOperations.includes('engineering.job.execute'));assert.equal(h.state.headers.has('x-sandy-approval-id'),false);
+   for(const bad of [{...args,provider:'github'},{...args,payload:{url:'https://evil.invalid'}}])assert.equal((await h.call(req(msg('engineering.implementation.request',bad)))).status,400);
+   assert.equal((await h.call(req(msg('engineering.job.execute',{change_id:proposal,job_id:APPROVAL})))).status,403);
+  }else assert.equal(h.state.delegated,0);
+ }
+});
+
+Deno.test('normal standing GitHub execution never consults an unrelated IAP grant',async()=>{
+ const h=await standingHarness();
+ const r=await h.call(req(msg('github.repos.get',{})));assert.equal(r.status,200);
+ assert.equal(h.calls.some(c=>c.name==='sandy_engineering_resolve_iap_repair'),false);
+ assert.equal(h.state.delegated,1);
+});
