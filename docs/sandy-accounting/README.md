@@ -4,6 +4,11 @@
 **Status:** DRAFT / proposed engineering requirements; **not** evidence of deployed accounting services, product certification, live AI agents or Australian regulatory accreditation.  
 **Scope discovery:** [Sandy engineering manifest](../sandy-engineering/scopes.json), ID `SANDY-ENG-0013`.
 
+**Implementation:** [Executable internal alpha](../../packages/sandy-accounting/README.md),
+[complete delivery register](delivery-register.json), and
+[as-built/test/release evidence](implementation-evidence.md). Local synthetic code/tests
+do not imply a deployed service, accepted accounting controls or full parity.
+
 ## Current version: v1.1 — Sandy Intelligence extension (24 October 2026)
 
 The canonical Markdown is the authoritative, editable source. Version 1.1 preserves the complete original Xero minimum requirement floor (352 function IDs F001–F352 and 87 named reports/analytics tools), and adds:

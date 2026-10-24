@@ -1,0 +1,17 @@
+{
+  "name": "@sandy/accounting",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test *.test.ts",
+    "demo": "node server.ts",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.3.14"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.0",
+    "typescript": "5.9.3"
+  }
+}

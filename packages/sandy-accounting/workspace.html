@@ -1,0 +1,603 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sandy Accounting · Synthetic workspace</title>
+  <style nonce="__NONCE__">
+  :root {
+    font-family: Inter,ui-sans-serif,system-ui,sans-serif;
+    color: #172e32;
+    background: #f5f7f6;
+    font-size: 15px;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+  }
+  header {
+    background: #143c37;
+    color: white;
+    padding: 24px 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+  }
+  h1 {
+    font-size: 25px;
+    margin: 0;
+  }
+  header p {
+    margin: 5px 0;
+    color: #ccded8;
+  }
+  .pill {
+    padding: 8px 12px;
+    border: 1px solid #9fc8bc;
+    border-radius: 30px;
+    font-size: 12px;
+  }
+  .notice {
+    background: #fff4d7;
+    border-bottom: 1px solid #ecdca7;
+    padding: 12px 5%;
+    color: #695222;
+  }
+  main {
+    max-width: 1320px;
+    margin: 28px auto;
+    padding: 0 24px;
+  }
+  nav {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+  }
+  button {
+    border: 1px solid #b6c9c3;
+    background: white;
+    color: #164b40;
+    border-radius: 6px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 600;
+  }
+  button:hover {
+    background: #e4efea;
+  }
+  button:disabled {
+    opacity: .5;
+    cursor: wait;
+  }
+  button.primary,
+  nav button[aria-selected=true] {
+    background: #185747;
+    color: white;
+    border-color: #185747;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(240px,1fr));
+    gap: 18px;
+  }
+  .card,
+  section {
+    background: white;
+    border: 1px solid #d8e2dd;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 18px;
+  }
+  .card p {
+    font-size: 13px;
+    color: #5e736c;
+  }
+  .value {
+    font-size: 30px;
+    font-weight: 650;
+  }
+  h2 {
+    font-size: 21px;
+    margin: 0 0 16px;
+  }
+  h3 {
+    font-size: 16px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 12px 0 5px;
+  }
+  input,
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #b8c9c0;
+    border-radius: 5px;
+    font: inherit;
+    background: white;
+  }
+  form {
+    max-width: 600px;
+  }
+  form button {
+    margin-top: 18px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 1px solid #e4ebe7;
+  }
+  th {
+    font-size: 12px;
+    color: #567064;
+  }
+  td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .overflow {
+    overflow-x: auto;
+  }
+  .muted {
+    color: #5b7069;
+    font-size: 13px;
+  }
+  #status {
+    min-height: 24px;
+    margin: 14px 0;
+    color: #174f40;
+  }
+  .error {
+    color: #a12d2d!important;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-size: 12px;
+    background: #f3f6f4;
+    padding: 16px;
+  }
+  a {
+    color: #185747;
+  }
+  dialog {
+    border: 1px solid #a9bcb1;
+    border-radius: 10px;
+    max-width: 850px;
+    width: 90%;
+    max-height: 85vh;
+  }
+  .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  [hidden] {
+    display: none!important;
+  }
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 3px solid #db9f31;
+    outline-offset: 3px;
+  }
+  @media (max-width:700px) {
+    header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+    .row {
+      grid-template-columns: 1fr;
+    }
+    main {
+      padding: 0 12px;
+    }
+    .card,
+    section {
+      padding: 16px;
+    }
+  }
+  </style>
+  <header>
+    <div>
+      <h1>Sandy Accounting</h1>
+      <p>Clear books. Evidence behind every figure.</p>
+    </div>
+    <div class="pill">Internal alpha · Synthetic books</div>
+  </header>
+  <div
+    class="notice">Synthetic workspace only. No real bank connection, money movement, messages or tax lodgments. All amounts AUD. Full product scope remains in development.</div>
+  <main><nav aria-label="Accounting workspace"><button data-tab="overview" aria-selected="true">Overview</button><button data-tab="sales">Sales & purchases</button><button data-tab="banking">Banking</button><button data-tab="reports">Reports</button><button data-tab="intelligence">Intelligence</button><button data-tab="controls">Controls & audit</button></nav>
+<div id="status" role="status" aria-live="polite"></div><button id="retry" hidden>Retry the same request</button>
+<div id="overview"><div class="grid"><div class="card"><p>Book bank balance</p><div id="bank-total" class="value">—</div></div><div class="card"><p>Receivables outstanding</p><div id="ar-total" class="value">—</div></div><div class="card"><p>Payables outstanding</p><div id="ap-total" class="value">—</div></div><div class="card"><p>Accrual profit · October 2026</p><div id="profit-total" class="value">—</div></div></div>
+<section><h2>Your first reconciled workflow</h2><p>Start with a synthetic opening balance, draft and approve an invoice, record a receipt, then match its statement line. Every report links back to the posted journal.</p><button id="opening" class="primary">Post synthetic opening balance · $1,000</button><p class="muted">Fixed fixture evidence. No statutory tax treatment or external payment is assumed.</p></section></div>
+<div id="sales" hidden><section><h2>Draft a synthetic document</h2><form id="document-form"><div class="row"><div><label for="kind">Document type</label><select id="kind"><option value="invoice">Customer invoice</option><option value="bill">Supplier bill</option></select></div><div><label for="number">Document number</label><input id="number" value="DEMO-001" required maxlength="60"></div></div><label for="contact">Synthetic contact</label><input id="contact" value="Demo customer" required maxlength="100"><label for="net">Amount (AUD, no tax in this fixture)</label><input id="net" value="100.00" inputmode="decimal" required pattern="[0-9]+(\.[0-9]{1,2})?"><div class="row"><div><label for="issued">Issue date</label><input id="issued" type="date" value="2026-10-02" required></div><div><label for="due">Due date</label><input id="due" type="date" value="2026-10-20" required></div></div><button class="primary">Save draft</button></form></section><section><h2>Documents</h2><div id="documents" class="overflow"></div></section></div>
+<div id="banking" hidden><section><h2>Import a synthetic statement line</h2><form id="statement-form"><label for="source-key">Source line ID (deduplicated)</label><input id="source-key" value="DEMO-STMT-001" required><label for="statement-amount">Signed amount · receipts positive, payments negative</label><input id="statement-amount" value="100.00" required pattern="-?[0-9]+(\.[0-9]{1,2})?"><label for="statement-date">Statement date</label><input id="statement-date" type="date" value="2026-10-03" required><label for="reference">Reference</label><input id="reference" value="Demo invoice receipt" required><button class="primary">Import line</button></form></section><section><h2>Statement lines</h2><div id="statements" class="overflow"></div><p class="muted">Imported lines are separate from posted book transactions. Exact match suggestions are in Intelligence; approve each proposed match there.</p></section><section><h2>Active reconciliations</h2><div id="matches"></div></section></div>
+<div id="reports" hidden><section><h2>Reports</h2><form id="report-form"><label for="report-type">Report</label><select id="report-type"><option value="trial_balance">Trial balance</option><option value="profit_and_loss">Profit and loss</option><option value="balance_sheet">Balance sheet</option><option value="general_ledger">General ledger detail</option><option value="aged_receivables">Aged receivables</option><option value="aged_payables">Aged payables</option><option value="bank_reconciliation">Bank reconciliation</option></select><label for="report-date">As at</label><input id="report-date" type="date" value="2026-10-31" required><button class="primary">Run accrual report</button></form><p class="muted">Debit-positive balances; credits negative. Balance sheet profit is shown separately as current earnings. Cash-basis and the remaining catalogue reports are not yet implemented.</p><div id="report-output" class="overflow"></div></section></div>
+<div id="intelligence" hidden><section><h2>Review suggestions</h2><p>Evidence-linked deterministic matching. Suggestions have no ledger effect until you approve a match. This fixture uses no generative model.</p><button id="suggest">Find exact bank matches</button><div id="suggestions"></div></section><section><h2>Cash scenario</h2><p>Use posted bank balances and approved outstanding invoices/bills as at 31 October. Assumes 100% collection on due dates; overdue amounts fall in the first bucket. Payroll, tax and unrecorded commitments are excluded.</p><button id="forecast">Calculate 13-week scenario</button><pre id="forecast-output"></pre></section></div>
+<div id="controls" hidden><section><h2>Period controls</h2><p>A lock prevents backdated postings and changes to reconciliations. Reopening is not exposed in this alpha.</p><form id="lock-form"><label for="lock-date">Lock through</label><input id="lock-date" type="date" value="2026-09-30" required><button>Lock period</button></form><p id="lock-state"></p></section><section><h2>Audit trail</h2><p>Each committed command records its actor, policy reference, input digest and result digest. Hash chaining is tamper evidence, not protection from a database administrator.</p><button id="audit">Verify audit chain</button><pre id="audit-output"></pre></section><section><h2>Posted journals</h2><div id="journals"></div></section></div>
+  </main>
+  <dialog
+    id="detail"><button id="close-detail">Close</button><h2>Journal and evidence</h2><pre id="detail-output"></pre></dialog>
+  <script type="module" nonce="__NONCE__">
+  const $ = (s) => document.querySelector(s), nonce = "__NONCE__";
+  let workspace, lastFailed, busy = false, source;
+  const esc = (s) =>
+    String(s ?? "").replace(
+      /[&<>"']/g,
+      (c) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[c]),
+    );
+  async function hash(value) {
+    const b = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(value),
+    );
+    return [...new Uint8Array(b)].map((v) => v.toString(16).padStart(2, "0"))
+      .join("");
+  }
+  const dollars = (minor) => {
+    let n = BigInt(minor), sign = n < 0n ? "-" : "";
+    n = n < 0n ? -n : n;
+    return sign + (n / 100n) + "." + String(n % 100n).padStart(2, "0");
+  };
+  async function api(operation, args = {}, key = crypto.randomUUID(), existing) {
+    const req = existing ??
+      {
+        operation,
+        arguments: args,
+        contract_version: "1",
+        company_id: "synthetic-company",
+        idempotency_key: key,
+      };
+    let res;
+    try {
+      res = await fetch("/api/run", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-synthetic-session": nonce,
+        },
+        body: JSON.stringify(req),
+      });
+    } catch (e) {
+      lastFailed = req;
+      $("#retry").hidden = false;
+      throw Error(
+        "Connection interrupted; outcome unknown. Retry the same request.",
+      );
+    }
+    const data = await res.json();
+    if (!res.ok) throw Error(data.error);
+    lastFailed = null;
+    $("#retry").hidden = true;
+    return data.result;
+  }
+  async function action(fn) {
+    if (busy) return;
+    busy = true;
+    document.querySelectorAll("button").forEach((b) => b.disabled = true);
+    $("#status").textContent = "Working…";
+    $("#status").className = "";
+    try {
+      await fn();
+      await refresh();
+      $("#status").textContent =
+        "Completed local request. No external action performed.";
+    } catch (e) {
+      $("#status").textContent = e.message;
+      $("#status").className = "error";
+    } finally {
+      busy = false;
+      document.querySelectorAll("button").forEach((b) => b.disabled = false);
+    }
+  }
+  function table(headers, rows) {
+    return "<table><thead><tr>" +
+      headers.map((h) => "<th>" + esc(h) + "</th>").join("") +
+      "</tr></thead><tbody>" +
+      rows.map((row) =>
+        "<tr>" + row.map((c) => "<td>" + c + "</td>").join("") +
+        "</tr>"
+      ).join("") + "</tbody></table>";
+  }
+  function drill(id) {
+    const b = document.createElement("button");
+    b.textContent = "View journal";
+    b.onclick = () =>
+      action(async () => {
+        $("#detail-output").textContent = JSON.stringify(
+          await api("accounting.reporting.drilldown", { journal_id: id }),
+          null,
+          2,
+        );
+        $("#detail").showModal();
+      });
+    return b;
+  }
+  async function refresh() {
+    workspace = await api("accounting.workspace.get");
+    const tb = await api("accounting.reporting.run", {
+      report: "trial_balance",
+      through: "2026-10-31",
+      basis: "accrual",
+    });
+    $("#bank-total").textContent = "$" +
+      (tb.rows.find((r) => r.account_id === "bank")?.amount ?? "0.00");
+    $("#ar-total").textContent = "$" +
+      (tb.rows.find((r) => r.account_id === "ar")?.amount ?? "0.00");
+    $("#ap-total").textContent = "$" +
+      (tb.rows.find((r) => r.account_id === "ap")?.amount ?? "0.00").replace(
+        "-",
+        "",
+      );
+    $("#profit-total").textContent = "$" + tb.profit;
+    $("#lock-state").textContent = "Locked through: " +
+      (workspace.book.locked_through?.slice(0, 10) ?? "no lock");
+    $("#documents").replaceChildren();
+    for (const d of workspace.documents) {
+      const div = document.createElement("div");
+      div.className = "card";
+      div.innerHTML = "<strong>" + esc(d.number) + " · " + esc(d.contact) +
+        "</strong><p>" + esc(d.kind) + " · " +
+        esc(d.void_journal_id ? "Voided" : d.journal_id ? "Approved" : "Draft") +
+        " · total $" + esc(d.total) + " · remaining $" + esc(d.remaining) +
+        "</p>";
+      if (!d.journal_id) {
+        const b = document.createElement("button");
+        b.textContent = "Approve " + d.number;
+        b.onclick = () =>
+          action(() =>
+            api("accounting.documents.approve", {
+              document_id: d.id,
+              expected_version: d.version,
+            })
+          );
+        div.append(b);
+      } else {
+        div.append(drill(d.journal_id));
+        if (d.remaining !== "0.00") {
+          const form = document.createElement("form");
+          form.innerHTML =
+            '<label>Record payment amount (AUD)<input name="amount" value="' +
+            esc(d.remaining) +
+            '" required pattern="[0-9]+(\\.[0-9]{1,2})?"></label><label>Payment date<input name="date" type="date" value="2026-10-03" required></label><button>Record payment</button>';
+          form.onsubmit = (e) => {
+            e.preventDefault();
+            action(() =>
+              api("accounting.documents.payment.record", {
+                document_id: d.id,
+                expected_version: d.version,
+                amount: form.elements.amount.value,
+                effective_date: form.elements.date.value,
+                bank_account: "bank",
+                evidence: [source],
+              })
+            );
+          };
+          div.append(form);
+        }
+      }
+      $("#documents").append(div);
+    }
+    $("#statements").innerHTML = table(
+      ["Date", "Reference", "Amount", "Matched"],
+      workspace.statements.map(
+        (s) => [
+          esc(s.effective_date.slice(0, 10)),
+          esc(s.reference),
+          esc(dollars(s.amount)),
+          esc(
+            dollars(
+              workspace.matches.filter((m) => m.statement_id === s.id).reduce(
+                (n, m) => n + BigInt(m.amount),
+                0n,
+              ).toString(),
+            ),
+          ),
+        ],
+      ),
+    );
+    $("#matches").replaceChildren();
+    for (const m of workspace.matches) {
+      const p = document.createElement("p");
+      p.textContent = dollars(m.amount) + " AUD · " + m.statement_id + " ";
+      const b = document.createElement("button");
+      b.textContent = "Undo match";
+      b.onclick = () =>
+        action(() =>
+          api("accounting.banking.reconcile.reverse", {
+            match_id: m.id,
+            reason: "Synthetic reviewer correction",
+          })
+        );
+      p.append(b);
+      $("#matches").append(p);
+    }
+    $("#journals").replaceChildren();
+    for (const j of workspace.journals) {
+      const p = document.createElement("p");
+      p.textContent = j.effective_date.slice(0, 10) + " · " + j.narration + " ";
+      p.append(drill(j.id));
+      $("#journals").append(p);
+    }
+  }
+  document.querySelectorAll("[data-tab]").forEach((b) =>
+    b.onclick = () => {
+      document.querySelectorAll("[data-tab]").forEach((x) => {
+        x.setAttribute("aria-selected", String(x === b));
+        $("#" + x.dataset.tab).hidden = x !== b;
+      });
+    }
+  );
+  $("#opening").onclick = () =>
+    action(() =>
+      api("accounting.ledger.journal.post", {
+        effective_date: "2026-10-01",
+        narration: "Synthetic opening balance",
+        currency: "AUD",
+        precision: 2,
+        evidence: [source],
+        lines: [{ account_id: "bank", amount: "1000.00" }, {
+          account_id: "capital",
+          amount: "-1000.00",
+        }],
+      }, "ui-synthetic-opening-v1")
+    );
+  $("#document-form").onsubmit = (e) => {
+    e.preventDefault();
+    const kind = $("#kind").value;
+    action(() =>
+      api(
+        kind === "invoice"
+          ? "accounting.sales.invoice.draft"
+          : "accounting.payables.bill.draft",
+        {
+          contact: $("#contact").value,
+          number: $("#number").value,
+          issued: $("#issued").value,
+          due: $("#due").value,
+          currency: "AUD",
+          control_account: kind === "invoice" ? "ar" : "ap",
+          evidence: [source],
+          lines: [{
+            description: "Synthetic service",
+            account_id: kind === "invoice" ? "sales" : "expense",
+            net: $("#net").value,
+            tax: "0.00",
+            tax_account: null,
+            tax_rule_ref: null,
+          }],
+        },
+      )
+    );
+  };
+  $("#statement-form").onsubmit = (e) => {
+    e.preventDefault();
+    action(() =>
+      api("accounting.banking.statements.import", {
+        bank_account: "bank",
+        lines: [{
+          source_key: $("#source-key").value,
+          effective_date: $("#statement-date").value,
+          amount: $("#statement-amount").value,
+          reference: $("#reference").value,
+          evidence: [source],
+        }],
+      })
+    );
+  };
+  $("#suggest").onclick = () =>
+    action(async () => {
+      const r = await api("accounting.intelligence.matches.propose");
+      $("#suggestions").replaceChildren();
+      if (!r.suggestions.length) {
+        $("#suggestions").textContent =
+          "No exact matches. Review dates, amounts and previous matches.";
+      }
+      for (const s of r.suggestions) {
+        const p = document.createElement("p");
+        p.textContent = "Suggestion · $" + s.amount +
+          " · account/date/amount match ";
+        const b = document.createElement("button");
+        b.textContent = "Approve match";
+        b.onclick = () =>
+          action(async () => {
+            await api("accounting.banking.reconcile.apply", {
+              statement_id: s.statement_id,
+              journal_id: s.journal_id,
+              ordinal: s.ordinal,
+              amount: s.amount,
+            });
+            p.remove();
+          });
+        p.append(b);
+        $("#suggestions").append(p);
+      }
+    });
+  $("#report-form").onsubmit = (e) => {
+    e.preventDefault();
+    action(async () => {
+      const r = await api("accounting.reporting.run", {
+        report: $("#report-type").value,
+        through: $("#report-date").value,
+        basis: "accrual",
+      });
+      $("#report-output").replaceChildren();
+      const pre = document.createElement("pre");
+      pre.textContent = JSON.stringify(r, null, 2);
+      $("#report-output").append(pre);
+      const ids = new Set(
+        r.rows.flatMap((x) =>
+          x.journal_id
+            ? [x.journal_id]
+            : (x.contributors ?? []).map((c) => c.journal_id)
+        ),
+      );
+      for (const id of ids) $("#report-output").append(drill(id));
+    });
+  };
+  $("#lock-form").onsubmit = (e) => {
+    e.preventDefault();
+    action(() =>
+      api("accounting.organisations.period.lock", {
+        through: $("#lock-date").value,
+        expected_revision: String(workspace.book.revision),
+      })
+    );
+  };
+  $("#forecast").onclick = () =>
+    action(async () => {
+      $("#forecast-output").textContent = JSON.stringify(
+        await api("accounting.intelligence.cashflow.forecast", {
+          as_of: "2026-11-01",
+          horizon: "13_weeks",
+          collection_probability_bps: 10000,
+        }),
+        null,
+        2,
+      );
+    });
+  $("#audit").onclick = () =>
+    action(async () => {
+      $("#audit-output").textContent = JSON.stringify(
+        await api("accounting.audit.verify"),
+        null,
+        2,
+      );
+    });
+  $("#close-detail").onclick = () => $("#detail").close();
+  $("#retry").onclick = () => action(() => api("", {}, "", lastFailed));
+  source = {
+    file_id: "synthetic-worksheet",
+    revision: "1",
+    sha256: await hash(
+      "Synthetic accountant worksheet: opening cash 1000; sales 100; supplier cost 30. Not a customer document or independent professional acceptance.",
+    ),
+    locator: "rows 1–3",
+  };
+  await action(async () => {});
+  </script>
+</html>
