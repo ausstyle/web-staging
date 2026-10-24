@@ -1,0 +1,8 @@
+{
+  "migration": "supabase/migrations/20261024022000_sandy_customer_task_guard_commit.sql",
+  "migration_sha256": "e82dccd23d63ed406250d0b1ab437bf584fd7a2b2961bf5dda9e6b4ef2386f78",
+  "version": "20261024022000",
+  "before_rpc_sha256": "2a06079d2ab9a630be5c28b126fb8526b12d6e17750c86500bd6cf7fb42a48db",
+  "after_rpc_sha256": "746abc32895b64925f1e2a1aaf7808909b621acaa230d905772018228fceae07",
+  "guard_sha256": "877199298ed083b4afe1a579fc366b1158c5517b7f748d1064d08e10e58e5cd5"
+}

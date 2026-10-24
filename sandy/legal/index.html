@@ -33,9 +33,9 @@ const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co",key,{auth:{pers
 installSandyIdleLock(sb.auth);
 const apiUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-legal";
 const filesUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-files";
-const state={matters:[],companies:[],files:[],matter:null,detail:null,tab:"overview",search:"",loading:false};
+const state={matters:[],companies:[],files:[],matter:null,detail:null,tab:"overview",search:"",loading:false,financialItems:[],financialError:null};
 const types=["document","evidence","correspondence","deadline","hearing","order","contact","engagement","cost","instruction","note"];
-const tabs=[["overview","Overview"],["proceedings","Proceedings"],["documents","Documents & evidence"],["dates","Court dates & orders"],["team","Lawyers & contacts"],["costs","Engagements & costs"],["notes","Instructions & notes"]];
+const tabs=[["overview","Overview"],["proceedings","Proceedings"],["documents","Documents & evidence"],["dates","Court dates & orders"],["team","Lawyers & contacts"],["invoices","Invoices"],["cost_orders","Costs orders & assessments"],["recoveries","Recovery actions"],["finance_engagements","Engagements & trust"],["costs","Legacy costs"],["notes","Instructions & notes"]];
 const recordsFor={documents:["document","evidence","correspondence"],dates:["deadline","hearing","order"],team:["contact"],costs:["engagement","cost"],notes:["instruction","note"]};
 function E(tag,cls,value){const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined&&value!==null)n.textContent=String(value);return n}
 function B(value,cb,cls){const n=E("button","btn "+(cls||""),value);n.type="button";n.addEventListener("click",cb);return n}
@@ -51,6 +51,17 @@ async function api(action,input={}){
  if(r.status===401){const refreshed=await sb.auth.refreshSession();if(refreshed.data?.session?.access_token)r=await send(refreshed.data.session.access_token);}
  const payload=await r.json().catch(()=>({}));
  if(!r.ok)throw Error(friendly(payload.error||"Request failed"));
+ return payload;
+}
+const financeUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-legal-finance";
+async function financeApi(action,input={}){
+ const {data}=await sb.auth.getSession();const token=data.session?.access_token;
+ if(!token)throw Error("Sandy sign-in required");
+ const send=async t=>fetch(financeUrl,{method:"POST",headers:{"authorization":"Bearer "+t,"content-type":"application/json","apikey":key},body:JSON.stringify({action,...input})});
+ let r=await send(token);
+ if(r.status===401){const next=await sb.auth.refreshSession();if(next.data?.session?.access_token)r=await send(next.data.session.access_token);}
+ const payload=await r.json().catch(()=>({}));
+ if(!r.ok)throw Error(friendly(payload.error||"Finance request failed"));
  return payload;
 }
 async function original(file_id){
@@ -141,19 +152,22 @@ function drawMatters(){
  }body.append(grid);
 }
 async function openMatter(id,tab){
- try{loading("Opening legal matter…");const x=await api("matter_get",{id});state.matter=x.matter;state.detail=x;state.tab=tab||"overview";renderDetail()}catch(e){notify(e.message,true);renderList()}
+ try{loading("Opening legal matter…");const x=await api("matter_get",{id});state.matter=x.matter;state.detail=x;state.tab=tab||"overview";state.financialItems=[];state.financialError=null;
+ try{const f=await financeApi("list",{matter_id:id});state.financialItems=f.items||[];if(f.truncated)state.financialError="Only the first 600 financial items are shown.";}catch(e){state.financialError=e.message||"Finance unavailable";}
+ renderDetail()}catch(e){notify(e.message,true);renderList()}
 }
 function renderDetail(){
  const s=$("screen"),m=state.matter,d=state.detail;if(!m||!d)return renderList();s.replaceChildren();
  s.append(B("← All legal matters",renderList,"ghost"));
  const title=container("hero",pageTitle("MATTER / "+friendly(m.status),m.title,m.description||"A central record of this legal matter."),B("＋ Add proceeding",createProceeding,"primary"));s.append(title);
  const g=E("div","detailgrid");
- const values=[["Jurisdiction",m.jurisdiction],["Proceedings",d.proceedings.length],["Registered records",d.records.filter(x=>x.status!=="archived").length]];
+ const values=[["Jurisdiction",m.jurisdiction],["Proceedings",d.proceedings.length],["Case records",d.records.filter(x=>x.status!=="archived").length],["Financial records",state.financialItems.length]];
  for(const [k,v] of values)g.append(container("info",E("span","key",k),E("strong","",v)));s.append(g);
  const tabsNode=E("div","tabs");for(const [k,label] of tabs){const b=E("button","tab"+(state.tab===k?" active":""),label);b.onclick=()=>{state.tab=k;renderDetail()};tabsNode.append(b)}s.append(tabsNode);
  const list=E("div");s.append(list);
  if(state.tab==="overview"){renderOverview(list);return}
  if(state.tab==="proceedings"){renderProceedings(list);return}
+ if(["invoices","cost_orders","recoveries","finance_engagements"].includes(state.tab)){renderFinance(list);return}
  renderRecords(list);
 }
 function sectionHead(title,description,addButton){
@@ -192,6 +206,62 @@ function recordCard(r){
  card.append(info,actions);return card;
 }
 function dProceeding(id){return state.detail.proceedings.find(x=>x.id===id)}
+const financePanels={
+ invoices:{title:"Legal invoices",description:"Actual solicitor and counsel bills. Amounts must be reconciled to payment evidence; a bill is not proof it remains unpaid.",type:"invoice",button:"＋ Add invoice"},
+ cost_orders:{title:"Costs orders & assessments",description:"Court costs orders, costs assessment applications and assessed liabilities are distinct states. An application amount is not an assessed amount.",type:"costs_order",button:"＋ Record costs order"},
+ recoveries:{title:"Costs recovery actions",description:"Indemnity and reimbursement claims, demands, disputed entitlements and actual recoveries. Proposed claims are not cash collected.",type:"recovery_action",button:"＋ Add recovery claim"},
+ finance_engagements:{title:"Engagements, estimates & trust",description:"Costs agreements, hourly rates, retainers and trust reconciliations. Retainer requests are not verified deposits.",type:"engagement",button:"＋ Add engagement"}
+};
+const moneyLabel=(value,currency)=>value===null||value===undefined?"Amount not verified":String(currency||"AUD")+" "+Number(value).toLocaleString("en-AU",{minimumFractionDigits:2,maximumFractionDigits:2});
+function financeSource(a,label){
+ if(!a||typeof a!=="string")return null;
+ try{const u=new URL(a);if(u.protocol!=="https:"||!["drive.google.com","docs.google.com","www.caselaw.nsw.gov.au","caselaw.nsw.gov.au","casechat.au"].includes(u.hostname))return null;
+ const e=E("a","link",label);e.href=u.href;e.target="_blank";e.rel="noopener noreferrer";return e;}catch{return null}
+}
+function financeCreate(type){
+ const m=state.matter;if(!m)return;
+ const proceedings=[["","General to the matter"],...(state.detail.proceedings||[]).map(x=>[x.id,x.case_number+" — "+x.court])];
+ const parts=[field("title","Description"),container("fields",field("counterparty","Law firm, claimant or payer"),field("reference_number","Matter / court reference")),container("fields",field("invoice_number","Invoice number (where applicable)"),field("gross_amount","Face amount or reported claim (AUD)","number")),container("fields",field("issue_date","Issue date","date"),field("due_date","Due date, if independently established","date")),field("proceeding_id","Proceeding","select","",proceedings),field("notes","Notes and source reference","textarea"),container("notice warn","New records are marked Awaiting review. Sandy will not infer that an invoice is unpaid or paid, that costs have been assessed, or that a recovery is collectible.")];
+ launch("New "+friendly(type.replaceAll("_"," ")), "A financial record is separate from court filing, payments and recovery evidence.",parts,async f=>{
+  await financeApi("create",{...f,matter_id:m.id,entry_type:type,proceeding_id:f.proceeding_id||null,gross_amount:f.gross_amount===""?null:Number(f.gross_amount),currency:"AUD"});
+ });
+}
+function financeCard(x){
+ const box=E("div","item");const content=E("div","");content.style.minWidth="0";
+ content.append(container("pillrow",E("strong","",x.title),E("span","badge"+(x.status==="awaiting_review"?" review":""),friendly(x.status))));
+ content.append(E("p","small muted",[x.counterparty,x.invoice_number?"Invoice "+x.invoice_number:null,x.issue_date?dateOnly(x.issue_date):null].filter(Boolean).join(" · ")));
+ const amt=E("div","");amt.style.marginTop="9px";amt.append(E("strong","",moneyLabel(x.gross_amount,x.currency)));
+ if(x.outstanding_amount!==null&&x.outstanding_amount!==undefined)amt.append(E("p","small muted","Reported outstanding at source date: "+moneyLabel(x.outstanding_amount,x.currency)+" — not live payment balance"));
+ content.append(amt);
+ if(x.entry_type==="costs_order")content.append(E("p","small muted","Assessment/award status: "+(x.status==="assessed"?"assessed":"not independently verified as assessed")));
+ if(x.entry_type==="recovery_action")content.append(E("p","small muted","Proposed recovery — do not include in paid receipts or automatically net against costs"));
+ if(x.entry_type==="trust_statement")content.append(E("p","small muted","Reconciliation snapshot — not a second invoice"));
+ if(x.notes){const details=E("details","");details.style.marginTop="10px";details.append(E("summary","small link","View provenance and notes"),E("p","small muted",x.notes));content.append(details);}
+ if(x.source_provider==="outlook")content.append(E("p","small muted","Source: Outlook"+(x.source_attachment_name?" · "+x.source_attachment_name:"")+" · record retained"));
+ if(x.source_provider==="drive"&&x.source_attachment_name){
+  content.append(E("p","small muted","Original document inside archived ZIP: "+x.source_attachment_name));
+ }
+ const actions=E("div","actions");
+ const link=financeSource(x.source_document_url,x.source_provider==="drive"?"Open archived source ↗":"View source ↗");if(link){link.className="btn small";actions.append(link);}
+ if(!["disputed","closed"].includes(x.status))actions.append(B("Dispute",async()=>{if(!confirm("Flag this financial record as disputed? This does not notify the law firm."))return;try{await financeApi("update",{id:x.id,expected_updated_at:x.updated_at,status:"disputed"});await openMatter(state.matter.id,state.tab);notify("Marked as disputed.")}catch(e){notify(e.message,true)}},"small"));
+ box.append(content,actions);return box;
+}
+function renderFinance(node){
+ const k=state.tab,conf=financePanels[k],types=k==="finance_engagements"?["engagement","trust_statement"]:[conf.type];
+ node.append(sectionHead(conf.title,conf.description,B(conf.button,()=>financeCreate(conf.type),"small primary")));
+ if(state.financialError)node.append(container("notice warn","Financial data could not be fully loaded: "+state.financialError));
+ node.append(container("notice warn","Amounts are classified by source and status. Never add invoices, assessments, trust statements and indemnity claims together: some records represent the same underlying cost."));
+ const rows=state.financialItems.filter(x=>types.includes(x.entry_type));
+ if(rows.length){
+  const stats=container("row");stats.style.margin="16px 0";
+  stats.append(E("span","badge",rows.length+" record"+(rows.length===1?"":"s")));
+  stats.append(E("span","small muted",k==="invoices"?"The invoice face amount is not a live balance":k==="recoveries"?"All proposed recoveries require legal verification":"Source amounts may be estimates or claims"));
+  node.append(stats);
+  const pane=E("div","pane");for(const v of rows)pane.append(financeCard(v));node.append(pane);
+ }else node.append(container("empty",E("h3","","No "+conf.title.toLowerCase()+" entered"),E("p","","Add a record and retain the original document as evidence.")));
+ if(k==="finance_engagements"){const legacy=state.detail.records.filter(x=>x.kind==="engagement"&&x.status!=="archived");if(legacy.length)node.append(container("notice","Historical engagement records are also preserved under Legacy costs; they are not automatically treated as invoices."));}
+ if(k==="recoveries"){node.append(container("notice","Potential recoveries in the previous Legal Costs register remain accessible under Legacy costs. The new recovery actions may overlap those older records."));}
+}
 function renderRecords(node){
  const k=state.tab;
  const title={documents:"Documents & evidence",dates:"Court dates, orders & deadlines",team:"Lawyers & contacts",costs:"Engagements & costs",notes:"Instructions & notes"}[k]||"Records";
