@@ -457,14 +457,16 @@
       ],
       "text": "Cloud SQL PostgreSQL is the v1 relational offering; database engine/version, instance sharing policy, region and HA tier are plan-specific. Provision dedicated roles and databases, use IAM database authentication where feasible, private connectivity, TLS and Secret Manager for credentials. Never expose database superuser credentials or public SQL network ingress to tenants. Limit max connections and concurrent provisioned tenants per shared instance; design instance sharding/capacity migration before hitting quotas. Test backup restore at database granularity and document point-in-time recovery eligibility/cost.",
       "text_sha256": "12f3eca3cf6f923807c4b6c73cdeb814f84c72c685241b86d9334a5cee81d37f",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/management_contracts.json"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "C"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented."
     },
     {
       "id": "HOST-S5-02",
@@ -476,14 +478,16 @@
       ],
       "text": "Cloud Storage holds application objects, customer uploads, backup artifacts and deployment artifacts with distinct buckets or IAM-isolated namespaces. Short-lived signed upload/download URLs, type/size validation, retention, object versioning where purchased, lifecycle rules, deletion protection and regional/data residency controls. Storage encryption, egress and backup costs are billable inputs. No claim of end-to-end zero-knowledge encryption.",
       "text_sha256": "9b34fbd3ba7dabe8d74665f7c30fe2e844fa56de1a7e11b39d21238f2a6b1c9e",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/management_contracts.json"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "C"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented."
     },
     {
       "id": "HOST-S6-01",
@@ -1178,15 +1182,17 @@
       ],
       "text": "SLOs are **targets for pricing and operational validation, not current SLAs**. Proposed standard paid tier: 99.9% monthly application availability excluding stated customer code failures and exclusions; premium offers higher availability only after multi-zone service design, tests and cost modelling. Use regional Cloud Run with appropriate instance scaling, regional Cloud SQL HA on qualifying plans, Cloud DNS authoritative redundancy, health checks and monitored critical-path dependencies. Database is not globally active-active by default.",
       "text_sha256": "3b59c714b5dd2ebc42d139d7f2431ddb245e86b0dfa8b5b6cb2ce3514ca40d26",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/management_contracts.json"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "C",
         "F"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented."
     },
     {
       "id": "HOST-S9-02",
@@ -1198,15 +1204,17 @@
       ],
       "text": "Define and measure RPO/RTO by plan: baseline daily backups with clearly stated restore window; premium PITR/HA with documented tested restore; regular isolated restore drills. Separate infrastructure platform failure from DNS delegation error, certificate outage, code release failure and customer billing lapse. Alert on failed provisioning, certificate expiry, DNS drift, SQL saturation, quota exhaustion, 5xx rates, backup failures and uncontrolled spend. Use automatic circuit breakers and blast-radius boundaries rather than unbounded replay.",
       "text_sha256": "70e0025876e9efadfb203feca6bc204d46fd8ccc94179f0707d5d48094336d7a",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/management_contracts.json"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "C",
         "F"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented."
     },
     {
       "id": "HOST-S10-01",
@@ -1218,15 +1226,17 @@
       ],
       "text": "**Proposed marketing anchors, not validated prices:** Starter USD 5/month and Plus USD 10/month, subject to real cloud unit economics, regions, billing currency, tax, payment and support costs. These cannot promise unlimited compute, Cloud SQL per-site instances, storage or bandwidth. Define clear hard/soft quotas for request CPU, memory, instance count, SQL database storage/connections, Cloud Storage GB, egress, builds, backups and domains. A free tier, if offered, must be strictly capped with abuse controls.",
       "text_sha256": "643144d57983bb4263375f6ce6ef80219f6700edfdae458c3253ec5eaeb21c2d",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/management_contracts.json"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "F",
         "G"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented."
     },
     {
       "id": "HOST-S10-02",
@@ -1238,15 +1248,17 @@
       ],
       "text": "Sandy records provider usage, cost allocation per tenant and service, price plan version, overage policy, taxes, invoices, trial/failed-payment lifecycle, proration, refunds, suspensions and data export before deletion. Require budgets and alert thresholds at tenant and operator levels. During provisioning estimate incremental worst-case cost and reject unsupported products/regions/quotas. Validate profitability at realistic low utilization and peak burst scenarios before launching price claims.",
       "text_sha256": "eb0896360502a71ada9fe0cc5c8e99e2b2237828aeff3d944d188bae7826243d",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "supabase/functions/_shared/sandy-hosting/management_contracts.json"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "F",
         "G"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented."
     },
     {
       "id": "HOST-S11-01",
@@ -1258,14 +1270,18 @@
       ],
       "text": "Dashboard: sites and their revision/health; attach domain; DNS editor with preview and records; certificates; databases and access rotation; file/storage browser; builds/deployments, logs and rollback; usage/billing; backup/restore; team invitations and roles; audit history; support. Sandy assistant can interpret natural-language requests but must translate them into typed, policy-authorised operations and display consequences and receipts. Provide contextual setup for GoDaddy/other registrars and external DNS; avoid exposing dangerous raw cloud permissions.",
       "text_sha256": "cfd5d932b95ff577e4189d4567b6848895ef93abfac80571b390722a4c4d3383",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "sandy/hosting/index.html",
+        "sandy/hosting/read-client.mjs",
+        "sandy/hosting/view.mjs"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "G"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Read-only management UI with synthetic browser coverage; gateway exposure, normal-user live account lookup and other management operations pending."
     },
     {
       "id": "HOST-S12-01",

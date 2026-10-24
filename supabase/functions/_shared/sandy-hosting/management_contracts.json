@@ -1,0 +1,448 @@
+{
+  "schema_version": "1.0.0",
+  "status": "source_only_not_registered_or_deployed",
+  "schemas": {
+    "usage_view": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "account_id",
+            "period_start",
+            "period_end",
+            "status",
+            "estimate",
+            "approved_limit",
+            "observed_charge",
+            "provider_receipt_ids"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "period_start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "period_end": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "const": "unavailable"
+            },
+            "estimate": {
+              "type": "null"
+            },
+            "approved_limit": {
+              "type": "null"
+            },
+            "observed_charge": {
+              "type": "null"
+            },
+            "provider_receipt_ids": {
+              "type": "array",
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "account_id",
+            "period_start",
+            "period_end",
+            "status",
+            "estimate",
+            "approved_limit",
+            "observed_charge",
+            "provider_receipt_ids"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "period_start": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "period_end": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "status": {
+              "const": "available"
+            },
+            "estimate": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "amount",
+                    "quote_id",
+                    "expires_at"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount_micros"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "amount_micros": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      }
+                    },
+                    "quote_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "expires_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              ]
+            },
+            "approved_limit": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "amount",
+                    "approval_id",
+                    "valid_until"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount_micros"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "amount_micros": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      }
+                    },
+                    "approval_id": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "valid_until": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              ]
+            },
+            "observed_charge": {
+              "anyOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "type": "object",
+                  "required": [
+                    "amount",
+                    "observed_at",
+                    "provider_receipt_ids"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "amount": {
+                      "type": "object",
+                      "required": [
+                        "currency",
+                        "amount_micros"
+                      ],
+                      "additionalProperties": false,
+                      "properties": {
+                        "currency": {
+                          "type": "string",
+                          "pattern": "^[A-Z]{3}$"
+                        },
+                        "amount_micros": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        }
+                      }
+                    },
+                    "observed_at": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "provider_receipt_ids": {
+                      "type": "array",
+                      "minItems": 1,
+                      "maxItems": 100,
+                      "uniqueItems": true,
+                      "items": {
+                        "type": "string",
+                        "format": "uuid"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            "provider_receipt_ids": {
+              "type": "array",
+              "maxItems": 100,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "backup_view": {
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "account_id",
+            "backup_id",
+            "source_resource_id",
+            "created_at",
+            "backup_receipt_id",
+            "state",
+            "restore_verified",
+            "restore_receipt_id",
+            "restored_at"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "backup_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "source_resource_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "backup_receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "state": {
+              "const": "created"
+            },
+            "restore_verified": {
+              "const": false
+            },
+            "restore_receipt_id": {
+              "type": "null"
+            },
+            "restored_at": {
+              "type": "null"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "account_id",
+            "backup_id",
+            "source_resource_id",
+            "created_at",
+            "backup_receipt_id",
+            "state",
+            "restore_verified",
+            "restore_receipt_id",
+            "restored_at",
+            "isolated_target_id"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "backup_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "source_resource_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "created_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "backup_receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "state": {
+              "const": "restore_tested"
+            },
+            "restore_verified": {
+              "const": true
+            },
+            "restore_receipt_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "restored_at": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "isolated_target_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      ]
+    },
+    "isolated_restore_plan": {
+      "type": "object",
+      "required": [
+        "account_id",
+        "backup_id",
+        "isolated_target_id",
+        "expected_target_version",
+        "plan_sha256",
+        "estimated_cost",
+        "requires_owner_authorization",
+        "requires_cost_approval",
+        "production_cutover",
+        "executable"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "backup_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "isolated_target_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "expected_target_version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "plan_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "estimated_cost": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "required": [
+                "amount",
+                "quote_id",
+                "expires_at"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "amount": {
+                  "type": "object",
+                  "required": [
+                    "currency",
+                    "amount_micros"
+                  ],
+                  "additionalProperties": false,
+                  "properties": {
+                    "currency": {
+                      "type": "string",
+                      "pattern": "^[A-Z]{3}$"
+                    },
+                    "amount_micros": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  }
+                },
+                "quote_id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "expires_at": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          ]
+        },
+        "requires_owner_authorization": {
+          "const": true
+        },
+        "requires_cost_approval": {
+          "const": true
+        },
+        "production_cutover": {
+          "const": false
+        },
+        "executable": {
+          "const": false
+        }
+      }
+    }
+  },
+  "semantic_checks_required": [
+    "Resolve account/resource ownership from real gateway actor, not input IDs",
+    "Validate ISO currency, same-currency comparisons, chronological periods and unexpired approvals",
+    "Verify receipt provenance and resource/source-version bindings before treating evidence as observed",
+    "Reserve budget atomically in existing canonical quota ledger; estimates are not approved limits",
+    "A created backup is not a tested restore; production cutover and deletion require separate authorization"
+  ]
+}
