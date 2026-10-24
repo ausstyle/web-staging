@@ -65,5 +65,11 @@ INSERT INTO sandy_operation_registry(operation,handler,permission_scope,is_mutat
  assert.equal((await db.query("SELECT count(*)::int n FROM sandy_operation_registry WHERE operation=ANY($1) AND verified",[Object.keys(contracts)])).rows[0].n,0);
  const altered=await mutate('tasks.update',{id:task,priority:'low'});assert.equal(altered.error,'idempotency_key_conflict');
  await claims(false);await db.query("INSERT INTO sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES($1,'customer_mutation_private_readiness_revoked',NULL,$2)",[change,JSON.stringify({artifact_id:artifact})]);await claims();assert.equal((await proof('files.rename',{id:file,name:'Changed'})).ok,false);
+ const names=['sandy_customer_mutation_contracts_v1','sandy_customer_mutation_fixture_owned','sandy_customer_mutation_fixture_set_valid','sandy_guard_customer_mutation_private_readiness_event','sandy_api_customer_mutation_private_readiness'];
+ const private_sources=(await db.query("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE pronamespace='public'::regnamespace AND proname=ANY($1) ORDER BY proname",[names])).rows;
+ const shared=(await db.query("SELECT encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha FROM pg_proc WHERE oid='public.sandy_api_customer_mutation(text,jsonb,text)'::regprocedure")).rows[0].sha;
+ const release=JSON.parse(await readFile(new URL('../../docs/sandy-engineering/evaluations/customer-mutation-private-release.json',import.meta.url),'utf8'));
+ if(!process.env.CUSTOMER_SCHEMA_OUTPUT){assert.deepEqual(private_sources,release.private_schema_sources);assert.equal(shared,release.shared_rpc_after_private_readiness_prosrc_sha256);}
+ if(process.env.CUSTOMER_SCHEMA_OUTPUT){const {writeFile}=await import('node:fs/promises');await writeFile(process.env.CUSTOMER_SCHEMA_OUTPUT,JSON.stringify({private_schema_sources:private_sources,shared_rpc_after:shared}));}
  console.log(JSON.stringify({existing_operations_actual_SQL:10,same_atomic_receipts:true,real_provider_or_production_used:false,registry_flags_enabled:false}));
 });

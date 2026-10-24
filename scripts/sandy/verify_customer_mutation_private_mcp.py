@@ -43,10 +43,11 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
         if not re.fullmatch('[a-f0-9]{40}',sha) or subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()!=sha:raise RuntimeError('committed_project_release_source_required')
         for p in [self.manifest,SPEC,Path(__file__).resolve()]:
             if subprocess.check_output(['git','show',sha+':'+str(p.relative_to(ROOT))],cwd=ROOT)!=p.read_bytes():raise RuntimeError('committed_source_required')
-        manifest=json.loads(self.manifest.read_text());admin=Installer(self.output.parent/'ten-write-source-readback');source={}
-        for slug in ['sandy-operation-api','sandy-api-mcp','sandy-task-analysis-worker']:
-            expected=manifest['functions'][slug];meta=json.loads(admin.api('GET','/functions/'+slug));body=admin.api('GET','/functions/'+slug+'/body');files=original_sources(body)
-            self.check(slug+'_actual_reviewed_source',meta.get('status')=='ACTIVE' and meta.get('verify_jwt') is expected['verify_jwt'] and {p:digest(v) for p,v in files.items()}==expected['candidate_files'])
+        from release_customer_mutation_certification import MANIFEST,load,functions,schema
+        if self.manifest!=MANIFEST.resolve():raise RuntimeError('fixed_reviewed_customer_manifest_required')
+        manifest,_=load();admin=Installer(self.output.parent/'ten-write-source-readback');observed=functions(admin,manifest,True);schema(admin,manifest,True);source={}
+        for slug,(meta,body,files) in observed.items():
+            self.check(slug+'_actual_reviewed_source',True)
             source[slug]={'version':meta['version'],'deployment_id':'zmqlyygzqoidkcwdysok_'+meta['id']+'_'+str(meta['version']),'bundle_sha256':digest(body)}
         self.report.update(source_commit=sha,installed_source=source);self.save();return source
     def storage(self,fixture,action,data=None):

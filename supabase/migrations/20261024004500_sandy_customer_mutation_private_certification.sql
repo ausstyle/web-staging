@@ -64,7 +64,7 @@ BEGIN
   OR m->>'release_commit' !~ '^[a-f0-9]{40}$' OR m->>'api_bundle_sha256' !~ '^[a-f0-9]{64}$'
   OR m->>'api_deployment_id' !~ '^zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_[1-9][0-9]{0,8}$'
   OR m->>'contract_sha256'<>'d25812379110342b5ff7fbd363a6adec85ab58e0a6351dd22eea7d9c196403cb'
-  OR m->>'idempotency_prefix' !~ '^customer_mutation_cert_[a-f0-9]{32}:$'
+  OR m->>'idempotency_prefix' IS DISTINCT FROM 'customer_mutation_cert_'||(m->>'fixture_nonce')||':'
   OR jsonb_typeof(m->'task_ids') IS DISTINCT FROM 'array' OR jsonb_array_length(m->'task_ids') NOT BETWEEN 1 AND 4
   OR (m->>'max_mutations')::integer <>26 OR (m->>'budget_units')::integer<>0
   OR (m->>'expires_at')::timestamptz<=clock_timestamp() OR (m->>'expires_at')::timestamptz>a.created_at+interval '15 minutes'
