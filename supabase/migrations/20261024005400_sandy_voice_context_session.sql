@@ -13,16 +13,18 @@ ALTER TABLE public.sandy_voice_call_links
  ADD COLUMN context_auth_user_id uuid REFERENCES auth.users(id),
  ADD COLUMN context_auth_session_id uuid,
  ADD COLUMN context_request_id uuid,
+ ADD COLUMN context_consent_at timestamptz,
+ ADD COLUMN context_policy_updated_at timestamptz,
  ADD COLUMN context_token_secret_id uuid,
  ADD COLUMN context_retired_reason text CHECK(context_retired_reason IN('customer','expired_or_revoked')),
  ADD CONSTRAINT sandy_voice_context_link_scope CHECK(
-  (purpose='voice_call' AND context_auth_user_id IS NULL AND context_auth_session_id IS NULL AND context_request_id IS NULL AND context_token_secret_id IS NULL AND context_retired_reason IS NULL)
-  OR (purpose='context_only' AND context_auth_user_id IS NOT NULL AND context_auth_session_id IS NOT NULL AND context_request_id IS NOT NULL AND trusted_memory=false AND max_starts=1 AND starts=0 AND expires_at<=created_at+interval '5 minutes'));
+  (purpose='voice_call' AND context_auth_user_id IS NULL AND context_auth_session_id IS NULL AND context_request_id IS NULL AND context_consent_at IS NULL AND context_policy_updated_at IS NULL AND context_token_secret_id IS NULL AND context_retired_reason IS NULL)
+  OR (purpose='context_only' AND context_auth_user_id IS NOT NULL AND context_auth_session_id IS NOT NULL AND context_request_id IS NOT NULL AND context_consent_at IS NOT NULL AND context_policy_updated_at IS NOT NULL AND trusted_memory=false AND max_starts=1 AND starts=0 AND expires_at<=created_at+interval '5 minutes'));
 CREATE UNIQUE INDEX sandy_voice_context_request ON public.sandy_voice_call_links(context_auth_user_id,context_request_id) WHERE purpose='context_only';
 
 CREATE FUNCTION public.sandy_voice_context_actor(p_require_context boolean DEFAULT true) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
-DECLARE claims jsonb:=auth.jwt();actor uuid:=auth.uid();sid uuid;customer uuid;expiry timestamptz;instant timestamptz:=clock_timestamp();
+DECLARE claims jsonb:=auth.jwt();actor uuid:=auth.uid();sid uuid;customer uuid;consent timestamptz;policy_updated timestamptz;expiry timestamptz;instant timestamptz:=clock_timestamp();
 BEGIN
  IF auth.role() IS DISTINCT FROM 'authenticated' OR actor IS NULL OR claims->>'role' IS DISTINCT FROM 'authenticated' OR claims->>'aud' IS DISTINCT FROM 'authenticated'
  OR coalesce(claims->>'session_id','')!~*'^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$' OR coalesce(claims->>'exp','')!~'^[0-9]{10,11}$'
@@ -37,14 +39,16 @@ BEGIN
  IF expiry<=instant+(CASE WHEN p_require_context THEN interval '30 seconds' ELSE interval '0 seconds' END) THEN RAISE EXCEPTION 'fresh_normal_customer_session_required' USING ERRCODE='42501';END IF;
  IF p_require_context THEN
   BEGIN
-   SELECT p.customer_id INTO STRICT customer FROM auth.users u
+   SELECT p.customer_id,m.consent_at,m.updated_at INTO STRICT customer,consent,policy_updated FROM auth.users u
    JOIN public.sandy_memory_portal_accounts p ON p.auth_user_id=u.id AND p.revoked_at IS NULL
    JOIN public.email_customer_addresses a ON a.customer_id=p.customer_id AND a.is_primary AND a.verified_at IS NOT NULL AND a.normalized_email=lower(u.email)
    JOIN public.sandy_memory_settings m ON m.customer_id=p.customer_id AND m.enabled
+    AND m.consent_at IS NOT NULL AND isfinite(m.consent_at) AND m.consent_at<=instant
+    AND m.updated_at IS NOT NULL AND isfinite(m.updated_at) AND m.updated_at<=instant
    WHERE u.id=actor FOR SHARE OF p,a,m;
   EXCEPTION WHEN NO_DATA_FOUND OR TOO_MANY_ROWS THEN RAISE EXCEPTION 'normal_customer_context_authority_required' USING ERRCODE='42501';END;
  END IF;
- RETURN jsonb_build_object('actor',actor,'auth_session',sid,'customer',customer,'expires_at',expiry);
+ RETURN jsonb_build_object('actor',actor,'auth_session',sid,'customer',customer,'consent_at',consent,'policy_updated_at',policy_updated,'expires_at',expiry);
 END $$;
 REVOKE ALL ON FUNCTION public.sandy_voice_context_actor(boolean) FROM PUBLIC,anon,authenticated,service_role;
 
@@ -57,6 +61,9 @@ LANGUAGE sql STABLE SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
   JOIN public.sandy_memory_portal_accounts p ON p.auth_user_id=u.id AND p.customer_id=l.owner_customer_id AND p.revoked_at IS NULL
   JOIN public.email_customer_addresses e ON e.customer_id=p.customer_id AND e.is_primary AND e.verified_at IS NOT NULL AND e.normalized_email=lower(u.email)
   JOIN public.sandy_memory_settings m ON m.customer_id=p.customer_id AND m.enabled
+   AND m.consent_at IS NOT NULL AND isfinite(m.consent_at) AND m.consent_at<=statement_timestamp()
+   AND m.updated_at IS NOT NULL AND isfinite(m.updated_at) AND m.updated_at<=statement_timestamp()
+   AND m.consent_at=l.context_consent_at AND m.updated_at=l.context_policy_updated_at
   JOIN public.sandy_voice_private_auth v ON v.session_id=s.id AND v.owner_customer_id=s.owner_customer_id AND v.verified_at IS NOT NULL AND v.expires_at>statement_timestamp()
   WHERE s.id=p_session AND l.purpose='context_only' AND l.revoked_at IS NULL AND l.expires_at>statement_timestamp()
   AND s.ended_at IS NULL AND s.state='starting' AND s.connected_at IS NULL AND s.openai_call_id IS NULL
@@ -70,7 +77,10 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
 DECLARE l public.sandy_voice_call_links;n integer:=0;instant timestamptz:=clock_timestamp();
 BEGIN
  FOR l IN SELECT * FROM public.sandy_voice_call_links WHERE purpose='context_only' AND (revoked_at IS NULL OR context_token_secret_id IS NOT NULL)
- AND (expires_at<=instant OR revoked_at IS NOT NULL OR NOT EXISTS(SELECT 1 FROM auth.sessions a WHERE a.id=context_auth_session_id AND a.user_id=context_auth_user_id AND (a.not_after IS NULL OR a.not_after>instant)))
+ AND (expires_at<=instant OR revoked_at IS NOT NULL OR NOT EXISTS(SELECT 1 FROM auth.sessions a WHERE a.id=context_auth_session_id AND a.user_id=context_auth_user_id AND (a.not_after IS NULL OR a.not_after>instant))
+  OR NOT EXISTS(SELECT 1 FROM public.sandy_memory_settings m JOIN public.sandy_memory_portal_accounts p ON p.customer_id=m.customer_id AND p.auth_user_id=context_auth_user_id AND p.revoked_at IS NULL
+   WHERE m.customer_id=owner_customer_id AND m.enabled AND m.consent_at=context_consent_at AND m.updated_at=context_policy_updated_at
+   AND isfinite(m.consent_at) AND m.consent_at<=instant AND isfinite(m.updated_at) AND m.updated_at<=instant))
  ORDER BY created_at LIMIT 100 FOR UPDATE SKIP LOCKED LOOP
   UPDATE public.sandy_voice_call_links SET revoked_at=coalesce(revoked_at,instant),context_retired_reason=coalesce(context_retired_reason,'expired_or_revoked'),context_token_secret_id=NULL WHERE id=l.id;
   UPDATE public.sandy_voice_call_sessions SET state='ended',ended_at=coalesce(ended_at,instant) WHERE link_id=l.id;
@@ -98,8 +108,8 @@ BEGIN
  ELSE
   IF (SELECT count(*) FROM public.sandy_voice_call_links WHERE purpose='context_only' AND context_auth_user_id=actor AND revoked_at IS NULL AND expires_at>instant)>=3 THEN RAISE EXCEPTION 'voice_context_session_quota' USING ERRCODE='54000';END IF;
   token:=encode(extensions.gen_random_bytes(32),'hex');SELECT vault.create_secret(token) INTO secret;
-  INSERT INTO public.sandy_voice_call_links(owner_customer_id,token_sha256,created_at,expires_at,max_starts,starts,trusted_memory,purpose,context_auth_user_id,context_auth_session_id,context_request_id,context_token_secret_id)
-  VALUES(customer,encode(extensions.digest(token,'sha256'),'hex'),instant,expiry,1,0,false,'context_only',actor,auth_session,p_request_id,secret) RETURNING * INTO l;
+  INSERT INTO public.sandy_voice_call_links(owner_customer_id,token_sha256,created_at,expires_at,max_starts,starts,trusted_memory,purpose,context_auth_user_id,context_auth_session_id,context_request_id,context_consent_at,context_policy_updated_at,context_token_secret_id)
+  VALUES(customer,encode(extensions.digest(token,'sha256'),'hex'),instant,expiry,1,0,false,'context_only',actor,auth_session,p_request_id,(a->>'consent_at')::timestamptz,(a->>'policy_updated_at')::timestamptz,secret) RETURNING * INTO l;
   INSERT INTO public.sandy_voice_call_sessions(link_id,owner_customer_id,created_at,state)VALUES(l.id,customer,instant,'starting')RETURNING * INTO s;
   INSERT INTO public.sandy_voice_private_auth(session_id,owner_customer_id,code_hash,attempts,sent_count,last_sent_at,expires_at,verified_at)
   VALUES(s.id,customer,'normal_auth_context:'||encode(extensions.digest(auth_session::text,'sha256'),'hex'),0,0,instant,expiry,instant);

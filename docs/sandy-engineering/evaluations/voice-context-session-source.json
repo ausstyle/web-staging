@@ -2,7 +2,7 @@
   "kind": "source-only-normal-customer-voice-context-v1",
   "deployed": false,
   "migration": "supabase/migrations/20261024005400_sandy_voice_context_session.sql",
-  "migration_sha256": "d9aeafe5501572ae7d4ab61131ba6d4a16eae357858f5c734c40f40d26c3236a",
+  "migration_sha256": "64c00a9743e2bc53ff0a87371a9b8a6902ddc93a2420515b040a2de3762d2810",
   "functions": {
     "sandy-voice-call": {
       "version": 40,
