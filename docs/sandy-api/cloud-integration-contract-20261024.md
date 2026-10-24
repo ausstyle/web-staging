@@ -1,0 +1,50 @@
+# Cloud integration: API-owned source and owner bindings
+
+SANDY-ENG-0005 / SC-01, SC-04, SC-06, SC-08; consumes SANDY-ENG-0012 PR266/267. Source only; no published operation, authority mapping, provider execution, permission, role, configuration or deployment is created. This extends the existing scope rather than creating another gateway or worker.
+
+## Implemented interface
+
+`packages/sandy-api/cloud/admission.ts` exports `cloudAdmissionHook(authenticatedContext, authorityOwner)`, directly assignable to `ProductionOwners.lockAdmission` in `packages/sandy-cloud/postgres/commit.ts`. The context comes only from canonical API authentication, never the Cloud request body. It snapshots actor, API tenant, session, optional device/company and admission ID. Each call checks intent actor/tenant before consulting authority and obtains a fresh lock through the exact supplied transaction. It accepts only an explicit portal/customer and tenant/customer relation, exact context/workspace, upload permission, current epoch and unexpired nonrevoked authority. Different tenant and customer IDs are supported; equality grants nothing. Replay therefore requires current admission too.
+
+`packages/sandy-api/cloud/transport.ts` exports `cloudTransport(serverOwnedScope, existingExecutor)`, directly assignable to Cloud's `AdmittedTransport`. It consumes the current protocol without editing Cloud-owned files. It validates exact fixed-host URLs, bucket/object prefix, upload create-only precondition, size/digest, headers, immutable server-owned session, offset and generation. It rejects extra/duplicate query parameters, redirects to arbitrary targets, caller authorization headers and changed scope. Bytes are copied before hashing/admission. Abort/expiry are checked again after hashing; unknown executor outcomes propagate without retry. The structured executor input includes the scope, contract version and exact body hash; no caller-supplied URL reaches that executor.
+
+The four candidate IDs below are **closed, unregistered source contracts**, not aliases that existing discovery can execute:
+
+| Cloud internal label | Proposed canonical contract | Fixed effect |
+| --- | --- | --- |
+| `gcs.resumable.start` | `gcp.storage.objects.upload.resumable.start` | Create-only upload session for one server-bound key and size |
+| `gcs.resumable.chunk` | `gcp.storage.objects.upload.resumable.chunk` | One bounded chunk at durable offset for that session |
+| `gcs.resumable.status` | `gcp.storage.objects.upload.resumable.status` | Reconcile that session; never resend bytes |
+| `gcs.object.read` | `gcp.storage.objects.read.media` | Stream one exact generation for independent size/SHA-256 verification |
+
+`provider_request.ts` implements `buildAdmittedGcsRequest` for the existing API provider executor: it reconstructs fixed URL/method/headers from admitted structured input, independently revalidates scope and exact body digest, preserves abort and sets `redirect: error`. It obtains no credential and performs no network call.
+
+Existing `gcp.storage.objects.get` is metadata, not byte streaming. Existing media upload does not imply resumable support. These new IDs require registry collision reconciliation, compiled contracts, execution/admission routing, exposure review and current-contract live receipts before use. The adapter performs no fetch and cannot turn a closed ID into an executable operation. Response byte verification remains Cloud's existing `verifyUploaded`/`verifyObject`, not trust in provider custom metadata.
+
+## Stable Runtime handoff — do not duplicate workers
+
+1. **Canonical authority/Runtime integration:** implement `CloudAuthorityOwner.lock(tx, context, workspaceId)`. On the SAME pinned transaction, lock canonical admission/session, portal mapping, explicit API-tenant/customer relationship and applicable device/company grants. Return `LockedCloudAuthority` only after current upload permission checks. Missing mapping returns null. Every revoker must participate in the same conflict/lock order through commit. Existing sequential REST identity checks cannot satisfy this contract. The API tenant catalogue currently has no verified customer mapping; do not invent one. The security owner must identify the canonical relation and revocation writers before any mapping installation. API code checks the returned evidence but cannot prove the callback acquired database locks.
+2. **API provider wiring / Runtime custody:** integrate `ExistingTransferExecutor.execute(AdmittedTransfer, signal)` within the existing Sandy API provider executor and ordinary policy/receipt interceptors. This is not permission to implement a direct worker fetch path. Load the scope/session/offset from existing durable server-side intent custody; consume a grant bound to the entire scope and body digest; recheck current authority immediately before provider dispatch; preserve unknown outcomes and reconcile before resend. Use the supplied `buildAdmittedGcsRequest` in the API executor and retain GCS session URLs only in Runtime private custody. API owns compiled registration/routing; Runtime owns durable session/offset wiring, not a competing provider handler. Each protocol call is separately admitted. Preserve streaming/cancellation; do not stringify media into the ordinary metadata response envelope.
+3. **Universal-file owner:** supply `ProductionOwners.projectVersion(tx, input)` with canonical writer assignment, revision CAS and lifecycle audit on that same connection, preserving deployed `sandy-files` v25. This patch does not invent file ownership or revise its worker.
+4. **Database/release owner:** supply the existing transaction-capable connection and reviewed private schema/role/RLS release. Real multi-session revocation races and rollback tests remain required; local tests do not establish locking correctness.
+5. **Runtime/Missions/Commercial:** wire server-owned scanner attestations, existing leased outbox consumer and unique version usage receipt through existing workers. No second queue is included.
+
+## Consolidated product blockers and bounded Owner decisions
+
+| Product | Completed source/evidence | Pending action and target | Status / owner |
+| --- | --- | --- | --- |
+| Hosting | PR258 region contracts; PR264 source-preserving artifact manifest `92f42f3c88c81f16f89698976152def247da4bab99bedbd281940c82628aea42` | Reconcile live provider/gateway baselines, persist rollback bytes, protected rollout plus exact two-row migration; merge only expiring `europe-west8` read binding, at most 24h | Pending protected release/config authority; shared release owner. No new deploy attempted |
+| Cloud | PR266/267 commit adapter; this identity/transfer source | Identify explicit tenant/customer authority and revocation rows, existing DB transaction target, canonical file projection and scanner/session custody; subsequently review exact closed transfer contracts and bucket/prefix permissions | Pending owner implementation/target evidence; API + Runtime + file/DB owners. No live mutation attempted |
+| Mail | Pinned request `839e45a`, existing release runner | Existing Cloud SQL instance/database and private GCS bucket metadata receipts; existing workload identity/network and protected execution target | Missing capability/target evidence, not a new provider denial. No cloud job submitted |
+
+Mail inventory is not currently callable from this delegation: the inspected operation-registry snapshot has no Cloud SQL instance/database list/get contract, while GCS bucket listing is closed/unverified. No direct-provider workaround or closed-operation retry was attempted. Preserve earlier Supabase scope denials and DNS403; they are unrelated to authority for these source edits.
+
+For the parent's single setup decision, first request **read-only resource reconciliation by the existing resource owner**, in project `elaborate-haven-511518-a5`: Cloud SQL instances list/get, then databases list/get on selected existing instances; GCS buckets list/get. Limit to one project, bounded pages/selected targets and 24h; no token export, grant changes, provisioning, customer data or ingestion. Existing IAM may already permit the owner to supply receipts. API exposure is a separate exact contract review, not automatically authorized by an Owner session. Read-only work needs no resource rollback; expire the delegation and preserve receipts.
+
+Only after those receipts identify concrete targets should the parent consider a separate exact activation diff: Cloud identity relation, Cloud bucket/prefix, Mail's nonowner SQL role and fixed synthetic object prefix, existing workload identity, source-pinned protected executor and expiry. Mail needs only object create/get on `mail/v1/23900000-0000-4000-8000-000000000001/23900000-0000-4000-8000-000000000002/23900000-0000-4000-8000-000000000003/`, Cloud SQL get/connect (login only for IAM database auth) and its documented bounded SQL grants. No project-wide grants, new service identity or role is installed here. Mail's USD20/48h and Cloud's USD10 proposals remain unapproved.
+
+Rollback for later approved activation: stop only new product routing/consumer invocation, restore previous source/config entries and preserve versions, objects, database receipts and outbox. Do not drop tables or delete objects. Existing production v31 and accepted evidence remain untouched by this source work.
+
+## Verification and limits
+
+Local integration tests compose the real Cloud protocol adapter with the new API boundary: start, status, chunk and generation-pinned byte verification. Negative cases cover each identity binding, revocation/expiry, tenant/customer confusion, foreign session, changed offset/generation, arbitrary host/query/header injection, cancellation and unknown outcomes without retry. These use a test executor, not Google Cloud. CI also runs Cloud's existing integrity/protocol tests. No family acceptance or production deployment is asserted. Runtime's real transaction locks, canonical registration/executor wiring, scanner and provider outcomes remain explicit integration requirements.

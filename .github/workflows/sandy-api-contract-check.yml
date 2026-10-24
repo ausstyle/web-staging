@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'packages/sandy-api/cloud/**'
+      - 'packages/sandy-cloud/gcs_protocol.ts'
+      - 'packages/sandy-cloud/postgres/commit.ts'
       - 'supabase/functions/sandy-operation-api/**'
       - 'supabase/functions/sandy-api-mcp/**'
       - 'supabase/functions/sandy-deployment-api/**'
@@ -48,6 +51,9 @@ on:
   push:
     branches: [main]
     paths:
+      - 'packages/sandy-api/cloud/**'
+      - 'packages/sandy-cloud/gcs_protocol.ts'
+      - 'packages/sandy-cloud/postgres/commit.ts'
       - 'supabase/functions/sandy-operation-api/**'
       - 'supabase/functions/sandy-api-mcp/**'
       - 'supabase/functions/sandy-deployment-api/**'
@@ -101,6 +107,8 @@ jobs:
       - uses: denoland/setup-deno@v2
         with:
           deno-version: '2.9.6'
+      - name: Test Cloud identity and admitted transfer integration
+        run: deno test packages/sandy-api/cloud/integration_test.ts packages/sandy-cloud/gcs_protocol_test.ts packages/sandy-cloud/integrity_test.ts
       - name: Test provider projection, credentials and response boundaries
         run: deno test --allow-env --allow-read supabase/functions/sandy-provider-operation-api/index_test.ts
       - name: Test immutable Git blob proofs and settlement boundaries
