@@ -5,7 +5,7 @@ from pathlib import Path
 from check_hosting_release_candidate import MANIFEST, SOURCE, PIN, ROOT, sha, verify
 from release_gcp_admin_read import Installer, quote
 from release_web_canary import Blocked, original_sources
-CHANGE='6b60ac54-9308-414c-bf39-f0b7ca6abc25'
+CHANGE='e6d65289-ce3d-41bd-8b1e-086f89ffa813'
 TARGET='sandy-customer-provisioning-api'
 CHECKS={'offline-control','api-contract-tests','provider-response-contract-tests','supabase-gap-contract-tests','vm-protocol-contract-tests','examiner-evidence-tests','offline-contract-tests','sandy-runtime-release-checks'}
 def source(p): return subprocess.check_output(['git','show',SOURCE+':'+p],cwd=ROOT)

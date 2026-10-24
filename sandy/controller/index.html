@@ -72,7 +72,7 @@ h1{font-size:clamp(29px,3.5vw,43px);letter-spacing:-.055em;margin:30px 0 1px}h2{
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {createControllerTransport} from "./session-transport.mjs";
 import {showAutonomousPolicyControls} from "./autonomous-policy.mjs";
-import {showHostingAccountApproval,PREVIOUS_CHANGE as previousHostingChange,isHostingAccountReview} from "./hosting-account-approval.mjs";
+import {showHostingAccountApproval,SUPERSEDED_CHANGES as previousHostingChanges,isHostingAccountReview} from "./hosting-account-approval.mjs";
 import {showRegionalReadApproval} from "./regional-read-approval.mjs";
 import {showProviderResponseApproval} from "./provider-response-approval.mjs";
 import {showAmendmentBApproval} from "./amendment-b-approval.mjs?v=2";
@@ -249,8 +249,8 @@ function showEngineeringChanges(c){
     const pre=el("pre","",details);pre.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f7f7;padding:12px;border-radius:10px;font-size:12px";card.append(pre);
    }catch(e){alert("Unable to load change: "+e.message)}
   };buttons.append(inspect);
-  if(item.id===previousHostingChange)txt(card,"Superseded hosting proposal. Use the refreshed hosting review above; no approval is requested for this stale candidate.","small muted");
-  if(item.id!==previousHostingChange&&item.status==="proposed"&&["high","critical"].includes(item.risk)){
+  if(previousHostingChanges.includes(item.id))txt(card,"Superseded hosting proposal. Use the refreshed hosting review above; no approval is requested for this stale candidate.","small muted");
+  if(!previousHostingChanges.includes(item.id)&&item.status==="proposed"&&["high","critical"].includes(item.risk)){
    const details=el("div");details.style.cssText="margin-top:10px;display:none";
    const note=el("textarea");note.rows=3;note.placeholder="Approval reason, including pinned source and manifest";note.style.cssText="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font:inherit";
    const status=el("p","small muted","");

@@ -7,7 +7,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / 'docs/sandy-engineering/evaluations/hosting-logical-account-release-candidate.json'
 SOURCE = '1dee65da7b68f12d147d11e3f02befae06416ef2'
-PIN = 'ebef1ee3c0e2084a3b449fd4b9071c410d62a7f121b9e5671c96999f9ecaed10'
+PIN = '8f4995fe40f523f06a372fa5de08a8ff802960108f4e7435245e2f618f2c51b2'
 REPLACEMENTS = {'sandy-customer-provisioning-api/index.ts', 'sandy-customer-provisioning-api/gateway.ts', 'sandy-customer-provisioning-api/hosting_accounts.json'}
 def sha(b): return hashlib.sha256(b).hexdigest()
 def verify(raw, read):

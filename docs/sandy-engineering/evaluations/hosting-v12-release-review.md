@@ -1,3 +1,5 @@
+> Superseded for execution by [bundle-pin review](hosting-bundle-release-review.md). Prior approval is retained as history.
+
 # Refreshed logical hosting account release — Owner review required
 
 The existing customer provisioning function is v12. Read-only reconciliation confirmed all six module SHA256 values exactly equal the original v10 baseline, the reported bundle SHA256 is unchanged, and JWT verification remains enabled. No active relevant component lease, hosting account table, either account migration history entry, or hosting account operation row was observed. See [module readback](hosting-v12-baseline-readback.json).

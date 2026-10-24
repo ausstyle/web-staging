@@ -1,10 +1,8 @@
 {
-  "id": "6b60ac54-9308-414c-bf39-f0b7ca6abc25",
-  "status": "proposed",
-  "title": "Release logical hosting accounts from verified v12 baseline",
-  "problem": "The old candidate expects v10, while the existing function is v12. Actual source comparison proves unchanged bytes, but the exact version guard must be refreshed before release.",
-  "expected_behavior": "Release unchanged product source 1dee65da7b68f12d147d11e3f02befae06416ef2 with refreshed manifest SHA256 ebef1ee3c0e2084a3b449fd4b9071c410d62a7f121b9e5671c96999f9ecaed10. Target sandy-customer-provisioning-api existing v12, preserve verify_jwt=true and all unchanged deployed modules. Apply only migrations 20261024010000 and 20261024010010; keep operation exposure disabled. Expected candidate v13 and function rollback v14. No gateway/provider/runtime deployment, paid infrastructure, DNS, traffic, IAM, credential or delegation changes. Preserve all customer/account/audit data on rollback. Protected executor must independently verify this genuine Owner audit, exact live preimage, source CI, component lease and recovery artifact before dispatch.",
-  "change_purpose": "Refresh the stale v10 hosting release candidate after verifying all six live v12 module digests and the reported bundle digest match the original baseline. Supersedes proposal 04fab547-3177-4eb4-ac23-23831152b420 for execution; preserves its history.",
+  "title": "Release logical hosting accounts with observed bundle pin",
+  "problem": "Protected preflight run 40102469434 matched every source module, version, JWT and status but rejected the raw downloaded bundle digest. No release writes occurred.",
+  "expected_behavior": "Release unchanged product source 1dee65da7b68f12d147d11e3f02befae06416ef2 with refreshed manifest SHA256 8f4995fe40f523f06a372fa5de08a8ff802960108f4e7435245e2f618f2c51b2. Target sandy-customer-provisioning-api existing v12, preserve verify_jwt=true and all unchanged deployed modules. Apply only migrations 20261024010000 and 20261024010010; keep operation exposure disabled. Expected candidate v13 and function rollback v14. No gateway/provider/runtime deployment, paid infrastructure, DNS, traffic, IAM, credential or delegation changes. Preserve all customer/account/audit data on rollback. Protected executor must independently verify this genuine Owner audit, exact live preimage, source CI, component lease and recovery artifact before dispatch.",
+  "change_purpose": "Pin exact Management API bundle SHA256 271ce5ac663f6ca6a688e7c901220b2ac3fe6704689d0d74c845cb71b3a7d99e observed in run 40102469434. All before/after module digests, v12 baseline, source and migrations are unchanged. Supersedes 6b60ac54-9308-414c-bf39-f0b7ca6abc25 for execution without reusing its approval.",
   "feature_improvement": "Enable non-billable tenant-bound logical account create/get with existing customer identity, idempotency and audit; no provider provisioning.",
   "scope": [
     "supabase:sandy-customer-provisioning-api",
@@ -12,7 +10,7 @@
     "supabase:migration:20261024010010"
   ],
   "risk": "high",
-  "idempotency_key": "hosting-logical-account-v12-ebef1ee3c0e2084a",
+  "idempotency_key": "hosting-logical-account-bundle-8f4995fe40f523f0",
   "acceptance_criteria": [
     "Verify exact v12 source/module and bundle digests, immutable candidate source and manifest",
     "Apply additive account schema and inactive contracts through the bounded protected executor",
@@ -20,10 +18,12 @@
     "Coordinate gateway availability and real verified sandy.chat owner-session canary separately"
   ],
   "regression_rules": [
-    "Supersedes stale proposal 04fab547-3177-4eb4-ac23-23831152b420 for dispatch; never manufacture or reuse its approval",
+    "Supersedes 6b60ac54-9308-414c-bf39-f0b7ca6abc25 for dispatch; require genuine new exact-pin Owner approval",
     "Preserve existing data and unchanged source bytes; rollback function only with exact candidate preimage",
     "Do not deploy shared gateway/provider/runtime services or change their registrations",
     "No new paid resources, credentials, IAM, DNS, traffic or persistent grants",
     "No automatic replay of uncertain writes; reconcile before further action"
-  ]
+  ],
+  "id": "e6d65289-ce3d-41bd-8b1e-086f89ffa813",
+  "status": "proposed"
 }
