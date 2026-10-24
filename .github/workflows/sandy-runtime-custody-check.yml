@@ -1,0 +1,17 @@
+name: Sandy proposed shared artifact custody checks
+on:
+  pull_request:
+    paths:
+      - 'packages/sandy-runtime-custody/**'
+      - '.github/workflows/sandy-runtime-custody-check.yml'
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - run: deno test --no-lock --allow-read --allow-env packages/sandy-runtime-custody/journal_test.ts
