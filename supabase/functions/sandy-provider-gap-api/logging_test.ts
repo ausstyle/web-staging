@@ -1,5 +1,5 @@
 import { strict as assert } from "node:assert";
-import { createGapHandler } from "./index.ts";
+import { createGapHandler, gapExecutionScope } from "./index.ts";
 import { GCP_PROJECT, type Obj } from "./contracts.ts";
 import { Calls, type Dependencies, type Finish, Refusal } from "./runtime.ts";
 const id = "10000000-0000-4000-8000-000000000001",
@@ -209,4 +209,17 @@ Deno.test("oversized result and malformed cursor are rejected without pagination
     assert.equal((await h.call()).status, 502);
     assert.equal(h.seen.length, 1);
   }
+});
+
+Deno.test("logging admission declares project-level metadata scope without pretending regional restriction", () => {
+  const scope = gapExecutionScope("gcp.logging.query");
+  assert.equal(scope.project_id, GCP_PROJECT);
+  assert.equal(scope.log_namespace, "sandy-engineering-canary");
+  assert.equal(scope.projection, "metadata_only");
+  assert.equal(Object.hasOwn(scope, "region"), false);
+  assert.equal(Object.hasOwn(scope, "zone"), false);
+  assert.equal(
+    gapExecutionScope("gcp.compute.instances.serial_output").zone,
+    "europe-west1-b",
+  );
 });

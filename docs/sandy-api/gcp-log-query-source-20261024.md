@@ -4,13 +4,15 @@ SANDY-ENG-0005/family67. The review found no log-entry query operation: existing
 
 Contract: existing project `elaborate-haven-511518-a5`; exact `sandy-engineering-canary` log or a bounded `-`/`_` suffix; canonical UTC start/end, at most15minutes and within the last7days; limit1–100. The executor builds the filter and fixed project resource. Callers cannot pass arbitrary filters, resource names, credentials, URLs or page tokens. Returned fields are timestamp/severity/resource type only. Payloads, insert IDs, labels, trace/user identifiers and provider continuation tokens are omitted. Empty results with a continuation token remain explicitly truncated; no automatic paging or retry.
 
+The admission scope explicitly declares project-level metadata and the canary namespace; it does not imply a region/zone restriction that Cloud Logging project queries cannot enforce. Exact log/time inputs remain bound by the admission input digest.
+
 The transport exception allows only `logging.googleapis.com/v2/entries:list` POST for this operation; existing Compute transport cannot use it. Logging POST is classified as a read, so transport failure does not create an unknown mutation claim. Existing authorization, exact grant consumption, credential consumer and durable finish path are reused. There is no parallel gateway or credential route.
 
 Source schema: pinned Google Logging discovery at commit795219d564a58d0ff44efde7b6be21544b4ff057, SHA256 `09ffd0099481c15e0e67a3407f57d70dc60b74eda29d6bf66f465e1b0525af1f`, `logging.entries.list`. Semantics checked against [official entries.list](https://docs.cloud.google.com/logging/docs/reference/v2/rest/v2/entries/list). The source descriptor was downloaded and its method/path/hash checked locally.
 
 Migration20261024023000 adds one closed/unverified source-ready row and fails on duplicate, without changing existing rows, grants or ACLs. Reproducible generation preserves all38 prior gateway descriptors. It has not been applied. No function is deployed and no log provider call is made.
 
-Validation: eight new boundary tests within35 passing provider-gap tests;14 isolated PostgreSQL checks for closed flags/approval requirement/no overwrite; existing38 descriptors unchanged. Tests cover foreign target/filter rejection, bounded dates/results, payload suppression, partial pages, duplicate admission, credential/authority refusal, immutable host/method/path and truthful read failure.
+Validation: nine new boundary tests within36 passing provider-gap tests;14 isolated PostgreSQL checks for closed flags/approval requirement/no overwrite; existing38 descriptors unchanged. Tests cover foreign target/filter rejection, bounded dates/results, payload suppression, partial pages, duplicate admission, credential/authority refusal, immutable host/method/path and truthful read failure.
 
 ## Activation boundary
 
