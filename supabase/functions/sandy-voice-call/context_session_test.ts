@@ -28,6 +28,16 @@ Deno.test("caller customer selectors, foreign origins and unavailable authorizat
  const count=f.calls.length;assert.equal((await f.invoke("/context/session",{request_id:requestId},{authorization:"Bearer "+jwt,origin:"https://foreign.invalid"})).status,403);assert.equal(f.calls.length,count);
  for(const [code,status]of [["42501",403],["23505",409],["54000",429],["P0001",503]]as const){f.state.error={code,message:"private secret details"};const response=await f.invoke("/context/session",{request_id:requestId});assert.equal(response.status,status);assert(!JSON.stringify(await response.json()).includes("secret"));}
 });
+Deno.test("approved browser SDK preflight accepts transport headers while foreign origins remain denied",async()=>{
+ const f=fixture(),headers={origin:"https://ausstyle.github.io","access-control-request-method":"POST","access-control-request-headers":"authorization,apikey,x-client-info,content-type"};
+ const allowed=await handleVoiceContextSession(new Request("https://fixture.invalid/context/session",{method:"OPTIONS",headers}),f.deps);
+ assert.equal(allowed.status,204);assert.equal(allowed.headers.get("access-control-allow-origin"),headers.origin);
+ const permitted=allowed.headers.get("access-control-allow-headers")!.split(",");for(const key of ["authorization","apikey","x-client-info","content-type"])assert(permitted.includes(key));
+ const denied=await handleVoiceContextSession(new Request("https://fixture.invalid/context/session",{method:"OPTIONS",headers:{...headers,origin:"https://foreign.invalid"}}),f.deps);
+ assert.equal(denied.status,403);assert.equal(denied.headers.get("access-control-allow-origin"),null);assert.deepEqual(f.calls,[]);
+ // A public apikey is transport configuration, never customer authentication.
+ const noBearer=await f.invoke("/context/session",{request_id:requestId},{apikey:"fixture-public-anon",origin:headers.origin});assert.equal(noBearer.status,401);assert.deepEqual(f.calls,[]);
+});
 Deno.test("actual voice-call adapter fences context-only capabilities from every legacy provider, media and tool route",async()=>{
  const source=await Deno.readTextFile(new URL("./index.ts",import.meta.url));const f=fixture();let providerRequests=0,handler:any;
  const query:any={select:()=>query,eq:()=>query,gt:()=>query,is:()=>query,maybeSingle:async()=>({data:{id:requestId,owner_customer_id:user,purpose:"context_only"},error:null})};

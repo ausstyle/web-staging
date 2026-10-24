@@ -8,7 +8,7 @@ export async function handleVoiceContextSession(request:Request,deps:Dependencie
  const url=new URL(request.url),origin=request.headers.get("origin");
  const origins=[url.origin,"https://ausstyle.github.io","https://35-241-239-80.sslip.io"];
  const headers:Record<string,string>={"cache-control":"no-store, private","referrer-policy":"no-referrer","vary":"origin"};
- if(origin&&origins.includes(origin)){headers["access-control-allow-origin"]=origin;headers["access-control-allow-headers"]="authorization,content-type";headers["access-control-allow-methods"]="POST,OPTIONS";}
+ if(origin&&origins.includes(origin)){headers["access-control-allow-origin"]=origin;headers["access-control-allow-headers"]="authorization,content-type,apikey,x-client-info";headers["access-control-allow-methods"]="POST,OPTIONS";}
  const reply=(body:unknown,status=200)=>Response.json(body,{status,headers});
  if(origin&&!origins.includes(origin))return reply({error:"invalid_origin"},403);
  if(request.method==="OPTIONS")return new Response(null,{status:204,headers});
