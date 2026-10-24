@@ -1,0 +1,18 @@
+{
+  "environment": "real-local-postgresql-filesystem-chromium",
+  "checks": [
+    "real_backend_four_persisted_messages_and_session_fragment_removed",
+    "hostile_html_is_text_no_remote_images_no_attachment_download",
+    "real_keyword_search_and_message_read",
+    "interrupted_search_old_response_does_not_overwrite_new_results",
+    "network_interruption_is_error_retry_reads_persisted_backend",
+    "desktop_mobile_reader_and_receipt_visible_without_horizontal_overflow",
+    "server_restart_revokes_session_preserves_exact_receipt_and_messages",
+    "no_external_browser_requests_or_uncaught_script_errors"
+  ],
+  "passed": 8,
+  "cloud_deployed": false,
+  "external_messages_sent": 0,
+  "independent_acceptance": false,
+  "source_revision": "f0174f9f405a34a5c0c8b00fbb71d38a7dd82fbc"
+}
