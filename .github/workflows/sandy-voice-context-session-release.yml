@@ -1,0 +1,59 @@
+name: Activate reviewed normal customer voice context sessions
+on:
+  pull_request:
+    paths:
+      - 'scripts/sandy/release_voice_context_session.py'
+      - 'scripts/sandy/test_voice_context_release.py'
+      - 'docs/sandy-engineering/evaluations/voice-context-session-release.json'
+      - '.github/workflows/sandy-voice-context-session-release.yml'
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Activate both reviewed guards with held issuer, or independent source and SQL readback only
+        type: choice
+        required: true
+        options: [verify-only, activate]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-voice-context-release-pr-{0}', github.event.pull_request.number) }}
+  cancel-in-progress: false
+jobs:
+  validate-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Prove held issuer, dual source readback and unknown-outcome custody
+        env:
+          PYTHONPATH: scripts/sandy
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest scripts/sandy/test_voice_context_release.py -v
+      - name: Compile the five pinned SQL functions in isolated PostgreSQL
+        run: deno test --no-lock --allow-read scripts/sandy/test_voice_context_session.ts
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: validate-release
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Activate protected source and SQL or independently verify current installation
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PHASE: ${{ inputs.phase }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          if [ "$PHASE" = activate ]; then
+            python3 scripts/sandy/release_voice_context_session.py --deploy --evidence-dir "$RUNNER_TEMP/voice-context-activation"
+          fi
+          python3 scripts/sandy/release_voice_context_session.py --verify-installed --evidence-dir "$RUNNER_TEMP/voice-context-readback"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: voice-context-custody-${{ github.run_id }}
+          path: ${{ runner.temp }}/voice-context-*/

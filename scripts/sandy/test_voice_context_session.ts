@@ -37,6 +37,10 @@ Deno.test("normal-customer context-only voice authority is atomic, private, boun
   // pg_cron cannot run in PostgreSQL/WASM. Production requires the existing
   // scheduler; only that independently checked installation block is omitted.
   await db.exec(source.split("-- Existing database scheduler,")[0]+"COMMIT;");
+  const release=JSON.parse(await Deno.readTextFile(new URL("../../docs/sandy-engineering/evaluations/voice-context-session-release.json",import.meta.url)));
+  const pins=(await db.query("SELECT p.proname,encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')source_sha256,p.prosecdef,p.proconfig FROM pg_proc p WHERE p.proname LIKE 'sandy_voice_context_%'")).rows as any[];
+  assert.equal(pins.length,5);
+  for(const row of pins){const signature=Object.keys(release.SQL_candidate).find(s=>s.startsWith('public.'+row.proname+'('))!;assert.deepEqual({source_sha256:row.source_sha256,prosecdef:row.prosecdef,proconfig:row.proconfig},release.SQL_candidate[signature]);}checks++;
   const claims=async(user=U1,session=A1)=>{await db.query("SELECT set_config('request.jwt.claims',$1,false)",[JSON.stringify({role:"authenticated",aud:"authenticated",sub:user,session_id:session,exp:Math.floor(Date.now()/1000)+3600})]);};
   const call=async(name:string,arg:string)=>((await db.query<{result:any}>(`SELECT public.${name}($1::uuid) result`,[arg])).rows[0].result);
   const current=async(sid:string)=>await call("sandy_voice_context_authority_current",sid);

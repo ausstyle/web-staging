@@ -1,0 +1,154 @@
+{
+  "kind": "protected-normal-customer-voice-context-release-v1",
+  "migration": "supabase/migrations/20261024005400_sandy_voice_context_session.sql",
+  "migration_sha256": "64c00a9743e2bc53ff0a87371a9b8a6902ddc93a2420515b040a2de3762d2810",
+  "functions": {
+    "sandy-voice-call": {
+      "version": 40,
+      "verify_jwt": false,
+      "body_sha256": "1a3cc84d4f2ac4b88be1a403dd21398387129553838de6cd8ef88cd0e7b928a6",
+      "before_files": {
+        "index.ts": "cc3962893674f75b78bff5a415ef193c38a2c7b6d17b77e3b41e160ab4c19a99"
+      },
+      "candidate_files": {
+        "sandy-voice-call/context_session.ts": "b4b1c0072ad41234a02d25d5a84dd22122a63e165af0a60c7296749f5f01a5de",
+        "sandy-voice-call/index.ts": "bfde878c5ea6bb4cbb34fe8e5e0485005e8980eaa764745fd783f4c08eb1342f"
+      }
+    },
+    "sandy-voice-account-context": {
+      "version": 22,
+      "verify_jwt": false,
+      "body_sha256": "c5940b2d6ea1b482c708b6be24c289e7dfa7420f14a6f96cc728250d11206989",
+      "before_files": {
+        "_shared/sandy-agent-operations/voice_source.ts": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04",
+        "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+        "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
+        "sandy-voice-account-context/executive.ts": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee",
+        "sandy-voice-account-context/index.ts": "bc8970c26dcda925e72b7e58a1e1485ae7cc4013b6ab184029c9834cec8c45a5"
+      },
+      "candidate_files": {
+        "_shared/sandy-agent-operations/voice_source.ts": "87bfa56876949f7e3aaf9d552945d1883f72b523f836438eb2180b803ab38e75",
+        "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+        "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
+        "sandy-voice-account-context/executive.ts": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee",
+        "sandy-voice-account-context/index.ts": "a745ca845915db164a59ccf86b064fd8086d2cb51f9422f8134bfc4844baa838"
+      }
+    }
+  },
+  "rollback_preconditions": [
+    "Revoke only the new context issuer RPC execution permission before source rollback.",
+    "Revoke context_only links and run private expiry cleanup until independent readback confirms zero usable context grants/private tokens.",
+    "Restore preserved exact source/auth metadata; keep additive schema and immutable receipts."
+  ],
+  "catalogue_changes": 0,
+  "provider_operations_authorized": 0,
+  "media_acceptance_claimed": false,
+  "configuration_reconciliation": {
+    "source": "protected IAP configuration binding run40047740407",
+    "function_sources_changed": false,
+    "readback": [
+      {
+        "function": "sandy-voice-call",
+        "prior_version": 39,
+        "actual_version": 40,
+        "all_module_hashes_unchanged": true,
+        "JWT_preserved": true
+      },
+      {
+        "function": "sandy-voice-account-context",
+        "prior_version": 21,
+        "actual_version": 22,
+        "all_module_hashes_unchanged": true,
+        "JWT_preserved": true
+      }
+    ]
+  },
+  "SQL_candidate": {
+    "public.sandy_voice_context_actor(boolean)": {
+      "source_sha256": "ef2200ef347343de2be1721d6b0266fa3c457b6accf2fb2a1bbb795696b11a13",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    },
+    "public.sandy_voice_context_authority_current(uuid)": {
+      "source_sha256": "e3f3aaa0081182e6a83069e747b6086afc9e15b3d362f8271b0950d0bb6c64d1",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    },
+    "public.sandy_voice_context_expire()": {
+      "source_sha256": "e463f4c652b96563b24687616c556f134a798ba19ed7d2bb5b799da436e96123",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    },
+    "public.sandy_voice_context_session_issue(uuid)": {
+      "source_sha256": "ff5257cdb513b0542db029216793447be29fbb2eb103bc5143c99e7e01983a14",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    },
+    "public.sandy_voice_context_session_retire(uuid)": {
+      "source_sha256": "0e83d1399f062a6e171b03151a357e1a9ae7b6c3209a63226448fac3478993cf",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    }
+  },
+  "SQL_preserved": {
+    "public.sandy_voice_claim_call(text)": {
+      "oid": "21123",
+      "source_sha256": "be8ab904d821cef85a288c8f2529a7b52c8074b68bec240e4c7d3c0a4d1d5eec",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    "public.sandy_voice_issue_call_link(uuid)": {
+      "oid": "21157",
+      "source_sha256": "c3c45bb1e5b46533cd5d93ec3e48e193191187b8771b9f72a306afd80d43d22c",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    "public.sandy_voice_issue_whatsapp_link(uuid)": {
+      "oid": "21132",
+      "source_sha256": "208064328ddc5ccae14a27d111e491b2c7965d43289eab47bd1924d11e67fea4",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    "public.sandy_voice_lookup_memory(uuid,text)": {
+      "oid": "21318",
+      "source_sha256": "b7e86ec9e719a0eebdf14a3455593bfd64ffc5b270c7ec15d73729637380dc19",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    "public.sandy_voice_save_explicit_memory(uuid,text,text)": {
+      "oid": "21315",
+      "source_sha256": "7dee46413219cc31cc5376b7b61570b1de91e788aba707468ca686c53100a09d",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    }
+  }
+}
