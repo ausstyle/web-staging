@@ -28,7 +28,9 @@ partial={
  'F042':'Draft/approve workflow; outbound sends remain unavailable.',
  'F045':'Dated invoice/bill void and payment-record reversal; partial credits/refunds pending.',
  'F046':'Partial receipt recording; reminders and verified provider payments pending.',
+ 'F051':'Applied customer credits against unpaid original lines, dated reversals and historical AR; standalone credits/refunds/reallocation pending.',
  'F120':'Contact/number uniqueness; fuzzy duplicate review pending.',
+ 'F124':'Applied supplier credits and reversal; recurring bills, standalone credits/refunds and PO integration pending.',
  'F126':'Basic supplier bill header; foreign-currency documents pending.',
  'F128':'Exact net/tax lines; item/tracking pending.',
  'F131':'Deterministic totals; independent tax review pending.',
@@ -42,6 +44,7 @@ partial={
  'F167':'Partial/multiple matches with no overmatching; intelligence acceptance pending.',
  'F175':'Posted journal list; full journal lifecycle tabs/filtering pending.',
  'F178':'Effective date/narration; tax treatment and auto-reversal schedule pending.',
+ 'F179':'Explicit manual-journal cash inclusion, preserved on reversal; autofill and full editor pending.',
  'F182':'Evidence-backed posting through service; full draft editor pending.',
  'F186':'Scoped ledger accounts and document coding; richer COA configuration pending.',
  'F187':'Five account classes and archived-state browsing; full filtering/exports pending.',
@@ -65,9 +68,12 @@ for f in features:
         if f['id'] in ['F186','F187','F188','F189']:
             f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
             f['test_paths']+=['packages/sandy-accounting/accounts.test.ts','packages/sandy-accounting/browser_test.py']
+        if f['id'] in ['F045','F046','F051','F124','F136','F179','F207','F208','F212']:
+            f['test_paths']+=['packages/sandy-accounting/cash.test.ts','packages/sandy-accounting/credits.test.ts','packages/sandy-accounting/postgres.test.ts','packages/sandy-accounting/browser_test.py']
         n=int(f['id'][1:])
         f['operations']=['accounting.reporting.run','accounting.workspace.get'] if n in [13,153,175,207,212] else ['accounting.sales.invoice.draft'] if n in [36,38,40] else ['accounting.documents.approve'] if n in [42,132] else ['accounting.documents.void','accounting.documents.payment.reverse'] if n==45 else ['accounting.documents.payment.record'] if n in [46,136] else ['accounting.payables.bill.draft'] if n in [120,126,128,131] else ['accounting.reporting.drilldown'] if n in [155,208] else ['accounting.banking.statements.import'] if n in [158,160] else ['accounting.intelligence.matches.propose','accounting.banking.reconcile.apply','accounting.banking.reconcile.reverse'] if n in [164,167] else ['accounting.audit.verify'] if n==197 else ['accounting.organisations.period.lock'] if n==272 else ['accounting.ledger.journal.post','accounting.ledger.journal.reverse']
         if 186<=n<=189:f['operations']=['accounting.accounts.create','accounting.accounts.archive','accounting.workspace.get']
+        if n in [51,124]:f['operations']=['accounting.documents.credit.record','accounting.documents.credit.reverse']
 reports=[]
 b=text.split('# Appendix B —',1)[1].split('# Appendix C —',1)[0]
 category=''
@@ -76,7 +82,7 @@ for line in b.splitlines():
     if line.startswith('## B. '):category=line[6:]
     if line.startswith('| ') and not line.startswith('| Required') and not line.startswith('| ---'):
         name,outcome=[v.strip() for v in line.split('|')[1:3]]
-        reports.append({'id':f'RPT-{len(reports)+1:03}','name':name,'category':category,'required_outcome':outcome,'status':'CODE_PRESENT_UNVERIFIED' if name in implemented else 'NOT_STARTED','operation':'accounting.reporting.run' if name in implemented else None,'report_selector':implemented.get(name),'test_paths':['packages/sandy-accounting/core.test.ts'] if name in implemented else [],'remaining':'Full filters, cash/accrual, output, source contract and accountant acceptance pending.','deployed':False,'independently_accepted':False})
+        reports.append({'id':f'RPT-{len(reports)+1:03}','name':name,'category':category,'required_outcome':outcome,'status':'CODE_PRESENT_UNVERIFIED' if name in implemented else 'NOT_STARTED','operation':'accounting.reporting.run' if name in implemented else None,'report_selector':implemented.get(name),'test_paths':['packages/sandy-accounting/core.test.ts','packages/sandy-accounting/cash.test.ts','packages/sandy-accounting/credits.test.ts'] if name in implemented else [],'remaining':'Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.','deployed':False,'independently_accepted':False})
 assert len(reports)==87
 gates=[]
 for line in text.splitlines():

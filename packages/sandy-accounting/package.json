@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "node --test *.test.ts",
+    "test": "node --experimental-transform-types --test *.test.ts",
     "demo": "node server.ts",
     "check": "tsc --noEmit"
   },

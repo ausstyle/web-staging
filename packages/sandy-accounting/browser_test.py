@@ -57,11 +57,11 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
                 page.get_by_role('button',name='Approve match',exact=True).first.click();saved()
             page.get_by_role('button',name='Reports',exact=True).click()
             page.locator('#report-type').select_option('bank_reconciliation')
-            page.get_by_role('button',name='Run accrual report',exact=True).click();saved()
+            page.get_by_role('button',name='Run report',exact=True).click();saved()
             report = json.loads(page.locator('#report-output pre').inner_text())
             assert report['rows']==[{'account_id':'bank','book':'1100.00','statement':'1100.00','difference':'0.00','unmatched_statement_ids':[]}]
             page.locator('#report-type').select_option('profit_and_loss')
-            page.get_by_role('button',name='Run accrual report',exact=True).click();saved()
+            page.get_by_role('button',name='Run report',exact=True).click();saved()
             assert json.loads(page.locator('#report-output pre').inner_text())['profit']=='100.00'
             page.locator('#report-output').get_by_role('button',name='View journal').first.click();saved()
             expect(page.locator('#detail-output')).to_contain_text('synthetic-worksheet')
@@ -91,7 +91,7 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             page.get_by_role('button',name='Save draft',exact=True).click();saved()
             bill = page.locator('[data-document-number="SUPPLIER-001"]')
             bill.get_by_role('button',name='Approve SUPPLIER-001',exact=True).click();saved()
-            bill.locator('input[name="amount"]').fill('40.00')
+            bill.locator('form.payment input[name="amount"]').fill('40.00')
             bill.get_by_role('button',name='Record payment',exact=True).click();saved()
             expect(bill).to_contain_text('remaining $60.00')
             page.get_by_role('button',name='Controls & audit',exact=True).click()
@@ -131,14 +131,49 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             page.locator('#report-type').select_option('aged_payables')
             for day, expected in [('2026-10-03','60.00'),('2026-10-04','100.00'),('2026-10-05',None)]:
                 page.locator('#report-date').fill(day)
-                page.get_by_role('button',name='Run accrual report',exact=True).click();saved()
+                page.get_by_role('button',name='Run report',exact=True).click();saved()
                 rows=json.loads(page.locator('#report-output pre').inner_text())['rows']
                 assert (rows[0]['amount'] if rows else None)==expected
             page.locator('#report-type').select_option('bank_reconciliation')
-            page.get_by_role('button',name='Run accrual report',exact=True).click();saved()
+            page.get_by_role('button',name='Run report',exact=True).click();saved()
             corrected=json.loads(page.locator('#report-output pre').inner_text())['rows'][0]
             assert corrected['book']=='1100.00' and corrected['statement']=='1060.00'
             assert corrected['difference']=='-40.00' and len(corrected['unmatched_statement_ids'])==1
+            # Credit an unpaid invoice, collect part, and compare cash/accrual views.
+            page.get_by_role('button',name='Sales & purchases',exact=True).click()
+            page.locator('#kind').select_option('invoice')
+            page.locator('#number').fill('CASH-INV')
+            page.locator('#contact').fill('Synthetic cash customer')
+            page.locator('#issued').fill('2026-10-04')
+            page.get_by_role('button',name='Save draft',exact=True).click();saved()
+            cashdoc=page.locator('[data-document-number="CASH-INV"]')
+            cashdoc.get_by_role('button',name='Approve CASH-INV',exact=True).click();saved()
+            creditform=cashdoc.locator('form.credit')
+            creditform.locator('input[name="number"]').fill('CASH-CREDIT')
+            creditform.locator('input[name="amount"]').fill('20.00')
+            creditform.locator('input[name="date"]').fill('2026-10-05')
+            creditform.locator('input[name="reason"]').fill('Synthetic agreed reduction')
+            creditform.get_by_role('button',name='Apply credit',exact=True).click();saved()
+            expect(cashdoc).to_contain_text('remaining $80.00')
+            cashdoc.locator('form.payment input[name="amount"]').fill('30.00')
+            cashdoc.locator('form.payment input[name="date"]').fill('2026-10-06')
+            cashdoc.get_by_role('button',name='Record payment',exact=True).click();saved()
+            expect(cashdoc).to_contain_text('remaining $50.00')
+            page.get_by_role('button',name='Reports',exact=True).click()
+            page.locator('#report-type').select_option('profit_and_loss')
+            page.locator('#report-date').fill('2026-10-06')
+            for basis, profit in [('cash','130.00'),('accrual','180.00')]:
+                page.locator('#report-basis').select_option(basis)
+                page.get_by_role('button',name='Run report',exact=True).click();saved()
+                result=json.loads(page.locator('#report-output pre').inner_text())
+                assert result['basis']==basis and result['profit']==profit
+            page.get_by_role('button',name='Sales & purchases',exact=True).click()
+            for label,day in [('Reverse credit CASH-CREDIT','2026-10-07'),('Reverse payment record','2026-10-08'),('Void CASH-INV','2026-10-09')]:
+                form=cashdoc.locator('form.correction').filter(has=page.get_by_role('button',name=label,exact=True))
+                form.locator('input[name="date"]').fill(day)
+                form.locator('input[name="reason"]').fill('Synthetic review correction')
+                form.get_by_role('button',name=label,exact=True).click();saved()
+            expect(cashdoc).to_contain_text('Voided')
             page.get_by_role('button',name='Overview',exact=True).click()
             expect(page.locator('#profit-total')).to_have_text('$100.00')
             page.screenshot(path=str(OUT/'workspace.png'),full_page=True)
@@ -147,7 +182,7 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             assert json.loads(page.locator('#audit-output').inner_text())['valid']
             assert not errors, errors
             browser.close()
-            (OUT/'result.json').write_text(json.dumps({'status':'PASSED','class':'LOCAL_SYNTHETIC_BROWSER','expected_bank':'1100.00','expected_profit':'100.00','supplier_historical_ap':['60.00','100.00','0.00'],'unmatched_supplier_statement_retained':True,'expected_statement_difference':'-40.00','provider_verified':False,'independently_accepted':False,'page_errors':errors},indent=2)+'\n')
+            (OUT/'result.json').write_text(json.dumps({'status':'PASSED','class':'LOCAL_SYNTHETIC_BROWSER','expected_bank':'1100.00','expected_profit':'100.00','credit_partial_receipt_cash_profit':'130.00','credit_partial_receipt_accrual_profit':'180.00','supplier_historical_ap':['60.00','100.00','0.00'],'unmatched_supplier_statement_retained':True,'expected_statement_difference':'-40.00','provider_verified':False,'independently_accepted':False,'page_errors':errors},indent=2)+'\n')
             print((OUT/'result.json').read_text())
     finally:
         proc.terminate()

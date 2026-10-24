@@ -391,11 +391,11 @@ test("FX requires explicit source and rejects rounded imbalance; draft source ca
     );
     await assert.rejects(
       f.run("accounting.reporting.run", {
-        report: "trial_balance",
+        report: "aged_receivables",
         through: "2026-10-31",
         basis: "cash",
       }),
-      /cash_basis_not_implemented/,
+      /report_requires_accrual/,
     );
   } finally {
     await f.db.close();

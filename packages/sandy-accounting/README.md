@@ -49,7 +49,10 @@ balance oracle and does not claim regulatory coverage.
   linked reversal/correction, monotonic period lock, draft invoice/bill approval
   and partial payment recording. AR/AP controls cannot be changed via manual
   journals. Payment corrections and document voids preserve effective-date
-  history. The workspace exposes dated payment reversals and document voids
+  history. Applied customer/supplier credits reduce unpaid original line budgets;
+  credits and payments cannot over-settle the same document. Standalone credits,
+  refunds and credit reallocation remain unfinished. The workspace exposes credit
+  application/reversal, dated payment reversals and document voids
   with a required reason, payment history and journal drilldown. A matched
   payment must be unreconciled before correction; its statement evidence stays
   visible and unmatched until separately resolved.
@@ -60,6 +63,13 @@ balance oracle and does not claim regulatory coverage.
   detail, aged AR, aged AP and bank reconciliation. Exact contributing journal
   lines and source references are available. Balance-sheet profit is a separate
   current-earnings figure; display balances use debit-positive signs.
+- Cash-basis views of trial balance, P&L, balance sheet and GL derive from exact
+  payment component snapshots and their dated reversals. Largest-remainder cent
+  allocation uses remaining original line budgets; credits consume those same
+  budgets. Each derived component links to the payment and original document
+  journal. No cash report writes ledger entries. Manual journals default to cash
+  inclusion when they contain a bank account; the explicit `cash_basis` flag is
+  preserved on reversal. These are management views, not a GST/BAS rule engine.
 - Explicit 13-week/12-month scenarios from supplied cash inputs. The service
   combines recorded bank/AR/AP only; probability and missing obligation
   assumptions are visible. This is deterministic modelling, not a trained
@@ -92,7 +102,14 @@ SC-01/SC-04, not an installed Sandy API endpoint. `Boundary.authorize` must be
 wired to canonical Sandy API identity/admissions and exact
 operation/input-digest approval. `Boundary.evidence` must resolve existing
 Universal Files version/hash/ACL state. There is no default production
-implementation. `fixture.ts` is solely synthetic and must never become the
+installation. `canonical_boundary.ts` now composes the actual Sandy API
+`ExecutionAdmission` type and canonical argument digest, binding the full input,
+idempotency key, company/tenant/channel scope, consumed grant and current Files
+access through owner callbacks on the exact ledger transaction. These owner
+callbacks remain unbound: no guessed tenant/customer equality or sequential REST
+snapshot can replace transaction-held canonical authority. Node tests enable
+TypeScript transforms to import the existing shared protocol unchanged.
+`fixture.ts` is solely synthetic and must never become the
 customer identity adapter. The `accounting_fixture` role is NOLOGIN and local
 only; custom GUCs are trusted server context, not customer-supplied
 authorization.
@@ -105,9 +122,9 @@ contracts without dual-write loss.
 
 ## Known limits
 
-No customer-ready onboarding, full COA editing/import/export, cash-basis reporting, tax calculation
+No customer-ready onboarding, full COA editing/import/export, statutory cash-tax rules, tax calculation
 rule packs, payroll, STP/BAS/SuperStream submission, real bank feed, payment
-rail, invoice sending, full credit/refund/recurring lifecycle, tracked
+rail, invoice sending, standalone credit/refund/recurring lifecycle, tracked
 inventory, assets, projects, lossless migration/export or full report catalogue.
 Foreign-currency document settlement/revaluation is not implemented. No general
 AI model or unattended Autopilot grant exists. Source references are metadata;

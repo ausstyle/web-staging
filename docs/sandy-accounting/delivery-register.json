@@ -719,6 +719,10 @@
         "packages/sandy-accounting/core.test.ts",
         "packages/sandy-accounting/corrections.test.ts",
         "packages/sandy-accounting/temporal.test.ts",
+        "packages/sandy-accounting/browser_test.py",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
         "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Dated invoice/bill void and payment-record reversal; partial credits/refunds pending.",
@@ -746,6 +750,10 @@
         "packages/sandy-accounting/core.test.ts",
         "packages/sandy-accounting/corrections.test.ts",
         "packages/sandy-accounting/temporal.test.ts",
+        "packages/sandy-accounting/browser_test.py",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
         "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Partial receipt recording; reminders and verified provider payments pending.",
@@ -822,13 +830,25 @@
       "required_outcome": "Create a customer credit note.",
       "module": "Sales, AR & collections",
       "work_package": "WP2",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Applied customer credits against unpaid original lines, dated reversals and historical AR; standalone credits/refunds/reallocation pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.documents.credit.record",
+        "accounting.documents.credit.reverse"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -1924,13 +1944,25 @@
       "required_outcome": "Start a repeating bill or supplier credit note.",
       "module": "Purchases, AP & expenses",
       "work_package": "WP3",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Applied supplier credits and reversal; recurring bills, standalone credits/refunds and PO integration pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.documents.credit.record",
+        "accounting.documents.credit.reverse"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -2142,6 +2174,10 @@
         "packages/sandy-accounting/core.test.ts",
         "packages/sandy-accounting/corrections.test.ts",
         "packages/sandy-accounting/temporal.test.ts",
+        "packages/sandy-accounting/browser_test.py",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
         "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Partial payment recording; no money movement.",
@@ -2851,13 +2887,25 @@
       "required_outcome": "Include on cash-basis reports and autofill descriptions.",
       "module": "Ledger & corrections",
       "work_package": "WP1",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Explicit manual-journal cash inclusion, preserved on reversal; autofill and full editor pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.ledger.journal.post",
+        "accounting.ledger.journal.reverse"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -3340,7 +3388,11 @@
         "packages/sandy-accounting/schema.sql"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Seven basic deterministic reports; entire 87-report contract remains open.",
       "deployed": false,
@@ -3363,7 +3415,11 @@
         "packages/sandy-accounting/schema.sql"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Exact journal-line contributors; live file ACL integration pending.",
       "deployed": false,
@@ -3430,7 +3486,11 @@
         "packages/sandy-accounting/schema.sql"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Entity/period/basis/currency/revision; report formatting pending.",
       "deployed": false,
@@ -5567,7 +5627,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5580,7 +5640,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5593,7 +5653,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5606,7 +5666,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5619,7 +5679,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5632,7 +5692,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5645,9 +5705,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "balance_sheet",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5660,7 +5722,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5673,7 +5735,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5686,7 +5748,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5699,7 +5761,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5712,7 +5774,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5725,7 +5787,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5738,7 +5800,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5751,7 +5813,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5764,9 +5826,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "profit_and_loss",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5779,7 +5843,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5792,7 +5856,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5805,7 +5869,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5818,9 +5882,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "aged_payables",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5833,7 +5899,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5846,9 +5912,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "aged_receivables",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5861,7 +5929,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5874,7 +5942,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5887,7 +5955,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5900,7 +5968,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5913,7 +5981,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5926,7 +5994,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5939,7 +6007,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5952,7 +6020,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5965,7 +6033,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5978,7 +6046,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -5991,7 +6059,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6004,7 +6072,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6017,7 +6085,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6030,7 +6098,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6043,7 +6111,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6056,7 +6124,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6069,7 +6137,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6082,7 +6150,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6095,7 +6163,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6108,7 +6176,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6121,7 +6189,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6134,7 +6202,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6147,7 +6215,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6160,7 +6228,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6173,7 +6241,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6186,7 +6254,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6199,7 +6267,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6212,7 +6280,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6225,7 +6293,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6238,7 +6306,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6251,7 +6319,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6264,9 +6332,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "bank_reconciliation",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6279,7 +6349,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6292,7 +6362,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6305,7 +6375,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6318,7 +6388,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6331,7 +6401,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6344,7 +6414,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6357,7 +6427,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6370,7 +6440,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6383,7 +6453,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6396,9 +6466,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "general_ledger",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6411,7 +6483,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6424,7 +6496,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6437,7 +6509,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6450,7 +6522,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6463,7 +6535,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6476,7 +6548,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6489,9 +6561,11 @@
       "operation": "accounting.reporting.run",
       "report_selector": "trial_balance",
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/cash.test.ts",
+        "packages/sandy-accounting/credits.test.ts"
       ],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6504,7 +6578,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6517,7 +6591,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6530,7 +6604,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6543,7 +6617,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6556,7 +6630,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6569,7 +6643,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6582,7 +6656,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6595,7 +6669,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6608,7 +6682,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6621,7 +6695,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6634,7 +6708,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6647,7 +6721,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6660,7 +6734,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6673,7 +6747,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6686,7 +6760,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     },
@@ -6699,7 +6773,7 @@
       "operation": null,
       "report_selector": null,
       "test_paths": [],
-      "remaining": "Full filters, cash/accrual, output, source contract and accountant acceptance pending.",
+      "remaining": "Cash/accrual views exist for TB, P&L, balance sheet and GL only; full filters, layouts/exports, source contract and accountant acceptance pending.",
       "deployed": false,
       "independently_accepted": false
     }

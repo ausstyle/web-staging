@@ -5,6 +5,8 @@ on:
       - 'packages/sandy-accounting/**'
       - 'docs/sandy-accounting/**'
       - 'docs/sandy-engineering/tasks/SANDY-ENG-0013-sandy-accounting.md'
+      - 'supabase/functions/_shared/sandy_api_protocol.ts'
+      - 'supabase/functions/sandy-operation-api/access_policy.ts'
       - '.github/workflows/sandy-accounting-checks.yml'
   workflow_dispatch:
 permissions:

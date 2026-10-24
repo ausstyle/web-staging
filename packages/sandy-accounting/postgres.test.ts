@@ -375,13 +375,116 @@ test(
         }),
         /protected_account/,
       );
+      const creditInvoice = await run("accounting.sales.invoice.draft", {
+        contact: "Synthetic customer",
+        number: "CONCURRENT-CREDIT",
+        issued: "2026-10-02",
+        due: "2026-10-20",
+        currency: "AUD",
+        control_account: "ar",
+        evidence: [source],
+        lines: [{
+          description: "Synthetic service",
+          account_id: "sales",
+          net: "100.00",
+          tax: "0.00",
+          tax_account: null,
+          tax_rule_ref: null,
+        }],
+      });
+      await run("accounting.documents.approve", {
+        document_id: creditInvoice.document_id,
+        expected_version: 1,
+      });
+      const creditArgs = {
+        document_id: creditInvoice.document_id,
+        expected_version: 2,
+        number: "PG-CREDIT",
+        amount: "70.00",
+        effective_date: "2026-10-03",
+        reason: "Synthetic allowance",
+        evidence: [source],
+      };
+      const creditRace = await Promise.allSettled([
+        run("accounting.documents.credit.record", creditArgs),
+        run("accounting.documents.payment.record", {
+          document_id: creditInvoice.document_id,
+          expected_version: 2,
+          amount: "70.00",
+          effective_date: "2026-10-03",
+          bank_account: "bank",
+          evidence: [source],
+        }),
+      ]);
+      assert.equal(
+        creditRace.filter((r) => r.status === "fulfilled").length,
+        1,
+      );
+      const winner = creditRace.find((r) => r.status === "fulfilled")!.value;
+      assert.equal(winner.remaining, "30.00");
+      await assert.rejects(
+        run("accounting.documents.credit.record", {
+          ...creditArgs,
+          expected_version: 3,
+          number: "PG-OVER",
+          amount: "30.01",
+        }),
+        /overcredit/,
+      );
+      const restArgs = {
+        document_id: creditInvoice.document_id,
+        expected_version: 3,
+        amount: "30.00",
+        effective_date: "2026-10-04",
+        bank_account: "bank",
+        evidence: [source],
+      };
+      const duplicates = await Promise.all(Array.from({ length: 20 }, () =>
+        run(
+          "accounting.documents.payment.record",
+          restArgs,
+          "cash-last-payment",
+        )));
+      assert.equal(
+        new Set(duplicates.map((r) => r.journal_id)).size,
+        1,
+      );
+      const cash = await run("accounting.reporting.run", {
+        report: "profit_and_loss",
+        through: "2026-10-04",
+        basis: "cash",
+      });
+      assert.equal(cash.profit, winner.credit_id ? "30.00" : "100.00");
+      if (winner.credit_id) {
+        await run("accounting.documents.credit.reverse", {
+          credit_id: winner.credit_id,
+          expected_version: 4,
+          effective_date: "2026-10-05",
+          reason: "Synthetic correction",
+          evidence: [source],
+        });
+      } else {await run("accounting.documents.payment.reverse", {
+          allocation_id: winner.allocation_id,
+          expected_version: 4,
+          effective_date: "2026-10-05",
+          reason: "Synthetic correction",
+          evidence: [source],
+        });}
+      assert.equal(
+        (await run("accounting.reporting.run", {
+          report: "profit_and_loss",
+          through: "2026-10-05",
+          basis: "cash",
+        })).profit,
+        "30.00",
+      );
       const audit = await app.execute("synthetic", {
         operation: "accounting.audit.verify",
         contract_version: "1",
         company_id: "c1",
         arguments: {},
       });
-      assert.equal(audit.events, 109);
+      assert.equal(audit.events, 114);
       assert.equal(audit.valid, true);
     } finally {
       await pool?.end();

@@ -1,5 +1,6 @@
 import { date, decimal, digest, minor, roundRatio } from "./money.ts";
 import { forecast } from "./forecast.ts";
+import { allocate, type Component } from "./allocation.ts";
 
 export type Row = Record<string, any>;
 export interface Sql {
@@ -38,8 +39,14 @@ export interface Boundary {
     session: string,
     request: Request,
     inputDigest: string,
+    tx: Sql,
   ): Promise<Actor>;
-  evidence(actor: Actor, company: string, source: Evidence): Promise<boolean>;
+  evidence(
+    actor: Actor,
+    company: string,
+    source: Evidence,
+    tx: Sql,
+  ): Promise<boolean>;
   now(): string;
 }
 export const operations = {
@@ -53,6 +60,8 @@ export const operations = {
   "accounting.documents.approve": "R2",
   "accounting.documents.payment.record": "R2",
   "accounting.documents.payment.reverse": "R2",
+  "accounting.documents.credit.record": "R2",
+  "accounting.documents.credit.reverse": "R2",
   "accounting.documents.void": "R2",
   "accounting.banking.statements.import": "R2",
   "accounting.banking.reconcile.apply": "R2",
@@ -126,7 +135,7 @@ export class Accounting {
     });
     return this.db.transaction(async (tx) => {
       // Re-evaluate after acquiring the transaction, including on idempotent retries.
-      const actor = await this.boundary.authorize(session, request, hash);
+      const actor = await this.boundary.authorize(session, request, hash, tx);
       check(
         actor && actor.company_ids.includes(request.company_id) &&
           actor.operations.includes(request.operation) &&
@@ -144,7 +153,7 @@ export class Accounting {
         scope,
       )).rows[0];
       check(book, "book_unavailable");
-      const current = await this.boundary.authorize(session, request, hash);
+      const current = await this.boundary.authorize(session, request, hash, tx);
       check(
         current.actor_id === actor.actor_id &&
           current.tenant_id === actor.tenant_id &&
@@ -248,7 +257,7 @@ export class Accounting {
         "evidence_digest",
       );
       check(
-        await this.boundary.evidence(c.actor, c.scope[1], source),
+        await this.boundary.evidence(c.actor, c.scope[1], source, c.tx),
         "evidence_missing_or_revoked",
       );
     }
@@ -277,6 +286,7 @@ export class Accounting {
       "currency",
       "precision",
       "fx",
+      "cash_basis",
       "evidence",
       "lines",
     ], [
@@ -313,11 +323,12 @@ export class Accounting {
         a.precision === c.book.precision && a.fx === undefined,
         "invalid_base_currency",
       );}
-    let total = 0n, base = 0n;
+    let total = 0n, base = 0n, hasBank = false;
     const lines = [];
     for (const l of a.lines) {
       exact(l, ["account_id", "amount"]);
-      await this.account(c, l.account_id);
+      const account = await this.account(c, l.account_id);
+      hasBank = hasBank || account.control === "bank";
       const amount = minor(l.amount, a.precision);
       check(amount !== 0n, "zero_line");
       const baseAmount = roundRatio(amount, numerator, denominator);
@@ -330,9 +341,14 @@ export class Accounting {
       });
     }
     check(total === 0n && base === 0n, "journal_unbalanced_or_fx_rounding");
+    check(
+      a.cash_basis === undefined || typeof a.cash_basis === "boolean",
+      "cash_basis_flag",
+    );
+    const cashBasis = a.cash_basis ?? (source === "manual" && hasBank);
     const journalId = id();
     await c.tx.query(
-      "INSERT INTO accounting.journals(tenant_id,company_id,id,effective_date,narration,currency,precision,fx,evidence,actor_id,source,reversal_of) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)",
+      "INSERT INTO accounting.journals(tenant_id,company_id,id,effective_date,narration,currency,precision,fx,evidence,actor_id,source,reversal_of,cash_basis) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
       [
         ...c.scope,
         journalId,
@@ -345,6 +361,7 @@ export class Accounting {
         c.actor.actor_id,
         source,
         reversalOf,
+        cashBasis,
       ],
     );
     await c.tx.query(
@@ -600,17 +617,20 @@ export class Accounting {
           a.effective_date >= d.issued.toISOString().slice(0, 10),
           "payment_before_issue",
         );
-        check(
-          !(await c.tx.query(
-            "SELECT 1 FROM accounting.allocations p LEFT JOIN accounting.allocation_reversals rv ON rv.tenant_id=p.tenant_id AND rv.company_id=p.company_id AND rv.allocation_id=p.id JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND (j.id=p.journal_id OR j.id=rv.journal_id) WHERE p.tenant_id=$1 AND p.company_id=$2 AND p.document_id=$3 AND j.effective_date>$4",
-            [...c.scope, d.id, a.effective_date],
-          )).rows.length,
+        await this.checkSettlementDate(
+          c,
+          d.id,
+          a.effective_date,
           "payment_before_history",
         );
         await this.account(c, a.bank_account, "bank");
         const amount = minor(a.amount, c.book.precision);
-        const paid = await this.paid(c, d.id);
+        const paid = await this.paid(c, d.id) + await this.credited(c, d.id);
         check(amount > 0n && amount + paid <= BigInt(d.total), "overpayment");
+        const components = allocate(
+          amount,
+          await this.remainingComponents(c, d),
+        );
         const sign = d.kind === "invoice" ? 1n : -1n;
         const j = await this.post(c, {
           effective_date: a.effective_date,
@@ -628,8 +648,15 @@ export class Accounting {
         }, "payment");
         const allocationId = id();
         await c.tx.query(
-          "INSERT INTO accounting.allocations VALUES($1,$2,$3,$4,$5,$6)",
-          [...c.scope, allocationId, d.id, j.journal_id, amount.toString()],
+          "INSERT INTO accounting.allocations VALUES($1,$2,$3,$4,$5,$6,$7)",
+          [
+            ...c.scope,
+            allocationId,
+            d.id,
+            j.journal_id,
+            amount.toString(),
+            JSON.stringify(components),
+          ],
         );
         await c.tx.query(
           "UPDATE accounting.documents SET version=version+1 WHERE tenant_id=$1 AND company_id=$2 AND id=$3",
@@ -683,6 +710,128 @@ export class Accounting {
           version: d.version + 1,
         };
       }
+      case "accounting.documents.credit.record": {
+        exact(a, [
+          "document_id",
+          "expected_version",
+          "number",
+          "amount",
+          "effective_date",
+          "reason",
+          "evidence",
+        ]);
+        const d = await this.document(c, a.document_id);
+        check(d.version === a.expected_version, "version_conflict");
+        check(
+          d.journal_id && !d.void_journal_id,
+          "document_unapproved_or_void",
+        );
+        text(a.number, "credit_number", 60);
+        text(a.reason, "reason");
+        date(a.effective_date);
+        check(
+          a.effective_date >= d.issued.toISOString().slice(0, 10),
+          "credit_before_issue",
+        );
+        await this.checkSettlementDate(
+          c,
+          d.id,
+          a.effective_date,
+          "credit_before_history",
+        );
+        const amount = minor(a.amount, c.book.precision);
+        const settled = await this.paid(c, d.id) + await this.credited(c, d.id);
+        check(amount > 0n && amount + settled <= BigInt(d.total), "overcredit");
+        const components = allocate(
+          amount,
+          await this.remainingComponents(c, d),
+        );
+        const sign = d.kind === "invoice" ? 1n : -1n;
+        const j = await this.post(c, {
+          effective_date: a.effective_date,
+          narration: "Credit " + a.number + " for " + d.number,
+          currency: d.currency,
+          precision: c.book.precision,
+          evidence: a.evidence,
+          lines: [
+            {
+              account_id: d.control_account,
+              amount: decimal(-sign * amount, c.book.precision),
+            },
+            ...components.map((v) => ({
+              account_id: v.account_id,
+              amount: decimal(sign * BigInt(v.amount), c.book.precision),
+            })),
+          ],
+        }, "credit");
+        const creditId = id();
+        await c.tx.query(
+          "INSERT INTO accounting.credits VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)",
+          [
+            ...c.scope,
+            creditId,
+            d.id,
+            j.journal_id,
+            a.number,
+            amount.toString(),
+            JSON.stringify(components),
+            a.reason,
+          ],
+        );
+        await c.tx.query(
+          "UPDATE accounting.documents SET version=version+1 WHERE tenant_id=$1 AND company_id=$2 AND id=$3",
+          [...c.scope, d.id],
+        );
+        return {
+          document_id: d.id,
+          credit_id: creditId,
+          journal_id: j.journal_id,
+          state: "CREDIT_APPLIED",
+          remaining: decimal(
+            BigInt(d.total) - settled - amount,
+            c.book.precision,
+          ),
+          version: d.version + 1,
+          money_moved: false,
+        };
+      }
+      case "accounting.documents.credit.reverse": {
+        exact(a, [
+          "credit_id",
+          "expected_version",
+          "effective_date",
+          "reason",
+          "evidence",
+        ]);
+        const credit = (await c.tx.query(
+          "SELECT * FROM accounting.credits WHERE tenant_id=$1 AND company_id=$2 AND id=$3",
+          [...c.scope, text(a.credit_id, "credit")],
+        )).rows[0];
+        check(credit, "credit_unavailable");
+        const d = await this.document(c, credit.document_id);
+        check(d.version === a.expected_version, "version_conflict");
+        const j = (await c.tx.query(
+          "SELECT * FROM accounting.journals WHERE tenant_id=$1 AND company_id=$2 AND id=$3",
+          [...c.scope, credit.journal_id],
+        )).rows[0];
+        const reversal = await this.reverse(c, j, a, "credit_reversal");
+        await c.tx.query(
+          "INSERT INTO accounting.credit_reversals VALUES($1,$2,$3,$4)",
+          [...c.scope, credit.id, reversal.journal_id],
+        );
+        await c.tx.query(
+          "UPDATE accounting.documents SET version=version+1 WHERE tenant_id=$1 AND company_id=$2 AND id=$3",
+          [...c.scope, d.id],
+        );
+        return {
+          document_id: d.id,
+          credit_id: credit.id,
+          journal_id: reversal.journal_id,
+          state: "CREDIT_REVERSED",
+          version: d.version + 1,
+          money_moved: false,
+        };
+      }
       case "accounting.documents.void": {
         exact(a, [
           "document_id",
@@ -698,11 +847,11 @@ export class Accounting {
           "document_unapproved_or_void",
         );
         check(await this.paid(c, d.id) === 0n, "reverse_payments_first");
-        check(
-          !(await c.tx.query(
-            "SELECT 1 FROM accounting.allocations p LEFT JOIN accounting.allocation_reversals rv ON rv.tenant_id=p.tenant_id AND rv.company_id=p.company_id AND rv.allocation_id=p.id JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND (j.id=p.journal_id OR j.id=rv.journal_id) WHERE p.tenant_id=$1 AND p.company_id=$2 AND p.document_id=$3 AND j.effective_date>$4",
-            [...c.scope, d.id, date(a.effective_date)],
-          )).rows.length,
+        check(await this.credited(c, d.id) === 0n, "reverse_credits_first");
+        await this.checkSettlementDate(
+          c,
+          d.id,
+          date(a.effective_date),
           "void_before_payment_history",
         );
         const j = (await c.tx.query(
@@ -892,6 +1041,7 @@ export class Accounting {
         narration: a.reason,
         currency: j.currency,
         precision: j.precision,
+        cash_basis: j.cash_basis,
         ...(j.fx ? { fx: j.fx } : {}),
         evidence: a.evidence,
         lines: lines.map((l) => ({
@@ -919,11 +1069,113 @@ export class Accounting {
       )).rows[0].total,
     );
   }
+  async remainingComponents(c: Context, d: Row): Promise<Component[]> {
+    const lines = (await c.tx.query(
+      "SELECT ordinal,account_id,abs(amount)::text AS amount FROM accounting.lines WHERE tenant_id=$1 AND company_id=$2 AND journal_id=$3 AND ordinal>0 ORDER BY ordinal",
+      [...c.scope, d.journal_id],
+    )).rows as Component[];
+    const used = (await c.tx.query(
+      "SELECT p.components FROM accounting.allocations p LEFT JOIN accounting.allocation_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.allocation_id=p.id WHERE p.tenant_id=$1 AND p.company_id=$2 AND p.document_id=$3 AND r.allocation_id IS NULL UNION ALL SELECT p.components FROM accounting.credits p LEFT JOIN accounting.credit_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.credit_id=p.id WHERE p.tenant_id=$1 AND p.company_id=$2 AND p.document_id=$3 AND r.credit_id IS NULL",
+      [...c.scope, d.id],
+    )).rows;
+    return lines.map((line) => ({
+      ...line,
+      amount: (BigInt(line.amount) -
+        used.reduce(
+          (total, payment) =>
+            total +
+            payment.components.filter((v: Component) =>
+              v.ordinal === line.ordinal
+            ).reduce((n: bigint, v: Component) => n + BigInt(v.amount), 0n),
+          0n,
+        )).toString(),
+    }));
+  }
+  async credited(
+    c: Context,
+    documentId: string,
+    through?: string,
+  ): Promise<bigint> {
+    const row = (await c.tx.query(
+      "SELECT coalesce(sum(p.amount),0)::text AS total FROM accounting.credits p JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND j.id=p.journal_id LEFT JOIN accounting.credit_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.credit_id=p.id LEFT JOIN accounting.journals rj ON rj.tenant_id=r.tenant_id AND rj.company_id=r.company_id AND rj.id=r.journal_id WHERE p.tenant_id=$1 AND p.company_id=$2 AND p.document_id=$3 AND ($4::date IS NULL OR j.effective_date<=$4) AND (rj.id IS NULL OR ($4::date IS NOT NULL AND rj.effective_date>$4))",
+      [...c.scope, documentId, through ?? null],
+    )).rows[0];
+    return BigInt(row.total);
+  }
+  async checkSettlementDate(
+    c: Context,
+    documentId: string,
+    day: string,
+    error: string,
+  ) {
+    const latest = (await c.tx.query(
+      "SELECT accounting.latest_settlement_date($1,$2,$3) AS day",
+      [...c.scope, documentId],
+    )).rows[0].day;
+    check(!latest || day >= latest.toISOString().slice(0, 10), error);
+  }
   async activeMatches(c: Context) {
     return (await c.tx.query(
       "SELECT m.* FROM accounting.matches m LEFT JOIN accounting.match_reversals r ON r.tenant_id=m.tenant_id AND r.company_id=m.company_id AND r.match_id=m.id WHERE m.tenant_id=$1 AND m.company_id=$2 AND r.match_id IS NULL",
       c.scope,
     )).rows;
+  }
+  async cashEntries(c: Context, entries: Row[]): Promise<Row[]> {
+    const allocations = (await c.tx.query(
+      "SELECT p.*,d.kind,d.journal_id AS source_journal_id,r.journal_id AS reversal_journal_id FROM accounting.allocations p JOIN accounting.documents d ON d.tenant_id=p.tenant_id AND d.company_id=p.company_id AND d.id=p.document_id LEFT JOIN accounting.allocation_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.allocation_id=p.id WHERE p.tenant_id=$1 AND p.company_id=$2",
+      c.scope,
+    )).rows;
+    const accounts = (await c.tx.query(
+      "SELECT * FROM accounting.accounts WHERE tenant_id=$1 AND company_id=$2",
+      c.scope,
+    )).rows;
+    const allocationByJournal = new Map<string, Row>();
+    for (const allocation of allocations) {
+      allocationByJournal.set(allocation.journal_id, allocation);
+      if (allocation.reversal_journal_id) {
+        allocationByJournal.set(allocation.reversal_journal_id, allocation);
+      }
+    }
+    const accountById = new Map(
+      accounts.map((account) => [account.id, account]),
+    );
+    const output: Row[] = [];
+    for (const e of entries) {
+      if (["manual", "reversal"].includes(e.source)) {
+        if (e.cash_basis) output.push(e);
+      } else if (["payment", "payment_reversal"].includes(e.source)) {
+        const allocation = allocationByJournal.get(e.journal_id);
+        check(allocation, "cash_allocation_missing");
+        if (e.control === "bank") {
+          output.push(e);
+          continue;
+        }
+        check(["ar", "ap"].includes(e.control), "cash_payment_control");
+        const sign = (allocation.kind === "invoice" ? -1n : 1n) *
+          (e.source === "payment_reversal" ? -1n : 1n);
+        for (const component of allocation.components as Component[]) {
+          const account = accountById.get(component.account_id);
+          check(account, "cash_component_account");
+          output.push({
+            ...e,
+            account_id: account.id,
+            name: account.name,
+            kind: account.kind,
+            control: account.control,
+            base_amount: (sign * BigInt(component.amount)).toString(),
+            derived: true,
+            allocation_id: allocation.id,
+            source_journal_id: allocation.source_journal_id,
+            source_ordinal: component.ordinal,
+          });
+        }
+      } else {check(
+          ["invoice", "bill", "document_void", "credit", "credit_reversal"]
+            .includes(e.source),
+          "cash_source_unsupported",
+        );}
+    }
+    return output;
   }
   async read(c: Context, r: Request): Promise<Row> {
     const a = r.arguments;
@@ -1041,7 +1293,8 @@ export class Accounting {
       )).rows;
       for (const d of docs) {
         d.remaining = d.void_journal_id ? "0.00" : decimal(
-          BigInt(d.total) - await this.paid(c, d.id),
+          BigInt(d.total) - await this.paid(c, d.id) -
+            await this.credited(c, d.id),
           c.book.precision,
         );
         d.total = decimal(BigInt(d.total), c.book.precision);
@@ -1050,6 +1303,10 @@ export class Accounting {
       return {
         book: c.book,
         documents: docs,
+        credits: (await c.tx.query(
+          "SELECT p.id,p.document_id,p.number,p.journal_id,p.amount::text,p.reason,j.effective_date,r.journal_id AS reversal_journal_id,rj.effective_date AS reversal_date FROM accounting.credits p JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND j.id=p.journal_id LEFT JOIN accounting.credit_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.credit_id=p.id LEFT JOIN accounting.journals rj ON rj.tenant_id=r.tenant_id AND rj.company_id=r.company_id AND rj.id=r.journal_id WHERE p.tenant_id=$1 AND p.company_id=$2 ORDER BY j.effective_date,p.id",
+          c.scope,
+        )).rows,
         payments: (await c.tx.query(
           "SELECT p.id,p.document_id,p.journal_id,p.amount::text,j.effective_date,r.journal_id AS reversal_journal_id,rj.effective_date AS reversal_date FROM accounting.allocations p JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND j.id=p.journal_id LEFT JOIN accounting.allocation_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.allocation_id=p.id LEFT JOIN accounting.journals rj ON rj.tenant_id=r.tenant_id AND rj.company_id=r.company_id AND rj.id=r.journal_id WHERE p.tenant_id=$1 AND p.company_id=$2 ORDER BY j.effective_date,p.id",
           c.scope,
@@ -1122,7 +1379,13 @@ export class Accounting {
       date(a.from);
       check(a.from <= a.through, "report_range");
     }
-    check(a.basis === "accrual", "cash_basis_not_implemented");
+    check(["accrual", "cash"].includes(a.basis), "invalid_report_basis");
+    check(
+      a.basis !== "cash" ||
+        ["trial_balance", "profit_and_loss", "balance_sheet", "general_ledger"]
+          .includes(a.report),
+      "report_requires_accrual",
+    );
     const supported = [
       "trial_balance",
       "profit_and_loss",
@@ -1133,17 +1396,25 @@ export class Accounting {
       "bank_reconciliation",
     ];
     check(supported.includes(a.report), "report_not_implemented");
-    const entries = (await c.tx.query(
-      "SELECT l.journal_id,l.ordinal,l.account_id,l.base_amount::text,j.effective_date,a.name,a.kind,a.control FROM accounting.lines l JOIN accounting.journals j ON j.tenant_id=l.tenant_id AND j.company_id=l.company_id AND j.id=l.journal_id JOIN accounting.accounts a ON a.tenant_id=l.tenant_id AND a.company_id=l.company_id AND a.id=l.account_id WHERE l.tenant_id=$1 AND l.company_id=$2 AND j.state='POSTED' AND j.effective_date<=$3 ORDER BY j.effective_date,l.journal_id,l.ordinal",
+    let entries = (await c.tx.query(
+      "SELECT l.journal_id,l.ordinal,l.account_id,l.base_amount::text,j.effective_date,j.source,j.cash_basis,a.name,a.kind,a.control FROM accounting.lines l JOIN accounting.journals j ON j.tenant_id=l.tenant_id AND j.company_id=l.company_id AND j.id=l.journal_id JOIN accounting.accounts a ON a.tenant_id=l.tenant_id AND a.company_id=l.company_id AND a.id=l.account_id WHERE l.tenant_id=$1 AND l.company_id=$2 AND j.state='POSTED' AND j.effective_date<=$3 ORDER BY j.effective_date,l.journal_id,l.ordinal",
       [...c.scope, a.through],
     )).rows;
+    if (a.basis === "cash") entries = await this.cashEntries(c, entries);
     const meta = {
       company_id: c.scope[1],
       tenant_id: c.scope[0],
       report: a.report,
       from: a.from ?? null,
       through: a.through,
-      basis: "accrual",
+      basis: a.basis,
+      ...(a.basis === "cash"
+        ? {
+          cash_policy:
+            "Payment component snapshots and their dated reversals; manual journals use the reviewed cash_basis flag (defaults to bank-containing journals). Derived management view, not a GST/BAS determination.",
+          ledger_mutated: false,
+        }
+        : {}),
       currency: c.book.currency,
       precision: c.book.precision,
       revision: String(c.book.revision),
@@ -1167,7 +1438,8 @@ export class Accounting {
             [...c.scope, d.id, a.through],
           )).rows[0].total,
         );
-        const remaining = BigInt(d.total) - paid;
+        const remaining = BigInt(d.total) - paid -
+          await this.credited(c, d.id, a.through);
         const days = Math.floor(
           (Date.parse(a.through) - d.due.getTime()) / 86400000,
         );
@@ -1259,6 +1531,14 @@ export class Accounting {
         journal_id: e.journal_id,
         ordinal: e.ordinal,
         amount: decimal(BigInt(e.base_amount), c.book.precision),
+        ...(e.derived
+          ? {
+            derived: true,
+            allocation_id: e.allocation_id,
+            source_journal_id: e.source_journal_id,
+            source_ordinal: e.source_ordinal,
+          }
+          : {}),
       });
     }
     const all = [...grouped.values()];
