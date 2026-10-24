@@ -1,0 +1,31 @@
+name: Sandy temporal automatic-learning privacy contracts
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/sandy-temporal-learning-contracts.yml'
+      - 'supabase/functions/sandy-temporal-ingest/**'
+      - 'supabase/migrations/20261024005800_sandy_temporal_automatic_learning.sql'
+      - 'scripts/sandy/test_temporal_automatic_learning_postgres.mjs'
+      - 'scripts/sandy/fixtures/sandy_automatic_memory_learning_allowed_05500.sql'
+      - 'scripts/sandy/fixtures/sandy_voice_automatic_learning_source_05600.sql'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-privacy-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exercise the handler without channel or provider access
+        run: deno test supabase/functions/sandy-temporal-ingest/index_test.ts
+      - name: Install the isolated PostgreSQL test engine
+        run: npm install --prefix "$RUNNER_TEMP/sandy-temporal-pg" --no-audit --no-fund @electric-sql/pglite@0.3.14
+      - name: Exercise consent, source, ownership and atomic persistence
+        run: node scripts/sandy/test_temporal_automatic_learning_postgres.mjs "$RUNNER_TEMP/sandy-temporal-pg/node_modules/@electric-sql/pglite/dist/index.js"
