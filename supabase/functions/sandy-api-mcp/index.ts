@@ -8,7 +8,7 @@ export { transportInputSchema } from "../_shared/sandy_mcp_transport.mjs";
 type JsonObject = Record<string, unknown>;
 const CATALOGUE_CURSOR = /^sc1\.[a-f0-9]{64}\.[1-9][0-9]{0,5}$/;
 export type ApiResponse = { status: number; result: unknown };
-export type ApiExecutionMetadata = { approvalId?: string; requestId?: string };
+export type ApiExecutionMetadata = { approvalId?: string; requestId?: string; certificationId?: string };
 export type InvokeApi = (
   token: string,
   body: JsonObject,
@@ -153,6 +153,7 @@ export function createHandler(api: InvokeApi) {
       return json({ error: "invalid_api_credential" }, 401);
     }
     const metadata: ApiExecutionMetadata = {
+      ...(req.headers.has("x-sandy-certification-id") ? { certificationId: req.headers.get("x-sandy-certification-id")! } : {}),
       ...(req.headers.has("x-sandy-approval-id")
         ? { approvalId: req.headers.get("x-sandy-approval-id")! }
         : {}),

@@ -4,7 +4,7 @@ const uuid = value => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-
 
 export function executionMetadataHeaders(metadata) {
   const headers = {};
-  for (const [key, header] of [["approvalId", "x-sandy-approval-id"], ["requestId", "x-sandy-request-id"]]) {
+  for (const [key, header] of [["approvalId", "x-sandy-approval-id"], ["requestId", "x-sandy-request-id"], ["certificationId", "x-sandy-certification-id"]]) {
     const value = metadata?.[key];
     if (value !== undefined) {
       if (!uuid(value)) return null;
