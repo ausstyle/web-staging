@@ -16,11 +16,12 @@ Deno.serve(async req=>{
  const hash=Array.from(new Uint8Array(h)).map(x=>x.toString(16).padStart(2,"0")).join("");
  const {data:session,error:se}=await db.from("sandy_voice_call_sessions").select("id,owner_customer_id,link_id,created_at,ended_at,state").eq("id",sid).maybeSingle();
  if(se||!session||Date.now()-Date.parse(session.created_at)>35*60000)return reply({error:"unauthorized"},403);
- const {data:link}=await db.from("sandy_voice_call_links").select("id,owner_customer_id,token_sha256,revoked_at").eq("id",session.link_id).maybeSingle();
+ const {data:link}=await db.from("sandy_voice_call_links").select("id,owner_customer_id,token_sha256,revoked_at,purpose").eq("id",session.link_id).maybeSingle();
  if(!link||link.token_sha256!==hash||link.owner_customer_id!==session.owner_customer_id||link.revoked_at)return reply({error:"unauthorized"},403);
  const {data:auth}=await db.from("sandy_voice_private_auth").select("verified_at").eq("session_id",sid).eq("owner_customer_id",session.owner_customer_id).maybeSingle();
  if(!auth?.verified_at)return reply({error:"private_access_locked"},403);
  if(!await currentVoiceSource(db,sid,session.owner_customer_id))return reply({error:"voice_source_authorization_expired_or_revoked"},403);
+ if(executive&&link.purpose==="context_only")return reply({error:"context_only_session_cannot_execute_turns"},403);
  if(executive){
   if(!executiveCanaryEnabled(session.owner_customer_id,Deno.env.get("SANDY_EXECUTIVE_CANARY_CUSTOMERS")))return reply({error:"voice_executive_not_enrolled"},403);
   return voiceExecutiveTurn(db,session,body.turn_id,{base:root,credential:secret,timezone:typeof body.timezone==="string"?body.timezone.slice(0,80):"UTC"});

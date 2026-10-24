@@ -4,6 +4,8 @@ on:
     paths:
       - 'scripts/sandy/release_runtime_slice.py'
       - 'scripts/sandy/test_runtime_slice_release.py'
+      - 'scripts/sandy/verify_runtime_slice_sources.py'
+      - 'scripts/sandy/test_runtime_slice_source_compat.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
       - 'scripts/sandy/test_mission_truth_acceptance.py'
       - 'scripts/sandy/test_runtime_slice_workflow.py'
@@ -31,6 +33,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: denoland/setup-deno@v2
         with:
           deno-version: '2.9.6'
@@ -39,18 +43,8 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_grounding_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
-          python3 - <<'PY'
-          import json
-          from pathlib import Path
-          from release_runtime_slice import validate, MODULES
-          from release_gcp_admin_read import digest
-          for slug in MODULES:
-              m=json.loads(Path('docs/sandy-engineering/evaluations/runtime-slices',slug+'.json').read_text())
-              validate(m)
-              for p,h in m['replacements'].items():
-                  assert digest(Path('supabase/functions',p).read_bytes())==h, p
-          PY
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_slice_source_compat.py scripts/sandy/test_runtime_grounding_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
+          python3 scripts/sandy/verify_runtime_slice_sources.py
       - name: Exercise real handler with isolated transport and privacy fixtures
         run: |
           deno test --allow-read --allow-env --import-map=scripts/sandy/testing/fallback_import_map.json scripts/sandy/fallback_runtime_test.ts

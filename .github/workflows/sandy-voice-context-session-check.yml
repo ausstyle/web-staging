@@ -1,0 +1,37 @@
+name: Verify normal-customer voice context lifecycle
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-voice-call/**'
+      - 'supabase/functions/sandy-voice-account-context/**'
+      - 'supabase/functions/_shared/sandy-agent-operations/voice_source.ts'
+      - 'supabase/migrations/20261024005400_sandy_voice_context_session.sql'
+      - 'scripts/sandy/test_voice_context_session.ts'
+      - 'scripts/sandy/test_voice_context_source.py'
+      - 'scripts/sandy/voice_context_handler_test.ts'
+      - 'docs/sandy-engineering/evaluations/voice-context-session-source.json'
+      - '.github/workflows/sandy-voice-context-session-check.yml'
+permissions:
+  contents: read
+concurrency:
+  group: sandy-voice-context-check-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+jobs:
+  voice-context-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Preserve installed voice source, isolation and explicit memory behavior
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest scripts/sandy/test_voice_context_source.py -v
+      - name: Exercise normal Auth transport, media fences and private context revocation
+        run: |
+          deno test --no-lock --allow-read=supabase/functions/sandy-voice-call/index.ts supabase/functions/sandy-voice-call/context_session_test.ts
+          deno test --no-lock --allow-read --allow-env --import-map=scripts/sandy/testing/voice_import_map.json scripts/sandy/voice_context_handler_test.ts
+      - name: Exercise actual migration in isolated PostgreSQL without provider or media access
+        run: deno test --no-lock --allow-read scripts/sandy/test_voice_context_session.ts
