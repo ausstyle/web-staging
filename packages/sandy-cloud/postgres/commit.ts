@@ -94,6 +94,14 @@ type IntentRow = Record<string, unknown> & {
   unexpired: boolean;
   ref_matches: boolean;
 };
+// Readonly is a compile-time annotation, not runtime custody. Snapshot before
+// the first await so callers cannot replace verified bytes or lock identities.
+function frozenIntent(i: Readonly<UploadIntent>): Readonly<UploadIntent> {
+  return Object.freeze({ ...i, ref: Object.freeze({ ...i.ref }) });
+}
+function frozenProof(p: IntegrityReceipt): IntegrityReceipt {
+  return Object.freeze({ ...p, ref: Object.freeze({ ...p.ref }) });
+}
 export class PostgresCommitBoundary implements CommitBoundary {
   constructor(
     private readonly db: SqlDatabase,
@@ -104,7 +112,8 @@ export class PostgresCommitBoundary implements CommitBoundary {
   private async admitted(tx: SqlTransaction, i: Readonly<UploadIntent>) {
     await this.owners.prepareTransaction(tx, i);
     // Full Runtime gates precede authority and domain row locks.
-    const admitted = await this.owners.lockAdmission(tx, i);
+    const resolved = await this.owners.lockAdmission(tx, i);
+    const admitted = resolved && Object.freeze({ ...resolved });
     if (
       !admitted || !Number.isSafeInteger(admitted.policyEpoch) ||
       admitted.policyEpoch < 1 || typeof admitted.customerId !== "string"
@@ -165,12 +174,14 @@ export class PostgresCommitBoundary implements CommitBoundary {
     ) fail("INVALID_BYTE_PROOF");
   }
   async authorize(i: Readonly<UploadIntent>): Promise<void> {
+    i = frozenIntent(i);
     await this.db.transaction(async (tx) => {
       await this.admitted(tx, i);
       await this.stored(tx, i);
     });
   }
   async lookup(i: Readonly<UploadIntent>): Promise<VersionReceipt | null> {
+    i = frozenIntent(i);
     return await this.db.transaction(async (tx) => {
       await this.admitted(tx, i);
       await this.stored(tx, i);
@@ -181,6 +192,8 @@ export class PostgresCommitBoundary implements CommitBoundary {
     i: Readonly<UploadIntent>,
     p: IntegrityReceipt,
   ): Promise<void> {
+    i = frozenIntent(i);
+    p = frozenProof(p);
     this.proof(i, p);
     await this.db.transaction(async (tx) => {
       const { admitted } = await this.admitted(tx, i);
@@ -195,6 +208,8 @@ export class PostgresCommitBoundary implements CommitBoundary {
     });
   }
   async commit(i: Readonly<UploadIntent>, p: IntegrityReceipt): Promise<void> {
+    i = frozenIntent(i);
+    p = frozenProof(p);
     this.proof(i, p);
     await this.db.transaction(async (tx) => {
       const { admitted, workspace } = await this.admitted(tx, i);
@@ -233,14 +248,14 @@ export class PostgresCommitBoundary implements CommitBoundary {
       if (Number(heads[0]?.revision) !== i.expectedRevision) {
         fail("REVISION_CONFLICT");
       }
-      const receipt: VersionReceipt = {
+      const receipt: VersionReceipt = Object.freeze({
         state: "COMMITTED",
         intentId: i.id,
         versionId: randomUUID(),
         revision: i.expectedRevision + 1,
-        ref: { ...i.ref },
+        ref: Object.freeze({ ...i.ref }),
         traceId: i.traceId,
-      };
+      });
       await tx.query(
         `INSERT INTO sandy_cloud.versions
         (tenant_id,workspace_id,version_id,file_id,intent_id,revision,ref)

@@ -394,6 +394,61 @@ try {
       assert.deepEqual(await state(), empty);
     },
   );
+  await seed();
+  await check(
+    "caller mutation after scan cannot replace the verified generation",
+    async () => {
+      const upload = structuredClone(i), verified = structuredClone(proof);
+      const guarded = new PostgresCommitBoundary(connection, owners, {
+        verifyInTransaction: async (tx, input) => {
+          const evidence = await fixtureScanner.verifyInTransaction(tx, input);
+          upload.ref.generation = "unverified-generation";
+          upload.traceId = "replaced-trace";
+          return evidence;
+        },
+      });
+      await guarded.commit(upload, verified);
+      const receipt =
+        (await db.query("SELECT receipt FROM sandy_cloud.commit_receipts"))
+          .rows[0].receipt;
+      assert.equal(receipt.ref.generation, i.ref.generation);
+      assert.equal(receipt.traceId, i.traceId);
+      const version =
+        (await db.query("SELECT ref FROM sandy_cloud.versions")).rows[0].ref;
+      assert.deepEqual(version, i.ref);
+    },
+  );
+  await check(
+    "all boundary entry points retain original identity across preparation awaits",
+    async () => {
+      for (
+        const method of [
+          "authorize",
+          "lookup",
+          "assertScanClean",
+          "commit",
+        ] as const
+      ) {
+        await seed();
+        const upload = structuredClone(i), verified = structuredClone(proof);
+        const guarded = new PostgresCommitBoundary(connection, {
+          ...owners,
+          prepareTransaction: async () => {
+            upload.actorId = "foreign-actor";
+            upload.ref.tenantId = "foreign-tenant";
+          },
+        }, fixtureScanner);
+        if (method === "authorize" || method === "lookup") {
+          await guarded[method](upload);
+        } else await guarded[method](upload, verified);
+        assert.equal(
+          (await db.query("SELECT count(*)::int n FROM sandy_cloud.versions"))
+            .rows[0].n,
+          method === "commit" ? 1 : 0,
+        );
+      }
+    },
+  );
   console.log(
     JSON.stringify({
       suite: "cloud-postgresql-transaction",

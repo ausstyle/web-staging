@@ -332,3 +332,14 @@ used. Source merge is not live schema or product deployment.
 - [ ] Bind and independently accept actual live identity/writer/revoker/provider
   installations through the existing protected release path. No live activation,
   trust, paid resource, production-readiness or full-scope acceptance is implied.
+
+### PR306 review follow-up (2026-10-24)
+
+- [x] Reproduce and fix mutable intent/proof inputs across asynchronous commit
+  boundaries; 15 transaction cases and all affected integration suites pass.
+- [x] Read existing Supabase project/schema/column/grant metadata without customer
+  data or mutations; observations recorded in `source-review-20261024.md`.
+- [ ] Independent source verdict: review runner failed before initialization on
+  read-only filesystem. Author inspection and passing CI are not a substitute.
+- [ ] Exact live installation identities, revoker participation and protected
+  activation approval remain pending; USD10 option remains unapproved.

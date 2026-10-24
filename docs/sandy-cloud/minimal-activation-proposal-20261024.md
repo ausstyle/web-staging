@@ -7,6 +7,13 @@ loader and complete lock plan. Combined acceptance is recorded in
 reference/lock interface. This list supersedes prior reciprocal source handoffs.
 No live action is requested until its actual targets and diff below are known.
 
+Read-only inventory on 2026-10-24 confirmed the existing project is healthy in
+`eu-west-1` on PostgreSQL 17.11 and that candidate Cloud/custody tables are not
+installed. Portal/admission columns match the source assumptions. The limited
+public-table grant inventory does not select an authorized Cloud transaction
+principal. See `source-review-20261024.md` for exact observations and limits;
+independent source review is still pending because its runner could not start.
+
 ## Exact existing target and source changes
 
 Reuse existing Supabase project `zmqlyygzqoidkcwdysok`; preserve universal-file
