@@ -17,6 +17,7 @@ from release_web_canary import Blocked, ROOT, original_sources, private_write
 
 # Reviewed components only. A manifest cannot select arbitrary targets/modules.
 MODULES = {
+    'sandy-orchestration-api': {'sandy-orchestration-api/workload_reads.ts'},
     'sandy-agent-runtime-v4': {
         'sandy-agent-runtime-v4/index.ts',
         '_shared/sandy-agent-operations/runtime_records.ts',
