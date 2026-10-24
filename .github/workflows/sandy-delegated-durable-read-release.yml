@@ -2,6 +2,11 @@ name: Deploy delegated durable metadata reads
 on:
   workflow_dispatch:
     inputs:
+      proposal_source_sync_only:
+        description: 'Install additive 05700 proposal/source sync only; no model, issue, provider test or Edge deployment'
+        type: boolean
+        required: false
+        default: false
       recovery_guard_only:
         description: 'Install additive 05300 receipt recovery only; no admission reinstall or provider test'
         type: boolean
@@ -22,6 +27,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Reject combined additive installation modes
+        env:
+          RECOVERY: ${{ inputs.recovery_guard_only }}
+          SOURCE_SYNC: ${{ inputs.proposal_source_sync_only }}
+        run: test "$RECOVERY:$SOURCE_SYNC" != 'true:true'
       - uses: denoland/setup-deno@v2
         with:
           deno-version: '2.9.6'
@@ -29,43 +39,62 @@ jobs:
         run: >-
           deno test --no-lock --allow-read
           scripts/sandy/test_delegated_durable_reads.ts
+          scripts/sandy/test_existing_proposal_source_sync.ts
           supabase/functions/sandy-orchestration-api/index_test.ts
           supabase/functions/sandy-orchestration-api/workload_reads_test.ts
       - name: Install source-preserved worker and additive delegated admission without expanding grants
-        if: ${{ !inputs.recovery_guard_only }}
+        if: ${{ !inputs.recovery_guard_only && !inputs.proposal_source_sync_only }}
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_delegated_durable_reads.py --deploy --evidence-dir "$RUNNER_TEMP/delegated-durable-install"
       - name: Independently verify every installed module, RPC and unchanged authority
-        if: ${{ !inputs.recovery_guard_only }}
+        if: ${{ !inputs.recovery_guard_only && !inputs.proposal_source_sync_only }}
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_delegated_durable_reads.py --verify-installed --evidence-dir "$RUNNER_TEMP/delegated-durable-readback"
       - name: Verify actual scheduled workload MCP to GitHub read after admitting-session retirement and cancellation
-        if: ${{ !inputs.recovery_guard_only }}
+        if: ${{ !inputs.recovery_guard_only && !inputs.proposal_source_sync_only }}
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
         run: deno run --no-lock --allow-env --allow-net --allow-read --allow-write scripts/sandy/verify_delegated_durable_reads.ts --output "$RUNNER_TEMP/delegated-durable-install/provider-acceptance.json"
       - name: Install only source-pinned expired-read recovery over the existing queue
-        if: inputs.recovery_guard_only
+        if: inputs.recovery_guard_only && !inputs.proposal_source_sync_only
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_known_read_recovery.py --deploy --evidence-dir "$RUNNER_TEMP/delegated-durable-install"
       - name: Independently verify additive recovery source and private permissions
-        if: inputs.recovery_guard_only
+        if: inputs.recovery_guard_only && !inputs.proposal_source_sync_only
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/release_known_read_recovery.py --verify-installed --evidence-dir "$RUNNER_TEMP/delegated-durable-readback"
       - name: Verify receipt recovery with a fully rolled-back approved fixture and no provider request
-        if: inputs.recovery_guard_only
+        if: inputs.recovery_guard_only && !inputs.proposal_source_sync_only
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/verify_known_read_recovery.py --evidence-dir "$RUNNER_TEMP/delegated-durable-readback-fault"
+      - name: Resume existing persisted proposal source review without a paid reinvestigation
+        if: inputs.proposal_source_sync_only && !inputs.recovery_guard_only
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_existing_proposal_source_sync.py --deploy --evidence-dir "$RUNNER_TEMP/delegated-durable-install"
+      - name: Independently verify scanner source, helper isolation and existing cron
+        if: inputs.proposal_source_sync_only && !inputs.recovery_guard_only
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_existing_proposal_source_sync.py --verify-installed --evidence-dir "$RUNNER_TEMP/delegated-durable-readback"
+      - name: Observe existing five-minute programme continuation without a direct scanner or model call
+        if: inputs.proposal_source_sync_only && !inputs.recovery_guard_only
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/verify_existing_proposal_source_sync.py --evidence-dir "$RUNNER_TEMP/delegated-durable-readback-cron"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -74,4 +103,5 @@ jobs:
             ${{ runner.temp }}/delegated-durable-install/
             ${{ runner.temp }}/delegated-durable-readback/
             ${{ runner.temp }}/delegated-durable-readback-fault/
+            ${{ runner.temp }}/delegated-durable-readback-cron/
           retention-days: 14

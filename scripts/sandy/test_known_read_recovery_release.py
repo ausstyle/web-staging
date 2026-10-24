@@ -28,7 +28,8 @@ class KnownReadRecoveryReleaseTests(unittest.TestCase):
   self.assertIn('recovery_guard_only:',source)
   for step in ['Install source-preserved worker','Independently verify every installed','Verify actual scheduled workload']:
    section=source.split('- name: '+step,1)[1].split('- name:',1)[0]
-   self.assertIn('if: ${{ !inputs.recovery_guard_only }}',section)
+   self.assertIn('if: ${{ !inputs.recovery_guard_only',section)
+   self.assertNotIn(' || ',section.split('if:',1)[1].splitlines()[0])
   self.assertIn('release_known_read_recovery.py --deploy',source)
   self.assertIn('release_known_read_recovery.py --verify-installed',source)
   self.assertIn('environment: sandy-production',source)
