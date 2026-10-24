@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"io"
@@ -83,6 +84,18 @@ func TestPostgresIntegration(t *testing.T) {
 	}
 	must(Migrate(ctx, admin))
 	must(Migrate(ctx, admin))
+	t.Run("synthetic_seed_repeat_and_collision", func(t *testing.T) {
+		must(SeedSynthetic(ctx, admin, "local-synthetic"))
+		must(SeedSynthetic(ctx, admin, "local-synthetic"))
+		if e := SeedSynthetic(ctx, admin, "different-region"); e == nil {
+			t.Fatal("fixture scope collision accepted")
+		}
+		var region string
+		must(admin.QueryRow(ctx, "SELECT region FROM core.tenants WHERE tenant_id=$1", SyntheticScope.Tenant).Scan(&region))
+		if region != "local-synthetic" {
+			t.Fatal("collision changed existing fixture")
+		}
+	})
 	// Tampering with a historical migration must fail closed, then restore it.
 	var checksum string
 	must(admin.QueryRow(ctx, "SELECT sha256 FROM public.sandy_mail_migrations WHERE version='0001_mail_core.sql'").Scan(&checksum))
@@ -364,6 +377,65 @@ func TestPostgresIntegration(t *testing.T) {
 		if _, e := service.ExportMailbox(ctx, other, io.Discard, 100); !errors.Is(e, ErrNotFound) {
 			t.Fatalf("unauthorized export: %v", e)
 		}
+	})
+	t.Run("portable_export_restore_replay", func(t *testing.T) {
+		target := Scope{r.Scope.Tenant, r.Scope.Account, uuid()}
+		_, e := admin.Exec(ctx, "INSERT INTO core.mailboxes VALUES($1,$2,$3,'Synthetic Restore')", target.Tenant, target.Account, target.Mailbox)
+		must(e)
+		var archive bytes.Buffer
+		exported, e := service.ExportMailbox(ctx, r.Scope, &archive, 100)
+		must(e)
+		preview, e := InspectTAR(bytes.NewReader(archive.Bytes()), nil)
+		must(e)
+		if len(preview.Items) != len(exported.Messages) || preview.PortableMetadata == nil {
+			t.Fatal("inventory mismatch")
+		}
+		if exported.PendingIngestions > 0 && preview.State != "NEEDS_ACTION" {
+			t.Fatal("pending source silently declared ready")
+		}
+		expected := map[string]ExportItem{}
+		for _, item := range exported.Messages {
+			expected[item.Path] = item
+		}
+		receipts := map[string]string{}
+		for pass := 0; pass < 2; pass++ {
+			_, e = InspectTAR(bytes.NewReader(archive.Bytes()), func(item ArchiveItem, raw []byte) error {
+				source := expected[item.Path]
+				var env Envelope
+				if e := json.Unmarshal(source.Envelope, &env); e != nil {
+					return e
+				}
+				env.ReceivedAt = source.ReceivedAt
+				request := Request{Scope: target, DeliveryID: "archive:" + digest(archive.Bytes()) + ":" + digest([]byte(item.Path)), Source: "synthetic-eml-tar-restore", Envelope: env, Raw: raw}
+				receipt, e := service.Ingest(ctx, request)
+				if e != nil {
+					return e
+				}
+				if pass == 0 {
+					receipts[item.Path] = receipt.ID
+				} else if receipt.ID != receipts[item.Path] {
+					return fmt.Errorf("restore_replay_duplicated")
+				}
+				_, restored, e := service.Retrieve(ctx, target, request.DeliveryID)
+				if e != nil {
+					return e
+				}
+				if !bytes.Equal(raw, restored) || digest(restored) != item.SHA256 {
+					return fmt.Errorf("restore_not_lossless")
+				}
+				return nil
+			})
+			must(e)
+		}
+		var restored bytes.Buffer
+		manifest, e := service.ExportMailbox(ctx, target, &restored, 100)
+		must(e)
+		check, e := InspectTAR(bytes.NewReader(restored.Bytes()), nil)
+		must(e)
+		if check.State != "READY" || len(manifest.Messages) != len(exported.Messages) {
+			t.Fatal("restore reconciliation failed")
+		}
+		t.Logf("synthetic archive source=%d restored=%d replay_receipts=%d bytes=%d", len(exported.Messages), len(manifest.Messages), len(receipts), archive.Len())
 	})
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {
 		var messages, receipts, events int

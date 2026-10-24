@@ -24,10 +24,10 @@ func main() {
 }
 func run() error {
 	if len(os.Args) != 2 {
-		return fmt.Errorf("usage: mail-fixture migrate|ingest|recover|read")
+		return fmt.Errorf("usage: mail-fixture migrate|seed-synthetic|ingest|recover|read")
 	}
 	action := os.Args[1]
-	if action != "migrate" && action != "ingest" && action != "recover" && action != "read" {
+	if action != "migrate" && action != "seed-synthetic" && action != "ingest" && action != "recover" && action != "read" {
 		return fmt.Errorf("unsupported_action")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
@@ -61,16 +61,21 @@ func run() error {
 	if cfg.ConnConfig.TLSConfig != nil && cfg.ConnConfig.TLSConfig.InsecureSkipVerify {
 		return fmt.Errorf("verified_tls_required")
 	}
-	if action == "migrate" {
+	if action == "migrate" || action == "seed-synthetic" {
 		c, e := pgx.ConnectConfig(ctx, cfg.ConnConfig)
 		if e != nil {
 			return fmt.Errorf("database_connection_failed")
 		}
 		defer c.Close(ctx)
-		if e = mailstore.Migrate(ctx, c); e != nil {
+		if action == "migrate" {
+			e = mailstore.Migrate(ctx, c)
+		} else {
+			e = mailstore.SeedSynthetic(ctx, c, os.Getenv("MAIL_REGION"))
+		}
+		if e != nil {
 			return e
 		}
-		return json.NewEncoder(os.Stdout).Encode(map[string]any{"migration_applied": true, "environment": os.Getenv("MAIL_ENVIRONMENT"), "database": expected, "mail_ingested": false})
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"migration_applied": action == "migrate", "synthetic_seeded": action == "seed-synthetic", "environment": os.Getenv("MAIL_ENVIRONMENT"), "database": expected, "mail_ingested": false})
 	}
 	scope := mailstore.Scope{Tenant: os.Getenv("MAIL_TENANT_ID"), Account: os.Getenv("MAIL_ACCOUNT_ID"), Mailbox: os.Getenv("MAIL_MAILBOX_ID")}
 	var objects mailstore.ObjectStore

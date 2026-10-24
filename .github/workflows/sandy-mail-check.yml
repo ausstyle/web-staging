@@ -38,6 +38,10 @@ jobs:
           go test -race -count=1 -v ./...
           go vet ./...
           go build ./cmd/mail-fixture
+      - name: Release runner contracts
+        run: python3 -m unittest discover -s release -v
+      - name: Build isolated nonroot canary container
+        run: docker build -t sandy-mail-canary:ci .
       - name: Check reachable dependency vulnerabilities
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - uses: actions/upload-artifact@v4
