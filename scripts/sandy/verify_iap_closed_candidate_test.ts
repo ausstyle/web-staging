@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {deniedChecks} from './verify_iap_closed_candidate.ts';
+import {candidateHealth,deniedChecks} from './verify_iap_closed_candidate.ts';
 const target='https://sandy-iap-repair-review---sandy-engineering-mcp-fixture-ew.a.run.app',source='a'.repeat(64),revision='sandy-engineering-mcp-iap-40000000000-1';
 Deno.test('closed acceptance uses normal MCP and protected Control denial, with no provider request or Owner identity',async()=>{
  const calls:any[]=[];
@@ -19,4 +19,10 @@ Deno.test('closed acceptance refuses unexpected target or a worker that reports 
  await assert.rejects(()=>deniedChecks('https://evil.invalid',source,revision,'fixture','anon',async()=>{throw Error('must not request');}));
  let n=0;const request=async()=>{n++;if(n===1)return Response.json({ok:true});if(n===2)return Response.json({error:'sandy_api_access_required'},{status:403});if(n===3)return Response.json({error:'independent_iap_repair_job_authorization_required',executed:false},{status:403});if(n===4)return Response.json({error:'expected_google_repair_runtime_required'},{status:403});return Response.json({ok:false,error:'protected_repair_admission_refused',executed:false,administrator_token_issued:true,token_recorded:false,OS_commands:0,provider_receipts:[]},{status:403});};
  await assert.rejects(()=>deniedChecks(target,source,revision,'fixture','anon',request),/must_deny_before_administrator_issuance/);
+});
+
+Deno.test('health diagnostic preserves exact HTTP status and safe classification without body or credentials',async()=>{
+ for(const status of [401,403,404,500]){const result=await candidateHealth(target,async()=>new Response('PRIVATE_TOKEN_BODY',{status,headers:{'content-type':'text/html','x-private-token':'PRIVATE_HEADER'}}));assert.equal(result.http_status,status);assert.equal(result.healthy,false);assert.equal(result.response_body_recorded,false);assert.equal(JSON.stringify(result).includes('PRIVATE'),false);}
+ const transport=await candidateHealth(target,async()=>{throw Error('PRIVATE_NETWORK_ERROR');});assert.equal(transport.classification,'health_transport_unavailable');assert.equal(transport.http_status,null);
+ const invalid=await candidateHealth(target,async()=>Response.json({ok:false,token:'PRIVATE'}));assert.equal(invalid.classification,'invalid_application_health');assert.equal(JSON.stringify(invalid).includes('PRIVATE'),false);
 });
