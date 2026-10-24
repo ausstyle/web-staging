@@ -15,7 +15,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: sandy-engineering-mcp-deploy
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-model-metrics-tests-{0}', github.ref) }}
   cancel-in-progress: false
 jobs:
   tests:
