@@ -121,10 +121,14 @@ const providerOperations = Object.freeze({
   ...baselineProviderOperations,
   ...providerExpansionOperations,
 });
-function providerExecutionScope(operation: string, config?: ProviderConfig) {
+function providerExecutionScope(
+  operation: string,
+  config?: ProviderConfig,
+  args: Record<string, unknown> = {},
+) {
   return providerExpansionOperations[operation]
     ? expandedProviderExecutionScope(operation, config)
-    : baselineProviderExecutionScope(operation, config);
+    : baselineProviderExecutionScope(operation, config, args);
 }
 export type DelegatedIdentity = {
   kind: "api_key" | "job_lease";
@@ -982,6 +986,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
                 : providerExecutionScope(
                   operation,
                   dependencies.providerConfig,
+                  args,
                 );
               if (!isObject(scope)) {
                 throw Error("provider_scope_configuration_required");
@@ -2478,7 +2483,11 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             },
           )
           : providerOperations[operation]
-          ? providerExecutionScope(operation, dependencies.providerConfig)
+          ? providerExecutionScope(
+            operation,
+            dependencies.providerConfig,
+            isObject(body.arguments) ? body.arguments : {},
+          )
           : {
             sandy_project_ref: "zmqlyygzqoidkcwdysok",
             permission_scope: entry.permission_scope,

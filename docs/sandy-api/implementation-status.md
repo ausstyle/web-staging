@@ -1,5 +1,9 @@
 # Sandy API implementation status
 
+## Hosting regional reads — source candidate
+
+The [bounded Hosting read contract proposal](hosting-read-contracts-20261024.md) adds europe-west8 selection for existing Cloud Run services list/get only when an explicit expiring server binding is present. Default europe-west1 behavior and existing policy checks remain. Storage listing already has a project-bound adapter but remains unexposed/unverified. No live binding, grant, exposure or provider operation changed; activation belongs in the parent’s consolidated setup-mode decision.
+
 ## Immutable blob settlement — source candidate
 
 A further [family 118 source slice](github-blob-settlement-20261024.md) verifies exact immutable blob bytes and adds guarded durable settlement while preserving authority, ACL and audit rules. It has isolated readback, provider integration and PostgreSQL tests; it has not been deployed or live-accepted. Tree settlement and whole-family acceptance remain open. The PR246 single-module release manifest does not cover this separate candidate.
