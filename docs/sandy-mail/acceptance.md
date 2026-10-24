@@ -154,3 +154,27 @@ fixtures. Draft restoration remains separate from received mail and sending.
 The [format/rollback contract](../../services/sandy-mail/EXPORTS.md#portable-v4-draft-mime)
 records exact limits and legacy compatibility. Source/local acceptance remains
 separate from Cloud SQL/GCS execution and independent acceptance.
+
+Source `10cb2afbc12655fadb0705631c35de2d9504c7ff` passed **122 race-checked Go
+test/subtest cases**, vet and five release-runner tests. The [full test log](evidence/mime-final-tests.txt)
+covers migration replay/checksums, three MIME-save interruption boundaries, four
+MIME-import boundaries, frozen resumable export, legacy JSON restoration, tenant
+isolation, tampering and old-writer refusal. The [populated clone upgrade](evidence/mime-upgrade.json)
+preserved 50 drafts, 224 collections, 298 import items, 420 inbound receipts and
+preexisting draft-content/edit-receipt checksums while applying 0009 twice safely.
+
+[Retained round-trip](evidence/mime-roundtrip.json) identifies import job
+`342e63b9-5cad-4428-8107-939cf3c871d3`, draft
+`064e2dd2-b2d8-42bc-ab93-92ea3460ec07` and restore receipt
+`1b9c0f91-54fc-40d8-bd19-392fe62563f8`: one verified record, zero exceptions,
+1304 original bytes. A [separate Python/psql readback](evidence/mime-after-exit.json)
+verified original/current MIME, the immutable reconciliation object, exactly one
+restore receipt and zero received messages after the test process exited. Python's
+standard-library MIME parser also decoded all six recipient fields, repeated
+headers, the ISO-8859-1 text, UTF-8 attachment filename, 14 binary attachment bytes
+and generated mixed-line-ending text. The later customer edit and original both
+survived. This is cross-implementation local evidence, not independent human or
+Outlook/provider acceptance. Objects remain under
+`/workspace/sandy-mail-evidence/mime-roundtrip-objects`, PostgreSQL on loopback
+55444. The Google canary binary remains SHA256
+`a796e5406ab16a26f9226b43fad6f4a4784aa6a284a0b28ad854cb37bea57700`.

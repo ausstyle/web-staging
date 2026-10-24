@@ -1,0 +1,48 @@
+{
+  "source_revision": "10cb2afbc12655fadb0705631c35de2d9504c7ff",
+  "separate_process": true,
+  "independent_acceptance": false,
+  "local_only": true,
+  "cloud_deployed": false,
+  "job_id": "342e63b9-5cad-4428-8107-939cf3c871d3",
+  "draft_id": "064e2dd2-b2d8-42bc-ab93-92ea3460ec07",
+  "receipt_id": "1b9c0f91-54fc-40d8-bd19-392fe62563f8",
+  "original_sha256": "78e4a834323fa7f0317d75b09270d9e5656f839b82c0eceb5de65c33108ac6d0",
+  "original_bytes": 1304,
+  "attachment_sha256": "33575b0fad57485726dadf61be9a149e344638053cfebfae011286d67cebb29d",
+  "attachment_bytes": 14,
+  "recipient_fields": {
+    "From": [
+      "author@example.invalid"
+    ],
+    "Sender": [
+      "sender@example.invalid"
+    ],
+    "Reply-To": [
+      "reply@example.invalid"
+    ],
+    "To": [
+      "to@example.invalid"
+    ],
+    "Cc": [
+      "cc@example.invalid"
+    ],
+    "Bcc": [
+      "bcc@example.invalid"
+    ]
+  },
+  "python_stdlib_mime_parser_passed": true,
+  "composed_mixed_line_endings_exact": true,
+  "restore_receipts": 1,
+  "received_messages": 0,
+  "verified_records": 1,
+  "exceptions": 0,
+  "reconciliation_object": {
+    "key": "mail/v1/6d4ea34f-6921-4bfc-92fc-add5aeb0052f/96279abc-ebcb-4ab9-9b44-ed99aad7e5ef/f44e0dec-71ad-46a9-807d-43093db70fd7/imports/342e63b9-5cad-4428-8107-939cf3c871d3/reports/12d8cc9424ced5e37e87ce83c89565602d01a7fd836d0b8c91771091c05b81f5.json",
+    "size": 608,
+    "sha256": "12d8cc9424ced5e37e87ce83c89565602d01a7fd836d0b8c91771091c05b81f5",
+    "generation": 1
+  },
+  "later_edit_preserved": true,
+  "immutable_original_still_available": true
+}
