@@ -11,6 +11,8 @@ on:
       - 'supabase/functions/sandy-provider-gap-api/**'
       - 'supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql'
       - 'scripts/sandy/*supabase*'
+      - 'scripts/sandy/*gcp_logging*'
+      - 'supabase/migrations/20261024023000_sandy_gcp_logging_query_closed.sql'
       - 'supabase/functions/sandy-mission-runner/**'
       - 'supabase/functions/sandy-auto-improve/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
@@ -56,6 +58,8 @@ on:
       - 'supabase/functions/sandy-provider-gap-api/**'
       - 'supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql'
       - 'scripts/sandy/*supabase*'
+      - 'scripts/sandy/*gcp_logging*'
+      - 'supabase/migrations/20261024023000_sandy_gcp_logging_query_closed.sql'
       - 'supabase/functions/sandy-mission-runner/**'
       - 'supabase/functions/sandy-auto-improve/**'
       - 'supabase/functions/_shared/sandy-agent-operations/**'
@@ -122,10 +126,16 @@ jobs:
         run: deno test supabase/functions/sandy-provider-gap-api/
       - name: Test creation custody in isolated PostgreSQL
         run: deno test --allow-read scripts/sandy/test_missing_supabase_custody.ts
+      - name: Test closed GCP logging registry installation
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sandy-logging-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_gcp_logging_registry.mjs "$RUNNER_TEMP/sandy-logging-pg/node_modules/@electric-sql/pglite/dist/index.js"
       - name: Check reproducible closed registry metadata
         run: |
           deno run --allow-read --allow-write=supabase/functions/sandy-provider-gap-api/gateway_manifest.json,supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql scripts/sandy/build_supabase_missing_contracts.ts
           git diff --exit-code -- supabase/functions/sandy-provider-gap-api/gateway_manifest.json supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql
+          deno run --allow-read --allow-write=supabase/functions/sandy-provider-gap-api/gateway_manifest.json,supabase/migrations/20261024023000_sandy_gcp_logging_query_closed.sql scripts/sandy/build_gcp_logging_contract.ts
+          git diff --exit-code -- supabase/functions/sandy-provider-gap-api/gateway_manifest.json supabase/migrations/20261024023000_sandy_gcp_logging_query_closed.sql
   api-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -211,6 +211,7 @@ export class Calls {
     private deps: Dependencies,
     private token: string,
     readonly provider: GapContract["provider"],
+    readonly operation?: string,
   ) {}
   async request(
     url: URL,
@@ -218,10 +219,12 @@ export class Calls {
     payload?: Obj,
     invocation?: { session: string; anonKey: string; requestId: string },
   ): Promise<ProviderReply> {
+    const loggingQuery = this.provider === "gcp" &&
+      this.operation === "gcp.logging.query";
     const hosts = {
       supabase: "api.supabase.com",
       github: "api.github.com",
-      gcp: "compute.googleapis.com",
+      gcp: loggingQuery ? "logging.googleapis.com" : "compute.googleapis.com",
     };
     const functionHost = this.provider === "supabase" &&
       invocation !== undefined;
@@ -239,7 +242,27 @@ export class Calls {
     ) {
       fail("function_invocation_scope_mismatch", 403);
     }
-    const mutation = method !== "GET" &&
+    if (
+      loggingQuery &&
+      (method !== "POST" || url.pathname !== "/v2/entries:list" || url.search ||
+        invocation)
+    ) fail("provider_scope_mismatch", 403);
+    if (
+      loggingQuery &&
+      (!payload ||
+        Object.keys(payload).some((key) =>
+          !["resourceNames", "filter", "orderBy", "pageSize"].includes(key)
+        ) ||
+        JSON.stringify(payload.resourceNames) !==
+          JSON.stringify([`projects/${GCP_PROJECT}`]) ||
+        payload.orderBy !== "timestamp desc" ||
+        !Number.isInteger(payload.pageSize) || Number(payload.pageSize) < 1 ||
+        Number(payload.pageSize) > 100 || typeof payload.filter !== "string" ||
+        !new RegExp(
+          `^logName="projects/${GCP_PROJECT}/logs/sandy-engineering-canary(?:[-_][a-z0-9_-]{1,64})?" AND timestamp >= "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z" AND timestamp < "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"$`,
+        ).test(payload.filter))
+    ) fail("provider_scope_mismatch", 403);
+    const mutation = method !== "GET" && !loggingQuery &&
       !(this.provider === "github" && url.pathname === "/graphql" &&
         typeof payload?.query === "string" &&
         !payload.query.trimStart().startsWith("mutation"));

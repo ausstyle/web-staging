@@ -34,6 +34,15 @@ export function gapExecutionScope(
     return { provider, project_ref: "zmqlyygzqoidkcwdysok" };
   }
   if (provider === "gcp") {
+    if (operation === "gcp.logging.query") {
+      return {
+        provider,
+        project_id: machineScope.project_id,
+        service_account: machineScope.service_account,
+        log_namespace: "sandy-engineering-canary",
+        projection: "metadata_only",
+      };
+    }
     return {
       provider,
       project_id: machineScope.project_id,

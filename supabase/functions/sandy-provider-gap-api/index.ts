@@ -31,6 +31,7 @@ import {
 import { parsePackageRestoreBindings } from "./scope.ts";
 export { parsePackageRestoreBindings } from "./scope.ts";
 import { executeGithub, executeSerial, executeSupabase } from "./providers.ts";
+import { executeLogging } from "./logging.ts";
 import { executeProjectFunction } from "./project_functions.ts";
 export { gapContracts } from "./contracts.ts";
 export {
@@ -187,7 +188,7 @@ export function createGapHandler(
         fail("provider_credential_unavailable", 424);
       }
       if (!token!) fail("provider_credential_unavailable", 424);
-      calls = new Calls(deps, token!, op.provider);
+      calls = new Calls(deps, token!, op.provider, op.operation);
       const value =
         ["project_list", "project_create", "function_invoke"].includes(op.kind)
           ? await executeProjectFunction(
@@ -202,7 +203,9 @@ export function createGapHandler(
           : op.provider === "supabase"
           ? await executeSupabase(op, args, calls, (deps.now ?? Date.now)())
           : op.provider === "gcp"
-          ? await executeSerial(args, calls)
+          ? op.kind === "logging_query"
+            ? await executeLogging(args, calls, (deps.now ?? Date.now)())
+            : await executeSerial(args, calls)
           : await executeGithub(op, args, calls, deps, context, admission);
       const last = (op.is_mutation ? calls.mutationReceipt : calls.last) ??
         fail("provider_receipt_missing", 502);

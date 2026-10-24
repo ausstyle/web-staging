@@ -179,6 +179,10 @@ const sourceInfo = {
     "https://raw.githubusercontent.com/github/rest-api-description/755ee33b4a81d51f6f07a902cce26cbec3b822f2/descriptions/ghec/ghec.json",
     "998ae512e4cd85801b3d94bef91bd34e4a7281f7e2f8704f9841c2782536a7d2",
   ],
+  logging: [
+    "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/logging/v2/logging-api.json",
+    "09ffd0099481c15e0e67a3407f57d70dc60b74eda29d6bf66f465e1b0525af1f",
+  ],
   compute: [
     "https://raw.githubusercontent.com/googleapis/google-api-go-client/795219d564a58d0ff44efde7b6be21544b4ff057/compute/v1/compute-api.json",
     "cc007ff6a76526bbfe0a6868678ca2b5b3eec6ee7a3f6f453f627013287629d5",
@@ -739,6 +743,47 @@ define(
   "orgs/get-audit-log",
   "Read repository-filtered organization audit events only after the current repository owner is proved to be an organization; provider plan requirements remain distinct",
   "ghec",
+);
+define(
+  "gcp.logging.query",
+  "logging_query",
+  "gcp",
+  [67],
+  object({
+    log_id: {
+      type: "string",
+      pattern: "^sandy-engineering-canary(?:[-_][a-z0-9_-]{1,64})?$",
+    },
+    start: { type: "string", format: "date-time" },
+    end: { type: "string", format: "date-time" },
+    limit: integer(100),
+  }, ["log_id", "start", "end"]),
+  object({
+    project_id: { const: GCP_PROJECT },
+    log_id: str(100),
+    entries: array(object({
+      timestamp: { type: "string", format: "date-time" },
+      severity: enumeration(
+        "DEFAULT",
+        "DEBUG",
+        "INFO",
+        "NOTICE",
+        "WARNING",
+        "ERROR",
+        "CRITICAL",
+        "ALERT",
+        "EMERGENCY",
+      ),
+      resource_type: str(100),
+    })),
+    payloads_disclosed: { const: false },
+    continuation_available: { type: "boolean" },
+  }),
+  false,
+  true,
+  "logging.entries.list",
+  "Query one bounded engineering canary log/time window in the fixed project; metadata only, no caller filter or payload disclosure, no automatic pagination",
+  "logging",
 );
 export const gapContracts: Readonly<Record<string, GapContract>> = Object
   .freeze(
