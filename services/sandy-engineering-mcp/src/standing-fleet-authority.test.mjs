@@ -9,7 +9,8 @@ function fixture(operation=OPERATIONS.ENSURE_SSH_IAP){
  const delegation={schema:FLEET_POLICY_VERSION,enabled:true,revokedAt:null,
    expiryMode:"until_revoked",boundActor:"sandy-computer-authenticated",
    ownerAuthorityVerified:true,revision:1,lastPolicyVerifiedAt:NOW-500,
-   allowedProjects:[TARGET.projectId],allowedOperations:Object.values(OPERATIONS)};
+   allowedProjects:[TARGET.projectId],allowedOperations:Object.values(OPERATIONS),
+   approvedCommandDigests:["b".repeat(64)]};
  const registry={...target,platform:"linux",enabled:true,revokedAt:null,
    managedBy:"sandy",enrolmentAttested:true,enrolmentProofSha256:"a".repeat(64),
    ownerProjectDelegated:true,attachedServiceAccount:sa,
@@ -19,7 +20,7 @@ function fixture(operation=OPERATIONS.ENSURE_SSH_IAP){
    serviceAccounts:[{email:sa}],observedAt:NOW-300};
  const request={operation,idempotencyKey:"test-request-abc123",port:22};
  if(operation===OPERATIONS.SSH_EXEC) Object.assign(request,{
-   commandSha256:"b".repeat(64),commandApproved:true,timeoutSeconds:30});
+   commandSha256:"b".repeat(64),timeoutSeconds:30});
  const trustedContext={source:"verified_sandy_api",authenticated:true,
    sessionActive:true,subject:"sandy-computer-authenticated"};
  return {trustedContext,delegation,target,registry,compute,request,now:NOW};
@@ -30,7 +31,7 @@ const denied=(base,alter,pattern)=>{
 test("standing authorization permits bounded owner enrolled VM without per-call human prompt",()=>{
  const ok=authorizeStandingFleetOperation(fixture());
  assert.equal(ok.allowed,true);assert.equal(ok.requiresSeparatePerTaskOwnerApproval,false);
- assert.equal(ok.requiresProviderPermission,true);assert.equal(ok.permitsIamGrantCreation,false);
+ assert.equal(ok.requiresProviderPermission,true);assert.equal(ok.permitsUnscopedIamGrantCreation,false);
 });
 test("approved SSH execution retains independent host pin and command digest",()=>{
  const ok=authorizeStandingFleetOperation(fixture(OPERATIONS.SSH_EXEC));
@@ -67,7 +68,7 @@ test("cannot request arbitrary TCP port",()=>{
  denied(null,a=>a.request.port=5986,/ssh_tcp_22_only/);
 });
 test("unapproved command is refused independently of standing VM access",()=>{
- let a=fixture(OPERATIONS.SSH_EXEC);a.request.commandApproved=false;
+ let a=fixture(OPERATIONS.SSH_EXEC);a.request.commandSha256="c".repeat(64);
  assert.throws(()=>authorizeStandingFleetOperation(a),/approved_bounded_command_required/);
 });
 test("SSH command cannot run without confirmed host pin",()=>{
@@ -75,7 +76,7 @@ test("SSH command cannot run without confirmed host pin",()=>{
  assert.throws(()=>authorizeStandingFleetOperation(a),/verified_ssh_host_pin_required/);
 });
 test("status/ensure operations cannot smuggle a command",()=>{
- denied(null,a=>a.request.commandApproved=true,/no_command_in_policy_or_status_operation/);
+ denied(null,a=>a.request.commandSha256="b".repeat(64),/no_command_in_policy_or_status_operation/);
 });
 test("new registered server automatically becomes eligible inside approved project",()=>{
  const a=fixture();
