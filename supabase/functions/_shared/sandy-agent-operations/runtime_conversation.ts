@@ -5,6 +5,7 @@ import {
   type RuntimeConversationTask,
 } from "./identity.ts";
 import { runtimeConversationContract, runtimeConversationOperation, runtimeConversationVersion } from "./runtime_conversation_contract.ts";
+import { collectReceiptModelMetrics } from "./runtime_model_metrics.ts";
 import { fixedRuntimeResponses } from "./runtime_responses_transport.ts";
 import { fixedV4ConversationBroker, v4RuntimeConversationSource, type V4ConversationBroker } from "./runtime_conversation_v4_transport.ts";
 
@@ -156,6 +157,7 @@ export async function executeRuntimeConversation(
     if (claim.error || !claim.data?.id) return denied(claim.error?.code === "23505" ? 409 : 503,
       claim.error?.code === "23505" ? "runtime_conversation_round_requires_reconciliation" : "runtime_conversation_audit_unavailable");
     let data: Obj | null = null, providerAttempted = false;
+    const modelRequestStartedAt=Date.now();
     try {
       providerAttempted = true;
       const response = capability.runtime === "sandy-agent-runtime-v4"
@@ -164,6 +166,8 @@ export async function executeRuntimeConversation(
       data = await responseJson(response);
       if (!response.ok || !data) data = null;
     } catch { data = null; }
+    const modelRequestFinishedAt=Date.now();
+    const metrics=await collectReceiptModelMetrics(deps.db,data,modelRequestStartedAt,modelRequestFinishedAt);
     const body = { ok: true, operation: runtimeConversationOperation, contract_version: runtimeConversationVersion,
       principal_kind: "trusted_runtime", customer_id: task.customerId, task_id: task.taskId,
       round: args.round, selected_model: request.model, response: data };
@@ -177,6 +181,7 @@ export async function executeRuntimeConversation(
     const succeeded = valid && validCalls;
     const finished = await deps.db.from("sandy_runtime_conversation_audit").update({
       state: succeeded ? "succeeded" : providerAttempted ? "unknown" : "failed",
+      model_metrics: metrics,
       provider_response_id: succeeded ? data!.id : null,
       response_sha256: succeeded ? await sha256(stable(data)) : null,
       error: succeeded ? null : "runtime_conversation_provider_outcome_unverified",

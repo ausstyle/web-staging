@@ -1,0 +1,70 @@
+name: Install exact Runtime model receipt telemetry
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/_shared/sandy-agent-operations/runtime_model_metrics*'
+      - 'supabase/migrations/20261024005000*'
+      - 'scripts/sandy/*model_metrics*'
+      - '.github/workflows/sandy-runtime-model-metrics-release.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        required: true
+        options: [install-and-accept, acceptance-only]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-model-metrics-tests-{0}', github.ref) }}
+  cancel-in-progress: false
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - run: |
+          deno test --no-lock supabase/functions/_shared/sandy-agent-operations/runtime_model_metrics_test.ts
+          deno test --no-lock --allow-read scripts/sandy/test_runtime_model_metrics_postgres.ts
+          deno test --no-lock --allow-read --allow-env --import-map=scripts/sandy/testing/fallback_import_map.json scripts/sandy/fallback_runtime_test.ts
+          deno check --no-lock supabase/functions/sandy-agent-runtime-v4/index.ts
+          PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_runtime_model_metrics_release.py scripts/sandy/test_runtime_model_metrics_acceptance.py -v
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: tests
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install additive receipt schema once, preserving source and ACL
+        if: inputs.action == 'install-and-accept'
+        run: python3 scripts/sandy/release_runtime_model_metrics.py --deploy --evidence-dir "$RUNNER_TEMP/metrics-schema"
+      - name: Install reviewed Runtime source slice once
+        if: inputs.action == 'install-and-accept'
+        run: python3 scripts/sandy/release_runtime_slice.py --deploy --manifest docs/sandy-engineering/evaluations/runtime-slices/sandy-agent-runtime-v4.json --evidence-dir "$RUNNER_TEMP/metrics-runtime"
+      - name: Independently reconcile installed schema and source before acceptance
+        run: |
+          python3 scripts/sandy/release_runtime_model_metrics.py --verify-installed --evidence-dir "$RUNNER_TEMP/metrics-schema-readback"
+          python3 scripts/sandy/release_runtime_slice.py --verify-installed --manifest docs/sandy-engineering/evaluations/runtime-slices/sandy-agent-runtime-v4.json --evidence-dir "$RUNNER_TEMP/metrics-source-readback"
+      - name: Verify one real normal-customer turn and actual usage readback
+        run: python3 scripts/sandy/runtime_model_metrics_acceptance.py --output "$RUNNER_TEMP/metrics-acceptance/receipt.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-model-metrics-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/metrics-schema/
+            ${{ runner.temp }}/metrics-runtime/
+            ${{ runner.temp }}/metrics-schema-readback/
+            ${{ runner.temp }}/metrics-source-readback/
+            ${{ runner.temp }}/metrics-acceptance/
+          retention-days: 14

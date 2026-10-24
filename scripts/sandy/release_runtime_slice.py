@@ -24,6 +24,7 @@ MODULES = {
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
         '_shared/sandy-agent-operations/identity.ts',
         '_shared/sandy-agent-operations/runtime_conversation.ts',
+        '_shared/sandy-agent-operations/runtime_model_metrics.ts',
         '_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts',
     },
     'sandy-examiner-full-cycle': {

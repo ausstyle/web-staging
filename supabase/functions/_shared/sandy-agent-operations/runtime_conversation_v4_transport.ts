@@ -1,10 +1,12 @@
 import { isRuntimeConversationTask, type RuntimeConversationTask } from "./identity.ts";
 
-// Exact active runtime source, as reconciled with the cached production readback.
+// Exact active entrypoint bytes independently read from Runtime35. This pin
+// identifies sandy-agent-runtime-v4/index.ts, not the entire ESZIP bundle or its
+// imported modules. The release manifest independently pins every bundled module.
 // Numeric deployment revisions may change after secret-only configuration edits.
 export const v4RuntimeConversationSource = Object.freeze({
   runtime: "sandy-agent-runtime-v4" as const,
-  sourceSha256: "3aadfb520f651e9a6807cbb24b5d4409fcfbb25fb69fe5d72036916e44db8679",
+  sourceSha256: "f4f15732b13e21d9fbd76de8173aac71672e4a5a49e8d17baf0884abe967f796",
   toolSchemaSha256: "3a6f4b1d9e3a600739d68013842bf119ec65e11f87fb4a308733befe4bbd2d6b",
   // Reuse the exact restricted profile reviewed in PR #212. Selection comes
   // from the persisted task capability, never a caller-selected tool subset.

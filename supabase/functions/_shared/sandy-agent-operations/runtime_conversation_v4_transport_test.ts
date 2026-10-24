@@ -17,7 +17,11 @@ async function actualTask(customer: string | null) {
   return cap;
 }
 Deno.test("v4 conversation profile pins the exact active source and keeps original broker credentials, task header and timeout", async () => {
-  assert.equal(v4RuntimeConversationSource.sourceSha256, "3aadfb520f651e9a6807cbb24b5d4409fcfbb25fb69fe5d72036916e44db8679");
+  // Independently hash the unchanged entrypoint; this is not a self-comparison
+  // against the transport constant and does not claim to hash imported modules.
+  const entrypoint=await Deno.readFile(new URL("../../sandy-agent-runtime-v4/index.ts",import.meta.url));
+  const entrypointHash=Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",entrypoint)),n=>n.toString(16).padStart(2,"0")).join("");
+  assert.equal(v4RuntimeConversationSource.sourceSha256,entrypointHash);
   for (const customer of [CUSTOMER, null]) {
     const task = await actualTask(customer), payload = { model: "gpt-5.2", instructions: "Original server instructions", tools: [], input: task.requestText, max_output_tokens: 1600 };
     const originalTimeout = AbortSignal.timeout;
