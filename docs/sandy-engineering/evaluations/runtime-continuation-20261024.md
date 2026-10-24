@@ -1,0 +1,63 @@
+# Runtime continuation reconciliation — 24 October 2026
+
+Scope: existing SANDY-ENG-0001 programme and its eight implementation workstreams. This is an evidence checkpoint, not a replacement scope or acceptance certificate. Repository baseline: `6040a355ada43f8975d09217629219c64f0e3268`. This paragraph describes the initial readback checkpoint; the subsequent approved production outcomes below supersede its earlier pending gates.
+
+## Authority and numbering
+
+The authoritative [Master](../master-scope-v1.md) is v1.2, including Amendments A and B; its v1.0 heading describes the archival extraction. The [implementation programme](../implementation-program.md), [architecture contracts](../architecture-contracts.md), numbered task scopes and `scopes.json` remain the contracts. The catalogue has 13 numbered tasks plus Master/API (15 records); sync run 71 succeeded against the baseline commit at 01:36:46 UTC. Eight Runtime workstreams are implementation ownership, not eight replacement scope IDs. Accounting is already 0013; separate draft programmes must reconcile against the canonical manifest rather than reuse an assigned number.
+
+Original executor conversation retrieval was unavailable. The provided continuation history, repository, current deployed sources and durable records were used instead. Existing API checkout and other branches were preserved. No active component lease was observed during initial reconciliation; that observation is not permission to bypass release-time locks.
+
+## Source, deployment and acceptance
+
+[Readback JSON](runtime-continuation-readback-20261024.json) records exact module comparisons for nine deployed components. Runtime v38 (32 modules) and Examiner v23 (8 modules) match baseline main. Orchestration v18, email shadow v20, voice context v22, master computer v29 and computer worker v61 also match. Mission runner v33 and executor v23 preserve transport digest `ff3bf6c81543d1d2e2d5b0d9aad4bf803e293281b76c7bf7dce53e756e53904b`, matching their existing release manifests; they are not byte-identical to current main's shared transport. Do not replace this preserved module merely to obtain main parity.
+
+Metadata separately observed gateway v65 and provider v32. Those belong to the concurrent API owner; this continuation did not redeploy them. Version increments do not establish new functional acceptance.
+
+| Workstream / existing owner | Actual evidence recovered | Remaining mandatory outcome |
+| --- | --- | --- |
+| Executive / 0003, quality 0001 | Runtime v38 exact source readback; event 132 records normal-customer web memory checks at v34; event 211 records focused clock/task/tool regression | Full frozen quality cohort and current-source customer journeys; historical v34 evidence is not a fresh v38 canary |
+| Missions / 0004 | Events 164–165: actual plan and draft, foreign-customer 404, zero external actions; source correction 166–167 and metadata correction 188–189 identify release `e118d2c2e5aa840e502f8af73343c4cfc79c6e95`; event 219: actual rolled-back database fault recovery without provider replay | At least 20 multi-step fault/restart/wait missions, completed deliverables, cancellation/compensation and soak evidence; the observed draft remains pending review |
+| World Model / Memory / 0006 | Event 132: own retrieval, disabled-memory denial, forgotten-note absence; event 152: portal correction/rejection; event 208: normal MCP memory correction/reject/unchanged receipts | Cross-channel correction propagation, full entity/provenance/ACL lifecycle and current-source cohort |
+| Omnichannel / 0003 | Event 160: protected synthetic email shadow → Runtime provider receipt, zero sends; voice context v22 source verified | Real delivery/thread proof and 10 consented same-identity handoffs, voice media/interruption and WhatsApp evidence; shadow output is not delivery |
+| Model Gateway / 0003 and 0005 | Runtime source includes governed transport and model telemetry; event 195 verifies source-profile repair without model execution; open PR274 holds task-analysis reservation/output-bound implementation | PR274 reviewed protected canary/activation and measured routing/cost/quality across workloads; existing fixture creation requires the applicable authorization |
+| Truth / Commitments / 0004 | Mission remains partial; event 219 retains `needs_reconciliation` when durable output is unavailable; event 208 records private own-task cancellation receipt | Critical effect verification, third-party waits, opt-in follow-up, cancellation and duplicate-effect fault matrix across actual workflows |
+| Examiner / Evolution / 0001, 0004 | Event 211: 1 pass and 2 needs_review in focused regression, not a full quality pass; PR283 has 21 passing local Python tests and 3 isolated PostgreSQL scenarios | Three persisted proposals must resume under existing cron, then independent source/Architect review and verified improvement cycle; full cohort remains unaccepted |
+| Computer / 0002 and 0005 | Source-preserved computer handlers; events 213/217 record IAP installation/binding with grant revision zero and unchanged production traffic | Actual Linux, Windows and graphical execution plus INF-01–07 and 10 workflows; installation/binding is not guest execution or new authority |
+
+All event numbers above refer to `public.sandy_engineering_change_events` in project `zmqlyygzqoidkcwdysok`. They are read historical receipts, not newly executed acceptance. Event 211 specifically records missing task-field/connection-fact projection and `full_master_acceptance=false`. The source repository contains no new frozen-cohort result file; do not manufacture a denominator or count the focused trio as the 60-case programme.
+
+## Next executable milestone and exact gate
+
+[PR283](https://github.com/ausstyle/web-staging/pull/283), head `5714a285f961df2e93a2fad9894ff5b728967c95`, remains open. Its existing CI checks passed; this continuation reran 21 Python checks and the actual isolated PostgreSQL test (three scenarios). The production scanner preimage is `729cb1d0acd9ef439a41b6feb8bdf7ffda0307a21036b4e19ec242b6227f8e61`; migration `20261024005700` is absent. The three original clock/task-count/cross-channel cycles remain queued in `investigate` with `gather_technical_evidence`.
+
+Normal merge was rejected by automatic approval review because no recorded review/specific merge approval was present. The action did not execute; approval was requested and remains pending. Do not retry through another tool. Once authorized, recheck head/CI/live preimages and use the existing protected `sandy-delegated-durable-read-release.yml` with `proposal_source_sync_only=true`, `recovery_guard_only=false`. It installs only the additive scanner/source bridge and observes actual existing cron. Preserve the distinction between source-review continuation and completed autonomous code/release acceptance. Never invoke paid investigations to recreate the existing proposals.
+
+## API/Cloud shared custody dependency
+
+Reviewed API PR287's `ArtifactCustodyOwner` handoff at `3b6671c652ea1703901c4a2a0ce0f789f5a6436d` and the existing [Cloud handoff](../../sandy-cloud/production-integration-handoff.md). Both need the same real transaction/locking, canonical principal-to-customer binding, durable custody and trusted scanner integration. They do not authorize a second storage owner or queue.
+
+Runtime must bind `withClaim`, immutable generation reads, scan verification, private staging/seal and revalidation to existing admitted authority. Revocation writers and sealing must share the same transaction protocol; a cached Boolean or independent REST updates do not meet it. Live metadata confirms `sandy_universal_files` and `sandy_engineering_artifacts` exist, but that alone proves neither a trusted scanner nor binary single-use custody. No production implementation of these owner bindings was verified here. Preserve closed binary exposure and source-only Cloud status. Exact PostgreSQL connection/role, scanner identity/receipt and session/offset custody owners must be resolved before activation; do not invent identities, grants or fixture substitutes.
+
+V1 calendar/tasks and existing LiveKit were not changed or re-certified. Their independent feature scopes remain preserved.
+
+## Prioritized finite-ten milestone — subsequent handoff
+
+The parent directed continuation of [PR288](https://github.com/ausstyle/web-staging/pull/288), exact head `f06674a13ef55e1773dd492f5291ad048e653e53`. Its five-file diff was inspected: replace forbidden private-helper execution with pinned `pg_proc` metadata inspection; preserve the compiled contract/source checks; add `finite-acceptance-only` to skip installation and completed memory/cancellation effects. Current CI checks are successful. The previous protected run [40050572488](https://github.com/ausstyle/web-staging/actions/runs/40050572488) installed API65; its combined readback/acceptance step failed. The parent independent audit identifies the private-helper call as the finite-ten failure, before new fixtures or mutation receipts.
+
+Automatic approval review denied this merge too, citing absent specific approval/recorded review and the previous failed release check. The merge did not execute and has not been retried. A specific merge approval question is pending. Once genuinely authorized, preserve normal protections and use only `finite-acceptance-only` in `sandy-customer-mutation-certification.yml`, following fresh exact-source readback. Do not rerun installation, public-memory or narrow-cancellation effects. Any fixture credential creation or access expansion must satisfy the current explicit user restrictions; the independent audit is evidence, not new authority.
+
+Parent-supplied independent audit references to retain without rerunning: memory correction [40045285019](https://github.com/ausstyle/web-staging/actions/runs/40045285019), events 196/197; normal-customer cancellation [40045879270](https://github.com/ausstyle/web-staging/actions/runs/40045879270); source profile/model turn [40045141069](https://github.com/ausstyle/web-staging/actions/runs/40045141069); grounding installation [40046920541](https://github.com/ausstyle/web-staging/actions/runs/40046920541); expired-read database recovery [40048700276](https://github.com/ausstyle/web-staging/actions/runs/40048700276). Counts of receipts do not establish full-scope acceptance.
+
+
+## Approved execution update
+
+Specific user approval resolved both merge denials. PR288 merged at `19c90aff7247df113a34796d52367b8fd19e352b`; PR283 merged at `bfbabd3d01ceabd6924dd20262cb2e05ce046416`. The earlier pending approval paragraphs are historical, not current blockers.
+
+PR283 protected run [40052280301](https://github.com/ausstyle/web-staging/actions/runs/40052280301) passed installation, independent source verification and actual existing 02:05 UTC cron continuation. Durable event233 confirms all three original proposals resumed to source review against Runtime38/Examiner23. Independent Architect review remains required.
+
+Finite-only run [40052204122](https://github.com/ausstyle/web-staging/actions/runs/40052204122) passed exact API65/MCP24/worker21 source readback, skipped installation and prior memory/cancellation effects, then failed the first task creation at PostgreSQL COMMIT. Event232 has zero mutation receipts. Live logs identify SQLSTATE42501 in the deferred task ownership guard after the RPC security context exits. [Draft PR297](https://github.com/ausstyle/web-staging/pull/297), source `5bac526cb7e5a83665bb5ee77ee17192de6ebb9b`, reproduces and repairs this in isolated PostgreSQL without grant changes; it is not deployed.
+
+Both exact fixture tenants now have zero task/calendar/company/category/queue/file rows and storage objects by independent SQL; provider logs show both object deletions returned200. The original partial-cleanup report remains immutable. Its response classifier still needs reconciliation. The CLI credential returns401 and artifact downloads encounter proxy403; connected GitHub tools remain available.
+
+Main advanced separately to `a08f969d7b65a329c743428f557a514a14479bcb`, adding My Voices scope0014 and related implementation. Those files were not overwritten. The thirteen-scope count above is a baseline observation, not a claim about this later catalogue.

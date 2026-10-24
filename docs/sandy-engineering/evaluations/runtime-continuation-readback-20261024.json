@@ -1,0 +1,496 @@
+{
+  "observed_date": "2026-10-24",
+  "repository": "ausstyle/web-staging",
+  "source_commit": "6040a355ada43f8975d09217629219c64f0e3268",
+  "project": "zmqlyygzqoidkcwdysok",
+  "method": "Authenticated Supabase get_edge_function contents compared exactly with local immutable main source; differences checked against existing release manifest",
+  "functional_acceptance_executed": false,
+  "production_mutations": 0,
+  "functions": [
+    {
+      "slug": "sandy-agent-runtime-v4",
+      "version": 38,
+      "verify_jwt": false,
+      "bundle_sha256": "8ab3849d11a5536b5eb6373246b77283baf75679c046795a2dcfb5ec8b9a8fc2",
+      "modules": [
+        {
+          "path": "sandy-agent-runtime-v4/index.ts",
+          "matches_main": true,
+          "local_sha256": "f4f15732b13e21d9fbd76de8173aac71672e4a5a49e8d17baf0884abe967f796"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/connected-gmail.ts",
+          "matches_main": true,
+          "local_sha256": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/identity.ts",
+          "matches_main": true,
+          "local_sha256": "ff41c2af6de1ebd96d8c477f8395f117b55d816448a729ee20fba851b449003a"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation.ts",
+          "matches_main": true,
+          "local_sha256": "bd32557109af7548df276d942263c6d4dea8ca3083cfeefd7d47156f4cdc786f"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_contract.ts",
+          "matches_main": true,
+          "local_sha256": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_model_metrics.ts",
+          "matches_main": true,
+          "local_sha256": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_responses_transport.ts",
+          "matches_main": true,
+          "local_sha256": "917741bf8b92ef5a7f03dcdfea81ad0f03ad8fc645862147b47def6c345143be"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts",
+          "matches_main": true,
+          "local_sha256": "797762604861477be1c8e2f7d7b15cbd30d094f995d19be983fc1635e4fbe0fd"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/service.ts",
+          "matches_main": true,
+          "local_sha256": "19e42131cf9525d3280d168e80672df089d073a5151c53ba665fb0203124821f"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/contracts.ts",
+          "matches_main": true,
+          "local_sha256": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/voice_source.ts",
+          "matches_main": true,
+          "local_sha256": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_profiles.ts",
+          "matches_main": true,
+          "local_sha256": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_record_contracts.ts",
+          "matches_main": true,
+          "local_sha256": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_records.ts",
+          "matches_main": true,
+          "local_sha256": "11d12b4ed55f646d776b9c32aa1226dc4285c53b3e9c0dcc080791a85a634440"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_memory.ts",
+          "matches_main": true,
+          "local_sha256": "33613b766e500ec5f559dba312192cf4e45e39da0591ca3df957baf9aeb840f6"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_operational_contracts.ts",
+          "matches_main": true,
+          "local_sha256": "ed66b477c252fcc4ecc4a182520c25bd582d28ab8a3e1ceed1d2953b7c8a3b83"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_operational.ts",
+          "matches_main": true,
+          "local_sha256": "120e5b831f970beefe5cd1ad24da741e6516f5c04d881af6e93fbb7a1e35fbcc"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts",
+          "matches_main": true,
+          "local_sha256": "f1753d179408b64f34009b37eb311ef71278662a25f08cbc1cda1cfc400de27e"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_connection_preflight.ts",
+          "matches_main": true,
+          "local_sha256": "5ce1a13576b9bf0a66c5d730d55822c037b75675722d15ff91645cf9997c90c6"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_snapshot.ts",
+          "matches_main": true,
+          "local_sha256": "c42980cc1b2e3c353c18dbdc77c49c699a90f60644a05186900433f74899a338"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_model_policy.ts",
+          "matches_main": true,
+          "local_sha256": "e81e6b878562e37e85c8e207f847fac815d03a7e761884d0f59fcf00b1211221"
+        },
+        {
+          "path": "_shared/sandy-executive/turn.ts",
+          "matches_main": true,
+          "local_sha256": "6e7f4d95b5c58f5c3cb74830972452fd8853628cb9d7d89292a4ef77f6658b7c"
+        },
+        {
+          "path": "_shared/sandy-executive/receipt.ts",
+          "matches_main": true,
+          "local_sha256": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b"
+        },
+        {
+          "path": "_shared/sandy-executive/outcome.ts",
+          "matches_main": true,
+          "local_sha256": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+        },
+        {
+          "path": "_shared/sandy-executive/pending_reply.ts",
+          "matches_main": true,
+          "local_sha256": "e4aa16d79fd18224a15387ad952e2c008b8003a43328e2d65c7cf69bce320887"
+        },
+        {
+          "path": "_shared/sandy-executive/clock.ts",
+          "matches_main": true,
+          "local_sha256": "7944043a954dbffeba9141f23522b7607b404c265ea7ef7e850732388a5c9c6e"
+        },
+        {
+          "path": "_shared/sandy-executive/history.ts",
+          "matches_main": true,
+          "local_sha256": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9"
+        },
+        {
+          "path": "_shared/sandy-executive/rollout.ts",
+          "matches_main": true,
+          "local_sha256": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e"
+        },
+        {
+          "path": "_shared/sandy-executive/temporal_context.ts",
+          "matches_main": true,
+          "local_sha256": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730"
+        },
+        {
+          "path": "_shared/sandy-executive/task_deadlines.ts",
+          "matches_main": true,
+          "local_sha256": "d68219d1101477e8160e2d6c4cbcd251139dea1f7359c5e7de6b58e186aae25e"
+        },
+        {
+          "path": "_shared/sandy-executive/assessment.ts",
+          "matches_main": true,
+          "local_sha256": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781"
+        },
+        {
+          "path": "sandy-agent-runtime-v4/version-awareness.js",
+          "matches_main": true,
+          "local_sha256": null
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    },
+    {
+      "slug": "sandy-examiner-full-cycle",
+      "version": 23,
+      "verify_jwt": false,
+      "bundle_sha256": "5c2d67bba2ba7055b09bfb0799474309ae905ad918155839591ee8a025da5f2e",
+      "modules": [
+        {
+          "path": "sandy-examiner-full-cycle/index.ts",
+          "matches_main": true,
+          "local_sha256": "e7f9436fe842f253cc82c4051b502f584b2d076d53d004276b86d14cda76e563"
+        },
+        {
+          "path": "sandy-examiner-full-cycle/judge.ts",
+          "matches_main": true,
+          "local_sha256": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/examiner_gateway_transport.ts",
+          "matches_main": true,
+          "local_sha256": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26"
+        },
+        {
+          "path": "sandy-examiner-full-cycle/evidence.ts",
+          "matches_main": true,
+          "local_sha256": "a7b70d8039bdd399bef1a87e9c5df9f678bfd0d730f70b2badea09d575b11dc0"
+        },
+        {
+          "path": "_shared/sandy-executive/receipt.ts",
+          "matches_main": true,
+          "local_sha256": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b"
+        },
+        {
+          "path": "_shared/sandy-executive/outcome.ts",
+          "matches_main": true,
+          "local_sha256": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+        },
+        {
+          "path": "sandy-examiner-full-cycle/selection.ts",
+          "matches_main": true,
+          "local_sha256": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc"
+        },
+        {
+          "path": "_shared/sandy-executive/assessment.ts",
+          "matches_main": true,
+          "local_sha256": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781"
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    },
+    {
+      "slug": "sandy-mission-runner",
+      "version": 33,
+      "verify_jwt": false,
+      "bundle_sha256": "3b02c06e4bf74cfc57e49d930c5327ae62f10fc6902a06bfdbf9015417144644",
+      "modules": [
+        {
+          "path": "sandy-mission-runner/index.ts",
+          "matches_main": true,
+          "local_sha256": "c24eff172a72c540366d7c4f3ffffb52f20749ef1747c72bf09d577ca3810773"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_planning_identity.ts",
+          "matches_main": true,
+          "local_sha256": "771fd8f08f57e29f6dd0bd32b240bea48c95839446d85d8a74968031f4535b30"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_planning.ts",
+          "matches_main": true,
+          "local_sha256": "d0baff2baf3da2a9fc4b7809dd75ba854bb946abba9dd03604eb225f5097a5d9"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_planning_contract.ts",
+          "matches_main": true,
+          "local_sha256": "41151acaba0c125f3d4cb4cd2a3f63e0b22095f0a51243947e17a99f6f082acc"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_planning_profiles.ts",
+          "matches_main": true,
+          "local_sha256": "0cfd9a3121f3a4979fd8764c171e5ff8685b32be5530306ac9f3c08012ca8590"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_planning_records.ts",
+          "matches_main": true,
+          "local_sha256": "5d2168d8f57901a55cd1eec611b72cbf2ec706ffcc87dc356e7cba2ae211f526"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_responses_transport.ts",
+          "matches_main": false,
+          "local_sha256": "917741bf8b92ef5a7f03dcdfea81ad0f03ad8fc645862147b47def6c345143be",
+          "deployed_sha256": "ff3bf6c81543d1d2e2d5b0d9aad4bf803e293281b76c7bf7dce53e756e53904b",
+          "matches_existing_release_manifest": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_model_result.ts",
+          "matches_main": true,
+          "local_sha256": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
+        }
+      ],
+      "all_modules_match_main": false,
+      "parity_basis": "current_main_except_exact_preserved_mission_transport_manifest"
+    },
+    {
+      "slug": "sandy-mission-executor",
+      "version": 23,
+      "verify_jwt": false,
+      "bundle_sha256": "da67b1089801c912266392d5d0595cc3efb4ed367e44802299bec5a19a0b7b9d",
+      "modules": [
+        {
+          "path": "sandy-mission-executor/index.ts",
+          "matches_main": true,
+          "local_sha256": "6f8c32b72c439f5d411469ec2049bca786f141a612282bd4d05114435bb29654"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_identity.ts",
+          "matches_main": true,
+          "local_sha256": "0fe5ace44af6eff27ad0e56d25773bd1972dc33c029c70c1a49126a9a467bbdb"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission.ts",
+          "matches_main": true,
+          "local_sha256": "30e84e39f39d0914ed01fb17c36405ab1ee8c01671fa213390b8d6c66db1b14a"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_mission_contract.ts",
+          "matches_main": true,
+          "local_sha256": "abc5ef74a915e49ac627569225349339dd021b5829ce4417c81fa6eb0c2d4b25"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/runtime_responses_transport.ts",
+          "matches_main": false,
+          "local_sha256": "917741bf8b92ef5a7f03dcdfea81ad0f03ad8fc645862147b47def6c345143be",
+          "deployed_sha256": "ff3bf6c81543d1d2e2d5b0d9aad4bf803e293281b76c7bf7dce53e756e53904b",
+          "matches_existing_release_manifest": true
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_model_result.ts",
+          "matches_main": true,
+          "local_sha256": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
+        }
+      ],
+      "all_modules_match_main": false,
+      "parity_basis": "current_main_except_exact_preserved_mission_transport_manifest"
+    },
+    {
+      "slug": "sandy-orchestration-api",
+      "version": 18,
+      "verify_jwt": true,
+      "bundle_sha256": "1c4fc06abe5ca383efd5b9ebc1b5b95bb574382834a390c0d1e419d80166f419",
+      "modules": [
+        {
+          "path": "sandy-orchestration-api/index.ts",
+          "matches_main": true,
+          "local_sha256": "6ef8bec78d3ed822d00bc52e440d0231e23a32210f721982a5fd145d918f846c"
+        },
+        {
+          "path": "sandy-orchestration-api/workload_reads.ts",
+          "matches_main": true,
+          "local_sha256": "388e9d9f86fe9f99d4ad1b20428f6f3e7a624346ab4eab6f5bd31374b91a08e1"
+        },
+        {
+          "path": "_shared/sandy_api_protocol.ts",
+          "matches_main": true,
+          "local_sha256": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8"
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    },
+    {
+      "slug": "sandy-email-runtime-canary",
+      "version": 20,
+      "verify_jwt": false,
+      "bundle_sha256": "4ced5b8a1e9cefed118d67d3866cae5142881f5fda0ca4881ac8f6b114a61346",
+      "modules": [
+        {
+          "path": "sandy-email-runtime-canary/index.ts",
+          "matches_main": true,
+          "local_sha256": "dbd7bd47711072e8d3b175065ce64ce6b9dc1979533430d6bb7c1c29d8e51a8b"
+        },
+        {
+          "path": "sandy-email-runtime-canary/outcome.ts",
+          "matches_main": true,
+          "local_sha256": "fe7b1560eb29501464577d6f6e540ed1c195ea390b03c31fc391d376d2313c04"
+        },
+        {
+          "path": "_shared/sandy-executive/outcome.ts",
+          "matches_main": true,
+          "local_sha256": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+        },
+        {
+          "path": "sandy-email-runtime-canary/history.ts",
+          "matches_main": true,
+          "local_sha256": "b25969e08277e041edb124dbe790b364e0475aa328811c32ad0e52c223ebf672"
+        },
+        {
+          "path": "_shared/sandy-executive/history.ts",
+          "matches_main": true,
+          "local_sha256": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9"
+        },
+        {
+          "path": "_shared/sandy-executive/assessment.ts",
+          "matches_main": true,
+          "local_sha256": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781"
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    },
+    {
+      "slug": "sandy-voice-account-context",
+      "version": 22,
+      "verify_jwt": false,
+      "bundle_sha256": "28214b2934ce7dfee27b8a137a21eaccf81ccccd0f2ebdf111b1b49bd6f190c7",
+      "modules": [
+        {
+          "path": "sandy-voice-account-context/index.ts",
+          "matches_main": true,
+          "local_sha256": "bc8970c26dcda925e72b7e58a1e1485ae7cc4013b6ab184029c9834cec8c45a5"
+        },
+        {
+          "path": "_shared/sandy-executive/rollout.ts",
+          "matches_main": true,
+          "local_sha256": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e"
+        },
+        {
+          "path": "sandy-voice-account-context/executive.ts",
+          "matches_main": true,
+          "local_sha256": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee"
+        },
+        {
+          "path": "_shared/sandy-executive/history.ts",
+          "matches_main": true,
+          "local_sha256": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9"
+        },
+        {
+          "path": "_shared/sandy-executive/outcome.ts",
+          "matches_main": true,
+          "local_sha256": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/voice_source.ts",
+          "matches_main": true,
+          "local_sha256": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04"
+        },
+        {
+          "path": "_shared/sandy-executive/temporal_context.ts",
+          "matches_main": true,
+          "local_sha256": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730"
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    },
+    {
+      "slug": "sandy-master-computer",
+      "version": 29,
+      "verify_jwt": true,
+      "bundle_sha256": "64a0c8c3592b6da17479fe3e3d8b9f4e8625619968e11f6e9ae3346434daa92f",
+      "modules": [
+        {
+          "path": "sandy-master-computer/index.ts",
+          "matches_main": true,
+          "local_sha256": "82d6f70b371849d524fa9e1a92d1e9ef643fefc1226c3aca585422303d2632a1"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_computer_identity.ts",
+          "matches_main": true,
+          "local_sha256": "7b9cde01545f0a00614d7f03c1e74574b7660cfae21b54857aad005d6cbb5888"
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    },
+    {
+      "slug": "sandy-computer-worker",
+      "version": 61,
+      "verify_jwt": false,
+      "bundle_sha256": "80f0fcfd84aad8095144b7b44e2380c1440579a81ae1e3b6e2101812c6294e38",
+      "modules": [
+        {
+          "path": "sandy-computer-worker/index.ts",
+          "matches_main": true,
+          "local_sha256": "690609041eb6b9df33e70df635d49f71055a9630ad8f58f1113a717b9bea1bb6"
+        },
+        {
+          "path": "sandy-computer-worker/eligibility.ts",
+          "matches_main": true,
+          "local_sha256": "e87cdf8f564f5d7af8283cc19af1d42d05678d30d1a542d9e3b7c862a4bc5d36"
+        },
+        {
+          "path": "_shared/sandy-agent-operations/worker_computer_identity.ts",
+          "matches_main": true,
+          "local_sha256": "7b9cde01545f0a00614d7f03c1e74574b7660cfae21b54857aad005d6cbb5888"
+        }
+      ],
+      "all_modules_match_main": true,
+      "parity_basis": "current_main"
+    }
+  ],
+  "scope_sync": {
+    "run_id": 71,
+    "source_commit": "6040a355ada43f8975d09217629219c64f0e3268",
+    "synced_count": 15,
+    "status": "succeeded"
+  },
+  "pending_merge": {
+    "pr": 283,
+    "head_sha": "5714a285f961df2e93a2fad9894ff5b728967c95",
+    "state": "denied_by_automatic_approval_review",
+    "reason": "No recorded review or specific merge approval",
+    "migration_installed": false,
+    "scanner_preimage_matches": true,
+    "python_tests_passed": 21,
+    "isolated_postgres_test_steps_passed": 3
+  }
+}

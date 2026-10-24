@@ -1,6 +1,6 @@
 # Sandy engineering implementation program
 
-Version: 1.2 · 24 October 2026 (addition of 0012; P0 priority unchanged)  
+Version: 1.3 · 24 October 2026 (reconcile already registered 0013; P0 priority unchanged)
 Governing design: [Master Scope v1.2](master-scope-v1.md), including amendment section 22  
 Shared implementation contracts: [architecture-contracts.md](architecture-contracts.md)  
 Source catalogue: [scopes.json](scopes.json)
@@ -27,6 +27,8 @@ These are engineering specifications, not evidence that the software is complete
 | [0010](tasks/SANDY-ENG-0010-commercial-infrastructure-readiness.md) | Commercial Infrastructure and Readiness | P3; immediate safety baseline | Tenant lifecycle, entitlements, usage, support and production readiness |
 | [0011](tasks/SANDY-ENG-0011-browser-workflow-learning.md) | Passive & Active Browser Learning and Verified Skill Execution | P1; P0 foundations | Chrome opt-in observation, discovery, Skill IR and versioning, active teaching and learning from verified browser execution |
 | [0012](tasks/SANDY-ENG-0012-sandy-cloud-drive-backup.md) | Sandy Cloud — Drive, Computer Backup and Intelligent Files | P2; safety gates from day one | File storage/sync, independent snapshots, restore and ACL-filtered AI; design in [Sandy Cloud architecture](../sandy-cloud/architecture.md) |
+
+| [0013](tasks/SANDY-ENG-0013-sandy-accounting.md) | Sandy Accounting — Australian Accounting, Payroll and Sandy Intelligence | P2 | Accounting records and deterministic financial controls; reuses Runtime, API identity, Missions and file ownership |
 
 Scope 0011 depends on 0002 for isolated computer execution, 0004 for durable Missions/receipts, 0005 for authorization/provider paths and 0009 for the user experience. It does not create independent versions of these services. Observation/compilation fixtures may progress independently without delaying P0 runtime fixes. No learned candidate is automatically an approved, verified action.
 
@@ -85,13 +87,13 @@ Reconcile requirements, implementations and operational evidence separately. Nev
 
 ## 7. Shared sources and Supabase synchronization
 
-Canonical files are in GitHub; `scopes.json` contains the Master, API and twelve engineering scope records. A source change merged to main triggers the existing OIDC-authenticated scope sync. The catalogue stores immutable source commit, content checksum and sync time. The latest successful sync is checked after this publication; it is not a deployment of the systems described here.
+Canonical files are in GitHub; `scopes.json` contains the Master, API and thirteen engineering scope records. A source change merged to main triggers the existing OIDC-authenticated scope sync. The catalogue stores immutable source commit, content checksum and sync time. The latest successful sync is checked after this publication; it is not a deployment of the systems described here.
 
 Supporting architecture/program/template files are linked from each numbered scope. To reproduce a design, read those relative paths at the scope's same pinned Git commit, not arbitrary current main. No customer data or secrets belong in the documentation repository. Additional tasks use a new scope ID and manifest entry; do not clone a competing Master Scope.
 
 ## 8. Codex start instruction
 
-Read AGENTS.md, the Master Scope v1.1, this program and the shared contracts. Start SANDY-ENG-0001's reproducible runtime failures. Implement the minimum 0003/0004/0005/0006 slices needed to fix those failures, preserving current working routes. Run real customer-facing canaries and record evidence before expanding. Continue approved independent work, but do not substitute more API mappings, another architecture rewrite or cosmetic UI work for measured reasoning and execution reliability.
+Read AGENTS.md, the Master Scope v1.2, this program and the shared contracts. Start SANDY-ENG-0001's reproducible runtime failures. Implement the minimum 0003/0004/0005/0006 slices needed to fix those failures, preserving current working routes. Run real customer-facing canaries and record evidence before expanding. Continue approved independent work, but do not substitute more API mappings, another architecture rewrite or cosmetic UI work for measured reasoning and execution reliability.
 
 ## 9. Design confidence and unresolved decisions
 
