@@ -8,7 +8,7 @@ readonly EXPECTED_HOST='sandy-deploy'
 readonly EXPECTED_PROJECT='elaborate-haven-511518-a5'
 readonly EXPECTED_ZONE='europe-west1-b'
 
-action="\${1:-}"
+action="${1:-}"
 if [[ "$#" -ne 1 || ( "$action" != '--preflight' && "$action" != '--install' ) ]]; then
   echo 'Usage: bash bootstrap.sh --preflight | --install' >&2
   exit 64
@@ -24,9 +24,9 @@ case "$(uname -m)" in
 esac
 # The approved VM-access handler must independently bind resource identity;
 # the environment variables below are fail-closed assertions, not IAM proof.
-if [[ "\${SANDY_TARGET_INSTANCE:-}" != "$EXPECTED_HOST" ||
-      "\${SANDY_TARGET_PROJECT:-}" != "$EXPECTED_PROJECT" ||
-      "\${SANDY_TARGET_ZONE:-}" != "$EXPECTED_ZONE" ]]; then
+if [[ "${SANDY_TARGET_INSTANCE:-}" != "$EXPECTED_HOST" ||
+      "${SANDY_TARGET_PROJECT:-}" != "$EXPECTED_PROJECT" ||
+      "${SANDY_TARGET_ZONE:-}" != "$EXPECTED_ZONE" ]]; then
   echo 'blocked: target_identity_not_confirmed' >&2
   exit 77
 fi
@@ -39,7 +39,7 @@ if [[ "$action" == '--preflight' ]]; then
   exit 0
 fi
 
-expected="\${ANTIGRAVITY_INSTALLER_SHA256:-}"
+expected="${ANTIGRAVITY_INSTALLER_SHA256:-}"
 [[ "$expected" =~ ^[0-9a-f]{64}$ ]] || { echo 'blocked: approved_installer_sha256_required' >&2; exit 77; }
 umask 077
 tmpdir="$(mktemp -d)"
