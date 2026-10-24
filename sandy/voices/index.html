@@ -22,7 +22,7 @@
 <div class="row"><button type="button" class="primary" id="create" disabled>Create my voice</button><span class="muted">Up to 3 active voices per account. Voice provider limits may apply.</span></div>
 <div id="createMessage" class="feedback" role="status" aria-live="polite"></div>
 </section>
-<p class="footer">Safety: No impersonation or voice cloning of another person through this form. Audio is used only for the chosen provider action and is not added to Sandy's conversation transcripts. Revocation disables the voice immediately in Sandy; provider deletion is tracked separately. Sandy's existing live calling adapter must be updated before a selected custom voice can actually be heard during calls.</p>
+<p class="footer">Safety: No impersonation or voice cloning of another person through this form. Audio is used only for the chosen provider action and is not added to Sandy's conversation transcripts. Revocation disables the voice immediately in Sandy; provider deletion is tracked separately. Sandy Rooms now requests the selected voice at the start of a new Realtime session, but audible custom-voice delivery has not yet been verified. Other voice-call channels remain on the standard voice.</p>
 </section>
 <section id="signedOut" class="panel hidden">Please <a href="../app/">sign in to Sandy</a> and return to My Voices.</section>
 </main>
@@ -51,9 +51,9 @@ async function refresh(){
   const subtitle=document.createElement("small");subtitle.textContent=(v.selected?"Selected · ":"")+v.status.replaceAll("_"," ")+(v.error_code?" · "+v.error_code:"");left.append(subtitle);
   if(v.status==="ready"){
    right.append(control("▶ Preview",async()=>{try{say("listMessage","Generating preview…");const blob=await api({action:"preview",id:v.id},true);const url=URL.createObjectURL(blob);const a=new Audio(url);a.addEventListener("ended",()=>URL.revokeObjectURL(url),{once:true});await a.play();say("listMessage","")}catch(e){say("listMessage",e.message)}}));
-   if(!v.selected)right.append(control("Use this voice",async()=>{try{await api({action:"select",id:v.id});await refresh();say("listMessage","Selection saved. Sandy's live calling adapter has not yet been switched to use custom voices.")}catch(e){say("listMessage",e.message)}}));
+   if(!v.selected)right.append(control("Use this voice",async()=>{try{await api({action:"select",id:v.id});await refresh();say("listMessage","Selection saved. New Sandy Rooms sessions will request this voice. Existing direct voice calls are not yet integrated.")}catch(e){say("listMessage",e.message)}}));
   }
-  if(v.status!=="deleted")right.append(control(v.status==="delete_pending"?"Retry provider deletion":"Revoke & delete",async()=>{
+  if(v.status!=="deleted"&&v.status!=="creating")right.append(control(v.status==="delete_pending"?"Retry provider deletion":"Revoke & delete",async()=>{
    if(!confirm("Revoke this voice and request deletion from the provider? This cannot be undone."))return;
    try{const r=await api({action:"revoke",id:v.id});await refresh();say("listMessage",r.status==="deleted"?"Voice deleted by provider.":"Voice disabled. Provider deletion is awaiting verification.")}catch(e){await refresh();say("listMessage","Voice revocation requested. Please check deletion status: "+e.message)}}));
   item.append(left,right);area.append(item);
