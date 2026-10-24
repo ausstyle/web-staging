@@ -21,7 +21,7 @@ HELPER=PROVIDER+'/cloud_run_read_region.ts'
 MIGRATION='supabase/migrations/20261024002500_sandy_cloud_run_region_contracts.sql'
 BASELINES={
  PROVIDER:(32,'17f8d544c0ebe5df2aa31b411074f5285aed6739c4128c8e56eda99ec9e081df',57),
- GATEWAY:(64,'3cb377480b0fe8f236a60fd50ecf45620b80204e8c4c52ca8473a83066459b82',128),
+ GATEWAY:(65,'2c6f60cbaea5607200577af63343fd87812578cf0181d7474b4084d403ffced2',129),
 }
 COMMON=[PROVIDER+'/configured_scopes.ts',PROVIDER+'/gateway.ts',PROVIDER+'/gateway_manifest.json']
 REPLACEMENTS={PROVIDER:[PROVIDER+'/index.ts',PROVIDER+'/catalogue.ts',*COMMON],GATEWAY:COMMON}

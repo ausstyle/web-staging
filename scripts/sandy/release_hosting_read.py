@@ -10,7 +10,7 @@ from prepare_hosting_read_release import (SOURCE, PROVIDER, GATEWAY, MIGRATION,
 from release_gcp_admin_read import Installer
 from release_web_canary import Blocked, ROOT, original_sources, private_write
 from release_provider_response_fix import sha, canonical, quote, source_map, BACKUP_CHUNK_BYTES
-PIN='ba221f869426f8b16d8dddde4f783e63bf95b2d818628bbd586645efe1be62ed'
+PIN='bc35412a4b71b0d4c47007575a1093172daa17d2329653da280cd1d539241f99'
 TARGETS=(PROVIDER,GATEWAY)
 VERSION='20261024002500'
 REGISTRY='sandy-operation-registry:cloud-run-region'

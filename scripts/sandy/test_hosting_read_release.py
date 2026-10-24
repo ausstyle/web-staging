@@ -18,6 +18,18 @@ class HostingReadRelease(unittest.TestCase):
             after=build_candidate(target,before,reviewed);self.assertEqual(after['unrelated.ts'],b'preserve');self.assertEqual(len(after),len(before)+1)
             if target==GATEWAY:self.assertEqual(after[GATEWAY+'/index.ts'],patch_gateway(before[GATEWAY+'/index.ts']))
             else:self.assertEqual(after[GATEWAY+'/index.ts'],before[GATEWAY+'/index.ts'])
+    def test_customer_mutation_certification_and_runtime_imports_survive(self):
+        name=GATEWAY+'/customer_mutation_certification.ts'
+        entry=b'import {certify} from "./customer_mutation_certification.ts";\n'+self.gateway()
+        before={n:b'prior' for n in REPLACEMENTS[GATEWAY]}
+        before.update({GATEWAY+'/index.ts':entry,name:b'// Runtime-owned certification bytes\n'})
+        reviewed={n:b'reviewed' for n in set(REPLACEMENTS[GATEWAY])|{HELPER}}
+        after=build_candidate(GATEWAY,before,reviewed)
+        self.assertEqual(after[name],before[name])
+        self.assertIn(b'import {certify} from "./customer_mutation_certification.ts";',after[GATEWAY+'/index.ts'])
+        restored=after[GATEWAY+'/index.ts']
+        for old,new in reversed(PATCHES):restored=restored.replace(new.encode(),old.encode())
+        self.assertEqual(restored,entry)
     def test_unrecognized_target_missing_modules_and_repeat_preparation_refused(self):
         for target,before,reviewed in [('other',{},{}),(GATEWAY,{},{}),(PROVIDER,{HELPER:b'installed'}, {})]:
             with self.assertRaises(Blocked):build_candidate(target,before,reviewed)

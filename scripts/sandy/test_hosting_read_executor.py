@@ -112,16 +112,16 @@ class Tests(unittest.TestCase):
             with self.assertRaisesRegex(Blocked,'existing_recovery'):x.store_recovery(r,m,CHANGE,x.PROVIDER,('before',{'version':32},body,files),[])
     def test_source_inspection_rejects_identical_bytes_at_unreviewed_version(self):
         body=b'bundle';files={'original.ts':b'original'}
-        m={'functions':{x.GATEWAY:{'expected_prior_version':64,'prior_bundle_sha256':x.sha(body),'before_files':x.source_map(files),'after_files':x.source_map({'new.ts':b'new'})}}}
+        m={'functions':{x.GATEWAY:{'expected_prior_version':65,'prior_bundle_sha256':x.sha(body),'before_files':x.source_map(files),'after_files':x.source_map({'new.ts':b'new'})}}}
         class R:
-            version=64
+            version=65
             def api(self,method,path):return body if path.endswith('/body') else json.dumps({'version':self.version,'status':'ACTIVE','verify_jwt':True,'slug':x.GATEWAY}).encode()
         r=R()
         with patch.object(x,'original_sources',return_value=files):
             self.assertEqual(x.inspect_function(r,m,x.GATEWAY)[0],'before')
-            for version in [61,62,63,65,67]:
+            for version in [61,62,63,64,66,68]:
                 r.version=version;self.assertEqual(x.inspect_function(r,m,x.GATEWAY)[0],'foreign')
-            r.version=66;self.assertEqual(x.inspect_function(r,m,x.GATEWAY)[0],'restored')
-    def test_capture_real_baseline_versions_are_32_and_64(self):
-        self.assertEqual(x.BASELINES[x.PROVIDER][0],32);self.assertEqual(x.BASELINES[x.GATEWAY][0],64)
+            r.version=67;self.assertEqual(x.inspect_function(r,m,x.GATEWAY)[0],'restored')
+    def test_capture_real_baseline_versions_are_32_and_65(self):
+        self.assertEqual(x.BASELINES[x.PROVIDER][0],32);self.assertEqual(x.BASELINES[x.GATEWAY][0],65)
 if __name__=='__main__':unittest.main()
