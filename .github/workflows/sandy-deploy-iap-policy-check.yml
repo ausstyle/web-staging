@@ -1,0 +1,27 @@
+name: Sandy fixed deploy IAP policy contracts
+on:
+  pull_request:
+    paths:
+      - 'services/sandy-engineering-mcp/src/sandy-deploy-iap-policy*'
+      - '.github/workflows/sandy-deploy-iap-policy-check.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'services/sandy-engineering-mcp/src/sandy-deploy-iap-policy*'
+      - '.github/workflows/sandy-deploy-iap-policy-check.yml'
+permissions:
+  contents: read
+jobs:
+  policy-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate fixed-target IAP contracts
+        run: |
+          set -euo pipefail
+          node --check services/sandy-engineering-mcp/src/sandy-deploy-iap-policy.mjs
+          node --test services/sandy-engineering-mcp/src/sandy-deploy-iap-policy.test.mjs
