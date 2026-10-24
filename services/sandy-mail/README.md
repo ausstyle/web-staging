@@ -68,3 +68,7 @@ Real PostgreSQL tests export six synthetic EMLs, ingest into a fresh synthetic m
 ## Resumable offline imports
 
 Migration 0004 and [offline import workers](IMPORTS.md) now implement chunked immutable master staging, bounded MBOXrd/EML archive/Maildir discovery, durable item and phase checkpoints, receipt-linked ingestion, initial flags, source provenance and hash/count reconciliation. MBOX export preserves supported originals with required portable metadata; exact master-archive export retains unsupported/corrupt source items. The earlier paragraph's pending import records/flags/MBOX statements describe the prior prototype; this follow-on implements the bounded worker slice, while public APIs, arbitrary MBOX dialects/PST, large-scale acceptance and resumable customer export remain pending. The original first-email release artifact remains separately pinned and requires no import grant expansion.
+
+## Resumable export backend
+
+Migration 0005 and [resumable exports](EXPORTS.md) add frozen SQL snapshots, checkpointed EML/TAR partitions, generation/hash readback, explicit exclusions and byte-offset reads. A canonical `ExportAuthority` adapter is mandatory; no production authority implementation or public download endpoint is supplied. The earlier bounded-export limitations describe that older helper. This follow-on implements durable generation/resume, while actual customer reauth/MFA/scanner policy, encrypted delivery, expiring links, audit and production scale still require shared integration and acceptance.

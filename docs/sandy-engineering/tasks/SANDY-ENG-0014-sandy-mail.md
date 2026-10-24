@@ -1,7 +1,7 @@
-# SANDY-ENG-0013 — Sandy Mail implementation and acceptance
+# SANDY-ENG-0014 — Sandy Mail implementation and acceptance
 
 Status: IMPLEMENTING (local first-ingest foundation; deployed acceptance blocked)  
-Version: 1.0  
+Version: 1.1  
 Priority: P2 product; user-directed first milestone is database structure and synthetic first email  
 Owner: Sandy Mail workstream; API/infrastructure retain shared release ownership  
 Created: 2026-10-24  
@@ -19,3 +19,5 @@ Shared boundaries: 0005 owns canonical authenticated API/release integration, 00
 Safety/rollback: no live SMTP/MX, real mailbox imports, external mail, shared-resource replacement, irreversible deletion, paid commitment or persistent IAM/credential expansion. Stop the canary consumer and retain SQL/originals; replay the same delivery identity or forward-repair migrations. Existing mail service remains active. A future public API must bind scope to canonical identity before invoking the internal package; customer SQL access is prohibited.
 
 Completion requires the scope’s full portability, security, recovery, client, operational and independent acceptance gates, not just this first local milestone. Source branch: `feat/sandy-mail-first-ingest`; new PR begins in draft.
+
+Catalogue reconciliation: main assigned SANDY-ENG-0013 to Accounting at `f3198b1`. Mail's previously unmerged entry moves to SANDY-ENG-0014; Accounting is preserved. Historical Mail evidence/source pins are unchanged. Follow-on migration 0005 adds resumable snapshot exports with mandatory canonical authority checks and explicit exclusions; customer-facing identity/scanner/encrypted-delivery integration remains pending.

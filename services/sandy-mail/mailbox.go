@@ -88,14 +88,18 @@ type ExportItem struct {
 	ImportOrigins     []json.RawMessage `json:"import_origins,omitempty"`
 }
 type ExportManifest struct {
-	Version           int          `json:"version"`
-	Scope             Scope        `json:"scope"`
-	MailboxName       string       `json:"mailbox_name"`
-	SnapshotAt        time.Time    `json:"snapshot_at"`
-	PendingIngestions int          `json:"pending_ingestions"`
-	Complete          bool         `json:"complete"`
-	Messages          []ExportItem `json:"messages"`
-	Limit             int          `json:"prototype_message_limit"`
+	Version           int               `json:"version"`
+	ExportJobID       string            `json:"export_job_id,omitempty"`
+	PartNumber        int64             `json:"part_number,omitempty"`
+	ExpectedMessages  int               `json:"expected_messages,omitempty"`
+	Exclusions        []ExportExclusion `json:"exclusions,omitempty"`
+	Scope             Scope             `json:"scope"`
+	MailboxName       string            `json:"mailbox_name"`
+	SnapshotAt        time.Time         `json:"snapshot_at"`
+	PendingIngestions int               `json:"pending_ingestions"`
+	Complete          bool              `json:"complete"`
+	Messages          []ExportItem      `json:"messages"`
+	Limit             int               `json:"prototype_message_limit"`
 }
 
 // ExportMailbox is a bounded operator prototype: frozen SQL snapshot, original

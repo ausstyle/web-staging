@@ -35,6 +35,8 @@ jobs:
           MAIL_TEST_ADMIN_DSN: postgres://postgres:synthetic-local-only@127.0.0.1:5432/sandy_mail_test?sslmode=disable
           MAIL_TEST_EVIDENCE: ${{ runner.temp }}/mail-first-email.json
           MAIL_TEST_IMPORT_EVIDENCE: ${{ runner.temp }}/mail-import-jobs.json
+          MAIL_TEST_EXPORT_EVIDENCE: ${{ runner.temp }}/mail-export-jobs.json
+          MAIL_TEST_SOURCE_REV: ${{ github.sha }}
         run: |
           go test -race -count=1 -v ./...
           go vet ./...
@@ -52,5 +54,6 @@ jobs:
           path: |
             ${{ runner.temp }}/mail-first-email.json
             ${{ runner.temp }}/mail-import-jobs.json
+            ${{ runner.temp }}/mail-export-jobs.json
           retention-days: 7
 # Test-only workflow. No cloud credentials, production environment or deployment.

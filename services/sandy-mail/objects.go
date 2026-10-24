@@ -18,6 +18,8 @@ import (
 
 const MaxMessageBytes = 25 * 1024 * 1024
 
+var ErrObjectNotFound = errors.New("object_not_found")
+
 var ErrIntegrity = errors.New("object_integrity_failure")
 
 type Object struct {
@@ -114,6 +116,9 @@ func (s GCSStore) Get(ctx context.Context, o Object) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	if status == 404 {
+		return nil, ErrObjectNotFound
+	}
 	if status != 200 {
 		return nil, fmt.Errorf("gcs_read_http_%d", status)
 	}
@@ -168,6 +173,9 @@ func (s LocalStore) Get(ctx context.Context, o Object) ([]byte, error) {
 		return nil, ErrIntegrity
 	}
 	f, err := os.Open(filepath.Join(s.Root, o.Key))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, ErrObjectNotFound
+	}
 	if err != nil {
 		return nil, err
 	}
