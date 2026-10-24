@@ -36,4 +36,23 @@ The proposed journal schema and public-key trust configuration require joint API
 
 Isolated PGlite tests use real signature verification and SQL transactions: changed generation/signature rejected, foreign actor/customer and binding substitution rejected, duplicate claim refused, scanner revocation/authority revision changes block seal, lost commit acknowledgement reconciles one receipt, terminal claims cannot reset, crash-before-seal stays unresolved, expired scan blocks access. PGlite's one pinned connection serializes the duplicate-claim test; this is NOT proof of real PostgreSQL multi-session races. Real concurrent revocation/claim tests, cancellation during streaming, immutable provider generation reads, scanner execution and actual consumer effects remain required before activation.
 
-There are no issued production receipts and no byte publication. The protocol currently reconciles only while its canonical admission remains consumed and valid; API/Cloud must agree an explicit authorized post-completion reconciliation policy before wiring provider completion. This deliberate restriction does not silently broaden expired authority.
+There are no issued production receipts and no byte publication. Handle-bearing `reconcile` remains limited to a consumed, unexpired admission and live scan. The separate source-only `reconcileStatus` requires an explicitly supplied `StatusAuthorityOwner` that independently authorizes current status access under canonical relation/revocation locks. It returns only SEALED, ABANDONED or RECONCILIATION_REQUIRED, never a private handle, byte proof, renewed lease or authority to publish. Missing current authorization fails closed even when the historical seal exists. API/Cloud must identify and review the actual existing status authority/route before activation; no new grant is inferred.
+
+## API compatibility follow-up
+
+Addresses API review at `595cf77ca6ca4e25739898c49f63a409acb37a88`:
+
+- `acquire` returns canonical customer, explicit tenant and authority revision from
+  the same locked transaction. Its lease expiry is floored to integer milliseconds
+  and range-checked; the API adapter must use this shorter expiry in its fence.
+- `verifyScanInTransaction` performs full canonical admission/file/trust validation
+  on Cloud's supplied transaction, without opening a nested transaction or consuming
+  the repository claim. Its locks last until Cloud commits or rolls back.
+- Signature verification rejects NaN, infinities, fractional, negative and unsafe
+  clocks before cryptographic acceptance. Synthetic expired signatures exercise this.
+- Status-only post-expiry recovery is separately authorized as described above.
+  Scanner withdrawal does not erase historical SEALED status, but also cannot return
+  bytes or revive permission. A revoked current status relationship denies access.
+
+Seven isolated tests now cover these interfaces in addition to the original cases.
+Real multi-session locking and actual provider/scanner wiring remain outstanding.

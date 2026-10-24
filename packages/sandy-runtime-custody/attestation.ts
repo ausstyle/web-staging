@@ -23,7 +23,7 @@ export function scanBytes(a:ScanAttestation):Uint8Array {
 const bytes=(hex:string)=>Uint8Array.from(hex.match(/../g)!,v=>parseInt(v,16));
 export async function verifyScanSignature(a:ScanAttestation,signatureHex:string,publicKeyHex:string,now:number):Promise<void>{
  const data=scanBytes(a);
- if(!/^[a-f0-9]{128}$/.test(signatureHex)||!/^[a-f0-9]{64}$/.test(publicKeyHex)||a.issuedAt>now||a.expiresAt<=now)throw Error('INVALID_SCAN_ATTESTATION');
+ if(!Number.isSafeInteger(now)||now<0||!/^[a-f0-9]{128}$/.test(signatureHex)||!/^[a-f0-9]{64}$/.test(publicKeyHex)||a.issuedAt>now||a.expiresAt<=now)throw Error('INVALID_SCAN_ATTESTATION');
  const key=await crypto.subtle.importKey('raw',bytes(publicKeyHex),{name:'Ed25519'},false,['verify']);
  if(!await crypto.subtle.verify('Ed25519',key,bytes(signatureHex),new Uint8Array(data)))throw Error('INVALID_SCAN_SIGNATURE');
 }

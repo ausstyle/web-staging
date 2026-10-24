@@ -13,6 +13,12 @@ export interface AuthorityOwner {
   * Revocation writers must hold the same locks through their own COMMIT. */
  lockAndResolve(tx:SqlTransaction,c:Readonly<AdmissionBinding>):Promise<{customerId:string;tenantId:string|null;revision:string}>;
 }
+export interface StatusAuthorityOwner {
+ /** Independently authorize this actor's CURRENT status-only access to the exact
+  * historical binding. Lock/re-read current canonical relation/revocation rows.
+  * The expired admission or a past scan is never this authorization. */
+ lockAndAuthorizeStatus(tx:SqlTransaction,c:Readonly<AdmissionBinding>):Promise<{customerId:string;tenantId:string|null;revision:string}>;
+}
 export async function lockCanonicalScope(tx:SqlTransaction,scope:{actorId:string;admissionId?:string;tenantId?:string;customerId?:string}) {
  const keys=Object.entries(scope).map(([kind,id])=>{
   if(typeof id!=='string'||!id||id.length>200)throw Error('INVALID_AUTHORITY_LOCK');
@@ -22,7 +28,7 @@ export async function lockCanonicalScope(tx:SqlTransaction,scope:{actorId:string
 }
 const fail=(code:string):never=>{throw Error(code);};
 export class ArtifactJournal {
- constructor(private db:SqlDatabase,private authority:AuthorityOwner){}
+ constructor(private db:SqlDatabase,private authority:AuthorityOwner,private statusAuthority?:StatusAuthorityOwner){}
  private async admitted(tx:SqlTransaction,c:AdmissionBinding){
   const owner=await this.authority.lockAndResolve(tx,Object.freeze({...c}));
   if(!owner?.customerId||!owner.revision)fail('CANONICAL_AUTHORITY_REQUIRED');
@@ -66,6 +72,14 @@ export class ArtifactJournal {
   if(file.rows[0]?.owner_customer_id!==customerId)fail('FILE_OWNER_REFUSED');
   return a!;
  }
+ /** Cloud calls this on its existing pinned commit transaction, retaining locks
+  * until that caller commits. It neither starts a transaction nor claims custody. */
+ async verifyScanInTransaction(tx:SqlTransaction,c:AdmissionBinding,receiptId:string){
+  c=Object.freeze({...c});
+  const owner=await this.admitted(tx,c);
+  const record=await this.scan(tx,c,receiptId,owner.customerId);
+  return {record,customerId:owner.customerId,tenantId:owner.tenantId,authorityRevision:owner.revision};
+ }
  async acquire(c:AdmissionBinding,receiptId:string){
   c=Object.freeze({...c});
   return await this.db.transaction(async tx=>{
@@ -74,8 +88,10 @@ export class ArtifactJournal {
    const {rows}=await tx.query(`INSERT INTO sandy_artifact_custody.claims
     (artifact_id,receipt_id,admission_id,binding_sha256,authority_revision,lease_token,expires_at,state)
     VALUES($1,$2,$3,$4,$5,$6,LEAST(clock_timestamp()+interval '30 seconds',to_timestamp($7/1000.0)),'CLAIMED')
-    RETURNING extract(epoch from expires_at)*1000 expires_ms`,[c.artifactId,receiptId,c.admissionId,c.bindingSha256,owner.revision,leaseToken,a.expiresAt]);
-   return {leaseToken,expiresAt:Number(rows[0].expires_ms),record:a};
+    RETURNING floor(extract(epoch from expires_at)*1000)::bigint expires_ms`,[c.artifactId,receiptId,c.admissionId,c.bindingSha256,owner.revision,leaseToken,a.expiresAt]);
+   const expiresAt=Number(rows[0].expires_ms);
+   if(!Number.isSafeInteger(expiresAt)||expiresAt<0)fail('INVALID_CLAIM_EXPIRY');
+   return {leaseToken,expiresAt,record:a,authorityRevision:owner.revision,customerId:owner.customerId,tenantId:owner.tenantId};
   });
  }
  async seal(c:AdmissionBinding,leaseToken:string,privateHandle:string,proof:Record<string,unknown>){
@@ -92,6 +108,28 @@ export class ArtifactJournal {
    const committed=await tx.query("UPDATE sandy_artifact_custody.claims SET state='SEALED',private_handle=$2,proof=$3::jsonb WHERE artifact_id=$1 AND expires_at>clock_timestamp() AND EXISTS(SELECT 1 FROM public.sandy_api_execution_admissions a WHERE a.id=admission_id AND a.expires_at>clock_timestamp()) RETURNING artifact_id",[c.artifactId,privateHandle,JSON.stringify(proof)]);
    if(committed.rows.length!==1)fail('CLAIM_EXPIRED_BEFORE_SEAL');
    return {privateHandle,proof};
+  });
+ }
+ /** Historical status only, independently authorized NOW. No handle, proof,
+  * bytes, scan verdict, renewed lease or authority to publish is returned. */
+ async reconcileStatus(c:AdmissionBinding){
+  c=Object.freeze({...c});
+  const statusAuthority=this.statusAuthority;
+  if(!statusAuthority)fail('CURRENT_STATUS_AUTHORITY_REQUIRED');
+  return await this.db.transaction(async tx=>{
+   const owner=await statusAuthority!.lockAndAuthorizeStatus(tx,c);
+   if(!owner?.customerId||!owner.revision)fail('CURRENT_STATUS_AUTHORITY_REQUIRED');
+   const admission=await tx.query(`SELECT actor_id,tenant_id,operation,input_sha256,contract_sha256,scope_sha256
+    FROM public.sandy_api_execution_admissions WHERE id=$1 FOR SHARE`,[c.admissionId]);
+   const a=admission.rows[0];
+   if(!a||a.actor_id!==c.actorId||a.tenant_id!==owner.tenantId||a.operation!==c.operation||a.input_sha256!==c.inputSha256||a.contract_sha256!==c.contractSha256||a.scope_sha256!==c.scopeSha256)fail('STATUS_BINDING_REFUSED');
+   const {rows}=await tx.query(`SELECT c.state,r.attestation,f.owner_customer_id FROM sandy_artifact_custody.claims c
+    JOIN sandy_artifact_custody.scan_receipts r ON r.id=c.receipt_id
+    JOIN public.sandy_universal_files f ON f.id=r.file_id
+    WHERE c.artifact_id=$1 AND c.admission_id=$2 AND c.binding_sha256=$3 FOR SHARE`,[c.artifactId,c.admissionId,c.bindingSha256]);
+   const row=rows[0],attestation=row?.attestation as ScanAttestation|undefined;
+   if(!row||!attestation||row.owner_customer_id!==owner.customerId||attestation.customerId!==owner.customerId||attestation.actorId!==c.actorId||attestation.bindingSha256!==c.bindingSha256)fail('STATUS_BINDING_REFUSED');
+   return {state:row.state==='SEALED'?'SEALED':row.state==='ABANDONED'?'ABANDONED':'RECONCILIATION_REQUIRED'};
   });
  }
  /** Read after unknown acknowledgement; never repeats append/seal work. */

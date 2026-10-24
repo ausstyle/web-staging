@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {PGlite} from 'npm:@electric-sql/pglite@0.3.14';
 import {ArtifactJournal,lockCanonicalScope,type AdmissionBinding} from './journal.ts';
-import {scanBytes,type ScanAttestation} from './attestation.ts';
+import {scanBytes,verifyScanSignature,type ScanAttestation} from './attestation.ts';
 const hex=(a:ArrayBuffer)=>Array.from(new Uint8Array(a),x=>x.toString(16).padStart(2,'0')).join('');
 async function fixture(){
  const pg=new PGlite();
@@ -28,12 +28,13 @@ async function fixture(){
   if(rows[0].revoked)throw Error('FIXTURE_AUTHORITY_REVOKED');
   return {customerId:customer,tenantId:null,revision:rows[0].revision};
  }};
- const journal=new ArtifactJournal(db,owner);
+ const statusOwner={lockAndAuthorizeStatus:owner.lockAndResolve};
+ const journal=new ArtifactJournal(db,owner,statusOwner);
  const c:AdmissionBinding={artifactId:artifact,admissionId:admission,actorId:actor,operation:'github.files.create',inputSha256:'a'.repeat(64),contractSha256:'a'.repeat(64),scopeSha256:'a'.repeat(64),bindingSha256:'b'.repeat(64)};
  const now=Date.now();const a:ScanAttestation={version:1,receiptId:receipt,artifactId:artifact,fileId:file,admissionId:admission,actorId:actor,customerId:customer,generation:'immutable:1',size:3,sha256:'c'.repeat(64),bindingSha256:c.bindingSha256,issuer:'fixture-only',release:'test-v1',trustRevision:1,verdict:'CLEAN',issuedAt:now-1000,expiresAt:now+60000};
  const sign=async(v:ScanAttestation)=>hex(await crypto.subtle.sign('Ed25519',keys.privateKey,new Uint8Array(scanBytes(v))));
  const proof={version:1,kind:'repository_artifact_bytes_verified',artifactId:artifact,generation:a.generation,size:a.size,sha256:a.sha256,bindingSha256:a.bindingSha256};
- return {pg,journal,c,a,sign,proof,loseNextAck(){loseAck=true;}};
+ return {pg,journal,c,a,sign,proof,db,owner,publicKey:hex(await crypto.subtle.exportKey('raw',keys.publicKey)),loseNextAck(){loseAck=true;}};
 }
 Deno.test('signed generation binding, duplicate claim and committed-but-lost seal reconcile once',async()=>{
  const f=await fixture();try{
@@ -43,6 +44,7 @@ Deno.test('signed generation binding, duplicate claim and committed-but-lost sea
   const claims=await Promise.allSettled([f.journal.acquire(f.c,f.a.receiptId),f.journal.acquire(f.c,f.a.receiptId)]);
   assert.equal(claims.filter(x=>x.status==='fulfilled').length,1);
   const claim=(claims.find(x=>x.status==='fulfilled') as PromiseFulfilledResult<any>).value;
+  assert.equal(claim.customerId,f.a.customerId);assert.equal(claim.tenantId,null);assert.equal(claim.authorityRevision,'1');assert.ok(Number.isSafeInteger(claim.expiresAt));assert.ok(claim.expiresAt<=f.a.expiresAt);
   await assert.rejects(f.journal.seal(f.c,crypto.randomUUID(),'private:test',f.proof),/CLAIM_LOST/);
   await assert.rejects(f.journal.seal(f.c,claim.leaseToken,'private:test',{...f.proof,generation:'replaced'}),/BYTE_PROOF/);
   f.loseNextAck();await assert.rejects(f.journal.seal(f.c,claim.leaseToken,'private:test',f.proof),/SIMULATED_LOST_ACK/);
@@ -84,5 +86,38 @@ Deno.test('crash before seal stays reconcilable and expired scan never grants an
   await new Promise(r=>setTimeout(r,1100));
   await assert.rejects(f.journal.reconcile(f.c),/CLEAN_BOUND_SCAN/);
   assert.equal((await f.pg.query<{state:string}>('SELECT state FROM sandy_artifact_custody.claims')).rows[0].state,'CLAIMED');
+ }finally{await f.pg.close();}
+});
+
+Deno.test('invalid scanner verification clocks fail closed for signed expired receipts',async()=>{
+ const f=await fixture();try{
+  const a={...f.a,issuedAt:1,expiresAt:100};const signature=await f.sign(a);
+  for(const now of [NaN,Infinity,-Infinity,-1,1.5,Number.MAX_SAFE_INTEGER+1,101])
+   await assert.rejects(verifyScanSignature(a,signature,f.publicKey,now),/INVALID_SCAN_ATTESTATION/);
+ }finally{await f.pg.close();}
+});
+Deno.test('Cloud validates on caller transaction; rollback does not create a claim',async()=>{
+ const f=await fixture();try{
+  await f.journal.recordScan(f.c,f.a,await f.sign(f.a));
+  await assert.rejects(f.db.transaction(async tx=>{
+   const result=await f.journal.verifyScanInTransaction(tx,f.c,f.a.receiptId);
+   assert.equal(result.customerId,f.a.customerId);assert.equal(result.authorityRevision,'1');
+   await tx.query("UPDATE fixture_authority SET revision='2'");throw Error('CLOUD_ROLLBACK');
+  }),/CLOUD_ROLLBACK/);
+  assert.equal((await f.pg.query<{revision:string}>('SELECT revision FROM fixture_authority')).rows[0].revision,'1');
+  assert.equal((await f.pg.query<{n:number}>('SELECT count(*)::int n FROM sandy_artifact_custody.claims')).rows[0].n,0);
+ }finally{await f.pg.close();}
+});
+Deno.test('post-expiry status requires current authority and never returns private custody',async()=>{
+ const f=await fixture();try{
+  await f.journal.recordScan(f.c,f.a,await f.sign(f.a));const claim=await f.journal.acquire(f.c,f.a.receiptId);
+  await f.journal.seal(f.c,claim.leaseToken,'private:test',f.proof);
+  await f.pg.exec("UPDATE sandy_api_execution_admissions SET state='completed',expires_at=clock_timestamp()-interval '1 hour';UPDATE sandy_artifact_custody.scanner_releases SET revoked_at=clock_timestamp()");
+  await assert.rejects(f.journal.reconcile(f.c),/ADMISSION_BINDING/);
+  assert.deepEqual(await f.journal.reconcileStatus(f.c),{state:'SEALED'});
+  await assert.rejects(new ArtifactJournal(f.db,f.owner).reconcileStatus(f.c),/CURRENT_STATUS_AUTHORITY/);
+  await assert.rejects(f.journal.reconcileStatus({...f.c,bindingSha256:'d'.repeat(64)}),/STATUS_BINDING/);
+  await f.pg.exec('UPDATE fixture_authority SET revoked=true');
+  await assert.rejects(f.journal.reconcileStatus(f.c),/FIXTURE_AUTHORITY_REVOKED/);
  }finally{await f.pg.close();}
 });
