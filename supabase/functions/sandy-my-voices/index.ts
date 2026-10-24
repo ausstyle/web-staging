@@ -123,6 +123,7 @@ Deno.serve(async(req:Request)=>{
  if(body.action==="revoke"){
   const p=await profile(body.id);if(!p)return json(req,{error:"not_found"},404);
   if(p.status==="deleted")return json(req,{status:"deleted"});
+  if(p.status==="creating")return json(req,{error:"creation_in_progress"},409);
   if(p.status!=="delete_pending"){
    const {error}=await db.from("sandy_voice_profiles").update({selected:false,status:"delete_pending",revoked_at:now(),updated_at:now()}).eq("id",p.id).eq("customer_id",cid);
    if(error)return json(req,{error:"revocation_failed"},503);
@@ -135,7 +136,8 @@ Deno.serve(async(req:Request)=>{
     const r=await fetch(apiBase+"/"+kind+"/"+encodeURIComponent(id),{method:"DELETE",headers:{Authorization:"Bearer "+openai},signal:AbortSignal.timeout(20000)});
     if(!r.ok)throw new Error("provider_delete_unverified_http_"+r.status);
    }
-   await db.from("sandy_voice_profiles").update({status:"deleted",provider_deleted_at:now(),selected:false,updated_at:now()}).eq("id",p.id).eq("customer_id",cid);
+   const {data:deletedRow,error:localError}=await db.from("sandy_voice_profiles").update({status:"deleted",provider_deleted_at:now(),selected:false,updated_at:now()}).eq("id",p.id).eq("customer_id",cid).eq("status","delete_pending").select("id").maybeSingle();
+   if(localError||!deletedRow)throw new Error("local_delete_receipt_unavailable");
    await audit(p.id,"delete_verified","provider_delete_acknowledged");
    return json(req,{status:"deleted"});
   }catch(e){
