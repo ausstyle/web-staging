@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {runMemoryReceiptTests} from './test_memory_correction_receipt_postgres.mjs';
+export async function runCustomerMutationTests(additional) {
 await runMemoryReceiptTests(async ({db,actor,customer,foreign})=>{
   await db.exec(
     `DROP TRIGGER deny_fixture_audit ON sandy_memory_audit;DROP FUNCTION deny_fixture_audit();
@@ -65,6 +66,7 @@ INSERT INTO sandy_operation_registry(operation,handler,permission_scope,is_mutat
  await db.query("SELECT set_config('request.headers',$1,false)",[JSON.stringify({'x-sandy-certification-id':artifact,'x-sandy-api-deployment-id':deployment})]);
  const mutate=async(op,args,key=prefix+op.replaceAll('.','_'))=>(await db.query('SELECT sandy_api_customer_mutation($1,$2,$3) result',[op,JSON.stringify(args),key])).rows[0].result;
  const cases=[['tasks.create',{title:'"Isolated literal task"',details:'Synthetic',status:'todo',priority:'low',company_id:company,category_id:category,parent_task_id:task,position:2}],['tasks.update',{id:task,title:'Isolated updated fixture',details:'Synthetic updated',status:'waiting',priority:'high',due_at:'2026-10-24T12:00:00Z',start_at:'2026-10-24T11:00:00Z',next_review_at:'2026-10-24T13:00:00Z',company_id:company,category_id:category,position:4}],['tasks.complete',{id:task}],['tasks.archive',{id:task}],['calendar.create',{title:'Isolated create event',starts_at:'2026-10-24T10:00:00Z',ends_at:'2026-10-24T10:30:00Z',description:'Synthetic',timezone:'UTC',all_day:false,location:'Fixture',status:'tentative',company_id:company}],['calendar.update',{id:event,title:'Updated local event',description:null,starts_at:'2026-10-24T11:00:00Z',ends_at:'2026-10-24T12:00:00Z',timezone:'Australia/Sydney',all_day:true,location:null,status:'confirmed',company_id:company}],['calendar.cancel',{id:event}],['files.rename',{id:file,name:'  Isolated Unicode ☁ file  '}],['files.set_description',{id:file,description:null}],['files.archive',{id:file}]];
+ if(additional) return await additional({db,actor,customer,foreign,task,company,category,mutate,cases});
  const receipts=[];
  for(const [op,args] of cases){const result=await mutate(op,args);assert.equal(result.ok,true,op+JSON.stringify(result));receipts.push(result.mutation_id);const replay=await mutate(op,args);assert.equal(replay.reused,true,op);assert.equal(replay.mutation_id,result.mutation_id);}
  assert.equal(new Set(receipts).size,10);
@@ -80,3 +82,6 @@ INSERT INTO sandy_operation_registry(operation,handler,permission_scope,is_mutat
  if(process.env.CUSTOMER_SCHEMA_OUTPUT){const {writeFile}=await import('node:fs/promises');await writeFile(process.env.CUSTOMER_SCHEMA_OUTPUT,JSON.stringify({private_schema_sources:private_sources,shared_rpc_after:shared}));}
  console.log(JSON.stringify({existing_operations_actual_SQL:10,same_atomic_receipts:true,real_provider_or_production_used:false,registry_flags_enabled:false}));
 });
+
+}
+if (process.argv[1] && import.meta.url.endsWith(process.argv[1].replaceAll("\\", "/"))) await runCustomerMutationTests();
