@@ -7,6 +7,7 @@
 - Read AGENTS, engineering README, Master including v1.2 Amendment B, implementation program, shared architecture contracts and the entire 161-family API scope. `/workspace/.agents` and `.codex` are empty; no local skills/AGENTS override exists inside this new package.
 - Mail PR239 is open at `b1d499f8dd946b6fda11e0cfcaa1f508ec435a08`. Its implementation branch `feat/sandy-mail-first-ingest` at `a72e87d717387510c860febf53cc5e316b75a9f9` confirms Mail **0014**, but contains Accounting manifest version 1.0. Do not cherry-pick that manifest over Accounting 1.1. Current main has not yet incorporated Mail0014. This change edits neither shared manifest nor Mail source.
 - Version gap: the engineering program index still says twelve scopes and its start instruction mentions Master 1.1, despite Master 1.2 and the Accounting 0013 manifest entry. Preserve Accounting's exact scope authority; reconcile shared documentation with the owning integration branch rather than silently rewriting concurrent scope work.
+- Concurrent collision discovered after the first push: main advanced to `a08f969d7b65a329c743428f557a514a14479bcb` and now assigns **SANDY-ENG-0014 to My Voices**, at `docs/sandy-engineering/tasks/SANDY-ENG-0014-my-voices.md`. Mail's confirmed active branch already uses **0014 for Mail**. This PR does not alter that manifest or either task. Shared scope ownership must resolve the collision before combining their catalogues; Accounting remains **0013 v1.1**. Neither product was renumbered here.
 
 ## As-built observations (read-only, not acceptance)
 
@@ -37,7 +38,7 @@ The source files in `packages/sandy-accounting` implement a local foundation, ma
 
 | Scope obligation | Current evidence | Remaining gate |
 | --- | --- | --- |
-| AC01 | 10,000 vouchers; exact integer oracle; balanced SQL query; same-key concurrent retries | Multiple PostgreSQL connections/processes, crash injection under production engine, independent accounting review |
+| AC01 | 10,000 vouchers; exact integer oracle; balanced SQL query; same-key concurrent retries; real PostgreSQL 17.6 multi-connection suite | Production-target scale/failover, remaining crash boundaries and independent accounting review |
 | AC02 / IA09 | 100 wrong-company reads/writes denied; wrong-tenant RLS read empty; authority revocation | Real token/session/company mapping; all channels/files/search/payroll; security review |
 | AC03 | Immutable statement lines, duplicate-source conflict, partial matches, overmatch denial and undo | Real formats/feeds, transfer/chargeback cohort, accepted bank baseline |
 | AC04 | Draft/approve invoice/bill, partial payment, payment-record reversal, void with historical ageing | Credit/refund/recurring/PO/expense lifecycle and delivery/provider receipts |
@@ -51,6 +52,10 @@ The source files in `packages/sandy-accounting` implement a local foundation, ma
 Chromium browser test exercises draft → approve → payment record → statement import → reviewed reconciliation → report → source → audit. It expects bank 1,100.00 and profit 100.00; no page errors. Screenshot/result artifacts are produced locally and by the scoped CI job. Installing a separate Playwright browser download returned HTTP 403; the already-installed system Chromium successfully ran the same test, so browser verification is not blocked.
 
 Source status, local test status, deployment and independent acceptance are separate. **Deployed: no. Independently accepted: no. Overall v1.1 scope: open.** Nothing here is ATO accreditation, bank authorization or a production release.
+
+First source candidate: `172a1376d20bc32f4c6375a6c928b235f9acf7ea`, draft [PR299](https://github.com/ausstyle/web-staging/pull/299). Both [Accounting CI](https://github.com/ausstyle/web-staging/actions/runs/40053259354) and [repository regression CI](https://github.com/ausstyle/web-staging/actions/runs/40053259339) succeeded on that commit. Engineering Control registration `0afd8c2b-4d70-4df9-a187-b5929ca90a21` is **proposed**, not approved/deployed; later hardening commits require their own current source manifest and CI. Never treat a prior-head green check as evidence for a later head.
+
+The follow-on PostgreSQL adapter keeps one physical client for BEGIN/queries/COMMIT/ROLLBACK and marks a lost commit acknowledgement unknown until same-key reconciliation. Its disposable local PostgreSQL 17.6 tests use a restricted NOINHERIT application login, up to 12 connections, 100 identical requests plus 100 distinct postings, row-lock revocation, concurrent document approvals/payments, source-linked corrections, lost-acknowledgement recovery and rollback. Test endpoints are restricted to loopback and the exact synthetic database name. The local container uses a read-only root, dropped capabilities, no-new-privileges, bounded CPU/memory, tmpfs data and no persistent credentials. CI repeats this in an isolated PostgreSQL service. This is actual PostgreSQL evidence, still not Cloud SQL/HA or customer acceptance.
 
 ## Official-source revalidation
 

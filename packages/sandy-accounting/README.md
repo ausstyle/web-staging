@@ -65,9 +65,15 @@ balance oracle and does not claim regulatory coverage.
 `schema.sql` is a **local isolated PostgreSQL data-plane candidate**, not a
 Supabase migration. PGlite runs actual PostgreSQL constraints/triggers/RLS
 locally. It serializes transactions on its single embedded database; the retry
-test does **not** prove multi-process PostgreSQL concurrency. Production Cloud
-SQL placement, HA/PITR, role separation and multi-connection lock tests remain
-required.
+test alone does **not** prove multi-process PostgreSQL concurrency. The separate
+`postgres.test.ts` suite runs the same service against PostgreSQL 17.6 with a
+12-connection pool and a restricted application login. It covers duplicate and
+distinct concurrent postings, approval/payment races, lock-wait revocation and a
+genuinely committed transaction whose acknowledgement is deliberately lost. Its
+connection URL must target loopback and `sandy_accounting_test`; the fixture
+requires a fresh database and never resets an existing schema. CI supplies a
+disposable PostgreSQL service. Production Cloud SQL placement, HA/PITR,
+production role separation and target-specific acceptance remain required.
 
 `Accounting.execute` is a proposed colocated application-service boundary under
 SC-01/SC-04, not an installed Sandy API endpoint. `Boundary.authorize` must be
