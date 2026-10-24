@@ -10,7 +10,7 @@ export async function bindPrivateWorkerTransport(db:any,key:string,identity:{sou
  // material or changing the existing source, run or credential restrictions.
  if(!/^[a-f0-9]{40}$/.test(identity.sourceCommit))return fail("worker_transport_source_invalid",403);
  if(!/^\d{1,20}$/.test(identity.runId))return fail("worker_transport_run_invalid",403);
- if(key.length<100||key.length>8192)return fail("worker_transport_credential_format_unsupported",403);
+ if(!((key.length>=100&&key.length<=8192&&/^[A-Za-z0-9_-]+[.][A-Za-z0-9_-]+[.][A-Za-z0-9_-]+$/.test(key))||/^sb_secret_[A-Za-z0-9_-]{20,128}$/.test(key)))return fail("worker_transport_credential_format_unsupported",403);
  const before=await db.rpc("sandy_orch_worker_transport_state");
  if(before.error||!validState(before.data))return fail("worker_transport_guard_unavailable_or_ineligible");
  const bound=await db.rpc("sandy_orch_worker_bind_transport",{p_secret:key});
@@ -19,7 +19,7 @@ export async function bindPrivateWorkerTransport(db:any,key:string,identity:{sou
  if(after.error||!validState(after.data)||after.data.credential_bound!==true)return fail("worker_transport_custody_not_verified");
  let response:Response;
  try{response=await request("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-orchestration-api",{
-  method:"POST",headers:{authorization:"Bearer "+key,"content-type":"application/json"},
+  method:"POST",headers:{authorization:"Bearer "+key,apikey:key,"content-type":"application/json"},
   body:JSON.stringify({action:"worker_run",arguments:{limit:1,lease_seconds:90}}),redirect:"error",signal:AbortSignal.timeout(30000),
  });}catch{return fail("worker_transport_http_outcome_unknown_reconcile",502);}
  let body:any={};try{const raw=await response.text();if(raw.length<=32768)body=JSON.parse(raw);}catch{/* No valid receipt. */}
