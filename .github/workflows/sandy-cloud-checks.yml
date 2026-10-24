@@ -18,6 +18,25 @@ jobs:
         with:
           deno-version: '2.9.6'
       - run: deno fmt --check packages/sandy-cloud
-      - run: deno check packages/sandy-cloud/integrity.ts packages/sandy-cloud/restore.ts
-      - run: deno test packages/sandy-cloud/integrity_test.ts
-      - run: deno test --allow-read=/tmp --allow-write=/tmp packages/sandy-cloud/restore_disk_test.ts
+      - run: deno check packages/sandy-cloud/fixture_server.ts packages/sandy-cloud/sync.ts packages/sandy-cloud/backup.ts
+      - run: deno test --allow-read=packages/sandy-cloud,/tmp --allow-write=/tmp packages/sandy-cloud/
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install playwright==1.62.0
+      - run: python -m playwright install --with-deps chromium
+      - run: python packages/sandy-cloud/run_browser_test.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-cloud-browser-${{ github.run_id }}
+          path: /tmp/sandy-cloud-evidence/
+          retention-days: 14

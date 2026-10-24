@@ -65,18 +65,18 @@ acceptance scenarios remain pending. No product feature is newly deployed.
 
 | Requirement | Delivery and canonical integration | Source status | Deployed | Independent acceptance |
 |---|---|---|---|---|
-| SC-01 namespace/company/tree | WP-1; existing identity + new admitted namespace mutations | Pending metadata ADR, ACL/tree/revision transaction | No | AC-01/02 pending |
-| SC-02 transfers/versions | WP-1/2; complete-upload via Sandy API | Partial: streaming digest/generation verification and commit coordinator in `packages/sandy-cloud/integrity.ts`; resumable provider and DB adapter pending | No | AC-03/04 pending |
-| SC-03 device sync | WP-4; durable revisions/cursors/conflicts | Pending desktop journal, offline reconciliation and server protocol | No | AC-05 pending |
-| SC-04 secure sharing | WP-1/3; scoped version download/share operations | Pending grant/expiry/revoke/audit and exact-version delivery | No | AC-02/06 pending |
-| SC-05 independent backup | WP-5; retained manifests/vault | Pending retention decision, snapshot engine, vault and scheduled verification | No | AC-07 pending |
-| SC-06 restore | WP-6; restore admission/receipts | Partial: manifest path/tree and independent target hash verifier in `restore.ts`; restore job/client pending | No | AC-08 pending |
-| SC-07 AI | WP-7; existing memory ACL/provenance boundary | Pending consent, sandboxed extraction, live ACL recheck and source version citations | No | AC-09 pending |
+| SC-01 namespace/company/tree | WP-1; existing identity + new admitted namespace mutations | Local durable namespace, company membership, tree mutations and revision/idempotency contracts implemented; production mapping pending | No | AC-01/02 pending |
+| SC-02 transfers/versions | WP-1/2; complete-upload via Sandy API | Local durable chunk resumption, immutable versions and atomic receipts/quota/outbox plus streaming verifier implemented; GCS/PostgreSQL adapter pending | No | AC-03/04 pending |
+| SC-03 device sync | WP-4; durable revisions/cursors/conflicts | Local folder-tree sync, encrypted journal, offline conflicts, rename/move and retained deletes tested; signed native agents pending | No | AC-05 pending |
+| SC-04 secure sharing | WP-1/3; scoped version download/share operations | Local recipient-bound exact-version shares, expiry/epoch/revoke/audit implemented; production sharing/UI refinement pending | No | AC-02/06 pending |
+| SC-05 independent backup | WP-5; retained manifests/vault | Independent local protected-folder capture and immutable manifests implemented; native consistency, scheduler integration and provider vault pending | No | AC-07 pending |
+| SC-06 restore | WP-6; restore admission/receipts | Clean-directory local restore and independent disk/tree/hash readback implemented; durable production restore worker pending | No | AC-08 pending |
+| SC-07 AI | WP-7; existing memory ACL/provenance boundary | Opt-in plain-text lexical index, live ACL/current-version filtering and citations implemented locally; sandboxed rich parsing and semantic AI pending | No | AC-09 pending |
 | SC-08 integrations | WP-1/3/7; stable universal-file references | Existing lineage inventoried; compatible projections/migration still pending | No new release | AC-10 pending |
-| SC-09 usage/health | WP-8; existing billing/entitlements | Pending reservation, unique settlement, provider reconciliation, dashboards | No | AC-11 pending |
+| SC-09 usage/health | WP-8; existing billing/entitlements | Local quota reservations, unique usage settlement and sequence audit implemented; provider cost/invoice reconciliation and dashboards pending | No | AC-11 pending |
 | SC-10 GCS rollout | WP-0/2/6; existing backend registry | Planned only; default preserved, PR177 reconciled | No | AC-12 pending |
 | SC-11 desktop | WP-4; verified device identity | Pending signed macOS/Windows installer, encrypted journal, revocation, OS tests | No | AC-05/13 pending |
-| SC-12 truthful recovery | WP-1/6; shared durable receipts/outbox | Partial: lost-ack reconciliation and unknown-outcome handling in integrity module; durable adapter pending | No | AC-04/08/12 pending |
+| SC-12 truthful recovery | WP-1/6; shared durable receipts/outbox | Local atomic metadata/outbox and fault/restart recovery tested; provider failure/rollback drills pending | No | AC-04/08/12 pending |
 | SC-13 mobile | WP-9, explicitly later in authoritative scope | Pending | No | AC-14 later |
 | SC-14 bare-metal images | WP-9, explicitly later in authoritative scope | Pending | No | AC-15 later |
 
@@ -133,3 +133,48 @@ No action has an uncertain provider-write outcome: no provider writes were issue
 The next milestone is a metadata/provider ownership decision and a real isolated
 upload/readback transaction, then MVP-1 Drive acceptance. Scope completion is not
 claimed; remaining software requirements above still require implementation.
+
+
+## Continuation delivery — 24 October 2026
+
+Original commit `ea9560e30f379b87423c1660a223ea99f2c9e015` and its successful
+CI runs remain valid evidence for the first slice. The continuation implements a
+usable local vertical slice instead of treating provider inventory as a blocker
+to all software work. [Metadata decision](metadata-decision.md) selects preserved
+Supabase authority for future production mapping and an isolated SQLite reference
+adapter for current fixture verification. No live schema/grant changes occurred.
+
+New implementation: fixed operation contracts and identity boundary; durable
+namespace/tree/revisions; resumable immutable chunks; atomic version/receipt/quota/
+outbox commit; exact-version shares; consented lexical indexing; browser Drive;
+encrypted selective-sync journals and conflict-preserving folder-tree reconciliation;
+independent protected-folder backup objects and immutable manifests; clean-directory
+restore with independent actual-disk verification. Existing local snapshots are
+separate from the new independent backup path, which creates no Drive nodes.
+
+**Observed local acceptance:** 30 Deno tests pass, including database rollback on
+injected outbox failure, restart/resume, quota accounting, recipient/expiry/epoch
+share denial, two-client offline conflicts/rename/move/deletion, protected-folder
+recovery after source deletion/mass modification and clean-directory readback.
+Real Chromium passes synthetic upload/download, snapshot/trash/restore, exact
+restored byte comparison, second-tenant isolation and reader denial. Browser
+screenshot/report are retained as fixture evidence. No local result upgrades a
+mandatory provider/device acceptance criterion to passed.
+
+**Remaining software:** production PostgreSQL and canonical gateway adapters,
+GCS resumable/streaming assembly and real quarantine scanner; metadata pagination
+and signed policy-epoch cursors at 100,000-node scale; durable production backup/
+restore scheduling; signed native Mac/Windows clients and safe directory-relative
+OS integration; native snapshot consistency; rich-document sandboxing, semantic
+retrieval, existing Mail/Task/Memory linking and commercial invoice/SLO support.
+Local code explicitly caps files/cohorts at 64 MiB and is not a large-file product.
+The fixture server is loopback-only, issues synthetic identities, and must never
+be installed as production identity/service code.
+
+**Proposed next provider decision:** [exact pilot approval request](pilot-approval-request.md)
+with three isolated bucket names, seven-day unlocked pilot vault retention,
+30-day USD 10 storage-only ceiling, byte/operation/egress limits and exact
+service-account/bucket roles. No impersonation/binding permission is bundled.
+Authorized inventory and the actual release workload principal remain required
+before the final source-pinned plan and separate binding request. Branch-protection
+inspection was not retried; no protected path or provider denial was bypassed.
