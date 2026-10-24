@@ -23,9 +23,10 @@ try:
      request.fulfill(content_type='text/javascript',body=f"export function createClient(){{return {{auth:{{getSession:async()=>({{data:{{session:{{access_token:'synthetic',user:{{id:'{ID}'}}}}}}}}),onAuthStateChange:f=>{{window.fixtureSignOut=()=>f('SIGNED_OUT')}}}}}}}}");return
     if url.endswith('/sandy-operation-api'):
      body=request.request.post_data_json;calls.append(body)
+     if body['operation']=='hosting.accounts.create' and sum(c['operation']=='hosting.accounts.create' for c in calls)==1:request.abort();return
      if len(calls)==1:request.fulfill(status=403,json={'error':'operation_not_exposed'});return
      account={'account_id':ID,'requested_plan':'starter','state':'logical_only','version':1,'billing_activated':False,'provider_resources_created':False}
-     request.fulfill(json={'ok':True,'executed':True,'operation':'hosting.accounts.get','result':{'ok':True,'executed':True,'operation':'hosting.accounts.get','contract_version':'1.0.0','request_state':'succeeded','reconciliation_required':False,'request_id':ID,'result':account}});return
+     request.fulfill(json={'ok':True,'executed':True,'operation':body['operation'],'result':{'ok':True,'executed':True,'operation':body['operation'],'contract_version':'1.0.0','request_state':'succeeded','reconciliation_required':False,'request_id':ID,'result':account}});return
     request.abort()
    page.route('**/*',route)
    page.goto(f'http://127.0.0.1:{server.server_port}/sandy/hosting/')
@@ -42,11 +43,21 @@ try:
    output=os.environ.get('HOSTING_SCREENSHOT_DIR')
    if output:
     Path(output).mkdir(parents=True,exist_ok=True);page.screenshot(path=str(Path(output)/f'hosting-{width}.png'),full_page=True)
+   assert len(calls)==2 and all(c['operation']=='hosting.accounts.get' for c in calls)
+   page.get_by_role('button',name='Create or resume logical account',exact=True).click()
+   page.get_by_role('status').filter(has_text='Setup outcome is not confirmed').wait_for()
+   saved=calls[-1]['arguments'];page.reload()
+   page.get_by_role('button',name='Create or resume logical account',exact=True).click()
+   page.get_by_role('status').filter(has_text='created and read back').wait_for()
+   creates=[c for c in calls if c['operation']=='hosting.accounts.create']
+   assert len(creates)==2 and creates[0]['arguments']==creates[1]['arguments']==saved
+   assert page.get_by_label('Hosting account ID').input_value()==ID
+   assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
    page.evaluate('window.fixtureSignOut()');assert page.get_by_label('Hosting account ID').input_value()==''
    assert page.get_by_text('Account details',exact=True).count()==0
    assert not errors,errors
-   assert len(calls)==2 and all(c['operation']=='hosting.accounts.get' and c['arguments']=={'account_id':ID} for c in calls)
+   assert len(calls)==5
    context.close()
   browser.close()
- print('PASS: mobile/desktop unavailable, account, usage, recovery, session-clear and fixed read-only gateway cases; synthetic only')
+ print('PASS: mobile/desktop unavailable, account, usage, recovery, session-clear and gateway lookup/create, lost-response reload/replay cases; synthetic only')
 finally:server.shutdown()

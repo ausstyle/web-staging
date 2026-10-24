@@ -25,7 +25,7 @@ jobs:
           deno-version: v2.5.6
       - name: Test fixed read boundary and source-only cost/recovery contracts
         run: |
-          node --test sandy/hosting/read-client.test.mjs
+          node --test sandy/hosting/*.test.mjs
           deno test --allow-read --allow-env supabase/functions/_shared/sandy-hosting/management_contracts_test.ts
       - name: Install isolated browser test dependencies
         run: |
