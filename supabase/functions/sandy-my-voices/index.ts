@@ -58,8 +58,9 @@ Deno.serve(async(req:Request)=>{
   if(!validUuid(body.request_id)||typeof body.name!=="string"||body.name.trim().length<1||body.name.trim().length>80)return json(req,{error:"invalid_parameters"},400);
   const {data:existing}=await db.from("sandy_voice_profiles").select("*").eq("customer_id",cid).eq("request_id",body.request_id).maybeSingle();
   if(existing)return json(req,{voice:display(existing),replayed:true},existing.status==="ready"?200:409);
-  const {data:all}=await db.from("sandy_voice_profiles").select("id,status").eq("customer_id",cid).in("status",["ready","creating"]);
-  if((all||[]).length>=3)return json(req,{error:"voice_limit_reached"},409);
+  const {data:all}=await db.from("sandy_voice_profiles").select("id,status,error_code").eq("customer_id",cid).in("status",["ready","creating","error"]);
+  if((all||[]).some(p=>p.status==="error"&&(!p.error_code||/Timeout|timed.out|provider_http_5|provider_voice_missing|provider_consent_missing|Failed to fetch|local_commit_failed/i.test(p.error_code))))return json(req,{error:"provider_reconciliation_required"},409);
+  if((all||[]).filter(p=>p.status==="ready"||p.status==="creating").length>=3)return json(req,{error:"voice_limit_reached"},409);
   let consent:File,sample:File;
   try{consent=decodeAudio(body.consent_audio,body.consent_mime);sample=decodeAudio(body.sample_audio,body.sample_mime);}catch(e){return json(req,{error:String((e as Error).message)},400);}
   const {data:created,error:insertError}=await db.from("sandy_voice_profiles").insert({
@@ -126,7 +127,7 @@ Deno.serve(async(req:Request)=>{
    for(const [kind,id] of [["voices",p.provider_voice_id],["voice_consents",p.provider_consent_id]]){
     if(!id)continue;
     const r=await fetch(apiBase+"/"+kind+"/"+encodeURIComponent(id),{method:"DELETE",headers:{Authorization:"Bearer "+openai},signal:AbortSignal.timeout(20000)});
-    if(!r.ok&&r.status!==404)throw new Error("provider_delete_http_"+r.status);
+    if(!r.ok)throw new Error("provider_delete_unverified_http_"+r.status);
    }
    await db.from("sandy_voice_profiles").update({status:"deleted",provider_deleted_at:now(),selected:false,updated_at:now()}).eq("id",p.id).eq("customer_id",cid);
    await audit(p.id,"delete_verified","provider_delete_acknowledged");
