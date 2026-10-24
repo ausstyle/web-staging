@@ -196,6 +196,38 @@ try {
   );
   passed++;
   x = await prepare();
+  const numericReceipt = await scalar(
+    "SELECT sandy_temporal_automatic_finish($1,$2,$3,$4) result",
+    [
+      x.j,
+      JSON.stringify(x.expected),
+      JSON.stringify(facts),
+      JSON.stringify({
+        provider_response_id: 1234,
+        response_sha256: "a".repeat(64),
+      }),
+    ],
+  );
+  assert.equal(numericReceipt.persisted, false);
+  passed++;
+  await db.exec(
+    "UPDATE web_source_rows SET question='My current timezone is UTC; reference 1234 for this week.'",
+  );
+  x = await prepare();
+  assert.equal(
+    (await finish(x, [{ ...facts[0], source_quote: 1234 }])).persisted,
+    false,
+  );
+  assert.equal(
+    (await db.query("SELECT count(*)::int n FROM sandy_temporal_facts")).rows[0]
+      .n,
+    0,
+  );
+  await db.exec(
+    "UPDATE web_source_rows SET question='My current timezone is UTC for the next week.'",
+  );
+  passed++;
+  x = await prepare();
   const result = await finish(x);
   assert.equal(result.persisted, true);
   assert.equal(result.inserted, 1);
