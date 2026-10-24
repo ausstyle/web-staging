@@ -37,6 +37,13 @@ INSERT INTO sandy_operation_registry(operation,handler,permission_scope,is_mutat
  CREATE OR REPLACE FUNCTION sandy_api_current_agenda_customer_id() RETURNS uuid LANGUAGE sql AS $$SELECT customer_id FROM public.sandy_memory_portal_accounts WHERE auth_user_id=auth.uid() AND revoked_at IS NULL$$;`);
  await db.exec(await readFile(new URL('../../supabase/migrations/20261024004500_sandy_customer_mutation_private_certification.sql',import.meta.url),'utf8'));
  const contracts=(await db.query('SELECT sandy_customer_mutation_contracts_v1() c')).rows[0].c;
+ const expectedMetadata=(await db.query("SELECT encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha FROM pg_proc WHERE oid='public.sandy_customer_mutation_contracts_v1()'::regprocedure")).rows;
+ await db.exec('CREATE ROLE supabase_read_only_user;SET ROLE supabase_read_only_user');
+ try{
+  await assert.rejects(db.query('SELECT public.sandy_customer_mutation_contracts_v1()'),e=>e.code==='42501');
+  assert.deepEqual((await db.query("SELECT encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha FROM pg_proc WHERE oid='public.sandy_customer_mutation_contracts_v1()'::regprocedure")).rows,expectedMetadata);
+ }finally{await db.exec('RESET ROLE');}
+
  for(const op of Object.keys(contracts)) await db.query("INSERT INTO sandy_operation_registry(operation,handler,permission_scope,is_mutation,api_exposed,ai_exposed,verified) VALUES($1,'sandy-operations-api',$2,true,true,true,false) ON CONFLICT(operation) DO UPDATE SET api_exposed=true,ai_exposed=true,verified=false",[op,op.split('.')[0]+':write']);
  const artifact='71000000-0000-4000-8000-000000000001',change='72000000-0000-4000-8000-000000000001',task='73000000-0000-4000-8000-000000000001',event='74000000-0000-4000-8000-000000000001',file='75000000-0000-4000-8000-000000000001',company='76000000-0000-4000-8000-000000000001',category='77000000-0000-4000-8000-000000000001',nonce='12345678901234567890123456789012';
  const email='sandy-service-acceptance-12345678-1234-4234-8234-1234567890ab@example.invalid',deployment='zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_63',prefix='customer_mutation_cert_'+nonce+':';

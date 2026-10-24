@@ -1,4 +1,4 @@
-import io,json,tempfile,unittest,zipfile
+import io,json,tempfile,unittest,zipfile,contextlib
 from pathlib import Path
 from unittest.mock import Mock
 from verify_customer_mutation_private_mcp import CustomerMutationAcceptance,fixture_docx,storage_object_absent
@@ -11,6 +11,29 @@ class CustomerMutationAcceptanceTests(unittest.TestCase):
  def test_storage_cleanup_distinguishes_missing_object_from_auth_or_transport_failure(self):
   self.assertTrue(storage_object_absent(400,b'{"statusCode":"404","error":"not_found","message":"Object not found"}'))
   for status,body in [(403,b'{"statusCode":"403","error":"AccessDenied"}'),(400,b'{"statusCode":"400","error":"InvalidJWT"}'),(404,b'proxy route missing')]:self.assertFalse(storage_object_absent(status,body))
+ def test_compiled_contract_check_reads_pinned_catalog_metadata_without_private_execution(self):
+  r=self.runner();expected={'proname':'sandy_customer_mutation_contracts_v1','sha':'a'*64,'prosecdef':False,'proconfig':['search_path=pg_catalog, pg_temp'],'owner':'postgres'}
+  with tempfile.TemporaryDirectory() as d:
+   r.manifest=Path(d)/'manifest.json';r.manifest.write_text(json.dumps({'private_schema_sources':[expected]}));r.report={'checks':[]}
+   r.r._sql.return_value=[expected];r.verify_contract_metadata()
+   query=r.r._sql.call_args.args[0]
+   self.assertIn('FROM pg_proc',query);self.assertNotIn('SELECT public.sandy_customer_mutation_contracts_v1()',query)
+   self.assertIs(r.r._sql.call_args.args[1],True);self.assertTrue(r.report['checks'][-1]['passed'])
+   r.r._sql.return_value=[{**expected,'sha':'b'*64}]
+   with self.assertRaisesRegex(RuntimeError,'reviewed_existing_ten_compiled_contracts'):r.verify_contract_metadata()
+ def test_failed_notice_exposes_safe_code_but_never_raw_sensitive_error(self):
+  for error,code in [(RuntimeError('runtime_administration_query_failed'),'runtime_administration_query_failed'),(RuntimeError('Authorization Bearer private.fixture.jwt'),None)]:
+   r=self.runner();r.readiness=None;r.change=None;r.retired=False
+   r.report={'checks':[],'cleanup':{},'verified_mutation_receipts':[],'exact_capability_scope':{'test':'fixture'}}
+   r.prepare=Mock(side_effect=error)
+   def cleanup():r.report['cleanup'].update(complete=True,storage_and_fixture_retirement_complete=True)
+   r.cleanup=cleanup
+   with tempfile.TemporaryDirectory() as d:
+    r.output=Path(d)/'report.json';r.save=lambda:r.output.write_text(json.dumps(r.report))
+    stdout=io.StringIO()
+    with contextlib.redirect_stdout(stdout):self.assertFalse(r.run())
+    notice=json.loads(stdout.getvalue().split('::',2)[2]);self.assertEqual(notice['error_class'],'RuntimeError');self.assertEqual(notice['runner_error_code'],code)
+    self.assertNotIn('private.fixture.jwt',stdout.getvalue());r.r._sql.assert_not_called()
  def runner(self):
   r=CustomerMutationAcceptance.__new__(CustomerMutationAcceptance);r.nonce='1'*32;r.fixtures=[];r.report={};r.save=Mock();r.keys={'service_role':'private.provider.fixture','anon':'public.fixture'};r.r=Mock();return r
  def test_storage_administration_cannot_choose_an_unowned_path_or_external_target(self):

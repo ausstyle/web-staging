@@ -32,6 +32,14 @@ class CustomerMutationReleaseTests(unittest.TestCase):
   self.assertLess(workflow.index('NormalMemoryAcceptance(Path'),workflow.index('verify_customer_mutation_private_mcp.py --manifest'))
   self.assertNotIn('repair-readiness-and-certify',workflow)
   self.assertNotIn('repair_memory_readiness_custody.py',workflow)
+ def test_finite_only_mode_reads_source_and_skips_completed_regression_effects(self):
+  workflow=(release.ROOT/'.github/workflows/sandy-customer-mutation-certification.yml').read_text()
+  self.assertIn('finite-acceptance-only',workflow)
+  self.assertIn('if [ "$RELEASE_ACTION" = acceptance-only ] || [ "$RELEASE_ACTION" = finite-acceptance-only ]; then args+=(--verify-installed); fi',workflow)
+  section=workflow.split('- name: Verify public memory and narrow cancellation after a new installation',1)[1].split('- name: Verify only the finite ten existing customer mutations',1)[0]
+  self.assertIn("if: inputs.action == 'install-and-certify' || inputs.action == 'acceptance-only'",section)
+  self.assertNotIn('finite-acceptance-only',section)
+  self.assertLess(workflow.index('release_customer_mutation_certification.py --verify-installed'),workflow.index('verify_customer_mutation_private_mcp.py --manifest'))
  def test_exact_source_preimage_rejects_arbitrary_index(self):
   with self.assertRaisesRegex(Blocked,'reviewed_IAP_API_source_preimage_changed'):source.patch_api({source.INDEX:b'arbitrary main'})
  def test_existing_cancellation_module_is_not_reinstalled(self):

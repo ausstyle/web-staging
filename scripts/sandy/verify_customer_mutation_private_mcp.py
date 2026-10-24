@@ -67,10 +67,17 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
         if len(payload)>4096:raise RuntimeError('storage_fixture_response_limit')
         self.report.setdefault('storage_fixture_calls',[]).append({'fixture_index':self.fixtures.index(fixture),'action':action,'http_status':status,'response_sha256':digest(payload),'provider_fixture_administration_only':True});self.save()
         return status,payload
+    def verify_contract_metadata(self):
+        # Management read-only sessions intentionally cannot EXECUTE this private
+        # helper. The source/schema preflight already binds all ten compiled
+        # registry descriptors to the committed spec; inspect catalog metadata.
+        manifest=json.loads(self.manifest.read_text())
+        expected=[x for x in manifest['private_schema_sources'] if x['proname']=='sandy_customer_mutation_contracts_v1']
+        actual=self.r._sql("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid='public.sandy_customer_mutation_contracts_v1()'::regprocedure",True)
+        self.check('reviewed_existing_ten_compiled_contracts',len(expected)==1 and actual==expected)
     def prepare(self):
         source=self.source();q=self.r._quote
-        contracts=self.r._sql('SELECT public.sandy_customer_mutation_contracts_v1() contracts',True)
-        self.check('reviewed_existing_ten_compiled_contracts',contracts==[{'contracts':self.spec['contracts']}])
+        self.verify_contract_metadata()
         bucket=self.r._sql("SELECT public,file_size_limit,allowed_mime_types FROM storage.buckets WHERE id='sandy-task-artifacts'",True)
         self.check('existing_private_DOCX_fixture_bucket',len(bucket)==1 and bucket[0]['public'] is False and MIME in bucket[0]['allowed_mime_types'] and bucket[0]['file_size_limit']>=2048)
         Acceptance.prepare(self)
@@ -200,7 +207,7 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
         try:self.prepare();self.exercise()
         except Exception as error:
             self.report['runner_error']=type(error).__name__
-            if isinstance(error,RuntimeError) and re.fullmatch('[A-Za-z0-9_]+',str(error)):self.report['runner_error_code']=str(error)
+            if isinstance(error,RuntimeError) and re.fullmatch('[A-Za-z0-9_]{1,120}',str(error)):self.report['runner_error_code']=str(error)
         finally:
             try:self.cleanup()
             except Exception as error:self.report['cleanup'].update(complete=False,error_class=type(error).__name__)
@@ -213,7 +220,7 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
             rows=self.r._sql("INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES("+self.r._quote(self.change)+",'customer_mutation_private_readiness_revoked',NULL,"+self.r._quote(json.dumps({'artifact_id':self.readiness,'customer_mutation_MCP_proof':proof}))+"::jsonb) RETURNING id")
             if len(rows)!=1:raise RuntimeError('immutable_execution_proof_record_required')
             proof_event=rows[0]['id']
-        notice={'complete':self.report['complete'],'report_sha256':report_sha,'proof_event_id':proof_event,'readiness_id':self.readiness,'receipt_ids':[x['mutation_id'] for x in self.report['verified_mutation_receipts']],'checks_passed':sum(x['passed'] for x in self.report['checks']),'failed_checks':[x['name'] for x in self.report['checks'] if not x['passed']],'cleanup':self.report['cleanup'],'scope':self.report['exact_capability_scope'],'nonliteral_model_enrichment_verified':False,'public_flags_changed':False}
+        notice={'complete':self.report['complete'],'error_class':self.report.get('runner_error'),'runner_error_code':self.report.get('runner_error_code'),'report_sha256':report_sha,'proof_event_id':proof_event,'readiness_id':self.readiness,'receipt_ids':[x['mutation_id'] for x in self.report['verified_mutation_receipts']],'checks_passed':sum(x['passed'] for x in self.report['checks']),'failed_checks':[x['name'] for x in self.report['checks'] if not x['passed']],'cleanup':self.report['cleanup'],'scope':self.report['exact_capability_scope'],'nonliteral_model_enrichment_verified':False,'public_flags_changed':False}
         raw=json.dumps(notice)
         if len(raw)>3900:raise RuntimeError('bounded_safe_annotation_required')
         print('::notice title=Finite normal-customer mutation acceptance::'+raw)
