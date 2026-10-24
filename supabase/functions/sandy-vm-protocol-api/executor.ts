@@ -105,18 +105,21 @@ export async function executeRegisteredProtocol(
       protocol === "ssh" && binding.ssh?.mode === "oslogin",
     );
   // Recheck the same binding and immutable command after provider metadata proof.
-  const current = await deps.resolveExecution(context);
-  if (
-    !obj(current) || !obj(current.binding) ||
-    current.binding.version !== binding.version ||
-    current.command_sha256 !== commandSha ||
-    canonicalJson(current.binding) !== canonicalJson(resolved.binding)
-  ) throw new ProtocolRefusal("vm_protocol_binding_changed_during_execution");
+  const recheckDispatch = async () => {
+    const current = await deps.resolveExecution(context);
+    if (
+      !obj(current) || current.vm_name !== context.vmName || !obj(current.binding) ||
+      current.binding.version !== binding.version || current.command !== command ||
+      current.command_sha256 !== commandSha ||
+      canonicalJson(current.binding) !== canonicalJson(resolved.binding)
+    ) throw new ProtocolRefusal("vm_protocol_binding_changed_during_execution");
+  };
+  await recheckDispatch();
   let result: SshResult | WinrmResult, cleanup: true | null = null;
   const executeSsh = async (endpoint: SshEndpoint) => {
     const stream = proof.transport === "iap"
       ? await (deps.iapTunnel ?? openIapTunnel)(context.vmName, 22, token) : undefined;
-    try { return await (deps.sshExecute ?? sshExecute)({ ...endpoint, ...(stream ? { stream } : {}) }, command); }
+    try { return await (deps.sshExecute ?? sshExecute)({ ...endpoint, ...(stream ? { stream } : {}) }, command, { beforeCommand: recheckDispatch }); }
     finally { stream?.destroy(); }
   };
   if (protocol === "ssh") {
@@ -169,7 +172,7 @@ export async function executeRegisteredProtocol(
       username: auth.username,
       password: auth.password,
     };
-    result = await (deps.winrmExecute ?? winrmExecute)(endpoint, command);
+    result = await (deps.winrmExecute ?? winrmExecute)(endpoint, command, { beforeCommand: recheckDispatch });
   }
   const stdoutSha = await bytesDigest(result.stdout),
     stderrSha = await bytesDigest(result.stderr),

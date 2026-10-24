@@ -41,7 +41,12 @@ function hostPin(value: string): Buffer {
 export async function sshExecute(
   endpoint: SshEndpoint,
   command: string,
-  options: { timeoutMs?: number; maxOutputBytes?: number } = {},
+  options: {
+    timeoutMs?: number;
+    maxOutputBytes?: number;
+    /** Server-owned authority recheck after authentication, before exec. */
+    beforeCommand?: () => Promise<void>;
+  } = {},
 ): Promise<SshResult> {
   const timeoutMs = options.timeoutMs ?? 30000,
     max = options.maxOutputBytes ?? 65536;
@@ -68,6 +73,7 @@ export async function sshExecute(
     const client = new ssh2.Client();
     let stream: ClientChannel | undefined,
       executed = false,
+      authorizing = false,
       hostVerified = false,
       hostRefused = false,
       done = false;
@@ -98,7 +104,7 @@ export async function sshExecute(
           new ProtocolRefusal(
             executed
               ? "ssh_execution_outcome_unknown"
-              : "ssh_connection_timeout",
+              : authorizing ? "ssh_dispatch_authorization_timeout" : "ssh_connection_timeout",
             executed,
           ),
         ),
@@ -141,12 +147,22 @@ export async function sshExecute(
         );
       }
     });
-    client.on("ready", () => {
+    client.on("ready", async () => {
       if (done) return;
       if (!hostVerified) {
         settle(new ProtocolRefusal("ssh_host_key_mismatch"));
         return;
       }
+      authorizing = true;
+      try {
+        await options.beforeCommand?.();
+      } catch {
+        settle(new ProtocolRefusal("ssh_dispatch_authorization_refused"));
+        return;
+      }
+      authorizing = false;
+      // A late policy response must not dispatch after the transport deadline.
+      if (done) return;
       // Mark possible effects before sending exec, including lost acknowledgements.
       executed = true;
       client.exec(command, { pty: false }, (error, channel) => {
