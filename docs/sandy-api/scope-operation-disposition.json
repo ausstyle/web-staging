@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "basis": "Original 161 families plus the user's clarifications: use shared adapters, retain operation-specific authorization, and provide reusable VM execution rather than software-specific MCP installation tools.",
   "standalone_mcp_tools_not_required": {
     "video.install": "Software installation belongs to the authorized reusable engineering executor.",
@@ -207,6 +207,20 @@
       "github.actions.artifacts.download.capture",
       "provider.artifacts.read_private",
       "github.actions.artifacts.delete"
+    ],
+    "117": [
+      "github.files.content.get",
+      "github.files.create",
+      "github.files.update",
+      "github.files.delete"
+    ],
+    "118": [
+      "github.git.blobs.create",
+      "github.git.get_blob",
+      "github.git.trees.create",
+      "github.git.trees.get",
+      "github.git.commits.create",
+      "github.git.commits.get"
     ]
   },
   "supporting_diagnostic_families": {
@@ -498,7 +512,9 @@
     "119": "Closing an existing PR is pull_requests.update with body.state=closed; this is not a separate transport or extra registry entry.",
     "125": "Publishing an existing draft release is releases.update with body.draft=false.",
     "28": "set_machine_type implements the reviewed machine-type change. Live resize constraints, stop prerequisites and guest effects remain acceptance obligations.",
-    "34": "Compute operation polling covers zone, region and global resources; unrelated Cloud Run/DNS operations are optional candidates for this explicit family."
+    "34": "Compute operation polling covers zone, region and global resources; unrelated Cloud Run/DNS operations are optional candidates for this explicit family.",
+    "117": "Contents GET and create/update/delete implement the four required file lifecycle actions. metadata.get is supporting metadata; upsert/push_files/read/update_file are compatibility or batching candidates, not extra required actions. This constituent review does not waive binary/large-artifact custody, isolation, recovery or current-version evidence.",
+    "118": "Git database scope requires immutable blob/tree/commit creation and retrieval (six canonical operations). github.commit is the compatibility alias for commit creation, not a seventh constituent. github.git.get_blob remains required despite closed exposure and restricted classification. Tree/blob mutation settlement and byte/hash verification are not waived."
   },
   "external_dependencies": [
     {
