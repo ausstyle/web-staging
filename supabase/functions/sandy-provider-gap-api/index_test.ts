@@ -377,12 +377,13 @@ const argsFor = (kind: string): Obj =>
     : kind.startsWith("comment_") || kind === "reply_list"
     ? { number: 2, comment_id: "DC_123" }
     : { number: 2 };
-Deno.test("38 exact contracts compile and the original 35 provider transports retain their regression coverage", async () => {
-  assert.equal(validateGapContracts(), 38);
-  // The three new transports have separate session/custody/security fixtures.
+Deno.test("39 exact contracts compile and the original 35 provider transports retain their regression coverage", async () => {
+  assert.equal(validateGapContracts(), 39);
+  // The four new transports have separate session/custody/security fixtures.
   for (
     const op of Object.values(gapContracts).filter((op) =>
-      !["project_list", "project_create", "function_invoke"].includes(op.kind)
+      !["project_list", "project_create", "function_invoke", "logging_query"]
+        .includes(op.kind)
     )
   ) {
     assert.match(op.source_sha256, /^[a-f0-9]{64}$/);
