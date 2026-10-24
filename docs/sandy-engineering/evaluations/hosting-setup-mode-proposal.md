@@ -46,3 +46,35 @@ Implementation would require a reviewed, expiry/revocation-aware authorization p
 Rollback is immediate revocation of the setup envelope, not removal of audit records or deletion of deployed customer data. In-flight authorized writes may need reconciliation; revocation cannot reverse an already executed effect. Existing exact-release gates resume for subsequent dispatch. Test expiry, revocation, retail transition, missing policy, target mismatch, security diff, budget exhaustion, stale source and uncertain outcomes before activation.
 
 Residual risk: classifying a code change as non-security is imperfect, static publishing may deliver customer-visible bugs, and a source review is not live acceptance. Keep the allowlist small, fail closed, retain independent review and receipts, and require fresh live acceptance before claiming readiness. No claim is made that any approval requirement has been removed.
+
+## Consolidated decision boundaries with Sandy Cloud (not hosting)
+
+Use the immutable [SC-0012 pilot request at 9f8ec7f](https://github.com/ausstyle/web-staging/blob/9f8ec7f8307ffd4906a10540c8eff77749b7bcdb/docs/sandy-cloud/pilot-approval-request.md) as its own exact proposal. It concerns Drive/backup synthetic storage, not customer website hosting. Its proposed europe-west1 location must not replace hosting's europe-west8 contract.
+
+| Decision | Exact scope | Approval status |
+| --- | --- | --- |
+| Routine setup work | Seven-day maximum hosting-only routine envelope described above; review/test/audit/expiry retained | Proposal only; source/build/test/ordinary PR work already proceeds without repeated Owner prompts |
+| Current logical hosting account release | Existing change 04fab547-3177-4eb4-ac23-23831152b420; immutable source/manifest above; one existing handler plus two migrations | Still requires genuine exact Owner audit; no paid resources |
+| Sandy Cloud pilot spending | Project elaborate-haven-511518-a5; 30 days; USD 10 total incremental GCS ceiling excluding tax/conversion; stop admissions at USD 8 estimated usage; physical bytes <=10 GiB, readback <=20 GiB, Class A <=10,000 and Class B <=100,000 | Proposed, not approved; SKU/billing/inventory verification still required; budget alert is not a hard cap |
+| Sandy Cloud security changes | Three new private buckets and three keyless accounts with the bucket-scoped matrix below | Separate explicit access-expansion decision; not implied by setup mode or budget approval |
+| Cloud workload binding | Existing authorized principal must be supplied and verified; exact binding proposal still missing | Not included in the pilot proposal or setup mode |
+| Hosting billable resources | Cloud Run/SQL/storage/LB/Certificate Manager target-specific inventory, costs and approval | No quantified hosting budget approved; the Cloud pilot USD 10 must not be reused |
+| Mail pilot | Exact first-email resource/cost proposal forthcoming | No resource, security or spending approval inferred |
+| Live DNS/traffic/security changes | Verified owner/tenant, exact target/diff, impact and recovery review | Remain separate; no blanket pre-retail exemption |
+
+The three proposed Cloud buckets are `elaborate-haven-511518-a5-sc0012-stage`, `elaborate-haven-511518-a5-sc0012-drive` and `elaborate-haven-511518-a5-sc0012-vault`. Proposed region is europe-west1 for synthetic fixtures only. Enforce public access prevention and uniform bucket access; no public principals, customer files, default-backend switch or irreversible retention lock. Proposed vault retention is seven days, unlocked.
+
+Exact proposed keyless service-account/bucket roles (no keys, project-wide storage roles, IAM-admin, token-creator, impersonation or federation binding):
+
+| Account prefix, all @elaborate-haven-511518-a5.iam.gserviceaccount.com | Bucket suffix | Roles |
+| --- | --- | --- |
+| sc0012-transfer | sc0012-stage | roles/storage.objectCreator; roles/storage.objectViewer |
+| sc0012-transfer | sc0012-drive | roles/storage.objectViewer |
+| sc0012-scanner | sc0012-stage | roles/storage.objectViewer |
+| sc0012-scanner | sc0012-drive | roles/storage.objectCreator; roles/storage.objectViewer |
+| sc0012-backup | sc0012-drive | roles/storage.objectViewer |
+| sc0012-backup | sc0012-vault | roles/storage.objectCreator; roles/storage.objectViewer |
+
+Those identities can list/read synthetic objects in their allowed buckets; tenant filtering still needs service enforcement and acceptance. Rollback freezes new admissions and preserves data/receipts. It does not authorize bucket destruction or cleanup. Continuing retention costs at pilot expiry need reconciliation and a follow-up decision. The missing principal binding and protected release remain separate prerequisites even if the resource/budget proposal is accepted.
+
+**Action-time wording must enumerate the selected decisions**, rather than “disable all approvals until retail.” No decision in this table has been activated by publishing this document. For the current hosting release, the deployed exact-record Controller view preserves the same Owner audit; it does not authorize this setup envelope or the Cloud pilot.
