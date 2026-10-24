@@ -12,6 +12,8 @@ GUARD='public.sandy_runtime_conversation_receipt_guard()'
 BEFORE='d67fca3362ed7a1e216014a8bc71f6ea'
 AFTER='0f077a547cdac1aa9329c0c78dfd3205'
 CONSTRAINT='f1a41a1a7c11525ba45b8e30c3c20c6c'
+SOURCE_REPAIR='supabase/migrations/20261024005100_sandy_runtime_entrypoint_source_profile.sql'
+SOURCE_REPAIR_GUARD='d6f53d143f87e6ad294fc3754efb3c8f'
 
 def state(r):
  rows=r.sql("SELECT pg_get_functiondef(oid) definition,md5(pg_get_functiondef(oid)) definition_md5,oid,proowner,proacl::text acl,prosecdef,proconfig FROM pg_proc WHERE oid="+quote(GUARD)+"::regprocedure",True)
@@ -31,7 +33,12 @@ def verify(r,sql):
  col=r.sql("SELECT data_type,is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name='sandy_runtime_conversation_audit' AND column_name='model_metrics'",True)
  constraint=r.sql("SELECT md5(pg_get_constraintdef(oid)) definition_md5 FROM pg_constraint WHERE conrelid='public.sandy_runtime_conversation_audit'::regclass AND conname='sandy_runtime_model_metrics_shape' AND convalidated",True)
  s=state(r)
- if rows!=[{'statements':[sql]}] or col!=[{'data_type':'jsonb','is_nullable':'YES'}] or constraint!=[{'definition_md5':CONSTRAINT}] or s['definition_md5']!=AFTER:raise Blocked('receipt_metrics_installation_readback_failed')
+ repair=r.sql("SELECT statements FROM supabase_migrations.schema_migrations WHERE version='20261024005100'",True)
+ expected_guard=AFTER
+ if repair:
+  if repair!=[{'statements':[(ROOT/SOURCE_REPAIR).read_text()]}]:raise Blocked('runtime_source_repair_history_changed')
+  expected_guard=SOURCE_REPAIR_GUARD
+ if rows!=[{'statements':[sql]}] or col!=[{'data_type':'jsonb','is_nullable':'YES'}] or constraint!=[{'definition_md5':CONSTRAINT}] or s['definition_md5']!=expected_guard:raise Blocked('receipt_metrics_installation_readback_failed')
  return {'migration':VERSION,'installed':True,'historical_usage_backfilled':False,'functional_acceptance_passed':False,'authority_expanded':False}
 
 def run(r,deploy=False,installed=False):

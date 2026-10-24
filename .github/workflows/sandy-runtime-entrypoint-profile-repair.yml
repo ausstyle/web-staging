@@ -1,0 +1,61 @@
+name: Repair exact Runtime entrypoint receipt profile
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261024005100*'
+      - 'scripts/sandy/*runtime_entrypoint_profile*'
+      - 'scripts/sandy/runtime_model_metrics_acceptance.py'
+      - '.github/workflows/sandy-runtime-entrypoint-profile-repair.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        required: true
+        options: [repair-and-accept, acceptance-only]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-runtime-profile-pr-{0}', github.event.pull_request.number) }}
+  cancel-in-progress: false
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - run: |
+          deno test --no-lock --allow-read scripts/sandy/test_runtime_entrypoint_profile_postgres.ts
+          deno test --no-lock --allow-read scripts/sandy/test_runtime_model_metrics_postgres.ts
+          PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_runtime_entrypoint_profile_release.py scripts/sandy/test_runtime_model_metrics_acceptance.py scripts/sandy/test_runtime_model_metrics_workflow.py -v
+  repair:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: tests
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Repair only the exact deployed entrypoint source profile
+        if: inputs.action == 'repair-and-accept'
+        run: python3 scripts/sandy/repair_runtime_entrypoint_profile.py --apply --evidence-dir "$RUNNER_TEMP/source-profile-repair"
+      - name: Verify source, profile, installed05000 and unchanged Runtime36
+        run: python3 scripts/sandy/repair_runtime_entrypoint_profile.py --verify-installed --evidence-dir "$RUNNER_TEMP/source-profile-readback"
+      - name: One normal customer turn after exact profile and source verification
+        run: python3 scripts/sandy/runtime_model_metrics_acceptance.py --output "$RUNNER_TEMP/source-profile-acceptance/receipt.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-source-profile-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/source-profile-repair/
+            ${{ runner.temp }}/source-profile-readback/
+            ${{ runner.temp }}/source-profile-acceptance/
+          retention-days: 14
