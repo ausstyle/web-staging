@@ -164,8 +164,9 @@ function assertReceipt(intent: UploadIntent, receipt: VersionReceipt): void {
 }
 
 /** This coordinator cannot expose a version just because bytes arrived.
- * Database adapters are intentionally NOT supplied until metadata ADR/ownership
- * is resolved. Unknown commit outcomes never trigger a blind second write.
+ * postgres/commit.ts supplies a transaction adapter with mandatory canonical-owner
+ * hooks; installation remains gated on ownership. Unknown commit outcomes never
+ * trigger a blind second write.
  */
 export async function completeUpload(
   input: UploadIntent,
