@@ -265,16 +265,27 @@
     n = n < 0n ? -n : n;
     return sign + (n / 100n) + "." + String(n % 100n).padStart(2, "0");
   };
+  function unknownOutcome(req) {
+    if (!lastFailed) lastFailed = structuredClone(req);
+    $("#retry").hidden = false;
+    return Error(
+      "Request outcome unknown. Retry the same request before continuing.",
+    );
+  }
   async function api(operation, args = {}, key = crypto.randomUUID(), existing) {
-    const req = existing ??
-      {
-        operation,
-        arguments: args,
-        contract_version: "1",
-        company_id: "synthetic-company",
-        idempotency_key: key,
-      };
-    let res;
+    if (lastFailed && existing !== lastFailed) {
+      throw Error(
+        "An earlier request has an unknown outcome. Retry the same request before continuing.",
+      );
+    }
+    const req = existing ?? structuredClone({
+      operation,
+      arguments: args,
+      contract_version: "1",
+      company_id: "synthetic-company",
+      idempotency_key: key,
+    });
+    let res, data;
     try {
       res = await fetch("/api/run", {
         method: "POST",
@@ -284,15 +295,22 @@
         },
         body: JSON.stringify(req),
       });
-    } catch (e) {
-      lastFailed = req;
-      $("#retry").hidden = false;
-      throw Error(
-        "Connection interrupted; outcome unknown. Retry the same request.",
-      );
+      data = await res.json();
+    } catch (error) {
+      throw unknownOutcome(req);
     }
-    const data = await res.json();
-    if (!res.ok) throw Error(data.error);
+    if (!res.ok) {
+      if (
+        data?.error === "commit_outcome_unknown_retry_same_key" ||
+        res.status >= 500 || res.status === 408
+      ) throw unknownOutcome(req);
+      // A denied retry does not establish whether the earlier request committed.
+      throw Error(data?.error ?? "Request failed.");
+    }
+    if (
+      !data || typeof data.result !== "object" || data.result === null ||
+      Array.isArray(data.result)
+    ) throw unknownOutcome(req);
     lastFailed = null;
     $("#retry").hidden = true;
     return data.result;
@@ -1023,7 +1041,24 @@
       );
     });
   $("#close-detail").onclick = () => $("#detail").close();
-  $("#retry").onclick = () => action(() => api("", {}, "", lastFailed));
+  $("#retry").onclick = () =>
+    action(async () => {
+      const pending = lastFailed;
+      if (!pending) throw Error("No request is waiting for recovery.");
+      const result = await api("", {}, "", pending);
+      if (pending.operation === "accounting.documents.draft.update") endEditing();
+      if (pending.operation === "accounting.banking.statements.csv.import") {
+        csvPreview = null;
+        $("#csv-import").hidden = true;
+        $("#csv-receipt").textContent = JSON.stringify(result, null, 2);
+        $("#csv-receipt").hidden = false;
+      }
+      $("#suggestions").replaceChildren();
+      $("#bank-review").replaceChildren();
+      $("#detail-title").textContent = "Recovered request result";
+      $("#detail-output").textContent = JSON.stringify(result, null, 2);
+      $("#detail").showModal();
+    });
   source = {
     file_id: "synthetic-worksheet",
     revision: "1",

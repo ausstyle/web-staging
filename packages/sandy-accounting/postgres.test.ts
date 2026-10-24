@@ -631,13 +631,66 @@ test(
         })).imports.length,
         2,
       );
+      const fxReview = await run("accounting.ledger.journal.post", {
+        ...args,
+        currency: "USD",
+        fx: {
+          numerator: "499999999999999999",
+          denominator: "999999999999999999",
+          source,
+          date: "2026-10-01",
+        },
+        lines: [{ account_id: "bank", amount: "0.03" }, {
+          account_id: "capital",
+          amount: "-0.03",
+        }],
+      });
+      assert.deepEqual(fxReview.lines.map((line: any) => line.base_amount), [
+        "1",
+        "-1",
+      ]);
+      const fxReversal = await run("accounting.ledger.journal.reverse", {
+        journal_id: fxReview.journal_id,
+        effective_date: "2026-10-02",
+        reason: "Synthetic independent-review FX boundary",
+        evidence: [source],
+      });
+      assert.deepEqual(fxReversal.lines.map((line: any) => line.base_amount), [
+        "-1",
+        "1",
+      ]);
+      await assert.rejects(
+        db.transaction(async (tx) => {
+          await tx.query("SET LOCAL ROLE accounting_fixture");
+          await tx.query(
+            "SELECT set_config('accounting.tenant','t1',true),set_config('accounting.company','c1',true),set_config('accounting.actor','a1',true)",
+          );
+          await tx.query(
+            "INSERT INTO accounting.journals(tenant_id,company_id,id,effective_date,narration,currency,precision,evidence,actor_id,source) VALUES('t1','c1','pg-guard-ar','2026-10-01','Synthetic role guard','AUD',2,$1,'a1','manual')",
+            [JSON.stringify([source])],
+          );
+          await tx.query(
+            "INSERT INTO accounting.lines VALUES('t1','c1','pg-guard-ar',0,'ar',2500,2500),('t1','c1','pg-guard-ar',1,'sales',-2500,-2500)",
+          );
+          await tx.query(
+            "UPDATE accounting.journals SET state='POSTED' WHERE id='pg-guard-ar'",
+          );
+        }),
+        /subledger_operation_required/,
+      );
+      assert.equal(
+        (await admin.query(
+          "SELECT count(*)::int n FROM accounting.journals WHERE id='pg-guard-ar'",
+        )).rows[0].n,
+        0,
+      );
       const audit = await app.execute("synthetic", {
         operation: "accounting.audit.verify",
         contract_version: "1",
         company_id: "c1",
         arguments: {},
       });
-      assert.equal(audit.events, editWon ? 121 : 120);
+      assert.equal(audit.events, editWon ? 123 : 122);
       assert.equal(audit.valid, true);
     } finally {
       await pool?.end();

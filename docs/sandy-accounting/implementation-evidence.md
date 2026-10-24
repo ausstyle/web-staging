@@ -115,7 +115,7 @@ The [delivery register](delivery-register.json) is an exhaustive inventory, not 
 
 | Target / action | Reason and current state | Impact / cost / rollback |
 | --- | --- | --- |
-| PR299 ready-for-review transition | Automatic approval review **denied** `github_mark_pull_request_ready_for_review`: the reviewer requires explicit authority to leave draft. The transition did not execute; no merge was attempted. A specific approval question is pending. | Blocks ready/merge only; work continues on the isolated draft branch. No infrastructure cost or financial effect. |
+| PR299 ready-for-review transition | Automatic approval review **denied** `github_mark_pull_request_ready_for_review`: the reviewer requires explicit authority to leave draft. The transition did not execute; no merge was attempted. The parent explicitly directed that PR299 remain draft; the denied transition is stopped and no approval request is pending. | Blocks ready/merge only; work continues on the isolated draft branch. No infrastructure cost or financial effect. |
 | Existing staging Accounting host and PostgreSQL database | Routine in-scope test-mode release is user-authorized, but no existing Accounting target, mapping, role or protected release-owner binding was verified. **Not attempted**; no denial or uncertain live mutation. | Blocks shared deployment, not local implementation. Use existing resources only after target/owner confirmation; cost unknown until selected. Roll back service artifact/flag; preserve posted data. |
 | `sandy-operation-api` and canonical registry | Shared concurrent API161/runtime component; the source adapter now exists, but has no live owner bindings, release lock or installed registration. **Not attempted.** | Requires owner-coordinated exact contract/admission integration and digest compatibility tests. No IAM expansion assumed; rollback removes new dispatch/exposure only. |
 | Cloud SQL / Cloud Run / storage | Region, HA, tenancy/cost ADR and billable provisioning authority missing. **Not provisioned.** | Cost cannot be quoted without sizing; retain local implementation. Proposed resources require exact cost/cap/cleanup plan before approval. |
@@ -123,3 +123,7 @@ The [delivery register](delivery-register.json) is an exhaustive inventory, not 
 | Independent acceptance | No accountant, payroll, security or product-owner sign-off supplied. **Pending.** | Local tests are useful evidence only; cannot claim GA, compliance or independent acceptance. |
 
 Automatic approval review rejected the PR299 ready-for-review transition as described above; it was not retried or bypassed. The legacy branch-protection read also returned HTTP 403, while safe branch/rule/status reads succeeded. Engineering Control source records were proposed, not approved or executed. No financial/customer data, credentials, IAM, live gateway/provider/runtime or concurrent product files were changed.
+
+## Independent source review follow-up
+
+See [independent-source-review.md](independent-source-review.md) for the exact frozen head, two separate reviewer agents, confirmed FX/browser defects, bounded SQL hardening, regression evidence and limitations. This is source review, not independent acceptance. The full v1.1 delivery register remains open.

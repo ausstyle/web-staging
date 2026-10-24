@@ -328,7 +328,9 @@ export class Accounting {
       date(a.fx.date);
       check(a.fx.date <= a.effective_date, "future_fx");
       check(
-        /^[1-9]\d{0,17}$/.test(a.fx.numerator) &&
+        typeof a.fx.numerator === "string" &&
+          typeof a.fx.denominator === "string" &&
+          /^[1-9]\d{0,17}$/.test(a.fx.numerator) &&
           /^[1-9]\d{0,17}$/.test(a.fx.denominator),
         "fx_ratio",
       );

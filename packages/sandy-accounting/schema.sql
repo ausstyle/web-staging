@@ -38,14 +38,17 @@ CREATE TABLE accounting.lines (
 CREATE INDEX accounting_lines_account ON accounting.lines(tenant_id,company_id,account_id,journal_id);
 CREATE INDEX accounting_journal_date ON accounting.journals(tenant_id,company_id,effective_date) WHERE state='POSTED';
 
+-- Integer quotient arithmetic avoids a rounded NUMERIC division at half boundaries.
 CREATE FUNCTION accounting.guard_journal() RETURNS trigger LANGUAGE plpgsql AS $$
-DECLARE lock_date date; b accounting.books;
+DECLARE lock_date date; b accounting.books; fx_n numeric; fx_d numeric;
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'journal_immutable'; END IF;
  IF TG_OP='UPDATE' AND (OLD.state='POSTED' OR (to_jsonb(OLD)-'state')<>(to_jsonb(NEW)-'state')) THEN RAISE EXCEPTION 'journal_immutable'; END IF;
  SELECT * INTO STRICT b FROM accounting.books WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id FOR UPDATE;
  IF NEW.effective_date<=b.locked_through THEN RAISE EXCEPTION 'period_locked'; END IF;
  IF NEW.state='POSTED' THEN
+  IF NEW.source NOT IN ('manual','reversal','invoice','bill','payment','payment_reversal','credit','credit_reversal','document_void') THEN RAISE EXCEPTION 'journal_source'; END IF;
+  IF NEW.source='manual' AND EXISTS(SELECT 1 FROM accounting.lines l JOIN accounting.accounts a ON a.tenant_id=l.tenant_id AND a.company_id=l.company_id AND a.id=l.account_id WHERE l.tenant_id=NEW.tenant_id AND l.company_id=NEW.company_id AND l.journal_id=NEW.id AND a.control IN ('ar','ap')) THEN RAISE EXCEPTION 'subledger_operation_required'; END IF;
   IF NEW.source NOT IN ('manual','reversal') AND NEW.cash_basis THEN RAISE EXCEPTION 'cash_basis_source'; END IF;
   IF NEW.reversal_of IS NOT NULL AND EXISTS(SELECT 1 FROM accounting.journals o WHERE o.tenant_id=NEW.tenant_id AND o.company_id=NEW.company_id AND o.id=NEW.reversal_of AND o.cash_basis<>NEW.cash_basis) THEN RAISE EXCEPTION 'cash_basis_reversal'; END IF;
   IF (SELECT count(*) FROM accounting.lines WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id AND journal_id=NEW.id)<2
@@ -53,8 +56,10 @@ BEGIN
   IF NEW.currency=b.currency AND (NEW.precision<>b.precision OR NEW.fx IS NOT NULL OR EXISTS(SELECT 1 FROM accounting.lines WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id AND journal_id=NEW.id AND amount<>base_amount)) THEN RAISE EXCEPTION 'invalid_base_currency'; END IF;
   IF NEW.currency<>b.currency AND (NEW.fx IS NULL OR NOT NEW.fx ?& ARRAY['numerator','denominator','source','date']) THEN RAISE EXCEPTION 'fx_evidence_required'; END IF;
   IF NEW.currency<>b.currency THEN
-   IF NOT (NEW.fx->>'numerator' ~ '^[1-9][0-9]{0,17}$') OR NOT (NEW.fx->>'denominator' ~ '^[1-9][0-9]{0,17}$') THEN RAISE EXCEPTION 'fx_ratio'; END IF;
-   IF EXISTS(SELECT 1 FROM accounting.lines WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id AND journal_id=NEW.id AND base_amount<>round(amount*(NEW.fx->>'numerator')::numeric*power(10::numeric,b.precision)/((NEW.fx->>'denominator')::numeric*power(10::numeric,NEW.precision)))) THEN RAISE EXCEPTION 'fx_conversion_mismatch'; END IF;
+   IF jsonb_typeof(NEW.fx->'numerator') IS DISTINCT FROM 'string' OR jsonb_typeof(NEW.fx->'denominator') IS DISTINCT FROM 'string' OR NOT (NEW.fx->>'numerator' ~ '^[1-9][0-9]{0,17}$') OR NOT (NEW.fx->>'denominator' ~ '^[1-9][0-9]{0,17}$') THEN RAISE EXCEPTION 'fx_ratio'; END IF;
+   fx_n:=(NEW.fx->>'numerator')::numeric*power(10::numeric,b.precision);
+   fx_d:=(NEW.fx->>'denominator')::numeric*power(10::numeric,NEW.precision);
+   IF EXISTS(SELECT 1 FROM accounting.lines WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id AND journal_id=NEW.id AND base_amount<>sign(amount)*div(abs(amount)*fx_n+div(fx_d,2),fx_d)) THEN RAISE EXCEPTION 'fx_conversion_mismatch'; END IF;
   END IF;
   IF NEW.reversal_of IS NOT NULL THEN
    IF NOT EXISTS(SELECT 1 FROM accounting.journals o WHERE o.tenant_id=NEW.tenant_id AND o.company_id=NEW.company_id AND o.id=NEW.reversal_of AND o.state='POSTED' AND ((o.source='manual' AND NEW.source='reversal') OR (o.source='payment' AND NEW.source='payment_reversal') OR (o.source IN ('invoice','bill') AND NEW.source='document_void') OR (o.source='credit' AND NEW.source='credit_reversal')) AND o.currency=NEW.currency AND o.precision=NEW.precision AND o.fx IS NOT DISTINCT FROM NEW.fx AND o.effective_date<=NEW.effective_date) THEN RAISE EXCEPTION 'invalid_reversal'; END IF;
