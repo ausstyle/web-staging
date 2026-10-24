@@ -14,7 +14,7 @@ from verify_memory_normal_mcp import NormalMemoryAcceptance
 
 
 def report():
-    return {'source_commit':'b'*40,'complete':True,'kind':'private_source_attested_normal_customer_MCP','checks':[{'name':x,'passed':True} for x in sorted(evidence.REQUIRED)],'cleanup':{'complete':True,'sessions':0,'portal_accounts':0,'banned_fixtures':2,'immutable_receipts_and_audit_preserved':True},'readiness_retired':True,'service_key_as_customer':False,'Owner_authority_claimed':False,'global_exposure_changed':False,'verified_mutation_receipts':[{}, {}, {}],'calls':[{'operation':'memory.fact_correct','response_sha256':'a'*64,'api_status':200,'executed':True},{'operation':'memory.fact_correct','response_sha256':'b'*64,'api_status':403,'is_error':True},{'operation':'memory.fact_correct','response_sha256':'c'*64,'api_status':409,'is_error':True}]}
+    return {'source_commit':'b'*40,'complete':True,'kind':'private_source_attested_normal_customer_MCP','checks':[{'name':x,'passed':True} for x in sorted(evidence.REQUIRED)],'cleanup':{'complete':True,'sessions':0,'portal_accounts':0,'banned_fixtures':2,'immutable_receipts_and_audit_preserved':True},'readiness_retired':True,'service_key_as_customer':False,'Owner_authority_claimed':False,'global_exposure_changed':False,'verified_mutation_receipts':[{'mutation_id':'00000000-0000-4000-8000-000000000001'},{'mutation_id':'00000000-0000-4000-8000-000000000002'},{'mutation_id':'00000000-0000-4000-8000-000000000003'}],'calls':[{'operation':'memory.fact_correct','response_sha256':'a'*64,'api_status':200,'executed':True},{'operation':'memory.fact_correct','response_sha256':'b'*64,'api_status':403,'is_error':True},{'operation':'memory.fact_correct','response_sha256':'c'*64,'api_status':409,'is_error':True}]}
 
 class Response(io.BytesIO):
     status=200
@@ -24,6 +24,8 @@ class EvidenceTests(unittest.TestCase):
         for key,value in [('complete',False),('Owner_authority_claimed',True),('service_key_as_customer',True),('readiness_retired',False),('verified_mutation_receipts',[])]:
             r=report();r[key]=value
             with self.assertRaises(Blocked):evidence.validate_report(r)
+        r=report();r['verified_mutation_receipts'][1]=r['verified_mutation_receipts'][0]
+        with self.assertRaisesRegex(Blocked,'three_distinct_actual_mutation_receipts_required'):evidence.validate_report(r)
         r=report();r['checks']=[]
         with self.assertRaises(Blocked):evidence.validate_report(r)
 

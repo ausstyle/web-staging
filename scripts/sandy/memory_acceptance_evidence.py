@@ -68,6 +68,8 @@ def validate_report(report):
         or report.get('readiness_retired') is not True or report.get('service_key_as_customer') is not False
         or report.get('Owner_authority_claimed') is not False or report.get('global_exposure_changed') is not False
         or len(report.get('verified_mutation_receipts',[]))!=3):raise Blocked('complete_independent_private_MCP_proof_required')
+    ids=[x.get('mutation_id') for x in report['verified_mutation_receipts']]
+    if len(set(ids))!=3 or any(not isinstance(x,str) or not re.fullmatch('[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}',x) for x in ids):raise Blocked('three_distinct_actual_mutation_receipts_required')
     calls=report.get('calls',[])
     if (not calls or any(c.get('operation')!='memory.fact_correct' or not re.fullmatch('[a-f0-9]{64}',c.get('response_sha256','')) for c in calls)
         or not any(c.get('api_status')==200 and c.get('executed') is True for c in calls)
