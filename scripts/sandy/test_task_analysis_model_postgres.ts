@@ -24,6 +24,16 @@ Deno.test('real PostgreSQL task admission is source/customer/contract bound, bou
  assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'legacy_staging');
  await db.exec(`INSERT INTO auth.users VALUES('${customer}','fixture@example.invalid','{"sandy_api_isolated_session_test":true}');INSERT INTO email_customers VALUES('${customer}','Isolated Sandy API service acceptance','excluded');INSERT INTO sandy_memory_settings VALUES('${customer}',false,false,false);INSERT INTO sandy_memory_portal_accounts VALUES('${customer}','${customer}',NULL);UPDATE sandy_openai_context_policies SET execution_limits=execution_limits||jsonb_build_object('canary_customer_id','${customer}','canary_expires_at',clock_timestamp()+interval '14 minutes')`);
  assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'governed');
+ // Add a delay only to the isolated fixture function, immediately before its
+ // real advisory wait point. Production migration has no hook or sleep.
+ const definition=(await db.query<{d:string}>(`SELECT pg_get_functiondef('sandy_task_model_admit(uuid,uuid,text,text)'::regprocedure) d`)).rows[0].d;
+ const delayed=definition.replace(" PERFORM pg_advisory_xact_lock(hashtextextended('task-model-global:"," PERFORM pg_sleep(0.15); PERFORM pg_advisory_xact_lock(hashtextextended('task-model-global:");assert.notEqual(delayed,definition);await db.exec(delayed);
+ await db.exec(`UPDATE sandy_openai_context_policies SET execution_limits=jsonb_set(execution_limits,'{canary_expires_at}',to_jsonb((clock_timestamp()+interval '50 milliseconds')::text))`);
+ assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'governed');
+ assert.equal((await call()).error,'task_model_policy_changed_before_reservation');
+ assert.equal((await db.query<{n:number}>('SELECT count(*)::int n FROM sandy_openai_request_audit')).rows[0].n,0);
+ await db.exec(definition);
+
  await db.exec(`UPDATE sandy_openai_context_policies SET execution_limits=jsonb_set(execution_limits,'{canary_expires_at}',to_jsonb((clock_timestamp()-interval '1 second')::text))`);
  assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'blocked');
  await db.exec(`UPDATE sandy_openai_context_policies SET execution_limits=execution_limits-ARRAY['canary_customer_id','canary_expires_at']`);

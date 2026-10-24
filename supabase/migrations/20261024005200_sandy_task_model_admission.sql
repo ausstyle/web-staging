@@ -85,6 +85,16 @@ BEGIN
  -- different idempotency keys. Unknown outcomes retain their whole reservation.
  PERFORM pg_advisory_xact_lock(hashtextextended('task-model-global:'||day_start::text,0));
  PERFORM pg_advisory_xact_lock(hashtextextended('task-model:'||p_customer_id::text||':'||day_start::text,0));
+ -- Re-read/lock after every serialization wait. A canary may expire, an
+ -- administrator may revoke the policy or reduce ceilings while we waited.
+ -- The share lock linearizes that protected change against this reservation.
+ SELECT * INTO p FROM public.sandy_openai_context_policies WHERE capability='task.configuration.extract' FOR SHARE;lim:=p.execution_limits;
+ IF public.sandy_task_model_mode(p_task_id,p_customer_id) IS DISTINCT FROM 'governed' OR lim->>'schema_version' IS DISTINCT FROM '1'
+  OR p_source_sha256 IS DISTINCT FROM lim->>'entrypoint_sha256' OR lim->>'model' IS DISTINCT FROM 'gpt-4.1-mini'
+  OR encode(sha256(convert_to(body->>'instructions','UTF8')),'hex') IS DISTINCT FROM lim->>'instructions_sha256'
+  OR octet_length(p_request_canonical)>LEAST((lim->>'request_bytes')::int,24000) OR length(t.title)>LEAST(p.max_context_chars,6000)
+  OR body->'max_output_tokens' IS DISTINCT FROM to_jsonb(LEAST((lim->>'output_tokens')::int,512))
+ THEN RETURN jsonb_build_object('ok',false,'error','task_model_policy_changed_before_reservation');END IF;
  SELECT * INTO a FROM public.sandy_openai_request_audit WHERE capability=p.capability AND request_id=rid;
  IF FOUND THEN
   IF a.customer_id IS DISTINCT FROM p_customer_id OR a.request_sha256 IS DISTINCT FROM encode(sha256(convert_to(p_request_canonical,'UTF8')),'hex') THEN RETURN jsonb_build_object('ok',false,'error','task_model_receipt_conflict');END IF;

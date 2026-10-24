@@ -14,7 +14,7 @@
     "_shared/sandy-agent-operations/worker_model_result.ts": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
   },
   "migration": "supabase/migrations/20261024005200_sandy_task_model_admission.sql",
-  "migration_sha256": "0fe8688472bdeb55ee7496ea3e766155d5866add27c71855167db92e424f843d",
+  "migration_sha256": "6863d3c38a919947c95925efed818297ab052864563686533ab316b0fec4361b",
   "model_gateway": "sandy-openai-gateway-v4",
   "model": "gpt-4.1-mini",
   "max_output_tokens": 512,
