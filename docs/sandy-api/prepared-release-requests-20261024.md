@@ -1,0 +1,79 @@
+# Prepared API release requests — 24 October 2026 reconciliation
+
+SANDY-ENG-0005. These are bounded candidate descriptions, **not approved dispatch requests**. No deployment, configuration, grant, exposure or approval mutation was made. PR270's draft-to-ready denial remains paused independently; this work neither retries nor works around it.
+
+## Current shared baseline and regional candidate
+
+Read-only metadata first observed gateway v62, then source capture observed v63, demonstrating active shared releases. The stable bracketed capture is gateway v63, ACTIVE, JWT true, 128 modules, bundle SHA-256 `3cb377480b0fe8f236a60fd50ecf45620b80204e8c4c52ca8473a83066459b82`. Provider remains v31, JWT true, 57 modules, bundle `17f8d544c0ebe5df2aa31b411074f5285aed6739c4128c8e56eda99ec9e081df`. This is a point-in-time baseline, not permission to overwrite later releases.
+
+The new regional read candidate is:
+
+- Source: `4be0ba5950d110d6cb0bbd8434f9ddbf63e7b3b3` (PR258); updated read-only preparation script captures v63.
+- Manifest: `26ecefde0c6fddc9dc3d8b64f2fab95113a733625324f26567bb2e87235e6d39`.
+- Targets: existing `sandy-provider-operation-api` v31 and `sandy-operation-api` v63 in `zmqlyygzqoidkcwdysok`; candidate totals 58 and 129 modules.
+- Effects: existing Cloud Run services list/get accept explicitly scoped `europe-west8`; migration `20261024002500_sandy_cloud_run_region_contracts.sql` revises exactly those two contracts while preserving flags/history. Includes PR246's response classification correction; excludes blob settlement and Storage exposure.
+- Preservation: all v63 IAP and cancellation modules remain unchanged; gateway entry changes only the three reversible region argument-flow snippets. No repository-wide gateway replacement.
+- Recovery: full private prior bundles and prior two contract rows captured. Persist them through the authorized protected artifact path before any dispatch. Restore only matching candidate source/contracts, preserve JWT/history, refuse to overwrite later versions; unknown dispatch requires readback first.
+- Configuration request, separate from artifact: merge only `SANDY_GCP_SCOPE_BINDINGS_JSON.cloud_run_read_region` with `id=europe-west8`, `project_id=elaborate-haven-511518-a5`, `verified=true`, exact activation expiry at most 24h, preserving every existing entry. It covers only services list/get. Remove only this entry on expiry/withdrawal. No IAM or credential changes. A concrete expiry must be selected at authorized activation, not silently refreshed by retries.
+
+The earlier regional manifest `92f42f3c88c81f16f89698976152def247da4bab99bedbd281940c82628aea42` is historical and no longer deployable because it pins gateway v61. The updated preparer also brackets each body download with metadata reads and refuses concurrent version/status/JWT/import-map change without automatic retry. Six guard tests pass. Offline checks loaded both exact candidate graphs, compiled 595 contracts and checked two regional bindings with zero provider/database calls.
+
+The source change `b26705ca-0dad-46df-9966-446a9cf402aa` is still `proposed` and scoped only to its GitHub branch. Its source/test receipts are evidence, not function deployment authority. A separate applicable release record or reviewed pre-established policy must cover both function targets, migration and exact source/manifest before dispatch. Configuration activation requires its own exact coverage. An Owner status transition of this source-only record does not add missing targets.
+
+## Other prepared provider requests
+
+| Candidate | Existing evidence | Disposition |
+| --- | --- | --- |
+| PR246 response failure classification | Source `f331a036a278056e79fc1d64a4b028a3d6cdd2b2`, standalone manifest `97e3d140c271bb83de8b32c57297ddcbbd6e8deeaa41ee07fd77b590b5737eff`, source record `1a6b4419-bb71-4de5-a91f-818471e52e99` proposed | Included in regional candidate; avoid redundant independent rollout |
+| PR251 Git blob settlement | Source `8be8a2b87d5e2c2f8cf141de4356fafb47fa6ce0`, historical manifest `38d9ed949012fdfa074f8c0740969cd82acf6a6ba982b480b20b403e170bcd78`, source record `8c5e710d-8ab2-43c4-a61b-0be7dd7d98fe` proposed | Pins gateway v61; stale, requires separate source/module/migration reconciliation and a new manifest; do not approve old manifest |
+| PR270 Cloud adapters | Source `cbfe1653798e25e2b88f93196b34947406a946f1`, test `ba56b0b1-356d-4d66-b984-a626204818ef` | Draft transition denied and paused; no deployed handler/registration or release artifact. Source tests do not authorize activation |
+| Storage inventory | Existing `gcp.storage.buckets.list` typed contract | Closed/unverified; no exposure mutation packaged in these candidates |
+
+## Owner route: what is verified and what is still missing
+
+The historical route has actual evidence: change event **131** was re-read and still joins an enabled genuine non-test Controller Owner; event is `status_changed` to `approved`. The exact PR222 release completed in [run 40039377923](https://github.com/ausstyle/web-staging/actions/runs/40039377923). That release is already accepted and must not be replayed.
+
+The existing Owner API route in `sandy-engineering-control` is authenticated `action=status`, `change_id=<exact release record>`, `status=approved`, `reason=<source and manifest pins plus bounded effects>`. It checks current Owner role and calls `sandy_engineering_record_owner_approval` transactionally; the acting workload cannot create this audit by writing status fields. The release record must first be registered with the exact function targets and reviewed expected behavior. Normal existing Owner authentication must be used; no token or identity is requested from the user. This documents the historically proven route, not a new Owner request executed in this session.
+
+**There is no verified end-to-end dispatch route for the new regional candidate yet.** The existing `sandy-provider-response-fix-release.yml` / `release_provider_response_fix.py` is pinned to PR222's source, provider v30 and single function. It cannot deploy the two-function v31/v63 candidate or its database/configuration changes. Do not put the new manifest into that old workflow, reuse audit131, weaken its guards, or describe source preparation as ready deployment. The new candidate still needs a reviewed source-preserving protected executor/lease covering the two functions and guarded migration, with independent CI, recovery persistence, genuine applicable policy/Owner authority and source readback. No ready Owner UI link or new approved record exists for that release at this checkpoint.
+
+The smallest parent decision is therefore sequencing/ownership: keep one shared release owner, reconcile that owner's current gateway baseline, and finish the protected executor before asking for an exact activation approval. Already-authorized source/guard implementation may proceed. Broad setup permissions are unnecessary and would not fix the missing execution implementation. Production rollback remains unexercised.
+
+## Executable package superseding the preparation-only checkpoint
+
+The protected executor and workflow are now implemented in `scripts/sandy/release_hosting_read.py` and `.github/workflows/sandy-hosting-read-release.yml`. The single exact Owner payload is [hosting-read-owner-request.json](hosting-read-owner-request.json). It includes registration and approval bodies for the existing Owner API route, exact candidate and executor digests, target versions, rollback permission and 24-hour approval expiry. It creates no approval or grant by itself.
+
+A further stable capture found provider **v32** and gateway **v64**, with byte-identical bundles to v31/v63 respectively. The historical v64 manifest is **`ba221f869426f8b16d8dddde4f783e63bf95b2d818628bbd586645efe1be62ed`**. Both earlier manifests in this document are now historical. The candidate still preserves all 57/128 existing modules outside the exact six/five changed-module sets, adding one helper per bundle. No Runtime/IAP module is overwritten. Any version or byte drift invalidates this package even if a redeployment has identical source.
+
+### Execution and recovery
+
+The workflow uses the existing `sandy-production` environment, existing management secret and provider-release concurrency group. It creates no secrets or permissions. Only the main branch can execute. Independent successful CI is required for the original candidate source and the actual executor revision. The genuine Owner predicate requires both function targets and the exact migration in scope; exact source, manifest and executor/workflow digest in both the change and audit reason; enabled non-test Owner identity; approved/implementing state; and approval within 24 hours. The executor never updates approval status or generates an Owner audit.
+
+Default `inspect` and `reconcile` modes are read-only. `preflight` also verifies actual Owner authority and CI. `deploy` atomically takes existing component leases for both functions and the contract rows, checks both source/version preimages, persists both full private recovery bundles with chunk and final digest checks, rechecks sources/authority/leases and records durable dispatch intent before the first upload. Every upload checks both components again and verifies exact installed source, version and JWT. The two-row migration runs only after both functions verify; row locks and full input/error-contract preimages protect against other writers. Migration history and the commit event are written in the same transaction. Exposure, verified flags and other registry fields remain unchanged.
+
+Partial releases can temporarily cause contract mismatch refusals until completion or explicit rollback; they cannot enable the uninstalled west8 binding. No automatic retry follows a recorded forward or rollback intent. Lost acknowledgement, partial recovery writes or source drift require read-only reconciliation. It reports actual function/contract states plus supplied Owner record's dispatch and recovery states. A completed recovery row is never duplicated by retry. Authority and leases are checked again before each dispatch, with at least two minutes of lease validity remaining.
+
+Explicit `rollback` uses the same exact Owner approval and shared leases. It accepts only this candidate or unchanged prior versions, verifies private recovery source and contracts, restores only candidate functions in reverse order and then restores the exact prior two contract fields if the migration committed. A provider-only partial forward release restores only that provider. Foreign/later source or already-restored versions are refused; unknown rollback is never repeated automatically. Migration history, audit events, existing data and historical evidence are retained. Production rollback has not been exercised.
+
+### Owner-route validation and remaining activation boundary
+
+Read-only deployed inspection found **sandy-engineering-control v56**, bundle `686474a98e120bb6af8336ee8d328e5c7cac22852e3e1be3a220fc58301b1844`. Its current `register` and `status` routes accept the package shape and retain the Owner role guard and actor-bound `status_changed` audit. Including the exact migration path makes this request outside the routine automatic-registration scope, so it remains proposed until genuine Owner approval. Unlike the earlier repository source, v56 performs the status update and audit as separate writes, not the approval RPC. The executor therefore requires both approved status **and** the exact genuine audit; a missing/uncertain audit blocks deployment and requires read-only reconciliation by the existing control owner. No approval-route repair or bypass is included. Historical audit131 proves the earlier genuine route, not authority for this package.
+
+Tests exercise the actual SQL Owner predicate with a synthetic valid Owner and deny disabled/nonowner/test identities, missing targets and expired/proposed records. They do not impersonate a live Owner. Source validation passed 22 focused Python tests, 13 isolated PostgreSQL checks and the broader 546-test suite (two skips). The executor's read-only inspection deliberately refused the superseded v31/v63 pins before mutation. Final CI and current-baseline inspection receipts must be read with the final source commit; no live deployment, binding installation or functional family acceptance is asserted here.
+
+After the source workflow is merged and main CI succeeds, the existing Owner can submit the single package through the normal authenticated route. The protected runner then performs `inspect`, `preflight`, one `deploy`, and read-only `reconcile`. The user need not supply or export a token. If either target advances again, stop: do not ask approval for stale pins. Installing the west8 read binding and exposing Storage inventory remain separately scoped decisions, absent from this executor and approval package.
+
+
+## Current gateway v65 refresh (source only)
+
+The current package supersedes the v64 manifest above. Fresh bracketed reads captured gateway **v65**, JWT true, **129** modules, full rollback bundle SHA-256 `2c6f60cbaea5607200577af63343fd87812578cf0181d7474b4084d403ffced2`. Provider **v32**, JWT true, **57** modules retains its previous full bundle digest. These archive digests differ from the metadata EZBR digests; the executor verifies captured rollback bytes.
+
+Current manifest: `bc35412a4b71b0d4c47007575a1093172daa17d2329653da280cd1d539241f99`. Executor: `3249afc088035caeb0b9512108c678da2baf37487116b5b1211fee81c2f5ca1e`. The exact Owner payload and file digests are in [hosting-read-owner-request.json](hosting-read-owner-request.json). No approval record has been created. PR270/271 ready/merge denials remain paused pending the parent's requested user decision.
+
+Gateway candidate has 130 modules. Runtime's `customer_mutation_certification.ts` is preserved byte-for-byte at SHA-256 `2a11c4ac7ccf110a94f113ec699aa0ef040d0803a50f823ea8a7a5304a23c800`, including its compiled entry integration. Only the same three reversible scope argument edits and explicitly named regional provider modules change. Every other prior module digest is unchanged. Full rollback bundles and two prior contract rows were recaptured privately; no release was attempted.
+
+Read-only inspection confirms the existing control route remains v56 with its Owner-role guard. Its status and audit writes remain separate: executable admission requires both the approved change and matching genuine Owner audit, with exact current manifest/executor pins and maximum 24-hour age. Source inspection does not prove a usable authenticated Owner session or available protected dispatch credential. Those are prerequisites for release, not permissions this source refresh supplies.
+
+The shortest functional path is: merge this reviewed source when the pending transition decision permits; obtain genuine exact package approval through the existing Owner route; run protected inspection/preflight with the existing dispatch credential and shared component leases; deploy and reconcile the two functions and two contract rows; separately approve/install the bounded expiring west8 read binding; execute existing service list/get and negative, expiry and isolation checks through normal admission. A contract rollout alone does not close family acceptance. Runtime owns its SQL guard repair/dispatch credential recovery; this patch neither substitutes a credential nor changes those components.
+
+Refresh validation: 23 focused Python tests, 13 isolated PostgreSQL checks, both exact candidate module graphs loaded offline, 595 contracts compiled and two regional binding checks passed. Offline verification made zero provider or database requests. Independent CI is tracked against the refreshed PR head.

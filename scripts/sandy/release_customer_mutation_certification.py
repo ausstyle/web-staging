@@ -55,6 +55,9 @@ def source_check(m):
             or subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip() != sha):
         raise Blocked('protected_committed_main_release_required')
     paths = [MANIFEST.relative_to(ROOT).as_posix(), *m['migrations'],
+             'scripts/sandy/release_customer_task_guard.py',
+             'docs/sandy-engineering/evaluations/customer-task-guard-release.json',
+             'supabase/migrations/20261024022000_sandy_customer_task_guard_commit.sql',
              'scripts/sandy/release_customer_mutation_certification.py','scripts/sandy/customer_mutation_source_patch.py',
              'scripts/sandy/release_gcp_admin_read.py','scripts/sandy/release_web_canary.py',
              'scripts/sandy/release_runtime_slice.py','scripts/sandy/verify_customer_mutation_private_mcp.py',
@@ -97,6 +100,9 @@ def functions(r,m,installed=False):
 def schema(r,m,installed=False):
     row=r.sql("SELECT p.oid::text row_oid,encode(sha256(convert_to(p.prosrc,'UTF8')),'hex') sha,p.prosecdef,p.proconfig,pg_get_functiondef(p.oid) definition,p.proacl::text acl,has_function_privilege('authenticated',p.oid,'EXECUTE') customer,has_function_privilege('anon',p.oid,'EXECUTE') anon,has_function_privilege('service_role',p.oid,'EXECUTE') service FROM pg_proc p WHERE p.oid='public.sandy_api_customer_mutation(text,jsonb,text)'::regprocedure",True)[0]
     expected=m['shared_rpc_after_private_readiness_prosrc_sha256' if installed else 'shared_rpc_before_prosrc_sha256']
+    if installed:
+        from release_customer_task_guard import state
+        expected=state(r)
     if row['sha']!=expected or not row['prosecdef'] or row['proconfig']!=['search_path=pg_catalog, pg_temp'] or not row['customer'] or row['anon'] or row['service']:
         raise Blocked('shared_RPC_source_or_security_drift')
     # Preserve the existing memory repair and immutable acceptance infrastructure.

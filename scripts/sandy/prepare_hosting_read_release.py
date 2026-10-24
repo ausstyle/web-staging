@@ -20,8 +20,8 @@ GATEWAY='sandy-operation-api'
 HELPER=PROVIDER+'/cloud_run_read_region.ts'
 MIGRATION='supabase/migrations/20261024002500_sandy_cloud_run_region_contracts.sql'
 BASELINES={
- PROVIDER:(31,'17f8d544c0ebe5df2aa31b411074f5285aed6739c4128c8e56eda99ec9e081df',57),
- GATEWAY:(61,'a86d46951be87a3ce1a447e39c409c5bc547ac4fe65f9a72fe54b71c3058c7c6',125),
+ PROVIDER:(32,'17f8d544c0ebe5df2aa31b411074f5285aed6739c4128c8e56eda99ec9e081df',57),
+ GATEWAY:(65,'2c6f60cbaea5607200577af63343fd87812578cf0181d7474b4084d403ffced2',129),
 }
 COMMON=[PROVIDER+'/configured_scopes.ts',PROVIDER+'/gateway.ts',PROVIDER+'/gateway_manifest.json']
 REPLACEMENTS={PROVIDER:[PROVIDER+'/index.ts',PROVIDER+'/catalogue.ts',*COMMON],GATEWAY:COMMON}
@@ -77,6 +77,11 @@ def prepare(metadata,bundle,reviewed):
       'changed_modules':[n for n in sorted(after) if before.get(n)!=after[n]],'new_modules':[HELPER]}
     return record,after
 
+def assert_stable_metadata(before,after):
+    fields=('slug','version','status','verify_jwt','import_map','import_map_path')
+    if any(before.get(k)!=after.get(k) for k in fields):
+        raise Blocked('concurrent_release_during_capture_reconcile_no_retry')
+
 def private_write(path,value):
     path.write_bytes(value);path.chmod(0o600)
 def main():
@@ -92,6 +97,7 @@ def main():
       'rollback':'Restore captured module sets and prior two contract records only while the deployed candidate matches; preserve JWT and historical evidence and refuse to overwrite a later release.'}
     for target in BASELINES:
         metadata=json.loads(installer.api('GET','/functions/'+target));bundle=installer.api('GET','/functions/'+target+'/body')
+        assert_stable_metadata(metadata,json.loads(installer.api('GET','/functions/'+target)))
         record,after=prepare(metadata,bundle,reviewed);manifest['functions'][target]=record
         private_write(args.out/(target+'.prior.bundle'),bundle)
         private_write(args.out/(target+'.metadata.json'),canonical(metadata))
