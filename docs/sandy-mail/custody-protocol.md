@@ -4,6 +4,13 @@ Status: SOURCE-TESTED PROPOSAL; not installed, registered or connected to Runtim
 Scope: SANDY-ENG-0015, saved Mail v1.0 §§3–6; canonical ownership remains 0003/0004/0005.
 Runtime reference: PR303 `c9786bdeb96721b58e8dce6486f5663044d7ae4b` (custody package unchanged from `cd6f6cf`).
 Mail source: `services/sandy-mail/custody_plan.go` and its tests.
+Reconciled with main `cc433f8` (Cloud PR306 and Runtime PR312/313). The new
+`sandy_prepare_mission_work_product`/`sandy_finish_mission_work_product` flow is for
+internal draft work products; its fixture RPC/recovery tests do not establish the
+Mail effect snapshot/fence/outbox adapter. Cloud
+`packages/sandy-cloud/postgres/runtime_integration.ts` assembles canonical locks
+inside its own database transaction; that does not make Mail Cloud SQL atomic
+with Runtime. Both owners’ source is preserved unchanged.
 
 ## Decision and boundaries
 
@@ -73,6 +80,12 @@ adapter was identified or invented here. An uncertain journal write must itself
 be read back before dispatch. Keep transactions short; never hold Cloud SQL locks
 while requesting remote authority.
 
+This bounded source model accepts at most 128 distinct events per snapshot; at
+that bound it refuses further transitions and preserves the existing snapshot.
+Production adoption must use the existing Runtime event ledger/checkpoint policy,
+not an unbounded Mail polling map or deletion of prior audit. Uncertain reads do
+not justify a new write.
+
 Lease tokens stay private to Runtime's existing executor; snapshots contain no
 lease token. Reconstructing a snapshot cannot restore a lost capability. Current
 `ArtifactJournal.acquire` is INSERT-only and bounds the lease to 30 seconds and
@@ -119,7 +132,12 @@ is explicitly a development transport and does not satisfy these deployment gate
    trusted scan; bind effect/receipt/proof to the API-owned Mail context and actual
    read-only Mail receipt lookup. Fetch immutable Mail proof outside canonical row
    locks, then recheck canonical authority/lease/trust and commit the minimal
-   references in the existing journal. The full Mail proof is not a second mailbox
+   references in the existing journal. `mailProofSha256` currently hashes the exact
+   Go `encoding/json.Marshal(MailCommitProof)` bytes, not an arbitrary JSON
+   re-serialization. The authenticated read transport must preserve those bytes
+   or the owners must agree and test a versioned canonical encoding before
+   adoption; a TypeScript object stringify is not assumed equivalent.
+   The full Mail proof is not a second mailbox
    catalogue. No new signer/trust authority is requested.
 2. **Runtime/API — non-capability reconciliation.** Current `reconcileStatus`
    returns only state. For this effect, return the exact artifact/binding and

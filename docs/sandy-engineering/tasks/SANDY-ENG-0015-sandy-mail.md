@@ -32,9 +32,10 @@ Migration 0009 and portable-v4 archives add interoperable unsent draft MIME:
 byte-exact rich originals in immutable object storage, explicit generated MIME
 accounting for composed text, destination-scoped restore references, CAS receipts,
 interrupted recovery and backward-compatible JSON drafts. Rich MIME cannot be
-silently overwritten by the plain-text editor. Full MIME editing remains an
-internal worker primitive; the local UI and canonical customer routes do not yet
-provide a rich editor/import/download flow. PST fixture generation/conversion and
+silently overwritten by the plain-text editor. At that increment, full MIME editing was an
+internal worker primitive. The follow-on local import/replace/download flow below
+now exposes it in the loopback development client; canonical customer routes
+remain pending. PST fixture generation/conversion and
 provider acceptance remain unverified. The first-email canary is unchanged.
 
 The next increment adds a real loopback rich-draft import/export/replace flow with

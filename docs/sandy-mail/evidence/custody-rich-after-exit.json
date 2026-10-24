@@ -1,0 +1,29 @@
+{
+  "source_revision": "162e4c1",
+  "separate_process_sql_and_filesystem_readback": true,
+  "local_only": true,
+  "cloud_deployed": false,
+  "independent_acceptance": false,
+  "canonical_runtime_evidence_verified": false,
+  "canonical_runtime_adapter_installed": false,
+  "draft_id": "d2a97e06-0e74-4170-b66d-59e7050a0965",
+  "draft_revision": 3,
+  "draft_receipt_ids": [
+    "8f0e80bf-60b7-403f-b652-c0afc4b3acd2",
+    "6d68fb2b-f05e-49cc-b86c-0f4d0b0abcd9",
+    "1561e6ae-bf94-426f-ade3-7c9b818aeb46"
+  ],
+  "draft_original_sha256s": [
+    "bb2f02e1997ea433094b106e2abb7f2dc6b4470490c85884f634edb9ffda03fb",
+    "86f496832a54bce1f15d1bf6450dd467e61f011f4fa2cf7197e7cbde1e1418c3",
+    "f54e74f555f2da462c5c40be39cb1f90e82699b62d55ee2623f4ec00bf9de1d1"
+  ],
+  "three_immutable_originals_match_browser_downloads": true,
+  "receipt_previous_current_chain_verified": true,
+  "mail_receipt_id": "871b5158-9efd-431f-9be6-77b5aca7a4e8",
+  "mail_message_id": "bfe142fd-ad92-4da2-bcf6-5f526170bc67",
+  "mail_state": "quarantined",
+  "mail_objects_verified": 3,
+  "mail_raw_sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+  "mail_input_sha256": "b325ccd03de2ef196af05d0e6c57eb288a169104f15eda7791bf69dd71ed9759"
+}
