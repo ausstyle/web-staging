@@ -78,3 +78,24 @@ Deno.test("lost admission/proposal/reviewer/final receipts never repeat paid wor
  for(const mode of["claimLost","proposalLost","reviewReceiptLost","finalFailure","finalResponseLost"]as const){const{db,job}=await setup();db[mode]=true;let calls=0;const deps={db,openaiKey:"fixture-model",fetch:(async()=>{calls++;return calls===1?envelope(plan):envelope({keep_indexes:[0]})})as typeof fetch};const result=await executeMissionPlanning(job,{},deps);assert.equal(result.status,mode==="claimLost"?503:502);const before=calls;assert.equal((await executeMissionPlanning(job,{},deps)).status,503);assert.equal(calls,before);assert.equal(db.saved.length,mode==="finalResponseLost"?1:0)}
 });
 Deno.test("concurrent same-run planner calls consume one primary and one optional reviewer",async()=>{const{db,job}=await setup();let calls=0;const deps={db,openaiKey:"fixture-model",fetch:(async()=>{calls++;await Promise.resolve();return calls===1?envelope(plan):envelope({keep_indexes:[]})})as typeof fetch};const results=await Promise.all([executeMissionPlanning(job,{},deps),executeMissionPlanning(job,{},deps)]);assert.deepEqual(results.map(r=>r.status).sort(),[200,503]);assert.equal(calls,2);assert.equal(db.saved.length,1);assert.equal(results.find(r=>r.status===200)?.body.outcome,"awaiting_client_plan_review")});
+
+Deno.test("noncompleted primary plans cannot publish milestones or client follow-through commitments",async()=>{
+ for(const status of ["cancelled","queued","in_progress","unknown_provider_state",undefined]){
+  const {db,job}=await setup();let calls=0;
+  const request=(async()=>{calls++;return Response.json({id:"resp_nonterminal_fixture",status,output:[{content:[{type:"output_text",text:JSON.stringify(plan)}]}]});})as typeof fetch;
+  const result=await executeMissionPlanning(job,{}, {db,openaiKey:"fixture-model",fetch:request});
+  assert.equal(result.status,502);assert.equal(result.body.reconciliation_required,true);assert.equal(db.saved.length,0);assert.equal(db.audits[0].state,"unknown");
+  assert.equal((await executeMissionPlanning(job,{}, {db,openaiKey:"fixture-model",fetch:request})).status,503);assert.equal(calls,1);
+ }
+});
+
+Deno.test("noncompleted clarification review cannot discard required client questions or invent verified follow-through",async()=>{
+ for(const status of ["cancelled","queued","in_progress","unknown_provider_state",undefined]){
+  const {db,job}=await setup();let calls=0;
+  const request=(async()=>{calls++;return calls===1?envelope(plan):Response.json({id:"resp_nonterminal_review",status,output:[{content:[{type:"output_text",text:JSON.stringify({keep_indexes:[]})}]}]});})as typeof fetch;
+  const result=await executeMissionPlanning(job,{}, {db,openaiKey:"fixture-model",fetch:request});
+  assert.equal(result.status,200);assert.equal(result.body.new_questions,2);assert.equal(db.audits[0].review_state,"unavailable");assert.equal(db.audits[0].review_reason,"model_outcome_unverified");
+  assert.equal(db.saved[0].questions.length,2);assert.equal(result.body.execution_verified,false);
+  assert.equal((await executeMissionPlanning(job,{}, {db,openaiKey:"fixture-model",fetch:request})).status,503);assert.equal(calls,2);
+ }
+});

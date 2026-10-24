@@ -51,6 +51,14 @@ MODULES = {
         '_shared/sandy-executive/outcome.ts', '_shared/sandy-agent-operations/voice_source.ts',
         '_shared/sandy-executive/temporal_context.ts',
     },
+    'sandy-mission-executor': {
+        '_shared/sandy-agent-operations/worker_mission.ts',
+        '_shared/sandy-agent-operations/worker_model_result.ts',
+    },
+    'sandy-mission-runner': {
+        '_shared/sandy-agent-operations/worker_mission_planning.ts',
+        '_shared/sandy-agent-operations/worker_model_result.ts',
+    },
     'sandy-engineering-oidc-ingest': {
         'sandy-engineering-oidc-ingest/index.ts',
         'sandy-engineering-oidc-ingest/examiner_scope.ts',
