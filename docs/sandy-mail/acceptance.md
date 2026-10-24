@@ -191,3 +191,58 @@ a rich-MIME regression checks the exact error and zero emitted bytes. The
 [reviewed full race suite](evidence/mime-reviewed-tests.txt) passed **123 Go
 test/subtest cases**. Earlier retained round-trip evidence still describes its
 original source pin; neither its objects nor the Google canary were rewritten.
+
+## Recoverable Mail commit proposal and rich draft client
+
+Source `162e4c1` passed **140 race-checked Go test/subtest cases**, `go vet` and
+five canary release-runner tests. [Test log](evidence/custody-local-tests.txt)
+includes real PostgreSQL ingestion proof readback and draft HTTP persistence;
+canonical Runtime authority/status events are explicitly modeled, not live.
+[Protocol and exact owner request](custody-protocol.md) specify two separate
+commits, immutable generation/input binding, seven revocation cut points,
+expiry/fence-loss refusal and read-only unknown-outcome reconciliation. A missing
+Mail receipt never authorizes a write retry. The reducer grants no customer byte
+access and introduces no Runtime persistence or authority adapter.
+
+[Retained proof](evidence/custody-proof.json) contains real local receipt
+`871b5158-9efd-431f-9be6-77b5aca7a4e8` for quarantined message
+`bfe142fd-ad92-4da2-bcf6-5f526170bc67`, alongside a separately labeled modeled
+Runtime snapshot. A [separate SQL/filesystem process](evidence/custody-rich-after-exit.json)
+verified the actual scope, input hash, receipt and all three original/intake/
+attachment objects after the tests exited. It did **not** verify Runtime authority.
+Objects remain under `/workspace/sandy-mail-evidence/custody-proof-objects`,
+local PostgreSQL port 55444. This is not Cloud SQL/GCS or independent acceptance.
+
+The real loopback client now imports, previews, replaces and exports synthetic
+rich `.eml` drafts up to 256 KiB. Six recipient fields, original repeated/folded
+headers, body encodings and attachment bytes remain in the original. Preview
+uses text only; no HTML, remote image or individual attachment execution occurs.
+Full-file replacement uses a saved revision; it does not pretend to be a visual
+rich-text editor. Downloads verify the exact returned SHA256 and byte count.
+
+[Eight real-Chromium checks](evidence/rich-draft-browser.json) passed lost real
+commit acknowledgement followed by identical-key retry, byte-exact export,
+reopen, concurrent stale replacement refusal/reload, full replacement, mobile
+layout and HTML-only source safety. No successful responses were mocked; no
+external requests or browser errors occurred. [Screenshot](evidence/rich-draft-desktop.png)
+shows the actual saved version. [All 13 baseline browser checks](evidence/custody-baseline-browser.json)
+also passed against the same actual server/database and filesystem, including
+restart, search and folders/labels.
+
+Draft `d2a97e06-0e74-4170-b66d-59e7050a0965` retains three immutable MIME originals
+and exactly three revision receipts despite the lost first acknowledgement.
+Separate readback matched all three objects to the actual browser downloads and
+verified the previous/current object chain in receipts. The initial receipt is
+`8f0e80bf-60b7-403f-b652-c0afc4b3acd2`; current revision is 3. Private object
+references are retained in Mail audit, omitted from local browser responses.
+Historical receipts are not rewritten or retroactively enriched.
+
+Reconciled main `cc433f8` preserves concurrent Cloud/Runtime changes; Mail source
+under test is unchanged by that merge. No migration was added in this increment.
+Canonical adapter/contract adoption and approved Cloud SQL/GCS first ingestion
+remain pending, not denied or submitted with uncertain outcome. The Google-trial
+canary binary checksum remains
+`a796e5406ab16a26f9226b43fad6f4a4784aa6a284a0b28ad854cb37bea57700`.
+PST remains investigated only; no synthetic converter acceptance is claimed.
+Rollback removes the loopback UI/proposal dispatch use and retains originals and
+receipts; no shared release job, live mail route or trust setting was changed.

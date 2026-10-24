@@ -1,7 +1,7 @@
 # SANDY-ENG-0015 — Sandy Mail implementation and acceptance
 
 Status: IMPLEMENTING (local first-ingest foundation; deployed acceptance blocked)  
-Version: 1.5
+Version: 1.6
 Priority: P2 product; user-directed first milestone is database structure and synthetic first email  
 Owner: Sandy Mail workstream; API/infrastructure retain shared release ownership  
 Created: 2026-10-24  
@@ -32,7 +32,19 @@ Migration 0009 and portable-v4 archives add interoperable unsent draft MIME:
 byte-exact rich originals in immutable object storage, explicit generated MIME
 accounting for composed text, destination-scoped restore references, CAS receipts,
 interrupted recovery and backward-compatible JSON drafts. Rich MIME cannot be
-silently overwritten by the plain-text editor. Full MIME editing remains an
-internal worker primitive; the local UI and canonical customer routes do not yet
-provide a rich editor/import/download flow. PST fixture generation/conversion and
+silently overwritten by the plain-text editor. At that increment, full MIME editing was an
+internal worker primitive. The follow-on local import/replace/download flow below
+now exposes it in the loopback development client; canonical customer routes
+remain pending. PST fixture generation/conversion and
 provider acceptance remain unverified. The first-email canary is unchanged.
+
+The next increment adds a real loopback rich-draft import/export/replace flow with
+safe text-only preview, byte-verified download, CAS conflict handling and current/
+previous original references in immutable edit receipts. It remains synthetic
+local acceptance; canonical customer exposure is not deployed. The
+[Mail custody protocol](../../sandy-mail/custody-protocol.md) is an executable,
+source-tested proposal for private Cloud SQL commit followed by canonical Runtime
+acknowledgement. Its existing-Mail receipt adapter performs real scoped readback;
+Runtime authority/journal events are modeled until the exact owner adapters and
+Mail proof/status extensions are implemented. No new queue, trust, role or schema
+is added. PST and the isolated Google canary remain unchanged.

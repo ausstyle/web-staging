@@ -76,3 +76,9 @@ Migration 0005 and [resumable exports](EXPORTS.md) add frozen SQL snapshots, che
 ## Local inbox reader
 
 [Run the local synthetic inbox](LOCAL_INBOX.md) for a real PostgreSQL-backed inbox with keyword search, integrity-checked reading, revisioned plain-text drafts, custom flat folders/labels, safe rendering and visible receipts. It uses a separate synthetic mailbox and loopback-only temporary session; no customer/cloud endpoint, sending or scanner verdict is implied.
+
+The [Mail custody protocol proposal](../../docs/sandy-mail/custody-protocol.md)
+provides a source-tested private-commit/revocation reducer and a read-only adapter
+for real Mail receipts. It is not connected to canonical Runtime authority and
+never authorizes customer bytes. [Rich local draft flows](LOCAL_INBOX.md#rich-draft-import-and-export)
+use the existing loopback synthetic transport; production activation remains separate.

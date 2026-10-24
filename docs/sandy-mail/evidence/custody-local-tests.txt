@@ -1,0 +1,295 @@
+=== RUN   TestArchiveMaildirAndEMLBytePreservation
+--- PASS: TestArchiveMaildirAndEMLBytePreservation (0.01s)
+=== RUN   TestArchiveExceptionsAndUnsafeInputs
+=== RUN   TestArchiveExceptionsAndUnsafeInputs/../escape.eml
+=== RUN   TestArchiveExceptionsAndUnsafeInputs//absolute.eml
+=== RUN   TestArchiveExceptionsAndUnsafeInputs/a/../escape.eml
+=== RUN   TestArchiveExceptionsAndUnsafeInputs/a\escape.eml
+--- PASS: TestArchiveExceptionsAndUnsafeInputs (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs/../escape.eml (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs//absolute.eml (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs/a/../escape.eml (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs/a\escape.eml (0.00s)
+=== RUN   TestArchiveBoundsAndManifest
+--- PASS: TestArchiveBoundsAndManifest (0.60s)
+=== RUN   TestArchiveCorruptionAndEntryLimit
+--- PASS: TestArchiveCorruptionAndEntryLimit (0.03s)
+=== RUN   TestCollectionGraphValidation
+=== RUN   TestCollectionGraphValidation/cycle
+=== RUN   TestCollectionGraphValidation/missing_parent
+=== RUN   TestCollectionGraphValidation/label_parent
+=== RUN   TestCollectionGraphValidation/duplicate_id
+=== RUN   TestCollectionGraphValidation/duplicate_sibling
+=== RUN   TestCollectionGraphValidation/label_with_parent
+--- PASS: TestCollectionGraphValidation (0.01s)
+    --- PASS: TestCollectionGraphValidation/cycle (0.00s)
+    --- PASS: TestCollectionGraphValidation/missing_parent (0.00s)
+    --- PASS: TestCollectionGraphValidation/label_parent (0.00s)
+    --- PASS: TestCollectionGraphValidation/duplicate_id (0.00s)
+    --- PASS: TestCollectionGraphValidation/duplicate_sibling (0.00s)
+    --- PASS: TestCollectionGraphValidation/label_with_parent (0.00s)
+=== RUN   TestMailCommitProtocol
+=== RUN   TestMailCommitProtocol/serialized_happy_path_never_releases_bytes
+=== RUN   TestMailCommitProtocol/revocation_cut_staged
+=== RUN   TestMailCommitProtocol/revocation_cut_claim_pending
+=== RUN   TestMailCommitProtocol/revocation_cut_prepared
+=== RUN   TestMailCommitProtocol/revocation_cut_mail_pending
+=== RUN   TestMailCommitProtocol/revocation_cut_mail_committed
+=== RUN   TestMailCommitProtocol/revocation_cut_seal_pending
+=== RUN   TestMailCommitProtocol/revocation_cut_sealed
+=== RUN   TestMailCommitProtocol/unknown_commit_never_replays_writes_or_renews_claim
+=== RUN   TestMailCommitProtocol/missing_status_proof_digest_is_not_sealed_acceptance
+=== RUN   TestMailCommitProtocol/reject_substitution_expiry_stale_revision_and_changed_retry
+=== RUN   TestMailCommitProtocol/expiry_and_fence_loss_are_not_misreported_as_revocation
+=== RUN   TestMailCommitProtocol/runtime_proof_is_exact_minimal_reference_not_mailbox_copy
+=== RUN   TestMailCommitProtocol/input_pointers_cannot_change_saved_proof
+--- PASS: TestMailCommitProtocol (0.22s)
+    --- PASS: TestMailCommitProtocol/serialized_happy_path_never_releases_bytes (0.02s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_staged (0.00s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_claim_pending (0.00s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_prepared (0.01s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_mail_pending (0.02s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_mail_committed (0.01s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_seal_pending (0.02s)
+    --- PASS: TestMailCommitProtocol/revocation_cut_sealed (0.02s)
+    --- PASS: TestMailCommitProtocol/unknown_commit_never_replays_writes_or_renews_claim (0.05s)
+    --- PASS: TestMailCommitProtocol/missing_status_proof_digest_is_not_sealed_acceptance (0.02s)
+    --- PASS: TestMailCommitProtocol/reject_substitution_expiry_stale_revision_and_changed_retry (0.02s)
+    --- PASS: TestMailCommitProtocol/expiry_and_fence_loss_are_not_misreported_as_revocation (0.03s)
+    --- PASS: TestMailCommitProtocol/runtime_proof_is_exact_minimal_reference_not_mailbox_copy (0.00s)
+    --- PASS: TestMailCommitProtocol/input_pointers_cannot_change_saved_proof (0.01s)
+=== RUN   TestDraftMIMEEncoding
+--- PASS: TestDraftMIMEEncoding (0.00s)
+=== RUN   TestParserAndLimits
+--- PASS: TestParserAndLimits (0.08s)
+=== RUN   TestLocalObjectImmutability
+--- PASS: TestLocalObjectImmutability (0.00s)
+=== RUN   TestPostgresIntegration
+=== RUN   TestPostgresIntegration/synthetic_seed_repeat_and_collision
+=== NAME  TestPostgresIntegration
+    ingest_test.go:167: first-email receipt=60bdccf1-5a8e-4214-af10-4777d99f3c22 message=6c582808-53bd-4d0e-b21e-04f7b2f2d65f sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244 bytes=1101
+=== RUN   TestPostgresIntegration/concurrent_retries
+=== RUN   TestPostgresIntegration/same_identity_different_input
+=== RUN   TestPostgresIntegration/same_message_id_distinct_delivery
+=== RUN   TestPostgresIntegration/tenant_account_mailbox_isolation
+=== RUN   TestPostgresIntegration/missing_context_and_privileges
+=== RUN   TestPostgresIntegration/wrong_scope_write
+=== RUN   TestPostgresIntegration/recover_after_raw
+=== RUN   TestPostgresIntegration/recover_after_objects
+=== RUN   TestPostgresIntegration/recover_before_commit
+=== RUN   TestPostgresIntegration/recover_after_commit
+=== RUN   TestPostgresIntegration/malformed_mime_retained_pending
+=== RUN   TestPostgresIntegration/corruption_and_missing_object
+=== RUN   TestPostgresIntegration/scoped_search_and_keyset
+=== RUN   TestPostgresIntegration/portable_eml_snapshot_export
+=== RUN   TestPostgresIntegration/portable_export_restore_replay
+    ingest_test.go:454: synthetic archive source=6 restored=6 replay_receipts=6 bytes=26624
+=== RUN   TestPostgresIntegration/offline_import_jobs
+=== RUN   TestPostgresIntegration/offline_import_jobs/mbox_jobs_flags_receipts_and_master_export
+    import_jobs_test.go:68: import-job=dca28f4f-921e-4295-99e0-a0118693b10e expected=3 verified=3 exceptions=0 source_sha256=71fb648b0946a8e4bcd7f24f7df9bbf24198cc3850865a322b6fe7c299808294
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_stage_chunk
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_discovery_object
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_ingest
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_before_item_commit
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_item_commit
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_report_object
+=== RUN   TestPostgresIntegration/offline_import_jobs/maildir_explicit_exceptions_and_provenance
+=== RUN   TestPostgresIntegration/offline_import_jobs/ambiguous_mbox_cannot_complete
+=== RUN   TestPostgresIntegration/offline_import_jobs/source_outage_retries_without_losing_cursor
+=== RUN   TestPostgresIntegration/offline_import_jobs/mbox_export_restore_with_portable_metadata
+=== RUN   TestPostgresIntegration/offline_import_jobs/concurrent_import_claim_is_nonblocking
+=== RUN   TestPostgresIntegration/offline_import_jobs/chunked_master_and_malformed_message_reconcile
+=== RUN   TestPostgresIntegration/offline_import_jobs/import_table_rls_and_column_grants
+=== RUN   TestPostgresIntegration/offline_import_jobs/metadata_change_does_not_get_overwritten_or_false_complete
+=== RUN   TestPostgresIntegration/offline_import_jobs/bulk_mbox_checkpoint_reconciliation
+    import_jobs_test.go:388: opt-in 1000-message local PostgreSQL measurement
+=== RUN   TestPostgresIntegration/offline_import_jobs/bad_source_hash_and_recovery
+=== RUN   TestPostgresIntegration/local_inbox_http
+=== RUN   TestPostgresIntegration/local_inbox_http/reads_real_content_receipt_and_safe_attachment_metadata
+=== RUN   TestPostgresIntegration/local_inbox_http/query_paging_replay_and_cancel
+=== RUN   TestPostgresIntegration/local_inbox_http/cross_tenant_account_mailbox_and_scope_injection
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/wrong_type
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/no_token
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/wrong_origin
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/dns_rebinding
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/remote_client
+=== RUN   TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/forwarded
+=== RUN   TestPostgresIntegration/local_inbox_http/source_outage_and_corruption_fail_closed_then_recover
+=== RUN   TestPostgresIntegration/resumable_exports
+=== RUN   TestPostgresIntegration/resumable_exports/frozen_snapshot_roundtrip_and_range_resume
+=== RUN   TestPostgresIntegration/resumable_exports/resume_export_after_chunk
+=== RUN   TestPostgresIntegration/resumable_exports/resume_export_after_part_objects
+=== RUN   TestPostgresIntegration/resumable_exports/resume_export_before_checkpoint_commit
+=== RUN   TestPostgresIntegration/resumable_exports/resume_export_after_checkpoint_commit
+=== RUN   TestPostgresIntegration/resumable_exports/resume_export_after_report_object
+=== RUN   TestPostgresIntegration/resumable_exports/mandatory_authority_revocation_expiry_and_cancellation
+=== RUN   TestPostgresIntegration/resumable_exports/explicit_exclusions_and_transient_recovery
+=== RUN   TestPostgresIntegration/resumable_exports/pending_intake_is_not_silently_omitted
+=== RUN   TestPostgresIntegration/resumable_exports/export_rls_and_immutable_snapshot_grants
+=== RUN   TestPostgresIntegration/resumable_exports/multi_chunk_export_and_corrupt_part_readback
+=== RUN   TestPostgresIntegration/resumable_exports/bounded_1000_message_export
+    export_jobs_test.go:362: opt-in local export scale fixture
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/parents_scope_sibling_names_and_receipt_binding
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_after_collection_insert
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_edit_after_commit
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_after_collection_restore
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_before_item_commit
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_after_item_commit
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/missing_maps_loss_accounting_and_name_collision
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/wrong_parent_map_and_corrupt_inventory_need_action
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/empty_only_mailbox_and_resumable_frozen_inventory
+=== RUN   TestPostgresIntegration/collection_hierarchy_portability/split_export_inventory_then_explicitly_mapped_message_part
+=== RUN   TestPostgresIntegration/rich_draft_local_http
+=== RUN   TestPostgresIntegration/mail_custody_readonly_proof
+=== RUN   TestPostgresIntegration/draft_mime_portability
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_save_atomicity_recovery_and_isolation
+=== RUN   TestPostgresIntegration/draft_mime_portability/draft_mime_manifest_loss_accounting_and_tamper
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_before_commit
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_after_commit
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_after_draft_restore
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_before_item_commit
+=== RUN   TestPostgresIntegration/draft_mime_portability/missing_mime_original_is_accounted_and_transient_reads_resume
+=== RUN   TestPostgresIntegration/draft_mime_portability/legacy_json_drafts_remain_importable
+=== RUN   TestPostgresIntegration/draft_mime_portability/resumable_mime_export_frozen_generation
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_only_archive_exact_and_mbox_explicit_rejection
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/resumable_draft_snapshot_frozen_after_edit_and_interruption
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_before_commit
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_after_commit
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_after_draft_restore
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_before_item_commit
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_edited_before_reconciliation_needs_action
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/malformed_and_missing_draft_manifest_fail_closed
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/mixed_roundtrip_explicit_destination_mapping_and_atomic_replay
+    portability_test.go:299: local mixed roundtrip job=d6f284c9-cb42-487a-8ca9-3f1e9c3b295a mailbox=d807a25f-64f9-4b43-9ef4-d367bbc3eb01 verified=3 raw_sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244
+=== RUN   TestPostgresIntegration/drafts_and_organization
+=== RUN   TestPostgresIntegration/drafts_and_organization/collections_organization_and_portable_metadata
+=== RUN   TestPostgresIntegration/drafts_and_organization/concurrent_duplicate_draft_save_and_version_conflicts
+=== RUN   TestPostgresIntegration/drafts_and_organization/atomic_receipt_rollback_and_unknown_commit_recovery
+=== RUN   TestPostgresIntegration/drafts_and_organization/isolation_grants_and_no_silent_draft_export_loss
+=== RUN   TestPostgresIntegration/drafts_and_organization/real_http_mutation_contract_and_replay
+=== RUN   TestPostgresIntegration/receipt_outbox_atomicity
+--- PASS: TestPostgresIntegration (21.56s)
+    --- PASS: TestPostgresIntegration/synthetic_seed_repeat_and_collision (0.01s)
+    --- PASS: TestPostgresIntegration/concurrent_retries (0.09s)
+    --- PASS: TestPostgresIntegration/same_identity_different_input (0.01s)
+    --- PASS: TestPostgresIntegration/same_message_id_distinct_delivery (0.02s)
+    --- PASS: TestPostgresIntegration/tenant_account_mailbox_isolation (0.06s)
+    --- PASS: TestPostgresIntegration/missing_context_and_privileges (0.00s)
+    --- PASS: TestPostgresIntegration/wrong_scope_write (0.00s)
+    --- PASS: TestPostgresIntegration/recover_after_raw (0.03s)
+    --- PASS: TestPostgresIntegration/recover_after_objects (0.03s)
+    --- PASS: TestPostgresIntegration/recover_before_commit (0.03s)
+    --- PASS: TestPostgresIntegration/recover_after_commit (0.03s)
+    --- PASS: TestPostgresIntegration/malformed_mime_retained_pending (0.01s)
+    --- PASS: TestPostgresIntegration/corruption_and_missing_object (0.01s)
+    --- PASS: TestPostgresIntegration/scoped_search_and_keyset (0.02s)
+    --- PASS: TestPostgresIntegration/portable_eml_snapshot_export (0.03s)
+    --- PASS: TestPostgresIntegration/portable_export_restore_replay (0.23s)
+    --- PASS: TestPostgresIntegration/offline_import_jobs (7.92s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/mbox_jobs_flags_receipts_and_master_export (0.50s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_stage_chunk (0.43s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_discovery_object (0.44s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_ingest (0.43s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_before_item_commit (0.45s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_item_commit (0.43s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_report_object (0.44s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/maildir_explicit_exceptions_and_provenance (0.32s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/ambiguous_mbox_cannot_complete (0.13s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/source_outage_retries_without_losing_cursor (0.40s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/mbox_export_restore_with_portable_metadata (0.84s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/concurrent_import_claim_is_nonblocking (0.44s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/chunked_master_and_malformed_message_reconcile (1.32s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/import_table_rls_and_column_grants (0.49s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/metadata_change_does_not_get_overwritten_or_false_complete (0.41s)
+        --- SKIP: TestPostgresIntegration/offline_import_jobs/bulk_mbox_checkpoint_reconciliation (0.00s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/bad_source_hash_and_recovery (0.45s)
+    --- PASS: TestPostgresIntegration/local_inbox_http (0.12s)
+        --- PASS: TestPostgresIntegration/local_inbox_http/reads_real_content_receipt_and_safe_attachment_metadata (0.01s)
+        --- PASS: TestPostgresIntegration/local_inbox_http/query_paging_replay_and_cancel (0.02s)
+        --- PASS: TestPostgresIntegration/local_inbox_http/cross_tenant_account_mailbox_and_scope_injection (0.02s)
+        --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards (0.00s)
+            --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/wrong_type (0.00s)
+            --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/no_token (0.00s)
+            --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/wrong_origin (0.00s)
+            --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/dns_rebinding (0.00s)
+            --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/remote_client (0.00s)
+            --- PASS: TestPostgresIntegration/local_inbox_http/session_origin_transport_and_operation_guards/forwarded (0.00s)
+        --- PASS: TestPostgresIntegration/local_inbox_http/source_outage_and_corruption_fail_closed_then_recover (0.01s)
+    --- PASS: TestPostgresIntegration/resumable_exports (4.08s)
+        --- PASS: TestPostgresIntegration/resumable_exports/frozen_snapshot_roundtrip_and_range_resume (0.42s)
+        --- PASS: TestPostgresIntegration/resumable_exports/resume_export_after_chunk (0.34s)
+        --- PASS: TestPostgresIntegration/resumable_exports/resume_export_after_part_objects (0.29s)
+        --- PASS: TestPostgresIntegration/resumable_exports/resume_export_before_checkpoint_commit (0.30s)
+        --- PASS: TestPostgresIntegration/resumable_exports/resume_export_after_checkpoint_commit (0.25s)
+        --- PASS: TestPostgresIntegration/resumable_exports/resume_export_after_report_object (0.27s)
+        --- PASS: TestPostgresIntegration/resumable_exports/mandatory_authority_revocation_expiry_and_cancellation (0.41s)
+        --- PASS: TestPostgresIntegration/resumable_exports/explicit_exclusions_and_transient_recovery (0.56s)
+        --- PASS: TestPostgresIntegration/resumable_exports/pending_intake_is_not_silently_omitted (0.22s)
+        --- PASS: TestPostgresIntegration/resumable_exports/export_rls_and_immutable_snapshot_grants (0.18s)
+        --- PASS: TestPostgresIntegration/resumable_exports/multi_chunk_export_and_corrupt_part_readback (0.84s)
+        --- SKIP: TestPostgresIntegration/resumable_exports/bounded_1000_message_export (0.00s)
+    --- PASS: TestPostgresIntegration/collection_hierarchy_portability (3.87s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/parents_scope_sibling_names_and_receipt_binding (0.02s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_after_collection_insert (0.46s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_edit_after_commit (0.41s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_after_collection_restore (0.40s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_before_item_commit (0.41s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/interrupted_tree_import_after_item_commit (0.38s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/missing_maps_loss_accounting_and_name_collision (0.44s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/wrong_parent_map_and_corrupt_inventory_need_action (0.23s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/empty_only_mailbox_and_resumable_frozen_inventory (0.40s)
+        --- PASS: TestPostgresIntegration/collection_hierarchy_portability/split_export_inventory_then_explicitly_mapped_message_part (0.64s)
+    --- PASS: TestPostgresIntegration/rich_draft_local_http (0.12s)
+    --- PASS: TestPostgresIntegration/mail_custody_readonly_proof (0.05s)
+    --- PASS: TestPostgresIntegration/draft_mime_portability (1.93s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_save_atomicity_recovery_and_isolation (0.05s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/draft_mime_manifest_loss_accounting_and_tamper (0.01s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_before_commit (0.28s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_after_commit (0.27s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_after_draft_restore (0.27s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_before_item_commit (0.28s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/missing_mime_original_is_accounted_and_transient_reads_resume (0.39s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/legacy_json_drafts_remain_importable (0.18s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/resumable_mime_export_frozen_generation (0.18s)
+    --- PASS: TestPostgresIntegration/portable_drafts_and_mapping (2.27s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_only_archive_exact_and_mbox_explicit_rejection (0.01s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/resumable_draft_snapshot_frozen_after_edit_and_interruption (0.17s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_before_commit (0.28s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_after_commit (0.26s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_after_draft_restore (0.26s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_before_item_commit (0.25s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_edited_before_reconciliation_needs_action (0.18s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/malformed_and_missing_draft_manifest_fail_closed (0.13s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/mixed_roundtrip_explicit_destination_mapping_and_atomic_replay (0.67s)
+    --- PASS: TestPostgresIntegration/drafts_and_organization (0.50s)
+        --- PASS: TestPostgresIntegration/drafts_and_organization/collections_organization_and_portable_metadata (0.36s)
+        --- PASS: TestPostgresIntegration/drafts_and_organization/concurrent_duplicate_draft_save_and_version_conflicts (0.03s)
+        --- PASS: TestPostgresIntegration/drafts_and_organization/atomic_receipt_rollback_and_unknown_commit_recovery (0.01s)
+        --- PASS: TestPostgresIntegration/drafts_and_organization/isolation_grants_and_no_silent_draft_export_loss (0.03s)
+        --- PASS: TestPostgresIntegration/drafts_and_organization/real_http_mutation_contract_and_replay (0.03s)
+    --- PASS: TestPostgresIntegration/receipt_outbox_atomicity (0.00s)
+=== RUN   TestMBOXRDLosslessAndResumable
+--- PASS: TestMBOXRDLosslessAndResumable (0.00s)
+=== RUN   TestMBOXRDAmbiguityFailsClosed
+--- PASS: TestMBOXRDAmbiguityFailsClosed (0.00s)
+=== RUN   TestGCSCreateOnlyGenerationAndIntegrityContract
+--- PASS: TestGCSCreateOnlyGenerationAndIntegrityContract (0.00s)
+=== RUN   TestGCSOutagesAndRedirectsFailClosed
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/301
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/403
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/429
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/500
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/503
+--- PASS: TestGCSOutagesAndRedirectsFailClosed (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/301 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/403 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/429 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/500 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/503 (0.00s)
+PASS
+ok  	github.com/ausstyle/web-staging/services/sandy-mail	23.549s
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-fixture	[no test files]
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-local	[no test files]

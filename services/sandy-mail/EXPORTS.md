@@ -102,3 +102,10 @@ on the existing draft table and, for full MIME updates, column UPDATE on
 Rollback: stop MIME writers and export workers, retain all SQL and originals, and
 forward-repair with a compatible build. Do not run old exports against MIME-backed
 drafts: older code would omit their rich content. No down migration/data deletion.
+
+New full-MIME save receipts additionally retain current and previous immutable
+object references in their private JSON result, in the same SQL transaction as
+the draft revision. These references support retrieval of superseded originals;
+no old receipt is amended or backdated. The local mutation response omits those
+object locations. Portable MIME/archive formats and the pinned first canary are
+unchanged by this audit-reference addition.

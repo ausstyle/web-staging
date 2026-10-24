@@ -103,3 +103,37 @@ Restore offers two explicit admitted modes: `restore_collections=true` creates a
 For partitioned export, restore the first inventory part, obtain its admitted source→destination map, then pass that map in each subsequent part's import specification. Each part has its own master and reconciliation. Do not set creation mode independently on every part or infer one job's completion means all parts were restored. The tests exercise inventory-first split restoration and source/destination message hashes.
 
 The existing import record ledger counts the inventory as one archive record; reports additionally expose `expected_collections`, `verified_collections`, and `unverified_collections`. Export reports expose expected/exported collection totals. An incomplete mapping retains the immutable inventory/master and reports an explicit item exception plus any affected message-organization exceptions. It never calls an omitted empty folder restored. The extra optional worker UPDATE column is only `mail_import_items(collection_receipt_id)`; no production grant is made. Older binaries should not process v3 archives; rollback stops the newer worker and retains data for forward repair.
+
+## Rich draft import and export
+
+The loopback UI now imports a synthetic `.eml` file as an unsent MIME draft,
+reopens it from PostgreSQL, displays all recipient kinds and attachment metadata,
+and downloads the exact original after verifying SHA-256 in the browser. HTML-only
+mail is shown as source text, never inserted as HTML; remote images, frames and
+individual attachment opening remain unavailable. The local import limit is
+256 KiB within the unchanged 512 KiB JSON request bound. This is a functioning
+local customer-flow prototype, not a registered production customer route.
+
+`mail.drafts.mime.import` v1 takes `draft_id`, `expected_version`, and base64 MIME;
+the existing request envelope supplies the idempotency key. The session supplies
+scope. A new import uses revision zero; replacement uses the displayed revision.
+Unknown acknowledgements retain the same bytes/key for explicit retry, and stale
+replacement receives HTTP 409. The existing full-MIME worker saves originals
+before the transactional draft/receipt commit. New MIME receipts retain current
+and previous immutable object references; older receipts are not rewritten or
+backdated. The local API returns only receipt metadata, not those object locations.
+
+`mail.drafts.mime.view` returns text-only content, recipients, headers, attachment
+metadata and integrity/accounting. `mail.drafts.mime.export` returns one coherent
+saved version's MIME bytes, size, hash and accounting. Both require the same local
+session and exact mailbox scope; export is a read, not a send. Plain-text drafts
+also export generated MIME, with the existing explicit missing-header accounting.
+Unsaved edits must be saved before export. Rich drafts can be replaced from a full
+MIME file; there is no lossy rich-to-plain edit or WYSIWYG composer.
+
+Run `localtest/rich_drafts.py` with the same environment as `localtest/browser.py`
+to exercise actual import, lost-ack retry, download, concurrent-edit conflict,
+replacement and HTML safety. The fixture `testdata/rich-draft.eml` was authored in
+`draft_mime_test.go` at source `10cb2af`; SHA256
+`78e4a834323fa7f0317d75b09270d9e5656f839b82c0eceb5de65c33108ac6d0`.
+It contains only synthetic `.invalid` addresses. No private mailbox data is used.
