@@ -3,7 +3,7 @@ from pathlib import Path
 import hashlib,json
 ROOT=Path(__file__).resolve().parents[2]
 BEFORE_SHA='797361b54aee283eb4d13825ef969fe23052fa21d626470c88f7ef24f1cd4a31'
-AFTER_SHA='badf527de90ff0060cb5e6ebfced55b74a5269357c9c7f45b94accc46d22dda3'
+AFTER_SHA='567cba5f8959f0e154e0a7c0a63c6d995816a50c927db4fe3843c3e7c4570a28'
 MODULES=('task_analysis_model.ts','task_analysis_profile.ts','runtime_model_metrics.ts','worker_model_result.ts')
 def sha(value):return hashlib.sha256(value).hexdigest()
 def candidate(files):
@@ -13,7 +13,7 @@ def candidate(files):
  before=files['index.ts'].decode();after=(ROOT/'supabase/functions/sandy-task-analysis-worker/index.ts').read_text()
  if sha(after.encode())!=AFTER_SHA:raise ValueError('reviewed_worker_entrypoint_changed')
  before_extract=before[before.index('async function extract('):before.index('function scheduled(')]
- after_extract=after[after.index('async function extract('):after.index('function scheduled(')]
+ after_extract=after[after.index('async function legacyExtract('):after.index('function scheduled(')]
  normalized=after.replace('import {extractTaskConfiguration} from "../_shared/sandy-agent-operations/task_analysis_model.ts";\n','').replace('import {literalTaskTitle} from "../_shared/sandy-agent-operations/task_analysis_profile.ts";\n','')
  normalized=normalized.replace('function taskAnalysisFailure(error:unknown){const value=error instanceof Error?error.message:"task_analysis_failed";return /^[a-z0-9_]{1,100}$/.test(value)?value:"task_analysis_failed_or_unknown";}\n','').replace(after_extract,before_extract).replace('extract(task.title,job.task_id,job.customer_id)','extract(task.title)').replace('String(x?.timezone).toUpperCase()','String(x.timezone).toUpperCase()').replace('last_error:taskAnalysisFailure(e)','last_error:String(e).slice(0,600)')
  if normalized!=before:raise ValueError('unreviewed_non_model_worker_delta')

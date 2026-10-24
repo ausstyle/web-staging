@@ -7,14 +7,14 @@
     "index.ts": "797361b54aee283eb4d13825ef969fe23052fa21d626470c88f7ef24f1cd4a31"
   },
   "candidate_files": {
-    "sandy-task-analysis-worker/index.ts": "badf527de90ff0060cb5e6ebfced55b74a5269357c9c7f45b94accc46d22dda3",
-    "_shared/sandy-agent-operations/task_analysis_model.ts": "14f7427131e4bcb9a1b770d14457f007999d7813d91994e5502eb3bbd36b05d9",
+    "sandy-task-analysis-worker/index.ts": "567cba5f8959f0e154e0a7c0a63c6d995816a50c927db4fe3843c3e7c4570a28",
+    "_shared/sandy-agent-operations/task_analysis_model.ts": "6d7e79dec70526025e41701d60762daa98d9749acd8c1ae0a836c3d235758e55",
     "_shared/sandy-agent-operations/task_analysis_profile.ts": "15feaa7a7739c0a966c80a22d144d8235aeea10e77f3fca4be7f9171e16286e7",
     "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f",
     "_shared/sandy-agent-operations/worker_model_result.ts": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
   },
   "migration": "supabase/migrations/20261024005200_sandy_task_model_admission.sql",
-  "migration_sha256": "0431fe1f4028a19dd765a0b1c0cf0d366cff2725f88c3fb774e3930048341931",
+  "migration_sha256": "0fe8688472bdeb55ee7496ea3e766155d5866add27c71855167db92e424f843d",
   "model_gateway": "sandy-openai-gateway-v4",
   "model": "gpt-4.1-mini",
   "max_output_tokens": 512,
@@ -29,5 +29,36 @@
     "one_isolated_normal_task_receipt_and_task_readback",
     "literal_no_provider_and_denied_contract_readback"
   ],
-  "dollar_budget_guaranteed": false
+  "dollar_budget_guaranteed": false,
+  "staged_cohort": "fixed isolated customer, fifteen minute protected configuration; other customers preserve original extractor until bounded rollout",
+  "agenda_source": {
+    "version": 88,
+    "verify_jwt": false,
+    "body_sha256": "77a518701aa91e3d69d56b5892f4f4fa76a79c19bdb4d3e196f266b6118d7afe",
+    "files": {
+      "index.ts": "ed1f796ef8e79aca12e0af16bc44c42a91fb6f7f8ee4b49b22f0cf62186f7ce5"
+    }
+  },
+  "database_invariants": [
+    {
+      "relname": "sandy_openai_context_policies",
+      "relrowsecurity": true,
+      "relforcerowsecurity": false,
+      "acl": "{postgres=arwdDxtm/postgres,service_role=rDxtm/postgres}",
+      "policies": null,
+      "triggers": null,
+      "service_update": false,
+      "customer_read": false
+    },
+    {
+      "relname": "sandy_openai_request_audit",
+      "relrowsecurity": true,
+      "relforcerowsecurity": false,
+      "acl": "{postgres=arwdDxtm/postgres,service_role=arDxtm/postgres}",
+      "policies": null,
+      "triggers": null,
+      "service_update": false,
+      "customer_read": false
+    }
+  ]
 }

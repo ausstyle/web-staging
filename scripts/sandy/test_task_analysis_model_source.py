@@ -19,5 +19,5 @@ class TaskAnalysisSource(unittest.TestCase):
   files=candidate(self.original);text=files['sandy-task-analysis-worker/index.ts'].decode()
   for anchor in ['sandy_task_worker_authorized','sandy_task_claim_analysis','p_limit:10','.eq("title",job.source_title)','.eq("customer_id",job.customer_id)','if(literalTaskTitle(title))return null']:
    self.assertIn(anchor,text)
-  self.assertNotIn('api.openai.com',text);self.assertNotIn('OPENAI_API_KEY',text)
+  self.assertEqual(text.count('https://api.openai.com/v1/chat/completions'),1);self.assertIn('if(mode.data==="legacy_staging")return await legacyExtract(title)',text)
 if __name__=='__main__':unittest.main()

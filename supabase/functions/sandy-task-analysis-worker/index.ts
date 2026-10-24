@@ -4,8 +4,19 @@ import {createClient} from "npm:@supabase/supabase-js@2.58.0";
 const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 function taskAnalysisFailure(error:unknown){const value=error instanceof Error?error.message:"task_analysis_failed";return /^[a-z0-9_]{1,100}$/.test(value)?value:"task_analysis_failed_or_unknown";}
 function response(status:number,result:unknown){return new Response(JSON.stringify(result),{status,headers:{"content-type":"application/json"}})}
+async function legacyExtract(title:string){
+ const key=Deno.env.get("OPENAI_API_KEY");if(!key)return null;
+ if((title.startsWith('"')&&title.endsWith('"'))||(title.startsWith("“")&&title.endsWith("”")))return null;
+ const res=await fetch("https://api.openai.com/v1/chat/completions",{method:"POST",headers:{"authorization":"Bearer "+key,"content-type":"application/json"},body:JSON.stringify({model:"gpt-4.1-mini",temperature:0,response_format:{type:"json_object"},messages:[{role:"system",content:"Extract configuration facts only; NEVER rewrite titles, descriptions or create tasks. JSON: {contact_name:string|null,priority:'high'|'normal'|'low'|null, time_text:string|null, hour:number|null,minute:number|null,timezone:'AEST'|'AEDT'|null,date_text:string|null,date_ymd:string|null,due_date_ymd:string|null}. time_text must be exact substring in original title and must include clock time. hour 0-23, minute 0-59. date_text must be exact source substring ('today','tomorrow', or explicit date). date_ymd only with explicit date. due_date_ymd only for explicit due dates. Additionally return relative_text (exact substring e.g. 'in 15 minutes') and relative_minutes (positive integer duration in minutes), or both null. Interpret natural relative durations including written numbers. If unspecified set null. Never assume a date yourself. No invented people or contacts."},{role:"user",content:title}]}),signal:AbortSignal.timeout(12000)});
+ if(!res.ok)throw Error("AI "+res.status);
+ return JSON.parse((await res.json()).choices?.[0]?.message?.content||"{}");
+}
 async function extract(title:string,taskId:string,customerId:string){
  if(literalTaskTitle(title))return null;
+ const mode=await db.rpc("sandy_task_model_mode",{p_task_id:taskId,p_customer_id:customerId});
+ if(mode.error)throw Error("task_analysis_model_mode_unavailable");
+ if(mode.data==="legacy_staging")return await legacyExtract(title);
+ if(mode.data!=="governed")throw Error("task_analysis_model_policy_denied");
  return await extractTaskConfiguration(db,{taskId,customerId,title},{base:Deno.env.get("SUPABASE_URL")!,serviceCredential:Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!});
 }
 function scheduled(x:any,title:string){

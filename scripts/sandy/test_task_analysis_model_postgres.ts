@@ -7,6 +7,7 @@ Deno.test('real PostgreSQL task admission is source/customer/contract bound, bou
  const db=new PGlite();try{
  await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;
  CREATE FUNCTION auth.role() RETURNS text LANGUAGE sql AS $$SELECT coalesce(nullif(current_setting('request.jwt.claim.role',true),''),'anon')$$;
+ CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,raw_user_meta_data jsonb);CREATE TABLE email_customers(id uuid PRIMARY KEY,display_name text,google_drive_folder_status text);CREATE TABLE sandy_memory_settings(customer_id uuid,enabled bool,learning_enabled bool,proactive_enabled bool);CREATE TABLE sandy_memory_portal_accounts(auth_user_id uuid,customer_id uuid,revoked_at timestamptz);CREATE TABLE sandy_controller_admins(auth_user_id uuid);
  CREATE TABLE sandy_tasks(id uuid PRIMARY KEY,customer_id uuid,title text,source_kind text,archived_at timestamptz);
  CREATE TABLE sandy_task_analysis_queue(task_id uuid PRIMARY KEY,customer_id uuid,source_title text,state text);
  CREATE TABLE sandy_openai_context_policies(capability text PRIMARY KEY,permitted_categories text[],prohibited_categories text[],require_external_research bool,max_context_chars int,enabled bool);
@@ -20,6 +21,14 @@ Deno.test('real PostgreSQL task admission is source/customer/contract bound, bou
  assert.equal((await call()).error,'task_model_private_runtime_required');
  await db.exec("SET request.jwt.claim.role='service_role'");
  assert.equal((await call()).error,'task_model_policy_disabled');
+ assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'legacy_staging');
+ await db.exec(`INSERT INTO auth.users VALUES('${customer}','fixture@example.invalid','{"sandy_api_isolated_session_test":true}');INSERT INTO email_customers VALUES('${customer}','Isolated Sandy API service acceptance','excluded');INSERT INTO sandy_memory_settings VALUES('${customer}',false,false,false);INSERT INTO sandy_memory_portal_accounts VALUES('${customer}','${customer}',NULL);UPDATE sandy_openai_context_policies SET execution_limits=execution_limits||jsonb_build_object('canary_customer_id','${customer}','canary_expires_at',clock_timestamp()+interval '14 minutes')`);
+ assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'governed');
+ await db.exec(`UPDATE sandy_openai_context_policies SET execution_limits=jsonb_set(execution_limits,'{canary_expires_at}',to_jsonb((clock_timestamp()-interval '1 second')::text))`);
+ assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'blocked');
+ await db.exec(`UPDATE sandy_openai_context_policies SET execution_limits=execution_limits-ARRAY['canary_customer_id','canary_expires_at']`);
+ await db.exec(`UPDATE sandy_openai_context_policies SET execution_limits=jsonb_set(execution_limits,'{rollout_stage}','"enforced"')`);
+ assert.equal((await db.query<{v:string}>('SELECT sandy_task_model_mode($1,$2) v',[task,customer])).rows[0].v,'blocked');
  await db.exec("UPDATE sandy_openai_context_policies SET enabled=true WHERE capability='task.configuration.extract'");
  assert.equal((await call(undefined,'0'.repeat(64))).error,'task_model_source_denied');
  assert.equal((await call(undefined,undefined,'20000000-0000-4000-8000-000000000099')).error,'task_model_current_request_required');
@@ -27,9 +36,12 @@ Deno.test('real PostgreSQL task admission is source/customer/contract bound, bou
  const source=await Deno.readTextFile('supabase/functions/sandy-task-analysis-worker/index.ts');
  const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source))),n=>n.toString(16).padStart(2,'0')).join('');
  assert.equal(hash,taskAnalysisSourceSha256,'compiled helper and real entrypoint must agree');
+ for(const [model,source] of [['gpt-wrong',taskAnalysisSourceSha256],['gpt-4.1-mini','0'.repeat(64)]]){
+  await assert.rejects(db.query(`INSERT INTO sandy_openai_request_audit(capability,model,decision,execution_status,verified_success,meta) VALUES('task.configuration.extract',$1,'allowed','started',false,$2)`,[model,{source_sha256:source}]),/source_bound_claim_required/);
+ }
  const admitted=await call();assert.equal(admitted.state,'started');assert.equal(admitted.reused,false);
  assert.equal((await call()).reused,true);
- const metrics={schema_version:'1',source:'received_provider_envelope',provider_effect_verified:false,cost_basis:'unavailable_usage_or_model'};
+ const metrics={schema_version:'1',source:'received_provider_envelope',provider_effect_verified:false,cost_basis:'unavailable_usage_or_model',model_returned:null,request_duration_ms:1,usage:null,estimated_cost_usd:null,rate_verified_at:null};
  const finish=async(state:string,result:any=null)=> (await db.query<{v:any}>('SELECT sandy_task_model_finish($1,$2,$3,$4,$5,$6) v',[admitted.audit_id,state,'resp_fixture','a'.repeat(64),result,metrics])).rows[0].v;
  assert.equal((await finish('unknown')).ok,true);assert.equal((await finish('unknown')).ok,true);
  assert.equal((await call()).state,'unknown');assert.equal((await call()).reused,true);
