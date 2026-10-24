@@ -1,9 +1,9 @@
 {
   "kind": "reviewed-runtime-slice-v1",
   "function": "sandy-agent-runtime-v4",
-  "version": 39,
+  "version": 40,
   "verify_jwt": false,
-  "body_sha256": "b1ddb8b3813d3ee9401c6394697aea8ced40e481e3e05745786cd7c4a041f36e",
+  "body_sha256": "3121f9336e5689f584102dfab0f0822b317a3a9adb4009cb57f90c8116292fea",
   "before_files": {
     "_shared/sandy-agent-operations/connected-gmail.ts": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
     "_shared/sandy-agent-operations/contracts.ts": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
@@ -16,7 +16,7 @@
     "_shared/sandy-agent-operations/runtime_memory.ts": "33613b766e500ec5f559dba312192cf4e45e39da0591ca3df957baf9aeb840f6",
     "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f",
     "_shared/sandy-agent-operations/runtime_model_policy.ts": "e81e6b878562e37e85c8e207f847fac815d03a7e761884d0f59fcf00b1211221",
-    "_shared/sandy-agent-operations/runtime_operational.ts": "120e5b831f970beefe5cd1ad24da741e6516f5c04d881af6e93fbb7a1e35fbcc",
+    "_shared/sandy-agent-operations/runtime_operational.ts": "f76c1b5fe5842b15da55dcdcfa3dc55c246856d5491939b9e906d5273bbeee4d",
     "_shared/sandy-agent-operations/runtime_operational_contracts.ts": "ed66b477c252fcc4ecc4a182520c25bd582d28ab8a3e1ceed1d2953b7c8a3b83",
     "_shared/sandy-agent-operations/runtime_profiles.ts": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
     "_shared/sandy-agent-operations/runtime_record_contracts.ts": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
@@ -39,6 +39,7 @@
     "sandy-agent-runtime-v4/version-awareness.js": "ee8ac38d54136ab291736f211f713f542bbc6c83af6460081f06a35782fe06c9"
   },
   "replacements": {
-    "_shared/sandy-agent-operations/runtime_operational.ts": "f76c1b5fe5842b15da55dcdcfa3dc55c246856d5491939b9e906d5273bbeee4d"
+    "_shared/sandy-agent-operations/runtime_operational.ts": "dc23f82f29e86d4944c2b6f368da2db65229e81534f030cd1e485ab21a539048",
+    "_shared/sandy-agent-operations/runtime_operational_contracts.ts": "6cde71cfd8093fa89aa4a0ef211bd7b5c6211772ccb229565c1d2ac576de6a8a"
   }
 }

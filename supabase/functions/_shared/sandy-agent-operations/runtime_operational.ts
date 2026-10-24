@@ -44,16 +44,19 @@ export async function runtimeOperationalOperation(principal: AgentPrincipal, ope
       db.from("sandy_master_modules").select("module_key,module_name,description,component_patterns,sort_order,acceptance_requirements").order("sort_order"),
     ]);
     const observedAt = Date.now();
-    return [caps, integrations, moduleRegistry, masterRegistry].some(result => result.error || !Array.isArray(result.data)) ? { error: "capability_catalog_unavailable" } : {
+    if ([caps, integrations, moduleRegistry, masterRegistry].some(result => result.error || !Array.isArray(result.data))) return { error: "capability_catalog_unavailable" };
+    const modules = moduleRegistry.data.map((m: Obj) => {
+      const testedAt = typeof m.last_tested_at === "string" ? Date.parse(m.last_tested_at) : NaN;
+      const stale = !Number.isFinite(testedAt) || testedAt > observedAt || observedAt - testedAt >= 86400000;
+      return { ...m, operational_status: stale ? "unverified" : m.operational_status, stale };
+    });
+    return {
       ok: true, source: ["sandy_capability_catalog", "sandy_ai_integrations"],
       capabilities: (caps.data || []).filter((x: Obj) => Array.isArray(x.channels) && x.channels.includes(facts.channel)).map((x: Obj) => ({ key: x.feature_key, verified_at: x.last_verified_at, verification_note: x.verification_note })),
       integration_configuration: (integrations.data || []).map((x: Obj) => ({ key: x.integration_key, enabled: x.enabled, status: x.deployment_status, verified_at: x.last_verified_at })),
       module_status_source: "sandy_module_status", master_modules: masterRegistry.data,
-      modules: moduleRegistry.data.map((m: Obj) => {
-        const testedAt = typeof m.last_tested_at === "string" ? Date.parse(m.last_tested_at) : NaN;
-        const stale = !Number.isFinite(testedAt) || testedAt > observedAt || observedAt - testedAt >= 86400000;
-        return { ...m, operational_status: stale ? "unverified" : m.operational_status, stale };
-      }),
+      module_summary: { returned_modules: modules.length, unverified_modules: modules.filter((m: Obj) => m.stale).length, scope: "returned_module_rows", possibly_truncated: modules.length === 250 },
+      modules,
       note: "A configured or deployed feature is not necessarily operational or authorised for the current customer.",
     };
   }

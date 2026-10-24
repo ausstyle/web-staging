@@ -21,7 +21,7 @@ class CapabilityAcceptance(ChannelActivityAcceptance):
    return self.r._sql("SELECT count(*) total_modules,count(*) FILTER (WHERE last_tested_at IS NULL OR last_tested_at>now() OR last_tested_at<=now()-interval '24 hours') unverified_modules FROM public.sandy_module_status",True)[0]
   before=oracle()
   self.check('catalogue_within_tool_limit',0<before['total_modules']<250)
-  prompt='Call inspect_sandy_operational_state with domain capabilities. Return only a JSON object with total_modules (number of entries in modules) and unverified_modules (number of entries whose stale is true). Do not treat unverified modules as operational. Do not send messages, change records, research or call other tools.'
+  prompt='Call inspect_sandy_operational_state with domain capabilities. Return only a JSON object with total_modules (copy module_summary.returned_modules) and unverified_modules (copy module_summary.unverified_modules). Use the server-provided summary; do not recount the long module list. Do not treat unverified modules as operational. Do not send messages, change records, research or call other tools.'
   status,body=self.workspace(f,'ask',{'conversation_id':conversation,'request_id':request,'question':prompt,'timezone':'UTC'})
   self.report['web_calls'].append({'http_status':status,'task_id':body.get('task_id'),'request_id':request,'response_sha256':hashlib.sha256(json.dumps(body,sort_keys=True).encode()).hexdigest()});self.save()
   self.check('normal_customer_web_response',status==200 and body.get('ok') is True)
@@ -31,20 +31,20 @@ class CapabilityAcceptance(ChannelActivityAcceptance):
   except ValueError:answer=None
   after=oracle()
   self.check('catalogue_stable_through_read',before==after)
-  self.check('model_answer_matches_independent_freshness_counts',exact_counts(answer,after))
   task=body['task_id']
   audits=self.r._sql('SELECT id,operation,principal_kind,customer_id,state FROM public.sandy_agent_operation_audit WHERE task_id='+q(task),True)
   self.check('actual_scoped_inspection_receipt',any(a['operation']=='agent.runtime.operational.capabilities' and a['state']=='succeeded' and a['customer_id']==f['customer'] and a['principal_kind']=='trusted_runtime' for a in audits))
   self.check('only_read_operation_requested',all(a['operation'] in ['agent.runtime.operational.capabilities','agent.runtime.conversation.respond','agent.runtime.connections.preflight'] for a in audits))
   rounds=self.r._sql('SELECT id,round,state,source_runtime,source_sha256,provider_response_id,response_sha256 FROM public.sandy_runtime_conversation_audit WHERE task_id='+q(task)+' ORDER BY round',True)
   self.check('bounded_actual_model_receipts',1<=len(rounds)<=4 and all(r['state']=='succeeded' and r['source_runtime']=='sandy-agent-runtime-v4' and r['source_sha256']==source['entrypoint_sha256'] and r['provider_response_id'] and r['response_sha256'] for r in rounds))
-  self.report.update(independent_counts=after,inspection_receipts=audits,model_receipts=rounds,acceptance_scope='normal web capability freshness inspection; invalid timestamps and unavailable catalogues verified by isolated fault integration, not production fault injection');self.save()
+  self.report.update(independent_counts=after,returned_counts=answer if exact_counts(answer,answer) else None,inspection_receipts=audits,model_receipts=rounds,acceptance_scope='normal web capability freshness inspection; invalid timestamps and unavailable catalogues verified by isolated fault integration, not production fault injection');self.save()
+  self.check('model_answer_matches_independent_freshness_counts',exact_counts(answer,after))
   self.check('source_preserved',self.source()==source)
 
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);args=p.parse_args()
  runner=CapabilityAcceptance(args.output);passed=runner.run()
- proof={'passed':passed,'source_commit':os.environ.get('GITHUB_SHA'),'github_run_id':os.environ.get('GITHUB_RUN_ID'),'report_sha256':hashlib.sha256(args.output.read_bytes()).hexdigest(),'scope':runner.report.get('acceptance_scope'),'inspection_receipts':runner.report.get('inspection_receipts',[]),'model_receipts':runner.report.get('model_receipts',[]),'cleanup':runner.report.get('cleanup'),'failure':safe_failure_classification(runner.report) if not passed else None,'old_effects_repeated':0}
+ proof={'passed':passed,'source_commit':os.environ.get('GITHUB_SHA'),'github_run_id':os.environ.get('GITHUB_RUN_ID'),'report_sha256':hashlib.sha256(args.output.read_bytes()).hexdigest(),'scope':runner.report.get('acceptance_scope'),'independent_counts':runner.report.get('independent_counts'),'returned_counts':runner.report.get('returned_counts'),'inspection_receipts':runner.report.get('inspection_receipts',[]),'model_receipts':runner.report.get('model_receipts',[]),'cleanup':runner.report.get('cleanup'),'failure':safe_failure_classification(runner.report) if not passed else None,'old_effects_repeated':0}
  q=runner.r._quote
  rows=runner.r._sql("INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) SELECT change_id,'runtime_capability_acceptance',NULL,"+q(json.dumps(proof))+"::jsonb FROM public.sandy_engineering_change_events WHERE event_type='runtime_slice_dispatch' AND detail->>'source_commit'="+q(os.environ.get('GITHUB_SHA',''))+" AND detail->>'github_run_id'="+q(os.environ.get('GITHUB_RUN_ID',''))+" ORDER BY id DESC LIMIT 1 RETURNING id")
  print('::notice title=Capability freshness acceptance::'+json.dumps({'passed':passed,'event_id':rows[0]['id'] if len(rows)==1 else None,'failure':proof['failure']}))

@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {PGlite} from 'npm:@electric-sql/pglite@0.3.14';
 import {authenticateRuntime,bindRuntimeTask} from './identity.ts';
 import {collectRuntimeSnapshot} from './runtime_snapshot.ts';
+import {validRuntimeOperationalOutput} from './runtime_operational_contracts.ts';
 import {bindRuntimeOperationalContext,runtimeOperationalOperation} from './runtime_operational.ts';
 async function fixture(overrides:Record<string,unknown>={}){
  const pg=new PGlite();const customer=crypto.randomUUID(),foreign=crypto.randomUUID(),task=crypto.randomUUID(),conversation=crypto.randomUUID();
@@ -84,6 +85,8 @@ Deno.test('capability inspection rejects malformed/future/stale verification evi
   const {capability}=await f.inspect();
   const result=await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability);
   assert.equal(result.ok,true);
+  assert.deepEqual(result.module_summary,{returned_modules:6,unverified_modules:4,scope:'returned_module_rows',possibly_truncated:false});
+  assert.equal(validRuntimeOperationalOutput('agent.runtime.operational.capabilities',{ok:true,contract_version:'1.0.0',principal_kind:'trusted_runtime',task_id:f.task,result}),true);
   for(const [key,,stale] of cases){const row=result.modules.find((m:any)=>m.module_key===key);assert.equal(row.stale,stale,key);assert.equal(row.operational_status,stale?'unverified':'operational',key);}
  }finally{Date.now=originalNow;await f.pg.close();}
 });
@@ -97,4 +100,16 @@ Deno.test('unavailable capability registries never report a successful empty cat
   }
  }
  const f=await fixture();try{const {capability}=await f.inspect();const result=await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability);assert.equal(result.ok,true);assert.deepEqual(result.modules,[]);assert.deepEqual(result.master_modules,[]);}finally{await f.pg.close();}
+});
+
+Deno.test('capability summary counts 111 rows exactly and labels the 250-row boundary',async()=>{
+ const f=await fixture();try{
+  await f.pg.exec("INSERT INTO sandy_module_status SELECT 'module_'||n,'operational',NULL FROM generate_series(1,111) n");
+  const {capability}=await f.inspect();
+  let result=await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability);
+  assert.deepEqual(result.module_summary,{returned_modules:111,unverified_modules:111,scope:'returned_module_rows',possibly_truncated:false});
+  await f.pg.exec("INSERT INTO sandy_module_status SELECT 'module_'||n,'operational',NULL FROM generate_series(112,251) n");
+  result=await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability);
+  assert.deepEqual(result.module_summary,{returned_modules:250,unverified_modules:250,scope:'returned_module_rows',possibly_truncated:true});
+ }finally{await f.pg.close();}
 });
