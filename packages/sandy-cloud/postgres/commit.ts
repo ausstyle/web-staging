@@ -201,11 +201,13 @@ export class PostgresCommitBoundary implements CommitBoundary {
         fail("POLICY_CHANGED");
       }
       if (!this.scanner) fail("SHARED_SCAN_OWNER_REQUIRED");
-      const scan = await this.scanner.verifyInTransaction(tx, {
-        intent: i,
-        fileId: row.file_id,
-        admission: admitted,
-        proof: p,
+      const scan = Object.freeze({
+        ...await this.scanner.verifyInTransaction(tx, {
+          intent: i,
+          fileId: row.file_id,
+          admission: admitted,
+          proof: p,
+        }),
       });
       if (
         !scan || !Number.isSafeInteger(scan.expiresAt) ||

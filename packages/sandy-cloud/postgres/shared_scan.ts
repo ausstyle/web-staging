@@ -148,7 +148,7 @@ export function sharedScanOwner(
         intent: i,
         admission: Object.freeze({ ...input.admission }),
       };
-      const source = await references.lock(tx, i, input.fileId);
+      const source = await references.lock(tx, i, frozen.fileId);
       if (!source) return deny();
       const { receiptId, binding: b } = structuredClone(source);
       if (
@@ -173,7 +173,7 @@ export function sharedScanOwner(
         a.version !== 1 ||
         a.receiptId !== receiptId || a.artifactId !== b.artifactId ||
         a.admissionId !== b.admissionId ||
-        a.fileId !== input.fileId || a.actorId !== i.actorId ||
+        a.fileId !== frozen.fileId || a.actorId !== i.actorId ||
         a.customerId !== frozen.admission.customerId ||
         a.bindingSha256 !== b.bindingSha256 || a.verdict !== "CLEAN" ||
         a.generation !== i.ref.generation ||
