@@ -332,5 +332,34 @@
       ],
       "owner": "postgres"
     }
-  ]
+  ],
+  "readiness_classification_repair": {
+    "migration": "supabase/migrations/20261024004210_sandy_memory_readiness_artifact_classification.sql",
+    "migration_sha256": "54e45759b4a4f3510379d10abd3892abbc7d9c3d984c48d61e51105c8c59c289",
+    "candidate_sources": [
+      {
+        "proname": "sandy_api_memory_private_readiness",
+        "sha": "3d2e43d8a5cae0b93c0fe551700f17fa157df54e7036f47a999e49deca07242b",
+        "prosecdef": true,
+        "proconfig": [
+          "search_path=pg_catalog, pg_temp"
+        ],
+        "owner": "postgres"
+      },
+      {
+        "proname": "sandy_guard_memory_private_readiness_event",
+        "sha": "52dbe9c8c0230fd6dfab38701f2b8737201c83238893c2a9c6748d339215a2de",
+        "prosecdef": false,
+        "proconfig": [
+          "search_path=pg_catalog, pg_temp"
+        ],
+        "owner": "postgres"
+      }
+    ],
+    "existing_artifact_type": "configuration",
+    "existing_rollback_strategy": "manual_review",
+    "required_metadata_kind": "runtime_private_certification",
+    "global_flags_changed": false,
+    "new_grants": 0
+  }
 }

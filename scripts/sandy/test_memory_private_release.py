@@ -7,6 +7,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 import release_memory_private_correction as release
+import repair_memory_readiness_custody as repair
 from release_web_canary import Blocked
 from verify_memory_private_mcp import PrivateMemoryAcceptance
 
@@ -29,7 +30,7 @@ class MemoryPrivateReleaseTests(unittest.TestCase):
         m,_=release.load()
         rows=[{'sha':m['shared_rpc_after_private_readiness_prosrc_sha256'],'prosecdef':True,'proconfig':['search_path=pg_catalog, pg_temp'],'customer':True,'anon':False,'service':False}]
         history=[{'version':Path(p).name.split('_')[0],'statements':[(release.ROOT/p).read_text()]} for p in sorted(m['migrations'])]
-        return m,[rows,[{'sha':release.CONFIDENCE}],history,[{'api_exposed':False,'ai_exposed':False,'verified':False}],m['private_schema_sources'],[{'tgenabled':'O','type':31,'internal':False,'fixed_guard':True}],[{'customer':True,'anon':False,'service':False}]]
+        return m,[rows,[{'sha':release.CONFIDENCE}],history,[{'api_exposed':False,'ai_exposed':False,'verified':False}],m['private_schema_sources'],[],[{'tgenabled':'O','type':31,'internal':False,'fixed_guard':True}],[{'customer':True,'anon':False,'service':False}]]
 
     def test_installed_readback_checks_original_statements_and_guard_sources(self):
         m,rows=self.schema_rows();r=Mock();r.sql.side_effect=rows
@@ -41,7 +42,7 @@ class MemoryPrivateReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(Blocked,'migration_state_requires_reconciliation_no_reinstall'):release.schema(r,m,True)
 
     def test_changed_readiness_body_or_disabled_guard_blocks_acceptance(self):
-        for index,replacement,error in [(4,[],'private_readiness_source_or_owner_drift'),(5,[],'private_readiness_guard_trigger_drift')]:
+        for index,replacement,error in [(4,[],'private_readiness_source_or_owner_drift'),(6,[],'private_readiness_guard_trigger_drift')]:
             m,rows=self.schema_rows();rows[index]=replacement;r=Mock();r.sql.side_effect=rows
             with self.assertRaisesRegex(Blocked,error):release.schema(r,m,True)
 
@@ -73,6 +74,27 @@ class MemoryPrivateReleaseTests(unittest.TestCase):
         queries=[c.args[0] for c in r.sql.call_args_list]
         self.assertTrue(any('outcome_unknown' in q for q in queries))
         self.assertFalse(any('DELETE FROM public.sandy_engineering_component_leases' in q for q in queries))
+
+
+class ReadinessCustodyRepairTests(unittest.TestCase):
+    def test_preflight_is_read_only_and_never_redeploys_installed_API(self):
+        m,_=release.load();r=Mock();r.sql.side_effect=[[],[{'active':0}]]
+        with patch.object(repair,'functions',return_value={}),patch.object(repair,'schema'):
+            result=repair.apply(r,m,False)
+        self.assertEqual(result['functions_redeployed'],0);self.assertEqual(result['mutations'],0)
+        r.upload.assert_not_called();self.assertTrue(all(c.args[1] is True for c in r.sql.call_args_list))
+
+    def test_existing_repair_cannot_be_reapplied(self):
+        m,_=release.load();r=Mock();r.sql.return_value=[{'version':'20261024004210','statements':['already installed']}]
+        with patch.object(repair,'functions',return_value={}),patch.object(repair,'schema'):
+            with self.assertRaisesRegex(Blocked,'readiness_repair_state_requires_reconciliation_no_replay'):repair.apply(r,m,True)
+        r.upload.assert_not_called();self.assertTrue(all(c.args[1] is True for c in r.sql.call_args_list))
+
+    def test_active_fixture_blocks_source_repair(self):
+        m,_=release.load();r=Mock();r.sql.side_effect=[[],[{'active':1}]]
+        with patch.object(repair,'functions',return_value={}),patch.object(repair,'schema'):
+            with self.assertRaisesRegex(Blocked,'retire_existing_readiness_before_repair'):repair.apply(r,m,True)
+        r.upload.assert_not_called();self.assertTrue(all(c.args[1] is True for c in r.sql.call_args_list))
 
 
 class MemoryPrivateAcceptanceTests(unittest.TestCase):
@@ -116,9 +138,24 @@ class MemoryPrivateAcceptanceTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError,'fixture_cleanup_ownership_not_proved'):a.cleanup()
         a.r._auth_admin.assert_not_called();self.assertEqual(a.r._sql.call_count,1)
 
-    def test_retirement_records_independent_audit_without_artifact_edit(self):
-        a=self.bare();a.retire();a.retire()
+    def test_failed_readiness_install_cannot_prevent_fixture_retirement(self):
+        a=self.bare();a.r._sql.return_value=[];a.retire()
+        self.assertTrue(a.retired);self.assertTrue(a.report['readiness_never_installed'])
         self.assertEqual(a.r._sql.call_count,1)
+        self.assertNotIn('INSERT INTO',a.r._sql.call_args.args[0])
+
+    def test_readiness_transport_error_still_bans_fixture_and_removes_sessions(self):
+        a=self.bare();a.retire=Mock(side_effect=RuntimeError('unavailable'))
+        a.r._sql.side_effect=[[{'display_name':'Isolated Sandy API service acceptance','google_drive_folder_status':'excluded'}],[],[{'sessions':0,'portal_accounts':0,'banned_fixtures':1}]]
+        a.cleanup()
+        a.r._auth_admin.assert_called_once_with('PUT','users/fixture-user',{'ban_duration':'876000h'})
+        query=a.r._sql.call_args_list[1].args[0]
+        self.assertIn('DELETE FROM auth.refresh_tokens',query);self.assertIn('DELETE FROM auth.sessions',query)
+        self.assertFalse(a.report['cleanup']['complete'])
+
+    def test_retirement_records_independent_audit_without_artifact_edit(self):
+        a=self.bare();a.r._sql.side_effect=[[{'id':1}],[]];a.retire();a.retire()
+        self.assertEqual(a.r._sql.call_count,2)
         query=a.r._sql.call_args.args[0]
         self.assertIn("'memory_private_readiness_revoked',NULL",query)
         self.assertNotIn('UPDATE ',query);self.assertNotIn('DELETE ',query)
