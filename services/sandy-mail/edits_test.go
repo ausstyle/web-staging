@@ -324,6 +324,11 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 				break
 			}
 			d := rows[0]
+			full, err := s.GetDraft(ctx, scope, d.DraftID)
+			must(err)
+			if d.CreatedAt.IsZero() || !d.CreatedAt.Equal(full.CreatedAt) {
+				t.Fatal("draft list lost creation time")
+			}
 			if seen[d.DraftID] {
 				t.Fatal("repeated draft page")
 			}

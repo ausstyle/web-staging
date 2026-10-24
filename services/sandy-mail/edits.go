@@ -217,7 +217,7 @@ func (s *Service) ListDrafts(ctx context.Context, scope Scope, after *DraftCurso
 		timestamp = &after.UpdatedAt
 		id = &after.DraftID
 	}
-	rows, err := tx.Query(ctx, `SELECT draft_id::text,revision,subject,recipients,updated_at FROM core.mail_drafts WHERE ($1::timestamptz IS NULL OR (updated_at,draft_id)<($1::timestamptz,$2::uuid)) ORDER BY updated_at DESC,draft_id DESC LIMIT $3`, timestamp, id, limit)
+	rows, err := tx.Query(ctx, `SELECT draft_id::text,revision,subject,recipients,updated_at,created_at FROM core.mail_drafts WHERE ($1::timestamptz IS NULL OR (updated_at,draft_id)<($1::timestamptz,$2::uuid)) ORDER BY updated_at DESC,draft_id DESC LIMIT $3`, timestamp, id, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (s *Service) ListDrafts(ctx context.Context, scope Scope, after *DraftCurso
 	out := []Draft{}
 	for rows.Next() {
 		var d Draft
-		if err = rows.Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.UpdatedAt); err != nil {
+		if err = rows.Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.UpdatedAt, &d.CreatedAt); err != nil {
 			return nil, err
 		}
 		out = append(out, d)
