@@ -1,12 +1,14 @@
 package mailstore
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -271,6 +273,97 @@ func TestPostgresIntegration(t *testing.T) {
 			t.Fatal("missing attachment accepted")
 		}
 		must(os.WriteFile(ap, saved, 0600))
+	})
+	t.Run("scoped_search_and_keyset", func(t *testing.T) {
+		items, e := service.List(ctx, r.Scope, "synthetic", nil, 100)
+		must(e)
+		if len(items) != 6 {
+			t.Fatalf("expected six scoped messages, got %d", len(items))
+		}
+		var cursor *Cursor
+		seen := map[string]bool{}
+		for {
+			page, e := service.List(ctx, r.Scope, "", cursor, 2)
+			must(e)
+			if len(page) == 0 {
+				break
+			}
+			for _, it := range page {
+				if seen[it.MessageID] {
+					t.Fatal("duplicate page item")
+				}
+				seen[it.MessageID] = true
+			}
+			last := page[len(page)-1]
+			cursor = &Cursor{last.ReceivedAt, last.MessageID}
+		}
+		if len(seen) != len(items) {
+			t.Fatal("keyset skipped equal-timestamp messages")
+		}
+		for _, sc := range scopes[1:] {
+			page, e := service.List(ctx, sc, "synthetic", nil, 100)
+			must(e)
+			if len(page) != 1 {
+				t.Fatal("cross-scope search")
+			}
+			if seen[page[0].MessageID] {
+				t.Fatal("cross-scope message leak")
+			}
+		}
+		none, e := service.List(ctx, r.Scope, "noexistuniqueword", nil, 10)
+		must(e)
+		if len(none) != 0 {
+			t.Fatal("false search result")
+		}
+	})
+	t.Run("portable_eml_snapshot_export", func(t *testing.T) {
+		var out bytes.Buffer
+		manifest, e := service.ExportMailbox(ctx, r.Scope, &out, 100)
+		must(e)
+		if !manifest.Complete || len(manifest.Messages) != 6 || manifest.PendingIngestions != 1 {
+			t.Fatal("incomplete snapshot")
+		}
+		reader := tar.NewReader(bytes.NewReader(out.Bytes()))
+		originals := 0
+		foundManifest := false
+		for {
+			h, e := reader.Next()
+			if e == io.EOF {
+				break
+			}
+			must(e)
+			data, e := io.ReadAll(reader)
+			must(e)
+			if h.Name == "manifest.json" {
+				var read ExportManifest
+				must(json.Unmarshal(data, &read))
+				if !read.Complete || len(read.Messages) != 6 {
+					t.Fatal("manifest mismatch")
+				}
+				foundManifest = true
+			} else {
+				if !bytes.Equal(data, r.Raw) {
+					t.Fatal("EML bytes changed")
+				}
+				parsed, e := Parse(data)
+				must(e)
+				if len(parsed.Attachments) != 1 {
+					t.Fatal("attachments not portable")
+				}
+				originals++
+			}
+		}
+		if !foundManifest || originals != 6 {
+			t.Fatal("silent export omission")
+		}
+		var limited bytes.Buffer
+		if m, e := service.ExportMailbox(ctx, r.Scope, &limited, 1); e == nil || m.Complete || limited.Len() != 0 {
+			t.Fatal("partial export called success")
+		}
+		other := Scope{Tenant: uuid(), Account: uuid(), Mailbox: uuid()}
+		if _, e := service.ExportMailbox(ctx, other, io.Discard, 100); !errors.Is(e, ErrNotFound) {
+			t.Fatalf("unauthorized export: %v", e)
+		}
 	})
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {
 		var messages, receipts, events int

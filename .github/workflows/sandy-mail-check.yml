@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'services/sandy-mail/**'
+      - 'docs/sandy-mail/**'
       - '.github/workflows/sandy-mail-check.yml'
   workflow_dispatch:
 permissions:
@@ -37,6 +38,8 @@ jobs:
           go test -race -count=1 -v ./...
           go vet ./...
           go build ./cmd/mail-fixture
+      - name: Check reachable dependency vulnerabilities
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
       - uses: actions/upload-artifact@v4
         if: always()
         with:
