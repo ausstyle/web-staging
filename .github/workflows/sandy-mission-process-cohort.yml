@@ -1,0 +1,33 @@
+name: Isolated mission process recovery cohort
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-mission-executor/process_cohort_test.ts'
+      - 'supabase/migrations/20261021010060_sandy_mission_work_product.sql'
+      - 'supabase/migrations/20261018004600_sandy_mission_single_active_stage_guard.sql'
+      - '.github/workflows/sandy-mission-process-cohort.yml'
+permissions:
+  contents: read
+jobs:
+  postgres-process-cohort:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+        env:
+          POSTGRES_USER: mission_fixture
+          POSTGRES_PASSWORD: isolated-ci-only
+          POSTGRES_DB: mission_ci
+        ports:
+          - 55432:5432
+        options: >-
+          --health-cmd "pg_isready -U mission_fixture -d mission_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Kill only synthetic clients against the disposable service
+        run: deno test --no-lock --allow-read --allow-env --allow-run=deno --allow-net=127.0.0.1:55432 supabase/functions/sandy-mission-executor/process_cohort_test.ts
