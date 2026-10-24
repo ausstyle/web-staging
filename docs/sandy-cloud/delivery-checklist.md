@@ -298,3 +298,23 @@ The inactive `minimal-activation-proposal-20261024.md` separates known existing
 Supabase reuse from unknown exact access bindings and the still-unapproved USD10
 new-resource proposal. No activation is attempted. Source/RLS coherence does not
 mark any mandatory live or native-device acceptance passed.
+
+## Historical version recovery
+
+Independent SC-02/06 product work now implements `versions.restore` through the
+local domain/API and Drive history UI. It reopens and hashes the source bytes,
+requires the current node revision, creates a new immutable version and atomic
+usage/audit/receipt, and preserves all earlier versions. Retry is idempotent;
+reader/tenant/trash/stale/quota/corrupt-source cases fail closed. Injected audit
+failure rolls back the new version and usage. Logical retained-version quota is
+charged once; physical bytes are reused without modifying the immutable object.
+Three new domain scenarios and real Chromium historical restore/readback pass;
+52 Cloud Deno tests pass in total. Production scanner/provider/canonical route
+integration and mandatory acceptance remain pending.
+
+PR270's original ready-transition denial is historical: its source subsequently
+merged through its owner. PR272 was retargeted to accepted main, reconciled with
+ordinary merge commits preserving API-owned versions, passed five checks and
+merged at `7179f62c06d9594b8659326a371eaa64e0867b2c`. PR306 now targets main and
+contains only Cloud-scoped differences. No force push or shared scope edits were
+used. Source merge is not live schema or product deployment.

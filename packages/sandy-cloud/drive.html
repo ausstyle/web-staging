@@ -599,6 +599,19 @@
             v.sha256.slice(0, 12) + " ",
         );
         line.append(button("Download", () => download(v.id, n.name)));
+        if (v.id !== n.current_version_id) {
+          line.append(button("Restore this version", async () => {
+            await api("versions.restore", {
+              versionId: v.id,
+              revision: n.revision,
+            });
+            $("dialog").close();
+            await loadWorkspaces();
+            status(
+              "Restored as a new version. Previous versions remain available.",
+            );
+          }));
+        }
         return line;
       }));
       $("submit").hidden = true;
