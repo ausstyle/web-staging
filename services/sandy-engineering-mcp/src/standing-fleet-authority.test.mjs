@@ -44,7 +44,7 @@ test("standing policy must be freshly checked, not cached forever",()=>{
  denied(null,a=>a.delegation.lastPolicyVerifiedAt=NOW-120000,/current_standing_policy_verification_required/);
 });
 test("cannot impersonate another subject",()=>{
- denied(null,a=>a.trustedContext.subject="attacker",/active_owner_standing_delegation_required/);
+ denied(null,a=>a.trustedContext.subject="attacker-service-id",/active_owner_standing_delegation_required/);
 });
 test("unknown service actors are denied",()=>{
  denied(null,a=>a.trustedContext.source="caller_json",/verified_workload_identity_required/);
