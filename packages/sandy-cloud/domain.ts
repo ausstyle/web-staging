@@ -51,6 +51,18 @@ export class CloudDomain {
     Deno.mkdirSync(root + "/objects", { recursive: true, mode: 0o700 });
     this.db = new DatabaseSync(root + "/metadata.sqlite");
     this.db.exec(schema);
+    // Additive local fixture upgrade: preserve every prior upload/object/receipt.
+    // Never use a fixture reset as application rollback.
+    if (
+      !this.db.prepare("PRAGMA table_info(uploads)").all().some((c) =>
+        c.name === "purpose"
+      )
+    ) {
+      this.db.exec(
+        "ALTER TABLE uploads ADD COLUMN purpose TEXT NOT NULL DEFAULT 'DRIVE' CHECK(purpose IN ('DRIVE','BACKUP'))",
+      );
+    }
+    this.db.exec("PRAGMA user_version=2");
   }
   close() {
     this.db.close();

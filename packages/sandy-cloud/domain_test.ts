@@ -294,3 +294,36 @@ Deno.test("expired upload releases reservation once and cannot commit later", ()
     f.close();
   }
 });
+Deno.test("additive local metadata upgrade preserves prior file bytes and receipts", () => {
+  const f = fixture();
+  try {
+    const v = upload(f.d);
+    f.d.db.exec("ALTER TABLE uploads DROP COLUMN purpose");
+    f.restart();
+    deepStrictEqual(
+      new TextDecoder().decode(f.d.download(a, "a", v.id).bytes),
+      "original",
+    );
+    deepStrictEqual(f.d.one("PRAGMA user_version")!.user_version, 2);
+    deepStrictEqual(f.d.one("SELECT purpose FROM uploads")!.purpose, "DRIVE");
+  } finally {
+    f.close();
+  }
+});
+Deno.test("share capability is never persisted in plaintext and replay returns no token", () => {
+  const f = fixture();
+  try {
+    const v = upload(f.d),
+      k = key(),
+      expiry = Date.now() + 60000,
+      share = f.d.createShare(a, "a", k, v.id, r.id, expiry);
+    ok(share.token);
+    const receipt =
+      f.d.one("SELECT result_json FROM receipts WHERE idempotency_key=?", k)!
+        .result_json;
+    ok(!receipt.includes(share.token!));
+    deepStrictEqual(f.d.createShare(a, "a", k, v.id, r.id, expiry).token, null);
+  } finally {
+    f.close();
+  }
+});

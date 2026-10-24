@@ -86,9 +86,11 @@ handles file rename/move across folders. Empty directory lifecycle, native
 watchers, placeholders, native Keychain/Credential Manager storage, filesystem
 ACLs and signed Mac/Windows packages are not implemented or certified. It is
 currently a Linux fixture engine, not a supported desktop release. Its transport
-must recheck the device on every call. The native client must also acquire a
-single-instance journal lock and use OS directory-relative safe handles before
-production use; these synthetic tests run each client sequentially.
+must recheck the device on every call. A single-instance journal lock prevents
+concurrent local runs; a stale lock fails closed for explicit process-aware
+recovery. Incoming replacements preserve prior local bytes in `.sandy-recovery`.
+Native directory-relative safe handles and OS concurrency acceptance remain
+required before production use.
 
 `backup.ts` captures a separately selected protected folder into immutable local
 backup objects and manifests, without creating Drive nodes. Repeating a run key
@@ -117,3 +119,25 @@ Browser tests require Playwright 1.62.0 and Chromium. The runner starts its own
 synthetic server, stops it afterward, and removes only its newly created
 temporary data directory. Results/screenshot are written to
 `/tmp/sandy-cloud-evidence`.
+
+## Provider protocol integration source
+
+`gcs_protocol.ts` uses an injected **admitted transport** owned by the existing
+provider boundary; it does not call `fetch`, obtain tokens or register
+operations. It pins create-only generation preconditions, rejects unexpected
+resumable session origins, requires status reconciliation after uncertain chunk
+acknowledgements, and verifies the exact returned generation by streaming
+independent readback. Session URLs are bearer capabilities: store them only in
+the existing protected server-side session store, never in client-visible
+metadata, logs or receipts. The synthetic protocol tests include 10 GiB offset
+arithmetic; they **do not** upload or resume 10 GiB against Google. The fixture
+data plane remains 64 MiB.
+
+Protocol references checked 24 October 2026:
+[Google resumable uploads](https://docs.cloud.google.com/storage/docs/performing-resumable-uploads)
+and
+[generation-specific object reads](https://docs.cloud.google.com/storage/docs/json_api/v1/objects/get).
+The final production transport must validate API admission, object/bucket
+binding, policy/lease state, deadline and budget on every request, persist each
+session transition and independently reconcile a lost start-session
+acknowledgement.

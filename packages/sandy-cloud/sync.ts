@@ -119,9 +119,30 @@ function writeTarget(root: string, name: string, bytes: Uint8Array) {
   } finally {
     f.close();
   }
-  Deno.renameSync(temp, root + "/" + name);
+  // Preserve the target atomically before installing incoming bytes. A local
+  // edit racing the earlier scan is retained, never overwritten out of existence.
+  const recovery = root + "/.sandy-recovery";
+  try {
+    const existing = Deno.lstatSync(root + "/" + name);
+    if (!existing.isFile || existing.isSymlink) {
+      throw Error("UNSAFE_SYNC_TARGET");
+    }
+    Deno.mkdirSync(recovery, { recursive: true, mode: 0o700 });
+    if (Deno.lstatSync(recovery).isSymlink) throw Error("SYMLINK_REFUSED");
+    Deno.renameSync(
+      root + "/" + name,
+      recovery + "/" + crypto.randomUUID() + "-" + name.replaceAll("/", "__"),
+    );
+  } catch (e) {
+    if (!(e instanceof Deno.errors.NotFound)) throw e;
+  }
+  try {
+    Deno.linkSync(temp, root + "/" + name);
+  } finally {
+    Deno.removeSync(temp);
+  }
 }
-export async function syncOnce(
+async function syncPass(
   options: {
     root: string;
     journalPath: string;
@@ -178,6 +199,7 @@ export async function syncOnce(
     return created.id;
   };
   const local = new Map<string, Uint8Array>();
+  let localBytes = 0;
   const scan = async (prefix: string, depth: number) => {
     if (depth > 64 || local.size > 100000) throw Error("TREE_LIMIT");
     for (const e of Deno.readDirSync(root + "/" + prefix)) {
@@ -190,7 +212,10 @@ export async function syncOnce(
         continue;
       }
       if (!e.isFile) throw Error("UNSUPPORTED_LOCAL_FILE");
-      local.set(path, readSafe(root + "/" + path));
+      const bytes = readSafe(root + "/" + path);
+      localBytes += bytes.length;
+      if (localBytes > 64 * 1024 * 1024) throw Error("SYNC_COHORT_LIMIT");
+      local.set(path, bytes);
     }
   };
   await scan("", 0);
@@ -204,7 +229,8 @@ export async function syncOnce(
         throw Error("LOCAL_FILE_CHANGED_DURING_SYNC");
       }
       ensureLocalParent(root, node.path);
-      Deno.renameSync(root + "/" + name, root + "/" + node.path);
+      Deno.linkSync(root + "/" + name, root + "/" + node.path);
+      Deno.removeSync(root + "/" + name);
       local.delete(name);
       local.set(node.path, bytes);
       delete journal.files[name];
@@ -308,7 +334,8 @@ export async function syncOnce(
     if (digest(readSafe(root + "/" + name)) !== sha) {
       throw Error("LOCAL_FILE_CHANGED_DURING_SYNC");
     }
-    Deno.renameSync(root + "/" + name, root + "/" + conflict);
+    Deno.linkSync(root + "/" + name, root + "/" + conflict);
+    Deno.removeSync(root + "/" + name);
     local.delete(name);
     local.set(conflict, bytes);
     delete journal.files[name];
@@ -382,4 +409,32 @@ export async function syncOnce(
     retainedDeletes,
     scope: "local-selective-folder-tree",
   };
+}
+
+/** One writer per encrypted journal. A process killed while holding the lock
+ * leaves a visible stale lock: recovery requires checking its process, never a
+ * timeout-based lock steal that could run two clients concurrently. */
+export async function syncOnce(options: Parameters<typeof syncPass>[0]) {
+  const path = options.journalPath + ".lock";
+  let lock: Deno.FsFile;
+  try {
+    lock = Deno.openSync(path, { write: true, createNew: true, mode: 0o600 });
+  } catch (e) {
+    if (e instanceof Deno.errors.AlreadyExists) {
+      throw Error("SYNC_ALREADY_RUNNING_OR_RECOVERY_REQUIRED");
+    }
+    throw e;
+  }
+  try {
+    lock.writeSync(
+      new TextEncoder().encode(
+        JSON.stringify({ pid: Deno.pid, createdAt: Date.now() }),
+      ),
+    );
+    lock.syncSync();
+    return await syncPass(options);
+  } finally {
+    lock.close();
+    Deno.removeSync(path);
+  }
 }

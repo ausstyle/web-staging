@@ -29,3 +29,22 @@ Postgres composite foreign keys and transaction isolation, source-attested
 canonical API admission, row-level security, scoped object provider reader,
 server-owned scan evidence, version/usage/outbox atomicity, protected release,
 two-tenant provider tests and recovery. Full scope 0012 remains governing.
+
+## Production identity readback — 24 October 2026
+
+A further authorized metadata-only read confirmed
+`sandy_memory_portal_accounts(auth_user_id, customer_id, revoked_at)`,
+`email_customer_addresses(customer_id, normalized_email, is_primary, verified_at)`,
+`sandy_agenda_access(email, customer_id, enabled)` and
+`sandy_agenda_companies(id, customer_id, name)`. The company ownership relation is
+customer-scoped; no separate company-member table was returned by the inspected
+public table inventory. Do not infer collaborative company grants from task
+participation or manufacture new membership authority.
+
+`sandy_api_tenants(id, name, status, daily_request_limit)` exists, but its identifier
+must not be equated to a customer ID without the existing API owner's binding.
+The production adapter must receive server-verified API actor/tenant/session
+context, resolve current portal/customer binding and company ownership through
+these existing services, and fail closed for an unestablished company share.
+This finding narrows the shared integration dependency; it does not prevent local
+implementation or authorize changes to shared identity and gateway resources.

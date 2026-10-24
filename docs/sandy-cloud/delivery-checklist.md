@@ -152,7 +152,7 @@ independent protected-folder backup objects and immutable manifests; clean-direc
 restore with independent actual-disk verification. Existing local snapshots are
 separate from the new independent backup path, which creates no Drive nodes.
 
-**Observed local acceptance:** 30 Deno tests pass, including database rollback on
+**Observed local acceptance:** 37 Deno tests pass, including database rollback on
 injected outbox failure, restart/resume, quota accounting, recipient/expiry/epoch
 share denial, two-client offline conflicts/rename/move/deletion, protected-folder
 recovery after source deletion/mass modification and clean-directory readback.
@@ -178,3 +178,25 @@ service-account/bucket roles. No impersonation/binding permission is bundled.
 Authorized inventory and the actual release workload principal remain required
 before the final source-pinned plan and separate binding request. Branch-protection
 inspection was not retried; no protected path or provider denial was bypassed.
+
+
+### Latest hardening and provider protocol source
+
+The local adapter now upgrades the earlier fixture schema additively, preserving
+file bytes and receipts. Share capability plaintext is never stored in receipts;
+replay returns no token. A journal lock blocks concurrent sync instances, incoming
+replacements retain prior local bytes, and a racing local edit is refused instead
+of overwritten. The GCS protocol adapter is source-only behind an injected
+admitted transport: generation-preconditioned creation, exact session origin,
+chunk/range validation, lost-ack status reconciliation and exact-generation
+streaming readback. Its 10 GiB offset test is arithmetic against a synthetic
+transport, not a 10 GiB provider transfer or AC-03 acceptance.
+
+For the parent's consolidated setup proposal, the exact unresolved targets are:
+(1) authorized read-only storage inventory for `elaborate-haven-511518-a5`;
+(2) the account/bucket matrix and USD 10 ceiling in the pilot proposal;
+(3) the actual existing provider workload principal and its separately reviewed
+binding; (4) a shared API identity/contract release slot preserving current owners;
+(5) signed macOS/Windows delivery identities and real two-device test hosts.
+No standing approval removal, IAM expansion, new cloud credentials or additional
+provider call was attempted. GitHub branch-protection inspection was not retried.
