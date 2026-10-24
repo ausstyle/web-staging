@@ -150,7 +150,8 @@
  <button class="nav" data-view="history"><span class="sym">☰</span> All conversations</button><a class="nav" href="../chat/"><span class="sym">✳</span> Chat with Sandy</a>
  <a class="nav" href="../agenda/"><span class="sym">☑</span> Agenda & tasks</a>
  <a class="nav" href="../calendar/"><span class="sym">▦</span> Calendar</a>
- <a class="nav" href="../meetings/"><span class="sym">▣</span> Meetings</a>\n  <a class="nav" href="../voices/"><span class="sym">♫</span> My Voices</a>
+ <a class="nav" href="../meetings/"><span class="sym">▣</span> Meetings</a>
+  <a class="nav" href="../voices/"><span class="sym">♫</span> My Voices</a>
  <a class="nav" href="../memory/"><span class="sym">◇</span> Memory Centre</a>
  <a class="nav" href="../spending/"><span class="sym">€</span> What do you spend your money on?</a>
  <a class="nav" href="../temporal/"><span class="sym">◷</span> Temporal Review</a>
@@ -360,7 +361,8 @@ service("☷","Conversations","Search all your past messages and call transcript
 service("☑","Agenda & tasks","Projects, subtasks, companies, deadlines and delegation.",()=>location.assign("../agenda/"),"Open"),
 service("◇","Memory Centre","What Sandy remembers about your personal and working life.",()=>location.assign("../memory/"),"Open"),
 service("✉","Email Sandy","Ask Sandy to draft, research, organise and follow up via email.",()=>location.assign("mailto:ai@email.com.au?subject=Hello%20Sandy"),"Send an email"),
-service("♫","Voice history","Read searchable transcripts from your conversations with Sandy.",()=>changeView("history","voice"),"View transcripts"),\n service("♪","My Voices","Record, preview and manage voices Sandy can use with your consent.",()=>location.assign("../voices/"),"Open voice settings"),
+service("♫","Voice history","Read searchable transcripts from your conversations with Sandy.",()=>changeView("history","voice"),"View transcripts"),
+ service("♪","My Voices","Record, preview and manage voices Sandy can use with your consent.",()=>location.assign("../voices/"),"Open voice settings"),
 service("◉","WhatsApp history","Find messages sent and received through your linked WhatsApp account.",()=>changeView("history","whatsapp"),"View messages"),
 service("▤","Knowledge & files","Find context and documents already indexed in Sandy's Memory Centre.",()=>location.assign("../memory/"),"Open memory"),
 service("✧","Research & writing","Ask for research, documents, spreadsheets and analysis through Sandy.",()=>location.assign("mailto:ai@email.com.au?subject=Research%20request"),"Ask Sandy"),
