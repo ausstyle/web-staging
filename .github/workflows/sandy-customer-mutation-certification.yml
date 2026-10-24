@@ -16,7 +16,7 @@ on:
         type: choice
         required: true
         description: Install once, or acceptance-only on the already installed exact sources
-        options: [preflight, install-and-certify, acceptance-only]
+        options: [preflight, install-and-certify, acceptance-only, finite-acceptance-only]
 permissions:
   contents: read
 concurrency:
@@ -71,7 +71,7 @@ jobs:
         run: |
           args=()
           if [ "$RELEASE_ACTION" = install-and-certify ]; then args+=(--deploy); fi
-          if [ "$RELEASE_ACTION" = acceptance-only ]; then args+=(--verify-installed); fi
+          if [ "$RELEASE_ACTION" = acceptance-only ] || [ "$RELEASE_ACTION" = finite-acceptance-only ]; then args+=(--verify-installed); fi
           python3 scripts/sandy/release_customer_mutation_certification.py "${args[@]}" --evidence-dir "$RUNNER_TEMP/customer-mutation/release"
       - name: Independent source readback before normal customer MCP certification
         if: inputs.action != 'preflight'
@@ -80,6 +80,12 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
           python3 scripts/sandy/release_customer_mutation_certification.py --verify-installed --evidence-dir "$RUNNER_TEMP/customer-mutation/readback"
+      - name: Verify public memory and narrow cancellation after a new installation
+        if: inputs.action == 'install-and-certify' || inputs.action == 'acceptance-only'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
           PYTHONPATH=scripts/sandy python3 - "$RUNNER_TEMP/customer-mutation/public-memory-MCP.json" <<'PY'
           from pathlib import Path
           import sys
@@ -87,6 +93,12 @@ jobs:
           raise SystemExit(0 if NormalMemoryAcceptance(Path(sys.argv[1])).run() else 1)
           PY
           python3 scripts/sandy/verify_task_cancel_private_mcp.py --manifest docs/sandy-engineering/evaluations/customer-mutation-private-release.json --output "$RUNNER_TEMP/customer-mutation/narrow-cancellation-regression.json"
+      - name: Verify only the finite ten existing customer mutations
+        if: inputs.action != 'preflight'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
           python3 scripts/sandy/verify_customer_mutation_private_mcp.py --manifest docs/sandy-engineering/evaluations/customer-mutation-private-release.json --output "$RUNNER_TEMP/customer-mutation/normal-customer-MCP.json"
       - uses: actions/upload-artifact@v4
         if: always()
