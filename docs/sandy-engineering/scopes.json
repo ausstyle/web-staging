@@ -141,6 +141,26 @@
       "source_version": "1.0",
       "status": "DRAFT",
       "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0013",
+      "title": "Sandy Accounting — Australian Accounting, Payroll and Sandy Intelligence",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0013-sandy-accounting.md",
+      "source_version": "1.1",
+      "status": "DRAFT",
+      "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0014",
+      "title": "My Voices — Consent-based Personal Voice Cloning",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0014-my-voices.md",
+      "source_version": "1.0",
+      "status": "IMPLEMENTING",
+      "priority": "P2"
     }
   ]
 }

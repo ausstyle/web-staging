@@ -1,0 +1,61 @@
+{
+  "kind": "reviewed-existing-proposal-source-snapshots-v1",
+  "functions": {
+    "sandy-agent-runtime-v4": {
+      "function": "sandy-agent-runtime-v4",
+      "version": 38,
+      "verify_jwt": false,
+      "body_sha256": "e647a9be9523429e0f234f96015df4db40551c4da9f34c8a7d3864e9a5724793",
+      "modules": {
+        "sandy-agent-runtime-v4/index.ts": "f4f15732b13e21d9fbd76de8173aac71672e4a5a49e8d17baf0884abe967f796",
+        "_shared/sandy-agent-operations/connected-gmail.ts": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
+        "_shared/sandy-agent-operations/identity.ts": "ff41c2af6de1ebd96d8c477f8395f117b55d816448a729ee20fba851b449003a",
+        "_shared/sandy-agent-operations/runtime_conversation.ts": "bd32557109af7548df276d942263c6d4dea8ca3083cfeefd7d47156f4cdc786f",
+        "_shared/sandy-agent-operations/runtime_conversation_contract.ts": "785200a5fb7b91406022bfccc9b56971b61d0a5c20343dbc1196dbf348f4684b",
+        "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f",
+        "_shared/sandy-agent-operations/runtime_responses_transport.ts": "917741bf8b92ef5a7f03dcdfea81ad0f03ad8fc645862147b47def6c345143be",
+        "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts": "797762604861477be1c8e2f7d7b15cbd30d094f995d19be983fc1635e4fbe0fd",
+        "_shared/sandy-agent-operations/service.ts": "19e42131cf9525d3280d168e80672df089d073a5151c53ba665fb0203124821f",
+        "_shared/sandy-agent-operations/contracts.ts": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
+        "_shared/sandy-agent-operations/voice_source.ts": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04",
+        "_shared/sandy-agent-operations/runtime_profiles.ts": "346440c69b2f947bba7236057cb9246fe8dab4b4afb0014c2f292c6529178a12",
+        "_shared/sandy-agent-operations/runtime_record_contracts.ts": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
+        "_shared/sandy-agent-operations/runtime_records.ts": "11d12b4ed55f646d776b9c32aa1226dc4285c53b3e9c0dcc080791a85a634440",
+        "_shared/sandy-agent-operations/runtime_memory.ts": "33613b766e500ec5f559dba312192cf4e45e39da0591ca3df957baf9aeb840f6",
+        "_shared/sandy-agent-operations/runtime_operational_contracts.ts": "ed66b477c252fcc4ecc4a182520c25bd582d28ab8a3e1ceed1d2953b7c8a3b83",
+        "_shared/sandy-agent-operations/runtime_operational.ts": "120e5b831f970beefe5cd1ad24da741e6516f5c04d881af6e93fbb7a1e35fbcc",
+        "_shared/sandy-agent-operations/runtime_connection_preflight_contract.ts": "f1753d179408b64f34009b37eb311ef71278662a25f08cbc1cda1cfc400de27e",
+        "_shared/sandy-agent-operations/runtime_connection_preflight.ts": "5ce1a13576b9bf0a66c5d730d55822c037b75675722d15ff91645cf9997c90c6",
+        "_shared/sandy-agent-operations/runtime_snapshot.ts": "c42980cc1b2e3c353c18dbdc77c49c699a90f60644a05186900433f74899a338",
+        "_shared/sandy-agent-operations/runtime_model_policy.ts": "e81e6b878562e37e85c8e207f847fac815d03a7e761884d0f59fcf00b1211221",
+        "_shared/sandy-executive/turn.ts": "6e7f4d95b5c58f5c3cb74830972452fd8853628cb9d7d89292a4ef77f6658b7c",
+        "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "_shared/sandy-executive/pending_reply.ts": "e4aa16d79fd18224a15387ad952e2c008b8003a43328e2d65c7cf69bce320887",
+        "_shared/sandy-executive/clock.ts": "7944043a954dbffeba9141f23522b7607b404c265ea7ef7e850732388a5c9c6e",
+        "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+        "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+        "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
+        "_shared/sandy-executive/task_deadlines.ts": "d68219d1101477e8160e2d6c4cbcd251139dea1f7359c5e7de6b58e186aae25e",
+        "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
+        "sandy-agent-runtime-v4/version-awareness.js": "ee8ac38d54136ab291736f211f713f542bbc6c83af6460081f06a35782fe06c9"
+      }
+    },
+    "sandy-examiner-full-cycle": {
+      "function": "sandy-examiner-full-cycle",
+      "version": 23,
+      "verify_jwt": false,
+      "body_sha256": "affcb7a51c67214e573985705a998757dee163c6cbe5314d7ef6c6b1e1827ff9",
+      "modules": {
+        "sandy-examiner-full-cycle/index.ts": "e7f9436fe842f253cc82c4051b502f584b2d076d53d004276b86d14cda76e563",
+        "sandy-examiner-full-cycle/judge.ts": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab",
+        "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26",
+        "sandy-examiner-full-cycle/evidence.ts": "a7b70d8039bdd399bef1a87e9c5df9f678bfd0d730f70b2badea09d575b11dc0",
+        "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "sandy-examiner-full-cycle/selection.ts": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc",
+        "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781"
+      }
+    }
+  }
+}

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffffff"><meta name="color-scheme" content="light"><title>My Voices — Sandy</title>
+<style>
+:root{font:15px/1.55 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#121212}*{box-sizing:border-box}body{margin:0;background:#fff}button,input{font:inherit}button{cursor:pointer;border:1px solid #d9d9d9;border-radius:10px;background:white;padding:11px 15px;color:#111}button:hover{background:#f4f4f4}button:disabled{opacity:.55;cursor:not-allowed}button.primary{background:#111;color:white;border-color:#111}button.primary:hover{background:#333}a{color:inherit}header{height:74px;border-bottom:1px solid #e9e9e9;display:flex;align-items:center;justify-content:space-between;padding:0 max(24px,calc((100% - 1040px)/2))}.logo{font-size:25px;font-weight:800;letter-spacing:-1.7px;text-decoration:none}main{max-width:1040px;padding:43px 24px 100px;margin:0 auto}h1{font-size:clamp(36px,5vw,57px);font-weight:600;letter-spacing:-.065em;line-height:1.1;margin:10px 0}h2{font-size:23px;letter-spacing:-.045em}p{color:#666}.lead{max-width:660px;font-size:16px}.eyebrow{font-size:11px;letter-spacing:.13em;color:#888;font-weight:800;text-transform:uppercase}.panel{border:1px solid #e5e5e5;border-radius:17px;padding:26px;margin-top:20px}.panel h2{margin:0 0 8px}.steps{display:grid;grid-template-columns:1fr 1fr;gap:18px}.step{border:1px solid #ececec;border-radius:12px;padding:18px;min-width:0}.step h3{font-size:17px;margin:0 0 8px}.phrase{color:#111;background:#f5f5f5;border-radius:9px;padding:14px;font-weight:650;line-height:1.6;margin:16px 0}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.muted{color:#777;font-size:13px}.tag{display:inline-block;padding:3px 8px;border:1px solid #ddd;border-radius:100px;font-size:11px;font-weight:700}.item{display:flex;justify-content:space-between;gap:20px;align-items:center;border-top:1px solid #eee;padding:17px 0;flex-wrap:wrap}.item strong{display:block}.item small{display:block;color:#777;margin-top:3px}.item .row button{font-size:13px;padding:8px 11px}.feedback{padding:12px 14px;background:#f6f6f6;border-radius:10px;margin-top:15px;white-space:pre-wrap;font-size:13px}.feedback:empty{display:none}.label{display:block;font-weight:650;font-size:13px;margin:20px 0 7px}.name{padding:12px 14px;border:1px solid #ddd;border-radius:9px;width:min(400px,100%)}audio{display:block;max-width:100%;margin-top:12px;width:100%}.hidden{display:none!important}input[type=checkbox]{accent-color:#111}.footer{font-size:12px;color:#777;margin-top:24px}button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid black;outline-offset:3px}@media(max-width:700px){header{padding:0 18px}main{padding:28px 17px 80px}.steps{grid-template-columns:1fr}.panel{padding:20px}.item{align-items:start}}
+</style></head><body>
+<header><a class="logo" href="../app/">sandy.</a><a href="../app/" class="muted">← Back to workspace</a></header>
+<main><div class="eyebrow">Personalisation · Audio</div><h1>My Voices.</h1>
+<p class="lead">Give Sandy a voice you recognise. Record your own voice with explicit consent, preview it and select it for Sandy's future conversations. No voice is cloned without the speaker's own permission.</p>
+<section id="loading" class="panel">Checking your Sandy session…</section>
+<section id="app" class="hidden">
+<section class="panel"><h2>Your voices</h2><p class="muted">Sandy's standard voice is Coral. Custom voices require provider approval. Switching during an active call requires starting a new call.</p>
+<div id="voices"></div><button type="button" id="reset">Use Sandy's standard voice</button><div id="listMessage" class="feedback" role="status" aria-live="polite"></div></section>
+<section class="panel"><h2>Create your voice</h2><p>Recordings must be of <strong>your own voice</strong>. The consent statement must be spoken exactly as shown; the sample should be natural speech lasting around 20–30 seconds. Speak in a quiet room.</p>
+<div class="steps">
+<div class="step"><h3>1. Record your consent</h3><div class="phrase">I am the owner of this voice and I consent to OpenAI using this voice to create a synthetic voice model.</div>
+<button id="consentRecord" type="button">● Record consent</button> <span id="consentStatus" class="muted">Not recorded</span><audio id="consentAudio" controls class="hidden"></audio></div>
+<div class="step"><h3>2. Record a sample</h3><p>Read a paragraph or talk naturally about your day. Include a range of ordinary sentences and pauses.</p><button id="sampleRecord" type="button">● Record voice sample</button> <span id="sampleStatus" class="muted">Not recorded</span><audio id="sampleAudio" controls class="hidden"></audio></div>
+</div>
+<label class="label" for="name">Voice name</label><input id="name" class="name" maxlength="80" placeholder="My own voice" autocomplete="off">
+<p><label><input id="attest" type="checkbox"> This is my own voice. I understand that my recordings will be transmitted to OpenAI to create a synthetic voice model, and that I can revoke its use and request deletion.</label></p>
+<div class="row"><button type="button" class="primary" id="create" disabled>Create my voice</button><span class="muted">Up to 3 active voices per account. Voice provider limits may apply.</span></div>
+<div id="createMessage" class="feedback" role="status" aria-live="polite"></div>
+</section>
+<p class="footer">Safety: No impersonation or voice cloning of another person through this form. Audio is used only for the chosen provider action and is not added to Sandy's conversation transcripts. Revocation disables the voice immediately in Sandy; provider deletion is tracked separately. Sandy Rooms now requests the selected voice at the start of a new Realtime session, but audible custom-voice delivery has not yet been verified. Other voice-call channels remain on the standard voice.</p>
+</section>
+<section id="signedOut" class="panel hidden">Please <a href="../app/">sign in to Sandy</a> and return to My Voices.</section>
+</main>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true}});
+const endpoint="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-my-voices";
+const $=id=>document.getElementById(id), recordings={consent:null,sample:null};
+let recording=false,busy=false;
+function say(id,text){$(id).textContent=text||""}
+function updateCreateButton(){$("create").disabled=busy||recording||!recordings.consent||!recordings.sample||!$("attest").checked||!$("name").value.trim()}
+async function api(body,binary=false){
+ const {data:{session},error}=await sb.auth.getSession();if(error||!session?.access_token)throw new Error("Sign in to Sandy again.");
+ const res=await fetch(endpoint,{method:"POST",headers:{"authorization":"Bearer "+session.access_token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts","content-type":"application/json"},body:JSON.stringify(body),signal:AbortSignal.timeout(body.action==="create"?110000:45000)});
+ if(binary){if(!res.ok){const x=await res.json().catch(()=>({}));throw Error(x.error||"Audio preview is unavailable");}return await res.blob();}
+ const out=await res.json().catch(()=>({error:"Unexpected server response"}));if(!res.ok)throw Error((out.error||"Request failed")+(out.detail?" ("+out.detail+")":""));return out;
+}
+function control(label,handler){const b=document.createElement("button");b.type="button";b.textContent=label;b.addEventListener("click",handler);return b}
+async function refresh(){
+ const data=await api({action:"list"});const area=$("voices");area.replaceChildren();
+ if(!data.voices.length){const p=document.createElement("p");p.textContent="No custom voices have been created yet.";area.append(p)}
+ for(const v of data.voices){if(v.status==="deleted")continue;
+  const item=document.createElement("div");item.className="item";
+  const left=document.createElement("div"),right=document.createElement("div");right.className="row";
+  const title=document.createElement("strong");title.textContent=v.name;left.append(title);
+  const subtitle=document.createElement("small");subtitle.textContent=(v.selected?"Selected · ":"")+v.status.replaceAll("_"," ")+(v.error_code?" · "+v.error_code:"");left.append(subtitle);
+  if(v.status==="ready"){
+   right.append(control("▶ Preview",async()=>{try{say("listMessage","Generating preview…");const blob=await api({action:"preview",id:v.id},true);const url=URL.createObjectURL(blob);const a=new Audio(url);a.addEventListener("ended",()=>URL.revokeObjectURL(url),{once:true});await a.play();say("listMessage","")}catch(e){say("listMessage",e.message)}}));
+   if(!v.selected)right.append(control("Use this voice",async()=>{try{await api({action:"select",id:v.id});await refresh();say("listMessage","Selection saved. New Sandy Rooms sessions will request this voice. Existing direct voice calls are not yet integrated.")}catch(e){say("listMessage",e.message)}}));
+  }
+  if(v.status!=="deleted"&&v.status!=="creating")right.append(control(v.status==="delete_pending"?"Retry provider deletion":"Revoke & delete",async()=>{
+   if(!confirm("Revoke this voice and request deletion from the provider? This cannot be undone."))return;
+   try{const r=await api({action:"revoke",id:v.id});await refresh();say("listMessage",r.status==="deleted"?"Voice deleted by provider.":"Voice disabled. Provider deletion is awaiting verification.")}catch(e){await refresh();say("listMessage","Voice revocation requested. Please check deletion status: "+e.message)}}));
+  item.append(left,right);area.append(item);
+ }
+ if(!data.enrollment_available)say("createMessage","Voice creation is currently unavailable because Sandy's provider credentials are not configured.");
+}
+async function record(kind){
+ if(recording||busy)return;
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){say(kind+"Status","Your browser does not support microphone recording.");return;}
+ const type=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(t=>MediaRecorder.isTypeSupported(t));
+ if(!type){say(kind+"Status","Audio recording isn't supported in this browser.");return;}
+ let stream;try{stream=await navigator.mediaDevices.getUserMedia({audio:true});}catch{say(kind+"Status","Microphone permission denied.");return;}
+ const chunks=[],rec=new MediaRecorder(stream,{mimeType:type}),start=Date.now();recording=true;updateCreateButton();
+ const button=$(kind+"Record"),audio=$(kind+"Audio");button.textContent="■ Stop recording";say(kind+"Status","Recording…");
+ const stop=()=>{if(rec.state!=="inactive")rec.stop()};const timeout=setTimeout(stop,30000);
+ rec.addEventListener("dataavailable",e=>{if(e.data.size)chunks.push(e.data)});
+ rec.addEventListener("stop",()=>{clearTimeout(timeout);stream.getTracks().forEach(t=>t.stop());button.onclick=null;button.textContent="● Record again";recording=false;
+  const duration=(Date.now()-start)/1000, blob=new Blob(chunks,{type:type.startsWith("audio/webm")?"audio/webm":"audio/mp4"});
+  if(duration<3||blob.size<2048||blob.size>3_750_000){say(kind+"Status","Recording must be at least 3 seconds and under 3.75 MB.");updateCreateButton();return;}
+  if(recordings[kind]?.url)URL.revokeObjectURL(recordings[kind].url);
+  const url=URL.createObjectURL(blob);recordings[kind]={blob,url};audio.src=url;audio.classList.remove("hidden");say(kind+"Status",Math.round(duration)+" seconds recorded");updateCreateButton();
+ },{once:true});
+ rec.addEventListener("error",()=>{clearTimeout(timeout);stream.getTracks().forEach(t=>t.stop());recording=false;say(kind+"Status","Recording failed");updateCreateButton()});
+ rec.start(200);
+ button.onclick=stop;
+}
+async function base64(blob){const arr=new Uint8Array(await blob.arrayBuffer());let s="";for(let i=0;i<arr.length;i+=16384)s+=String.fromCharCode(...arr.subarray(i,i+16384));return btoa(s)}
+$("consentRecord").addEventListener("click",()=>record("consent"));$("sampleRecord").addEventListener("click",()=>record("sample"));
+$("attest").addEventListener("change",updateCreateButton);$("name").addEventListener("input",updateCreateButton);
+$("create").addEventListener("click",async()=>{
+ if(busy||recording||!$("attest").checked||!recordings.consent||!recordings.sample)return;
+ busy=true;updateCreateButton();say("createMessage","Submitting consent and voice sample for provider review…");
+ try{
+  const c=recordings.consent.blob,s=recordings.sample.blob;
+  const r=await api({action:"create",request_id:crypto.randomUUID(),name:$("name").value.trim(),own_voice:true,consent_version:"v1-2026-10",consent_audio:await base64(c),sample_audio:await base64(s),consent_mime:c.type,sample_mime:s.type});
+  if(r.voice?.status!=="ready")throw Error("Provider has not verified this voice.");
+  say("createMessage","The voice provider accepted your recordings. Your voice is ready to preview and select.");
+  await refresh();
+ }catch(e){say("createMessage","Could not create a verified voice: "+e.message+" No activation has been claimed.");await refresh().catch(()=>{});}
+ finally{busy=false;updateCreateButton();}
+});
+$("reset").addEventListener("click",async()=>{try{await api({action:"deselect"});await refresh();say("listMessage","Standard Sandy voice selected for future sessions.")}catch(e){say("listMessage",e.message)}});
+(async()=>{const {data:{session}}=await sb.auth.getSession();$("loading").classList.add("hidden");if(!session){$("signedOut").classList.remove("hidden");return;}$("app").classList.remove("hidden");try{await refresh()}catch(e){say("listMessage",e.message);}})();
+</script></body></html>
