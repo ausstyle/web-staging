@@ -166,7 +166,25 @@ function recordCard(r){
  if(r.contact_name||r.organisation||r.contact_email)info.append(E("p","",([r.contact_name,r.organisation,r.contact_email].filter(Boolean)).join(" · ")));
  if(r.amount!==null&&r.amount!==undefined)info.append(E("p","","Amount: "+r.currency+" "+Number(r.amount).toLocaleString("en-AU",{minimumFractionDigits:2})));
  if(r.event_date||r.due_at)info.append(E("p","",r.event_date?dateOnly(r.event_date):new Date(r.due_at).toLocaleString("en-AU")));
- if(r.source_note)info.append(E("p","","Source: "+r.source_note));
+ if(r.source_note){
+   const ref=E("div","small muted");ref.style.whiteSpace="pre-wrap";ref.style.marginTop="7px";
+   ref.append(E("strong","","Sources: "));
+   const lines=String(r.source_note).split("\n");
+   for(const [i,line] of lines.entries()){
+    if(i)ref.append(document.createTextNode("\n"));
+    const match=line.match(/(https:\/\/[^\s]+)/);
+    if(!match){ref.append(document.createTextNode(line));continue}
+    const raw=match[1];
+    let allowed=false;
+    try{const u=new URL(raw);allowed=u.protocol==="https:"&&["caselaw.nsw.gov.au","www.caselaw.nsw.gov.au","casechat.au","www.casechat.au","casenote.au","www.casenote.au","docs.google.com","drive.google.com"].includes(u.hostname)}catch{}
+    if(!allowed){ref.append(document.createTextNode(line));continue}
+    ref.append(document.createTextNode(line.slice(0,line.indexOf(raw))));
+    const a=E("a","link",line.startsWith("Private Google Drive Word copy")?"Open archived Word document ↗":"Open source ↗");
+    a.href=raw;a.target="_blank";a.rel="noopener noreferrer";ref.append(a);
+    ref.append(document.createTextNode(line.slice(line.indexOf(raw)+raw.length)));
+   }
+   info.append(ref);
+  }
  const p=dProceeding(r.proceeding_id);if(p)info.append(E("small","",p.court+(p.case_number?" · "+p.case_number:"")));
  const actions=E("div","actions");
  if(r.file_id)actions.append(B("View original ↗",()=>original(r.file_id),"small"));
