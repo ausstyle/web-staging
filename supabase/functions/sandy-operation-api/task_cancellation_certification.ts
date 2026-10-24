@@ -15,7 +15,7 @@ export type TaskCancellationCertification = {
   id: string;
   apiDeploymentId: string;
 };
-async function boundedPayload(response: Response): Promise<unknown> {
+export async function boundedPayload(response: Response): Promise<unknown> {
   const reader = response.body?.getReader();
   if (!reader) throw Error("missing_response");
   const chunks: Uint8Array[] = [];

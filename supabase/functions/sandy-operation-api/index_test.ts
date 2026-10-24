@@ -7291,7 +7291,7 @@ Deno.test("private readiness invokes the existing cancellation through normal au
  let deny=false,mutations=0;
  const h=harness({base:"https://zmqlyygzqoidkcwdysok.supabase.co",memoryCertificationDeploymentId:deployment,role:null,actorId:actor,tenant:customer,memoryTenant:customer,rows:[entry],backend:(url,init)=>{
   const headers=new Headers(init?.headers);assert.equal(headers.get("authorization"),"Bearer normal.fixture.jwt");
-  if(url.endsWith("/rpc/sandy_api_task_cancel_private_readiness"))return Response.json(deny?{ok:false,error:"private_readiness_denied",http_status:403}:{ok:true,readiness_id:readiness,customer_id:customer,expires_at:new Date(Date.now()+60000).toISOString()});
+  if(url.endsWith("/rpc/sandy_api_customer_mutation_private_readiness"))return Response.json(deny?{ok:false,error:"private_readiness_denied",http_status:403}:{ok:true,readiness_id:readiness,customer_id:customer,operation:"tasks.update",expires_at:new Date(Date.now()+60000).toISOString()});
   assert.ok(url.endsWith("/rpc/sandy_api_customer_mutation"));assert.equal(headers.get("x-sandy-certification-id"),readiness);assert.equal(headers.get("x-sandy-api-deployment-id"),deployment);mutations++;
   return Response.json({ok:true,contract_version:"1.0.0",operation:"tasks.update",mutation_id:"60000000-0000-4000-8000-000000000001",reused:false,item:{id:original,customer_id:customer,status:"cancelled",priority:"normal",title:"synthetic fixture",version:2}});
  }});
