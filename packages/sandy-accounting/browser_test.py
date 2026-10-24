@@ -72,14 +72,66 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             assert scenario['state']=='FORECAST' and len(scenario['buckets'])==13
             assert scenario['buckets'][-1]['closing']=='1100.00'
             assert scenario['ledger_mutated'] is False
+            # Supplier lifecycle uses only the workspace controls, including corrections.
+            page.get_by_role('button',name='Sales & purchases',exact=True).click()
+            page.locator('#kind').select_option('bill')
+            page.locator('#number').fill('SUPPLIER-001')
+            page.locator('#contact').fill('Synthetic supplier')
+            page.get_by_role('button',name='Save draft',exact=True).click();saved()
+            bill = page.locator('[data-document-number="SUPPLIER-001"]')
+            bill.get_by_role('button',name='Approve SUPPLIER-001',exact=True).click();saved()
+            bill.locator('input[name="amount"]').fill('40.00')
+            bill.get_by_role('button',name='Record payment',exact=True).click();saved()
+            expect(bill).to_contain_text('remaining $60.00')
+            page.get_by_role('button',name='Banking',exact=True).click()
+            page.locator('#source-key').fill('SUPPLIER-DEBIT')
+            page.locator('#statement-amount').fill('-40.00')
+            page.locator('#statement-date').fill('2026-10-03')
+            page.locator('#reference').fill('Synthetic supplier payment')
+            page.get_by_role('button',name='Import line',exact=True).click();saved()
+            page.get_by_role('button',name='Intelligence',exact=True).click()
+            page.get_by_role('button',name='Find exact bank matches',exact=True).click();saved()
+            expect(page.get_by_role('button',name='Approve match',exact=True)).to_have_count(1)
+            page.get_by_role('button',name='Approve match',exact=True).click();saved()
+            page.get_by_role('button',name='Sales & purchases',exact=True).click()
+            bill.locator('.correction input[name="date"]').fill('2026-10-04')
+            bill.locator('.correction input[name="reason"]').fill('Synthetic wrong allocation')
+            bill.get_by_role('button',name='Reverse payment record',exact=True).click()
+            expect(page.locator('#status')).to_have_text('unreconcile_first')
+            page.get_by_role('button',name='Banking',exact=True).click()
+            page.locator('#matches p').filter(has_text='-40.00 AUD').get_by_role('button',name='Undo match',exact=True).click();saved()
+            page.get_by_role('button',name='Sales & purchases',exact=True).click()
+            bill.locator('.correction input[name="date"]').fill('2026-10-04')
+            bill.locator('.correction input[name="reason"]').fill('Synthetic wrong allocation')
+            bill.get_by_role('button',name='Reverse payment record',exact=True).click();saved()
+            expect(bill).to_contain_text('remaining $100.00')
+            expect(bill).to_contain_text('reversed on 2026-10-04')
+            bill.locator('.correction input[name="date"]').fill('2026-10-05')
+            bill.locator('.correction input[name="reason"]').fill('Synthetic bill entered in error')
+            bill.get_by_role('button',name='Void SUPPLIER-001',exact=True).click();saved()
+            expect(bill).to_contain_text('Voided')
+            expect(bill.get_by_role('button',name='Record payment',exact=True)).to_have_count(0)
+            page.get_by_role('button',name='Reports',exact=True).click()
+            page.locator('#report-type').select_option('aged_payables')
+            for day, expected in [('2026-10-03','60.00'),('2026-10-04','100.00'),('2026-10-05',None)]:
+                page.locator('#report-date').fill(day)
+                page.get_by_role('button',name='Run accrual report',exact=True).click();saved()
+                rows=json.loads(page.locator('#report-output pre').inner_text())['rows']
+                assert (rows[0]['amount'] if rows else None)==expected
+            page.locator('#report-type').select_option('bank_reconciliation')
+            page.get_by_role('button',name='Run accrual report',exact=True).click();saved()
+            corrected=json.loads(page.locator('#report-output pre').inner_text())['rows'][0]
+            assert corrected['book']=='1100.00' and corrected['statement']=='1060.00'
+            assert corrected['difference']=='-40.00' and len(corrected['unmatched_statement_ids'])==1
             page.get_by_role('button',name='Overview',exact=True).click()
+            expect(page.locator('#profit-total')).to_have_text('$100.00')
             page.screenshot(path=str(OUT/'workspace.png'),full_page=True)
             page.get_by_role('button',name='Controls & audit',exact=True).click()
             page.get_by_role('button',name='Verify audit chain',exact=True).click();saved()
             assert json.loads(page.locator('#audit-output').inner_text())['valid']
             assert not errors, errors
             browser.close()
-            (OUT/'result.json').write_text(json.dumps({'status':'PASSED','class':'LOCAL_SYNTHETIC_BROWSER','expected_bank':'1100.00','expected_profit':'100.00','provider_verified':False,'independently_accepted':False,'page_errors':errors},indent=2)+'\n')
+            (OUT/'result.json').write_text(json.dumps({'status':'PASSED','class':'LOCAL_SYNTHETIC_BROWSER','expected_bank':'1100.00','expected_profit':'100.00','supplier_historical_ap':['60.00','100.00','0.00'],'unmatched_supplier_statement_retained':True,'expected_statement_difference':'-40.00','provider_verified':False,'independently_accepted':False,'page_errors':errors},indent=2)+'\n')
             print((OUT/'result.json').read_text())
     finally:
         proc.terminate()

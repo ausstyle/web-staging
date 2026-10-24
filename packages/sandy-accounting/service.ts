@@ -1009,6 +1009,10 @@ export class Accounting {
       return {
         book: c.book,
         documents: docs,
+        payments: (await c.tx.query(
+          "SELECT p.id,p.document_id,p.journal_id,p.amount::text,j.effective_date,r.journal_id AS reversal_journal_id,rj.effective_date AS reversal_date FROM accounting.allocations p JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND j.id=p.journal_id LEFT JOIN accounting.allocation_reversals r ON r.tenant_id=p.tenant_id AND r.company_id=p.company_id AND r.allocation_id=p.id LEFT JOIN accounting.journals rj ON rj.tenant_id=r.tenant_id AND rj.company_id=r.company_id AND rj.id=r.journal_id WHERE p.tenant_id=$1 AND p.company_id=$2 ORDER BY j.effective_date,p.id",
+          c.scope,
+        )).rows,
         accounts: (await c.tx.query(
           "SELECT * FROM accounting.accounts WHERE tenant_id=$1 AND company_id=$2 ORDER BY id",
           c.scope,

@@ -43,7 +43,10 @@ balance oracle and does not claim regulatory coverage.
   linked reversal/correction, monotonic period lock, draft invoice/bill approval
   and partial payment recording. AR/AP controls cannot be changed via manual
   journals. Payment corrections and document voids preserve effective-date
-  history.
+  history. The workspace exposes dated payment reversals and document voids
+  with a required reason, payment history and journal drilldown. A matched
+  payment must be unreconciled before correction; its statement evidence stays
+  visible and unmatched until separately resolved.
 - Separate immutable bank statement lines, source-key deduplication,
   partial/multiple matching, duplicate-match protection and append-only undo.
   Match suggestions do not post or reconcile anything.

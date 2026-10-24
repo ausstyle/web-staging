@@ -712,12 +712,14 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
         "packages/sandy-accounting/core.test.ts",
         "packages/sandy-accounting/corrections.test.ts",
-        "packages/sandy-accounting/temporal.test.ts"
+        "packages/sandy-accounting/temporal.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Dated invoice/bill void and payment-record reversal; partial credits/refunds pending.",
       "deployed": false,
@@ -737,12 +739,14 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
         "packages/sandy-accounting/core.test.ts",
         "packages/sandy-accounting/corrections.test.ts",
-        "packages/sandy-accounting/temporal.test.ts"
+        "packages/sandy-accounting/temporal.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Partial receipt recording; reminders and verified provider payments pending.",
       "deployed": false,
@@ -2131,12 +2135,14 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
         "packages/sandy-accounting/core.test.ts",
         "packages/sandy-accounting/corrections.test.ts",
-        "packages/sandy-accounting/temporal.test.ts"
+        "packages/sandy-accounting/temporal.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Partial payment recording; no money movement.",
       "deployed": false,

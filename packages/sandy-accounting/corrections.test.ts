@@ -2,6 +2,125 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { fixture } from "./fixture.ts";
 import { forecast } from "./forecast.ts";
+test("supplier payment correction preserves AP history and exposes the unmatched bank evidence", async () => {
+  const f = await fixture();
+  try {
+    await f.run("accounting.ledger.journal.post", f.journal());
+    const bill = await f.run(
+      "accounting.payables.bill.draft",
+      f.document("bill"),
+    );
+    await f.run("accounting.documents.approve", {
+      document_id: bill.document_id,
+      expected_version: 1,
+    });
+    const payment = await f.run("accounting.documents.payment.record", {
+      document_id: bill.document_id,
+      expected_version: 2,
+      amount: "40.00",
+      effective_date: "2026-10-03",
+      bank_account: "bank",
+      evidence: [f.source],
+    });
+    const s = await f.run("accounting.banking.statements.import", {
+      bank_account: "bank",
+      lines: [{
+        source_key: "supplier-payment",
+        effective_date: "2026-10-03",
+        amount: "-40.00",
+        reference: "Synthetic supplier debit",
+        evidence: [f.source],
+      }],
+    });
+    const match = await f.run("accounting.banking.reconcile.apply", {
+      statement_id: s.statement_ids[0],
+      journal_id: payment.journal_id,
+      ordinal: 0,
+      amount: "-40.00",
+    });
+    const correction = {
+      allocation_id: payment.allocation_id,
+      expected_version: 3,
+      effective_date: "2026-10-04",
+      reason: "Synthetic payment attributed to wrong document",
+      evidence: [f.source],
+    };
+    await assert.rejects(
+      f.run("accounting.documents.payment.reverse", correction),
+      /unreconcile_first/,
+    );
+    await f.run("accounting.banking.reconcile.reverse", {
+      match_id: match.match_id,
+      reason: correction.reason,
+    });
+    await f.run("accounting.documents.payment.reverse", correction);
+    const report = (name: string, through: string) =>
+      f.run("accounting.reporting.run", {
+        report: name,
+        through,
+        basis: "accrual",
+      });
+    assert.equal(
+      (await report("aged_payables", "2026-10-03")).rows[0].amount,
+      "60.00",
+    );
+    assert.equal(
+      (await report("aged_payables", "2026-10-04")).rows[0].amount,
+      "100.00",
+    );
+    const beforeVoid = await report("trial_balance", "2026-10-03");
+    assert.deepEqual(
+      Object.fromEntries(
+        beforeVoid.rows.map((r: any) => [r.account_id, r.amount]),
+      ),
+      {
+        bank: "960.00",
+        capital: "-1000.00",
+        expense: "100.00",
+        ap: "-60.00",
+      },
+    );
+    await f.run("accounting.documents.void", {
+      document_id: bill.document_id,
+      expected_version: 4,
+      effective_date: "2026-10-05",
+      reason: "Synthetic supplier bill entered in error",
+      evidence: [f.source],
+    });
+    assert.equal(
+      (await report("aged_payables", "2026-10-04")).rows[0].amount,
+      "100.00",
+    );
+    assert.equal((await report("aged_payables", "2026-10-05")).rows.length, 0);
+    assert.equal(
+      (await report("profit_and_loss", "2026-10-04")).profit,
+      "-100.00",
+    );
+    assert.equal(
+      (await report("profit_and_loss", "2026-10-05")).profit,
+      "0.00",
+    );
+    const workspace = await f.run("accounting.workspace.get");
+    assert.equal(workspace.payments.length, 1);
+    assert.equal(workspace.payments[0].amount, "4000");
+    assert.equal(
+      workspace.payments[0].effective_date.toISOString().slice(0, 10),
+      "2026-10-03",
+    );
+    assert.equal(
+      workspace.payments[0].reversal_date.toISOString().slice(0, 10),
+      "2026-10-04",
+    );
+    assert.equal(workspace.statements.length, 1);
+    const bank = (await report("bank_reconciliation", "2026-10-05")).rows[0];
+    assert.equal(bank.book, "1000.00");
+    assert.equal(bank.statement, "-40.00");
+    assert.deepEqual(bank.unmatched_statement_ids, s.statement_ids);
+    assert.equal((await f.run("accounting.audit.verify")).valid, true);
+  } finally {
+    await f.db.close();
+  }
+});
 test("partial payment correction and invoice void retain historical ageing and GL lineage", async () => {
   const f = await fixture();
   try {

@@ -56,7 +56,8 @@ for f in features:
     if f['id'] in partial:
         f.update(status='CODE_PRESENT_UNVERIFIED',delivery_paths=['packages/sandy-accounting/service.ts','packages/sandy-accounting/schema.sql'],test_paths=['packages/sandy-accounting/core.test.ts'],remaining=partial[f['id']])
         if f['id'] in ['F045','F046','F136']:
-            f['test_paths']+=['packages/sandy-accounting/corrections.test.ts','packages/sandy-accounting/temporal.test.ts']
+            f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
+            f['test_paths']+=['packages/sandy-accounting/corrections.test.ts','packages/sandy-accounting/temporal.test.ts','packages/sandy-accounting/browser_test.py']
         n=int(f['id'][1:])
         f['operations']=['accounting.reporting.run','accounting.workspace.get'] if n in [13,153,175,207,212] else ['accounting.sales.invoice.draft'] if n in [36,38,40] else ['accounting.documents.approve'] if n in [42,132] else ['accounting.documents.void','accounting.documents.payment.reverse'] if n==45 else ['accounting.documents.payment.record'] if n in [46,136] else ['accounting.payables.bill.draft'] if n in [120,126,128,131] else ['accounting.reporting.drilldown'] if n in [155,208] else ['accounting.banking.statements.import'] if n in [158,160] else ['accounting.intelligence.matches.propose','accounting.banking.reconcile.apply','accounting.banking.reconcile.reverse'] if n in [164,167] else ['accounting.audit.verify'] if n==197 else ['accounting.organisations.period.lock'] if n==272 else ['accounting.ledger.journal.post','accounting.ledger.journal.reverse']
 reports=[]

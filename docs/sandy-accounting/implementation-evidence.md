@@ -59,6 +59,8 @@ The follow-on PostgreSQL adapter keeps one physical client for BEGIN/queries/COM
 
 Follow-on temporal regression: a 60.00 receipt on 3 October, reversed on 10 October, followed by a new 100.00 receipt backdated to 5 October previously produced a historical overpayment. `temporal.test.ts` reproduced the missing rejection before the fix. Both the service and allocation trigger now reject payments dated before existing payment/correction history, requiring the reviewer to use a coherent correction date. The earlier aged balance stays 40.00. The overview's October profit now explicitly requests October P&L; a prior-September revenue fixture verifies that cumulative balance-sheet earnings remain separate. More sophisticated backdated corrections and separate overpayment accounting remain in the full scope.
 
+The supplier correction workflow is now available in the workspace, including payment history, mandatory correction date/reason, reversal journal drilldown and document void. The browser test adds a 100.00 supplier bill, records and reconciles a 40.00 payment, verifies that reversal is denied while matched, undoes that match, reverses the payment on 4 October and voids the bill on 5 October. Historical AP remains 60.00 on 3 October, 100.00 on 4 October and zero on 5 October. Bank returns to 1,100.00 while the original statement debit remains visible: statement 1,060.00, difference -40.00, one unmatched line. No fictitious bank correction is invented to erase that discrepancy. The independent service fixture also verifies the AP/expense/GL totals and history. This extends executable coverage; all acceptance gates remain open.
+
 ## Official-source revalidation
 
 Checked official primary sources on 24 October 2026:

@@ -366,6 +366,7 @@
     for (const d of workspace.documents) {
       const div = document.createElement("div");
       div.className = "card";
+      div.dataset.documentNumber = d.number;
       div.innerHTML = "<strong>" + esc(d.number) + " · " + esc(d.contact) +
         "</strong><p>" + esc(d.kind) + " · " +
         esc(d.void_journal_id ? "Voided" : d.journal_id ? "Approved" : "Draft") +
@@ -384,7 +385,7 @@
         div.append(b);
       } else {
         div.append(drill(d.journal_id));
-        if (d.remaining !== "0.00") {
+        if (!d.void_journal_id && d.remaining !== "0.00") {
           const form = document.createElement("form");
           form.innerHTML =
             '<label>Record payment amount (AUD)<input name="amount" value="' +
@@ -405,6 +406,48 @@
           };
           div.append(form);
         }
+        const payments = workspace.payments.filter((p) => p.document_id === d.id);
+        for (const payment of payments) {
+          const history = document.createElement("p");
+          history.textContent = "Recorded " + dollars(payment.amount) +
+            " AUD on " +
+            payment.effective_date.slice(0, 10) +
+            (payment.reversal_journal_id
+              ? " · reversed on " + payment.reversal_date.slice(0, 10)
+              : " · no external transfer verified");
+          history.append(drill(payment.journal_id));
+          if (payment.reversal_journal_id) {
+            history.append(drill(payment.reversal_journal_id));
+          }
+          div.append(history);
+          if (!payment.reversal_journal_id && !d.void_journal_id) {
+            div.append(
+              correctionForm(
+                "Reverse payment record",
+                (fields) =>
+                  api("accounting.documents.payment.reverse", {
+                    allocation_id: payment.id,
+                    expected_version: d.version,
+                    ...fields,
+                  }),
+              ),
+            );
+          }
+        }
+        if (!d.void_journal_id && payments.every((p) => p.reversal_journal_id)) {
+          div.append(
+            correctionForm(
+              "Void " + d.number,
+              (fields) =>
+                api("accounting.documents.void", {
+                  document_id: d.id,
+                  expected_version: d.version,
+                  ...fields,
+                }),
+            ),
+          );
+        }
+        if (d.void_journal_id) div.append(drill(d.void_journal_id));
       }
       $("#documents").append(div);
     }
@@ -449,6 +492,28 @@
       p.append(drill(j.id));
       $("#journals").append(p);
     }
+  }
+  function correctionForm(label, submit) {
+    const form = document.createElement("form");
+    form.className = "correction";
+    form.innerHTML =
+      '<label>Correction date<input name="date" type="date" required></label>' +
+      '<label>Reason<input name="reason" required maxlength="500"></label>' +
+      '<p class="muted">Creates a dated ledger reversal. Does not refund or move money. Undo any bank match first.</p>';
+    const button = document.createElement("button");
+    button.textContent = label;
+    form.append(button);
+    form.onsubmit = (e) => {
+      e.preventDefault();
+      action(() =>
+        submit({
+          effective_date: form.elements.date.value,
+          reason: form.elements.reason.value,
+          evidence: [source],
+        })
+      );
+    };
+    return form;
   }
   document.querySelectorAll("[data-tab]").forEach((b) =>
     b.onclick = () => {
