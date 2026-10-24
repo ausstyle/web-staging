@@ -55,7 +55,7 @@ Deno.serve(async(req:Request)=>{
  if(body.action==="resolve"){
   const {data,error}=await db.from("sandy_voice_profiles").select("id,provider_voice_id,provider_verified_at,status,revoked_at").eq("customer_id",cid).eq("selected",true).eq("status","ready").is("revoked_at",null).maybeSingle();
   if(error)return json(req,{error:"voice_resolution_unavailable"},503);
-  const voice=data?.provider_verified_at && typeof data.provider_voice_id==="string" && /^voice_[\\w-]+$/.test(data.provider_voice_id) ? {id:data.provider_voice_id} : "coral";
+  const voice=data?.provider_verified_at && typeof data.provider_voice_id==="string" && /^voice_[\w-]+$/.test(data.provider_voice_id) ? {id:data.provider_voice_id} : "coral";
   return json(req,{voice,source:typeof voice==="string"?"standard":"custom",verified_source:typeof voice!=="string"});
  }
  if(body.action==="create"){
