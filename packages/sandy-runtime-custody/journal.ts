@@ -10,6 +10,8 @@ export interface AdmissionBinding {
 export interface AuthorityOwner {
  /** Resolve canonical actor/tenant/customer relation, lock its revocation rows,
   * re-read current permission and return revision. No cached authorization.
+  * Before any row lock, acquire the complete locking.ts CustodyLockPlan,
+  * then re-read canonical discovery. All revokers use the same resource keys.
   * Revocation writers must hold the same locks through their own COMMIT. */
  lockAndResolve(tx:SqlTransaction,c:Readonly<AdmissionBinding>):Promise<{customerId:string;tenantId:string|null;revision:string}>;
 }

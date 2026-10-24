@@ -56,3 +56,58 @@ Addresses API review at `595cf77ca6ca4e25739898c49f63a409acb37a88`:
 
 Seven isolated tests now cover these interfaces in addition to the original cases.
 Real multi-session locking and actual provider/scanner wiring remain outstanding.
+
+
+## Complete lock and canonical Cloud reference contract
+
+`locking.ts` defines one protocol, not a grant. Before row locks, a canonical owner
+performs non-authorizing discovery of the exact admission, authenticated session,
+actor/customer/tenant, artifact/file/receipt/scanner release and Cloud workspace,
+intent and writer assignment. It then calls `lockCustodyPlan` with the COMPLETE set.
+Resources are encoded unambiguously and globally sorted; UUID row identities use
+canonical lower case. All gates are transaction advisory locks held to COMMIT.
+Nested adapters may request subsets; adding a resource later is rejected. The helper
+checks actual PostgreSQL transaction identity, including reused connections, rather
+than treating a JS object as proof that a transaction is still open.
+
+After acquiring all gates, re-read and authorize canonical rows. Discovery alone is
+not permission. If any discovered relation or resource changed, abort; discover a new
+plan in a fresh authorized attempt, never add locks to the current transaction. The
+connection owner pins BEGIN/callback/COMMIT and never retries uncertain commits.
+Every participating revoker must acquire its affected gates BEFORE row writes and
+must not expand the set afterward. Session/company/scanner revocation cannot release
+its gate before its actual state update commits. Existing `lockCanonicalScope` is
+an identity-only compatibility helper, not a complete Cloud/file lock protocol.
+
+After common gates are held, Cloud keeps its workspace→intent→head/projection row
+sequence; Runtime keeps admission→scan→scanner/file validation. A complete common
+file gate prevents concurrent SHARE-to-UPDATE upgrades across those paths. Gates
+cover writer assignment and session rows too; omitted resources are an integration
+error, not permission to proceed. This deliberately serializes related custody work;
+production contention and participation by every real revoker remain to be verified.
+
+`cloud_reference.ts` implements Cloud PR306's `CloudScanReferenceOwner.lock` seam.
+The candidate `cloud_reference_schema.sql` adds one immutable shared reference keyed
+by Cloud tenant/workspace/intent, with foreign keys to the existing intent, universal
+file, API admission and Runtime scan receipt. It contains no second verdict, bytes,
+identity mapping or execution queue. This separate schema must follow BOTH candidate
+schemas in a reviewed release; none is installed now.
+
+Dataflow: canonical transfer intent → complete gates and current API authorization →
+Cloud-owned `cloudScanBindingDigest` recipe → exact-generation scanner signature →
+Runtime signed receipt → `recordCloudReference` revalidates the actual intent, current
+workspace policy, file owner and signature on one transaction → immutable reference →
+Cloud commit loads it and calls Runtime validation again on its own transaction.
+Cloud owns the digest implementation; Runtime receives that source function as a
+server installation dependency, never a caller-selected digest callback or identity.
+The canonical operation/contract hash and actual signer/reader still require owner
+installation records; no fixture operation is registered.
+
+The new CI job uses disposable PostgreSQL16.10 and independent connections. It checks
+single-claim/lost-ack behavior, scanner/session/company revocation ordering, file lock
+upgrade serialization, late-plan rejection and actual deadlock rollback without retry.
+It composes the reference implementation with Cloud source pinned to
+`e175386b711afbc0055e39ce8feb132f0c8e9a08`. Local type checking is not reported as a
+multi-session pass; the CI result is required. Live scanner identity, generation reads,
+canonical identity/status resolvers, revoker adoption and schema/RLS release remain
+explicit production integration dependencies.
