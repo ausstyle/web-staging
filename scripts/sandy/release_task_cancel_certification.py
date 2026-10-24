@@ -59,7 +59,9 @@ def source_check(m):
              'scripts/sandy/release_runtime_slice.py','scripts/sandy/verify_task_cancel_private_mcp.py',
              '.github/workflows/sandy-task-cancel-certification.yml',
              'docs/sandy-engineering/evaluations/memory-correction-adapter-release.json',
-             'supabase/migrations/20261024004210_sandy_memory_readiness_artifact_classification.sql']
+             'supabase/migrations/20261024004210_sandy_memory_readiness_artifact_classification.sql',
+             'scripts/sandy/publish_memory_correction.py','scripts/sandy/verify_memory_normal_mcp.py',
+             'scripts/sandy/memory_acceptance_evidence.py']
     for slug,e in m['functions'].items():
         paths += ['supabase/functions/'+p for p,h in e['candidate_files'].items()
                   if e['before_files'].get(p) != h and not (slug=='sandy-operation-api' and p==slug+'/index.ts')]
@@ -91,6 +93,8 @@ def schema(r,m,installed=False):
         raise Blocked('shared_RPC_source_or_security_drift')
     # Preserve the existing memory repair and immutable acceptance infrastructure.
     prior=json.loads((ROOT/'docs/sandy-engineering/evaluations/memory-correction-adapter-release.json').read_bytes())
+    from publish_memory_correction import verify_publication_evidence
+    verify_publication_evidence(r,prior)
     repair=prior['readiness_classification_repair'];raw=(ROOT/repair['migration']).read_text()
     history=r.sql("SELECT statements FROM supabase_migrations.schema_migrations WHERE version='20261024004210'",True)
     if history!=[{'statements':[raw]}]:raise Blocked('04210_repair_must_be_installed_without_replay')

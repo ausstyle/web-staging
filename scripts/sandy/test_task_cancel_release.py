@@ -26,6 +26,12 @@ class TaskCancelReleaseTests(unittest.TestCase):
   with patch.object(release,'functions',side_effect=Blocked('drift')):
    with self.assertRaises(Blocked):release.run(r,{}, {},True)
   r.sql.assert_not_called();r.upload.assert_not_called()
+ def test_acceptance_verifies_source_then_public_memory_before_private_cancellation(self):
+  workflow=(release.ROOT/'.github/workflows/sandy-task-cancel-certification.yml').read_text()
+  self.assertLess(workflow.index('release_task_cancel_certification.py --verify-installed'),workflow.index('NormalMemoryAcceptance(Path'))
+  self.assertLess(workflow.index('NormalMemoryAcceptance(Path'),workflow.index('verify_task_cancel_private_mcp.py --manifest'))
+  self.assertNotIn('repair-readiness-and-certify',workflow)
+  self.assertNotIn('repair_memory_readiness_custody.py',workflow)
  def test_exact_source_preimage_rejects_arbitrary_index(self):
   with self.assertRaisesRegex(Blocked,'reviewed_API61_preimage_changed'):source.patch_api({source.INDEX:b'arbitrary main'})
  def test_existing_cancellation_module_is_not_reinstalled(self):

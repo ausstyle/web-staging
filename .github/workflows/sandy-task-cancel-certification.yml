@@ -78,6 +78,12 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
           python3 scripts/sandy/release_task_cancel_certification.py --verify-installed --evidence-dir "$RUNNER_TEMP/task-cancel/readback"
+          PYTHONPATH=scripts/sandy python3 - "$RUNNER_TEMP/task-cancel/public-memory-MCP.json" <<'PY'
+          from pathlib import Path
+          import sys
+          from verify_memory_normal_mcp import NormalMemoryAcceptance
+          raise SystemExit(0 if NormalMemoryAcceptance(Path(sys.argv[1])).run() else 1)
+          PY
           python3 scripts/sandy/verify_task_cancel_private_mcp.py --manifest docs/sandy-engineering/evaluations/task-cancel-adapter-release.json --output "$RUNNER_TEMP/task-cancel/normal-customer-MCP.json"
       - uses: actions/upload-artifact@v4
         if: always()
