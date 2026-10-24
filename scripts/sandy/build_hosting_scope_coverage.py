@@ -27,6 +27,10 @@ def build():
                               'supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql']
         if section == '4':
             implementation = ['PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf', 'supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs']
+        if section in ('5', '9', '10'):
+            implementation = ['supabase/functions/_shared/sandy-hosting/management_contracts.json']
+        if section == '11':
+            implementation = ['sandy/hosting/index.html', 'sandy/hosting/read-client.mjs', 'sandy/hosting/view.mjs']
         if section == '14':
             implementation = ['scripts/sandy/release_hosting_accounts.py', '.github/workflows/sandy-hosting-account-release.yml']
         if section == '6':
@@ -42,6 +46,8 @@ def build():
                                    'Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending.' if section == '4' else
                                    'Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending.' if section == '6' else
                                    'Bounded account executor source only; genuine Owner admission, deployment, customer canary and rollback exercise pending.' if section == '14' else
+                                   'Source-only usage/backup/restore view contracts; semantic receipt validation, metering, billing and actual restore remain unimplemented.' if section in ('5', '9', '10') else
+                                   'Read-only management UI with synthetic browser coverage; gateway exposure, normal-user live account lookup and other management operations pending.' if section == '11' else
                                    'Implement and independently verify this scope block; do not infer completion from source or registry metadata.')})
         pending.clear()
 
