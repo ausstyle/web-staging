@@ -6,14 +6,14 @@ export async function voiceLearningSource(db:any,sessionId:string,customerId:str
  try{
   const result=await db.rpc("sandy_voice_automatic_learning_source",{p_session:sessionId,p_expected_customer:customerId,p_source_cutoff:cutoff??null});
   const source=result.data;
-  if(result.error||!object(source)||source.ok!==true||source.session_id!==sessionId||source.customer_id!==customerId||fields.some(k=>typeof source[k]!=="string"||!source[k]))return null;
+  if(result.error||!object(source)||typeof source.source_turns_sha256!=="string"||!(/^[a-f0-9]{64}$/).test(source.source_turns_sha256)||source.ok!==true||source.session_id!==sessionId||source.customer_id!==customerId||fields.some(k=>typeof source[k]!=="string"||!source[k]))return null;
   if(fields.slice(3).some(k=>!Number.isFinite(Date.parse(source[k]))))return null;
   return source;
  }catch{return null;}
 }
 export async function sameVoiceLearningSource(db:any,source:Obj):Promise<boolean>{
  const current=await voiceLearningSource(db,source.session_id,source.customer_id,source.source_cutoff);
- return !!current&&fields.every(key=>current[key]===source[key]);
+ return !!current&&current.source_turns_sha256===source.source_turns_sha256&&fields.every(key=>current[key]===source[key]);
 }
 export async function persistVoiceLearning(db:any,source:Obj,result:Obj):Promise<{state:"persisted"|"denied"|"unknown";result?:Obj}>{
  try{

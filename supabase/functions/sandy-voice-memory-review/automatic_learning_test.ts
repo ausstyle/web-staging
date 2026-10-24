@@ -7,7 +7,7 @@ const customer="61000000-0000-4000-8000-000000000001",sid="62000000-0000-4000-80
 type Mode="allowed"|"denied"|"before_model"|"during_model"|"unknown"|"provider_failure";
 async function fixture(mode:Mode){
  const now=Date.now(),time=(delta:number)=>new Date(now+delta).toISOString();
- const snapshot:any={ok:true,session_id:sid,customer_id:customer,link_id:link,session_created_at:time(-3600000),private_verified_at:time(-3500000),private_expires_at:time(3600000),link_expires_at:time(3600000),authorized_until:time(3600000),consent_at:time(-7200000),policy_updated_at:time(-7200000),source_not_before:time(-3500000),source_cutoff:time(0)};
+ const snapshot:any={ok:true,source_turns_sha256:"a".repeat(64),session_id:sid,customer_id:customer,link_id:link,session_created_at:time(-3600000),private_verified_at:time(-3500000),private_expires_at:time(3600000),link_expires_at:time(3600000),authorized_until:time(3600000),consent_at:time(-7200000),policy_updated_at:time(-7200000),source_not_before:time(-3500000),source_cutoff:time(0)};
  const review:any={},session:any={id:sid,owner_customer_id:customer,created_at:time(-3600000),state:"ended"};
  const counts={transcript_reads:0,model_requests:0,temporal_requests:0,persistence:0,derived_writes:0,source_checks:0};const pending:Promise<unknown>[]=[];
  let revoked=mode==="denied";

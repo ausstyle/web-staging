@@ -47,6 +47,9 @@ Deno.test("automatic voice persistence requires current consent/source epoch and
   assert.equal((await source()).ok,false);assert.equal((await persist(valid)).persisted,false);passed++;
   await db.exec("UPDATE sandy_voice_private_auth SET expires_at=clock_timestamp()+interval '1 hour'");
   valid=await source();
+  const stable=await source();await db.exec("UPDATE sandy_voice_transcript_turns SET text='The source was redacted while extraction ran' WHERE id=1");
+  assert.equal((await persist(stable,{summary:'Must not survive redaction',candidates:[]})).persisted,false);assert.deepEqual(await totals(),{facts:0,audit:0,summaries:0});passed++;
+  await db.exec("UPDATE sandy_voice_transcript_turns SET text='I like ordinary fixture coffee' WHERE id=1");valid=await source();
   const policy=(await db.query("SELECT consent_at::text,updated_at::text FROM sandy_memory_settings WHERE customer_id=$1",[customer])).rows[0]as any;
   for(const setup of ["enabled=false","learning_enabled=false","consent_at=NULL","consent_at=clock_timestamp()+interval '1 hour'","updated_at=clock_timestamp()+interval '1 hour'"]){
    await db.exec("UPDATE sandy_memory_settings SET "+setup);assert.equal((await source()).ok,false);assert.equal((await persist(valid)).persisted,false);assert.deepEqual(await totals(),{facts:0,audit:0,summaries:0});passed++;

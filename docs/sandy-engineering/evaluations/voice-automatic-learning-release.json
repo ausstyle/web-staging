@@ -3,7 +3,7 @@
   "function": "sandy-voice-memory-review",
   "source_manifest": "docs/sandy-engineering/evaluations/runtime-slices/sandy-voice-memory-review.json",
   "migration": "supabase/migrations/20261024005600_sandy_voice_automatic_learning.sql",
-  "migration_sha256": "c2cc28b55ab7c0a4cafe9e331bf4d568582b6bf1e606d0233e8f81d03a5f8c9a",
+  "migration_sha256": "9be916d6e08f8239fc2a2feda0183a522e602c4e72046e586390d30e3fc38b59",
   "SQL_preserved": {
     "public.sandy_voice_save_explicit_memory(uuid,text,text)": {
       "oid": "21315",
@@ -33,7 +33,7 @@
       ]
     },
     "public.sandy_voice_automatic_learning_source(uuid,uuid,timestamptz)": {
-      "source_sha256": "79e9eb72223f336cebc8601d2da68d6f2589ac4f8086c58b7170b214cc7b43e6",
+      "source_sha256": "0cf0de01ee9ac9336072800825eb674f87e42460a1e92589c5a8ce8614681c45",
       "prosecdef": true,
       "proconfig": [
         "search_path=pg_catalog, pg_temp"
