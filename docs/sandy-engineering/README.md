@@ -4,7 +4,7 @@
 
 The governing target is **Master Software Scope v1.2**: the original baseline, Amendment A and Amendment B. Routine engineering uses standing, revocable policy authorization without a per-release owner click. The amendment itself does not provision a grant. The stable filename remains `master-scope-v1.md`.
 
-Read the [implementation program and twelve-scope index](implementation-program.md), then [shared architecture contracts](architecture-contracts.md) and the relevant numbered task. The [Sandy Learn browser skills scope](tasks/SANDY-ENG-0011-browser-workflow-learning.md) adds opt-in passive, explicit active and execution-based learning. **P0 is Sandy chat reasoning and runtime reliability**, not growing the API operation count. Eight detailed implementation scopes, 0003–0010, now complement 0001 and 0002 with explicit ownership, dependencies, API contracts, tests and recovery requirements.
+Read the [implementation program and thirteen-scope index](implementation-program.md), then [shared architecture contracts](architecture-contracts.md) and the relevant numbered task. The [Sandy Learn browser skills scope](tasks/SANDY-ENG-0011-browser-workflow-learning.md) adds opt-in passive, explicit active and execution-based learning. **P0 is Sandy chat reasoning and runtime reliability**, not growing the API operation count. Eight detailed implementation scopes, 0003–0010, now complement 0001 and 0002 with explicit ownership, dependencies, API contracts, tests and recovery requirements.
 
 ## Sources of truth
 
