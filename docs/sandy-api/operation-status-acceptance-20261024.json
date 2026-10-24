@@ -1,0 +1,288 @@
+{
+  "observed_at_utc": "2026-10-23T23:57:50.712123+00:00",
+  "family": 34,
+  "fully_accepted": false,
+  "remaining_required_constituents": [
+    "gcp.region_operations.get",
+    "gcp.region_operations.wait"
+  ],
+  "remaining_reason": "Existing current contracts remain API/MCP closed. No exposure or permission change made.",
+  "new_verified_required_operations": 4,
+  "new_verified_supporting_list_operations": 2,
+  "current_contract_successful_operations": 63,
+  "prior_current_contract_successful_operations": 57,
+  "fully_accepted_families": 0,
+  "operations": [
+    {
+      "operation": "gcp.compute.global_operations.list",
+      "request_id": "716d6be5-a187-4a7c-84a1-c4c3a67a6fd5",
+      "admission_id": "db318c72-6193-492b-9878-74c2bbe0bd79",
+      "contract_sha256": "b029839af753bc9771eeb469e83ab05a5eacd3c3f983ad71331120b91dbe1486",
+      "result_sha256": "37c8b13e30361ee195ea184f4d291d4f07648d3a3baeadd7d914abbf6756961c",
+      "receipt_state": "succeeded",
+      "schema_valid": true,
+      "provider_http_status": 200,
+      "independent_provider_projection_matches": true,
+      "audit_events_verified": 3,
+      "exactly_one_admission": true,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.get",
+      "request_id": "fe660f7e-1029-4cb8-a124-c7740f0f79ce",
+      "admission_id": "c5fe2866-3223-47e5-86a8-a5f64d3cef40",
+      "contract_sha256": "4e2e7818340fc34ce380e3cc89d811e5d73a6f93e0acdbf99ede29eb894a3c41",
+      "result_sha256": "63f849bf36f1befdfc4828479b9db6127c580bf30a7291c2865f267222a5e367",
+      "receipt_state": "succeeded",
+      "schema_valid": true,
+      "provider_http_status": 200,
+      "independent_provider_projection_matches": true,
+      "audit_events_verified": 3,
+      "exactly_one_admission": true,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.wait",
+      "request_id": "fc48b420-2cb8-4ecb-a045-74de2c761fe3",
+      "admission_id": "8b51a32f-a86e-4cda-ae9e-3152ae13464a",
+      "contract_sha256": "976601fbb080dd091a6044f791b854d27be7bf15f6a8dc6c969a7e76d1af1a94",
+      "result_sha256": "63f849bf36f1befdfc4828479b9db6127c580bf30a7291c2865f267222a5e367",
+      "receipt_state": "succeeded",
+      "schema_valid": true,
+      "provider_http_status": 200,
+      "independent_provider_projection_matches": true,
+      "audit_events_verified": 3,
+      "exactly_one_admission": true,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.list",
+      "request_id": "95729c50-bdce-4e98-a127-4d1dbd8406c1",
+      "admission_id": "cbdee841-2bfd-4810-9d74-3e76e4c0de7e",
+      "contract_sha256": "1b53457969e5cb2723c376c8448e7164dae83cc707d100bca99d1b648c1ec668",
+      "result_sha256": "260e135a7bed499315cc29234b6b74fbd76d7fabf06d3fd9387f3b72ef5a593d",
+      "receipt_state": "succeeded",
+      "schema_valid": true,
+      "provider_http_status": 200,
+      "independent_provider_projection_matches": true,
+      "audit_events_verified": 3,
+      "exactly_one_admission": true,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.get",
+      "request_id": "74f50855-edeb-4a48-af31-a2155ff2c77e",
+      "admission_id": "ab417598-11d1-442c-b4a3-c56923b0e3ef",
+      "contract_sha256": "0745917e01ed703f55cb8ccb9da06494dc6f5332a16758b0beeec62bddd7d474",
+      "result_sha256": "00539977754d80ef5ea1c3bdfc9f6a137bc3c562de9838a9b9ba42786f73431b",
+      "receipt_state": "succeeded",
+      "schema_valid": true,
+      "provider_http_status": 200,
+      "independent_provider_projection_matches": true,
+      "audit_events_verified": 3,
+      "exactly_one_admission": true,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.wait",
+      "request_id": "23ce02ae-b882-4361-91a1-1f2569d0b987",
+      "admission_id": "037b1f53-132b-4ea5-990f-f1c7767790a0",
+      "contract_sha256": "e591540d49bd3e7f451d077183d4c86969d5180217f15a4a9d5c080d7ab38d07",
+      "result_sha256": "00539977754d80ef5ea1c3bdfc9f6a137bc3c562de9838a9b9ba42786f73431b",
+      "receipt_state": "succeeded",
+      "schema_valid": true,
+      "provider_http_status": 200,
+      "independent_provider_projection_matches": true,
+      "audit_events_verified": 3,
+      "exactly_one_admission": true,
+      "passed": true
+    }
+  ],
+  "boundary_checks": [
+    {
+      "operation": "gcp.compute.global_operations.list",
+      "case": "duplicate",
+      "api_status": 409,
+      "error": "admission_already_recorded",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.list",
+      "case": "changed-input",
+      "api_status": 409,
+      "error": "engineering_request_conflict",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.list",
+      "case": "foreign-project",
+      "api_status": 400,
+      "error": "invalid_operation_arguments",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.list",
+      "case": "receipt",
+      "api_status": 200,
+      "error": null,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.get",
+      "case": "duplicate",
+      "api_status": 409,
+      "error": "admission_already_recorded",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.get",
+      "case": "changed-input",
+      "api_status": 409,
+      "error": "engineering_request_conflict",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.get",
+      "case": "foreign-project",
+      "api_status": 400,
+      "error": "invalid_operation_arguments",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.get",
+      "case": "receipt",
+      "api_status": 200,
+      "error": null,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.wait",
+      "case": "duplicate",
+      "api_status": 409,
+      "error": "admission_already_recorded",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.wait",
+      "case": "changed-input",
+      "api_status": 409,
+      "error": "engineering_request_conflict",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.wait",
+      "case": "foreign-project",
+      "api_status": 400,
+      "error": "invalid_operation_arguments",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.global_operations.wait",
+      "case": "receipt",
+      "api_status": 200,
+      "error": null,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.list",
+      "case": "duplicate",
+      "api_status": 409,
+      "error": "admission_already_recorded",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.list",
+      "case": "changed-input",
+      "api_status": 409,
+      "error": "engineering_request_conflict",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.list",
+      "case": "foreign-project",
+      "api_status": 400,
+      "error": "invalid_operation_arguments",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.list",
+      "case": "receipt",
+      "api_status": 200,
+      "error": null,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.get",
+      "case": "duplicate",
+      "api_status": 409,
+      "error": "admission_already_recorded",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.get",
+      "case": "changed-input",
+      "api_status": 409,
+      "error": "engineering_request_conflict",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.get",
+      "case": "foreign-project",
+      "api_status": 400,
+      "error": "invalid_operation_arguments",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.get",
+      "case": "receipt",
+      "api_status": 200,
+      "error": null,
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.wait",
+      "case": "duplicate",
+      "api_status": 409,
+      "error": "admission_already_recorded",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.wait",
+      "case": "changed-input",
+      "api_status": 409,
+      "error": "engineering_request_conflict",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.wait",
+      "case": "foreign-project",
+      "api_status": 400,
+      "error": "invalid_operation_arguments",
+      "passed": true
+    },
+    {
+      "operation": "gcp.compute.zone_operations.wait",
+      "case": "receipt",
+      "api_status": 200,
+      "error": null,
+      "passed": true
+    }
+  ],
+  "recovery": {
+    "operation": "gcp.compute.zone_operations.get",
+    "original_failure": "engineering_policy_unavailable",
+    "api_status": 503,
+    "no_admission_verified_before_retry": true,
+    "same_request_id_recovered_once": true
+  },
+  "initial_query_failure": {
+    "provider_status": 400,
+    "api_status": 502,
+    "reason": "Provider rejects simultaneous filter and orderBy; minimal bounded query passed. Both failed attempts retained.",
+    "source_candidate_fix": "Preserve provider 400 as provider_request_invalid; not yet deployed."
+  },
+  "provider_list_pagination": "Opaque nextPageToken presence checked; raw tokens are not stable equality oracles. Only one bounded page requested, not complete inventory.",
+  "production_deployment_performed": false,
+  "credentials_recorded": false,
+  "runtime_or_hosting_changes": false
+}
