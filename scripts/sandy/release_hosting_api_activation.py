@@ -60,8 +60,11 @@ def run(r,mode,change,artifact=None):
    files=inspect(r,m);body=r.api('GET','/functions/'+TARGET+'/body');require(sha(body)==m['gateway']['bundle_sha256'],'backup_drift')
    # Reuse the bounded private transfer implementation with its explicit target set.
    import release_hosting_accounts as recovery
-   recovery.TARGET=TARGET
-   artifact=recovery.store_recovery(r,m,change,m['gateway']['version'],body,PIN)
+   previous_target=recovery.TARGET
+   try:
+    recovery.TARGET=TARGET
+    artifact=recovery.store_recovery(r,m,change,m['gateway']['version'],body,PIN)
+   finally:recovery.TARGET=previous_target
    inspect(r,m)
   else:
    state=observe(r,m);require(state['source']=='candidate' and state['registry'] in ('active','inactive'),'rollback_foreign_state')
