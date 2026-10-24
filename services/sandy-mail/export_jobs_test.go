@@ -375,6 +375,7 @@ func exerciseExportJobs(t *testing.T, service *Service, admin *pgx.Conn, ctx con
 			t.Fatal(report)
 		}
 		count := 0
+		archives := [][]byte{}
 		for part := int64(1); part <= report.PartCount; part++ {
 			var output bytes.Buffer
 			_, e = service.ReadExportPart(ctx, sc, sp.Key, part, 0, &output, a)
@@ -390,13 +391,39 @@ func exerciseExportJobs(t *testing.T, service *Service, admin *pgx.Conn, ctx con
 			if preview.State != "READY" {
 				t.Fatal("invalid portable part")
 			}
+			archives = append(archives, append([]byte(nil), output.Bytes()...))
 		}
 		if count != 1000 {
 			t.Fatal("bulk export omission")
 		}
 		t.Logf("LOCAL_EXPORT_ONLY job=%s messages=1000 parts=10 elapsed_seconds=%.3f", job.ID, time.Since(started).Seconds())
+		destination, _ := createSource(0)
+		restoreStarted := time.Now()
+		for number, data := range archives {
+			importSpec := ImportSpec{Key: fmt.Sprintf("restore-%s-%d", job.ID, number), Format: "eml-tar", SourceSHA256: digest(data), SourceSize: int64(len(data)), Cutoff: report.SnapshotAt, Folder: "Synthetic Export Restore", AdmissionRef: "synthetic-local-export-restore"}
+			_, e = service.StageImport(ctx, destination, importSpec, bytes.NewReader(data))
+			must(e)
+			var imported ImportJob
+			for attempt := 0; attempt < 10; attempt++ {
+				imported, e = service.ResumeImport(ctx, destination, importSpec.Key, 100)
+				must(e)
+				if imported.State == "COMPLETE" {
+					break
+				}
+			}
+			if imported.State != "COMPLETE" {
+				t.Fatal("export partition not restorable")
+			}
+		}
+		var restored, seen int
+		must(admin.QueryRow(ctx, "SELECT count(*),count(*) FILTER(WHERE flags=ARRAY['seen']) FROM core.memberships WHERE mailbox_id=$1", destination.Mailbox).Scan(&restored, &seen))
+		if restored != 1000 || seen != 1000 {
+			t.Fatal("restored snapshot count/flags mismatch")
+		}
+		t.Logf("LOCAL_EXPORT_RESTORE destination=%s messages=%d flags_verified=%d elapsed_seconds=%.3f", destination.Mailbox, restored, seen, time.Since(restoreStarted).Seconds())
+
 		if path := os.Getenv("MAIL_TEST_EXPORT_EVIDENCE"); path != "" {
-			must(os.WriteFile(path, append(encoded(map[string]any{"environment": "local-postgresql-filesystem-not-cloudsql-gcs", "source_revision": os.Getenv("MAIL_TEST_SOURCE_REV"), "report": report, "raw_messages_checked": 1000, "job_key": sp.Key, "cloud_deployed": false}), '\n'), 0600))
+			must(os.WriteFile(path, append(encoded(map[string]any{"environment": "local-postgresql-filesystem-not-cloudsql-gcs", "source_revision": os.Getenv("MAIL_TEST_SOURCE_REV"), "report": report, "raw_messages_checked": 1000, "restored_messages": restored, "restored_flags_verified": seen, "restored_scope": destination, "job_key": sp.Key, "cloud_deployed": false}), '\n'), 0600))
 		}
 	})
 }
