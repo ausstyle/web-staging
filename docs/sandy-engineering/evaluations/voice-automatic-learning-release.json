@@ -1,0 +1,51 @@
+{
+  "kind": "voice-automatic-learning-privacy-v1",
+  "function": "sandy-voice-memory-review",
+  "source_manifest": "docs/sandy-engineering/evaluations/runtime-slices/sandy-voice-memory-review.json",
+  "migration": "supabase/migrations/20261024005600_sandy_voice_automatic_learning.sql",
+  "migration_sha256": "16822bd89a19cc0b9fa85185627fe701c2a24488b73f320547c92fcc71289f2b",
+  "SQL_preserved": {
+    "public.sandy_voice_save_explicit_memory(uuid,text,text)": {
+      "oid": "21315",
+      "source_sha256": "7dee46413219cc31cc5376b7b61570b1de91e788aba707468ca686c53100a09d",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    }
+  },
+  "SQL_dependency": {
+    "public.sandy_automatic_memory_learning_allowed(uuid)": {
+      "source_sha256": "db80c5dd6c5a39e34210d313d39b9f815b0548b7ca3472ed336bd79912b75f9f",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    }
+  },
+  "SQL_candidate": {
+    "public.sandy_voice_automatic_learning_persist(uuid,uuid,jsonb,jsonb)": {
+      "source_sha256": "c8e3b1fd1e0c83b9cd42ee612cbf04f9ad32fe4faad602df212523993835cc9c",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    },
+    "public.sandy_voice_automatic_learning_source(uuid,uuid,timestamptz)": {
+      "source_sha256": "0518d4d38282c4c4229f8e8c56a40ae42e1c47b8b73a0e3954bb5502a13461db",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=pg_catalog, pg_temp"
+      ]
+    }
+  },
+  "activation_order": [
+    "Deploy strict source first: missing new RPCs fail closed before transcripts/models.",
+    "Verify exact installed source and shared05500 dependency.",
+    "Install05600 SQL transaction/history, verify exact new RPCs and preserved writer."
+  ],
+  "automatic_temporal_dispatch": "contained until child05800 independently deployed and accepted",
+  "catalogue_changes": 0,
+  "positive_live_model_execution_verified": false
+}

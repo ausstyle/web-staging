@@ -1,0 +1,15 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-voice-memory-review",
+  "version": 25,
+  "verify_jwt": false,
+  "body_sha256": "b03cae8b6fd5fb783b3a979d86bbb2a6efc5521233cbe773dd1f6c108602ec81",
+  "before_files": {
+    "index.ts": "43fc28edc8f7cb9d049782993b10db7d50ee69cb2f420242731a2cf76a681304"
+  },
+  "replacements": {
+    "sandy-voice-memory-review/index.ts": "0c4d201ad16ee278912d77a6d71eaa447dfd7995782e86a73edebd2cc75f5bd6",
+    "sandy-voice-memory-review/automatic_learning.ts": "9b56dc626dbae1e4e385f29a37e52a71b60e52c943dd5788926f7d20a4095bbc"
+  },
+  "source_layout": "reviewed-flat-index-to-namespaced-v1"
+}

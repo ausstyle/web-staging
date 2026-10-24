@@ -1,0 +1,69 @@
+name: Contain and repair automatic voice learning privacy
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-voice-memory-review/**'
+      - 'supabase/migrations/20261024005600_sandy_voice_automatic_learning.sql'
+      - 'scripts/sandy/release_voice_automatic_learning.py'
+      - 'scripts/sandy/test_voice_automatic*'
+      - 'docs/sandy-engineering/evaluations/voice-automatic-learning-release.json'
+      - 'docs/sandy-engineering/evaluations/runtime-slices/sandy-voice-memory-review.json'
+      - '.github/workflows/sandy-voice-automatic-learning-release.yml'
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: Source containment first; SQL activation requires exact contained source and05500
+        type: choice
+        required: true
+        options: [source-and-sql, source-only, sql-only]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-voice-privacy-pr-{0}', github.event.pull_request.number) }}
+  cancel-in-progress: false
+jobs:
+  validate-voice-learning-privacy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - name: Verify fixed SQL-only activation and unknown-outcome containment
+        env:
+          PYTHONPATH: scripts/sandy
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest scripts/sandy/test_voice_automatic_release.py -v
+      - name: Test actual handler without provider calls or customer sources
+        run: deno test --no-lock --allow-read=supabase/functions/sandy-voice-memory-review/index.ts supabase/functions/sandy-voice-memory-review/automatic_learning_test.ts
+      - name: Test shared consent dependency and atomic derived writes in isolated PostgreSQL
+        run: deno test --no-lock --allow-read scripts/sandy/test_voice_automatic_learning.ts
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: validate-voice-learning-privacy
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Contain source before enabling atomic SQL; never restore old unconsented extraction
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PHASE: ${{ inputs.phase }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          if [ "$PHASE" != sql-only ]; then
+            python3 scripts/sandy/release_runtime_slice.py docs/sandy-engineering/evaluations/runtime-slices/sandy-voice-memory-review.json --deploy --evidence-dir "$RUNNER_TEMP/voice-privacy-source"
+            python3 scripts/sandy/release_runtime_slice.py docs/sandy-engineering/evaluations/runtime-slices/sandy-voice-memory-review.json --verify-installed --evidence-dir "$RUNNER_TEMP/voice-privacy-source-readback"
+          fi
+          if [ "$PHASE" != source-only ]; then
+            python3 scripts/sandy/release_voice_automatic_learning.py --deploy --evidence-dir "$RUNNER_TEMP/voice-privacy-sql"
+            python3 scripts/sandy/release_voice_automatic_learning.py --verify-installed --evidence-dir "$RUNNER_TEMP/voice-privacy-sql-readback"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: voice-learning-privacy-custody-${{ github.run_id }}
+          path: ${{ runner.temp }}/voice-privacy-*/
+          retention-days: 14

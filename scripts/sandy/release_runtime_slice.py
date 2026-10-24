@@ -45,6 +45,7 @@ MODULES = {
         'sandy-vm-protocol-api/winrm.ts',
     },
     'sandy-computer-worker': {'sandy-computer-worker/index.ts'},
+    'sandy-voice-memory-review': {'sandy-voice-memory-review/index.ts','sandy-voice-memory-review/automatic_learning.ts'},
     'sandy-master-computer': {
         'sandy-master-computer/index.ts',
         '_shared/sandy-agent-operations/worker_computer_identity.ts',
@@ -80,12 +81,13 @@ MODULES = {
 # These inspected legacy services have exactly one flat source module. Only
 # separately allowlisted modules and reviewed manifests can activate a target.
 # This is not arbitrary entrypoint rewriting or permission to lose other files.
-NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context', 'sandy-engineering-oidc-ingest'}
+NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context', 'sandy-engineering-oidc-ingest','sandy-voice-memory-review'}
 FLAT_INDEX_LAYOUT = 'reviewed-flat-index-to-namespaced-v1'
 FLAT_REVISIONS = {'sandy-master-computer': (27, True),
                   'sandy-email-runtime-canary': (18, False),
                   'sandy-voice-account-context': (20, False),
-                  'sandy-engineering-oidc-ingest': (92, False)}
+                  'sandy-engineering-oidc-ingest': (92, False),
+                  'sandy-voice-memory-review': (25, False)}
 
 
 def hashes(files):
