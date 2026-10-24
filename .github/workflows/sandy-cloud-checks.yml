@@ -63,3 +63,29 @@ jobs:
           name: sandy-cloud-integration-source-${{ github.sha }}
           path: /tmp/sandy-cloud-release/
           retention-days: 14
+  postgres-multisession:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: sandy_cloud_fixture
+        ports:
+          - '127.0.0.1:5432:5432'
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sandy_cloud_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --prefix /tmp/sandy-cloud-pg --no-audit --no-fund --ignore-scripts pg@8.16.3
+      - name: Read pinned Runtime source only
+        run: |
+          git fetch --no-tags origin ab2cfa4fb29fc5ba72a72fb77c0665fd1181ae55
+          mkdir -p /tmp/sandy-cloud-runtime-source
+          git archive ab2cfa4fb29fc5ba72a72fb77c0665fd1181ae55 packages/sandy-runtime-custody/journal.ts packages/sandy-runtime-custody/attestation.ts packages/sandy-runtime-custody/schema.sql | tar -x -C /tmp/sandy-cloud-runtime-source
+      - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify_multisession.mts /tmp/sandy-cloud-pg/node_modules/pg/lib/index.js /tmp/sandy-cloud-runtime-source/packages/sandy-runtime-custody 5432

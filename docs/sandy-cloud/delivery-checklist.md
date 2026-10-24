@@ -284,3 +284,17 @@ remain fail closed. Six actual pinned Runtime/Cloud PostgreSQL composition scena
 and four new binding scenarios pass; no production trust or provider is exercised.
 [Detailed review and remaining owner work](runtime-scan-alignment-20261024.md).
 SC-02/08/12 source integration advanced; no mandatory live acceptance changed.
+
+## Real PostgreSQL concurrency and candidate RLS
+
+Eight real multi-session PostgreSQL 17.6 scenarios now supplement the embedded
+engine checks: complete duplicate commit, rollback/waiter race, both revocation
+orders, file SHARE-to-UPDATE, backend death rollback, default-deny/forced RLS and
+scanner withdrawal. Three distinct backend PIDs and actual blocking relations were
+observed. Runtime's actual scope-lock and scan journal source is consumed; no
+parallel authority is introduced. See `schema-concurrency-review-20261024.md`.
+
+The inactive `minimal-activation-proposal-20261024.md` separates known existing
+Supabase reuse from unknown exact access bindings and the still-unapproved USD10
+new-resource proposal. No activation is attempted. Source/RLS coherence does not
+mark any mandatory live or native-device acceptance passed.
