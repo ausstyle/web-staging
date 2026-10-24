@@ -1,5 +1,9 @@
 # Sandy API implementation status
 
+## Immutable blob settlement — source candidate
+
+A further [family 118 source slice](github-blob-settlement-20261024.md) verifies exact immutable blob bytes and adds guarded durable settlement while preserving authority, ACL and audit rules. It has isolated readback, provider integration and PostgreSQL tests; it has not been deployed or live-accepted. Tree settlement and whole-family acceptance remain open. The PR246 single-module release manifest does not cover this separate candidate.
+
 ## Continuation acceptance — 24 October 2026
 
 Six new global/zonal operation list/get/wait cases passed normal MCP execution, independent provider readback, durable hash/audit verification and 24 boundary/recovery checks. The live register now has **63 current-contract successful operations**; **0/161 families** are fully accepted because required regional get/wait remain closed. No provider function was redeployed. Production remains provider-operation API **v31**, source `53556941f600c7ec625067a74d37bbcffa8bd400`.

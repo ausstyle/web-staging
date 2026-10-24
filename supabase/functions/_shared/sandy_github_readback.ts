@@ -158,6 +158,60 @@ export async function verifyGithubReadback(
     body.parents === undefined
   ) body.parents = [];
   try {
+    if (githubMutationSemantics[operation] === "blob") {
+      if (
+        typeof body.content !== "string" || body.content.length > 100000 ||
+        !sha(raw.sha)
+      ) throw Error();
+      const encoding = body.encoding ?? "utf-8";
+      const expected = encoding === "base64"
+        ? bytes(body.content)
+        : encoding === "utf-8"
+        ? new TextEncoder().encode(body.content)
+        : null;
+      if (
+        !expected || expected.length > 65536 ||
+        (encoding === "utf-8" &&
+          new TextDecoder("utf-8", { ignoreBOM: true }).decode(expected) !==
+            body.content)
+      ) throw Error();
+      const header = new TextEncoder().encode(`blob ${expected.length}\0`);
+      const framed = new Uint8Array(header.length + expected.length);
+      framed.set(header);
+      framed.set(expected, header.length);
+      const blobSha = Array.from(
+        new Uint8Array(await crypto.subtle.digest("SHA-1", framed)),
+        (v) => v.toString(16).padStart(2, "0"),
+      ).join("");
+      if (raw.sha !== blobSha) throw Error();
+      const observed = await readGithubObservation(
+        request,
+        `https://api.github.com/repos/ausstyle/web-staging/git/blobs/${blobSha}`,
+        token,
+      );
+      if (
+        !object(observed) || observed.sha !== blobSha ||
+        observed.encoding !== "base64" ||
+        observed.size !== expected.length
+      ) throw Error();
+      const actual = bytes(observed.content);
+      if (
+        !actual || actual.length !== expected.length ||
+        actual.some((v, i) => v !== expected[i])
+      ) throw Error();
+      return {
+        verified: true,
+        proof: {
+          version: 1,
+          kind: "github_blob",
+          repository: "ausstyle/web-staging",
+          blob_sha: blobSha,
+          byte_length: actual.length,
+          content_sha256: await digest(actual),
+          read_http_status: 200,
+        },
+      };
+    }
     if (githubMutationSemantics[operation] === "ref") {
       const ref = typeof body.ref === "string"
         ? body.ref
