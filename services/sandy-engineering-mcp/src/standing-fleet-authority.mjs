@@ -105,7 +105,8 @@ export function authorizeStandingFleetOperation({
   if(request.operation===OPERATIONS.SSH_EXEC){
     requireThat(typeof request.commandSha256==="string"&&
       SHA.test(request.commandSha256)&&
-      request.commandApproved===true&&
+      Array.isArray(delegation.approvedCommandDigests)&&
+      delegation.approvedCommandDigests.includes(request.commandSha256)&&
       Number.isSafeInteger(request.timeoutSeconds)&&
       request.timeoutSeconds>=1&&request.timeoutSeconds<=30,
       "approved_bounded_command_required");
@@ -114,8 +115,7 @@ export function authorizeStandingFleetOperation({
       /^SHA256:[A-Za-z0-9+/]{43}$/.test(registry.sshHostKeySha256),
       "verified_ssh_host_pin_required");
   } else {
-    requireThat(request.commandSha256===undefined&&
-      request.commandApproved===undefined,
+    requireThat(request.commandSha256===undefined,
       "no_command_in_policy_or_status_operation");
   }
   // Protected hosts are not excluded from access in a fleet grant, but
@@ -131,7 +131,8 @@ export function authorizeStandingFleetOperation({
     requiresSeparatePerTaskOwnerApproval:false,
     requiresProviderPermission:true,
     requiresFreshExecutionReceipt:true,
-    permitsIamGrantCreation:false,
+    permitsUnscopedIamGrantCreation:false,
+    requiresExactIamPolicyPreimage:request.operation===OPERATIONS.ENSURE_SSH_IAP,
     permitsArbitraryServerEnrollment:false,
   });
 }
