@@ -635,6 +635,7 @@ def compile_route(spec, document, source):
               "api_exposed": not needs_grant, "ai_exposed": not needs_grant, "verified": False,
               "source": source["source"], "source_sha256": source["sha256"],
               "permission_scope": "infrastructure:write" if needs_grant else "infrastructure:read"}
+    apply_cloud_run_read_scope(result)
     result["output_schema"] = output_schema(result)
     result["contract_sha256"] = hashlib.sha256(json.dumps(result, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
     return result
@@ -763,6 +764,22 @@ def migration(catalogue):
             "-- No provider write, plan purchase, exposure of unverified mutations or verification claim.\nBEGIN;\n"
             "INSERT INTO public.sandy_operation_registry(operation,domain,description,permission_scope,is_mutation,input_schema,output_schema,handler,api_exposed,ui_exposed,ai_exposed,verified,implementation_state,source_repository,source_path,dependencies,error_contract) VALUES\n" +
             ",\n".join(values) + "\nON CONFLICT (operation) DO NOTHING;\nCOMMIT;\n")
+
+
+def apply_cloud_run_read_scope(operation):
+    """Source-only bounded hosting reads; activation still needs verified binding."""
+    if operation['operation'] not in {'gcp.cloud_run.services.list', 'gcp.cloud_run.services.get'}:
+        return
+    if operation['method'] != 'GET' or operation['provider'] != 'gcp':
+        raise ValueError('cloud_run_read_descriptor_required')
+    operation['regional_read_scope'] = {
+        'default_region': 'europe-west1', 'additional_region': 'europe-west8',
+        'verified_server_binding': 'cloud_run_read_region',
+        'binding_maximum_lifetime_hours': 24,
+        'activation_is_not_implied_by_contract': True,
+    }
+    if operation['operation'].endswith('.list'):
+        operation['input_schema']['properties']['region'] = {'type': 'string', 'enum': ['europe-west1', 'europe-west8']}
 
 
 def compact_manifest(catalogue):

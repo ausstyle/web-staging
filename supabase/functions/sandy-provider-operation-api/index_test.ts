@@ -1001,3 +1001,257 @@ Deno.test("blob settlement uses one POST then immutable GET; failed settlement n
     assertEquals(verification?.effect_verified, settled);
   }
 });
+
+Deno.test("Cloud Run hosting reads require verified regional binding and bind exact scope digest", async () => {
+  const verifiedBindings = {
+    cloud_run_read_region: {
+      id: "europe-west8",
+      expires_at: new Date(Date.now() + 3600000).toISOString(),
+      verified: true as const,
+      project_id: "elaborate-haven-511518-a5" as const,
+    },
+  };
+  const names = ["gcp.cloud_run.services.list", "gcp.cloud_run.services.get"];
+  for (const operation of names) {
+    const args = operation.endsWith(".list")
+      ? { region: "europe-west8", query: { pageSize: 1 } }
+      : {
+        path: {
+          name:
+            "projects/elaborate-haven-511518-a5/locations/europe-west8/services/fixture",
+        },
+      };
+    const unavailable = harness();
+    assertEquals((await unavailable.call(operation, args)).status, 424);
+    assertEquals(unavailable.consumes(), 0);
+    assertEquals(unavailable.requests.length, 0);
+    let consumedScope = "";
+    let requested = "";
+    const h = harness({
+      verifiedBindings,
+      consumeGrant: (request) => {
+        consumedScope = request.scope_sha256;
+        return Promise.resolve({ allowed: true, admission_id: ADMISSION });
+      },
+      fetch: (url, init) => {
+        requested = String(url);
+        assertEquals(init?.method, "GET");
+        return Promise.resolve(Response.json(
+          operation.endsWith(".list")
+            ? { services: [] }
+            : { name: args.path?.name },
+        ));
+      },
+    });
+    const response = await h.call(operation, args);
+    assertEquals(response.status, 200);
+    assertEquals(
+      requested.startsWith(
+        "https://run.googleapis.com/v2/projects/elaborate-haven-511518-a5/locations/europe-west8/services",
+      ),
+      true,
+    );
+    assertEquals(
+      consumedScope,
+      await argumentDigest(
+        providerExecutionScope(operation, { verifiedBindings }, args),
+      ),
+    );
+    assertEquals(
+      consumedScope === await argumentDigest(providerExecutionScope(operation)),
+      false,
+    );
+    assertEquals(h.finishes[0].outcome, "succeeded");
+  }
+});
+Deno.test("regional candidate preserves defaults and refuses foreign, wildcard and caller-created bindings", async () => {
+  const verifiedBindings = {
+    cloud_run_read_region: {
+      id: "europe-west8",
+      expires_at: new Date(Date.now() + 3600000).toISOString(),
+      verified: true as const,
+      project_id: "elaborate-haven-511518-a5" as const,
+    },
+  };
+  const op = providerOperations["gcp.cloud_run.services.list"];
+  assertEquals(
+    bindProviderRequest(op, {}).pathname,
+    "/v2/projects/elaborate-haven-511518-a5/locations/europe-west1/services",
+  );
+  assertEquals(
+    providerExecutionScope(op.operation, { verifiedBindings }),
+    providerExecutionScope(op.operation),
+  );
+  for (
+    const bad of [
+      { region: "us-east1" },
+      { region: "-" },
+      { region: "europe-west8", verifiedBindings },
+      { path: { parent: "projects/foreign/locations/europe-west8" } },
+    ]
+  ) {
+    const h = harness({ verifiedBindings });
+    assertEquals((await h.call(op.operation, bad)).status, 400);
+    assertEquals(h.consumes(), 0);
+  }
+  for (
+    const name of [
+      "projects/foreign/locations/europe-west8/services/x",
+      "projects/elaborate-haven-511518-a5/locations/-/services/x",
+      "projects/elaborate-haven-511518-a5/locations/europe-west8/services/../x",
+    ]
+  ) {
+    const h = harness({ verifiedBindings });
+    assertEquals(
+      (await h.call("gcp.cloud_run.services.get", { path: { name } })).status,
+      400,
+    );
+    assertEquals(h.consumes(), 0);
+  }
+  assertThrows(() =>
+    bindProviderRequest(providerOperations["gcp.cloud_run.jobs.get"], {
+      path: {
+        name:
+          "projects/elaborate-haven-511518-a5/locations/europe-west8/jobs/x",
+      },
+    }, { verifiedBindings })
+  );
+  for (
+    const binding of [
+      {
+        id: "europe-west8",
+        verified: false,
+        project_id: "elaborate-haven-511518-a5",
+      },
+      { id: "europe-west8", verified: true, project_id: "foreign" },
+      {
+        id: "us-east1",
+        verified: true,
+        project_id: "elaborate-haven-511518-a5",
+      },
+    ]
+  ) {
+    assertThrows(() =>
+      bindProviderRequest(op, { region: "europe-west8" }, {
+        verifiedBindings: { cloud_run_read_region: binding } as any,
+      })
+    );
+  }
+});
+Deno.test("Storage listing adapter stays project bound; fixture execution does not expose registry operation", async () => {
+  const h = harness({
+    fetch: (url, init) => {
+      const target = new URL(String(url));
+      assertEquals(target.origin, "https://storage.googleapis.com");
+      assertEquals(
+        target.searchParams.get("project"),
+        "elaborate-haven-511518-a5",
+      );
+      assertEquals(target.searchParams.get("maxResults"), "1");
+      assertEquals(init?.method, "GET");
+      return Promise.resolve(
+        Response.json({ kind: "storage#buckets", items: [] }),
+      );
+    },
+  });
+  assertEquals(
+    (await h.call("gcp.storage.buckets.list", { query: { maxResults: 1 } }))
+      .status,
+    200,
+  );
+  const denied = harness();
+  assertEquals(
+    (await denied.call("gcp.storage.buckets.list", {
+      query: { project: "foreign" },
+    })).status,
+    400,
+  );
+  assertEquals(denied.consumes(), 0);
+});
+
+Deno.test("regional binding expiry refuses dispatch and preserves unrelated configured scopes", async () => {
+  const { parseProviderBindings } = await import("./configured_scopes.ts");
+  const project_id = "elaborate-haven-511518-a5" as const;
+  const organization = { id: "123", project_id, verified: true as const };
+  for (
+    const expiry of [
+      undefined,
+      "not-a-date",
+      new Date(Date.now() - 1000).toISOString(),
+      new Date(Date.now() + 48 * 3600000).toISOString(),
+    ]
+  ) {
+    const bindings = {
+      organization,
+      cloud_run_read_region: {
+        id: "europe-west8",
+        project_id,
+        verified: true as const,
+        expires_at: expiry,
+      },
+    };
+    assertEquals(parseProviderBindings(JSON.stringify(bindings)), {
+      organization,
+    });
+    const h = harness({ verifiedBindings: bindings });
+    assertEquals(
+      (await h.call("gcp.cloud_run.services.list", { region: "europe-west8" }))
+        .status,
+      424,
+    );
+    assertEquals(h.consumes(), 0);
+  }
+  const verifiedBindings = {
+    cloud_run_read_region: {
+      id: "europe-west8",
+      project_id,
+      verified: true as const,
+      expires_at: new Date(Date.now() + 3600000).toISOString(),
+    },
+  };
+  const h = harness({
+    verifiedBindings,
+    getGcpAccessToken: () => {
+      verifiedBindings.cloud_run_read_region.expires_at = new Date(
+        Date.now() - 1000,
+      ).toISOString();
+      return Promise.resolve("fixture");
+    },
+  });
+  const response = await h.call("gcp.cloud_run.services.list", {
+    region: "europe-west8",
+  });
+  assertEquals(response.status, 424);
+  const value = await response.json();
+  assertEquals(value.executed, false);
+  assertEquals(value.error, "provider_regional_binding_unavailable");
+  assertEquals(h.requests.length, 0);
+  assertEquals(h.finishes[0].outcome, "failed");
+});
+
+Deno.test("renewed regional configuration cannot reuse a request admitted against another expiry", async () => {
+  const verifiedBindings = {
+    cloud_run_read_region: {
+      id: "europe-west8",
+      project_id: "elaborate-haven-511518-a5" as const,
+      verified: true as const,
+      expires_at: new Date(Date.now() + 3600000).toISOString(),
+    },
+  };
+  const h = harness({
+    verifiedBindings,
+    getGcpAccessToken: () => {
+      verifiedBindings.cloud_run_read_region.expires_at = new Date(
+        Date.now() + 7200000,
+      ).toISOString();
+      return Promise.resolve("fixture");
+    },
+  });
+  assertEquals(
+    (await h.call("gcp.cloud_run.services.list", { region: "europe-west8" }))
+      .status,
+    424,
+  );
+  assertEquals(h.requests.length, 0);
+  assertEquals(h.finishes[0].outcome, "failed");
+});
