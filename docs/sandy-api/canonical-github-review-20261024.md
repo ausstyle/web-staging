@@ -1,0 +1,17 @@
+# Remaining GitHub canonical review
+
+SANDY-ENG-0005; source review of 17 families: 114,120,123,126,130–142 excluding previously reviewed127–129. Together with PR289's121/122/124, this resolves canonical mapping review for20 of the prior97 families. It does not certify implementation completeness or provider acceptance.
+
+The JSON companion records195 required operation identities, exact source descriptor fields, supporting candidates and missing capability obligations. Repository creation is explicitly retained as missing. Cross-family aliases are described individually: archive uses repository update, issue close/reopen uses update.state, replies use comments.create, secret rotation uses set with newly bound ciphertext, and variable create is not PATCH/set. Required higher-risk operations stay in scope without any activation or execution authority.
+
+Review basis: the original PDF sections6.1/6.2 and current source contracts, checked against official [repository](https://docs.github.com/en/rest/repos/repos), [check run](https://docs.github.com/en/rest/checks/runs), [check suite](https://docs.github.com/en/rest/checks/suites), [status](https://docs.github.com/en/rest/commits/statuses), [deployment](https://docs.github.com/en/rest/deployments/deployments), [environment](https://docs.github.com/en/rest/deployments/environments), [secret](https://docs.github.com/en/rest/actions/secrets), [variable](https://docs.github.com/en/rest/actions/variables), [package](https://docs.github.com/en/rest/packages/packages), [Discussions](https://docs.github.com/en/graphql/guides/using-the-graphql-api-for-discussions), [webhook](https://docs.github.com/en/rest/repos/webhooks), [collaborator](https://docs.github.com/en/rest/collaborators/collaborators), [team](https://docs.github.com/en/rest/teams/teams), [ruleset](https://docs.github.com/en/rest/repos/rules), and [code-scanning](https://docs.github.com/en/rest/code-scanning/code-scanning) documentation. Provider documents describe capabilities, not this environment's entitlements.
+
+## Concrete source correction
+
+The coverage reconciler now refuses full-family acceptance or implementation-complete classification while `unresolved_family_capabilities` is nonempty. Existing successful operation receipts remain visible. This prevents a family whose existing descriptors all pass from hiding missing publication, team permissions, secret custody or asynchronous completion behavior. It does not remove any existing gate.
+
+## Boundaries requiring later decisions
+
+Repository creation requires an explicit new-resource owner/name and compensating plan; existing web-staging scope is insufficient. Package publishing requires a supported existing credential route and owned package/version, not a new personal token. Checks writes require the applicable existing GitHub App authority. Secret rotation requires trusted ciphertext custody and a precise key/target; metadata success is insufficient. Webhook replay needs an owned receiver/delivery with signature and effect verification. Team grants/rulesets/security settings require exact independently approved changes. No blanket decision is requested: source and contract work remains available before any such proposal.
+
+The new Runtime continuation's exact custody/scanner/locking handoff is in `runtime-custody-binding-handoff-20261024.md`, pinned to PR287 source. No gateway, worker, provider grant, exposure flag, protected approval or live acceptance record changed in this review.

@@ -240,6 +240,235 @@
       "github.refs.list",
       "github.refs.update",
       "github.tags.list"
+    ],
+    "114": [
+      "github.repos.create",
+      "github.repos.delete",
+      "github.repos.get",
+      "github.repos.list",
+      "github.repos.update"
+    ],
+    "120": [
+      "github.issues.add_assignees",
+      "github.issues.add_blocked_by_dependency",
+      "github.issues.add_issue_field_values",
+      "github.issues.add_labels",
+      "github.issues.add_relates_to",
+      "github.issues.add_sub_issue",
+      "github.issues.approve_suggestion",
+      "github.issues.assignee.check",
+      "github.issues.assignee_on_issue.check",
+      "github.issues.create",
+      "github.issues.create_comment",
+      "github.issues.delete_comment",
+      "github.issues.delete_issue_field_value",
+      "github.issues.dismiss_suggestion",
+      "github.issues.get",
+      "github.issues.get_comment",
+      "github.issues.get_event",
+      "github.issues.get_parent",
+      "github.issues.list",
+      "github.issues.list_assignees",
+      "github.issues.list_comments",
+      "github.issues.list_comments_for_repo",
+      "github.issues.list_dependencies_blocked_by",
+      "github.issues.list_dependencies_blocking",
+      "github.issues.list_events",
+      "github.issues.list_events_for_repo",
+      "github.issues.list_events_for_timeline",
+      "github.issues.list_issue_field_values_for_issue",
+      "github.issues.list_labels_on_issue",
+      "github.issues.list_relates_to",
+      "github.issues.list_sub_issues",
+      "github.issues.list_suggestions",
+      "github.issues.lock",
+      "github.issues.pin_comment",
+      "github.issues.remove_all_labels",
+      "github.issues.remove_assignees",
+      "github.issues.remove_dependency_blocked_by",
+      "github.issues.remove_label",
+      "github.issues.remove_relates_to",
+      "github.issues.remove_sub_issue",
+      "github.issues.reprioritize_sub_issue",
+      "github.issues.set_issue_field_values",
+      "github.issues.set_labels",
+      "github.issues.unlock",
+      "github.issues.unpin_comment",
+      "github.issues.update",
+      "github.issues.update_comment",
+      "github.reactions.create_for_issue",
+      "github.reactions.create_for_issue_comment",
+      "github.reactions.delete_for_issue",
+      "github.reactions.delete_for_issue_comment",
+      "github.reactions.list_for_issue",
+      "github.reactions.list_for_issue_comment"
+    ],
+    "123": [
+      "github.discussions.categories.list",
+      "github.discussions.close",
+      "github.discussions.comments.create",
+      "github.discussions.comments.delete",
+      "github.discussions.comments.get",
+      "github.discussions.comments.list",
+      "github.discussions.comments.mark_answer",
+      "github.discussions.comments.unmark_answer",
+      "github.discussions.comments.update",
+      "github.discussions.create",
+      "github.discussions.delete",
+      "github.discussions.get",
+      "github.discussions.list",
+      "github.discussions.reopen",
+      "github.discussions.replies.list",
+      "github.discussions.update"
+    ],
+    "126": [
+      "github.packages.delete",
+      "github.packages.get",
+      "github.packages.list",
+      "github.packages.restore",
+      "github.packages.versions.delete",
+      "github.packages.versions.get",
+      "github.packages.versions.list",
+      "github.packages.versions.restore"
+    ],
+    "130": [
+      "github.checks.create_suite",
+      "github.checks.get_suite",
+      "github.checks.list_annotations",
+      "github.checks.list_for_suite",
+      "github.checks.list_suites_for_ref",
+      "github.checks.rerequest_run",
+      "github.checks.rerequest_suite",
+      "github.checks.runs.create",
+      "github.checks.runs.get",
+      "github.checks.runs.list",
+      "github.checks.runs.update",
+      "github.checks.set_suites_preferences"
+    ],
+    "131": [
+      "github.statuses.combined.get",
+      "github.statuses.create",
+      "github.statuses.list"
+    ],
+    "132": [
+      "github.deployments.create",
+      "github.deployments.list",
+      "github.deployments.statuses.create",
+      "github.deployments.statuses.list",
+      "github.repos.get_deployment",
+      "github.repos.get_deployment_status"
+    ],
+    "133": [
+      "github.environments.get",
+      "github.environments.list",
+      "github.environments.update"
+    ],
+    "134": [
+      "github.actions.get_repo_secret",
+      "github.repo_secrets.list",
+      "github.repo_secrets.public_key.get",
+      "github.repo_secrets.remove",
+      "github.repo_secrets.set"
+    ],
+    "135": [
+      "github.actions.create_environment_variable",
+      "github.actions.delete_environment_variable",
+      "github.actions.get_environment_variable",
+      "github.actions.get_repo_variable",
+      "github.actions.list_environment_variables",
+      "github.actions.update_environment_variable",
+      "github.variables.create",
+      "github.variables.list",
+      "github.variables.remove",
+      "github.variables.set"
+    ],
+    "136": [
+      "github.environment_secrets.delete",
+      "github.environment_secrets.get",
+      "github.environment_secrets.list",
+      "github.environment_secrets.public_key.get",
+      "github.environment_secrets.set"
+    ],
+    "137": [
+      "github.repos.get_webhook",
+      "github.repos.get_webhook_delivery",
+      "github.webhooks.create",
+      "github.webhooks.delete",
+      "github.webhooks.deliveries.list",
+      "github.webhooks.list",
+      "github.webhooks.redeliver",
+      "github.webhooks.update"
+    ],
+    "138": [
+      "github.collaborators.add",
+      "github.collaborators.check",
+      "github.collaborators.list",
+      "github.collaborators.permission.get",
+      "github.collaborators.remove",
+      "github.repos.delete_invitation",
+      "github.repos.list_invitations",
+      "github.repos.list_teams",
+      "github.repos.update_invitation"
+    ],
+    "139": [
+      "github.repos.get_branch_rules",
+      "github.repos.get_repo_rule_suite",
+      "github.repos.get_repo_rule_suites",
+      "github.repos.get_repo_ruleset_history",
+      "github.repos.get_repo_ruleset_version",
+      "github.rulesets.create",
+      "github.rulesets.delete",
+      "github.rulesets.get",
+      "github.rulesets.list",
+      "github.rulesets.update"
+    ],
+    "140": [
+      "github.audit.list"
+    ],
+    "141": [
+      "github.code_security.get_configuration_for_repository",
+      "github.dependabot.get_alert",
+      "github.dependabot.update_alert",
+      "github.repos.disable_vulnerability_alerts",
+      "github.repos.enable_vulnerability_alerts",
+      "github.secret_scanning.get_alert",
+      "github.secret_scanning.list_alerts_for_repo",
+      "github.secret_scanning.list_locations_for_alert",
+      "github.secret_scanning.update_alert",
+      "github.security.code_scanning.alerts.list",
+      "github.security.dependabot.alerts.list",
+      "github.security.vulnerability_alerts.check",
+      "github.security_advisories.create_fork",
+      "github.security_advisories.create_private_vulnerability_report",
+      "github.security_advisories.create_repository_advisory",
+      "github.security_advisories.create_repository_advisory_cve_request",
+      "github.security_advisories.get_repository_advisory",
+      "github.security_advisories.list_repository_advisories",
+      "github.security_advisories.update_repository_advisory"
+    ],
+    "142": [
+      "github.code_scanning.commit_autofix",
+      "github.code_scanning.create_autofix",
+      "github.code_scanning.create_variant_analysis",
+      "github.code_scanning.delete_analysis",
+      "github.code_scanning.delete_codeql_database",
+      "github.code_scanning.get_ai_scan_enablement",
+      "github.code_scanning.get_alert",
+      "github.code_scanning.get_analysis",
+      "github.code_scanning.get_autofix",
+      "github.code_scanning.get_codeql_database",
+      "github.code_scanning.get_default_setup",
+      "github.code_scanning.get_sarif",
+      "github.code_scanning.get_variant_analysis",
+      "github.code_scanning.get_variant_analysis_repo_task",
+      "github.code_scanning.list_alert_instances",
+      "github.code_scanning.list_codeql_databases",
+      "github.code_scanning.list_recent_analyses",
+      "github.code_scanning.update_ai_scan_enablement",
+      "github.code_scanning.update_alert",
+      "github.code_scanning.update_default_setup",
+      "github.code_scanning.upload_sarif",
+      "github.security.code_scanning.alerts.list"
     ]
   },
   "supporting_diagnostic_families": {
@@ -543,6 +772,108 @@
       "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
       "awaiting_real_family_acceptance": true,
       "basis": "docs/sandy-api/canonical-label-milestone-tag-review-20261024.json; descriptor review does not prove authorized lifecycle execution or settlement."
+    },
+    "114": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "120": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "123": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "126": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "130": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "131": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "132": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "133": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "134": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "135": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "136": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "137": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "138": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "139": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "140": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "141": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "142": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
     }
   },
   "explicit_semantic_mappings": {
@@ -552,7 +883,24 @@
     "34": "Compute operation polling covers zone, region and global resources; unrelated Cloud Run/DNS operations are optional candidates for this explicit family.",
     "121": "Labels wildcard includes repository label CRUD plus issue/PR label attachment/removal and milestone-label reads through existing issues.* handlers. These are shared canonical constituents, not aliases to repository label deletion.",
     "122": "Milestone close/reopen uses milestones.update body.state; assigning/removing a milestone on an issue uses issues.update and remains a cross-family120 lifecycle obligation. list_labels_for_milestone is required read coverage.",
-    "124": "Annotated tag objects use git.create_tag/get_tag; they do not publish refs/tags. Lightweight/annotated publication, resolution, movement and deletion use shared refs handlers. Existing engineering-branch authority does not authorize tag namespaces. No fictitious tag delete endpoint or redundant alias is added."
+    "124": "Annotated tag objects use git.create_tag/get_tag; they do not publish refs/tags. Lightweight/annotated publication, resolution, movement and deletion use shared refs handlers. Existing engineering-branch authority does not authorize tag namespaces. No fictitious tag delete endpoint or redundant alias is added.",
+    "114": "Archive is repos.update with archived=true (repos.archive is a fixed-body compatibility wrapper); write.preflight is diagnostic. Missing create remains required, not removed by fixed existing-repository scope.",
+    "120": "Issue CRUD includes close/reopen via update.state, comments, assignment, labels, dependencies, subissues, issue fields, reactions and suggestions. Repository notifications/events and commit comments are supporting cross-family candidates, not issue CRUD aliases.",
+    "123": "Discussions use fixed GraphQL documents with server-resolved repository/discussion/comment ownership. Reply creation is comments.create(reply_to_comment_id); answer marking, close/reopen and cursor pagination are distinct required behavior.",
+    "126": "Existing REST package/version list/get/delete/restore is post-publication management, not package publishing. Repository association and immutable package/version IDs remain necessary; a package-manager publishing adapter is a recorded gap.",
+    "130": "Check runs and suites are separate objects. Create/update, suite preferences, annotations, list/get and re-request are distinct; GitHub App authority for writes cannot be inferred from successful metadata reads or commit-status authority.",
+    "131": "Statuses are append-only observations per SHA/context, not an update/delete resource. Create, list and combined status are required; a combined success alone cannot attest a particular context or independent build execution.",
+    "132": "Deployment create and status create/list/get form this explicit family. Deployment list/get supports independent readback. Deleting deployments is supporting cleanup, not implied by create/status scope. GitHub deployment records are not proof that a workload deployed.",
+    "133": "Explicit list/update includes get for verification. The environment PUT can create or replace configuration; protection-rule and branch-policy administration are separate candidates, not authorized by this mapping. Existing rules/reviewers must be preserved.",
+    "134": "Repository secret set/remove requires trusted ciphertext custody and repository public-key binding. rotate is a semantic reuse of set with new ciphertext, not a separate endpoint. Metadata reads cannot retrieve values or prove workload use.",
+    "135": "Repository variables create and update are separate provider operations; set is PATCH, not an upsert. Environment-variable CRUD shares this configuration family. Lists and exact get are required to verify effects; values are non-secret configuration.",
+    "136": "Environment secrets use exact environment and key identity; metadata get/list/public-key/set/delete are distinct. Rotation reuses set. Plaintext and secret ciphertext cannot be used as public result evidence.",
+    "137": "Webhook CRUD, exact get, delivery list/get and redelivery cover the explicit scope. Ping/test and separate config reads/writes are supporting endpoints. Redelivery can trigger external effects and needs exact owned delivery and receiver confirmation.",
+    "138": "Collaborator invitations/permissions and repository teams are related but distinct. Existing collaborator and invitation handlers plus teams listing do not implement team-to-repository permission grant/change/revoke; the missing lifecycle remains a blocker.",
+    "139": "Ruleset CRUD, effective branch rules, history/version and evaluation suites are distinct. Effective rules can originate above the repository; readback must not imply authority to edit inherited organization rules.",
+    "140": "Organization audit is filtered to the configured repository and a bounded date window. Existing owner must actually be an organization with provider entitlement; no substitution of a different organization or audit credential is allowed.",
+    "141": "Security alert listing includes Dependabot, secret-scanning and code-scanning families; alert get/update and advisory tracking are distinct from enabling a security product. Existing broad candidates are retained conservatively; no security setting is activated.",
+    "142": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required."
   },
   "external_dependencies": [
     {
@@ -682,10 +1030,48 @@
     "129": "Private Actions artifact capture/delivery source exists. All required list/download/delivery/delete outcomes, ownership and larger-transfer lifecycle remain unaccepted.",
     "118": "Detached commits and engineering refs create/update have independently verified receipts. Atomic source-tree publication has exact Git source readback; blob/tree operation-level durable effect settlement and protected/destructive ref lifecycle remain incomplete.",
     "119": "PR list/get contracts exist and authenticated listing works. Routine draft-creation class is implemented but creation, owned PR lifecycle and reviewed merge/recovery are not accepted.",
-    "130": "Actions workflow, artifact, run and check metadata reads work through the shared engine; nullable-array projection is repaired. Workflow mutation, protected delivery and complete Actions constituent acceptance remain outstanding.",
-    "134": "Repository Actions-secrets metadata listing reaches GitHub through normal MCP authorization but GitHub returns HTTP 403. No secret values were retrieved and no permission was expanded. Trusted ciphertext write/rotation and full constituent execution remain unaccepted.",
+    "130": "Check runs and suites are separate objects. Create/update, suite preferences, annotations, list/get and re-request are distinct; GitHub App authority for writes cannot be inferred from successful metadata reads or commit-status authority. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "134": "Repository secret set/remove requires trusted ciphertext custody and repository public-key binding. rotate is a semantic reuse of set with new ciphertext, not a separate endpoint. Metadata reads cannot retrieve values or prove workload use. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
     "121": "Labels wildcard includes repository label CRUD plus issue/PR label attachment/removal and milestone-label reads through existing issues.* handlers. These are shared canonical constituents, not aliases to repository label deletion. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete.",
     "122": "Milestone close/reopen uses milestones.update body.state; assigning/removing a milestone on an issue uses issues.update and remains a cross-family120 lifecycle obligation. list_labels_for_milestone is required read coverage. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete.",
-    "124": "Annotated tag objects use git.create_tag/get_tag; they do not publish refs/tags. Lightweight/annotated publication, resolution, movement and deletion use shared refs handlers. Existing engineering-branch authority does not authorize tag namespaces. No fictitious tag delete endpoint or redundant alias is added. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete."
+    "124": "Annotated tag objects use git.create_tag/get_tag; they do not publish refs/tags. Lightweight/annotated publication, resolution, movement and deletion use shared refs handlers. Existing engineering-branch authority does not authorize tag namespaces. No fictitious tag delete endpoint or redundant alias is added. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete.",
+    "114": "Archive is repos.update with archived=true (repos.archive is a fixed-body compatibility wrapper); write.preflight is diagnostic. Missing create remains required, not removed by fixed existing-repository scope. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "120": "Issue CRUD includes close/reopen via update.state, comments, assignment, labels, dependencies, subissues, issue fields, reactions and suggestions. Repository notifications/events and commit comments are supporting cross-family candidates, not issue CRUD aliases. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "123": "Discussions use fixed GraphQL documents with server-resolved repository/discussion/comment ownership. Reply creation is comments.create(reply_to_comment_id); answer marking, close/reopen and cursor pagination are distinct required behavior. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "126": "Existing REST package/version list/get/delete/restore is post-publication management, not package publishing. Repository association and immutable package/version IDs remain necessary; a package-manager publishing adapter is a recorded gap. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "131": "Statuses are append-only observations per SHA/context, not an update/delete resource. Create, list and combined status are required; a combined success alone cannot attest a particular context or independent build execution. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "132": "Deployment create and status create/list/get form this explicit family. Deployment list/get supports independent readback. Deleting deployments is supporting cleanup, not implied by create/status scope. GitHub deployment records are not proof that a workload deployed. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "133": "Explicit list/update includes get for verification. The environment PUT can create or replace configuration; protection-rule and branch-policy administration are separate candidates, not authorized by this mapping. Existing rules/reviewers must be preserved. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "135": "Repository variables create and update are separate provider operations; set is PATCH, not an upsert. Environment-variable CRUD shares this configuration family. Lists and exact get are required to verify effects; values are non-secret configuration. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "136": "Environment secrets use exact environment and key identity; metadata get/list/public-key/set/delete are distinct. Rotation reuses set. Plaintext and secret ciphertext cannot be used as public result evidence. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "137": "Webhook CRUD, exact get, delivery list/get and redelivery cover the explicit scope. Ping/test and separate config reads/writes are supporting endpoints. Redelivery can trigger external effects and needs exact owned delivery and receiver confirmation. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "138": "Collaborator invitations/permissions and repository teams are related but distinct. Existing collaborator and invitation handlers plus teams listing do not implement team-to-repository permission grant/change/revoke; the missing lifecycle remains a blocker. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "139": "Ruleset CRUD, effective branch rules, history/version and evaluation suites are distinct. Effective rules can originate above the repository; readback must not imply authority to edit inherited organization rules. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "140": "Organization audit is filtered to the configured repository and a bounded date window. Existing owner must actually be an organization with provider entitlement; no substitution of a different organization or audit credential is allowed. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "141": "Security alert listing includes Dependabot, secret-scanning and code-scanning families; alert get/update and advisory tracking are distinct from enabling a security product. Existing broad candidates are retained conservatively; no security setting is activated. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "142": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete."
+  },
+  "unresolved_family_capabilities": {
+    "114": [
+      "Repository creation for an explicitly authorized owner/new resource has no canonical callable handler."
+    ],
+    "126": [
+      "Publishing an owned artifact through a supported package-manager adapter, then verifying exact package/version/digest."
+    ],
+    "134": [
+      "Trusted ciphertext custody and exact public-key/target binding with workload-use evidence for rotation."
+    ],
+    "136": [
+      "Trusted environment-secret ciphertext custody, target/key binding and rotation-use evidence."
+    ],
+    "137": [
+      "Owned receiver signature-verification and correlated delivery/redelivery outcome evidence."
+    ],
+    "138": [
+      "Team-to-repository permission get/grant/update/revoke lifecycle with canonical organization/team/repository bindings."
+    ],
+    "142": [
+      "Canonical asynchronous SARIF/variant-analysis/autofix completion and recovery evidence."
+    ]
   }
 }
