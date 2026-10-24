@@ -2,8 +2,12 @@
 """One new normal-customer web inspection; no replay of prior mutation/memory suites."""
 import argparse,hashlib,json,os,uuid
 from pathlib import Path
-from runtime_model_metrics_acceptance import ModelMetricsAcceptance,safe_failure_classification
+from runtime_model_metrics_acceptance import safe_failure_classification
 from runtime_channel_activity_acceptance import ChannelActivityAcceptance
+
+def exact_counts(answer,expected):
+ return (isinstance(answer,dict) and set(answer)=={'total_modules','unverified_modules'}
+         and all(type(value) is int and value>=0 for value in answer.values()) and answer==expected)
 
 class CapabilityAcceptance(ChannelActivityAcceptance):
  def __init__(self,output):
@@ -27,7 +31,7 @@ class CapabilityAcceptance(ChannelActivityAcceptance):
   except ValueError:answer=None
   after=oracle()
   self.check('catalogue_stable_through_read',before==after)
-  self.check('model_answer_matches_independent_freshness_counts',answer==after)
+  self.check('model_answer_matches_independent_freshness_counts',exact_counts(answer,after))
   task=body['task_id']
   audits=self.r._sql('SELECT id,operation,principal_kind,customer_id,state FROM public.sandy_agent_operation_audit WHERE task_id='+q(task),True)
   self.check('actual_scoped_inspection_receipt',any(a['operation']=='agent.runtime.operational.capabilities' and a['state']=='succeeded' and a['customer_id']==f['customer'] and a['principal_kind']=='trusted_runtime' for a in audits))
@@ -40,9 +44,9 @@ class CapabilityAcceptance(ChannelActivityAcceptance):
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);args=p.parse_args()
  runner=CapabilityAcceptance(args.output);passed=runner.run()
- proof={'passed':passed,'source_commit':os.environ.get('GITHUB_SHA'),'report_sha256':hashlib.sha256(args.output.read_bytes()).hexdigest(),'scope':runner.report.get('acceptance_scope'),'inspection_receipts':runner.report.get('inspection_receipts',[]),'model_receipts':runner.report.get('model_receipts',[]),'cleanup':runner.report.get('cleanup'),'failure':safe_failure_classification(runner.report) if not passed else None,'old_effects_repeated':0}
+ proof={'passed':passed,'source_commit':os.environ.get('GITHUB_SHA'),'github_run_id':os.environ.get('GITHUB_RUN_ID'),'report_sha256':hashlib.sha256(args.output.read_bytes()).hexdigest(),'scope':runner.report.get('acceptance_scope'),'inspection_receipts':runner.report.get('inspection_receipts',[]),'model_receipts':runner.report.get('model_receipts',[]),'cleanup':runner.report.get('cleanup'),'failure':safe_failure_classification(runner.report) if not passed else None,'old_effects_repeated':0}
  q=runner.r._quote
- rows=runner.r._sql("INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) SELECT change_id,'runtime_capability_acceptance',NULL,"+q(json.dumps(proof))+"::jsonb FROM public.sandy_engineering_change_events WHERE event_type='runtime_slice_dispatch' AND detail->>'source_commit'="+q(os.environ.get('GITHUB_SHA',''))+" ORDER BY id DESC LIMIT 1 RETURNING id")
+ rows=runner.r._sql("INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) SELECT change_id,'runtime_capability_acceptance',NULL,"+q(json.dumps(proof))+"::jsonb FROM public.sandy_engineering_change_events WHERE event_type='runtime_slice_dispatch' AND detail->>'source_commit'="+q(os.environ.get('GITHUB_SHA',''))+" AND detail->>'github_run_id'="+q(os.environ.get('GITHUB_RUN_ID',''))+" ORDER BY id DESC LIMIT 1 RETURNING id")
  print('::notice title=Capability freshness acceptance::'+json.dumps({'passed':passed,'event_id':rows[0]['id'] if len(rows)==1 else None,'failure':proof['failure']}))
  return 0 if passed and len(rows)==1 else 1
 if __name__=='__main__':raise SystemExit(main())
