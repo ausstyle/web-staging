@@ -244,12 +244,15 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		result, err = h.service.ListCollections(ctx, h.scope)
 	case "mail.collections.create":
 		mutation = true
-		var a CollectionInput
+		var a struct {
+			CollectionInput
+			ParentID *string `json:"parent_id,omitempty"`
+		}
 		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
 			reply(400, "invalid_arguments", nil)
 			return
 		}
-		result, err = h.service.CreateCollection(ctx, h.scope, who, a)
+		result, err = h.service.CreateCollectionUnder(ctx, h.scope, who, a.CollectionInput, a.ParentID)
 	case "mail.messages.organize":
 		mutation = true
 		var a OrganizationInput

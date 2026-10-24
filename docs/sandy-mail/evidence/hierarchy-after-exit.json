@@ -1,0 +1,32 @@
+{
+  "source_revision": "733bb820ff95fcb8bfefa2543f06c18fc4c88462",
+  "environment": "local-postgresql-17-filesystem",
+  "verified_after_test_process_exit": true,
+  "job_id": "bb90b982-df27-40e3-9af5-d4c6a4c02e3c",
+  "scope": {
+    "Tenant": "4338654f-0a93-4ea6-90f6-c525a13b18e8",
+    "Account": "302f58ad-842c-43f8-8cf1-df1045e71de3",
+    "Mailbox": "39d5fe47-3351-45dc-8831-30daf39b27a9"
+  },
+  "collections_verified": 7,
+  "parent_edges_verified": 3,
+  "original_collection_names": [
+    "2026",
+    "2026",
+    "Archive",
+    "Empty \u65e5\u672c\u8a9e",
+    "Projects",
+    "Review",
+    "Unused label"
+  ],
+  "collection_restore_receipts": 1,
+  "receipt_id": "84233c1e-d540-458e-941a-b54434d44cf8",
+  "verified_archive_records": 2,
+  "exceptions": 0,
+  "raw_sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+  "raw_bytes": 1101,
+  "attachments_verified": 1,
+  "reconciliation_sha256": "29dba5342d4ac392e3a1f36567540a2113d9ac6865faf3cf53add6ec4fceace4",
+  "provider_deployed": false,
+  "independent_acceptance": false
+}

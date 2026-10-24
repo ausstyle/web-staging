@@ -19,14 +19,15 @@ const MaxArchiveBytes int64 = 100 << 20
 const MaxArchiveEntries = 1001 // 1,000 records plus the portable manifest
 
 type ArchiveItem struct {
-	Draft         *Draft    `json:"draft,omitempty"`
-	Path          string    `json:"path"`
-	Folder        string    `json:"folder"`
-	Size          int64     `json:"size"`
-	SHA256        string    `json:"sha256"`
-	SourceTime    time.Time `json:"source_time"`
-	Flags         []string  `json:"flags"`
-	UnmappedFlags string    `json:"unmapped_flags,omitempty"`
+	Collections   *CollectionInventory `json:"collections,omitempty"`
+	Draft         *Draft               `json:"draft,omitempty"`
+	Path          string               `json:"path"`
+	Folder        string               `json:"folder"`
+	Size          int64                `json:"size"`
+	SHA256        string               `json:"sha256"`
+	SourceTime    time.Time            `json:"source_time"`
+	Flags         []string             `json:"flags"`
+	UnmappedFlags string               `json:"unmapped_flags,omitempty"`
 }
 type ArchiveException struct {
 	Path string `json:"path"`
@@ -92,7 +93,7 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 	}
 	if name == "manifest.json" {
 		var manifest ExportManifest
-		if err = json.Unmarshal(raw, &manifest); err != nil || (manifest.Version != 1 && manifest.Version != 2) {
+		if err = json.Unmarshal(raw, &manifest); err != nil || (manifest.Version != 1 && manifest.Version != 2 && manifest.Version != 3) {
 			a.exception(name, "invalid_portable_manifest")
 			return nil
 		}
@@ -101,6 +102,25 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 		return nil
 	}
 	item := ArchiveItem{Path: name, Folder: path.Dir(name), Size: size, SHA256: digest(raw), SourceTime: modified, Flags: []string{}}
+	if name == "collections.json" {
+		var inventory CollectionInventory
+		if json.Unmarshal(raw, &inventory) != nil {
+			a.exception(name, "invalid_portable_manifest_collections")
+			return nil
+		}
+		if _, err = orderedCollections(inventory); err != nil || string(encoded(inventory)) != string(raw) {
+			a.exception(name, "invalid_portable_manifest_collections")
+			return nil
+		}
+		item.Collections = &inventory
+		a.preview.Items = append(a.preview.Items, item)
+		if a.visit != nil {
+			if err = a.visit(item, raw); err != nil {
+				return fmt.Errorf("archive_visitor_failed")
+			}
+		}
+		return nil
+	}
 	if strings.HasPrefix(name, "drafts/") && strings.HasSuffix(name, ".draft.json") {
 		var d Draft
 		if json.Unmarshal(raw, &d) != nil || !validPortableDraft(d) || name != "drafts/"+d.DraftID+".draft.json" || string(encoded(d)) != string(raw) {
@@ -165,10 +185,13 @@ func (a *archiveInspector) finish(err error) (ArchivePreview, error) {
 		for _, i := range a.preview.Items {
 			actual[i.Path] = i
 		}
+		if err := validateManifestCollections(m, a.preview.Items); err != nil {
+			a.exception("collections.json", "portable_manifest_collection_mismatch")
+		}
 		matched := map[string]bool{}
 		for _, i := range m.Messages {
 			found, ok := actual[i.Path]
-			if !ok || matched[i.Path] || found.SHA256 != i.Raw.SHA256 || found.Size != i.Raw.Size || (found.Draft != nil) != (i.Draft != nil) || (i.Draft != nil && (m.Version != 2 || string(encoded(found.Draft)) != string(encoded(i.Draft)))) {
+			if !ok || matched[i.Path] || found.SHA256 != i.Raw.SHA256 || found.Size != i.Raw.Size || (found.Collections != nil) != (i.Collections != nil) || (i.Collections != nil && (m.Version != 3 || string(encoded(found.Collections)) != string(encoded(i.Collections)))) || (found.Draft != nil) != (i.Draft != nil) || (i.Draft != nil && (m.Version < 2 || string(encoded(found.Draft)) != string(encoded(i.Draft)))) {
 				a.exception(i.Path, "portable_manifest_integrity_mismatch")
 			}
 			matched[i.Path] = true
@@ -182,7 +205,7 @@ func (a *archiveInspector) finish(err error) (ArchivePreview, error) {
 	}
 	if a.preview.PortableMetadata == nil {
 		for _, item := range a.preview.Items {
-			if item.Draft != nil {
+			if item.Draft != nil || item.Collections != nil {
 				a.exception(item.Path, "portable_manifest_required_for_draft")
 			}
 		}

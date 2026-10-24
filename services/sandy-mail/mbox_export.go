@@ -43,6 +43,9 @@ func (s *Service) ExportMailboxMBOXRD(ctx context.Context, scope Scope, out io.W
 	destination := io.MultiWriter(out, hash)
 	var conversionError error
 	preview, e := InspectTAR(reader, func(item ArchiveItem, raw []byte) error {
+		if item.Collections != nil {
+			return nil
+		} // inventory remains in companion metadata
 		if item.Draft != nil {
 			conversionError = fmt.Errorf("drafts_require_portable_archive_not_mbox")
 			return conversionError
