@@ -43,10 +43,10 @@ def readback(original):
  return {**proof,'passed':True,'traffic_readback':traffic,'new_candidate_created':False,'bindings_changed':False,'IAM_changes':0},actual,rev
 def verify(r,original):
  proof,actual,rev=readback(original)
- manifest,_,migration=load();installed=verify_installed(r,manifest,migration)
+ manifest,_,migration=load();installed=verify_installed(r,manifest,migration,post_binding_readback=True)
  observed=json.loads(r.api('GET','/secrets'));values=[proof['url'],proof['source_sha256'],proof['revision']]
  if any(not any(x.get('name')==n and x.get('value')==digest(v.encode()) for x in observed) for n,v in zip(NAMES,values)):raise Blocked('existing_runtime_binding_hash_mismatch')
- return {**proof,'installed_source_and_RPC_ACL_verified':installed['passed'],'existing_binding_hashes_verified':True},actual,rev
+ return {**proof,'installed_source_and_RPC_ACL_verified':installed['passed'],'preserved_MCP_metadata_version':installed['preserved_MCP_metadata_version'],'existing_binding_hashes_verified':True},actual,rev
 def notice(title,value):
  text=json.dumps(value,separators=(',',':'))
  if len(text)>12000:raise Blocked('bounded_safe_notice_required')

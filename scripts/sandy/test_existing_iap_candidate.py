@@ -19,6 +19,13 @@ class ExistingCandidate(unittest.TestCase):
    result,_,_=r.readback(original)
   self.assertFalse(result['new_candidate_created']);self.assertFalse(result['bindings_changed']);self.assertEqual(result['IAM_changes'],0)
   self.assertEqual(validate.call_args.args[:6],({'original':'traffic'},{'status':{'traffic':[]}},{'actual':'revision'},r.SOURCE,r.RUN,r.ATTEMPT))
+ def test_actual_acceptance_path_explicitly_selects_only_reviewed_MCP24_readback(self):
+  proof={'passed':True,'url':'https://fixed.invalid','source_sha256':r.WORKER_HASH,'revision':r.REVISION}
+  management=mock.Mock();management.api.return_value=json.dumps([{'name':name,'value':r.digest(value.encode())} for name,value in zip(r.NAMES,[proof['url'],proof['source_sha256'],proof['revision']])]).encode()
+  with mock.patch.object(r,'readback',return_value=(proof,{},{})),mock.patch.object(r,'load',return_value=({},None,'migration')),mock.patch.object(r,'verify_installed',return_value={'passed':True,'preserved_MCP_metadata_version':24}) as installed:
+   result,_,_=r.verify(management,None)
+  installed.assert_called_once_with(management,{},'migration',post_binding_readback=True)
+  self.assertEqual(result['preserved_MCP_metadata_version'],24);management.upload.assert_not_called();management.sql.assert_not_called()
  def test_notices_are_bounded_and_escape_annotation_controls(self):
   import io
   output=io.StringIO()
