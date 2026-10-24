@@ -30,3 +30,22 @@ Before committing the corrections, the author ran all three new regression tests
 - Fixture SQL is not the production role/tenancy release design. Trusted-role writes and all source relationships need broader production hardening and owner-reviewed release configuration.
 - Synthetic fixtures cover selected invariants, not all financial permutations, AU tax/payroll rules, real feeds, production failover or all scope functions/reports. No external financial action or regulatory certification occurred.
 - Scope remains open: 37 functions partially delivered, 315 not started, seven report selectors partial, **zero independently accepted gates**. Source review must not change these counts into accepted functionality.
+
+## Corrected-source re-review
+
+Both reviewers independently re-reviewed exact commit **b06fb39e8f3411ebb2d62e062ef25f6289d49f8d**, compared with the original reviewed head, and confirmed a clean working tree. Neither edited source. They reported no new actionable findings within this bounded review.
+
+- **Financial reviewer:** all three original rejected FX probes now persist exact +1/-1 base cents. A separate quotient/remainder oracle passed 126 FX vectors across precisions 0–6 and six ordinary/extreme/near-half ratios, with exact reversals: 252 posted journals, 504 signed conversion checks, zero final trial balance and valid audit. Twelve malformed ratio types were rejected. All seven independently specified historical cutoffs and all 19 affected tests passed. This review used PGlite; it did not claim an independent full-volume or external PostgreSQL rerun.
+- **Integrity reviewer:** independent Chromium probes passed for truncated JSON, commit uncertainty, post-commit connection abort and HTTP 408. Replacement submissions were blocked and same-key retries recovered the exact original receipts. The checked-in recovery browser test also passed, including HTTP 502, missing result, denied retry, draft editing and CSV import. A fresh PostgreSQL 17.6 run passed both concurrency/timezone tests with zero skips. Independent negative-match/undo, CSV rollback/retry/source-revocation probes passed. The original manual AR role bypass and unknown source both failed and rolled back. The reviewer removed its disposable database container.
+
+Reviewer probe artifacts remain local, separately authored evidence: `/tmp/accounting-fx-rereview.ts`, `/tmp/accounting-financial-review.ts`, `/tmp/accounting-independent-fixed-probes.json`, `/tmp/accounting-independent-fixed-browser/result.json` and `/tmp/accounting-review-integrity-fixed.ts`. These are synthetic runs; no external bank, tax, payroll or customer effect was tested. The committed regressions and CI workflow preserve the affected repeatable checks; the local reviewer artifacts are not an independently accepted release certificate.
+
+Any later documentation-only checkpoint does not change this reviewed code head. Source review, automatic CI, deployment and professional acceptance remain separate statuses.
+
+## Author validation of corrected code
+
+The complete local suite passed on the corrected code: **35 tests, 33 passed, two PostgreSQL-only skips, zero failures**. The 10,000-voucher independent integer oracle passed in 293.8 seconds; total suite time was 324.3 seconds. The separate real PostgreSQL 17.6 invocation passed both tests with zero skips, including the timezone fixture. All three Chromium workflows passed with zero page errors: AR/AP/cash/corrections, CSV reconciliation, and ambiguous-response recovery. TypeScript, scope-register and diff checks passed.
+
+Local logs: `/tmp/accounting-review-full-tests.log`, `/tmp/accounting-review-pg-tests.log`, `/tmp/accounting-review-browser.log`. Browser result artifacts: `/tmp/sandy-accounting-browser-evidence/result.json`, `/tmp/sandy-accounting-csv-browser-evidence/result.json`, `/tmp/sandy-accounting-recovery-browser-evidence/result.json`.
+
+Read-only reconciliation with main `cc433f84474e3ee8b766afa41bb50dcdf06d6fd9` found no changes to the authoritative Accounting scope or the two imported canonical API files. `git merge-tree` found no conflicts (tree `d912702d4253cc954403215aa0d01b7138690009` for the reviewed code and that main). No concurrent Runtime/Mail source was overwritten or merged into this branch. CI results for the pushed head are recorded in PR299; previous-head CI is not evidence for these fixes.

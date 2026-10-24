@@ -29,7 +29,13 @@ explicitly synthetic worksheet.
 Browser verification: `python3 browser_test.py` (Playwright and Chromium
 required). It creates temporary books and checks actual UI actions, balances and
 source drilldown. `python3 csv_browser_test.py` additionally verifies CSV preview,
-duplicates/conflicts, exception review and reversible matching. Evidence goes to `/tmp/sandy-accounting-browser-evidence/`.
+duplicates/conflicts, exception review and reversible matching.
+`python3 recovery_browser_test.py` tests post-commit response loss and same-key
+recovery, including denied retries, draft edits and CSV receipts. Pending browser
+requests are retained within the current page session; reload recovery remains
+open. Evidence directories under `/tmp/` are printed by each script.
+The [independent source review](../../docs/sandy-accounting/independent-source-review.md)
+records exact reviewed heads, fixes and remaining acceptance limits.
 The 10,000-voucher test takes several minutes; it uses an independent integer
 balance oracle and does not claim regulatory coverage.
 
