@@ -64,7 +64,9 @@ export function cloudAdmissionHook(
       !present(intent.ref.workspaceId)
     ) deny();
     const a = await owner.lock(tx, c, intent.ref.workspaceId);
+    const checkedAt = now();
     if (
+      !Number.isSafeInteger(checkedAt) || checkedAt < 0 ||
       !a || a.actorId !== c.actorId || a.apiTenantId !== c.apiTenantId ||
       a.sessionId !== c.sessionId || a.deviceId !== c.deviceId ||
       a.companyId !== c.companyId ||
@@ -76,7 +78,7 @@ export function cloudAdmissionHook(
       (c.deviceId !== null && a.deviceAllowed !== true) ||
       (c.companyId !== null && a.companyAllowed !== true) ||
       !Number.isSafeInteger(a.policyEpoch) || a.policyEpoch < 1 ||
-      !Number.isSafeInteger(a.expiresAt) || a.expiresAt <= now()
+      !Number.isSafeInteger(a.expiresAt) || a.expiresAt <= checkedAt
     ) deny();
     return { customerId: a!.customerId, policyEpoch: a!.policyEpoch };
   };
