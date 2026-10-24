@@ -1,0 +1,54 @@
+=== RUN   TestParserAndLimits
+--- PASS: TestParserAndLimits (0.07s)
+=== RUN   TestLocalObjectImmutability
+--- PASS: TestLocalObjectImmutability (0.00s)
+=== RUN   TestPostgresIntegration
+    ingest_test.go:138: first-email receipt=bb2e5a20-f8fe-4e21-941f-7eb37c4a3b28 message=a6c63287-6876-488a-9e57-14bb0e361e0f sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244 bytes=1101
+=== RUN   TestPostgresIntegration/concurrent_retries
+=== RUN   TestPostgresIntegration/same_identity_different_input
+=== RUN   TestPostgresIntegration/same_message_id_distinct_delivery
+=== RUN   TestPostgresIntegration/tenant_account_mailbox_isolation
+=== RUN   TestPostgresIntegration/missing_context_and_privileges
+=== RUN   TestPostgresIntegration/wrong_scope_write
+=== RUN   TestPostgresIntegration/recover_after_raw
+=== RUN   TestPostgresIntegration/recover_after_objects
+=== RUN   TestPostgresIntegration/recover_before_commit
+=== RUN   TestPostgresIntegration/recover_after_commit
+=== RUN   TestPostgresIntegration/malformed_mime_retained_pending
+=== RUN   TestPostgresIntegration/corruption_and_missing_object
+=== RUN   TestPostgresIntegration/scoped_search_and_keyset
+=== RUN   TestPostgresIntegration/portable_eml_snapshot_export
+=== RUN   TestPostgresIntegration/receipt_outbox_atomicity
+--- PASS: TestPostgresIntegration (0.39s)
+    --- PASS: TestPostgresIntegration/concurrent_retries (0.08s)
+    --- PASS: TestPostgresIntegration/same_identity_different_input (0.00s)
+    --- PASS: TestPostgresIntegration/same_message_id_distinct_delivery (0.01s)
+    --- PASS: TestPostgresIntegration/tenant_account_mailbox_isolation (0.05s)
+    --- PASS: TestPostgresIntegration/missing_context_and_privileges (0.00s)
+    --- PASS: TestPostgresIntegration/wrong_scope_write (0.00s)
+    --- PASS: TestPostgresIntegration/recover_after_raw (0.03s)
+    --- PASS: TestPostgresIntegration/recover_after_objects (0.02s)
+    --- PASS: TestPostgresIntegration/recover_before_commit (0.03s)
+    --- PASS: TestPostgresIntegration/recover_after_commit (0.02s)
+    --- PASS: TestPostgresIntegration/malformed_mime_retained_pending (0.01s)
+    --- PASS: TestPostgresIntegration/corruption_and_missing_object (0.01s)
+    --- PASS: TestPostgresIntegration/scoped_search_and_keyset (0.02s)
+    --- PASS: TestPostgresIntegration/portable_eml_snapshot_export (0.02s)
+    --- PASS: TestPostgresIntegration/receipt_outbox_atomicity (0.00s)
+=== RUN   TestGCSCreateOnlyGenerationAndIntegrityContract
+--- PASS: TestGCSCreateOnlyGenerationAndIntegrityContract (0.00s)
+=== RUN   TestGCSOutagesAndRedirectsFailClosed
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/301
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/403
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/429
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/500
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/503
+--- PASS: TestGCSOutagesAndRedirectsFailClosed (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/301 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/403 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/429 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/500 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/503 (0.00s)
+PASS
+ok  	github.com/ausstyle/web-staging/services/sandy-mail	1.479s
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-fixture	[no test files]

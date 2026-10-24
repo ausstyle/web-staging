@@ -16,9 +16,12 @@ class MetricsReleaseTests(unittest.TestCase):
   with self.assertRaises(Blocked):schema.expected_definition(source.replace("'finished_at'","'changed_at'"))
  def test_manifest_preserves_existing_live_bundle_and_entrypoint_provenance(self):
   m=json.loads(schema.MANIFEST.read_bytes());validate(m)
-  self.assertEqual(m['version'],35)
-  self.assertEqual(set(m['replacements']),{'_shared/sandy-agent-operations/runtime_conversation.ts','_shared/sandy-agent-operations/runtime_model_metrics.ts','_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts'})
-  self.assertEqual(len(m['before_files']),31)
+  self.assertGreaterEqual(m['version'],35)
+  # Later reviewed slices preserve the already installed telemetry module;
+  # this test proves it remains pinned rather than freezing a spent deployment.
+  metrics='_shared/sandy-agent-operations/runtime_model_metrics.ts'
+  self.assertEqual(m['replacements'].get(metrics,m['before_files'].get(metrics)),hashlib.sha256(Path('supabase/functions',metrics).read_bytes()).hexdigest())
+  self.assertGreaterEqual(len(m['before_files']),31)
   entry=hashlib.sha256(Path('supabase/functions/sandy-agent-runtime-v4/index.ts').read_bytes()).hexdigest()
   transport=Path('supabase/functions/_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts').read_text()
   self.assertEqual(re.findall(r'sourceSha256: "([a-f0-9]{64})"',transport),[entry])

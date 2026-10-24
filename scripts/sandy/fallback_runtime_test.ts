@@ -648,6 +648,8 @@ for (const slug of slugs) Deno.test(`${slug}: operational tool domains share fix
     assert.equal(returned[1].counts.email_authored_by_verified_customer, null);
     assert.match(returned[1].caveat, /not combine unverified email counts/);
     assert.ok(returned[2].services.every((item: Obj) => item.state === "locally_recorded_active_not_provider_verified"));
+    assert.match(returned[2].services.find((item:Obj)=>item.service==="gmail").chat_actions,/configured_only_.*_not_executed_by_this_read/);
+    assert.match(returned[2].note,/makes no request to Gmail or any other external service/);
     assert.equal(returned[3].physical_location, "not_available");
     assert.equal(returned[5].error, slug === "sandy-agent-runtime-v1-backup-r50" ? "unsupported_operational_domain" : "version_registry_unavailable");
     assert.equal(audits(db).length, slug === "sandy-agent-runtime-v1-backup-r50" ? 5 : 6);

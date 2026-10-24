@@ -1,0 +1,71 @@
+name: Repair current identity scope on onboarding receipt replay
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261024004400*'
+      - 'scripts/sandy/*onboarding*'
+      - 'scripts/sandy/fixtures/customer_onboarding_v10.sql'
+      - 'docs/sandy-engineering/evaluations/onboarding-receipt-scope-release.json'
+      - '.github/workflows/sandy-onboarding-receipt-scope.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        required: true
+        description: Source-only repair of existing RPC, or acceptance against already installed repair
+        options: [preflight, install-and-verify, acceptance-only]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('sandy-onboarding-scope-check-{0}', github.event.pull_request.number) || 'sandy-engineering-mcp-deploy' }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Source custody, unchanged rights and no uncertain migration replay
+        env:
+          PYTHONPATH: scripts/sandy
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest scripts/sandy/test_onboarding_receipt_scope_release.py -v
+      - name: Reproduce deployed stale-binding receipt and enforce isolation in PostgreSQL
+        run: |
+          npm install --prefix "$RUNNER_TEMP/sandy-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
+          node scripts/sandy/test_onboarding_receipt_scope_postgres.mjs "$RUNNER_TEMP/sandy-pg/node_modules/@electric-sql/pglite/dist/index.js"
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: validate
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install only exact reviewed existing RPC source repair, preserving OID and ACL
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          RELEASE_ACTION: ${{ inputs.action }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          args=()
+          if [ "$RELEASE_ACTION" = install-and-verify ]; then args+=(--deploy); fi
+          if [ "$RELEASE_ACTION" = acceptance-only ]; then args+=(--verify-installed); fi
+          python3 scripts/sandy/release_onboarding_receipt_scope.py "${args[@]}" --evidence-dir "$RUNNER_TEMP/onboarding-receipt-scope/release"
+      - name: Independent source readback and actual normal customer MCP replay tests
+        if: inputs.action != 'preflight'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 scripts/sandy/release_onboarding_receipt_scope.py --verify-installed --evidence-dir "$RUNNER_TEMP/onboarding-receipt-scope/readback"
+          python3 scripts/sandy/verify_onboarding_receipt_scope.py --output "$RUNNER_TEMP/onboarding-receipt-scope/normal-customer-MCP.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: onboarding-receipt-scope-${{ github.run_id }}
+          path: ${{ runner.temp }}/onboarding-receipt-scope/
+          retention-days: 14

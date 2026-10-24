@@ -403,3 +403,58 @@ Deno.test("provider builder reconstructs fixed request and revalidates body dige
     )
   );
 });
+
+Deno.test("invalid clock evidence cannot authorize Cloud identity or transfer", async () => {
+  for (
+    const value of [
+      NaN,
+      Infinity,
+      -Infinity,
+      -1,
+      1.5,
+      Number.MAX_SAFE_INTEGER + 1,
+    ]
+  ) {
+    const hook = cloudAdmissionHook(
+      context,
+      { lock: async () => authority() },
+      () => value,
+    );
+    await denied(() => hook({ query: async () => ({ rows: [] }) }, intent()));
+    let dispatches = 0;
+    const t = cloudTransport(scope(), {
+      execute: async () => {
+        dispatches++;
+        return new Response();
+      },
+    }, () => value);
+    await denied(() => t(startRequest(), policy().signal));
+    assert(dispatches === 0);
+  }
+});
+Deno.test("clock failure after hashing prevents transfer at both API boundaries", async () => {
+  let admitted: AdmittedTransfer | undefined;
+  await cloudTransport(scope(), {
+    execute: async (i) => {
+      admitted = i;
+      return new Response();
+    },
+  }, () => 10)(startRequest(), policy().signal);
+  let ticks = 0, dispatches = 0;
+  const t = cloudTransport(scope(), {
+    execute: async () => {
+      dispatches++;
+      return new Response();
+    },
+  }, () => ++ticks === 1 ? 10 : NaN);
+  await denied(() => t(startRequest(), policy().signal));
+  assert(dispatches === 0);
+  ticks = 0;
+  await denied(() =>
+    buildAdmittedGcsRequest(
+      admitted!,
+      policy().signal,
+      () => ++ticks === 1 ? 10 : NaN,
+    )
+  );
+});

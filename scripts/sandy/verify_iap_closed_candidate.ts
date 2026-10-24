@@ -13,11 +13,22 @@ const stateQuery=`SELECT g.iap_repair_revision,g.iap_repair_policy IS NULL no_ia
  (SELECT count(*)::int FROM public.sandy_deployment_jobs WHERE payload->>'boundary'='gcp_iap_repair') repair_jobs,
  (SELECT count(*)::int FROM public.sandy_engineering_identity_events WHERE detail->>'boundary'='gcp_iap_repair_delegation' AND actor_kind='controller_owner') owner_iap_events
  FROM public.sandy_engineering_control_grants g JOIN auth.users u ON u.id=g.identity_user_id WHERE u.email='sandy-engineering-test@sandy-ai.internal'`;
+/** Safe diagnostic metadata only; never retain headers, raw body or tokens. */
+export async function candidateHealth(target:string,request=fetch){
+ try{
+  const response=await request(target+'/healthz',{redirect:'error',signal:AbortSignal.timeout(15000)});
+  const type=(response.headers.get('content-type')||'').split(';')[0];
+  const raw=await response.text();let value:unknown;try{value=JSON.parse(raw);}catch{/* platform error pages are not application JSON */}
+  const healthy=response.status===200&&!!value&&typeof value==='object'&&(value as Obj).ok===true;
+  const classification=healthy?'application_health_ok':response.status===401?'http_unauthenticated':response.status===403?'http_forbidden':response.status===404?'http_not_found':response.status>=500?'http_upstream_failure':response.status===200?'invalid_application_health':'unexpected_http_status';
+  return {healthy,http_status:response.status,classification,content_type:['application/json','text/html','text/plain'].includes(type)?type:'other',body_format:value===undefined?'non_json':'json',response_body_recorded:false};
+ }catch{return {healthy:false,http_status:null,classification:'health_transport_unavailable',response_body_recorded:false};}
+}
 export async function deniedChecks(target:string,source:string,revision:string,token:string,anon:string,request=fetch){
  need(/^https:\/\/sandy-iap-repair-review---sandy-engineering-mcp-[a-z0-9]+-ew\.a\.run\.app$/.test(target)&&/^[a-f0-9]{64}$/.test(source)&&/^sandy-engineering-mcp-iap-[0-9]+-[0-9]+$/.test(revision),'closed_candidate_source_binding_required');
  const headers={authorization:'Bearer '+token,apikey:anon,'content-type':'application/json'};
  const send=(url:string,b:Obj)=>request(url,{method:'POST',redirect:'error',headers,body:JSON.stringify(b),signal:AbortSignal.timeout(30000)});
- const health=await request(target+'/healthz',{redirect:'error',signal:AbortSignal.timeout(15000)});need(health.status===200&&(await body(health)).ok===true,'iap_candidate_health_failed');
+ const health=await candidateHealth(target,request);need(health.healthy,'iap_candidate_health_failed');
  // The actual MCP tools/call uses the normal workload session. No high-risk
  // tool may be invoked through a read-only or canary grant.
  const args={change_id:iapRepairProposal,provider:'google_cloud',operation:'iap.repair.plan',target:iapRepairTarget,idempotency_key:'iap-closed-'+crypto.randomUUID(),payload:{}};
@@ -47,7 +58,8 @@ if(import.meta.main){
  const management=async(path:'/api-keys'|'/database/query',b?:Obj)=>managementRequest(path,credential,[],b);
  try{
   const proof=JSON.parse(await Deno.readTextFile(directory+'/iap-runtime-binding.json'));
-  need(proof.passed===true&&proof.production_traffic_unchanged===true&&proof.original_candidate_tag_preserved===true&&proof.source_commit===Deno.env.get('GITHUB_SHA'),'independent_runtime_binding_proof_required');
+  need(proof.passed===true&&proof.production_traffic_unchanged===true&&proof.original_candidate_tag_preserved===true&&proof.source_commit===(Deno.env.get('SANDY_IAP_ACCEPTANCE_SOURCE_COMMIT')||Deno.env.get('GITHUB_SHA')),'independent_runtime_binding_proof_required');
+  report.health=await candidateHealth(proof.url);need(report.health.healthy,'iap_candidate_health_failed');
   const before=await management('/database/query',{read_only:true,query:stateQuery});
   need(Array.isArray(before)&&before.length===1&&before[0].iap_repair_revision===0&&before[0].no_iap_grant===true&&before[0].owner_iap_events===0,'closed_acceptance_requires_unapproved_proposal');
   const keys=await management('/api-keys'),service=keys.find((r:Obj)=>r.name==='service_role')?.api_key,anon=keys.find((r:Obj)=>r.name==='anon')?.api_key;

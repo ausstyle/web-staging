@@ -1,0 +1,28 @@
+=== RUN   TestPostgresIntegration
+    ingest_test.go:167: first-email receipt=6a6d5a44-00b2-4306-a462-5dd4ab708e37 message=efc501bb-5fab-4dc9-9f9f-b8876ec918c2 sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244 bytes=1101
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_only_archive_exact_and_mbox_explicit_rejection
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/resumable_draft_snapshot_frozen_after_edit_and_interruption
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_before_commit
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_after_commit
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_after_draft_restore
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_before_item_commit
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/draft_edited_before_reconciliation_needs_action
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/malformed_and_missing_draft_manifest_fail_closed
+=== RUN   TestPostgresIntegration/portable_drafts_and_mapping/mixed_roundtrip_explicit_destination_mapping_and_atomic_replay
+    portability_test.go:293: local mixed roundtrip job=078b5db1-c1de-4b50-876c-9d078cf8a462 mailbox=8d4d2df3-8372-4d15-b02a-d04697b818c6 verified=2 raw_sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244
+--- PASS: TestPostgresIntegration (3.08s)
+    --- PASS: TestPostgresIntegration/portable_drafts_and_mapping (2.85s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_only_archive_exact_and_mbox_explicit_rejection (0.01s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/resumable_draft_snapshot_frozen_after_edit_and_interruption (0.33s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_before_commit (0.39s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_edit_after_commit (0.40s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_after_draft_restore (0.35s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_restore_retry_import_before_item_commit (0.38s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/draft_edited_before_reconciliation_needs_action (0.19s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/malformed_and_missing_draft_manifest_fail_closed (0.13s)
+        --- PASS: TestPostgresIntegration/portable_drafts_and_mapping/mixed_roundtrip_explicit_destination_mapping_and_atomic_replay (0.56s)
+PASS
+ok  	github.com/ausstyle/web-staging/services/sandy-mail	4.103s
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-fixture	[no test files]
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-local	[no test files]

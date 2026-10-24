@@ -3,6 +3,8 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'scripts/sandy/*hosting_read*'
+      - '.github/workflows/sandy-hosting-read-release.yml'
       - 'packages/sandy-api/cloud/**'
       - 'packages/sandy-cloud/gcs_protocol.ts'
       - 'packages/sandy-cloud/postgres/commit.ts'
@@ -51,6 +53,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/sandy/*hosting_read*'
+      - '.github/workflows/sandy-hosting-read-release.yml'
       - 'packages/sandy-api/cloud/**'
       - 'packages/sandy-cloud/gcs_protocol.ts'
       - 'packages/sandy-cloud/postgres/commit.ts'
@@ -104,6 +108,8 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: denoland/setup-deno@v2
         with:
           deno-version: '2.9.6'
@@ -117,6 +123,7 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/sandy-blob-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
           node scripts/sandy/test_github_blob_settlement_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/sandy/test_cloud_run_region_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/sandy/test_hosting_read_executor_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
           PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_cloud_run_region_contracts.py
   supabase-gap-contract-tests:
     runs-on: ubuntu-latest

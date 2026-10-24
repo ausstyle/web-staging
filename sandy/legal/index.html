@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ffffff"><title>Legal — Sandy</title>
+<style>
+:root{font:14px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#151515;background:#fff;--border:#e8e8e8;--muted:#747474}*{box-sizing:border-box}body{margin:0}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.5;cursor:wait}a{color:inherit;text-decoration:none}:focus-visible{outline:2px solid #111;outline-offset:3px}
+.wrap{display:grid;grid-template-columns:228px minmax(0,1fr);min-height:100vh}.side{background:#fafafa;border-right:1px solid #e8e8e8;padding:27px 13px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh}.brand{font-size:25px;letter-spacing:-1.5px;font-weight:800;padding:0 14px 33px}.nav{padding:11px 13px;border-radius:9px;color:#555;font-size:13px;font-weight:620}.nav:hover,.nav.active{background:#ededed;color:#111}.navheading{font-size:10px;letter-spacing:.12em;color:#999;font-weight:750;margin:18px 13px 4px}.sidefoot{margin-top:auto;padding:17px 13px;border-top:1px solid #eee;color:#777;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.main{min-width:0}.top{height:75px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;padding:0 clamp(18px,4vw,64px)}.crumb{font-size:12px;font-weight:700;letter-spacing:.07em;color:#888}.top a{font-size:12px;color:#666}.content{max-width:1260px;padding:44px clamp(18px,4vw,64px) 100px;margin:auto}h1{font-size:clamp(34px,4vw,54px);letter-spacing:-.065em;line-height:1.12;font-weight:620;margin:9px 0 14px}h2{font-size:22px;letter-spacing:-.5px;font-weight:650;margin:0}h3{margin:0;font-size:16px;font-weight:670;letter-spacing:-.2px}p{margin:5px 0 0}.muted{color:var(--muted)}.small{font-size:12px}.eyebrow{font-size:10px;letter-spacing:.15em;font-weight:760;color:#888;text-transform:uppercase}.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.between{justify-content:space-between}.btn{border:1px solid #dedede;background:white;border-radius:10px;padding:10px 14px;color:#111;font-weight:650;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn:hover{background:#f7f7f7}.btn.primary{background:#111;color:white;border-color:#111}.btn.primary:hover{background:#303030}.btn.small{font-size:12px;padding:7px 11px}.btn.ghost{border-color:transparent;background:transparent;color:#666}.hero{display:flex;justify-content:space-between;align-items:end;gap:20px}.lead{max-width:700px;font-size:15px;color:#6e6e6e;line-height:1.7}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0}.stat{border:1px solid var(--border);padding:21px;border-radius:16px;min-width:0}.stat strong{display:block;font-size:32px;letter-spacing:-1.5px}.stat span{font-size:12px;color:#777}.pane{border:1px solid var(--border);border-radius:16px;background:white;padding:24px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.matter{border:1px solid var(--border);background:#fff;border-radius:15px;padding:24px;text-align:left;min-height:174px;display:flex;flex-direction:column;align-items:stretch;gap:9px}.matter:hover{border-color:#a9a9a9;box-shadow:0 6px 25px #00000008}.matter h3{font-size:18px}.matter .foot{margin-top:auto;display:flex;justify-content:space-between;gap:8px;color:#888;font-size:11px}.badge{display:inline-block;background:#f2f2f2;border-radius:100px;padding:4px 10px;font-size:11px;font-weight:700;color:#555}.badge.review{background:#fff5e4;color:#875600}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:26px 0 15px}.search{border:1px solid #ddd;border-radius:10px;padding:10px 12px;width:min(330px,100%)}.tabs{display:flex;gap:4px;overflow:auto;border-bottom:1px solid #eee;margin:28px 0 24px;padding-bottom:8px}.tab{white-space:nowrap;background:white;border:0;padding:10px 13px;border-radius:8px;color:#6a6a6a;font-weight:650}.tab.active{background:#efefef;color:#161616}.item{border-bottom:1px solid #eee;padding:17px 0;display:flex;align-items:start;justify-content:space-between;gap:15px}.item:last-child{border:0}.item strong{font-size:14px}.item p{font-size:12px;color:#666;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}.item small{font-size:11px;color:#888}.actions{display:flex;gap:8px;flex-shrink:0}.empty{border:1px dashed #dedede;padding:44px 20px;border-radius:15px;text-align:center;color:#777}.empty h3{color:#222;margin-bottom:7px}.notice{padding:14px 17px;border-radius:11px;background:#fafafa;border:1px solid #e8e8e8;color:#555;font-size:12px;margin:17px 0}.notice.warn{background:#fff8ec;border-color:#efdfc3;color:#755321}.back{background:none;border:0;color:#666;font-size:13px;padding:0;margin-bottom:17px}.back:hover{text-decoration:underline}.two{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:18px}.key{font-size:11px;text-transform:uppercase;color:#888;font-weight:750;letter-spacing:.06em}.detailgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px;margin-top:20px}.info{background:#fafafa;border-radius:11px;padding:14px;min-width:0}.info strong{display:block;font-size:13px;overflow-wrap:anywhere}.link{color:#242424;text-decoration:underline;text-underline-offset:3px}.pillrow{display:flex;gap:7px;align-items:center;flex-wrap:wrap}.toast{position:fixed;right:18px;bottom:18px;background:#1e1e1e;color:white;border-radius:11px;padding:14px 17px;box-shadow:0 12px 30px #0002;max-width:420px;z-index:9}.toast.err{background:#842c2c}.overlay{position:fixed;inset:0;background:#0007;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.overlay.open{display:flex}.modal{background:white;border-radius:17px;width:min(640px,100%);max-height:92vh;overflow:auto;padding:30px;box-shadow:0 20px 70px #0003}.modal h2{margin:0 0 10px}.modal .field{margin:13px 0}.modal label{display:block;font-size:12px;font-weight:700;color:#555;margin-bottom:6px}.modal input,.modal select,.modal textarea{width:100%;padding:11px 12px;border:1px solid #dcdcdc;border-radius:10px;background:#fff;min-height:43px}.modal textarea{resize:vertical;min-height:95px}.modal .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}.modal .footer{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}.subhead{font-size:12px;color:#999;margin-top:4px}.crumbbuttons{display:flex;gap:10px;align-items:center}.statusbar{background:#fafafa;border-top:1px solid #eee;padding:15px 30px;color:#999;font-size:11px;margin-top:40px}
+@media(max-width:950px){.wrap{grid-template-columns:186px minmax(0,1fr)}.side{padding:22px 8px}.stats{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}@media(max-width:700px){.wrap{display:block}.side{display:none}.top{height:62px}.content{padding:27px 16px 95px}.hero{display:block}.hero .btn{margin-top:15px}.grid{grid-template-columns:1fr}.stats{gap:8px}.stat{padding:16px}.stat strong{font-size:27px}.pane{padding:17px}.toolbar{align-items:stretch;flex-direction:column}.search{width:100%}.item{flex-direction:column}.actions{width:100%}.modal{padding:21px}.modal .fields{grid-template-columns:1fr}.detailgrid{grid-template-columns:1fr 1fr}input,select,textarea{font-size:16px!important}}
+</style></head><body>
+<div class="wrap">
+<aside class="side">
+ <a class="brand" href="../app/">sandy.</a>
+ <div class="navheading">WORKSPACE</div>
+ <a class="nav" href="../app/">⌂ &nbsp; Overview</a>
+ <a class="nav" href="../agenda/">☑ &nbsp; Agenda & tasks</a>
+ <a class="nav" href="../calendar/">▦ &nbsp; Calendar</a>
+ <a class="nav" href="../files/">▤ &nbsp; Files</a>
+ <a class="nav active" href="./">⚖ &nbsp; Legal</a>
+ <a class="nav" href="../memory/">◇ &nbsp; Memory Centre</a>
+ <a class="nav" href="../apps/">◫ &nbsp; Connect Apps</a>
+ <div class="sidefoot" id="identity">Private Sandy workspace</div>
+</aside>
+<div class="main"><header class="top"><span class="crumb">SANDY / LEGAL</span><div class="row"><a href="../app/">← Client Admin</a><button class="btn small" id="refresh">↻ Refresh</button></div></header><main class="content" id="screen"><div class="empty">Checking your Sandy sign-in…</div></main><footer class="statusbar">Sandy Legal · Client-controlled matter register · Australian litigation · Court deadlines require independent verification.</footer></div>
+</div>
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><form class="modal" id="entryForm"><div class="row between"><h2 id="dialogTitle">Add a record</h2><button type="button" class="btn small" id="closeDialog" aria-label="Close">✕</button></div><p class="muted small" id="dialogHelp"></p><div id="formFields"></div><div class="footer"><button class="btn" type="button" id="cancelDialog">Cancel</button><button class="btn primary" type="submit" id="saveDialog">Save record →</button></div></form></div>
+<div id="toast" class="toast" hidden role="status"></div>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
+import {installSandyIdleLock} from "../security-lock.js";
+const $=id=>document.getElementById(id);
+const key="sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts";
+const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co",key,{auth:{persistSession:true,autoRefreshToken:true,storage:localStorage,detectSessionInUrl:true}});
+installSandyIdleLock(sb.auth);
+const apiUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-legal";
+const filesUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-files";
+const state={matters:[],companies:[],files:[],matter:null,detail:null,tab:"overview",search:"",loading:false,financialItems:[],financialError:null};
+const types=["document","evidence","correspondence","deadline","hearing","order","contact","engagement","cost","instruction","note"];
+const tabs=[["overview","Overview"],["proceedings","Proceedings"],["documents","Documents & evidence"],["dates","Court dates & orders"],["team","Lawyers & contacts"],["invoices","Invoices"],["cost_orders","Costs orders & assessments"],["recoveries","Recovery actions"],["finance_engagements","Engagements & trust"],["costs","Legacy costs"],["notes","Instructions & notes"]];
+const recordsFor={documents:["document","evidence","correspondence"],dates:["deadline","hearing","order"],team:["contact"],costs:["engagement","cost"],notes:["instruction","note"]};
+function E(tag,cls,value){const n=document.createElement(tag);if(cls)n.className=cls;if(value!==undefined&&value!==null)n.textContent=String(value);return n}
+function B(value,cb,cls){const n=E("button","btn "+(cls||""),value);n.type="button";n.addEventListener("click",cb);return n}
+function pval(v){return v===null||v===undefined||v===""?"—":String(v)}
+function dateOnly(v){if(!v)return "Date not specified";return new Date(String(v).slice(0,10)+"T12:00:00").toLocaleDateString("en-AU",{day:"numeric",month:"short",year:"numeric"})}
+function friendly(v){return String(v||"").replaceAll("_"," ").replace(/\b\w/g,x=>x.toUpperCase())}
+function notify(t,failed=false){const e=$("toast");e.textContent=t;e.className="toast"+(failed?" err":"");e.hidden=false;setTimeout(()=>e.hidden=true,5500)}
+async function api(action,input={}){
+ const {data}=await sb.auth.getSession();let token=data.session?.access_token;
+ if(!token)throw Error("Please sign in to Sandy Client Admin.");
+ const send=async t=>fetch(apiUrl,{method:"POST",headers:{"authorization":"Bearer "+t,"content-type":"application/json","apikey":key},body:JSON.stringify({action,...input})});
+ let r=await send(token);
+ if(r.status===401){const refreshed=await sb.auth.refreshSession();if(refreshed.data?.session?.access_token)r=await send(refreshed.data.session.access_token);}
+ const payload=await r.json().catch(()=>({}));
+ if(!r.ok)throw Error(friendly(payload.error||"Request failed"));
+ return payload;
+}
+const financeUrl="https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-legal-finance";
+async function financeApi(action,input={}){
+ const {data}=await sb.auth.getSession();const token=data.session?.access_token;
+ if(!token)throw Error("Sandy sign-in required");
+ const send=async t=>fetch(financeUrl,{method:"POST",headers:{"authorization":"Bearer "+t,"content-type":"application/json","apikey":key},body:JSON.stringify({action,...input})});
+ let r=await send(token);
+ if(r.status===401){const next=await sb.auth.refreshSession();if(next.data?.session?.access_token)r=await send(next.data.session.access_token);}
+ const payload=await r.json().catch(()=>({}));
+ if(!r.ok)throw Error(friendly(payload.error||"Finance request failed"));
+ return payload;
+}
+async function original(file_id){
+ try{
+ const {data}=await sb.auth.getSession();if(!data.session?.access_token)throw Error("Sign in required");
+ const res=await fetch(filesUrl,{method:"POST",headers:{"authorization":"Bearer "+data.session.access_token,"content-type":"application/json"},body:JSON.stringify({action:"open",id:file_id})});
+ const j=await res.json();if(!res.ok||!j.url)throw Error(j.error||"Original unavailable");
+ const u=new URL(j.url);if(u.protocol!=="https:")throw Error("Invalid file location");
+ window.open(u.href,"_blank","noopener,noreferrer");
+ }catch(e){notify(e.message||"Unable to open file",true)}
+}
+function loading(text){$("screen").replaceChildren(E("div","empty",text))}
+function pageTitle(kicker,title,description){const n=E("div");n.append(E("div","eyebrow",kicker),E("h1","",title),E("p","lead",description));return n}
+function field(name,label,type="text",value="",options=null){
+ const box=E("div","field");const lab=E("label","",label);lab.htmlFor="fld_"+name;
+ let x;if(type==="select"){x=E("select");for(const [v,t] of options||[]){const op=E("option","",t);op.value=v;if(v===value)op.selected=true;x.append(op)}}else if(type==="textarea"){x=E("textarea");x.value=value||""}else{x=E("input");x.type=type;x.value=value||"";}
+ x.id="fld_"+name;x.name=name;box.append(lab,x);return box
+}
+function container(cls,...children){const n=E("div",cls);for(const x of children)if(x)n.append(x);return n}
+function launch(title,help,parts,submit){
+ $("dialogTitle").textContent=title;$("dialogHelp").textContent=help;$("formFields").replaceChildren(...parts);$("overlay").classList.add("open");$("entryForm").onsubmit=async e=>{
+  e.preventDefault();const b=$("saveDialog");b.disabled=true;b.textContent="Saving…";
+  try{await submit(Object.fromEntries(new FormData($("entryForm")).entries()));$("overlay").classList.remove("open");notify("Saved to Sandy Legal.");await refresh()}catch(err){notify(err.message||"Unable to save",true)}finally{b.disabled=false;b.textContent="Save record →";}
+ };
+}
+function closeForm(){$("overlay").classList.remove("open")}
+$("closeDialog").onclick=closeForm;$("cancelDialog").onclick=closeForm;
+$("overlay").addEventListener("click",e=>{if(e.target===$("overlay"))closeForm()});
+function createMatter(){
+ const companies=[["","Personal / no company"],...state.companies.map(x=>[x.id,x.name])];
+ launch("New legal matter","A matter can contain several connected court proceedings.",[
+ field("title","Matter name"),field("description","Summary / objectives","textarea"),
+ container("fields",field("company_id","Client / owning company","select","",companies),field("jurisdiction","Jurisdiction","text","Australia")),
+ field("matter_type","Matter type","select","litigation",[["litigation","Litigation"],["dispute","Pre-litigation dispute"],["arbitration","Arbitration"],["tribunal","Tribunal proceeding"]])
+ ],async f=>{await api("matter_create",f)});
+}
+function createProceeding(){
+ launch("Add proceeding","Associate a specific Australian court file with this matter. Case numbers are recorded, not verified against the registry.",[
+ field("court","Court / tribunal"),container("fields",field("case_number","Court file number"),field("proceeding_type","Type","select","originating",[["originating","Originating"],["interlocutory","Interlocutory"],["appeal","Appeal"],["enforcement","Enforcement"],["other","Other"]])),
+ field("stage","Current stage"),field("notes","Notes","textarea")
+ ],async f=>api("proceeding_create",{...f,matter_id:state.matter.id}));
+}
+async function createRecord(kind){
+ const tabsForKind={document:"documents",evidence:"documents",correspondence:"documents",deadline:"dates",hearing:"dates",order:"dates",contact:"team",engagement:"costs",cost:"costs",instruction:"notes",note:"notes"};
+ const proceedings=[["","General to the matter"],...(state.detail?.proceedings||[]).map(p=>[p.id,p.court+(p.case_number?" · "+p.case_number:"")])];
+ const items=[
+ field("title","Record title"),
+ field("details","Details, source and context","textarea"),
+ container("fields",field("proceeding_id","Proceeding","select","",proceedings),field("event_date","Date (not automatically verified)","date")),
+ ];
+ if(["document","evidence","correspondence","order","engagement","instruction"].includes(kind)){
+  if(!state.files.length){try{state.files=(await api("files")).files||[]}catch(e){notify(e.message,true)}}
+  items.push(field("file_id","Link existing Sandy file (optional)","select","",[["","None"],...state.files.map(x=>[x.id,x.display_name||"Untitled file"])]));
+ }
+ if(kind==="contact"||kind==="engagement")items.push(container("fields",field("contact_name","Contact name"),field("organisation","Firm / organisation")),field("contact_email","Email address","email"));
+ if(kind==="cost")items.push(container("fields",field("amount","Amount","number"),field("currency","Currency","select","AUD",[["AUD","AUD"],["USD","USD"],["GBP","GBP"],["EUR","EUR"]])));
+ if(["deadline","hearing","order"].includes(kind))items.push(container("notice warn","Dates and court directions are entered as awaiting review. No legal deadline calculations, calendar events, or filing confirmations occur automatically."));
+ items.push(field("source_note","Document, order paragraph or other source reference"));
+ state.tab=tabsForKind[kind]||state.tab;
+ launch("Add "+friendly(kind),"Saved privately to the client matter. Original documents remain in Sandy Files.",items,async f=>{
+  const payload={...f,kind,matter_id:state.matter.id,file_id:f.file_id||null,proceeding_id:f.proceeding_id||null,event_date:f.event_date||null};
+  if(kind==="cost"){payload.amount=f.amount===""?null:Number(f.amount)}else delete payload.amount;
+  await api("record_create",payload);
+ });
+}
+function renderList(){
+ state.matter=null;state.detail=null;const s=$("screen");s.replaceChildren();
+ const h=pageTitle("LEGAL / CLIENT WORKSPACE","Legal matters","Your litigation, lawyers, evidence and key dates — organised in one private client-controlled workspace.");
+ const hero=container("hero",h,B("＋ New matter",createMatter,"primary"));s.append(hero);
+ const matters=state.matters;const active=matters.filter(x=>x.status==="active"||x.status==="appeal");
+ const courtDates=matters.flatMap(x=>x.dates||[]).length;
+ const grid=E("div","stats");for(const [n,label] of [[matters.length,"Total matters"],[active.length,"Active matters"],[matters.reduce((v,x)=>v+(x.proceedings||0),0),"Proceedings"],[courtDates,"Upcoming unverified dates"]])grid.append(container("stat",E("strong","",n),E("span","",label)));s.append(grid);
+ const bar=container("toolbar",container("",E("h2","","Matter register"),E("p","small muted","Choose a matter to view its full history.")));
+ const search=E("input","search");search.type="search";search.placeholder="Search matters…";search.value=state.search;search.setAttribute("aria-label","Search matters");search.addEventListener("input",()=>{state.search=search.value;drawMatters()});bar.append(search);s.append(bar);
+ const body=E("div");body.id="matterCards";s.append(body);
+ s.append(container("notice","Court dates and deadlines entered here are not independently verified. Sandy Legal does not file or serve documents on your behalf."));
+ drawMatters();
+}
+function drawMatters(){
+ const body=$("matterCards");if(!body)return;body.replaceChildren();
+ const found=state.matters.filter(m=>[m.title,m.description,m.jurisdiction].join(" ").toLowerCase().includes(state.search.toLowerCase()));
+ if(!found.length){body.append(container("empty",E("h3","",state.matters.length?"No matching matters yet":"No legal matters yet"),E("p","","Create your first matter to start building the complete client record.")));return}
+ const grid=E("div","grid");for(const m of found){
+  const b=E("button","matter");b.type="button";b.append(container("row between",E("span","eyebrow",m.jurisdiction||"Australia"),E("span","badge",friendly(m.status))));
+  b.append(E("h3","",m.title),E("p","small muted",(m.description||"No summary added.").slice(0,240)));
+  b.append(container("foot",E("span","",String(m.proceedings||0)+" proceedings · "+String(m.documents||0)+" files"),E("span","","Open matter →")));
+  b.onclick=()=>openMatter(m.id);grid.append(b);
+ }body.append(grid);
+}
+async function openMatter(id,tab){
+ try{loading("Opening legal matter…");const x=await api("matter_get",{id});state.matter=x.matter;state.detail=x;state.tab=tab||"overview";state.financialItems=[];state.financialError=null;
+ try{const f=await financeApi("list",{matter_id:id});state.financialItems=f.items||[];if(f.truncated)state.financialError="Only the first 600 financial items are shown.";}catch(e){state.financialError=e.message||"Finance unavailable";}
+ renderDetail()}catch(e){notify(e.message,true);renderList()}
+}
+function renderDetail(){
+ const s=$("screen"),m=state.matter,d=state.detail;if(!m||!d)return renderList();s.replaceChildren();
+ s.append(B("← All legal matters",renderList,"ghost"));
+ const title=container("hero",pageTitle("MATTER / "+friendly(m.status),m.title,m.description||"A central record of this legal matter."),B("＋ Add proceeding",createProceeding,"primary"));s.append(title);
+ const g=E("div","detailgrid");
+ const values=[["Jurisdiction",m.jurisdiction],["Proceedings",d.proceedings.length],["Case records",d.records.filter(x=>x.status!=="archived").length],["Financial records",state.financialItems.length]];
+ for(const [k,v] of values)g.append(container("info",E("span","key",k),E("strong","",v)));s.append(g);
+ const tabsNode=E("div","tabs");for(const [k,label] of tabs){const b=E("button","tab"+(state.tab===k?" active":""),label);b.onclick=()=>{state.tab=k;renderDetail()};tabsNode.append(b)}s.append(tabsNode);
+ const list=E("div");s.append(list);
+ if(state.tab==="overview"){renderOverview(list);return}
+ if(state.tab==="proceedings"){renderProceedings(list);return}
+ if(["invoices","cost_orders","recoveries","finance_engagements"].includes(state.tab)){renderFinance(list);return}
+ renderRecords(list);
+}
+function sectionHead(title,description,addButton){
+ return container("row between",container("",E("h2","",title),E("p","subhead",description)),addButton||E("span"));
+}
+function recordCard(r){
+ const card=E("div","item"),info=E("div");
+ info.append(container("pillrow",E("strong","",r.title),E("span","badge"+(r.status==="awaiting_review"?" review":""),friendly(r.status)),E("span","eyebrow",friendly(r.kind))));
+ if(r.details)info.append(E("p","",r.details));
+ if(r.contact_name||r.organisation||r.contact_email)info.append(E("p","",([r.contact_name,r.organisation,r.contact_email].filter(Boolean)).join(" · ")));
+ if(r.amount!==null&&r.amount!==undefined)info.append(E("p","","Amount: "+r.currency+" "+Number(r.amount).toLocaleString("en-AU",{minimumFractionDigits:2})));
+ if(r.event_date||r.due_at)info.append(E("p","",r.event_date?dateOnly(r.event_date):new Date(r.due_at).toLocaleString("en-AU")));
+ if(r.source_note){
+   const ref=E("div","small muted");ref.style.whiteSpace="pre-wrap";ref.style.marginTop="7px";
+   ref.append(E("strong","","Sources: "));
+   const lines=String(r.source_note).split("\n");
+   for(const [i,line] of lines.entries()){
+    if(i)ref.append(document.createTextNode("\n"));
+    const match=line.match(/(https:\/\/[^\s]+)/);
+    if(!match){ref.append(document.createTextNode(line));continue}
+    const raw=match[1];
+    let allowed=false;
+    try{const u=new URL(raw);allowed=u.protocol==="https:"&&["caselaw.nsw.gov.au","www.caselaw.nsw.gov.au","casechat.au","www.casechat.au","casenote.au","www.casenote.au","docs.google.com","drive.google.com"].includes(u.hostname)}catch{}
+    if(!allowed){ref.append(document.createTextNode(line));continue}
+    ref.append(document.createTextNode(line.slice(0,line.indexOf(raw))));
+    const a=E("a","link",line.startsWith("Private Google Drive Word copy")?"Open archived Word document ↗":"Open source ↗");
+    a.href=raw;a.target="_blank";a.rel="noopener noreferrer";ref.append(a);
+    ref.append(document.createTextNode(line.slice(line.indexOf(raw)+raw.length)));
+   }
+   info.append(ref);
+  }
+ const p=dProceeding(r.proceeding_id);if(p)info.append(E("small","",p.court+(p.case_number?" · "+p.case_number:"")));
+ const actions=E("div","actions");
+ if(r.file_id)actions.append(B("View original ↗",()=>original(r.file_id),"small"));
+ if(r.status!=="archived")actions.append(B("Archive",async()=>{if(!confirm("Archive this legal record? It will remain in the audit history."))return;try{await api("record_update",{id:r.id,status:"archived"});await openMatter(state.matter.id,state.tab)}catch(e){notify(e.message,true)}},"small"));
+ card.append(info,actions);return card;
+}
+function dProceeding(id){return state.detail.proceedings.find(x=>x.id===id)}
+const financePanels={
+ invoices:{title:"Legal invoices",description:"Actual solicitor and counsel bills. Amounts must be reconciled to payment evidence; a bill is not proof it remains unpaid.",type:"invoice",button:"＋ Add invoice"},
+ cost_orders:{title:"Costs orders & assessments",description:"Court costs orders, costs assessment applications and assessed liabilities are distinct states. An application amount is not an assessed amount.",type:"costs_order",button:"＋ Record costs order"},
+ recoveries:{title:"Costs recovery actions",description:"Indemnity and reimbursement claims, demands, disputed entitlements and actual recoveries. Proposed claims are not cash collected.",type:"recovery_action",button:"＋ Add recovery claim"},
+ finance_engagements:{title:"Engagements, estimates & trust",description:"Costs agreements, hourly rates, retainers and trust reconciliations. Retainer requests are not verified deposits.",type:"engagement",button:"＋ Add engagement"}
+};
+const moneyLabel=(value,currency)=>value===null||value===undefined?"Amount not verified":String(currency||"AUD")+" "+Number(value).toLocaleString("en-AU",{minimumFractionDigits:2,maximumFractionDigits:2});
+function financeSource(a,label){
+ if(!a||typeof a!=="string")return null;
+ try{const u=new URL(a);if(u.protocol!=="https:"||!["drive.google.com","docs.google.com","www.caselaw.nsw.gov.au","caselaw.nsw.gov.au","casechat.au"].includes(u.hostname))return null;
+ const e=E("a","link",label);e.href=u.href;e.target="_blank";e.rel="noopener noreferrer";return e;}catch{return null}
+}
+function financeCreate(type){
+ const m=state.matter;if(!m)return;
+ const proceedings=[["","General to the matter"],...(state.detail.proceedings||[]).map(x=>[x.id,x.case_number+" — "+x.court])];
+ const parts=[field("title","Description"),container("fields",field("counterparty","Law firm, claimant or payer"),field("reference_number","Matter / court reference")),container("fields",field("invoice_number","Invoice number (where applicable)"),field("gross_amount","Face amount or reported claim (AUD)","number")),container("fields",field("issue_date","Issue date","date"),field("due_date","Due date, if independently established","date")),field("proceeding_id","Proceeding","select","",proceedings),field("notes","Notes and source reference","textarea"),container("notice warn","New records are marked Awaiting review. Sandy will not infer that an invoice is unpaid or paid, that costs have been assessed, or that a recovery is collectible.")];
+ launch("New "+friendly(type.replaceAll("_"," ")), "A financial record is separate from court filing, payments and recovery evidence.",parts,async f=>{
+  await financeApi("create",{...f,matter_id:m.id,entry_type:type,proceeding_id:f.proceeding_id||null,gross_amount:f.gross_amount===""?null:Number(f.gross_amount),currency:"AUD"});
+ });
+}
+function financeCard(x){
+ const box=E("div","item");const content=E("div","");content.style.minWidth="0";
+ content.append(container("pillrow",E("strong","",x.title),E("span","badge"+(x.status==="awaiting_review"?" review":""),friendly(x.status))));
+ content.append(E("p","small muted",[x.counterparty,x.invoice_number?"Invoice "+x.invoice_number:null,x.issue_date?dateOnly(x.issue_date):null].filter(Boolean).join(" · ")));
+ const amt=E("div","");amt.style.marginTop="9px";amt.append(E("strong","",moneyLabel(x.gross_amount,x.currency)));
+ if(x.outstanding_amount!==null&&x.outstanding_amount!==undefined)amt.append(E("p","small muted","Reported outstanding at source date: "+moneyLabel(x.outstanding_amount,x.currency)+" — not live payment balance"));
+ content.append(amt);
+ if(x.entry_type==="costs_order")content.append(E("p","small muted","Assessment/award status: "+(x.status==="assessed"?"assessed":"not independently verified as assessed")));
+ if(x.entry_type==="recovery_action")content.append(E("p","small muted","Proposed recovery — do not include in paid receipts or automatically net against costs"));
+ if(x.entry_type==="trust_statement")content.append(E("p","small muted","Reconciliation snapshot — not a second invoice"));
+ if(x.notes){const details=E("details","");details.style.marginTop="10px";details.append(E("summary","small link","View provenance and notes"),E("p","small muted",x.notes));content.append(details);}
+ if(x.source_provider==="outlook")content.append(E("p","small muted","Source: Outlook"+(x.source_attachment_name?" · "+x.source_attachment_name:"")+" · record retained"));
+ if(x.source_provider==="drive"&&x.source_attachment_name){
+  content.append(E("p","small muted","Original document inside archived ZIP: "+x.source_attachment_name));
+ }
+ const actions=E("div","actions");
+ const link=financeSource(x.source_document_url,x.source_provider==="drive"?"Open archived source ↗":"View source ↗");if(link){link.className="btn small";actions.append(link);}
+ if(!["disputed","closed"].includes(x.status))actions.append(B("Dispute",async()=>{if(!confirm("Flag this financial record as disputed? This does not notify the law firm."))return;try{await financeApi("update",{id:x.id,expected_updated_at:x.updated_at,status:"disputed"});await openMatter(state.matter.id,state.tab);notify("Marked as disputed.")}catch(e){notify(e.message,true)}},"small"));
+ box.append(content,actions);return box;
+}
+function renderFinance(node){
+ const k=state.tab,conf=financePanels[k],types=k==="finance_engagements"?["engagement","trust_statement"]:[conf.type];
+ node.append(sectionHead(conf.title,conf.description,B(conf.button,()=>financeCreate(conf.type),"small primary")));
+ if(state.financialError)node.append(container("notice warn","Financial data could not be fully loaded: "+state.financialError));
+ node.append(container("notice warn","Amounts are classified by source and status. Never add invoices, assessments, trust statements and indemnity claims together: some records represent the same underlying cost."));
+ const rows=state.financialItems.filter(x=>types.includes(x.entry_type));
+ if(rows.length){
+  const stats=container("row");stats.style.margin="16px 0";
+  stats.append(E("span","badge",rows.length+" record"+(rows.length===1?"":"s")));
+  stats.append(E("span","small muted",k==="invoices"?"The invoice face amount is not a live balance":k==="recoveries"?"All proposed recoveries require legal verification":"Source amounts may be estimates or claims"));
+  node.append(stats);
+  const pane=E("div","pane");for(const v of rows)pane.append(financeCard(v));node.append(pane);
+ }else node.append(container("empty",E("h3","","No "+conf.title.toLowerCase()+" entered"),E("p","","Add a record and retain the original document as evidence.")));
+ if(k==="finance_engagements"){const legacy=state.detail.records.filter(x=>x.kind==="engagement"&&x.status!=="archived");if(legacy.length)node.append(container("notice","Historical engagement records are also preserved under Legacy costs; they are not automatically treated as invoices."));}
+ if(k==="recoveries"){node.append(container("notice","Potential recoveries in the previous Legal Costs register remain accessible under Legacy costs. The new recovery actions may overlap those older records."));}
+}
+function renderRecords(node){
+ const k=state.tab;
+ const title={documents:"Documents & evidence",dates:"Court dates, orders & deadlines",team:"Lawyers & contacts",costs:"Engagements & costs",notes:"Instructions & notes"}[k]||"Records";
+ const desc={documents:"Document references linked to originals in Sandy Files.",dates:"Calendar dates are awaiting review until verified against the applicable order or rules.",team:"Your lawyers, barristers, experts and other key contacts.",costs:"Retainers, engagement terms, budgets and invoices.",notes:"Client instructions, decisions and case notes."}[k];
+ const choices={documents:[["document","＋ Document"],["evidence","＋ Evidence"],["correspondence","＋ Correspondence"]],dates:[["deadline","＋ Deadline"],["hearing","＋ Hearing"],["order","＋ Court order"]],team:[["contact","＋ Contact"]],costs:[["engagement","＋ Engagement"],["cost","＋ Cost entry"]],notes:[["instruction","＋ Instruction"],["note","＋ Note"]]}[k]||[];
+ const buttons=container("row",...choices.map(([kind,label])=>B(label,()=>createRecord(kind),"small")));
+ node.append(sectionHead(title,desc,buttons));
+ if(k==="documents")node.append(container("notice",E("span","","Files must first exist in your private Sandy Files library. "),B("Open Sandy Files ↗",()=>location.assign("../files/"),"small")));
+ if(k==="dates")node.append(container("notice warn","Sandy has not verified court deadlines or connected these records to automatic reminders. Check dates and filing obligations with your lawyers."));
+ const rows=state.detail.records.filter(x=>(recordsFor[k]||[]).includes(x.kind)&&x.status!=="archived");
+ if(!rows.length){node.append(container("empty",E("h3","","Nothing recorded yet"),E("p","","Use the buttons above to add your first "+title.toLowerCase()+" record.")));return}
+ const box=E("div","pane");for(const r of rows.sort((a,b)=>String(b.event_date||b.created_at).localeCompare(String(a.event_date||a.created_at))))box.append(recordCard(r));node.append(box);
+}
+function renderProceedings(node){
+ node.append(sectionHead("Court proceedings","Different proceedings and appeals can be tracked under the same matter.",B("＋ Add proceeding",createProceeding,"small primary")));
+ if(!state.detail.proceedings.length){node.append(container("empty",E("h3","","No proceedings registered"),E("p","","Record the court, case number and procedural stage.")));return}
+ const box=E("div","pane");for(const p of state.detail.proceedings){
+  const x=E("div","item");x.append(container("",E("strong","",p.court),E("p","",p.case_number||"Court file number not entered"),E("p","",p.notes||p.stage||"No stage recorded"),E("span","badge",friendly(p.proceeding_type))));box.append(x);
+ }node.append(box);
+}
+function renderOverview(node){
+ const d=state.detail;const next=d.records.filter(r=>["deadline","hearing","order"].includes(r.kind)&&r.status!=="archived").sort((a,b)=>String(a.event_date||"9999").localeCompare(String(b.event_date||"9999"))).slice(0,5);
+ const contacts=d.records.filter(r=>r.kind==="contact"&&r.status!=="archived").slice(0,4);
+ const recent=d.records.filter(r=>r.status!=="archived").slice(0,5);
+ const root=E("div","two");
+ const left=E("div");left.append(sectionHead("Matter at a glance","Every item is part of the client-owned legal record."));
+ left.append(container("notice warn","Court dates shown below are manually entered and not verified against the current court list or orders."));
+ const a=E("div","pane");a.append(E("h3","","Upcoming / recorded court events"));
+ if(next.length){for(const r of next)a.append(recordCard(r))}else a.append(E("p","muted small","No court dates or orders added."));
+ left.append(a);
+ const b=E("div","pane");b.style.marginTop="16px";b.append(E("h3","","Recent records"));
+ if(recent.length){for(const r of recent)b.append(recordCard(r))}else b.append(E("p","muted small","Add documents, instructions or court details to begin."));
+ left.append(b);
+ const right=E("div");const p=E("div","pane");p.append(E("h3","","Legal team"));
+ if(contacts.length){for(const r of contacts)p.append(container("item",container("",E("strong","",r.contact_name||r.title),E("p","",r.organisation||r.contact_email||""))))}else p.append(E("p","muted small","No lawyers or contacts registered."));
+ p.append(B("Manage contacts →",()=>{state.tab="team";renderDetail()},"small"));right.append(p);
+ const q=E("div","pane");q.style.marginTop="16px";q.append(E("h3","","Useful links"),E("p","small muted","Sandy's shared services remain the source of truth for files, tasks and dates."));
+ for(const [text,uri] of [["Sandy Files ↗","../files/"],["Agenda & Tasks ↗","../agenda/"],["Calendar ↗","../calendar/"]]){const a=E("a","btn small",text);a.href=uri;a.style.margin="8px 7px 0 0";q.append(a)}
+ right.append(q);root.append(left,right);node.append(root);
+}
+async function refresh(){
+ try{
+  const had=state.matter?.id,tab=state.tab;
+  const [m,c]=await Promise.all([api("list"),api("companies")]);
+  state.matters=m.matters||[];state.companies=c.companies||[];
+  if(had)await openMatter(had,tab);else renderList();
+ }catch(e){
+  const message=String(e?.message||"Unable to load the legal register.");
+  const needsSignIn=/sign[ _-]?in|invalid.session|not.authori[sz]ed|authentication|required.sandy.sign/i.test(message);
+  loading(needsSignIn?"Your Sandy sign-in needs to be renewed.":"The legal register could not be loaded. Your session remains signed in.");
+  const s=$("screen");
+  s.append(E("p","notice",message));
+  s.append(needsSignIn?B("Open Sandy sign-in →",()=>location.assign("../app/"),"primary"):B("↻ Retry legal register",refresh,"primary"));
+  if(!needsSignIn)s.append(B("← Back to Client Admin",()=>location.assign("../app/"),"small"));
+  notify(message,true);
+ }
+}
+$("refresh").onclick=refresh;
+const {data}=await sb.auth.getSession();
+if(!data.session?.access_token){loading("Sign in to Sandy Client Admin to access your private legal files.");$("screen").append(B("Sign in →",()=>location.assign("../app/"),"primary"))}
+else{$("identity").textContent=data.session.user?.email||"Private Sandy workspace";await refresh()}
+</script></body></html>
