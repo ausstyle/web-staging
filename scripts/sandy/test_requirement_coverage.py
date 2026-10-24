@@ -41,6 +41,14 @@ class RequirementCoverageTests(unittest.TestCase):
             def accepted(p=policy, r=row, f=live):
                 return reconcile(families, [r], [f], p, positive, {}, evidence_root=root)[0]
             self.assertTrue(accepted()["fully_accepted"])
+            for gap in (["required publication adapter missing"], {"missing": "team permission lifecycle"}, "malformed gap record"):
+                altered = copy.deepcopy(policy)
+                altered["unresolved_family_capabilities"] = {"1": gap}
+                result = accepted(p=altered)
+                self.assertFalse(result["fully_accepted"])
+                self.assertEqual(result["unresolved_capability_obligations"], gap)
+                self.assertEqual(result["actual_MCP_success_operation_ids"], ["fixture.read"])
+
             for altered in [{**live, "version": 8}, {**live, "status": "REMOVED"},
                             {**live, "verify_jwt": False}, {**live, "version": None}]:
                 self.assertFalse(accepted(f=altered)["fully_accepted"])

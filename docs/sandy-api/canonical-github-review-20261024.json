@@ -1,0 +1,2086 @@
+{
+  "scope": "SANDY-ENG-0005",
+  "review_date": "2026-10-24",
+  "specification_sha256": "44eebd52e016ca31ace6dfdf34d60bebdfb65aeadbaf9f1344987cfd25a0226a",
+  "basis": "Original PDF sections6.1/6.2, existing source descriptors and official GitHub API documentation. No live calls or family acceptance.",
+  "families": [
+    {
+      "family": 114,
+      "semantics": "Archive is repos.update with archived=true (repos.archive is a fixed-body compatibility wrapper); write.preflight is diagnostic. Missing create remains required, not removed by fixed existing-repository scope.",
+      "required_operations": [
+        {
+          "operation": "github.repos.create",
+          "source_descriptor_found": false
+        },
+        {
+          "operation": "github.repos.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}",
+          "provider_operation_id": "repos/delete",
+          "kind": "mutation_metadata",
+          "contract_sha256": "9bdfca74aead08cc1bc6ed14d37e4a291a9c4ef1b744a40803ed125df460cb38"
+        },
+        {
+          "operation": "github.repos.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}",
+          "provider_operation_id": "repos/get",
+          "kind": "object",
+          "contract_sha256": "a3d4be27bad591250eed647b020fb92b5366b42c64eda01df64998008cdef91e"
+        },
+        {
+          "operation": "github.repos.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}",
+          "provider_operation_id": "repos/get",
+          "kind": "scoped_list",
+          "contract_sha256": "0870ed117566abdf5dd223b30391bd5e8d94527e8fa2acb8d03512144c320b2f"
+        },
+        {
+          "operation": "github.repos.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}",
+          "provider_operation_id": "repos/update",
+          "kind": "mutation_metadata",
+          "contract_sha256": "47f3e9254459ee40fd23ff65e6ea0f859b9a620151b3a2fac3b808c16a11eada"
+        }
+      ],
+      "supporting_candidates": [
+        "github.repos.archive",
+        "github.write.preflight"
+      ],
+      "unresolved_capabilities": [
+        "Repository creation for an explicitly authorized owner/new resource has no canonical callable handler."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 120,
+      "semantics": "Issue CRUD includes close/reopen via update.state, comments, assignment, labels, dependencies, subissues, issue fields, reactions and suggestions. Repository notifications/events and commit comments are supporting cross-family candidates, not issue CRUD aliases.",
+      "required_operations": [
+        {
+          "operation": "github.issues.add_assignees",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
+          "provider_operation_id": "issues/add-assignees",
+          "kind": "mutation_metadata",
+          "contract_sha256": "c62ff8ae9cde1b6427c4aa3cd923f90dd12c2ced8260573e8c2afda3b99efa9d"
+        },
+        {
+          "operation": "github.issues.add_blocked_by_dependency",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by",
+          "provider_operation_id": "issues/add-blocked-by-dependency",
+          "kind": "mutation_metadata",
+          "contract_sha256": "28b4d48219bb624dccd7e01c687eed2b1d045f1a00c1c81f02c04b7b57a1aeff"
+        },
+        {
+          "operation": "github.issues.add_issue_field_values",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/issue-field-values",
+          "provider_operation_id": "issues/add-issue-field-values",
+          "kind": "mutation_metadata",
+          "contract_sha256": "55c01044d4afe558b10532126d368129948dde5230eb0a80986e21da1e8c7a55"
+        },
+        {
+          "operation": "github.issues.add_labels",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels",
+          "provider_operation_id": "issues/add-labels",
+          "kind": "mutation_metadata",
+          "contract_sha256": "578f8de828068a416c66add9c9e5309fceaa4b4c1eeff04e4d47f1a131f65582"
+        },
+        {
+          "operation": "github.issues.add_relates_to",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/relates_to",
+          "provider_operation_id": "issues/add-relates-to",
+          "kind": "mutation_metadata",
+          "contract_sha256": "c9239f8a6566010f1ea3f5a39b2b646e5247d7359e69d83ce1c2b705282b61f5"
+        },
+        {
+          "operation": "github.issues.add_sub_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/sub_issues",
+          "provider_operation_id": "issues/add-sub-issue",
+          "kind": "mutation_metadata",
+          "contract_sha256": "48572bcd6e0971241e308160546c55609e0fcc30a31a144f4450a875c326f612"
+        },
+        {
+          "operation": "github.issues.approve_suggestion",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/suggestions/{suggestion_id}/approve",
+          "provider_operation_id": "issues/approve-suggestion",
+          "kind": "mutation_metadata",
+          "contract_sha256": "b416a9eabafcfefc3b3674fb2b98982b5eb05ec03cb79ba27be3abada293b438"
+        },
+        {
+          "operation": "github.issues.assignee.check",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-supplement-api/contracts.json",
+          "provider_operation_id": "issues/check-user-can-be-assigned",
+          "kind": "github_assignee",
+          "contract_sha256": "fcfccb43e9976095d8be3b331db24b3f39617c4f5605bc31f5b74d0a66d96287"
+        },
+        {
+          "operation": "github.issues.assignee_on_issue.check",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-supplement-api/contracts.json",
+          "provider_operation_id": "issues/check-user-can-be-assigned-to-issue",
+          "kind": "github_issue_assignee",
+          "contract_sha256": "9d2dafe9c8f645fd14970f1c4b345c56a03f4d4499b32e6732573470e4f3e738"
+        },
+        {
+          "operation": "github.issues.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues",
+          "provider_operation_id": "issues/create",
+          "kind": "mutation_metadata",
+          "contract_sha256": "b7767642c19ec2faad1024a19f7fed5dee263ea31d0341a06190710cf5d5b145"
+        },
+        {
+          "operation": "github.issues.create_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/comments",
+          "provider_operation_id": "issues/create-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "5d9a0308ff572e50c9a19759651fcd5f67607472cdffcc52cc0dc43fe1555f62"
+        },
+        {
+          "operation": "github.issues.delete_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}",
+          "provider_operation_id": "issues/delete-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "618d6b80f188c436ab96c164de7975d90464e8ddf722ef5ba04f170d44c94872"
+        },
+        {
+          "operation": "github.issues.delete_issue_field_value",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/issue-field-values/{issue_field_id}",
+          "provider_operation_id": "issues/delete-issue-field-value",
+          "kind": "mutation_metadata",
+          "contract_sha256": "273074a03210f8935def384d595bb3d3c5ac825eb71e10172411df648c3fd62c"
+        },
+        {
+          "operation": "github.issues.dismiss_suggestion",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/suggestions/{suggestion_id}/dismiss",
+          "provider_operation_id": "issues/dismiss-suggestion",
+          "kind": "mutation_metadata",
+          "contract_sha256": "4f212755cb99647abbdbd766c2925717f842305da4bc183a4bccc178c49775a7"
+        },
+        {
+          "operation": "github.issues.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}",
+          "provider_operation_id": "issues/get",
+          "kind": "object",
+          "contract_sha256": "af9a8ebd3080f356d43b2df9e663887b9765fe1823fae9b3bdcfe1beb0b017d2"
+        },
+        {
+          "operation": "github.issues.get_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}",
+          "provider_operation_id": "issues/get-comment",
+          "kind": "typed_projection",
+          "contract_sha256": "1953c27d75e9c5f855546cc8cdd6dd55b91f751859be464abfaa135721135089"
+        },
+        {
+          "operation": "github.issues.get_event",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/events/{event_id}",
+          "provider_operation_id": "issues/get-event",
+          "kind": "typed_projection",
+          "contract_sha256": "4a4ccb1cec597ac6779582e8a74b049e8b230ee7a377065e7e86074635d0efe4"
+        },
+        {
+          "operation": "github.issues.get_parent",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/parent",
+          "provider_operation_id": "issues/get-parent",
+          "kind": "typed_projection",
+          "contract_sha256": "bd713b26b2a40e13dceb7403b98d5c18f21fbcaa7284517a39a57e3c540cfbf5"
+        },
+        {
+          "operation": "github.issues.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues",
+          "provider_operation_id": "issues/list-for-repo",
+          "kind": "array",
+          "contract_sha256": "4d8beec5948ec916d1e55d19910c2f796d54e3475c68194306134c77bfa592ee"
+        },
+        {
+          "operation": "github.issues.list_assignees",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/assignees",
+          "provider_operation_id": "issues/list-assignees",
+          "kind": "typed_projection",
+          "contract_sha256": "bacaa8a2ae14b3c4fbf6232d149f05376ed013835cc0529b8ea440aec561a2aa"
+        },
+        {
+          "operation": "github.issues.list_comments",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/comments",
+          "provider_operation_id": "issues/list-comments",
+          "kind": "typed_projection",
+          "contract_sha256": "4165df219bb4e2c3a6e16c52ca52e575d5b465d6c530935b059cbadf414143be"
+        },
+        {
+          "operation": "github.issues.list_comments_for_repo",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/comments",
+          "provider_operation_id": "issues/list-comments-for-repo",
+          "kind": "typed_projection",
+          "contract_sha256": "f3970a075fd92068a38c09d595ac04eb0b8f22750f6c10e8e6c1c8ca3df9836c"
+        },
+        {
+          "operation": "github.issues.list_dependencies_blocked_by",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by",
+          "provider_operation_id": "issues/list-dependencies-blocked-by",
+          "kind": "typed_projection",
+          "contract_sha256": "723bf52e5688aacc7478df605687929d3f26fa5882c99db6046d5ba4fa9f5a87"
+        },
+        {
+          "operation": "github.issues.list_dependencies_blocking",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocking",
+          "provider_operation_id": "issues/list-dependencies-blocking",
+          "kind": "typed_projection",
+          "contract_sha256": "689b2d89b2a9107b17098148f98ed7b0664fcecf17443d09eea2f5937df3d71f"
+        },
+        {
+          "operation": "github.issues.list_events",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/events",
+          "provider_operation_id": "issues/list-events",
+          "kind": "typed_projection",
+          "contract_sha256": "1f61336a83f864d85e7cde271ef07873397f65e2d2a57ae898850848265a4744"
+        },
+        {
+          "operation": "github.issues.list_events_for_repo",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/events",
+          "provider_operation_id": "issues/list-events-for-repo",
+          "kind": "typed_projection",
+          "contract_sha256": "623534f658d9a047f4589e9985a755ce9f1aedf62757e61f66bcd4942bc7e3d4"
+        },
+        {
+          "operation": "github.issues.list_events_for_timeline",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/timeline",
+          "provider_operation_id": "issues/list-events-for-timeline",
+          "kind": "typed_projection",
+          "contract_sha256": "b7af235d4278f6c4288c972af081f226c46eb0127f8ec86b4cca4b9d86ba9cf8"
+        },
+        {
+          "operation": "github.issues.list_issue_field_values_for_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/issue-field-values",
+          "provider_operation_id": "issues/list-issue-field-values-for-issue",
+          "kind": "typed_projection",
+          "contract_sha256": "1dc512a7543eec8cb8b0c849cebe5ab1e91a760d0a2e79204b7f2ccc5338f789"
+        },
+        {
+          "operation": "github.issues.list_labels_on_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels",
+          "provider_operation_id": "issues/list-labels-on-issue",
+          "kind": "typed_projection",
+          "contract_sha256": "717419e29a83b8124fc79d7f8adcdbea37ce4851ce88c584e4f84e067dfa515b"
+        },
+        {
+          "operation": "github.issues.list_relates_to",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/relates_to",
+          "provider_operation_id": "issues/list-relates-to",
+          "kind": "typed_projection",
+          "contract_sha256": "5d610d521d0a69ea4188ca3587fa42275d5a9a9f914e66dd547fed88187d3052"
+        },
+        {
+          "operation": "github.issues.list_sub_issues",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/sub_issues",
+          "provider_operation_id": "issues/list-sub-issues",
+          "kind": "typed_projection",
+          "contract_sha256": "6c678037001b8f5659988427eedc20667ef4767fe9074f68c683bb583abedcac"
+        },
+        {
+          "operation": "github.issues.list_suggestions",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/suggestions",
+          "provider_operation_id": "issues/list-suggestions",
+          "kind": "typed_projection",
+          "contract_sha256": "1b9b22513e0d85e4569d55bcc35a525289c9b50d631cd80236588787b77f9d5b"
+        },
+        {
+          "operation": "github.issues.lock",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/lock",
+          "provider_operation_id": "issues/lock",
+          "kind": "mutation_metadata",
+          "contract_sha256": "9782b29699f9ef78784865f858311a6b7a429e8b2c321a835b802bdb92e59803"
+        },
+        {
+          "operation": "github.issues.pin_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}/pin",
+          "provider_operation_id": "issues/pin-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "610374065f8854d306b0276caa1fba755990cf0f6d947933dae97ab94c970cee"
+        },
+        {
+          "operation": "github.issues.remove_all_labels",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels",
+          "provider_operation_id": "issues/remove-all-labels",
+          "kind": "mutation_metadata",
+          "contract_sha256": "a1296b344c90fbe3b5731758814f65c002d10926d45a75621abb69ef4d73aa9e"
+        },
+        {
+          "operation": "github.issues.remove_assignees",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/assignees",
+          "provider_operation_id": "issues/remove-assignees",
+          "kind": "mutation_metadata",
+          "contract_sha256": "61cab1ef280e9e81957fbcb2c9ae5d18a9de4f367afa2a8b5ff2985a872f44ed"
+        },
+        {
+          "operation": "github.issues.remove_dependency_blocked_by",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/dependencies/blocked_by/{issue_id}",
+          "provider_operation_id": "issues/remove-dependency-blocked-by",
+          "kind": "mutation_metadata",
+          "contract_sha256": "672089e2c535fd0e4213372af67d2615abcf07ce2b52a5a407f1e2187c77dbff"
+        },
+        {
+          "operation": "github.issues.remove_label",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels/{name}",
+          "provider_operation_id": "issues/remove-label",
+          "kind": "mutation_metadata",
+          "contract_sha256": "5ee664624e4871517abafa652b59d221c6028057a5ae7e68d0176d92bdebfc84"
+        },
+        {
+          "operation": "github.issues.remove_relates_to",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/relates_to/{issue_id}",
+          "provider_operation_id": "issues/remove-relates-to",
+          "kind": "mutation_metadata",
+          "contract_sha256": "efa5e27e8c2c37101167a32173e72a8418cf8d90d67e2df10fdc66160d3f3fa2"
+        },
+        {
+          "operation": "github.issues.remove_sub_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/sub_issue",
+          "provider_operation_id": "issues/remove-sub-issue",
+          "kind": "mutation_metadata",
+          "contract_sha256": "15f113728dabd9f866add28ac4a2ad424bf11060e865a0016a5a8a0e0053dd44"
+        },
+        {
+          "operation": "github.issues.reprioritize_sub_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/sub_issues/priority",
+          "provider_operation_id": "issues/reprioritize-sub-issue",
+          "kind": "mutation_metadata",
+          "contract_sha256": "b1459967e602e51fdc2db0c632025ee14d48d111b361ff1bd7eecd3ede769e93"
+        },
+        {
+          "operation": "github.issues.set_issue_field_values",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/issue-field-values",
+          "provider_operation_id": "issues/set-issue-field-values",
+          "kind": "mutation_metadata",
+          "contract_sha256": "edb72af943eb35040854efb85cd91beae10e52ce6d3b52ace269060f374168c8"
+        },
+        {
+          "operation": "github.issues.set_labels",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/labels",
+          "provider_operation_id": "issues/set-labels",
+          "kind": "mutation_metadata",
+          "contract_sha256": "d280f9f4758d772755d4affb92ea96d97228ad8de6b38ca4ce1afe438b75c6ed"
+        },
+        {
+          "operation": "github.issues.unlock",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/lock",
+          "provider_operation_id": "issues/unlock",
+          "kind": "mutation_metadata",
+          "contract_sha256": "7ed6b7022345c18c391f9c3415b50e3639e1efea077eef819f9334fa30a66f31"
+        },
+        {
+          "operation": "github.issues.unpin_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}/pin",
+          "provider_operation_id": "issues/unpin-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "0c2f68be2abaf2799cf570c1da515eaa0d9d843a99960b8456bbb51ec353bb30"
+        },
+        {
+          "operation": "github.issues.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}",
+          "provider_operation_id": "issues/update",
+          "kind": "mutation_metadata",
+          "contract_sha256": "398e8a38b185053d3f108e1fca9370dee976c810d73bf2700eac5780cc639ebf"
+        },
+        {
+          "operation": "github.issues.update_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}",
+          "provider_operation_id": "issues/update-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "4a7932b8f8b997ad0df8c58cc83143b657292a844720a1c3211c96f69a2b867c"
+        },
+        {
+          "operation": "github.reactions.create_for_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/reactions",
+          "provider_operation_id": "reactions/create-for-issue",
+          "kind": "mutation_metadata",
+          "contract_sha256": "ec5c9c0a0b8f72a1c3594e4f53947ddda93345c7249a11779c88ee4e3f04beb8"
+        },
+        {
+          "operation": "github.reactions.create_for_issue_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
+          "provider_operation_id": "reactions/create-for-issue-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "2ac059762556a95d5676f326f52cea44d585180f7a5e7c1ba4e8350c42c343c9"
+        },
+        {
+          "operation": "github.reactions.delete_for_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/reactions/{reaction_id}",
+          "provider_operation_id": "reactions/delete-for-issue",
+          "kind": "mutation_metadata",
+          "contract_sha256": "82843dd8881c37df94817b1bf7b6500cefaee3553967ecc766f9de64d369ea73"
+        },
+        {
+          "operation": "github.reactions.delete_for_issue_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions/{reaction_id}",
+          "provider_operation_id": "reactions/delete-for-issue-comment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "114f06157479786c62cd4bb8e10804edab3e1a6d0e4e62e0331a98c93584e307"
+        },
+        {
+          "operation": "github.reactions.list_for_issue",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/{issue_number}/reactions",
+          "provider_operation_id": "reactions/list-for-issue",
+          "kind": "typed_projection",
+          "contract_sha256": "14b5ba36b3e5e7d2d0f145f7fc1cdec08e46b853325df87fa49da97f6668bc5d"
+        },
+        {
+          "operation": "github.reactions.list_for_issue_comment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/issues/comments/{comment_id}/reactions",
+          "provider_operation_id": "reactions/list-for-issue-comment",
+          "kind": "typed_projection",
+          "contract_sha256": "0aef03f40d8dcdb8277df28dc0169aa507801d3004a37833e7a9e8b76b88568d"
+        }
+      ],
+      "supporting_candidates": [
+        "github.activity.list_repo_events",
+        "github.activity.list_repo_notifications_for_authenticated_user",
+        "github.activity.mark_repo_notifications_as_read",
+        "github.reactions.create_for_commit_comment",
+        "github.reactions.delete_for_commit_comment",
+        "github.reactions.list_for_commit_comment",
+        "github.repos.delete_commit_comment",
+        "github.repos.get_commit_comment",
+        "github.repos.list_commit_comments_for_repo",
+        "github.repos.update_commit_comment"
+      ],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 123,
+      "semantics": "Discussions use fixed GraphQL documents with server-resolved repository/discussion/comment ownership. Reply creation is comments.create(reply_to_comment_id); answer marking, close/reopen and cursor pagination are distinct required behavior.",
+      "required_operations": [
+        {
+          "operation": "github.discussions.categories.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.repository.discussionCategories",
+          "kind": "discussion_categories",
+          "contract_sha256": "b9c8157d678d00bdae167dc23131c3c648da6f68c711ff01a0dd4d7bd86bf2f2"
+        },
+        {
+          "operation": "github.discussions.close",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.closeDiscussion",
+          "kind": "discussion_close",
+          "contract_sha256": "a3be479f59d0a27e2d026cf4ad603efe040ef7dcbfce13b5fc96fa677ea9a9e4"
+        },
+        {
+          "operation": "github.discussions.comments.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.addDiscussionComment",
+          "kind": "comment_create",
+          "contract_sha256": "d0d6eef48400289dfd81d61a16fbe081396220836545bd9b7b0798a21d3f24f1"
+        },
+        {
+          "operation": "github.discussions.comments.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.deleteDiscussionComment",
+          "kind": "comment_delete",
+          "contract_sha256": "e0211a9bf0ed56ffacee5341f035e6c3c5cd9132eac89b926ff0042425eedb5e"
+        },
+        {
+          "operation": "github.discussions.comments.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.node:DiscussionComment",
+          "kind": "comment_get",
+          "contract_sha256": "c98be9f9b36c699ba23d6975fe243e96ffa4b8a8cad2c253ae23a0393e8fe90a"
+        },
+        {
+          "operation": "github.discussions.comments.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.repository.discussion.comments",
+          "kind": "comment_list",
+          "contract_sha256": "19ec2a15f707d5dc5c6ca26498fdc47441828c6ad86956c4f1b980a7f1db412d"
+        },
+        {
+          "operation": "github.discussions.comments.mark_answer",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.markDiscussionCommentAsAnswer",
+          "kind": "comment_mark_answer",
+          "contract_sha256": "428d21c86250ea7bbabf0c0d912230c7c37c23de5af412ce9d3952048db29622"
+        },
+        {
+          "operation": "github.discussions.comments.unmark_answer",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.unmarkDiscussionCommentAsAnswer",
+          "kind": "comment_unmark_answer",
+          "contract_sha256": "c5fafb1ce5f5b7a9e4cc7a226db4030afaff297de14c00cdf248643852f66d8f"
+        },
+        {
+          "operation": "github.discussions.comments.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.updateDiscussionComment",
+          "kind": "comment_update",
+          "contract_sha256": "8444ca9931b0bf3ad983d26799c706f192beaf9624e9d45f32d3843b6ae3ed0f"
+        },
+        {
+          "operation": "github.discussions.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.createDiscussion",
+          "kind": "discussion_create",
+          "contract_sha256": "543c05784146c87b04e68d73157be8c6281072a2c4810a1c0b96123f69bc0809"
+        },
+        {
+          "operation": "github.discussions.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.deleteDiscussion",
+          "kind": "discussion_delete",
+          "contract_sha256": "8333987c680eb06aee55906fc0fac5787737dc291079e4fc3c0061c5b99f770d"
+        },
+        {
+          "operation": "github.discussions.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.repository.discussion",
+          "kind": "discussion_get",
+          "contract_sha256": "09cc11588be3ec9f50418ae58426a2a6abf12063f8c079c49e80852eacf85ea1"
+        },
+        {
+          "operation": "github.discussions.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.repository.discussions",
+          "kind": "discussion_list",
+          "contract_sha256": "43624b1dba067d082b8f62fab320f18bbcd5b2792ffe74048607497669ee98bd"
+        },
+        {
+          "operation": "github.discussions.reopen",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.reopenDiscussion",
+          "kind": "discussion_reopen",
+          "contract_sha256": "b636c1e35244f23f9a65c8e83d542c349afb94e3242093d4c3330807377290cc"
+        },
+        {
+          "operation": "github.discussions.replies.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.node:DiscussionComment.replies",
+          "kind": "reply_list",
+          "contract_sha256": "a5601de05a7dc3ab1efa29ab733db1221ca93212ec5b7d6636dc0db09367f6ae"
+        },
+        {
+          "operation": "github.discussions.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "GraphQL.updateDiscussion",
+          "kind": "discussion_update",
+          "contract_sha256": "4083e4ab7eaab3201038b06b4d59c86c78101ec4a600db51764f2eee0279eb78"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 126,
+      "semantics": "Existing REST package/version list/get/delete/restore is post-publication management, not package publishing. Repository association and immutable package/version IDs remain necessary; a package-manager publishing adapter is a recorded gap.",
+      "required_operations": [
+        {
+          "operation": "github.packages.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/delete-package-for-org|packages/delete-package-for-user",
+          "kind": "package_delete",
+          "contract_sha256": "a562e477d65556b39cd39d664a8857e03ab8864459c3c13bf78f0b1311a26132"
+        },
+        {
+          "operation": "github.packages.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/get-package-for-organization|packages/get-package-for-user",
+          "kind": "package_get",
+          "contract_sha256": "222d5e65a67526ce5a40f7bb619052bb6c4cc653de906a9558ffbfa0c1e1d7d2"
+        },
+        {
+          "operation": "github.packages.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/list-packages-for-organization|packages/list-packages-for-user",
+          "kind": "package_list",
+          "contract_sha256": "94494d9945d693322569b76e064dc45717c7b374757fe4b9fdc8c9b826117d75"
+        },
+        {
+          "operation": "github.packages.restore",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/restore-package-for-org|packages/restore-package-for-user",
+          "kind": "package_restore",
+          "contract_sha256": "6a830d2f0b4c584634c99fce3c11c528d9f1fbe9dbed6db3c63bf593050be10b"
+        },
+        {
+          "operation": "github.packages.versions.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/delete-package-version-for-org|packages/delete-package-version-for-user",
+          "kind": "version_delete",
+          "contract_sha256": "83495168479b5f92ff599545ca4d64f69b564d3c299a3baa82d28184e998b88d"
+        },
+        {
+          "operation": "github.packages.versions.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/get-package-version-for-organization|packages/get-package-version-for-user",
+          "kind": "version_get",
+          "contract_sha256": "b7cfd2569d4650cf6dfa50dc2d59e322bfa743bb5d2ffc922b84720af0924bf0"
+        },
+        {
+          "operation": "github.packages.versions.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/get-all-package-versions-for-package-owned-by-org|packages/get-all-package-versions-for-package-owned-by-user",
+          "kind": "version_list",
+          "contract_sha256": "876c9e0a7b3f1d9ac29fa9b038de87ac9cb701baa907fb1bd2be08719835262e"
+        },
+        {
+          "operation": "github.packages.versions.restore",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "packages/restore-package-version-for-org|packages/restore-package-version-for-user",
+          "kind": "version_restore",
+          "contract_sha256": "edd1cfccacd7c2ea1b238d0c05d2ade7e3e20f81c866c53ff0278ec0cc8712f8"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [
+        "Publishing an owned artifact through a supported package-manager adapter, then verifying exact package/version/digest."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 130,
+      "semantics": "Check runs and suites are separate objects. Create/update, suite preferences, annotations, list/get and re-request are distinct; GitHub App authority for writes cannot be inferred from successful metadata reads or commit-status authority.",
+      "required_operations": [
+        {
+          "operation": "github.checks.create_suite",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/check-suites",
+          "provider_operation_id": "checks/create-suite",
+          "kind": "mutation_metadata",
+          "contract_sha256": "5880b70e3e15543b469a96482cc1cd619680ca8d1337d076b10c7e9ebe180c3d"
+        },
+        {
+          "operation": "github.checks.get_suite",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/check-suites/{check_suite_id}",
+          "provider_operation_id": "checks/get-suite",
+          "kind": "typed_projection",
+          "contract_sha256": "e543ccf86ea105dd3a9914592f2af0663972b1ea1d02bd08ac8b4f13449ad7e4"
+        },
+        {
+          "operation": "github.checks.list_annotations",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/check-runs/{check_run_id}/annotations",
+          "provider_operation_id": "checks/list-annotations",
+          "kind": "typed_projection",
+          "contract_sha256": "f3dacc2625aa3de6913d951d15f6ffdb5cf76bbbda3031a2a43b827d4c80de89"
+        },
+        {
+          "operation": "github.checks.list_for_suite",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/check-suites/{check_suite_id}/check-runs",
+          "provider_operation_id": "checks/list-for-suite",
+          "kind": "typed_projection",
+          "contract_sha256": "b00c28b5d5610914aa834efe1cd91eb213541cbfcdda93d915f1552169fbb5b3"
+        },
+        {
+          "operation": "github.checks.list_suites_for_ref",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/commits/{ref}/check-suites",
+          "provider_operation_id": "checks/list-suites-for-ref",
+          "kind": "typed_projection",
+          "contract_sha256": "10f2ad3cd84e4e67daa62a00d03cc50dfc5e9a7fd0392a0077fa2024355cb7c7"
+        },
+        {
+          "operation": "github.checks.rerequest_run",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/check-runs/{check_run_id}/rerequest",
+          "provider_operation_id": "checks/rerequest-run",
+          "kind": "mutation_metadata",
+          "contract_sha256": "f1d4c9504b70eaef11068fda003908afc556404a7abe4413d0c2499559de5d70"
+        },
+        {
+          "operation": "github.checks.rerequest_suite",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/check-suites/{check_suite_id}/rerequest",
+          "provider_operation_id": "checks/rerequest-suite",
+          "kind": "mutation_metadata",
+          "contract_sha256": "58269addbf65d22c7829e37478543b28b687148db2c96bf22fd93417af5b088d"
+        },
+        {
+          "operation": "github.checks.runs.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/check-runs",
+          "provider_operation_id": "checks/create",
+          "kind": "mutation_metadata",
+          "contract_sha256": "42bcf733b21ccb580bcf799982227a0595eacf9f3692e55d7a4dc96eff5ecc4e"
+        },
+        {
+          "operation": "github.checks.runs.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/check-runs/{check_run_id}",
+          "provider_operation_id": "checks/get",
+          "kind": "object",
+          "contract_sha256": "18301c429bcc0768b4c9f99cada5fcf13f42d952cbec20ec6cce4fd842cc1fb7"
+        },
+        {
+          "operation": "github.checks.runs.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/commits/{ref}/check-runs",
+          "provider_operation_id": "checks/list-for-ref",
+          "kind": "object",
+          "contract_sha256": "c997eef0275a541de5a90bb7657d48d0f287c652f8e23d8112922e738076bea6"
+        },
+        {
+          "operation": "github.checks.runs.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/check-runs/{check_run_id}",
+          "provider_operation_id": "checks/update",
+          "kind": "mutation_metadata",
+          "contract_sha256": "aaa3503099ac47f228243ee7ab06e0dda5b9b808b66e6aad2c2bb960ee218752"
+        },
+        {
+          "operation": "github.checks.set_suites_preferences",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/check-suites/preferences",
+          "provider_operation_id": "checks/set-suites-preferences",
+          "kind": "mutation_metadata",
+          "contract_sha256": "2c53ae62639a39dc5068312958cf7f101c8845bf2a27392abced685c15ea9332"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 131,
+      "semantics": "Statuses are append-only observations per SHA/context, not an update/delete resource. Create, list and combined status are required; a combined success alone cannot attest a particular context or independent build execution.",
+      "required_operations": [
+        {
+          "operation": "github.statuses.combined.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/commits/{ref}/status",
+          "provider_operation_id": "repos/get-combined-status-for-ref",
+          "kind": "object",
+          "contract_sha256": "54c3e320720077997ab2a6b2e127630dba43f0e596fc284b73de9cd53134dd67"
+        },
+        {
+          "operation": "github.statuses.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/statuses/{sha}",
+          "provider_operation_id": "repos/create-commit-status",
+          "kind": "mutation_metadata",
+          "contract_sha256": "a6a8700e7d887998b62e662d53c1fe7b1f0843ca9bdeb2d238377a548da442c8"
+        },
+        {
+          "operation": "github.statuses.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/commits/{ref}/statuses",
+          "provider_operation_id": "repos/list-commit-statuses-for-ref",
+          "kind": "array",
+          "contract_sha256": "be942dc35f83c67d2b9a185c5c457f09a39a973b215abd6140477c6b5899a37d"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 132,
+      "semantics": "Deployment create and status create/list/get form this explicit family. Deployment list/get supports independent readback. Deleting deployments is supporting cleanup, not implied by create/status scope. GitHub deployment records are not proof that a workload deployed.",
+      "required_operations": [
+        {
+          "operation": "github.deployments.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/deployments",
+          "provider_operation_id": "repos/create-deployment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "054653554262b5693e79ab5230dffd693461b2904a3a87ef0f3458ccb3b1d6e9"
+        },
+        {
+          "operation": "github.deployments.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/deployments",
+          "provider_operation_id": "repos/list-deployments",
+          "kind": "array",
+          "contract_sha256": "f823afac557fc55a434d702f2f1d0dd9a287009f7c40085d68026bc44fadac3d"
+        },
+        {
+          "operation": "github.deployments.statuses.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/deployments/{deployment_id}/statuses",
+          "provider_operation_id": "repos/create-deployment-status",
+          "kind": "mutation_metadata",
+          "contract_sha256": "59faf11ad2295dd26646cab483e835e941dc6526ef1b06302dcc758181b73fa7"
+        },
+        {
+          "operation": "github.deployments.statuses.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/deployments/{deployment_id}/statuses",
+          "provider_operation_id": "repos/list-deployment-statuses",
+          "kind": "array",
+          "contract_sha256": "a40893b05064306ac8c1153415312fa2f5622b481945963645d877cf4688d011"
+        },
+        {
+          "operation": "github.repos.get_deployment",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/deployments/{deployment_id}",
+          "provider_operation_id": "repos/get-deployment",
+          "kind": "typed_projection",
+          "contract_sha256": "288211f9d3a3d54fe1cbc8206d6e5ef6e6f0976dc0f30142f3add0b38bfdd695"
+        },
+        {
+          "operation": "github.repos.get_deployment_status",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/deployments/{deployment_id}/statuses/{status_id}",
+          "provider_operation_id": "repos/get-deployment-status",
+          "kind": "typed_projection",
+          "contract_sha256": "7804c5636d9035610afc29e5cd172c6bdea226af4a4ad2bb9f1f2ee4ce52dddd"
+        }
+      ],
+      "supporting_candidates": [
+        "github.repos.delete_deployment"
+      ],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 133,
+      "semantics": "Explicit list/update includes get for verification. The environment PUT can create or replace configuration; protection-rule and branch-policy administration are separate candidates, not authorized by this mapping. Existing rules/reviewers must be preserved.",
+      "required_operations": [
+        {
+          "operation": "github.environments.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}",
+          "provider_operation_id": "repos/get-environment",
+          "kind": "object",
+          "contract_sha256": "a42b8c57c1767afb113cfcdfbfefdb0c72df097cd684144bd4f96e700238c205"
+        },
+        {
+          "operation": "github.environments.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/environments",
+          "provider_operation_id": "repos/get-all-environments",
+          "kind": "object",
+          "contract_sha256": "0ed85f5697fee57d272e182e471f6dcd3a6bc03d27d98ba8544329555137f535"
+        },
+        {
+          "operation": "github.environments.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}",
+          "provider_operation_id": "repos/create-or-update-environment",
+          "kind": "mutation_metadata",
+          "contract_sha256": "406830b0f60e413ad8b0b069699595bd585179a73f3a758da9173a59675ab5f0"
+        }
+      ],
+      "supporting_candidates": [
+        "github.repos.create_deployment_branch_policy",
+        "github.repos.create_deployment_protection_rule",
+        "github.repos.delete_an_environment",
+        "github.repos.delete_deployment_branch_policy",
+        "github.repos.disable_deployment_protection_rule",
+        "github.repos.get_all_deployment_protection_rules",
+        "github.repos.get_custom_deployment_protection_rule",
+        "github.repos.get_deployment_branch_policy",
+        "github.repos.list_custom_deployment_rule_integrations",
+        "github.repos.list_deployment_branch_policies",
+        "github.repos.update_deployment_branch_policy"
+      ],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 134,
+      "semantics": "Repository secret set/remove requires trusted ciphertext custody and repository public-key binding. rotate is a semantic reuse of set with new ciphertext, not a separate endpoint. Metadata reads cannot retrieve values or prove workload use.",
+      "required_operations": [
+        {
+          "operation": "github.actions.get_repo_secret",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/actions/secrets/{secret_name}",
+          "provider_operation_id": "actions/get-repo-secret",
+          "kind": "typed_projection",
+          "contract_sha256": "d358cb4dfba2267958fa3da03e1ca5dc2b80bbba42ef8bc32b22b3471b7983ac"
+        },
+        {
+          "operation": "github.repo_secrets.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/actions/secrets",
+          "provider_operation_id": "actions/list-repo-secrets",
+          "kind": "object",
+          "contract_sha256": "1b95b473963881e3143953fc975c0b23f8e92231904011bf4c10b03e5d604cfe"
+        },
+        {
+          "operation": "github.repo_secrets.public_key.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/actions/secrets/public-key",
+          "provider_operation_id": "actions/get-repo-public-key",
+          "kind": "object",
+          "contract_sha256": "37a335e706ece51a4b9878993e8026e2580a61794c8826943f001582c070ecfc"
+        },
+        {
+          "operation": "github.repo_secrets.remove",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/actions/secrets/{secret_name}",
+          "provider_operation_id": "actions/delete-repo-secret",
+          "kind": "mutation_metadata",
+          "contract_sha256": "e8725c89270f343af312d21e4e37f84a1635725bbadf68a3e735bc0c96857ba5"
+        },
+        {
+          "operation": "github.repo_secrets.set",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/actions/secrets/{secret_name}",
+          "provider_operation_id": "actions/create-or-update-repo-secret",
+          "kind": "mutation_metadata",
+          "contract_sha256": "af7c0131a43b126035be0b486cea163078a7e6f99b4cc6040d21a8cc92018648"
+        }
+      ],
+      "supporting_candidates": [
+        "github.repo_secrets.rotate"
+      ],
+      "unresolved_capabilities": [
+        "Trusted ciphertext custody and exact public-key/target binding with workload-use evidence for rotation."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 135,
+      "semantics": "Repository variables create and update are separate provider operations; set is PATCH, not an upsert. Environment-variable CRUD shares this configuration family. Lists and exact get are required to verify effects; values are non-secret configuration.",
+      "required_operations": [
+        {
+          "operation": "github.actions.create_environment_variable",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}/variables",
+          "provider_operation_id": "actions/create-environment-variable",
+          "kind": "mutation_metadata",
+          "contract_sha256": "701c7b5a88cd51966682db320f815f15976cb7b348abeda3f99d3b6c1780233d"
+        },
+        {
+          "operation": "github.actions.delete_environment_variable",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}/variables/{name}",
+          "provider_operation_id": "actions/delete-environment-variable",
+          "kind": "mutation_metadata",
+          "contract_sha256": "75767bd93d73ae50407ee0cd35a05e7979b52d74acb91d21c8cf382af119095c"
+        },
+        {
+          "operation": "github.actions.get_environment_variable",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}/variables/{name}",
+          "provider_operation_id": "actions/get-environment-variable",
+          "kind": "typed_projection",
+          "contract_sha256": "29b2e390089d4863e8d17148e3c32986eef33e7a0afc8d0311c7d12c14e3e723"
+        },
+        {
+          "operation": "github.actions.get_repo_variable",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/actions/variables/{name}",
+          "provider_operation_id": "actions/get-repo-variable",
+          "kind": "typed_projection",
+          "contract_sha256": "c40b543264316bfeb097d71b6ef26a82523375d02637104a2d442c8d49ac4530"
+        },
+        {
+          "operation": "github.actions.list_environment_variables",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}/variables",
+          "provider_operation_id": "actions/list-environment-variables",
+          "kind": "typed_projection",
+          "contract_sha256": "34fe7fb1abc5129879e4ed6531551d7d5b932f8885a4932a61c7e00879463d4b"
+        },
+        {
+          "operation": "github.actions.update_environment_variable",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/environments/{environment_name}/variables/{name}",
+          "provider_operation_id": "actions/update-environment-variable",
+          "kind": "mutation_metadata",
+          "contract_sha256": "7b881b4f9407d6faaaf32c9f0648d15a288f584076c5a763aee6a2dc1236fdf3"
+        },
+        {
+          "operation": "github.variables.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/actions/variables",
+          "provider_operation_id": "actions/create-repo-variable",
+          "kind": "mutation_metadata",
+          "contract_sha256": "efa4b9a5df17a4f186fc9f4e2fb3341efc90cd91ac8e49a75f9baff694755d42"
+        },
+        {
+          "operation": "github.variables.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/actions/variables",
+          "provider_operation_id": "actions/list-repo-variables",
+          "kind": "object",
+          "contract_sha256": "1505795360e8f86fdcb8af8fdc45cf8f73fb752d5ae4f64b435678c60f015913"
+        },
+        {
+          "operation": "github.variables.remove",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/actions/variables/{name}",
+          "provider_operation_id": "actions/delete-repo-variable",
+          "kind": "mutation_metadata",
+          "contract_sha256": "fb0bfa1a4fba3ad6f027f59365ac4dc0de37b07ac17f06197260baa9197c4513"
+        },
+        {
+          "operation": "github.variables.set",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/actions/variables/{name}",
+          "provider_operation_id": "actions/update-repo-variable",
+          "kind": "mutation_metadata",
+          "contract_sha256": "b6387a41e2c04b56c07b3fe0353421bae17ddc9e6dfa2bab4d4b29f6fba45ec9"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 136,
+      "semantics": "Environment secrets use exact environment and key identity; metadata get/list/public-key/set/delete are distinct. Rotation reuses set. Plaintext and secret ciphertext cannot be used as public result evidence.",
+      "required_operations": [
+        {
+          "operation": "github.environment_secrets.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "actions/delete-environment-secret",
+          "kind": "secret_delete",
+          "contract_sha256": "3aae5243acd1df2e06cfdb2e73bdd57ae3070c541e537eca7b8f636dbcb47c66"
+        },
+        {
+          "operation": "github.environment_secrets.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "actions/get-environment-secret",
+          "kind": "secret_get",
+          "contract_sha256": "64fec6e67ceda4d78e6580f3df4ec95b67da55f6ba9da33a8031527ee9f208b5"
+        },
+        {
+          "operation": "github.environment_secrets.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "actions/list-environment-secrets",
+          "kind": "secret_list",
+          "contract_sha256": "8f07e677eb8d53687b3ffd60b4b561612d9854b0043c50bd2145ed12950f1653"
+        },
+        {
+          "operation": "github.environment_secrets.public_key.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "actions/get-environment-public-key",
+          "kind": "secret_key",
+          "contract_sha256": "ca9353a4468ed0d315fe405a437d38efa16f6656e1e75b2a150065f5f0191ae1"
+        },
+        {
+          "operation": "github.environment_secrets.set",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "actions/create-or-update-environment-secret",
+          "kind": "secret_set",
+          "contract_sha256": "dceed8034220ae003852c1870483e93bcd43c2e528f4784493cd609849ebfeac"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [
+        "Trusted environment-secret ciphertext custody, target/key binding and rotation-use evidence."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 137,
+      "semantics": "Webhook CRUD, exact get, delivery list/get and redelivery cover the explicit scope. Ping/test and separate config reads/writes are supporting endpoints. Redelivery can trigger external effects and needs exact owned delivery and receiver confirmation.",
+      "required_operations": [
+        {
+          "operation": "github.repos.get_webhook",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/hooks/{hook_id}",
+          "provider_operation_id": "repos/get-webhook",
+          "kind": "typed_projection",
+          "contract_sha256": "bcfd774b8b454bcc48345c4d17afd6a9f282f1592bc6b9a7c4c4ab9e165a8d61"
+        },
+        {
+          "operation": "github.repos.get_webhook_delivery",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}",
+          "provider_operation_id": "repos/get-webhook-delivery",
+          "kind": "typed_projection",
+          "contract_sha256": "271dfd539de3a51793f76c0b818b764c57b8838741d92ddb2583d9260e734a13"
+        },
+        {
+          "operation": "github.webhooks.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/hooks",
+          "provider_operation_id": "repos/create-webhook",
+          "kind": "mutation_metadata",
+          "contract_sha256": "f9cca082639c575b56b8d57761c2edbef1ccbab8a6945d5d821ceb0e64708838"
+        },
+        {
+          "operation": "github.webhooks.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/hooks/{hook_id}",
+          "provider_operation_id": "repos/delete-webhook",
+          "kind": "mutation_metadata",
+          "contract_sha256": "7dc3af78401f502d1b20a4521e2cf74797d94646f9060d51acdae2f0b8f54e1a"
+        },
+        {
+          "operation": "github.webhooks.deliveries.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/hooks/{hook_id}/deliveries",
+          "provider_operation_id": "repos/list-webhook-deliveries",
+          "kind": "array",
+          "contract_sha256": "b72118368592580bb443741f0b4e4aa56a682b7654da0dc0ed76fce3a841917a"
+        },
+        {
+          "operation": "github.webhooks.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/hooks",
+          "provider_operation_id": "repos/list-webhooks",
+          "kind": "array",
+          "contract_sha256": "6db79800e4304843b9ed96ce685f2ad96bcb275e7a34c5dc77636df03a347bb0"
+        },
+        {
+          "operation": "github.webhooks.redeliver",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/hooks/{hook_id}/deliveries/{delivery_id}/attempts",
+          "provider_operation_id": "repos/redeliver-webhook-delivery",
+          "kind": "mutation_metadata",
+          "contract_sha256": "531ecc82c76b531b519ef014797bb3886e9b286ad32fcaeea44593603ab921bd"
+        },
+        {
+          "operation": "github.webhooks.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/hooks/{hook_id}",
+          "provider_operation_id": "repos/update-webhook",
+          "kind": "mutation_metadata",
+          "contract_sha256": "c8bbdf571ecc9d98f8727c5626ce2f5a4a049e8b1e37268470fc23ad12b135eb"
+        }
+      ],
+      "supporting_candidates": [
+        "github.repos.get_webhook_config_for_repo",
+        "github.repos.ping_webhook",
+        "github.repos.test_push_webhook",
+        "github.repos.update_webhook_config_for_repo"
+      ],
+      "unresolved_capabilities": [
+        "Owned receiver signature-verification and correlated delivery/redelivery outcome evidence."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 138,
+      "semantics": "Collaborator invitations/permissions and repository teams are related but distinct. Existing collaborator and invitation handlers plus teams listing do not implement team-to-repository permission grant/change/revoke; the missing lifecycle remains a blocker.",
+      "required_operations": [
+        {
+          "operation": "github.collaborators.add",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/collaborators/{username}",
+          "provider_operation_id": "repos/add-collaborator",
+          "kind": "mutation_metadata",
+          "contract_sha256": "537dc0a4f5c1eba8560309b05015bbd39931dd87b668553cae8768b5120591e8"
+        },
+        {
+          "operation": "github.collaborators.check",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-supplement-api/contracts.json",
+          "provider_operation_id": "repos/check-collaborator",
+          "kind": "github_collaborator",
+          "contract_sha256": "1782ab362127f198e3362ec750f14b079ce97bcb097f33b14bafebe73d4cf82e"
+        },
+        {
+          "operation": "github.collaborators.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/collaborators",
+          "provider_operation_id": "repos/list-collaborators",
+          "kind": "array",
+          "contract_sha256": "ca6179b5692ba0c491b1a0526ed24a404d94685c1ad764ad1eb086a3d351b0db"
+        },
+        {
+          "operation": "github.collaborators.permission.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/collaborators/{username}/permission",
+          "provider_operation_id": "repos/get-collaborator-permission-level",
+          "kind": "object",
+          "contract_sha256": "fe8472479eeb530d8baa3f78d706de692bb7af51de63ee3ea87581fd991e6f9b"
+        },
+        {
+          "operation": "github.collaborators.remove",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/collaborators/{username}",
+          "provider_operation_id": "repos/remove-collaborator",
+          "kind": "mutation_metadata",
+          "contract_sha256": "2b0e357a51cd7e30a2d027bc5f80121f57c18d1292232e3c542d583f1a78dae1"
+        },
+        {
+          "operation": "github.repos.delete_invitation",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/invitations/{invitation_id}",
+          "provider_operation_id": "repos/delete-invitation",
+          "kind": "mutation_metadata",
+          "contract_sha256": "e4941767467deac1db237b88d00df718772e66eed37ae729ef2c89dfb8cfdb5a"
+        },
+        {
+          "operation": "github.repos.list_invitations",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/invitations",
+          "provider_operation_id": "repos/list-invitations",
+          "kind": "typed_projection",
+          "contract_sha256": "64e752574801b44c8e6708ba963dd5493d1466e03b84b4b34bcc5240c5a8c00d"
+        },
+        {
+          "operation": "github.repos.list_teams",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/teams",
+          "provider_operation_id": "repos/list-teams",
+          "kind": "typed_projection",
+          "contract_sha256": "cd9aea149afca5b771b6c347b8e371a78a56afe6c709f2d57b19cbe2b6f24c79"
+        },
+        {
+          "operation": "github.repos.update_invitation",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/invitations/{invitation_id}",
+          "provider_operation_id": "repos/update-invitation",
+          "kind": "mutation_metadata",
+          "contract_sha256": "053d67413752b749358cc7e2d14589bbb381cb0ef8ae55d6ba033ed3cd55b00c"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [
+        "Team-to-repository permission get/grant/update/revoke lifecycle with canonical organization/team/repository bindings."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 139,
+      "semantics": "Ruleset CRUD, effective branch rules, history/version and evaluation suites are distinct. Effective rules can originate above the repository; readback must not imply authority to edit inherited organization rules.",
+      "required_operations": [
+        {
+          "operation": "github.repos.get_branch_rules",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rules/branches/{branch}",
+          "provider_operation_id": "repos/get-branch-rules",
+          "kind": "typed_projection",
+          "contract_sha256": "02ccbfec4b843ecbfe71b2942e4881f5a80e498ff8f657e882ad642da1703d6d"
+        },
+        {
+          "operation": "github.repos.get_repo_rule_suite",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rulesets/rule-suites/{rule_suite_id}",
+          "provider_operation_id": "repos/get-repo-rule-suite",
+          "kind": "typed_projection",
+          "contract_sha256": "5b25d40aecb529dd25845ae53540be18e608854e9af0414b319b2b5dd113b3a9"
+        },
+        {
+          "operation": "github.repos.get_repo_rule_suites",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rulesets/rule-suites",
+          "provider_operation_id": "repos/get-repo-rule-suites",
+          "kind": "typed_projection",
+          "contract_sha256": "30d34c6dd3502d15b06beea56ec2248ac1069ac94a933dc8f4ee9c4b049883e1"
+        },
+        {
+          "operation": "github.repos.get_repo_ruleset_history",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rulesets/{ruleset_id}/history",
+          "provider_operation_id": "repos/get-repo-ruleset-history",
+          "kind": "typed_projection",
+          "contract_sha256": "8bc60b9dc3b91e21632de9e2ffa2edc58f38a979b7cfe378a7e278d6e05c1c4e"
+        },
+        {
+          "operation": "github.repos.get_repo_ruleset_version",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rulesets/{ruleset_id}/history/{version_id}",
+          "provider_operation_id": "repos/get-repo-ruleset-version",
+          "kind": "typed_projection",
+          "contract_sha256": "653a4f4cbcfcf605df9ff6da4781aa09bb381aca8abcf039c40c2f87394bcecb"
+        },
+        {
+          "operation": "github.rulesets.create",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/rulesets",
+          "provider_operation_id": "repos/create-repo-ruleset",
+          "kind": "mutation_metadata",
+          "contract_sha256": "7a140c91eb28f2be2bae8316eac4b2cacd086a92eaa0d3633118d35274e6ba27"
+        },
+        {
+          "operation": "github.rulesets.delete",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/rulesets/{ruleset_id}",
+          "provider_operation_id": "repos/delete-repo-ruleset",
+          "kind": "mutation_metadata",
+          "contract_sha256": "ce5b80a8bb94863e1548f5b0384e3b11c8c1369824e3ef81ba16ec95c77d457f"
+        },
+        {
+          "operation": "github.rulesets.get",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rulesets/{ruleset_id}",
+          "provider_operation_id": "repos/get-repo-ruleset",
+          "kind": "object",
+          "contract_sha256": "67effc08871a760d100b54d0813c609e7b3897277aec34450fbcafc72ca56208"
+        },
+        {
+          "operation": "github.rulesets.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/rulesets",
+          "provider_operation_id": "repos/get-repo-rulesets",
+          "kind": "array",
+          "contract_sha256": "d2f0085c87d406b7252772937e4c9d506994f74e904a71ec9c741f3002438aa5"
+        },
+        {
+          "operation": "github.rulesets.update",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/rulesets/{ruleset_id}",
+          "provider_operation_id": "repos/update-repo-ruleset",
+          "kind": "mutation_metadata",
+          "contract_sha256": "27c3502c1b1fb9955f83cf9707bba53546ead2abe17319abca0efc4a330fd281"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 140,
+      "semantics": "Organization audit is filtered to the configured repository and a bounded date window. Existing owner must actually be an organization with provider entitlement; no substitution of a different organization or audit credential is allowed.",
+      "required_operations": [
+        {
+          "operation": "github.audit.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-gap-api/contracts.ts",
+          "provider_operation_id": "orgs/get-audit-log",
+          "kind": "audit",
+          "contract_sha256": "e4971c533467dbd4d31d0006de2e44d9bc755d5678be8b635c77e390abe4ac88"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 141,
+      "semantics": "Security alert listing includes Dependabot, secret-scanning and code-scanning families; alert get/update and advisory tracking are distinct from enabling a security product. Existing broad candidates are retained conservatively; no security setting is activated.",
+      "required_operations": [
+        {
+          "operation": "github.code_security.get_configuration_for_repository",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-security-configuration",
+          "provider_operation_id": "code-security/get-configuration-for-repository",
+          "kind": "typed_projection",
+          "contract_sha256": "fa20556d08d51d60e4cb20fca80a3c6ac5b28dc79c43bd13585acc866a06d9f2"
+        },
+        {
+          "operation": "github.dependabot.get_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/dependabot/alerts/{alert_number}",
+          "provider_operation_id": "dependabot/get-alert",
+          "kind": "typed_projection",
+          "contract_sha256": "5ece4540d0db4ff5d3f43815e0548138b1d5c9295d627cf167abd2ac961da2d2"
+        },
+        {
+          "operation": "github.dependabot.update_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/dependabot/alerts/{alert_number}",
+          "provider_operation_id": "dependabot/update-alert",
+          "kind": "mutation_metadata",
+          "contract_sha256": "72e1995395a8a81c258d94bd71ac77545891f98192aa7d7c2f7a7e5d8e4e2530"
+        },
+        {
+          "operation": "github.repos.disable_vulnerability_alerts",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/vulnerability-alerts",
+          "provider_operation_id": "repos/disable-vulnerability-alerts",
+          "kind": "mutation_metadata",
+          "contract_sha256": "2cd4542efe84b9efcce595daec26c04cacf47db54c3babede98c0933e2a92f98"
+        },
+        {
+          "operation": "github.repos.enable_vulnerability_alerts",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PUT",
+          "path": "/repos/{owner}/{repo}/vulnerability-alerts",
+          "provider_operation_id": "repos/enable-vulnerability-alerts",
+          "kind": "mutation_metadata",
+          "contract_sha256": "93e27a216b95640e734394e34a095135f5d7fcf6893e7ddf4e51ea93caa11409"
+        },
+        {
+          "operation": "github.secret_scanning.get_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}",
+          "provider_operation_id": "secret-scanning/get-alert",
+          "kind": "typed_projection",
+          "contract_sha256": "ac94bedc586cfb361fa60fd443b44a67ba99473ae559b2b3d083a8d2a5354a6b"
+        },
+        {
+          "operation": "github.secret_scanning.list_alerts_for_repo",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/secret-scanning/alerts",
+          "provider_operation_id": "secret-scanning/list-alerts-for-repo",
+          "kind": "typed_projection",
+          "contract_sha256": "fc8c09750f6f0b05deb1f3b8746b9131c09721fb71b5a9da11efabcd4ca4d55a"
+        },
+        {
+          "operation": "github.secret_scanning.list_locations_for_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}/locations",
+          "provider_operation_id": "secret-scanning/list-locations-for-alert",
+          "kind": "typed_projection",
+          "contract_sha256": "a4589a529ff0bec211673d9d7be19b1c312c8379cde68a7bcff26c4bd9abe03b"
+        },
+        {
+          "operation": "github.secret_scanning.update_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/secret-scanning/alerts/{alert_number}",
+          "provider_operation_id": "secret-scanning/update-alert",
+          "kind": "mutation_metadata",
+          "contract_sha256": "b6a480170a7efc1b4d75a8228e03640e3b5e52369b3169e03512537890f916ab"
+        },
+        {
+          "operation": "github.security.code_scanning.alerts.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts",
+          "provider_operation_id": "code-scanning/list-alerts-for-repo",
+          "kind": "array",
+          "contract_sha256": "2c59047b964278db2414e345bedd264f070796e559e76672b0022270fb3df1e7"
+        },
+        {
+          "operation": "github.security.dependabot.alerts.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/dependabot/alerts",
+          "provider_operation_id": "dependabot/list-alerts-for-repo",
+          "kind": "array",
+          "contract_sha256": "88473bbfc7d4714246ca1d3744a765c7417d0d579f9a0ee4b68133899c99e338"
+        },
+        {
+          "operation": "github.security.vulnerability_alerts.check",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-supplement-api/contracts.json",
+          "provider_operation_id": "repos/check-vulnerability-alerts",
+          "kind": "github_vulnerability",
+          "contract_sha256": "966ebfc5a762be6d7985a8dfbf45e221940a6d4e1bcfff0ad4e09461a4022089"
+        },
+        {
+          "operation": "github.security_advisories.create_fork",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/security-advisories/{ghsa_id}/forks",
+          "provider_operation_id": "security-advisories/create-fork",
+          "kind": "mutation_metadata",
+          "contract_sha256": "c4785fdeff1be1b4cba80586225f0331e4ded42643ae8108574e63ea7f47fa33"
+        },
+        {
+          "operation": "github.security_advisories.create_private_vulnerability_report",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/security-advisories/reports",
+          "provider_operation_id": "security-advisories/create-private-vulnerability-report",
+          "kind": "mutation_metadata",
+          "contract_sha256": "1497f74caf7754977649514e8c10487ff52b8d98520b5737853c461ae2cee5aa"
+        },
+        {
+          "operation": "github.security_advisories.create_repository_advisory",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/security-advisories",
+          "provider_operation_id": "security-advisories/create-repository-advisory",
+          "kind": "mutation_metadata",
+          "contract_sha256": "8bb6d1f8b9cd5c2d5afd6534169e79cd3e2e45642cce133b590cb1e31b6e95d8"
+        },
+        {
+          "operation": "github.security_advisories.create_repository_advisory_cve_request",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/security-advisories/{ghsa_id}/cve",
+          "provider_operation_id": "security-advisories/create-repository-advisory-cve-request",
+          "kind": "mutation_metadata",
+          "contract_sha256": "525627a98bcdb9ef84913a6bb07610f75ca26f114efecc491593116c616817c3"
+        },
+        {
+          "operation": "github.security_advisories.get_repository_advisory",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/security-advisories/{ghsa_id}",
+          "provider_operation_id": "security-advisories/get-repository-advisory",
+          "kind": "typed_projection",
+          "contract_sha256": "771bf58b09e7673435054af52c8545f99a918fcf30dbac024aa81d9ec83629ad"
+        },
+        {
+          "operation": "github.security_advisories.list_repository_advisories",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/security-advisories",
+          "provider_operation_id": "security-advisories/list-repository-advisories",
+          "kind": "typed_projection",
+          "contract_sha256": "7711d80d95e66c61bd82b40cf4046141e5edd0f4c8929b5476700b5664a5f818"
+        },
+        {
+          "operation": "github.security_advisories.update_repository_advisory",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/security-advisories/{ghsa_id}",
+          "provider_operation_id": "security-advisories/update-repository-advisory",
+          "kind": "mutation_metadata",
+          "contract_sha256": "bfe60806553a926bf7b59956b37ad419155400c3b5cc714969603eccbb71bfac"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [],
+      "fully_accepted": false
+    },
+    {
+      "family": 142,
+      "semantics": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required.",
+      "required_operations": [
+        {
+          "operation": "github.code_scanning.commit_autofix",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/autofix/commits",
+          "provider_operation_id": "code-scanning/commit-autofix",
+          "kind": "mutation_metadata",
+          "contract_sha256": "0c7aaa2db9f18368619cda34d8b31d7bb55d0fe1b1109ddd00f52bbe638105b1"
+        },
+        {
+          "operation": "github.code_scanning.create_autofix",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/autofix",
+          "provider_operation_id": "code-scanning/create-autofix",
+          "kind": "mutation_metadata",
+          "contract_sha256": "fa2c1aa29163676ee85157556dc2a8b159bfd7bf294582b4d04c0460387feafd"
+        },
+        {
+          "operation": "github.code_scanning.create_variant_analysis",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/code-scanning/codeql/variant-analyses",
+          "provider_operation_id": "code-scanning/create-variant-analysis",
+          "kind": "mutation_metadata",
+          "contract_sha256": "4f7e486e01b3283369dd3c805a45b899f2fc4ca3a7a3c805b1eddebcc5e9e943"
+        },
+        {
+          "operation": "github.code_scanning.delete_analysis",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/code-scanning/analyses/{analysis_id}",
+          "provider_operation_id": "code-scanning/delete-analysis",
+          "kind": "mutation_metadata",
+          "contract_sha256": "7d197e0cef6e6ff3ab1987246ca75a12cb5e8e1fdb327a4a27a99f7e0eef6412"
+        },
+        {
+          "operation": "github.code_scanning.delete_codeql_database",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "DELETE",
+          "path": "/repos/{owner}/{repo}/code-scanning/codeql/databases/{language}",
+          "provider_operation_id": "code-scanning/delete-codeql-database",
+          "kind": "mutation_metadata",
+          "contract_sha256": "873c7fd4d7e16f7e579b6b921c0c637949dcaffc63d626881899beb6f4f2c367"
+        },
+        {
+          "operation": "github.code_scanning.get_ai_scan_enablement",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/ai-scan",
+          "provider_operation_id": "code-scanning/get-ai-scan-enablement",
+          "kind": "typed_projection",
+          "contract_sha256": "f1b2cf4ed75e6d6d86f32f92c5e4357b0d9a6e18bad68b202484b5d73c32869c"
+        },
+        {
+          "operation": "github.code_scanning.get_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}",
+          "provider_operation_id": "code-scanning/get-alert",
+          "kind": "typed_projection",
+          "contract_sha256": "2b4f6cbb0b5e5536b0b6d88f2ac9c47e9f086bac0722d18f39e80a2178fcfa7e"
+        },
+        {
+          "operation": "github.code_scanning.get_analysis",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/analyses/{analysis_id}",
+          "provider_operation_id": "code-scanning/get-analysis",
+          "kind": "typed_projection",
+          "contract_sha256": "8e611f6825b364e436448e79f039ece16adb9a3ea541d86a4440e8bdf5094dd9"
+        },
+        {
+          "operation": "github.code_scanning.get_autofix",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/autofix",
+          "provider_operation_id": "code-scanning/get-autofix",
+          "kind": "typed_projection",
+          "contract_sha256": "2f2e6784b0832e00f86a4326d791627e102b67c5d6ac5e3f822dc06feacd0de3"
+        },
+        {
+          "operation": "github.code_scanning.get_codeql_database",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/codeql/databases/{language}",
+          "provider_operation_id": "code-scanning/get-codeql-database",
+          "kind": "typed_projection",
+          "contract_sha256": "5c4b0de4044d6dd62e07578d7d0fcfb0ddbbfcbbd725ce976f89ebcec2e9a2ff"
+        },
+        {
+          "operation": "github.code_scanning.get_default_setup",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/default-setup",
+          "provider_operation_id": "code-scanning/get-default-setup",
+          "kind": "typed_projection",
+          "contract_sha256": "6f2523f4967b637003d0c18f343f325487062405a8973a8531d632bd18b1afeb"
+        },
+        {
+          "operation": "github.code_scanning.get_sarif",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/sarifs/{sarif_id}",
+          "provider_operation_id": "code-scanning/get-sarif",
+          "kind": "typed_projection",
+          "contract_sha256": "5d160cebe7b1f4de5a318a7fdfe2794d3db1103ba7100739106a806d51ebd45b"
+        },
+        {
+          "operation": "github.code_scanning.get_variant_analysis",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/codeql/variant-analyses/{codeql_variant_analysis_id}",
+          "provider_operation_id": "code-scanning/get-variant-analysis",
+          "kind": "typed_projection",
+          "contract_sha256": "0e9f2e07691f58df23d723de2a5028a066551911f967f487103e870a2d18fe8f"
+        },
+        {
+          "operation": "github.code_scanning.get_variant_analysis_repo_task",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/codeql/variant-analyses/{codeql_variant_analysis_id}/repos/{repo_owner}/{repo_name}",
+          "provider_operation_id": "code-scanning/get-variant-analysis-repo-task",
+          "kind": "typed_projection",
+          "contract_sha256": "278a78fdf6865dabcbdc5e77e0d5c0411c77be313efc33b6a1a20a76d5093eac"
+        },
+        {
+          "operation": "github.code_scanning.list_alert_instances",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}/instances",
+          "provider_operation_id": "code-scanning/list-alert-instances",
+          "kind": "typed_projection",
+          "contract_sha256": "e19a375e7097c208db1328c45098108dc6eec3dba1d6abc528ff88295d0deaaf"
+        },
+        {
+          "operation": "github.code_scanning.list_codeql_databases",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/codeql/databases",
+          "provider_operation_id": "code-scanning/list-codeql-databases",
+          "kind": "typed_projection",
+          "contract_sha256": "9b43c8a16f4ee93dcf14f41dd81c2a74be4567a6568c1aac22e9826d5e6d41b9"
+        },
+        {
+          "operation": "github.code_scanning.list_recent_analyses",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/analyses",
+          "provider_operation_id": "code-scanning/list-recent-analyses",
+          "kind": "typed_projection",
+          "contract_sha256": "00b9c1253947d8409d826d90b68098de3390b416097bd17faf75bb4a8f8723e5"
+        },
+        {
+          "operation": "github.code_scanning.update_ai_scan_enablement",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/code-scanning/ai-scan",
+          "provider_operation_id": "code-scanning/update-ai-scan-enablement",
+          "kind": "mutation_metadata",
+          "contract_sha256": "77d64f156c168a85a470ac02da80c27ea59d9ddfe180f4e4a15bc0af69108e3b"
+        },
+        {
+          "operation": "github.code_scanning.update_alert",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts/{alert_number}",
+          "provider_operation_id": "code-scanning/update-alert",
+          "kind": "mutation_metadata",
+          "contract_sha256": "54e5ce78e64ce2419ff8ee1d9729d7a5c9f6fb652995f288bfc256fd4074c59b"
+        },
+        {
+          "operation": "github.code_scanning.update_default_setup",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "PATCH",
+          "path": "/repos/{owner}/{repo}/code-scanning/default-setup",
+          "provider_operation_id": "code-scanning/update-default-setup",
+          "kind": "mutation_metadata",
+          "contract_sha256": "61843480905d68de3af88c0cd794968ec5e13832e58490db14f968d1e4fdd2bd"
+        },
+        {
+          "operation": "github.code_scanning.upload_sarif",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/expansion_contracts.json",
+          "method": "POST",
+          "path": "/repos/{owner}/{repo}/code-scanning/sarifs",
+          "provider_operation_id": "code-scanning/upload-sarif",
+          "kind": "mutation_metadata",
+          "contract_sha256": "224e81614b78e1d9de1469063c9d24e97d4ce115ae04a316273ef065a37ef464"
+        },
+        {
+          "operation": "github.security.code_scanning.alerts.list",
+          "source_descriptor_found": true,
+          "source_file": "supabase/functions/sandy-provider-operation-api/contracts.json",
+          "method": "GET",
+          "path": "/repos/{owner}/{repo}/code-scanning/alerts",
+          "provider_operation_id": "code-scanning/list-alerts-for-repo",
+          "kind": "array",
+          "contract_sha256": "2c59047b964278db2414e345bedd264f070796e559e76672b0022270fb3df1e7"
+        }
+      ],
+      "supporting_candidates": [],
+      "unresolved_capabilities": [
+        "Canonical asynchronous SARIF/variant-analysis/autofix completion and recovery evidence."
+      ],
+      "fully_accepted": false
+    }
+  ]
+}

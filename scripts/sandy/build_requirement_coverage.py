@@ -370,7 +370,8 @@ def reconcile(requirements, registry, functions, disposition, positive, denied, 
         required_rows = [rows[name] for name in sorted(required) if name in rows]
         actual = sorted(required & set(positive))
         certified = disposition.get("family_acceptance", {}).get(str(ident), {})
-        complete = (str(ident) in overrides
+        capability_gaps = disposition.get("unresolved_family_capabilities", {}).get(str(ident), [])
+        complete = (not capability_gaps and str(ident) in overrides
                     and certified.get("all_required_constituents_reviewed") is True
                     and certified.get("shared_and_contract_tests_passed") is True
                     and certified.get("representative_provider_acceptance_passed") is True
@@ -383,7 +384,7 @@ def reconcile(requirements, registry, functions, disposition, positive, denied, 
         # Only an explicit constituent review can classify code as complete.
         # A deployed function, registry flags or a generated schema cannot do so.
         source_candidates = set(requirement.get("source_gateway_operation_ids", []))
-        implemented = (review.get("reviewed_explicit_constituents") is True
+        implemented = (not capability_gaps and review.get("reviewed_explicit_constituents") is True
                        and review.get("code_status") == "implemented_for_reviewed_authorized_targets"
                        and bool(required) and required <= rows.keys()
                        and required <= source_candidates)
@@ -396,6 +397,7 @@ def reconcile(requirements, registry, functions, disposition, positive, denied, 
             "implementation_assessment": "implemented_awaiting_real_family_acceptance" if implemented and not complete
                 else "fully_operational" if complete else "implementation_or_constituent_reconciliation_required",
             "implementation_review": review or None,
+            "unresolved_capability_obligations": capability_gaps,
             "software_or_constituent_reconciliation_required": software_required,
             "external_dependency_ids": [dependency["id"] for dependency in external],
             "external_dependency_details": external,
