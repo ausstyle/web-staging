@@ -73,6 +73,7 @@ import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {createControllerTransport} from "./session-transport.mjs";
 import {showAutonomousPolicyControls} from "./autonomous-policy.mjs";
 import {showHostingAccountApproval,RELEASE as hostingAccountRelease} from "./hosting-account-approval.mjs";
+import {showRegionalReadApproval} from "./regional-read-approval.mjs";
 import {showProviderResponseApproval} from "./provider-response-approval.mjs";
 import {showAmendmentBApproval} from "./amendment-b-approval.mjs?v=2";
 const sb=createClient("https://zmqlyygzqoidkcwdysok.supabase.co","sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -216,6 +217,11 @@ async function refreshEngineeringChanges(){
  finally{engineeringChangesBusy=false;render()}
 }
 function showEngineeringChanges(c){
+ if(new URLSearchParams(location.search).get("release")==="regional-read"){
+  if(data?.role==="owner")showRegionalReadApproval(c,controllerTransport);
+  else txt(c,"Sign in with your existing Controller Owner account.","muted");
+  return;
+ }
  if(data?.role==="owner"){
   showHostingAccountApproval(c,controllerTransport);
   if(new URLSearchParams(location.search).get("change")===hostingAccountRelease.change)return;
@@ -485,6 +491,6 @@ document.querySelectorAll(".nav[data-view]").forEach(n=>n.onclick=()=>{view=n.da
 $("refresh").onclick=load;$("signout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 $("switchAccount").onclick=async()=>{await sb.auth.signOut();location.href="../app/?return="+encodeURIComponent(location.pathname)};
 $("signin").onclick=async()=>{const s=(await sb.auth.getSession()).data.session;if(s){await load();return}location.href="../app/"};
-view=new URLSearchParams(location.search).get("change")===hostingAccountRelease.change?"changes":location.hash.slice(1)==="roadmap"?"qa":headings[location.hash.slice(1)]?location.hash.slice(1):"overview";
+view=new URLSearchParams(location.search).get("release")==="regional-read"?"changes":new URLSearchParams(location.search).get("change")===hostingAccountRelease.change?"changes":location.hash.slice(1)==="roadmap"?"qa":headings[location.hash.slice(1)]?location.hash.slice(1):"overview";
 load().then(()=>{if(view==="engineering"||view==="changes")refreshEngineeringChanges();if(view==="activity")loadActivity(true);if(view==="examiner"){loadExaminerProductionAccount();loadExaminerRuns();loadExaminerProduction()}});
 </script></body></html>
