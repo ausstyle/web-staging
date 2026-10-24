@@ -73,7 +73,7 @@ Deno.serve(async(req)=>{
       return result;
     };
     const actions:Record<string,unknown>[]=[];
-    let finalSummary="";
+    let finalSummary="",modelDeclaredDone=false;
     for(let step=0;step<4;step++){
       const current=await db.from("sandy_computer_sessions").select("control_mode").eq("id",sessionId).single();
       if(current.error||current.data?.control_mode!=="agent")throw Error("human_takeover");
@@ -87,7 +87,7 @@ Deno.serve(async(req)=>{
       const raw=(modelBody.output??[]).flatMap((o:any)=>(o.content??[]).filter((c:any)=>c.type==="output_text").map((c:any)=>c.text)).join("").trim();
       let act:any;try{act=JSON.parse(raw.replace(/^\`\`\`(?:json)?\s*/i,"").replace(/\`\`\`\s*$/,""))}catch{throw Error("agent_invalid_json")}
       if(!["click","type","key","scroll","done"].includes(act.action))throw Error("agent_invalid_action");
-      if(act.action==="done"){finalSummary=String(act.summary??"Finished").slice(0,1500);break;}
+      if(act.action==="done"){modelDeclaredDone=true;finalSummary=String(act.summary??"Finished").slice(0,1500);break;}
       const validXY=Number.isInteger(act.x)&&act.x>=0&&act.x<=32767&&Number.isInteger(act.y)&&act.y>=0&&act.y<=32767;
       if((act.action==="click"||act.action==="scroll")&&!validXY)throw Error("agent_invalid_coordinates");
       let path:string;let payload:Record<string,unknown>;
@@ -98,8 +98,11 @@ Deno.serve(async(req)=>{
       await desktop(path,"POST",payload);
       actions.push({step:step+1,action:act.action,...(act.action==="type"?{text_length:act.text.length}:act.action==="click"?{x:act.x,y:act.y}:{})});
     }
-    await finish("completed",{task_type:"browser_agent",steps:actions,summary:finalSummary||"Reached safe 4-step limit; no completion verified",complete:Boolean(finalSummary)});
-    return reply({ok:true,task_id:id,status:"completed",summary:finalSummary,steps:actions.length,complete:Boolean(finalSummary)});
+    // A model's stopping decision and summary are not independent outcome evidence.
+    // Completed is the existing worker-attempt state, not verified task success.
+    const verification={model_declared_done:modelDeclaredDone,execution_verified:false,objective_verified:false,complete:false};
+    await finish("completed",{task_type:"browser_agent",steps:actions,summary:finalSummary||"Reached safe 4-step limit; no completion verified",...verification});
+    return reply({ok:true,task_id:id,status:"completed",summary:finalSummary,steps:actions.length,...verification});
   }
   let command="";
   if(taskType==="probe")command="pwd";

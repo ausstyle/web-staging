@@ -1,0 +1,15 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-computer-worker",
+  "version": 59,
+  "verify_jwt": false,
+  "body_sha256": "1fd6a77c1175840487a382ab25b94092d6953ca226a80ebeaf802ad59acc4707",
+  "before_files": {
+    "_shared/sandy-agent-operations/worker_computer_identity.ts": "7b9cde01545f0a00614d7f03c1e74574b7660cfae21b54857aad005d6cbb5888",
+    "sandy-computer-worker/eligibility.ts": "e87cdf8f564f5d7af8283cc19af1d42d05678d30d1a542d9e3b7c862a4bc5d36",
+    "sandy-computer-worker/index.ts": "23f538b1347955091e121d08bed6385b5d8a123a5fdbfa9582ba2f342f29537d"
+  },
+  "replacements": {
+    "sandy-computer-worker/index.ts": "690609041eb6b9df33e70df635d49f71055a9630ad8f58f1113a717b9bea1bb6"
+  }
+}

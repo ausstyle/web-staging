@@ -49,6 +49,18 @@ class RuntimeSliceWorkflowTests(unittest.TestCase):
             'sandy-vm-protocol-api/winrm.ts',
         })
 
+    def test_computer_truth_release_cannot_change_worker_authority_or_dispatch_guards(self):
+        self.assertIn("extra['computer-truth']=['sandy-computer-worker']", self.source)
+        manifest = json.loads((ROOT / 'docs/sandy-engineering/evaluations/runtime-slices/sandy-computer-worker.json').read_text())
+        self.assertEqual(manifest['version'], 59)
+        self.assertIs(manifest['verify_jwt'], False)  # Existing Vault worker-token boundary.
+        self.assertEqual(set(manifest['replacements']), {'sandy-computer-worker/index.ts'})
+        self.assertEqual(set(manifest['before_files']), {
+            'sandy-computer-worker/index.ts',
+            'sandy-computer-worker/eligibility.ts',
+            '_shared/sandy-agent-operations/worker_computer_identity.ts',
+        })
+
 
 if __name__ == '__main__':
     unittest.main()

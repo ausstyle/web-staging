@@ -207,7 +207,7 @@ jobs:
           deno test scripts/sandy/verify_iap_closed_candidate_test.ts
           deno check scripts/sandy/submit_iap_repair_proposal.ts
           deno check supabase/functions/sandy-computer-worker/eligibility.ts
-          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts
+          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts supabase/functions/sandy-computer-worker/objective_truth_test.ts
           deno test supabase/functions/_shared/sandy-agent-operations/worker_computer_lifecycle_test.ts
           deno test supabase/functions/sandy-master-computer/index_test.ts
       - name: Test native protocols against isolated loopback fixtures
