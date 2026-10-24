@@ -663,6 +663,78 @@ export class CloudDomain {
       };
     });
   }
+  /** Restore creates a new immutable version; it never rewrites history or bytes.
+   * Local reference adapter only; production uses the admitted scanner/commit path.
+   */
+  restoreVersion(
+    actor: Actor,
+    w: string,
+    key: string,
+    versionId: string,
+    expectedRevision: number,
+  ) {
+    if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 1) {
+      fail("INVALID_REVISION");
+    }
+    return this.mutate(actor, w, key, {
+      op: "version.restore",
+      versionId,
+      expectedRevision,
+    }, () => {
+      const source = this.one(
+        "SELECT * FROM versions WHERE workspace_id=? AND id=?",
+        w,
+        versionId,
+      );
+      if (!source) return fail("NOT_FOUND", 404);
+      const node = this.accessibleNode(w, source.node_id);
+      if (node.revision !== expectedRevision) fail("STALE_REVISION", 409);
+      if (node.current_version_id === versionId) {
+        fail("VERSION_ALREADY_CURRENT", 409);
+      }
+      const bytes = this.objectBytes(source.object_key);
+      if (bytes.length !== source.size || digest(bytes) !== source.sha256) {
+        fail("CHECKSUM_MISMATCH", 409);
+      }
+      const ws = this.authorize(actor, w, true);
+      if (ws.used_bytes + ws.reserved_bytes + source.size > ws.quota_bytes) {
+        fail("QUOTA_EXCEEDED", 409);
+      }
+      const id = randomUUID();
+      this.run(
+        "INSERT INTO versions VALUES(?,?,?,?,?,?,?,?)",
+        id,
+        w,
+        node.id,
+        source.object_key,
+        source.size,
+        source.sha256,
+        source.generation,
+        Date.now(),
+      );
+      this.run(
+        "UPDATE nodes SET current_version_id=?,revision=revision+1 WHERE id=?",
+        id,
+        node.id,
+      );
+      this.run(
+        "UPDATE workspaces SET used_bytes=used_bytes+? WHERE id=?",
+        source.size,
+        w,
+      );
+      this.run("INSERT INTO usage_events VALUES(?,?,?)", id, w, source.size);
+      this.event(actor, w, "version.restored", {
+        nodeId: node.id,
+        versionId: id,
+        sourceVersionId: versionId,
+      });
+      return {
+        state: "COMMITTED",
+        version: this.one("SELECT * FROM versions WHERE id=?", id),
+        revision: node.revision + 1,
+      };
+    });
+  }
   history(actor: Actor, w: string, nodeId: string) {
     this.authorize(actor, w);
     this.accessibleNode(w, nodeId);

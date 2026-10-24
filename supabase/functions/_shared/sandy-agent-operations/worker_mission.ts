@@ -57,16 +57,35 @@ export async function executeMissionWorkProduct(job: MissionWorkProductJob, args
       if (!object(draft) || typeof draft.content !== "string" || draft.content.trim().length < 150) throw Error("empty_draft");
       draftCanonical = JSON.stringify({ title: String(draft.title || claim.context.milestone).slice(0, 240), content: draft.content.slice(0, 14000), content_type: ["checklist", "draft", "decision_brief"].includes(draft.content_type) ? draft.content_type : "draft" });
     }
-    const finished = await deps.db.rpc("sandy_finish_mission_work_product", { p_audit_id: claim.id, p_state: claim.waiting_reason ? "waiting" : "succeeded", p_provider_response_id: responseId, p_response_sha256: responseSha, p_draft_canonical: draftCanonical, p_error: null });
-    const result = Array.isArray(finished.data) ? finished.data[0] : finished.data;
-    if (finished.error || !object(result) || result.ok !== true) throw Error("mission_work_product_final_receipt_unavailable");
+    // A lost acknowledgement may follow an atomic committed draft. Read the
+    // immutable existing receipt once; never repeat model work or successful finalization.
+    let finished: Obj;
+    try {
+      finished = await deps.db.rpc("sandy_finish_mission_work_product", { p_audit_id: claim.id, p_state: claim.waiting_reason ? "waiting" : "succeeded", p_provider_response_id: responseId, p_response_sha256: responseSha, p_draft_canonical: draftCanonical, p_error: null });
+    } catch { finished = { error: true }; }
+    let result = Array.isArray(finished.data) ? finished.data[0] : finished.data;
+    if (finished.error || !object(result) || result.ok !== true) {
+      const readback = await deps.db.from("sandy_mission_work_product_audit")
+        .select("id,run_id,customer_id,mission_task_id,source_sha256,state,waiting_reason,provider_response_id,response_sha256,draft_sha256,work_product_id,review_task_id,finished_at")
+        .eq("id", claim.id).eq("run_id", job.runId).eq("customer_id", job.customerId).eq("mission_task_id", job.missionId).maybeSingle();
+      const receipt = readback.data;
+      const common = !readback.error && object(receipt) && receipt.id === claim.id && receipt.run_id === job.runId && receipt.customer_id === job.customerId && receipt.mission_task_id === job.missionId && receipt.source_sha256 === missionExecutorSource.sourceSha256 && typeof receipt.finished_at === "string" && Number.isFinite(Date.parse(receipt.finished_at));
+      const uuid = (v: unknown) => typeof v === "string" && /^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(v);
+      const confirmed = common && (claim.waiting_reason
+        ? receipt.state === "waiting" && receipt.waiting_reason === claim.waiting_reason && receipt.provider_response_id === null && receipt.response_sha256 === null && receipt.draft_sha256 === null && receipt.work_product_id === null && receipt.review_task_id === null
+        : receipt.state === "succeeded" && receipt.waiting_reason === null && responseId !== null && responseSha !== null && draftCanonical !== null && receipt.provider_response_id === responseId && receipt.response_sha256 === responseSha && receipt.draft_sha256 === await sha(draftCanonical) && uuid(receipt.work_product_id) && uuid(receipt.review_task_id));
+      if (!confirmed) throw Error("mission_work_product_final_receipt_unavailable");
+      result = { ok: true, work_product_id: receipt.work_product_id };
+    }
     const body = { ok: true, operation: missionWorkProductOperation, contract_version: missionWorkProductVersion, principal_kind: "trusted_internal_worker", auth_user_id: null,
       customer_id: job.customerId, run_id: job.runId, mission_id: job.missionId, outcome: claim.waiting_reason ? "waiting" : "draft_pending_review", work_product_id: result.work_product_id || null,
       waiting_reason: claim.waiting_reason || null, requires_client_review: true, external_actions_performed: 0, execution_verified: false };
     if (!validMissionWorkProductOutput(body)) throw Error("mission_work_product_result_invalid");
     return { status: 200, body, legacy: claim.waiting_reason ? { run: job.runId, state: "waiting", reason: claim.waiting_reason } : { run: job.runId, state: "completed", draft: true } };
   } catch {
-    await deps.db.rpc("sandy_finish_mission_work_product", { p_audit_id: claim.id, p_state: "unknown", p_provider_response_id: responseId, p_response_sha256: responseSha, p_draft_canonical: null, p_error: "mission_work_product_outcome_requires_reconciliation" });
+    // Best-effort unknown marking is distinct from retrying finalization. A
+    // terminal canonical receipt rejects it; transport failure remains unknown.
+    try { await deps.db.rpc("sandy_finish_mission_work_product", { p_audit_id: claim.id, p_state: "unknown", p_provider_response_id: responseId, p_response_sha256: responseSha, p_draft_canonical: null, p_error: "mission_work_product_outcome_requires_reconciliation" }); } catch { /* Preserve bounded uncertainty without redispatch. */ }
     return refused(502, "mission_work_product_outcome_requires_reconciliation", null);
   }
 }

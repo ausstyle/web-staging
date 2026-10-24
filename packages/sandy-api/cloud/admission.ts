@@ -80,6 +80,11 @@ export function cloudAdmissionHook(
       !Number.isSafeInteger(a.policyEpoch) || a.policyEpoch < 1 ||
       !Number.isSafeInteger(a.expiresAt) || a.expiresAt <= checkedAt
     ) deny();
-    return { customerId: a!.customerId, policyEpoch: a!.policyEpoch };
+    return Object.freeze({
+      customerId: a!.customerId,
+      policyEpoch: a!.policyEpoch,
+      admissionId: c.admissionId,
+      expiresAt: a!.expiresAt,
+    });
   };
 }

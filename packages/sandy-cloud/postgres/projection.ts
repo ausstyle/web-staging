@@ -48,7 +48,8 @@ export function canonicalFileProjection(
       [r.ref.tenantId, r.ref.workspaceId, fileId],
     );
     if (heads.length !== 1 || Number(heads[0].revision) !== revision) deny();
-    const a = await owner.lock(tx, fileId);
+    const source = await owner.lock(tx, fileId);
+    const a = source && Object.freeze({ ...source });
     if (
       !a || !a.assignmentId || a.writer !== "sandy-cloud" ||
       a.fileId !== fileId || a.customerId !== customerId ||
@@ -122,5 +123,6 @@ export function canonicalFileProjection(
         r.traceId,
       ],
     );
+    return Object.freeze({ expiresAt: a!.expiresAt });
   };
 }

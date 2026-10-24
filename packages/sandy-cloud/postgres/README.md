@@ -65,3 +65,45 @@ Production tree/share/device/backup schema, admission installation, gateway
 registration, rich-document scanner, provider execution, native signed clients
 and mandatory acceptance remain unfinished. Do not interpret these tests or the
 source bundle as a production-ready storage/backup release.
+
+## Shared scanner dependency (supersedes the earlier scan-row seam)
+
+`PostgresCommitBoundary` requires a third argument implementing
+`ScanCommitOwner`. Use `sharedScanOwner` with Runtime PR303 `ab2cfa4`'s
+supplied-transaction verifier and a canonical server-owned reference loader. No
+clean-verdict table or fallback scanner is part of the production candidate
+schema. `version_scans` stores only immutable shared receipt references; Runtime
+remains the receipt/trust authority. `fixture_scan.mts` is test-only, excluded
+from the release package. Final database settlement checks scan/intent expiry
+again and rolls back late completion.
+
+`verify_runtime_scan.mts` runs the actual pinned Runtime journal with an
+ephemeral PostgreSQL database and ephemeral synthetic signing material. CI
+fetches only pinned source; it does not merge or deploy Runtime. See the Cloud
+alignment review for exact reference-loader, global lock-order, scanner trust
+and release gates.
+
+## Complete-plan assembly (PR303 cd6f6cf)
+
+Use `integrateRuntimeCustody` with Runtime's actual `lockCustodyPlan`,
+`canonicalCloudReferences` and journal, the authenticated API context, and the
+canonical writer assignment discovery callback. `prepareTransaction` is required
+and runs before admission or domain row locks on every boundary path. Discovery
+is not authorization; any identity/assignment change after gates aborts.
+Production assembly must never use the no-op preparation in the isolated legacy
+fixtures. Both combined Runtime suites exercise the real preparation and loader.
+
+Runtime's reference schema follows both base schemas. All live revokers must
+participate in the complete gate protocol, including devices through actor
+gates. See `docs/sandy-cloud/runtime-combined-acceptance-20261024.md` for
+evidence and `docs/sandy-cloud/minimal-activation-proposal-20261024.md` for the
+single finite activation dependency list. The packaged bundle remains
+non-installable source.
+
+The admission result must include the immutable canonical `admissionId` and
+minimum authority `expiresAt`. The boundary independently locks/caps against the
+actual API admission's database expiry. Projection must return the locked
+writer's `expiresAt`; missing deadlines fail closed. Final settlement uses
+database time to enforce intent, scan, authority and writer deadlines, and rolls
+back all effects on expiry. Installation callbacks returning the old void
+projection result must be updated before any activation.

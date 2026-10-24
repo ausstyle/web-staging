@@ -2,6 +2,7 @@
  * The canonical API owner supplies admission and canonical-file projection hooks;
  * both run on the SAME transaction, never via an independent REST write.
  */
+import type { ScanCommitOwner } from "./shared_scan.ts";
 import { createHash, randomUUID } from "node:crypto";
 import {
   type CommitBoundary,
@@ -26,8 +27,16 @@ export interface SqlDatabase {
 export interface CanonicalAdmission {
   customerId: string;
   policyEpoch: number;
+  admissionId: string;
+  expiresAt: number;
 }
 export interface ProductionOwners {
+  /** Non-authorizing discovery, complete Runtime gates, then discovery recheck.
+   * Must run before any canonical authority/domain row locks. */
+  prepareTransaction(
+    tx: SqlTransaction,
+    intent: Readonly<UploadIntent>,
+  ): Promise<void>;
   /** Resolve authenticated actor/session/device and API-tenant/customer/company
    * membership from canonical sources. Lock relevant revocation/policy rows until
    * commit; reject unestablished shares. Never trust identity from request JSON.
@@ -49,7 +58,7 @@ export interface ProductionOwners {
       expectedRevision: number;
       receipt: VersionReceipt;
     },
-  ): Promise<void>;
+  ): Promise<Readonly<{ expiresAt: number }>>;
 }
 const fail = (code: string): never => {
   throw new IntegrityError(code);
@@ -87,21 +96,51 @@ type IntentRow = Record<string, unknown> & {
   unexpired: boolean;
   ref_matches: boolean;
 };
+// Readonly is a compile-time annotation, not runtime custody. Snapshot before
+// the first await so callers cannot replace verified bytes or lock identities.
+function frozenIntent(i: Readonly<UploadIntent>): Readonly<UploadIntent> {
+  return Object.freeze({ ...i, ref: Object.freeze({ ...i.ref }) });
+}
+function frozenProof(p: IntegrityReceipt): IntegrityReceipt {
+  return Object.freeze({ ...p, ref: Object.freeze({ ...p.ref }) });
+}
 export class PostgresCommitBoundary implements CommitBoundary {
   constructor(
     private readonly db: SqlDatabase,
     private readonly owners: ProductionOwners,
+    private readonly scanner: ScanCommitOwner,
   ) {}
 
   private async admitted(tx: SqlTransaction, i: Readonly<UploadIntent>) {
-    // Domain locks follow authority locks, always workspace -> intent -> file.
-    const admitted = await this.owners.lockAdmission(tx, i);
+    await this.owners.prepareTransaction(tx, i);
+    // Full Runtime gates precede authority and domain row locks.
+    const resolved = await this.owners.lockAdmission(tx, i);
+    let admitted = resolved && Object.freeze({ ...resolved });
     if (
       !admitted || !Number.isSafeInteger(admitted.policyEpoch) ||
-      admitted.policyEpoch < 1 || typeof admitted.customerId !== "string"
+      admitted.policyEpoch < 1 || typeof admitted.customerId !== "string" ||
+      !admitted.admissionId || !Number.isSafeInteger(admitted.expiresAt) ||
+      admitted.expiresAt <= 0
     ) {
       fail("NOT_FOUND");
     }
+    // Pin the actual API admission deadline, independently of resolver facts.
+    const api = await tx.query(
+      `SELECT floor(extract(epoch from expires_at)*1000)::bigint expires_ms
+      FROM public.sandy_api_execution_admissions WHERE id=$1::uuid AND actor_id::text=$2
+      AND tenant_id::text=$3 AND state='consumed' FOR SHARE`,
+      [admitted.admissionId, i.actorId, i.ref.tenantId],
+    );
+    const apiExpiry = Number(api.rows[0]?.expires_ms);
+    if (
+      api.rows.length !== 1 || !Number.isSafeInteger(apiExpiry) ||
+      apiExpiry <= 0
+    ) fail("API_ADMISSION_DEADLINE_REQUIRED");
+    admitted = Object.freeze({
+      ...admitted,
+      expiresAt: Math.min(admitted.expiresAt, apiExpiry),
+    });
+    await this.authorityLive(tx, admitted);
     const { rows } = await tx.query(
       `SELECT customer_id, policy_epoch,
       used_bytes, reserved_bytes, quota_bytes FROM sandy_cloud.workspaces
@@ -114,6 +153,13 @@ export class PostgresCommitBoundary implements CommitBoundary {
       Number(w.policy_epoch) !== admitted.policyEpoch
     ) fail("NOT_FOUND");
     return { admitted, workspace: w };
+  }
+  private async authorityLive(tx: SqlTransaction, a: CanonicalAdmission) {
+    const { rows } = await tx.query(
+      "SELECT to_timestamp($1/1000.0)>clock_timestamp() AS live",
+      [a.expiresAt],
+    );
+    if (rows[0]?.live !== true) fail("AUTHORITY_EXPIRED");
   }
   private async stored(tx: SqlTransaction, i: Readonly<UploadIntent>) {
     const { rows } = await tx.query<IntentRow>(
@@ -141,15 +187,6 @@ export class PostgresCommitBoundary implements CommitBoundary {
     );
     return (rows[0]?.receipt as VersionReceipt | undefined) ?? null;
   }
-  private async scan(tx: SqlTransaction, i: Readonly<UploadIntent>) {
-    const { rows } = await tx.query(
-      `SELECT verdict FROM sandy_cloud.scan_receipts
-      WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3
-      AND ref=$4::jsonb AND valid_until > clock_timestamp() FOR SHARE`,
-      [...scope(i), i.id, JSON.stringify(i.ref)],
-    );
-    if (rows[0]?.verdict !== "CLEAN") fail("SCAN_NOT_CLEAN");
-  }
   private proof(i: Readonly<UploadIntent>, p: IntegrityReceipt) {
     validateRef(i.ref, {
       tenantId: i.ref.tenantId,
@@ -165,43 +202,75 @@ export class PostgresCommitBoundary implements CommitBoundary {
     ) fail("INVALID_BYTE_PROOF");
   }
   async authorize(i: Readonly<UploadIntent>): Promise<void> {
+    i = frozenIntent(i);
     await this.db.transaction(async (tx) => {
-      await this.admitted(tx, i);
+      const { admitted } = await this.admitted(tx, i);
       await this.stored(tx, i);
+      await this.authorityLive(tx, admitted);
     });
   }
   async lookup(i: Readonly<UploadIntent>): Promise<VersionReceipt | null> {
+    i = frozenIntent(i);
     return await this.db.transaction(async (tx) => {
-      await this.admitted(tx, i);
+      const { admitted } = await this.admitted(tx, i);
       await this.stored(tx, i);
-      return await this.receipt(tx, i);
+      await this.authorityLive(tx, admitted);
+      const receipt = await this.receipt(tx, i);
+      await this.authorityLive(tx, admitted);
+      return receipt;
     });
   }
   async assertScanClean(
     i: Readonly<UploadIntent>,
     p: IntegrityReceipt,
   ): Promise<void> {
+    i = frozenIntent(i);
+    p = frozenProof(p);
     this.proof(i, p);
     await this.db.transaction(async (tx) => {
-      await this.admitted(tx, i);
-      await this.stored(tx, i);
-      await this.scan(tx, i);
+      const { admitted } = await this.admitted(tx, i);
+      const row = await this.stored(tx, i);
+      if (!this.scanner) fail("SHARED_SCAN_OWNER_REQUIRED");
+      await this.scanner.verifyInTransaction(tx, {
+        intent: i,
+        fileId: row.file_id,
+        admission: admitted,
+        proof: p,
+      });
+      await this.authorityLive(tx, admitted);
     });
   }
   async commit(i: Readonly<UploadIntent>, p: IntegrityReceipt): Promise<void> {
+    i = frozenIntent(i);
+    p = frozenProof(p);
     this.proof(i, p);
     await this.db.transaction(async (tx) => {
       const { admitted, workspace } = await this.admitted(tx, i);
       const row = await this.stored(tx, i);
       const existing = await this.receipt(tx, i);
-      if (existing) return; // current admission is still required on replay
+      if (existing) {
+        await this.authorityLive(tx, admitted);
+        return;
+      } // current authority on replay
       if (row.state !== "OPEN" || !row.unexpired || Date.now() >= i.expiresAt) {
         fail("INTENT_EXPIRED");
       }
       if (Number(row.policy_epoch) !== admitted.policyEpoch) {
         fail("POLICY_CHANGED");
       }
-      await this.scan(tx, i);
+      if (!this.scanner) fail("SHARED_SCAN_OWNER_REQUIRED");
+      const scan = Object.freeze({
+        ...await this.scanner.verifyInTransaction(tx, {
+          intent: i,
+          fileId: row.file_id,
+          admission: admitted,
+          proof: p,
+        }),
+      });
+      if (
+        !scan || !Number.isSafeInteger(scan.expiresAt) ||
+        scan.expiresAt <= Date.now()
+      ) fail("SCAN_NOT_CLEAN");
       if (
         Number(workspace.reserved_bytes) < i.ref.size ||
         Number(workspace.used_bytes) + Number(workspace.reserved_bytes) >
@@ -215,14 +284,14 @@ export class PostgresCommitBoundary implements CommitBoundary {
       if (Number(heads[0]?.revision) !== i.expectedRevision) {
         fail("REVISION_CONFLICT");
       }
-      const receipt: VersionReceipt = {
+      const receipt: VersionReceipt = Object.freeze({
         state: "COMMITTED",
         intentId: i.id,
         versionId: randomUUID(),
         revision: i.expectedRevision + 1,
-        ref: { ...i.ref },
+        ref: Object.freeze({ ...i.ref }),
         traceId: i.traceId,
-      };
+      });
       await tx.query(
         `INSERT INTO sandy_cloud.versions
         (tenant_id,workspace_id,version_id,file_id,intent_id,revision,ref)
@@ -236,12 +305,21 @@ export class PostgresCommitBoundary implements CommitBoundary {
           JSON.stringify(i.ref),
         ],
       );
-      await this.owners.projectVersion(tx, {
+      await tx.query(
+        `INSERT INTO sandy_cloud.version_scans
+        (tenant_id,workspace_id,version_id,receipt_id,evidence) VALUES($1,$2,$3,$4,$5::jsonb)`,
+        [...scope(i), receipt.versionId, scan.receiptId, JSON.stringify(scan)],
+      );
+      const projected = await this.owners.projectVersion(tx, {
         customerId: admitted.customerId,
         fileId: row.file_id,
         expectedRevision: i.expectedRevision,
         receipt,
       });
+      const writerExpiresAt = projected?.expiresAt;
+      if (!Number.isSafeInteger(writerExpiresAt) || writerExpiresAt <= 0) {
+        fail("WRITER_DEADLINE_REQUIRED");
+      }
       await tx.query(
         `UPDATE sandy_cloud.file_heads SET revision=$4,current_version_id=$5
         WHERE tenant_id=$1 AND workspace_id=$2 AND file_id=$3`,
@@ -267,6 +345,7 @@ export class PostgresCommitBoundary implements CommitBoundary {
             kind: "cloud.version.committed",
             fileId: row.file_id,
             receipt,
+            scanReceiptId: scan.receiptId,
           }),
         ],
       );
@@ -274,11 +353,23 @@ export class PostgresCommitBoundary implements CommitBoundary {
         `INSERT INTO sandy_cloud.commit_receipts VALUES ($1,$2,$3,$4::jsonb)`,
         [...scope(i), i.id, JSON.stringify(receipt)],
       );
-      await tx.query(
+      const settled = await tx.query(
         `UPDATE sandy_cloud.upload_intents SET state='COMMITTED'
-        WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3`,
-        [...scope(i), i.id],
+        WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3
+        AND expires_at>clock_timestamp() AND to_timestamp($4/1000.0)>clock_timestamp()
+        AND to_timestamp($5/1000.0)>clock_timestamp() AND to_timestamp($6/1000.0)>clock_timestamp()
+        RETURNING intent_id`,
+        [
+          ...scope(i),
+          i.id,
+          scan.expiresAt,
+          admitted.expiresAt,
+          writerExpiresAt,
+        ],
       );
+      if (settled.rows.length !== 1) {
+        fail("COMMIT_DEADLINE_EXPIRED");
+      }
     });
   }
 }

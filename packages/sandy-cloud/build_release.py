@@ -13,6 +13,8 @@ FILES = (
     "packages/sandy-cloud/gcs_protocol.ts",
     "packages/sandy-cloud/restore.ts",
     "packages/sandy-cloud/postgres/commit.ts",
+    "packages/sandy-cloud/postgres/shared_scan.ts",
+    "packages/sandy-cloud/postgres/runtime_integration.ts",
     "packages/sandy-cloud/postgres/schema.sql",
     "packages/sandy-cloud/postgres/authority.ts",
     "packages/sandy-cloud/postgres/projection.ts",
@@ -23,6 +25,8 @@ FILES = (
     "packages/sandy-cloud/postgres/README.md",
     "docs/sandy-cloud/metadata-decision.md",
     "docs/sandy-cloud/production-integration-handoff.md",
+    "docs/sandy-cloud/runtime-combined-acceptance-20261024.md",
+    "docs/sandy-cloud/minimal-activation-proposal-20261024.md",
     "docs/sandy-engineering/tasks/SANDY-ENG-0012-sandy-cloud-drive-backup.md",
 )
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -42,6 +46,7 @@ def build(output):
         "format": "sandy-cloud-integration-source-v1",
         "source_commit": source,
         "scope": "SANDY-ENG-0012",
+        "runtime_dependency_commit": "cd6f6cf659e924bd0c9090445a7794ae122746ab",
         "installable": False,
         "deployed": False,
         "provider_acceptance": False,
@@ -50,13 +55,13 @@ def build(output):
         "required_owner_bindings": [
             "canonical transaction-pinned actor/session/device/company admission",
             "canonical universal-file projection CAS and lifecycle audit in same transaction",
-            "admitted GCS transport and server-owned scan receipts",
+            "admitted provider transport and pinned Runtime canonical references/complete lock plan",
             "transfer intent creation, quota reservation and expiry owner",
             "existing Mission outbox consumer and usage settlement owner",
         ],
         "release_gates": [
             "reviewed additive schema and exact database role/RLS plan",
-            "resource inventory, region, USD10 proposal and exact workload binding approval",
+            "existing resource inventory and exact workload binding approval; separate USD10 option only if needed and approved",
             "shared component owner release slot and protected source preservation",
             "two-tenant provider E2E, multi-connection concurrency, recovery and rollback",
         ],

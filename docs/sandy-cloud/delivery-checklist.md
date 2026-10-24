@@ -273,3 +273,83 @@ PR270's reported ready-transition denial is respected. Dependent Cloud source is
 prepared on a stacked draft only; no merge into the API branch, live schema,
 credentials, grants, customer relation, provider routing or deployment is enabled.
 All mandatory production acceptance remains pending; full scope stays open.
+
+## Runtime shared scan continuation
+
+Runtime PR303 `ab2cfa4` now composes with Cloud's existing transaction. The production
+candidate no longer accepts a separate Cloud clean-verdict table: a required shared
+verifier binds signed Runtime evidence to the exact upload and stores an immutable
+receipt reference atomically. Final expiry and unknown-acknowledgement recovery
+remain fail closed. Six actual pinned Runtime/Cloud PostgreSQL composition scenarios
+and four new binding scenarios pass; no production trust or provider is exercised.
+[Detailed review and remaining owner work](runtime-scan-alignment-20261024.md).
+SC-02/08/12 source integration advanced; no mandatory live acceptance changed.
+
+## Real PostgreSQL concurrency and candidate RLS
+
+Eight real multi-session PostgreSQL 17.6 scenarios now supplement the embedded
+engine checks: complete duplicate commit, rollback/waiter race, both revocation
+orders, file SHARE-to-UPDATE, backend death rollback, default-deny/forced RLS and
+scanner withdrawal. Three distinct backend PIDs and actual blocking relations were
+observed. Runtime's actual scope-lock and scan journal source is consumed; no
+parallel authority is introduced. See `schema-concurrency-review-20261024.md`.
+
+The inactive `minimal-activation-proposal-20261024.md` separates known existing
+Supabase reuse from unknown exact access bindings and the still-unapproved USD10
+new-resource proposal. No activation is attempted. Source/RLS coherence does not
+mark any mandatory live or native-device acceptance passed.
+
+## Historical version recovery
+
+Independent SC-02/06 product work now implements `versions.restore` through the
+local domain/API and Drive history UI. It reopens and hashes the source bytes,
+requires the current node revision, creates a new immutable version and atomic
+usage/audit/receipt, and preserves all earlier versions. Retry is idempotent;
+reader/tenant/trash/stale/quota/corrupt-source cases fail closed. Injected audit
+failure rolls back the new version and usage. Logical retained-version quota is
+charged once; physical bytes are reused without modifying the immutable object.
+Three new domain scenarios and real Chromium historical restore/readback pass;
+52 Cloud Deno tests pass in total. Production scanner/provider/canonical route
+integration and mandatory acceptance remain pending.
+
+PR270's original ready-transition denial is historical: its source subsequently
+merged through its owner. PR272 was retargeted to accepted main, reconciled with
+ordinary merge commits preserving API-owned versions, passed five checks and
+merged at `7179f62c06d9594b8659326a371eaa64e0867b2c`. PR306 now targets main and
+contains only Cloud-scoped differences. No force push or shared scope edits were
+used. Source merge is not live schema or product deployment.
+
+### Runtime complete-plan integration follow-up (2026-10-24)
+
+- [x] Adopt PR303 `cd6f6cf` canonical reference loader and complete gates before
+  Cloud authority/domain row locks; no parallel custody authority.
+- [x] Record/read actual Runtime references in combined acceptance; 8 embedded
+  cases and 9 real PostgreSQL multi-session cases, including writer reassignment,
+  actor/session/scanner revocation, rollback and backend loss. See
+  `runtime-combined-acceptance-20261024.md` for limits and source evidence.
+- [x] Consolidate the finite live activation dependencies in
+  `minimal-activation-proposal-20261024.md`; no unresolved interface design handoff.
+- [ ] Bind and independently accept actual live identity/writer/revoker/provider
+  installations through the existing protected release path. No live activation,
+  trust, paid resource, production-readiness or full-scope acceptance is implied.
+
+### PR306 review follow-up (2026-10-24)
+
+- [x] Reproduce and fix mutable intent/proof inputs across asynchronous commit
+  boundaries; 15 transaction cases and all affected integration suites pass.
+- [x] Read existing Supabase project/schema/column/grant metadata without customer
+  data or mutations; observations recorded in `source-review-20261024.md`.
+- [ ] Independent source verdict: review runner failed before initialization on
+  read-only filesystem. Author inspection and passing CI are not a substitute.
+- [ ] Exact live installation identities, revoker participation and protected
+  activation approval remain pending; USD10 option remains unapproved.
+
+### Independent P1 deadline repair (2026-10-24)
+
+- [x] Preserve immutable authority and writer deadlines, including the actual API
+  execution-admission expiry; enforce all at final database-clock settlement.
+- [x] Replace simplified callbacks in the real PostgreSQL suite with canonical
+  admission/authority/projection hooks and Runtime custody; 22 cases pass,
+  including delayed settlement, real writer row-lock waits and receipt replay.
+- [ ] Parent's independent re-review of repaired head; live activation stays
+  unattempted and all exact installation/approval dependencies remain applicable.

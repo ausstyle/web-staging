@@ -26,6 +26,17 @@ with sync_playwright() as p:
     with page.expect_download() as download:
         page.get_by_role('button',name='Download',exact=True).click()
     assert Path(download.value.path()).read_bytes()==b'browser acceptance original bytes'
+    page.get_by_role('button',name='Edit fixture',exact=True).click()
+    page.get_by_label('Synthetic text only',exact=True).fill('replacement bytes to retain in history')
+    page.get_by_role('button',name='Save',exact=True).click()
+    page.wait_for_selector('dialog[open]',state='hidden')
+    page.get_by_role('button',name='Versions',exact=True).click()
+    page.get_by_role('button',name='Restore this version',exact=True).click()
+    page.wait_for_selector('dialog[open]',state='hidden')
+    page.get_by_role('status').get_by_text('Restored as a new version.',exact=False).wait_for()
+    with page.expect_download() as restored_version:
+        page.get_by_role('button',name='Download',exact=True).click()
+    assert Path(restored_version.value.path()).read_bytes()==b'browser acceptance original bytes'
     page.get_by_role('button',name='Create recovery point',exact=True).click()
     page.get_by_role('button',name='Restore to new folder',exact=True).wait_for()
     page.get_by_role('button',name='Files',exact=True).click()
@@ -71,6 +82,6 @@ with sync_playwright() as p:
     page.screenshot(path='/tmp/sandy-cloud-evidence/drive-pagination.png',full_page=True)
     assert not errors,errors
     browser.close()
-    report={'passed':True,'environment':'loopback fixture / real Chromium','checks':['upload','exact downloaded bytes','snapshot','trash','restore into new folder','restored downloaded bytes','second tenant sees no files','reader write denied','bounded 100-row folder page','next page contains remaining entries'],'provider_acceptance':False}
+    report={'passed':True,'environment':'loopback fixture / real Chromium','checks':['upload','exact downloaded bytes','historical version restore creates new current version','snapshot','trash','restore into new folder','restored downloaded bytes','second tenant sees no files','reader write denied','bounded 100-row folder page','next page contains remaining entries'],'provider_acceptance':False}
     Path('/tmp/sandy-cloud-evidence/browser.json').write_text(json.dumps(report,indent=2))
     print(json.dumps(report))

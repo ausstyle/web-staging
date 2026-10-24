@@ -10,6 +10,8 @@ on:
       - 'supabase/functions/_shared/sandy-agent-operations/runtime_operational.ts'
       - 'scripts/sandy/test_runtime_slice_release.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
+      - 'supabase/functions/sandy-mission-executor/**'
+      - 'supabase/functions/_shared/sandy-agent-operations/worker_mission.ts'
       - 'scripts/sandy/test_mission_truth_acceptance.py'
       - 'scripts/sandy/test_runtime_slice_workflow.py'
       - 'docs/sandy-engineering/evaluations/runtime-slices/**'
@@ -23,7 +25,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [runtime-programme, runtime, capability-truth, graphical, channels, acceptance-bridge, missions, native, computer-truth, durable-receipts, grounding]
+        options: [runtime-programme, runtime, capability-truth, graphical, channels, acceptance-bridge, missions, mission-reconciliation, native, computer-truth, durable-receipts, grounding]
 permissions:
   contents: read
 concurrency:
@@ -69,6 +71,7 @@ jobs:
           deno test supabase/functions/sandy-email-runtime-canary/history_test.ts supabase/functions/sandy-email-runtime-canary/outcome_test.ts supabase/functions/sandy-voice-account-context/executive_test.ts
           deno check supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
           deno test --allow-read --import-map=scripts/sandy/testing/fallback_import_map.json supabase/functions/_shared/sandy-agent-operations/worker_model_result_test.ts supabase/functions/sandy-mission-executor/index_test.ts supabase/functions/sandy-mission-runner/index_test.ts
+          deno test --no-lock --allow-read --allow-env supabase/functions/sandy-mission-executor/reconciliation_test.ts
           deno test supabase/functions/sandy-orchestration-api/workload_reads_test.ts
           deno test supabase/functions/sandy-engineering-oidc-ingest/examiner_scope_test.ts
           deno test supabase/functions/sandy-engineering-oidc-ingest/email_fixture_test.ts supabase/functions/sandy-engineering-oidc-ingest/worker_transport_test.ts supabase/functions/_shared/sandy-executive/email_shadow_fixture_test.ts
@@ -108,6 +111,7 @@ jobs:
           # Grounding selects only the two independently captured source slices;
           # native and other components retain their separate preimage guards.
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
+          extra['mission-reconciliation']=['sandy-mission-executor']
           extra['missions']=['sandy-mission-runner','sandy-mission-executor']
           extra['native']=['sandy-vm-protocol-api']
           extra['grounding']=['sandy-agent-runtime-v4','sandy-examiner-full-cycle']
