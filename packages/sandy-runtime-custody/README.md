@@ -62,7 +62,7 @@ Real multi-session locking and actual provider/scanner wiring remain outstanding
 
 `locking.ts` defines one protocol, not a grant. Before row locks, a canonical owner
 performs non-authorizing discovery of the exact admission, authenticated session,
-actor/customer/tenant, artifact/file/receipt/scanner release and Cloud workspace,
+actor/customer/company/tenant, artifact/file/receipt/scanner release and Cloud workspace,
 intent and writer assignment. It then calls `lockCustodyPlan` with the COMPLETE set.
 Resources are encoded unambiguously and globally sorted; UUID row identities use
 canonical lower case. All gates are transaction advisory locks held to COMMIT.
@@ -111,3 +111,8 @@ It composes the reference implementation with Cloud source pinned to
 multi-session pass; the CI result is required. Live scanner identity, generation reads,
 canonical identity/status resolvers, revoker adoption and schema/RLS release remain
 explicit production integration dependencies.
+
+Independent review found concurrent initialization could bypass the complete-plan
+rule. The helper now rejects concurrent initialization on one transaction before
+its first await; the real PostgreSQL regression also checks that the rejected set
+was not recorded. UUID actor/company keys are normalized consistently.

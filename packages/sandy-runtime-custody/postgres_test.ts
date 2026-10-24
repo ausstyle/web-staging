@@ -23,7 +23,7 @@ async function setup(tenant:string|null=null){
  await pool.query("INSERT INTO sandy_api_execution_admissions VALUES($1,$2,$4,'fixture.only',$3,$3,$3,'consumed',clock_timestamp()+interval '1 hour')",[admission,actor,'a'.repeat(64),tenant]);
  const keys=await crypto.subtle.generateKey('Ed25519',true,['sign','verify']) as CryptoKeyPair;
  await pool.query("INSERT INTO sandy_artifact_custody.scanner_releases VALUES('fixture-only','ci-v1',$1,1,NULL)",[hex(await crypto.subtle.exportKey('raw',keys.publicKey))]);
- const plan:CustodyLockPlan={actorId:actor,customerId:customer,tenantId:tenant,admissionId:admission,fileId:file,artifactId:artifact,receiptId:receipt,sessionId:session,scanner:{issuer:'fixture-only',release:'ci-v1'}};
+ const plan:CustodyLockPlan={actorId:actor,customerId:customer,tenantId:tenant,admissionId:admission,fileId:file,artifactId:artifact,receiptId:receipt,sessionId:session,companyId:crypto.randomUUID(),scanner:{issuer:'fixture-only',release:'ci-v1'}};
  let loseAck=false,hold:{entered:ReturnType<typeof latch>;resume:ReturnType<typeof latch>}|undefined;
  const db={async transaction<T>(work:(tx:any)=>Promise<T>):Promise<T>{
   const client=await pool.connect();let committed=false;
@@ -61,12 +61,12 @@ Deno.test({name:'real PostgreSQL duplicate claims and lost seal acknowledgement 
  }finally{await f.pool.end();}
 }});
 Deno.test({name:'real PostgreSQL scanner/session/company revocation waits for seal or prevents it',ignore:!url,fn:async()=>{
- for(const resource of ['scanner','session','customer'] as const){
+ for(const resource of ['scanner','session','company'] as const){
   const f=await setup();const client=await f.pool.connect();try{
    const claim=await f.journal.acquire(f.c,f.a.receiptId),h=f.holdNext();
    const sealing=f.journal.seal(f.c,claim.leaseToken,'private:ci',f.proof);await h.entered.promise;
    await client.query('BEGIN');const pid=(await client.query('SELECT pg_backend_pid() pid')).rows[0].pid;
-   const id=resource==='scanner'?scopedResourceId('fixture-only','ci-v1'):resource==='session'?f.plan.sessionId!:f.plan.customerId;
+   const id=resource==='scanner'?scopedResourceId('fixture-only','ci-v1'):resource==='session'?f.plan.sessionId!:f.plan.companyId!;
    const revoke=(async()=>{await lockCustodyResources(client,[{kind:resource,id}]);
     if(resource==='scanner')await client.query('UPDATE sandy_artifact_custody.scanner_releases SET revoked_at=clock_timestamp()');
     else await client.query('UPDATE fixture_authority SET revoked=true');
@@ -79,7 +79,13 @@ Deno.test({name:'real PostgreSQL scanner/session/company revocation waits for se
 }});
 Deno.test({name:'real PostgreSQL complete gates serialize SHARE-to-UPDATE file upgrades and reject late gates',ignore:!url,fn:async()=>{
  const f=await setup(),one=await f.pool.connect(),two=await f.pool.connect();try{
-  await one.query('BEGIN');await two.query('BEGIN');await lockCustodyPlan(one,f.plan);
+  await one.query('BEGIN');await two.query('BEGIN');
+  const foreignFile=crypto.randomUUID();
+  const simultaneous=await Promise.allSettled([lockCustodyPlan(one,f.plan),lockCustodyResources(one,[{kind:'file',id:foreignFile}])]);
+  assert.equal(simultaneous[0].status,'fulfilled');assert.equal(simultaneous[1].status,'rejected');
+  assert.match(String((simultaneous[1] as PromiseRejectedResult).reason),/CONCURRENT_CUSTODY_LOCK_INITIALIZATION/);
+  await assert.rejects(requireCustodyResources(one,[{kind:'file',id:foreignFile}]),/COMPLETE_CUSTODY_LOCK_PLAN_REQUIRED/);
+  await requireCustodyResources(one,[{kind:'actor',id:f.plan.actorId.toUpperCase()}]);
   await one.query('SELECT * FROM sandy_universal_files WHERE id=$1 FOR SHARE',[f.plan.fileId]);
   const pid=(await two.query('SELECT pg_backend_pid() pid')).rows[0].pid;
   const second=lockCustodyPlan(two,{...f.plan,actorId:crypto.randomUUID(),admissionId:crypto.randomUUID()});
