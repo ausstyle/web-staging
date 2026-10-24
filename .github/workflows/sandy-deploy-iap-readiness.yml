@@ -1,0 +1,62 @@
+name: Inspect Sandy deploy IAP and OS Login
+on:
+  pull_request:
+    paths:
+      - 'scripts/sandy/antigravity/check_iap_readiness.py'
+      - 'scripts/sandy/antigravity/test_iap_readiness.py'
+      - '.github/workflows/sandy-deploy-iap-readiness.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/sandy/antigravity/check_iap_readiness.py'
+      - 'scripts/sandy/antigravity/test_iap_readiness.py'
+      - '.github/workflows/sandy-deploy-iap-readiness.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          set -euo pipefail
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest scripts/sandy/antigravity/test_iap_readiness.py -v
+          python3 -m py_compile scripts/sandy/antigravity/check_iap_readiness.py
+  provider-read-only:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify scoped deployment identity configuration
+        env:
+          PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
+          WIF_PROVIDER: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          DEPLOYER_SA: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+        run: |
+          set -euo pipefail
+          test "$PROJECT" = 'elaborate-haven-511518-a5'
+          test -n "$WIF_PROVIDER"
+          test -n "$DEPLOYER_SA"
+          test "$DEPLOYER_SA" != 'sandy-cloud-administrator@elaborate-haven-511518-a5.iam.gserviceaccount.com'
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.SANDY_GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.SANDY_GCP_DEPLOY_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Read fixed VM and IAP policy, no writes
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/antigravity/check_iap_readiness.py | tee "$RUNNER_TEMP/sandy-deploy-iap-readiness.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sandy-deploy-iap-readiness-${{ github.run_id }}
+          path: ${{ runner.temp }}/sandy-deploy-iap-readiness.json
+          retention-days: 7
