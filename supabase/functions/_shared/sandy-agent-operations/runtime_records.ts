@@ -24,6 +24,14 @@ export async function runtimeRecordOperation(ctx: AgentPrincipal, operation: str
   if (operation === "agent.runtime.tasks.list") {
     const { data, error } = await db.from("sandy_tasks").select("id,title,status,priority,due_at,parent_task_id,responsible_customer_id,created_at").eq("customer_id", customerId).is("archived_at", null).not("status", "in", "(completed,cancelled,canceled,deleted)").order("due_at", { ascending: true, nullsFirst: false }).limit(150);
     const { count: exactCount, error: countError } = await db.from("sandy_tasks").select("id", { count: "exact", head: true }).eq("customer_id", customerId).is("archived_at", null).not("status", "in", "(completed,cancelled,canceled,deleted)");
+    if (error || countError) return { error: error?.code || countError?.code || "runtime_task_list_unavailable" };
+    // A missing count is unknown, never an empty account. These reads are not
+    // one snapshot: refuse detectable drift instead of presenting conflicting
+    // totals. A full 150-row page may still represent a larger account.
+    if (!Array.isArray(data) || !Number.isSafeInteger(exactCount) || exactCount < 0)
+      return { error: "runtime_task_count_unavailable" };
+    if (exactCount < data.length || (data.length < 150 && exactCount !== data.length))
+      return { error: "runtime_task_snapshot_changed" };
     const taskIds = (data || []).map((t: Obj) => t.id);
     const delegationQuery = taskIds.length ? await db.from("sandy_task_delegations").select("task_id,assignee_customer_id,status,scope").in("task_id", taskIds) : { data: [], error: null };
     const participantQuery = taskIds.length ? await db.from("sandy_task_participants").select("task_id,customer_id,role,status").in("task_id", taskIds) : { data: [], error: null };
@@ -32,7 +40,7 @@ export async function runtimeRecordOperation(ctx: AgentPrincipal, operation: str
     const assigneeNames = new Map((namesQuery.data || []).map((u: Obj) => [u.id, u.display_name]));
     if (error || countError || delegationQuery.error || participantQuery.error || namesQuery.error) return { error: error?.code || countError?.code || delegationQuery.error?.code || participantQuery.error?.code || namesQuery.error?.code };
     return {
-      outstanding_count: exactCount ?? 0, shown_count: data?.length || 0,
+      outstanding_count: exactCount, shown_count: data.length,
       definition: "Outstanding includes todo, waiting, pending, blocked and in-progress tasks; excludes completed, cancelled, canceled, deleted and archived.",
       status_breakdown: (data || []).reduce((acc: Record<string, number>, t: Obj) => { acc[t.status] = (acc[t.status] || 0) + 1; return acc; }, {}),
       in_progress_count: (data || []).filter((t: Obj) => ["in_progress", "in progress", "doing"].includes(String(t.status))).length,
