@@ -20,6 +20,8 @@ const ImportChunkBytes = 1 << 20
 const MaxImportItems = 100000
 
 type ImportSpec struct {
+	RestoreCollections bool `json:"restore_collections,omitempty"` // explicitly admitted creation, never inferred from archive
+
 	CollectionMap map[string]string `json:"collection_map,omitempty"` // canonical admission binds source IDs to existing destination IDs
 
 	Key          string    `json:"key"`
@@ -33,7 +35,7 @@ type ImportSpec struct {
 }
 
 func (s ImportSpec) valid() bool {
-	if len(s.CollectionMap) > 200 {
+	if len(s.CollectionMap) > 200 || (s.RestoreCollections && len(s.CollectionMap) > 0) || (s.RestoreCollections && s.Format == "mboxrd") {
 		return false
 	}
 	used := map[string]bool{}

@@ -242,19 +242,39 @@ type CollectionInput struct {
 	Name         string `json:"name"`
 }
 type Collection struct {
-	CollectionID string `json:"collection_id"`
-	Kind         string `json:"kind"`
-	Name         string `json:"name"`
+	ParentID     *string `json:"parent_id,omitempty"`
+	CollectionID string  `json:"collection_id"`
+	Kind         string  `json:"kind"`
+	Name         string  `json:"name"`
 }
 
 func (s *Service) CreateCollection(ctx context.Context, scope Scope, who EditIdentity, input CollectionInput) (EditReceipt, error) {
+	return s.CreateCollectionUnder(ctx, scope, who, input, nil)
+}
+func (s *Service) CreateCollectionUnder(ctx context.Context, scope Scope, who EditIdentity, input CollectionInput, parent *string) (EditReceipt, error) {
+	if parent != nil && (!idPattern.MatchString(*parent) || *parent == input.CollectionID || input.Kind != "folder") {
+		return EditReceipt{}, ErrEditInvalid
+	}
 	input.Name = strings.TrimSpace(input.Name)
 	if !idPattern.MatchString(input.CollectionID) || (input.Kind != "folder" && input.Kind != "label") || !utf8.ValidString(input.Name) || utf8.RuneCountInString(input.Name) < 1 || utf8.RuneCountInString(input.Name) > 80 || strings.IndexFunc(input.Name, unicode.IsControl) >= 0 || (input.Kind == "folder" && strings.EqualFold(input.Name, "Inbox")) {
 		return EditReceipt{}, ErrEditInvalid
 	}
-	return s.applyEdit(ctx, scope, who, "mail.collections.create", input, func(tx pgx.Tx) (string, int64, error) {
+	// Preserve the existing root-creation receipt digest for historical replay.
+	var identity any = input
+	if parent != nil {
+		identity = struct {
+			CollectionInput
+			ParentID string `json:"parent_id"`
+		}{input, *parent}
+	}
+	return s.applyEdit(ctx, scope, who, "mail.collections.create", identity, func(tx pgx.Tx) (string, int64, error) {
 		if err := lockEdit(ctx, tx, scope, "collections"); err != nil {
 			return "", 0, err
+		}
+		if parent != nil {
+			if err := validateDestinationParent(ctx, tx, *parent); err != nil {
+				return "", 0, err
+			}
 		}
 		var n int
 		if err := tx.QueryRow(ctx, `SELECT count(*) FROM core.mail_collections`).Scan(&n); err != nil {
@@ -263,7 +283,7 @@ func (s *Service) CreateCollection(ctx context.Context, scope Scope, who EditIde
 		if n >= 200 {
 			return "", 0, ErrEditLimit
 		}
-		_, err := tx.Exec(ctx, `INSERT INTO core.mail_collections(tenant_id,account_id,mailbox_id,collection_id,kind,name,normalized_name) VALUES($1,$2,$3,$4,$5,$6,$7)`, scope.Tenant, scope.Account, scope.Mailbox, input.CollectionID, input.Kind, input.Name, strings.ToLower(input.Name))
+		_, err := tx.Exec(ctx, `INSERT INTO core.mail_collections(tenant_id,account_id,mailbox_id,collection_id,kind,name,normalized_name,parent_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8)`, scope.Tenant, scope.Account, scope.Mailbox, input.CollectionID, input.Kind, input.Name, strings.ToLower(input.Name), parent)
 		return input.CollectionID, 1, err
 	})
 }
@@ -278,7 +298,7 @@ func (s *Service) ListCollections(ctx context.Context, scope Scope) ([]Collectio
 		return nil, err
 	}
 	defer tx.Rollback(ctx)
-	rows, err := tx.Query(ctx, `SELECT collection_id::text,kind,name FROM core.mail_collections ORDER BY kind,normalized_name,collection_id LIMIT 201`)
+	rows, err := tx.Query(ctx, `SELECT collection_id::text,kind,name,parent_id::text FROM core.mail_collections ORDER BY kind,normalized_name,collection_id LIMIT 201`)
 	if err != nil {
 		return nil, err
 	}
@@ -286,7 +306,7 @@ func (s *Service) ListCollections(ctx context.Context, scope Scope) ([]Collectio
 	out := []Collection{}
 	for rows.Next() {
 		var item Collection
-		if err = rows.Scan(&item.CollectionID, &item.Kind, &item.Name); err != nil {
+		if err = rows.Scan(&item.CollectionID, &item.Kind, &item.Name, &item.ParentID); err != nil {
 			return nil, err
 		}
 		out = append(out, item)
@@ -424,7 +444,7 @@ func portableOrganization(ctx context.Context, tx pgx.Tx, id string) (*PortableO
 	out := &PortableOrganization{Version: state.Version, Labels: []Collection{}}
 	read := func(id string) (Collection, error) {
 		var c Collection
-		err := tx.QueryRow(ctx, `SELECT collection_id::text,kind,name FROM core.mail_collections WHERE collection_id=$1`, id).Scan(&c.CollectionID, &c.Kind, &c.Name)
+		err := tx.QueryRow(ctx, `SELECT collection_id::text,kind,name,parent_id::text FROM core.mail_collections WHERE collection_id=$1`, id).Scan(&c.CollectionID, &c.Kind, &c.Name, &c.ParentID)
 		return c, err
 	}
 	if state.FolderID != nil {

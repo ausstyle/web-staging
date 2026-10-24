@@ -86,12 +86,12 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 		var archive bytes.Buffer
 		manifest, err := s.ExportMailbox(ctx, scope, &archive, 10)
 		must(err)
-		if manifest.Messages[0].Organization == nil || manifest.Messages[0].Organization.Folder.Name != "Projects" || manifest.Messages[0].Organization.Labels[0].Name != "Needs reply" {
+		if manifest.Messages[1].Organization == nil || manifest.Messages[1].Organization.Folder.Name != "Projects" || manifest.Messages[1].Organization.Labels[0].Name != "Needs reply" {
 			t.Fatal("portable organization lost")
 		}
 		preview, err := InspectTAR(bytes.NewReader(archive.Bytes()), nil)
 		must(err)
-		if preview.PortableMetadata.Messages[0].Organization.Folder.CollectionID != folder.CollectionID {
+		if preview.PortableMetadata.Messages[1].Organization.Folder.CollectionID != folder.CollectionID {
 			t.Fatal("archive stripped folder metadata")
 		}
 
@@ -112,7 +112,7 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 		must(err)
 		portable, err := InspectTAR(bytes.NewReader(part.Bytes()), nil)
 		must(err)
-		if portable.PortableMetadata.Messages[0].Organization.Folder.Name != "Projects" {
+		if portable.PortableMetadata.Messages[1].Organization.Folder.Name != "Projects" {
 			t.Fatal("resumable export lost collection")
 		}
 		importedSpec := ImportSpec{Key: uuid(), Format: "eml-tar", SourceSHA256: digest(archive.Bytes()), SourceSize: int64(archive.Len()), Folder: "Portable", Cutoff: request.Envelope.ReceivedAt, AdmissionRef: "synthetic-local-edit-import"}
@@ -126,7 +126,7 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 			t.Fatal("unmapped organization reported complete")
 		}
 		var metadata string
-		must(admin.QueryRow(ctx, `SELECT properties->'portable_metadata'->'organization'->'folder'->>'name' FROM core.mail_import_items WHERE mailbox_id=$1 AND job_id=$2`, sibling.Mailbox, imported.ID).Scan(&metadata))
+		must(admin.QueryRow(ctx, `SELECT properties->'portable_metadata'->'organization'->'folder'->>'name' FROM core.mail_import_items WHERE mailbox_id=$1 AND job_id=$2 AND properties ? 'portable_metadata'`, sibling.Mailbox, imported.ID).Scan(&metadata))
 		if metadata != "Projects" {
 			t.Fatal("import source metadata lost")
 		}
@@ -294,7 +294,7 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 		}
 		var archive bytes.Buffer
 		manifest, err := s.ExportMailbox(ctx, scope, &archive, 100)
-		if err != nil || manifest.Version != 2 || archive.Len() == 0 {
+		if err != nil || manifest.Version != 3 || archive.Len() == 0 {
 			t.Fatal("draft silently omitted from complete export")
 		}
 		c, err := s.connection(ctx)

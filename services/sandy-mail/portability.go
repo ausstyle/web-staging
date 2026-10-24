@@ -138,11 +138,11 @@ func (i *importSession) hasOrganizationMapping(org *PortableOrganization) bool {
 	if org == nil {
 		return true
 	}
-	if org.Folder != nil && i.job.Spec.CollectionMap[org.Folder.CollectionID] == "" {
+	if org.Folder != nil && i.collectionDestination(org.Folder.CollectionID) == "" {
 		return false
 	}
 	for _, c := range org.Labels {
-		if i.job.Spec.CollectionMap[c.CollectionID] == "" {
+		if i.collectionDestination(c.CollectionID) == "" {
 			return false
 		}
 	}
@@ -164,16 +164,17 @@ func (i *importSession) mappedOrganization(ctx context.Context, tx pgx.Tx, org *
 	labels := []string{}
 	used := map[string]bool{}
 	resolve := func(c Collection, kind string) (string, error) {
-		dest := i.job.Spec.CollectionMap[c.CollectionID]
+		dest := i.collectionDestination(c.CollectionID)
 		if c.Kind != kind || !idPattern.MatchString(dest) || used[dest] {
 			return "", ErrEditInvalid
 		}
 		used[dest] = true
 		var actualKind string
-		if err := tx.QueryRow(ctx, `SELECT kind FROM core.mail_collections WHERE collection_id=$1`, dest).Scan(&actualKind); err != nil {
+		var actualParent *string
+		if err := tx.QueryRow(ctx, `SELECT kind,parent_id::text FROM core.mail_collections WHERE collection_id=$1`, dest).Scan(&actualKind, &actualParent); err != nil {
 			return "", err
 		}
-		if actualKind != kind {
+		if actualKind != kind || (actualParent == nil) != (c.ParentID == nil) || (actualParent != nil && *actualParent != i.collectionDestination(*c.ParentID)) {
 			return "", ErrEditInvalid
 		}
 		return dest, nil
