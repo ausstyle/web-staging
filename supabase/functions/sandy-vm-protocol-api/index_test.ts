@@ -471,3 +471,31 @@ Deno.test("scope and durable claim precede remote execution; private envelope pi
   assert.equal(privatePayload.protocol, "ssh2");
   assert.equal(canonicalJson(args).includes("password"), false);
 });
+Deno.test("governed native transports receive a fresh same-command same-binding check at the actual dispatch boundary", async () => {
+  for (const operation of ["gcp.vm.ssh.exec", "gcp.vm.winrm.exec"]) {
+    const h = await harness();
+    const resolve = h.deps.resolveExecution;
+    let connected = false, rechecks = 0;
+    h.deps.resolveExecution = async (context) => {
+      const current = await resolve(context) as Obj;
+      if (connected) {
+        rechecks++;
+        return {...current,binding:{...current.binding as Obj,version:crypto.randomUUID()}};
+      }
+      return current;
+    };
+    const transport = async (_endpoint: unknown, _command: string, options: {beforeCommand?: () => Promise<void>} = {}) => {
+      connected = true;
+      assert.equal(typeof options.beforeCommand,"function");
+      await options.beforeCommand!();
+      throw Error("revoked native command must never dispatch");
+    };
+    h.deps.sshExecute = transport;
+    h.deps.winrmExecute = transport;
+    const response = await h.call(operation);
+    assert.equal(response.status,424);
+    assert.equal(rechecks,1);
+    assert.equal(h.finished[0].outcome,"failed");
+    assert.deepEqual(h.captures,[]);
+  }
+});

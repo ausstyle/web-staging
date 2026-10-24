@@ -258,7 +258,7 @@ Deno.test("WinRM: actual governed handler composes synthetic policy with pinned 
           }],
           networkInterfaces: [{ accessConfigs: [{ natIP: "34.0.0.10" }] }],
         }),
-      winrmExecute: async (endpoint, actual) => {
+      winrmExecute: async (endpoint, actual, options) => {
         assert.equal(endpoint.address, "34.0.0.10");
         assert.equal(endpoint.port, 5986);
         assert.equal(endpoint.password, f.endpoint.password);
@@ -267,7 +267,7 @@ Deno.test("WinRM: actual governed handler composes synthetic policy with pinned 
           ...endpoint,
           address: f.endpoint.address,
           port: f.endpoint.port,
-        }, actual);
+        }, actual, options);
       },
       saveResult: async (_c, result) => {
         captures++;
@@ -330,6 +330,31 @@ Deno.test("WinRM: actual governed handler composes synthetic policy with pinned 
     assert(!JSON.stringify(body).includes("synthetic_password"));
   } finally {
     await f.close();
+  }
+});
+Deno.test("WinRM: revoked or timed-out authority after shell creation sends no Command and retires the existing shell once", async () => {
+  for (const delayed of [false, true]) {
+    const f = await fixture();
+    let checks = 0, release: (() => void) | undefined;
+    const waiting = new Promise<void>((resolve) => { release = resolve; });
+    try {
+      await assert.rejects(() => winrmExecute(f.endpoint, "whoami", {
+        timeoutMs: 1500,
+        beforeCommand: () => {
+          checks++;
+          if (delayed) return waiting;
+          return Promise.reject(Error("private policy backend detail"));
+        },
+      }), (error) => error instanceof ProtocolRefusal && error.mayHaveExecuted &&
+        !error.cleanupRequired &&
+        error.code === (delayed ? "winrm_execution_timeout" : "winrm_dispatch_authorization_refused") &&
+        !error.message.includes("private"));
+      release!();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      assert.equal(checks, 1);
+      assert.deepEqual(f.commands, []);
+      assert.deepEqual(f.requests, ["Create", "Delete"]);
+    } finally { release!(); await f.close(); }
   }
 });
 Deno.test("WinRM: wrong pinned certificate refuses before HTTP credentials or shell creation", async () => {
