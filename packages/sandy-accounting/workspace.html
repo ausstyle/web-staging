@@ -353,7 +353,13 @@
         "-",
         "",
       );
-    $("#profit-total").textContent = "$" + tb.profit;
+    const monthly = await api("accounting.reporting.run", {
+      report: "profit_and_loss",
+      from: "2026-10-01",
+      through: "2026-10-31",
+      basis: "accrual",
+    });
+    $("#profit-total").textContent = "$" + monthly.profit;
     $("#lock-state").textContent = "Locked through: " +
       (workspace.book.locked_through?.slice(0, 10) ?? "no lock");
     $("#documents").replaceChildren();

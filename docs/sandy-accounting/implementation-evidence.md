@@ -57,6 +57,8 @@ First source candidate: `172a1376d20bc32f4c6375a6c928b235f9acf7ea`, draft [PR299
 
 The follow-on PostgreSQL adapter keeps one physical client for BEGIN/queries/COMMIT/ROLLBACK and marks a lost commit acknowledgement unknown until same-key reconciliation. Its disposable local PostgreSQL 17.6 tests use a restricted NOINHERIT application login, up to 12 connections, 100 identical requests plus 100 distinct postings, row-lock revocation, concurrent document approvals/payments, source-linked corrections, lost-acknowledgement recovery and rollback. Test endpoints are restricted to loopback and the exact synthetic database name. The local container uses a read-only root, dropped capabilities, no-new-privileges, bounded CPU/memory, tmpfs data and no persistent credentials. CI repeats this in an isolated PostgreSQL service. This is actual PostgreSQL evidence, still not Cloud SQL/HA or customer acceptance.
 
+Follow-on temporal regression: a 60.00 receipt on 3 October, reversed on 10 October, followed by a new 100.00 receipt backdated to 5 October previously produced a historical overpayment. `temporal.test.ts` reproduced the missing rejection before the fix. Both the service and allocation trigger now reject payments dated before existing payment/correction history, requiring the reviewer to use a coherent correction date. The earlier aged balance stays 40.00. The overview's October profit now explicitly requests October P&L; a prior-September revenue fixture verifies that cumulative balance-sheet earnings remain separate. More sophisticated backdated corrections and separate overpayment accounting remain in the full scope.
+
 ## Official-source revalidation
 
 Checked official primary sources on 24 October 2026:

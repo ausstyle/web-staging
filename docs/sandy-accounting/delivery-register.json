@@ -715,7 +715,9 @@
         "packages/sandy-accounting/schema.sql"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/corrections.test.ts",
+        "packages/sandy-accounting/temporal.test.ts"
       ],
       "remaining": "Dated invoice/bill void and payment-record reversal; partial credits/refunds pending.",
       "deployed": false,
@@ -738,7 +740,9 @@
         "packages/sandy-accounting/schema.sql"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/corrections.test.ts",
+        "packages/sandy-accounting/temporal.test.ts"
       ],
       "remaining": "Partial receipt recording; reminders and verified provider payments pending.",
       "deployed": false,
@@ -2130,7 +2134,9 @@
         "packages/sandy-accounting/schema.sql"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/corrections.test.ts",
+        "packages/sandy-accounting/temporal.test.ts"
       ],
       "remaining": "Partial payment recording; no money movement.",
       "deployed": false,

@@ -559,6 +559,13 @@ export class Accounting {
           a.effective_date >= d.issued.toISOString().slice(0, 10),
           "payment_before_issue",
         );
+        check(
+          !(await c.tx.query(
+            "SELECT 1 FROM accounting.allocations p LEFT JOIN accounting.allocation_reversals rv ON rv.tenant_id=p.tenant_id AND rv.company_id=p.company_id AND rv.allocation_id=p.id JOIN accounting.journals j ON j.tenant_id=p.tenant_id AND j.company_id=p.company_id AND (j.id=p.journal_id OR j.id=rv.journal_id) WHERE p.tenant_id=$1 AND p.company_id=$2 AND p.document_id=$3 AND j.effective_date>$4",
+            [...c.scope, d.id, a.effective_date],
+          )).rows.length,
+          "payment_before_history",
+        );
         await this.account(c, a.bank_account, "bank");
         const amount = minor(a.amount, c.book.precision);
         const paid = await this.paid(c, d.id);
