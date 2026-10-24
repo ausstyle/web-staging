@@ -9,6 +9,9 @@ import { repositorySourcePath } from "./sandy_repository_text.ts";
 export interface ArtifactContext {
   artifactId: string;
   actorId: string;
+  /** Canonical server-resolved relation; never inferred from actor or request JSON. */
+  customerId: string;
+  tenantId: string | null;
   admissionId: string;
   operation: "github.files.create" | "github.files.update";
   repository: "ausstyle/web-staging";
@@ -21,6 +24,10 @@ export interface ArtifactContext {
 export interface SealedArtifact {
   artifactId: string;
   ownerActorId: string;
+  ownerCustomerId: string;
+  tenantId: string | null;
+  /** Shared revocation/claim revision, checked atomically again by seal. */
+  authorityRevision: string;
   generation: string;
   size: number;
   sha256: string;
@@ -38,6 +45,25 @@ export interface ArtifactProof {
   sha256: string;
   bindingSha256: string;
 }
+export interface VerifiedScanReceipt {
+  receiptId: string;
+  artifactId: string;
+  generation: string;
+  sha256: string;
+  size: number;
+  bindingSha256: string;
+  scannerIdentity: string;
+  scannerVersion: string;
+  verdict: "clean";
+  expiresAt: number;
+}
+export interface SealFence {
+  authorityRevision: string;
+  scanReceiptId: string;
+  customerId: string;
+  tenantId: string | null;
+  expiresAt: number;
+}
 export interface PrivateArtifactStage {
   append(bytes: Uint8Array): Promise<void>;
   /** Publish only a private, execution-bound handle; atomically record its
@@ -45,6 +71,12 @@ export interface PrivateArtifactStage {
    */
   seal(
     proof: ArtifactProof,
+    /** In the SAME transaction/revision lock as revocation writers, verify this
+     * fence and the live canonical relation/claim/scan, then consume and seal.
+     * A pre-transaction Boolean check is insufficient. Unknown commits must be
+     * reconciled by the owner using admission/artifact/binding, never reissued.
+     */
+    fence: Readonly<SealFence>,
   ): Promise<{ privateHandle: string; proof: ArtifactProof }>;
   discard(): Promise<void>;
 }
@@ -58,10 +90,11 @@ export interface ArtifactCustodyOwner {
     context: Readonly<ArtifactContext>,
     work: (record: Readonly<SealedArtifact>) => Promise<T>,
   ): Promise<T>;
+  /** Resolve a trusted scanner receipt from canonical custody, not caller metadata. */
   verifyScan(
     record: Readonly<SealedArtifact>,
     bindingSha256: string,
-  ): Promise<boolean>;
+  ): Promise<Readonly<VerifiedScanReceipt> | null>;
   openGeneration(
     record: Readonly<SealedArtifact>,
     signal: AbortSignal,
@@ -101,7 +134,8 @@ export async function stageRepositoryArtifact(
   signal = AbortSignal.any([signal, AbortSignal.timeout(30000)]);
   const c = Object.freeze({ ...context });
   if (
-    ![c.artifactId, c.actorId, c.admissionId].every(id) ||
+    ![c.artifactId, c.actorId, c.admissionId, c.customerId].every(id) ||
+    (c.tenantId !== null && !id(c.tenantId)) ||
     c.repository !== "ausstyle/web-staging" ||
     !["github.files.create", "github.files.update"].includes(c.operation) ||
     !repositorySourcePath(c.path) ||
@@ -119,15 +153,31 @@ export async function stageRepositoryArtifact(
     const a = Object.freeze({ ...loaded });
     if (
       a.state !== "sealed" || a.artifactId !== c.artifactId ||
-      a.ownerActorId !== c.actorId ||
+      a.ownerActorId !== c.actorId || a.ownerCustomerId !== c.customerId ||
+      a.tenantId !== c.tenantId || !reference(a.authorityRevision) ||
       !reference(a.generation) || !reference(a.scanReceiptId) ||
       !digest(a.sha256) || a.bindingSha256 !== binding ||
       !Number.isSafeInteger(a.size) || a.size < 0 || a.size > 8 * 1024 * 1024 ||
       !Number.isSafeInteger(a.expiresAt) || a.expiresAt <= now()
     ) fail();
-    if (await owner.verifyScan(a, binding) !== true) {
+    const scan = await owner.verifyScan(a, binding);
+    if (
+      !scan || scan.receiptId !== a.scanReceiptId ||
+      scan.artifactId !== a.artifactId || scan.generation !== a.generation ||
+      scan.sha256 !== a.sha256 || scan.size !== a.size ||
+      scan.bindingSha256 !== binding || scan.verdict !== "clean" ||
+      !reference(scan.scannerIdentity) || !reference(scan.scannerVersion) ||
+      !Number.isSafeInteger(scan.expiresAt) || scan.expiresAt <= now()
+    ) {
       fail("REPOSITORY_ARTIFACT_SCAN_REQUIRED");
     }
+    const fence = Object.freeze({
+      authorityRevision: a.authorityRevision,
+      scanReceiptId: a.scanReceiptId,
+      customerId: c.customerId,
+      tenantId: c.tenantId,
+      expiresAt: Math.min(a.expiresAt, scan.expiresAt),
+    });
     signal.throwIfAborted();
     const opened = await owner.openGeneration(a, signal);
     if (
@@ -151,7 +201,7 @@ export async function stageRepositoryArtifact(
       try {
         for (;;) {
           signal.throwIfAborted();
-          if (a.expiresAt <= now()) fail();
+          if (fence.expiresAt <= now()) fail();
           const item = await reader.read();
           signal.throwIfAborted();
           if (item.done) break;
@@ -181,11 +231,13 @@ export async function stageRepositoryArtifact(
       };
       // Capture expected proof before handing it to an asynchronous owner.
       const expected = await argumentDigest(proof);
-      if (a.expiresAt <= now() || await owner.revalidate(c, a) !== true) fail();
+      if (fence.expiresAt <= now() || await owner.revalidate(c, a) !== true) {
+        fail();
+      }
       signal.throwIfAborted();
-      if (a.expiresAt <= now()) fail();
+      if (fence.expiresAt <= now()) fail();
       sealing = true;
-      const result = await staging.seal(Object.freeze(proof));
+      const result = await staging.seal(Object.freeze(proof), fence);
       if (
         !reference(result.privateHandle) ||
         await argumentDigest(result.proof) !== expected

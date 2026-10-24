@@ -11,6 +11,8 @@ import { repositoryText } from "./sandy_repository_text.ts";
 const context = (): ArtifactContext => ({
   artifactId: "11111111-1111-4111-8111-111111111111",
   actorId: "22222222-2222-4222-8222-222222222222",
+  customerId: "55555555-5555-4555-8555-555555555555",
+  tenantId: null,
   admissionId: "33333333-3333-4333-8333-333333333333",
   operation: "github.files.create",
   repository: "ausstyle/web-staging",
@@ -24,6 +26,9 @@ async function fixture(bytes: Uint8Array, c = context()) {
   const record: SealedArtifact = {
     artifactId: c.artifactId,
     ownerActorId: c.actorId,
+    ownerCustomerId: c.customerId,
+    tenantId: c.tenantId,
+    authorityRevision: "revision-1",
     generation: "7",
     size: bytes.length,
     sha256: createHash("sha256").update(bytes).digest("hex"),
@@ -48,7 +53,19 @@ async function fixture(bytes: Uint8Array, c = context()) {
       stats.claimed = true;
       return await work(record);
     },
-    verifyScan: () => Promise.resolve(true),
+    verifyScan: () =>
+      Promise.resolve({
+        receiptId: record.scanReceiptId,
+        artifactId: record.artifactId,
+        generation: record.generation,
+        sha256: record.sha256,
+        size: record.size,
+        bindingSha256: record.bindingSha256,
+        scannerIdentity: "fixture-scanner",
+        scannerVersion: "v1",
+        verdict: "clean",
+        expiresAt: 1000,
+      }),
     openGeneration: async () => {
       stats.open++;
       let offset = 0;
@@ -72,7 +89,11 @@ async function fixture(bytes: Uint8Array, c = context()) {
       append: async () => {
         stats.append++;
       },
-      seal: async (proof) => {
+      seal: async (proof, fence) => {
+        assert.equal(fence.authorityRevision, record.authorityRevision);
+        assert.equal(fence.customerId, c.customerId);
+        assert.equal(fence.tenantId, c.tenantId);
+        assert.equal(fence.scanReceiptId, record.scanReceiptId);
         stats.seal++;
         return { privateHandle: "private-artifact-1", proof };
       },
@@ -138,7 +159,7 @@ Deno.test("foreign actor, admission, path, generation binding and stale scan nev
     assert.equal(f.stats.open, 0);
   }
   const f = await fixture(new Uint8Array());
-  f.owner.verifyScan = () => Promise.resolve(false);
+  f.owner.verifyScan = () => Promise.resolve(null);
   await assert.rejects(() =>
     stageRepositoryArtifact(
       f.c,
@@ -328,4 +349,116 @@ Deno.test("private seal digest mismatch remains unknown and unsafe targets never
     );
     assert.equal(f.stats.claim, 0);
   }
+});
+
+Deno.test("canonical customer and tenant mismatch reject even a matching caller digest", async () => {
+  for (
+    const patch of [
+      { customerId: "66666666-6666-4666-8666-666666666666" },
+      { tenantId: "66666666-6666-4666-8666-666666666666" },
+    ]
+  ) {
+    const f = await fixture(new Uint8Array([1]));
+    const altered = { ...f.c, ...patch };
+    f.record.bindingSha256 = await argumentDigest(altered);
+    await assert.rejects(() =>
+      stageRepositoryArtifact(
+        altered,
+        f.owner,
+        new AbortController().signal,
+        () => 10,
+      )
+    );
+    assert.equal(f.stats.open, 0);
+  }
+});
+Deno.test("scanner receipt must bind exact bytes generation identity version and lifetime", async () => {
+  for (
+    const patch of [
+      { generation: "8" },
+      { sha256: "f".repeat(64) },
+      { size: 999 },
+      { artifactId: "other" },
+      { receiptId: "other" },
+      { bindingSha256: "f".repeat(64) },
+      { scannerIdentity: "" },
+      { scannerVersion: "" },
+      { verdict: "infected" },
+      { expiresAt: 10 },
+    ]
+  ) {
+    const f = await fixture(new Uint8Array([1]));
+    const scan = await f.owner.verifyScan(f.record, f.record.bindingSha256);
+    f.owner.verifyScan = async () =>
+      ({ ...scan!, ...patch }) as unknown as NonNullable<typeof scan>;
+    await assert.rejects(
+      () =>
+        stageRepositoryArtifact(
+          f.c,
+          f.owner,
+          new AbortController().signal,
+          () => 10,
+        ),
+      /SCAN_REQUIRED/,
+    );
+    assert.equal(f.stats.open, 0);
+  }
+});
+Deno.test("scan expiry during streaming prevents seal even when artifact remains valid", async () => {
+  const f = await fixture(new Uint8Array([1]));
+  const scan = await f.owner.verifyScan(f.record, f.record.bindingSha256);
+  f.owner.verifyScan = async () => ({ ...scan!, expiresAt: 20 });
+  let time = 10;
+  const stage = f.owner.stage;
+  f.owner.stage = async (c) => {
+    const result = await stage(c);
+    return {
+      ...result,
+      append: async (bytes) => {
+        await result.append(bytes);
+        time = 20;
+      },
+    };
+  };
+  await assert.rejects(() =>
+    stageRepositoryArtifact(
+      f.c,
+      f.owner,
+      new AbortController().signal,
+      () => time,
+    )
+  );
+  assert.equal(f.stats.seal, 0);
+  assert.equal(f.stats.discard, 1);
+});
+Deno.test("revocation after revalidation is fenced at seal without retry or cleanup", async () => {
+  const f = await fixture(new Uint8Array([1]));
+  f.owner.revalidate = async () => {
+    f.record.authorityRevision = "revision-2";
+    return true;
+  };
+  // The canonical owner must do this comparison under its shared transaction lock.
+  f.owner.stage = async () => ({
+    append: async () => {},
+    discard: async () => {
+      f.stats.discard++;
+    },
+    seal: async (_proof, fence) => {
+      f.stats.seal++;
+      assert.notEqual(fence.authorityRevision, f.record.authorityRevision);
+      throw Error("canonical revision changed");
+    },
+  });
+  await assert.rejects(
+    () =>
+      stageRepositoryArtifact(
+        f.c,
+        f.owner,
+        new AbortController().signal,
+        () => 10,
+      ),
+    /COMMIT_UNKNOWN/,
+  );
+  assert.equal(f.stats.seal, 1);
+  assert.equal(f.stats.discard, 0);
 });
