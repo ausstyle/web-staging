@@ -1,0 +1,146 @@
+{
+  "scope": "SANDY-ENG-0005",
+  "review_date": "2026-10-24",
+  "source_sha256": {
+    "supabase/functions/sandy-operation-api/index.ts": "d65b7b931da968339da857fb433853d87b4050dbeef738a5f502a173882595bc",
+    "supabase/functions/sandy-operation-api/api_job_routes.ts": "2b5e5b5963c5d358f12062041aafa725fe638ae2b2f20850267f02514de1570e",
+    "supabase/functions/sandy-orchestration-api/contracts.ts": "25ac7d21c761e2217b5ea88ba6381acd6b6e48e849b94bb88c1a3882f6d46729",
+    "supabase/functions/sandy-orchestration-api/index.ts": "6ef8bec78d3ed822d00bc52e440d0231e23a32210f721982a5fd145d918f846c"
+  },
+  "families": [
+    {
+      "family": 1,
+      "required_operations": [
+        "system.registry.list"
+      ],
+      "semantics": "GET capabilities uses authenticated action=list and caller-filtered registry records. Provider-specific authenticated_discovery and registry.summary are supporting diagnostics, not the universal catalogue. Canonical system.registry.list execution exposure must be reconciled with the route.",
+      "unresolved_capabilities": [
+        "Universal canonical registry operation/HTTP/MCP discovery equivalence and current caller-filtered executability evidence."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 2,
+      "required_operations": [
+        "system.registry.describe"
+      ],
+      "semantics": "GET capabilities/{operation} uses action=describe for the selected operation. Provider discovery is not a universal schema/handler/grant description; reconcile canonical system.registry.describe with this builtin route.",
+      "unresolved_capabilities": [
+        "Universal canonical describe operation/HTTP/MCP equivalence for schema, handler, prerequisites and grants."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 3,
+      "required_operations": [
+        "deployment.jobs.execute",
+        "orchestration.operations.enqueue"
+      ],
+      "semantics": "Generic operations/{operation}:execute dispatches the selected existing operation contract through shared admission, not a separate provider executor. Durable enqueue and legacy deployment execution are distinct acceptance cases; approve_read is authorization support, not execution.",
+      "unresolved_capabilities": [
+        "Cross-operation synchronous/asynchronous lifecycle and principal/tenant equivalence through the shared gateway."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 4,
+      "required_operations": [
+        "deployment.jobs.get",
+        "orchestration.jobs.get",
+        "system.execution.get"
+      ],
+      "semantics": "Job route classification uses authenticated database resolution to distinguish durable orchestration.jobs.get from legacy deployment.jobs.get. Execution receipt lookup is system.execution.get; deployment.jobs.status is a compatibility diagnostic, not assumed identical without contract tests.",
+      "unresolved_capabilities": [
+        "Durable and legacy job/provider-request/result readback under all supported principals."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 5,
+      "required_operations": [
+        "deployment.jobs.events",
+        "orchestration.jobs.events"
+      ],
+      "semantics": "Events use orchestration.jobs.events or deployment.jobs.events after principal-scoped job classification. Cursor pagination and ordering must preserve job isolation; polling records alone do not prove streaming delivery.",
+      "unresolved_capabilities": [
+        "Structured event ordering/resume/delivery and cancellation interaction across supported job kinds."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 6,
+      "required_operations": [
+        "deployment.jobs.cancel",
+        "orchestration.jobs.cancel"
+      ],
+      "semantics": "Cancel routes to the actual durable/legacy job kind. Eligible state transitions, worker cancellation acknowledgement and prevention of further effects are separate from request acceptance; cancel is not forced provider rollback.",
+      "unresolved_capabilities": [
+        "Actual eligible running-worker/provider cancellation outcome and negative/recovery cases."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 7,
+      "required_operations": [
+        "deployment.jobs.retry",
+        "orchestration.jobs.retry"
+      ],
+      "semantics": "Retry routes to the actual job kind and only idempotent failed work. Unknown provider effects must reconcile first; a fresh job or changed contract/input cannot inherit retry authority.",
+      "unresolved_capabilities": [
+        "Failed-step idempotency, changed-contract refusal and uncertain-outcome reconciliation across supported operations."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 8,
+      "required_operations": [
+        "system.lifecycle.compensate",
+        "system.lifecycle.get",
+        "system.lifecycle.verify"
+      ],
+      "semantics": "Rollback routes to system.lifecycle.compensate with exact compensation approval and server-selected source snapshot. Lifecycle get/verify are required readbacks; engineering.rollback.* prepares source recovery but is not universal production compensation.",
+      "unresolved_capabilities": [
+        "General approved production compensation and independent postcondition/rollback verification; fixture rollback is insufficient."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 9,
+      "required_operations": [
+        "system.audit.checkpoint",
+        "system.audit.list",
+        "system.audit.verify"
+      ],
+      "semantics": "Audit list/verify/checkpoint cover chain integrity and observation. Current HTTP resource filter is treated as an operation ID, not arbitrary target-resource lookup. Resource-indexed audit and retention/access behavior remain requirements.",
+      "unresolved_capabilities": [
+        "Actual target-resource audit filtering, access/retention and independent chain verification."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 10,
+      "required_operations": [
+        "orchestration.plans.validate"
+      ],
+      "semantics": "Current plans.validate accepts bounded read-only DAGs and reports provider_dry_run_performed=false, null monetary cost and no tenant execution. Schema/dependency validation is not general provider dry-run, pricing or mutation blast-radius planning.",
+      "unresolved_capabilities": [
+        "General authorized provider dry-run, monetary cost and mutation blast-radius planning beyond the current read-only validator."
+      ],
+      "fully_accepted": false
+    },
+    {
+      "family": 11,
+      "required_operations": [
+        "orchestration.plans.execute",
+        "orchestration.plans.get"
+      ],
+      "semantics": "plans.execute records a bounded DAG and plans.get observes its jobs; accepted is not completed. Current read-only owner scope does not implement arbitrary multi-service mutation graphs or tenant execution. Runtime owns shared scheduler/worker orchestration.",
+      "unresolved_capabilities": [
+        "General authorized multi-service mutation DAG, partial failure/compensation and tenant execution beyond the current read-only engine."
+      ],
+      "fully_accepted": false
+    }
+  ],
+  "live_calls": 0,
+  "families_promoted": 0
+}

@@ -469,6 +469,50 @@
       "github.code_scanning.update_default_setup",
       "github.code_scanning.upload_sarif",
       "github.security.code_scanning.alerts.list"
+    ],
+    "1": [
+      "system.registry.list"
+    ],
+    "2": [
+      "system.registry.describe"
+    ],
+    "3": [
+      "deployment.jobs.execute",
+      "orchestration.operations.enqueue"
+    ],
+    "4": [
+      "deployment.jobs.get",
+      "orchestration.jobs.get",
+      "system.execution.get"
+    ],
+    "5": [
+      "deployment.jobs.events",
+      "orchestration.jobs.events"
+    ],
+    "6": [
+      "deployment.jobs.cancel",
+      "orchestration.jobs.cancel"
+    ],
+    "7": [
+      "deployment.jobs.retry",
+      "orchestration.jobs.retry"
+    ],
+    "8": [
+      "system.lifecycle.compensate",
+      "system.lifecycle.get",
+      "system.lifecycle.verify"
+    ],
+    "9": [
+      "system.audit.checkpoint",
+      "system.audit.list",
+      "system.audit.verify"
+    ],
+    "10": [
+      "orchestration.plans.validate"
+    ],
+    "11": [
+      "orchestration.plans.execute",
+      "orchestration.plans.get"
     ]
   },
   "supporting_diagnostic_families": {
@@ -874,6 +918,72 @@
       "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
       "awaiting_real_family_acceptance": true,
       "basis": "docs/sandy-api/canonical-github-review-20261024.json; required behavior and unresolved capabilities retained; source descriptors are not provider acceptance."
+    },
+    "1": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "2": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "3": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "4": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "5": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "6": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "7": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "8": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "9": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "10": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
+    },
+    "11": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-core-review-20261024.json; builtin URL routing is not universal lifecycle acceptance."
     }
   },
   "explicit_semantic_mappings": {
@@ -900,7 +1010,18 @@
     "139": "Ruleset CRUD, effective branch rules, history/version and evaluation suites are distinct. Effective rules can originate above the repository; readback must not imply authority to edit inherited organization rules.",
     "140": "Organization audit is filtered to the configured repository and a bounded date window. Existing owner must actually be an organization with provider entitlement; no substitution of a different organization or audit credential is allowed.",
     "141": "Security alert listing includes Dependabot, secret-scanning and code-scanning families; alert get/update and advisory tracking are distinct from enabling a security product. Existing broad candidates are retained conservatively; no security setting is activated.",
-    "142": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required."
+    "142": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required.",
+    "1": "GET capabilities uses authenticated action=list and caller-filtered registry records. Provider-specific authenticated_discovery and registry.summary are supporting diagnostics, not the universal catalogue. Canonical system.registry.list execution exposure must be reconciled with the route.",
+    "2": "GET capabilities/{operation} uses action=describe for the selected operation. Provider discovery is not a universal schema/handler/grant description; reconcile canonical system.registry.describe with this builtin route.",
+    "3": "Generic operations/{operation}:execute dispatches the selected existing operation contract through shared admission, not a separate provider executor. Durable enqueue and legacy deployment execution are distinct acceptance cases; approve_read is authorization support, not execution.",
+    "4": "Job route classification uses authenticated database resolution to distinguish durable orchestration.jobs.get from legacy deployment.jobs.get. Execution receipt lookup is system.execution.get; deployment.jobs.status is a compatibility diagnostic, not assumed identical without contract tests.",
+    "5": "Events use orchestration.jobs.events or deployment.jobs.events after principal-scoped job classification. Cursor pagination and ordering must preserve job isolation; polling records alone do not prove streaming delivery.",
+    "6": "Cancel routes to the actual durable/legacy job kind. Eligible state transitions, worker cancellation acknowledgement and prevention of further effects are separate from request acceptance; cancel is not forced provider rollback.",
+    "7": "Retry routes to the actual job kind and only idempotent failed work. Unknown provider effects must reconcile first; a fresh job or changed contract/input cannot inherit retry authority.",
+    "8": "Rollback routes to system.lifecycle.compensate with exact compensation approval and server-selected source snapshot. Lifecycle get/verify are required readbacks; engineering.rollback.* prepares source recovery but is not universal production compensation.",
+    "9": "Audit list/verify/checkpoint cover chain integrity and observation. Current HTTP resource filter is treated as an operation ID, not arbitrary target-resource lookup. Resource-indexed audit and retention/access behavior remain requirements.",
+    "10": "Current plans.validate accepts bounded read-only DAGs and reports provider_dry_run_performed=false, null monetary cost and no tenant execution. Schema/dependency validation is not general provider dry-run, pricing or mutation blast-radius planning.",
+    "11": "plans.execute records a bounded DAG and plans.get observes its jobs; accepted is not completed. Current read-only owner scope does not implement arbitrary multi-service mutation graphs or tenant execution. Runtime owns shared scheduler/worker orchestration."
   },
   "external_dependencies": [
     {
@@ -1001,11 +1122,11 @@
     "supabase.functions.invoke": "No registry operation or installed gateway handler for general authorized Edge Function invocation; direct fixture HTTP readback does not satisfy MCP invocation."
   },
   "current_remaining_capability": {
-    "1": "Caller-filtered dynamic API catalogue and digest are deployed and exercised through MCP discovery. Canonical requirement-to-operation mapping and provider readiness/health aggregation remain incomplete; passive registry summaries are not executable discovery.",
-    "2": "Typed describe and discovery schemas exist. Uniform versions, examples, grants, readiness and corresponding canonical registry operation mapping still need reconciliation.",
-    "3": "Synchronous canonical MCP dispatch has evidence for 51 operations. Eight existing task/calendar/Agenda reads now have tenant-scoped one-use admissions, settled receipts, digest-only audit and replay refusal. General durable multi-provider execution and all original business constituents remain incomplete.",
-    "8": "Owned engineering-file create/update/delete compensation, immutable parent preimages, provider SHA conflicts, drift refusal and safe unadmitted recovery resumption are verified through MCP. General production-function rollback and durable verification of delayed/uncertain mutations remain incomplete.",
-    "9": "Append-only hash-chain audit and checkpoint/verification source exist. Complete normal-caller acceptance, provider correlation and retention/access-policy verification remain outstanding.",
+    "1": "GET capabilities uses authenticated action=list and caller-filtered registry records. Provider-specific authenticated_discovery and registry.summary are supporting diagnostics, not the universal catalogue. Canonical system.registry.list execution exposure must be reconciled with the route. Universal canonical registry operation/HTTP/MCP discovery equivalence and current caller-filtered executability evidence.",
+    "2": "GET capabilities/{operation} uses action=describe for the selected operation. Provider discovery is not a universal schema/handler/grant description; reconcile canonical system.registry.describe with this builtin route. Universal canonical describe operation/HTTP/MCP equivalence for schema, handler, prerequisites and grants.",
+    "3": "Generic operations/{operation}:execute dispatches the selected existing operation contract through shared admission, not a separate provider executor. Durable enqueue and legacy deployment execution are distinct acceptance cases; approve_read is authorization support, not execution. Cross-operation synchronous/asynchronous lifecycle and principal/tenant equivalence through the shared gateway.",
+    "8": "Rollback routes to system.lifecycle.compensate with exact compensation approval and server-selected source snapshot. Lifecycle get/verify are required readbacks; engineering.rollback.* prepares source recovery but is not universal production compensation. General approved production compensation and independent postcondition/rollback verification; fixture rollback is insufficient.",
+    "9": "Audit list/verify/checkpoint cover chain integrity and observation. Current HTTP resource filter is treated as an operation ID, not arbitrary target-resource lookup. Resource-indexed audit and retention/access behavior remain requirements. Actual target-resource audit filtering, access/retention and independent chain verification.",
     "17": "Project/folder/organization IAM adapters exist. General target-specific IAP policy read/write integration is missing, and current IAP policy inspection returns HTTP403; no blind IAM write is permitted.",
     "21": "Normal technical Auth to STS and service-account impersonation worked for the canonical Google VM read. Complete API-owned configuration/reconciliation of pools, providers and IAM bindings remains unaccepted.",
     "22": "OS Login profile/key and IAM descriptors plus native ephemeral-key code exist. Reusable grant/revoke lifecycle, authorized target binding, host enrollment and real SSH execution are not production-accepted.",
@@ -1049,7 +1170,13 @@
     "139": "Ruleset CRUD, effective branch rules, history/version and evaluation suites are distinct. Effective rules can originate above the repository; readback must not imply authority to edit inherited organization rules. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
     "140": "Organization audit is filtered to the configured repository and a bounded date window. Existing owner must actually be an organization with provider entitlement; no substitution of a different organization or audit credential is allowed. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
     "141": "Security alert listing includes Dependabot, secret-scanning and code-scanning families; alert get/update and advisory tracking are distinct from enabling a security product. Existing broad candidates are retained conservatively; no security setting is activated. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
-    "142": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete."
+    "142": "Code scanning includes alerts/instances, analyses, SARIF upload/status, databases, variant analyses, autofix and setup settings. Upload accepted is not analysis completion; asynchronous status and functional outcome verification remain required. Current-contract lifecycle/isolation/negative/idempotency/recovery and independent provider evidence remain incomplete.",
+    "4": "Job route classification uses authenticated database resolution to distinguish durable orchestration.jobs.get from legacy deployment.jobs.get. Execution receipt lookup is system.execution.get; deployment.jobs.status is a compatibility diagnostic, not assumed identical without contract tests. Durable and legacy job/provider-request/result readback under all supported principals.",
+    "5": "Events use orchestration.jobs.events or deployment.jobs.events after principal-scoped job classification. Cursor pagination and ordering must preserve job isolation; polling records alone do not prove streaming delivery. Structured event ordering/resume/delivery and cancellation interaction across supported job kinds.",
+    "6": "Cancel routes to the actual durable/legacy job kind. Eligible state transitions, worker cancellation acknowledgement and prevention of further effects are separate from request acceptance; cancel is not forced provider rollback. Actual eligible running-worker/provider cancellation outcome and negative/recovery cases.",
+    "7": "Retry routes to the actual job kind and only idempotent failed work. Unknown provider effects must reconcile first; a fresh job or changed contract/input cannot inherit retry authority. Failed-step idempotency, changed-contract refusal and uncertain-outcome reconciliation across supported operations.",
+    "10": "Current plans.validate accepts bounded read-only DAGs and reports provider_dry_run_performed=false, null monetary cost and no tenant execution. Schema/dependency validation is not general provider dry-run, pricing or mutation blast-radius planning. General authorized provider dry-run, monetary cost and mutation blast-radius planning beyond the current read-only validator.",
+    "11": "plans.execute records a bounded DAG and plans.get observes its jobs; accepted is not completed. Current read-only owner scope does not implement arbitrary multi-service mutation graphs or tenant execution. Runtime owns shared scheduler/worker orchestration. General authorized multi-service mutation DAG, partial failure/compensation and tenant execution beyond the current read-only engine."
   },
   "unresolved_family_capabilities": {
     "114": [
@@ -1072,6 +1199,39 @@
     ],
     "142": [
       "Canonical asynchronous SARIF/variant-analysis/autofix completion and recovery evidence."
+    ],
+    "1": [
+      "Universal canonical registry operation/HTTP/MCP discovery equivalence and current caller-filtered executability evidence."
+    ],
+    "2": [
+      "Universal canonical describe operation/HTTP/MCP equivalence for schema, handler, prerequisites and grants."
+    ],
+    "3": [
+      "Cross-operation synchronous/asynchronous lifecycle and principal/tenant equivalence through the shared gateway."
+    ],
+    "4": [
+      "Durable and legacy job/provider-request/result readback under all supported principals."
+    ],
+    "5": [
+      "Structured event ordering/resume/delivery and cancellation interaction across supported job kinds."
+    ],
+    "6": [
+      "Actual eligible running-worker/provider cancellation outcome and negative/recovery cases."
+    ],
+    "7": [
+      "Failed-step idempotency, changed-contract refusal and uncertain-outcome reconciliation across supported operations."
+    ],
+    "8": [
+      "General approved production compensation and independent postcondition/rollback verification; fixture rollback is insufficient."
+    ],
+    "9": [
+      "Actual target-resource audit filtering, access/retention and independent chain verification."
+    ],
+    "10": [
+      "General authorized provider dry-run, monetary cost and mutation blast-radius planning beyond the current read-only validator."
+    ],
+    "11": [
+      "General authorized multi-service mutation DAG, partial failure/compensation and tenant execution beyond the current read-only engine."
     ]
   }
 }
