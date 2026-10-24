@@ -18,7 +18,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native]
+        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native, computer-truth]
 permissions:
   contents: read
 concurrency:
@@ -58,6 +58,7 @@ jobs:
           deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
           deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
           deno test supabase/functions/sandy-master-computer/index_test.ts
+          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/objective_truth_test.ts
           deno test --allow-read --allow-env --import-map=scripts/sandy/testing/voice_import_map.json scripts/sandy/voice_context_handler_test.ts
           deno test supabase/functions/sandy-email-runtime-canary/history_test.ts supabase/functions/sandy-email-runtime-canary/outcome_test.ts supabase/functions/sandy-voice-account-context/executive_test.ts
           deno check supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
@@ -102,6 +103,7 @@ jobs:
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
           extra['missions']=['sandy-mission-runner','sandy-mission-executor']
           extra['native']=['sandy-vm-protocol-api']
+          extra['computer-truth']=['sandy-computer-worker']
           extra['runtime-programme']=['sandy-agent-runtime-v4','sandy-email-runtime-canary','sandy-voice-account-context','sandy-master-computer','sandy-engineering-oidc-ingest']
           selected=extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
           # Check every preimage before the first provider mutation.

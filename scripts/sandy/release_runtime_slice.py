@@ -41,6 +41,7 @@ MODULES = {
         'sandy-vm-protocol-api/ssh.ts',
         'sandy-vm-protocol-api/winrm.ts',
     },
+    'sandy-computer-worker': {'sandy-computer-worker/index.ts'},
     'sandy-master-computer': {
         'sandy-master-computer/index.ts',
         '_shared/sandy-agent-operations/worker_computer_identity.ts',
