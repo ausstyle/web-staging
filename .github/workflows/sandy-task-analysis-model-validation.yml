@@ -1,0 +1,92 @@
+name: Validate governed task analysis model path
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/sandy-task-analysis-worker/**'
+      - 'supabase/functions/_shared/sandy-agent-operations/task_analysis*'
+      - 'supabase/migrations/20261024005200*'
+      - 'scripts/sandy/*task_analysis_model*'
+      - 'scripts/sandy/testing/fixtures/task-analysis-worker-v20.ts'
+      - 'docs/sandy-engineering/evaluations/task-analysis-model-admission.json'
+      - 'scripts/sandy/release_task_analysis_model.py'
+      - 'scripts/sandy/task_analysis_model_acceptance.py'
+      - 'scripts/sandy/test_task_analysis_release.py'
+      - 'docs/sandy-engineering/evaluations/runtime-slices/sandy-task-analysis-worker.json'
+      - '.github/workflows/sandy-task-analysis-model-validation.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        required: true
+        type: choice
+        options: [install-and-canary, resume-source-and-canary, acceptance-only, bounded-rollout]
+      accepted_run:
+        description: Successful protected one-model canary run, required for bounded rollout
+        required: false
+        type: string
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-task-analysis-model-pr-{0}', github.event.pull_request.number) }}
+  cancel-in-progress: false
+jobs:
+  isolated-source-and-admission-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - run: |
+          deno test --no-lock --allow-read scripts/sandy/test_task_analysis_model.ts scripts/sandy/test_task_analysis_model_postgres.ts
+          deno check --no-lock supabase/functions/sandy-task-analysis-worker/index.ts
+          PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_task_analysis_model_source.py scripts/sandy/test_task_analysis_release.py scripts/sandy/test_runtime_slice_release.py -v
+  release:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: isolated-source-and-admission-tests
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+      GH_TOKEN: ${{ github.token }}
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install disabled additive admission schema once
+        if: inputs.action == 'install-and-canary'
+        run: python3 scripts/sandy/release_task_analysis_model.py --action schema --deploy --evidence-dir "$RUNNER_TEMP/task-model-schema"
+      - name: Install source-preserved worker with legacy customer path intact
+        id: source
+        if: inputs.action == 'install-and-canary' || inputs.action == 'resume-source-and-canary'
+        run: python3 scripts/sandy/release_task_analysis_model.py --action source --deploy --evidence-dir "$RUNNER_TEMP/task-model-source"
+      - name: Independently verify deployed source, schema and custody
+        if: inputs.action != 'bounded-rollout'
+        run: python3 scripts/sandy/release_task_analysis_model.py --action verify --evidence-dir "$RUNNER_TEMP/task-model-readback"
+      - name: Test one normal customer nonliteral task and literal no-model task
+        id: canary
+        if: inputs.action != 'bounded-rollout'
+        run: python3 scripts/sandy/task_analysis_model_acceptance.py --output "$RUNNER_TEMP/task-model-acceptance/receipt.json"
+      - name: Restore exact captured worker if known-installed canary fails
+        if: failure() && steps.source.outcome == 'success' && steps.canary.outcome == 'failure'
+        run: python3 scripts/sandy/release_task_analysis_model.py --action rollback-source --deploy --preimage-dir "$RUNNER_TEMP/task-model-source/private" --evidence-dir "$RUNNER_TEMP/task-model-rollback"
+      - name: Enable bounded cohort only after separately verified successful canary
+        if: inputs.action == 'bounded-rollout'
+        env:
+          ACCEPTED_RUN: ${{ inputs.accepted_run }}
+        run: python3 scripts/sandy/release_task_analysis_model.py --action rollout --deploy --accepted-run "$ACCEPTED_RUN" --evidence-dir "$RUNNER_TEMP/task-model-rollout"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: task-analysis-model-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/task-model-schema/
+            ${{ runner.temp }}/task-model-source/
+            ${{ runner.temp }}/task-model-readback/
+            ${{ runner.temp }}/task-model-acceptance/
+            ${{ runner.temp }}/task-model-rollback/
+            ${{ runner.temp }}/task-model-rollout/
+          retention-days: 14

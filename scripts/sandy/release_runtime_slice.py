@@ -17,6 +17,13 @@ from release_web_canary import Blocked, ROOT, original_sources, private_write
 
 # Reviewed components only. A manifest cannot select arbitrary targets/modules.
 MODULES = {
+    'sandy-task-analysis-worker': {
+        'sandy-task-analysis-worker/index.ts',
+        '_shared/sandy-agent-operations/task_analysis_model.ts',
+        '_shared/sandy-agent-operations/task_analysis_profile.ts',
+        '_shared/sandy-agent-operations/runtime_model_metrics.ts',
+        '_shared/sandy-agent-operations/worker_model_result.ts',
+    },
     'sandy-orchestration-api': {'sandy-orchestration-api/workload_reads.ts'},
     'sandy-agent-runtime-v4': {
         'sandy-agent-runtime-v4/index.ts',
@@ -80,9 +87,9 @@ MODULES = {
 # These inspected legacy services have exactly one flat source module. Only
 # separately allowlisted modules and reviewed manifests can activate a target.
 # This is not arbitrary entrypoint rewriting or permission to lose other files.
-NORMALIZED_TARGETS = {'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context', 'sandy-engineering-oidc-ingest'}
+NORMALIZED_TARGETS = {'sandy-task-analysis-worker', 'sandy-master-computer', 'sandy-email-runtime-canary', 'sandy-voice-account-context', 'sandy-engineering-oidc-ingest'}
 FLAT_INDEX_LAYOUT = 'reviewed-flat-index-to-namespaced-v1'
-FLAT_REVISIONS = {'sandy-master-computer': (27, True),
+FLAT_REVISIONS = {'sandy-task-analysis-worker': (21, False), 'sandy-master-computer': (27, True),
                   'sandy-email-runtime-canary': (18, False),
                   'sandy-voice-account-context': (20, False),
                   'sandy-engineering-oidc-ingest': (92, False)}

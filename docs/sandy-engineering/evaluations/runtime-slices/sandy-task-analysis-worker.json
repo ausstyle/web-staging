@@ -1,0 +1,20 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-task-analysis-worker",
+  "version": 21,
+  "verify_jwt": false,
+  "body_sha256": "844a89d9e295e8c940fbb2ee718e59e514c5ede210102466363f5174705e633b",
+  "source_layout": "reviewed-flat-index-to-namespaced-v1",
+  "before_files": {
+    "index.ts": "797361b54aee283eb4d13825ef969fe23052fa21d626470c88f7ef24f1cd4a31"
+  },
+  "replacements": {
+    "sandy-task-analysis-worker/index.ts": "567cba5f8959f0e154e0a7c0a63c6d995816a50c927db4fe3843c3e7c4570a28",
+    "_shared/sandy-agent-operations/task_analysis_model.ts": "6d7e79dec70526025e41701d60762daa98d9749acd8c1ae0a836c3d235758e55",
+    "_shared/sandy-agent-operations/task_analysis_profile.ts": "15feaa7a7739c0a966c80a22d144d8235aeea10e77f3fca4be7f9171e16286e7",
+    "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f",
+    "_shared/sandy-agent-operations/worker_model_result.ts": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
+  },
+  "functional_acceptance_passed": false,
+  "provider_execution_verified": false
+}
