@@ -73,18 +73,19 @@ func (s *Service) List(ctx context.Context, scope Scope, query string, after *Cu
 }
 
 type ExportItem struct {
-	MessageID         string          `json:"message_id"`
-	InternetMessageID string          `json:"internet_message_id"`
-	Subject           string          `json:"subject"`
-	Path              string          `json:"path"`
-	ReceivedAt        time.Time       `json:"received_at"`
-	SentAt            *time.Time      `json:"sent_at"`
-	Flags             []string        `json:"flags"`
-	SecurityState     string          `json:"security_state"`
-	Headers           json.RawMessage `json:"headers"`
-	Envelope          json.RawMessage `json:"envelope"`
-	Raw               Object          `json:"raw"`
-	Attachments       []Object        `json:"attachments"`
+	MessageID         string            `json:"message_id"`
+	InternetMessageID string            `json:"internet_message_id"`
+	Subject           string            `json:"subject"`
+	Path              string            `json:"path"`
+	ReceivedAt        time.Time         `json:"received_at"`
+	SentAt            *time.Time        `json:"sent_at"`
+	Flags             []string          `json:"flags"`
+	SecurityState     string            `json:"security_state"`
+	Headers           json.RawMessage   `json:"headers"`
+	Envelope          json.RawMessage   `json:"envelope"`
+	Raw               Object            `json:"raw"`
+	Attachments       []Object          `json:"attachments"`
+	ImportOrigins     []json.RawMessage `json:"import_origins,omitempty"`
 }
 type ExportManifest struct {
 	Version           int          `json:"version"`
@@ -180,6 +181,22 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 		ar.Close()
 		if ar.Err() != nil {
 			return manifest, ar.Err()
+		}
+		origins, err := tx.Query(ctx, `SELECT jsonb_build_object('job_id',j.job_id,'source_sha256',j.spec->>'source_sha256','source_size',j.spec->'source_size','format',j.spec->>'format','source_path',i.source_path,'source_folder',i.source_folder,'flags',i.flags,'properties',i.properties) FROM core.mail_import_items i JOIN core.mail_import_jobs j USING(tenant_id,account_id,mailbox_id,job_id) WHERE i.message_id=$1 AND i.state='VERIFIED' ORDER BY i.job_id,i.ordinal`, item.MessageID)
+		if err != nil {
+			return manifest, err
+		}
+		for origins.Next() {
+			var origin []byte
+			if err = origins.Scan(&origin); err != nil {
+				origins.Close()
+				return manifest, err
+			}
+			item.ImportOrigins = append(item.ImportOrigins, json.RawMessage(origin))
+		}
+		origins.Close()
+		if err = origins.Err(); err != nil {
+			return manifest, err
 		}
 		for _, a := range item.Attachments {
 			if _, err = s.Objects.Get(ctx, a); err != nil {

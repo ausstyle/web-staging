@@ -111,7 +111,15 @@ func TestPostgresIntegration(t *testing.T) {
  GRANT USAGE ON SCHEMA core TO mail_test_worker;
  GRANT SELECT ON ALL TABLES IN SCHEMA core TO mail_test_worker;
  GRANT INSERT ON core.intake_objects,core.recipients,core.ingestions,core.messages,core.envelopes,core.bodies,core.mime_objects,core.attachments,core.memberships,core.inbound_receipts,core.outbox TO mail_test_worker;
- GRANT UPDATE(attempts,last_error,updated_at,state) ON core.ingestions TO mail_test_worker;`)
+ GRANT UPDATE(attempts,last_error,updated_at,state) ON core.ingestions TO mail_test_worker;
+ GRANT INSERT ON core.mail_import_jobs,core.mail_import_sources,core.mail_import_items,core.mail_import_checkpoints,core.mail_import_exceptions,core.mail_import_reconciliation TO mail_test_worker;
+ REVOKE UPDATE ON core.mail_import_jobs,core.mail_import_sources,core.mail_import_items,core.mail_import_checkpoints,core.mail_import_exceptions,core.mail_import_reconciliation FROM mail_test_worker;
+ GRANT UPDATE(state,inventory_complete,updated_at) ON core.mail_import_jobs TO mail_test_worker;
+ GRANT UPDATE(manifest,complete) ON core.mail_import_sources TO mail_test_worker;
+ GRANT UPDATE(state,message_id,receipt_id,flags,envelope,properties) ON core.mail_import_items TO mail_test_worker;
+ GRANT UPDATE(cursor,item_count,chain_sha256) ON core.mail_import_checkpoints TO mail_test_worker;
+ GRANT UPDATE(code,retryable,evidence,resolved) ON core.mail_import_exceptions TO mail_test_worker;
+ GRANT UPDATE(flags) ON core.memberships TO mail_test_worker;`)
 	must(e)
 	workerCfg, e := pgxpool.ParseConfig(dsn)
 	must(e)
@@ -437,6 +445,7 @@ func TestPostgresIntegration(t *testing.T) {
 		}
 		t.Logf("synthetic archive source=%d restored=%d replay_receipts=%d bytes=%d", len(exported.Messages), len(manifest.Messages), len(receipts), archive.Len())
 	})
+	t.Run("offline_import_jobs", func(t *testing.T) { exerciseImportJobs(t, &service, admin, ctx, r.Scope) })
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {
 		var messages, receipts, events int
 		must(admin.QueryRow(ctx, `SELECT (SELECT count(*) FROM core.messages WHERE tenant_id=$1),(SELECT count(*) FROM core.inbound_receipts WHERE tenant_id=$1),(SELECT count(*) FROM core.outbox WHERE tenant_id=$1)`, r.Scope.Tenant).Scan(&messages, &receipts, &events))

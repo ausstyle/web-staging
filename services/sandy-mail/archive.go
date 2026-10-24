@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"path"
@@ -80,6 +81,9 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 	a.preview.Bytes += size
 	raw, err := io.ReadAll(io.LimitReader(r, size+1))
 	if err != nil {
+		if errors.Is(err, ErrImportSourceUnavailable) {
+			return err
+		}
 		return fmt.Errorf("archive_read_failed")
 	}
 	if int64(len(raw)) != size {
@@ -198,6 +202,9 @@ func InspectTAR(input io.Reader, visit func(ArchiveItem, []byte) error) (Archive
 			return a.finish(nil)
 		}
 		if err != nil {
+			if errors.Is(err, ErrImportSourceUnavailable) {
+				return a.finish(err)
+			}
 			return a.finish(fmt.Errorf("invalid_tar"))
 		}
 		if err = a.entry(h.Name, h.Size, h.ModTime, h.Typeflag == tar.TypeDir, h.Typeflag == tar.TypeReg || h.Typeflag == tar.TypeRegA, tr); err != nil {
@@ -215,6 +222,9 @@ func InspectZIP(input io.ReaderAt, size int64, visit func(ArchiveItem, []byte) e
 	}
 	zr, err := zip.NewReader(input, size)
 	if err != nil {
+		if errors.Is(err, ErrImportSourceUnavailable) {
+			return a.finish(err)
+		}
 		return a.finish(fmt.Errorf("invalid_zip"))
 	}
 	if len(zr.File) > MaxArchiveEntries {

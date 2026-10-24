@@ -80,7 +80,9 @@ func (s *Service) checkpoint(stage string) error {
 	}
 	return nil
 }
-func scopedTx(ctx context.Context, c *pgxpool.Conn, scope Scope) (pgx.Tx, error) {
+func scopedTx(ctx context.Context, c interface {
+	Begin(context.Context) (pgx.Tx, error)
+}, scope Scope) (pgx.Tx, error) {
 	if !scope.valid() {
 		return nil, fmt.Errorf("invalid_scope")
 	}
