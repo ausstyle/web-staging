@@ -14,7 +14,7 @@ A signed-in customer can record their own voice, speak an exact provider consent
 - Backend: sandy-my-voices Edge Function v2 ACTIVE, verify_jwt=true. Authenticated user resolved against existing non-revoked sandy_memory_portal_accounts membership; never trusts a customer identifier from the browser. Consent and sample sent to OpenAI only for a specifically requested action. Unknown create outcomes block new creations pending reconciliation. Revocation first removes selection, provider deletion errors remain pending; a provider HTTP 404 is not proof of deletion.
 - UI: sandy/voices/index.html, with two-step mic recording, explicit self-consent, voice names, list, previews, select, standard Coral fallback and revoke. Linked from sandy/app/index.html sidebar and services card. Frontend remains feature-branch source pending verified GitHub Pages publishing.
 
-Existing sandy-voice-call remains ACTIVE v40 and unchanged. Its deployed source cannot be recovered via current connected Edge Function inspection and is not in the matching repository path. Existing Sandy Rooms media and spoken integration therefore were intentionally not overwritten or claimed to be complete.
+Existing sandy-voice-call remains ACTIVE v40 and unchanged. Its deployed source cannot be recovered via current connected Edge Function inspection and is not in the matching repository path. A bounded Sandy Rooms frontend change now resolves a selected voice for the signed-in host before the session update, falling back to Coral for missing access/errors. This code has not yet been published or tested in a real call; the direct browser voice-call service remains unchanged.
 
 ## Required integration before live calling
 
@@ -33,7 +33,7 @@ Existing sandy-voice-call remains ACTIVE v40 and unchanged. Its deployed source 
 | MV-03 | Separate microphone consent and sample, self-consent required | Implemented; browser test pending |
 | MV-04 | Real OpenAI provider consent/creation accepted | Not tested; provider entitlement and user sample unknown |
 | MV-05 | Correct voice preview audible | Implemented; untested with a custom voice |
-| MV-06 | Selected voice actually spoken in new Sandy calls | Not implemented: live adapter source blocker |
+| MV-06 | Selected voice actually spoken in new Sandy calls | Rooms session selection coded, not published or audibly tested; direct browser call adapter not integrated |
 | MV-07 | Revocation immediate; provider deletion separately evidenced | Implemented; deletion tests pending |
 | MV-08 | Duplicate creates and uncertain outcomes contained | Guarded; stress test pending |
 | MV-09 | Existing Coral default and existing calls preserved | Additive backend only; regression test pending |
