@@ -1,0 +1,17 @@
+{
+  "environment": "local-postgresql-filesystem-not-cloudsql-gcs",
+  "source_revision": "a515e125aaa5353b5f4390b194f6bb4499c2524f",
+  "export_job_id": "f98ddd6d-cd39-4495-9d12-77525213c5a3",
+  "restored_mailbox_id": "a2ccc5c8-8b5a-4713-81f9-7df1f3788e34",
+  "archive_parts_verified": 10,
+  "archive_bytes": 3584000,
+  "part_chain_sha256": "aa1bbea4ab1129e561d15b0af3197c432ba37537a15a72e29b86716fad046b42",
+  "frozen_message_ids_verified": 1000,
+  "restored_raw_messages_verified": 1000,
+  "restored_flags_verified": 1000,
+  "attachment_hashes_verified": 1000,
+  "verification_path": "separate Python tar/email parser plus psql process after Go test exit; same agent",
+  "cloud_deployed": false,
+  "customer_delivered": false,
+  "independent_acceptance": false
+}

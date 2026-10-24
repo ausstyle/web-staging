@@ -56,3 +56,7 @@ Release payload: [runner and exact manifest contract](../../services/sandy-mail/
 ## Import follow-on does not widen the first-email request
 
 Keep the first deployed-email target mapping and protected execution focused on preserved artifact/source `a135eb69bdcf16d66b9e7e3edf27f9e85c868a33` (migrations 0001–0003). Later source adds migration 0004 and internal offline import workers. Its [separate optional SQL column-grant diff](../../services/sandy-mail/IMPORTS.md#separate-optional-sql-grant-diff) is neither required for the first email nor applied live. Parent/API owner already has the first-email dependency request; no repeated approval or fallback provisioning is requested by this follow-on.
+
+## Export follow-on also remains separate
+
+Migration 0005 and the resumable export worker have a [separate optional SQL grant diff and mandatory authority contract](../../services/sandy-mail/EXPORTS.md#bounds-validation-and-separate-grants). Neither changes the first-email artifact, its fixture namespace, existing target request or required first-email permissions. Local export/restore evidence is not cloud deployment or permission evidence. Shared canonical identity/reauth/revocation, scanner policy and private encrypted customer delivery remain pending integration; this follow-on requests no new provisioned resource, access or approval.
