@@ -8,6 +8,26 @@ class TaskAnalysisRelease(unittest.TestCase):
   m,s,sql=r.load();self.assertEqual(slices.validate(s),'sandy-task-analysis-worker');self.assertFalse(m['policy_installed_enabled']);self.assertEqual(s['version'],21)
   for table in m['database_invariants']:
    self.assertTrue(table['relrowsecurity']);self.assertFalse(table['service_update']);self.assertFalse(table['customer_read'])
+ def test_gateway_readback_rejects_changed_source_auth_or_version_without_calls(self):
+  m,_,_=r.load();import copy
+  m=copy.deepcopy(m);body=b'gateway-fixture';files={'index.ts':b'fixed-source'}
+  for expected in m['gateway_dependencies'].values():expected.update(body_sha256=r.digest(body),files={p:r.digest(v) for p,v in files.items()})
+  class Fake:
+   def __init__(self,field=None):self.field=field;self.calls=[]
+   def api(self,method,path):
+    self.calls.append((method,path))
+    if path.endswith('/body'):return body
+    slug=path.split('/')[-1];e=m['gateway_dependencies'][slug];meta={'status':'ACTIVE','version':e['version'],'verify_jwt':e['verify_jwt']}
+    if self.field:meta[self.field]=not e['verify_jwt'] if self.field=='verify_jwt' else e['version']+1
+    return json.dumps(meta).encode()
+  with patch('release_web_canary.original_sources',return_value=files):
+   self.assertTrue(r.gateway_dependencies(Fake(),m)['fixed_model_gateway_dependencies_verified'])
+   for field in ['verify_jwt','version']:
+    fake=Fake(field)
+    with self.assertRaisesRegex(r.Blocked,'gateway_dependency_changed'):r.gateway_dependencies(fake,m)
+    self.assertTrue(all(method=='GET' for method,_ in fake.calls))
+  with patch('release_web_canary.original_sources',return_value={**files,'unreviewed.ts':b'new'}):
+   with self.assertRaisesRegex(r.Blocked,'gateway_dependency_changed'):r.gateway_dependencies(Fake(),m)
  def test_all_new_rpc_sources_are_exactly_extractable_not_merely_names(self):
   import re,hashlib
   _,_,sql=r.load()
