@@ -71,6 +71,25 @@ class TestV2APIQA(unittest.TestCase):
         self.assertIn('qa_no_novel_eligible_generated_cases',self.edge)
         self.assertIn('qa_targeted_budget_or_novelty_insufficient',self.edge)
 
+    def test_dynamic_web_count_oracle_intent_before_execution(self):
+        """The designed/refilled prompt must match the independently checked count oracle."""
+        pattern=re.search(r'const webHistoryCountIntent=\(question:string\)=>\s*(.*?);',self.edge,re.S)
+        self.assertIsNotNone(pattern)
+        samples=[
+            ("How many web chat messages have I sent?", True),
+            ("Count my web turns", True),
+            ("Tell me what you know about web chat history", False),
+            ("How many calendar messages exist?", False),
+            ("What was our last web chat?", False),
+            ("How many web conversations are open?", False),
+        ]
+        expression='('+json.dumps([q for q,_ in samples])+').map(question=>('+pattern.group(1)+'))'
+        self.assertEqual(javascript_value(expression),[ok for _,ok in samples])
+        # Both shadow-designed and just-in-time refill candidates fail closed
+        # *before* a runtime request, not after a model returns an answer.
+        self.assertIn('if(oracle==="web_history"&&!webHistoryCountIntent(String(x.question||"")))return reject("oracle_question_mismatch",x);',self.edge)
+        self.assertIn('if(oracle==="web_history"&&!webHistoryCountIntent(question)){reason("oracle_question_mismatch");continue;}',self.edge)
+
     def test_response_evidence_and_proposal_only_improvement(self):
         self.assertIn('db.from("sandy_agent_tasks").select("status,tool_trace,model,customer_id")',self.edge)
         self.assertIn('status:"completed"',(ROOT/'supabase/functions/sandy-agent-runtime/index.ts').read_text())
