@@ -3,13 +3,13 @@ from pathlib import Path
 from prepare_task_analysis_model import ROOT,BEFORE_SHA,AFTER_SHA,candidate,sha
 class TaskAnalysisSource(unittest.TestCase):
  def setUp(self):
-  self.original={'sandy-task-analysis-worker/index.ts':(ROOT/'scripts/sandy/testing/fixtures/task-analysis-worker-v20.ts').read_bytes()}
+  self.original={'index.ts':(ROOT/'scripts/sandy/testing/fixtures/task-analysis-worker-v20.ts').read_bytes()}
  def test_reviewed_actual_preimage_and_full_bundle_pins(self):
   m=json.loads((ROOT/'docs/sandy-engineering/evaluations/task-analysis-model-admission.json').read_text());files=candidate(self.original)
-  self.assertEqual({k:sha(v) for k,v in files.items()},m['candidate_files']);self.assertEqual(sha(self.original['sandy-task-analysis-worker/index.ts']),BEFORE_SHA)
+  self.assertEqual({k:sha(v) for k,v in files.items()},m['candidate_files']);self.assertEqual(sha(self.original['index.ts']),BEFORE_SHA)
   self.assertEqual(sha((ROOT/m['migration']).read_bytes()),m['migration_sha256']);self.assertFalse(m['provider_execution_verified']);self.assertFalse(m['policy_installed_enabled'])
  def test_drift_and_unexpected_modules_deny_before_any_upload(self):
-  for files in [{**self.original,'other.ts':b''},{'sandy-task-analysis-worker/index.ts':self.original['sandy-task-analysis-worker/index.ts']+b'\n'}]:
+  for files in [{**self.original,'other.ts':b''},{'index.ts':self.original['index.ts']+b'\n'}]:
    with self.assertRaisesRegex(ValueError,'preimage'):candidate(files)
  def test_database_guard_and_helper_pin_real_unchanged_entrypoint(self):
   files=candidate(self.original);sql=(ROOT/'supabase/migrations/20261024005200_sandy_task_model_admission.sql').read_text();helper=files['_shared/sandy-agent-operations/task_analysis_model.ts'].decode()

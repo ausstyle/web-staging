@@ -1,10 +1,10 @@
 {
   "kind": "task_analysis_model_admission_source_review",
   "function": "sandy-task-analysis-worker",
-  "before_version": 20,
+  "before_version": 21,
   "verify_jwt": false,
   "before_files": {
-    "sandy-task-analysis-worker/index.ts": "797361b54aee283eb4d13825ef969fe23052fa21d626470c88f7ef24f1cd4a31"
+    "index.ts": "797361b54aee283eb4d13825ef969fe23052fa21d626470c88f7ef24f1cd4a31"
   },
   "candidate_files": {
     "sandy-task-analysis-worker/index.ts": "badf527de90ff0060cb5e6ebfced55b74a5269357c9c7f45b94accc46d22dda3",
