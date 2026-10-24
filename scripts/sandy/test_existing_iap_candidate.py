@@ -15,10 +15,16 @@ class ExistingCandidate(unittest.TestCase):
  def test_readback_uses_fixed_existing_candidate_and_immutable_original_traffic(self):
   proof={'image_digest':'image@sha256:'+r.IMAGE,'source_sha256':r.WORKER_HASH}
   original=mock.Mock();original.__truediv__=mock.Mock(return_value=mock.Mock(read_text=mock.Mock(return_value='{"original":"traffic"}')))
-  with mock.patch.object(r,'service',return_value={'actual':'traffic'}),mock.patch.object(r,'revision',return_value={'actual':'revision'}),mock.patch.object(r,'worker_manifest',return_value={'source_sha256':r.WORKER_HASH}),mock.patch.object(r,'validate',return_value=proof) as validate:
+  with mock.patch.object(r,'service',return_value={'status':{'traffic':[]}}),mock.patch.object(r,'revision',return_value={'actual':'revision'}),mock.patch.object(r,'worker_manifest',return_value={'source_sha256':r.WORKER_HASH}),mock.patch.object(r,'validate',return_value=proof) as validate:
    result,_,_=r.readback(original)
   self.assertFalse(result['new_candidate_created']);self.assertFalse(result['bindings_changed']);self.assertEqual(result['IAM_changes'],0)
-  self.assertEqual(validate.call_args.args[:6],({'original':'traffic'},{'actual':'traffic'},{'actual':'revision'},r.SOURCE,r.RUN,r.ATTEMPT))
+  self.assertEqual(validate.call_args.args[:6],({'original':'traffic'},{'status':{'traffic':[]}},{'actual':'revision'},r.SOURCE,r.RUN,r.ATTEMPT))
+ def test_notices_are_bounded_and_escape_annotation_controls(self):
+  import io
+  output=io.StringIO()
+  with mock.patch('sys.stdout',output):r.notice('fixed',{'status':404,'classification':'http_not_found'})
+  self.assertIn('::notice title=fixed::',output.getvalue());self.assertIn('404',output.getvalue())
+  with self.assertRaisesRegex(r.Blocked,'bounded_safe_notice_required'):r.notice('fixed',{'huge':'x'*12001})
  def test_wrong_candidate_image_stops_acceptance(self):
   original=mock.MagicMock();(original/'before.json').read_text.return_value='{}'
   with mock.patch.object(r,'service'),mock.patch.object(r,'revision'),mock.patch.object(r,'worker_manifest',return_value={'source_sha256':r.WORKER_HASH}),mock.patch.object(r,'validate',return_value={'image_digest':'image@sha256:wrong'}),self.assertRaisesRegex(r.Blocked,'existing_candidate_image_mismatch'):r.readback(original)
