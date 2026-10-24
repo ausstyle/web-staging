@@ -267,6 +267,8 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		switch {
+		case errors.Is(err, ErrDraftMIMEEditRequired):
+			reply(409, "mime_draft_requires_full_mime_edit", nil)
 		case errors.Is(err, ErrEditInvalid):
 			reply(400, "invalid_arguments", nil)
 		case errors.Is(err, ErrEditStale):

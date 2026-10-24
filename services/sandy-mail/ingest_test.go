@@ -125,7 +125,7 @@ func TestPostgresIntegration(t *testing.T) {
  GRANT UPDATE(state,part_number) ON core.mail_export_items TO mail_test_worker;
  GRANT UPDATE(code,retryable,resolved,evidence) ON core.mail_export_exceptions TO mail_test_worker;
  GRANT INSERT ON core.mail_drafts,core.mail_collections,core.mail_message_organization,core.mail_message_labels,core.mail_edit_receipts TO mail_test_worker;
- GRANT UPDATE(subject,recipients,body_text,revision,updated_at) ON core.mail_drafts TO mail_test_worker;
+ GRANT UPDATE(subject,recipients,body_text,revision,updated_at,mime_original) ON core.mail_drafts TO mail_test_worker;
  GRANT UPDATE(folder_id,revision) ON core.mail_message_organization TO mail_test_worker;
  GRANT UPDATE(active) ON core.mail_message_labels TO mail_test_worker;`)
 	must(e)
@@ -457,6 +457,7 @@ func TestPostgresIntegration(t *testing.T) {
 	t.Run("local_inbox_http", func(t *testing.T) { exerciseLocalInbox(t, &service, ctx, scopes) })
 	t.Run("resumable_exports", func(t *testing.T) { exerciseExportJobs(t, &service, admin, ctx, r.Scope) })
 	t.Run("collection_hierarchy_portability", func(t *testing.T) { exerciseCollectionPortability(t, &service, admin, ctx) })
+	t.Run("draft_mime_portability", func(t *testing.T) { exerciseDraftMIME(t, &service, admin, ctx) })
 	t.Run("portable_drafts_and_mapping", func(t *testing.T) { exercisePortability(t, &service, admin, ctx) })
 	t.Run("drafts_and_organization", func(t *testing.T) { exerciseEdits(t, &service, admin, ctx) })
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {

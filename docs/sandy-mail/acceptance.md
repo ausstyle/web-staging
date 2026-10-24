@@ -140,4 +140,17 @@ Source `733bb820ff95fcb8bfefa2543f06c18fc4c88462` passed **112 race-checked Go t
 
 [Retained round-trip](evidence/hierarchy-roundtrip.json) and [post-process readback](evidence/hierarchy-after-exit.json) identify import job `bb90b982-df27-40e3-9af5-d4c6a4c02e3c`: seven verified collections, three parent edges, two verified archive records and zero exceptions. Exactly one collection restore receipt `84233c1e-d540-458e-941a-b54434d44cf8` survived interrupted acknowledgement. The independent process re-read every source item, original MIME, attachment and reconciliation object by hash; it was still run by the implementing agent, so independent acceptance remains false. Retained objects are at `/workspace/sandy-mail-evidence/hierarchy-roundtrip-objects`, with local database port 55442; none are Cloud SQL/GCS acceptance.
 
-Scope reconciliation: native draft JSON round-trip is verified, but §6.1 also requires an interoperable RFC822/MIME representation for locally composed drafts. That output adapter remains an independent source task; native-v2/v3 success is not full provider-exit or Outlook/PST acceptance.
+Scope reconciliation: native draft JSON round-trip is verified, but §6.1 also requires an interoperable RFC822/MIME representation for locally composed drafts. The subsequent v4 increment below implements that adapter; native-v2/v3 success alone was not full provider-exit or Outlook/PST acceptance.
+
+
+## Interoperable unsent draft MIME
+
+Portable v4 and migration 0009 retain byte-exact rich MIME and generate an explicit
+MIME representation for composed text. Per-record accounting identifies preserved
+originals versus generated headers/encoding/date and absent sender/Message-ID.
+Original MIME recipients, folded/repeated headers, ISO-8859-1 quoted-printable,
+UTF-8 HTML and binary attachment bytes are exercised with authored `.invalid`
+fixtures. Draft restoration remains separate from received mail and sending.
+The [format/rollback contract](../../services/sandy-mail/EXPORTS.md#portable-v4-draft-mime)
+records exact limits and legacy compatibility. Source/local acceptance remains
+separate from Cloud SQL/GCS execution and independent acceptance.

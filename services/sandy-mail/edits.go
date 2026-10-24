@@ -115,6 +115,7 @@ type DraftInput struct {
 	Text            string   `json:"text"`
 }
 type Draft struct {
+	MIME      *Object   `json:"mime_original,omitempty"`
 	DraftID   string    `json:"draft_id"`
 	Version   int64     `json:"version"`
 	Subject   string    `json:"subject"`
@@ -148,7 +149,8 @@ func (s *Service) SaveDraft(ctx context.Context, scope Scope, who EditIdentity, 
 			return "", 0, err
 		}
 		var version int64
-		err := tx.QueryRow(ctx, `SELECT revision FROM core.mail_drafts WHERE draft_id=$1 FOR UPDATE`, input.DraftID).Scan(&version)
+		var hasMIME bool
+		err := tx.QueryRow(ctx, `SELECT revision,mime_original IS NOT NULL FROM core.mail_drafts WHERE draft_id=$1 FOR UPDATE`, input.DraftID).Scan(&version, &hasMIME)
 		if errors.Is(err, pgx.ErrNoRows) {
 			if input.ExpectedVersion != 0 {
 				return "", 0, ErrEditStale
@@ -165,6 +167,9 @@ func (s *Service) SaveDraft(ctx context.Context, scope Scope, who EditIdentity, 
 		}
 		if err != nil {
 			return "", 0, err
+		}
+		if hasMIME {
+			return "", 0, ErrDraftMIMEEditRequired
 		}
 		if version != input.ExpectedVersion {
 			return "", 0, ErrEditStale
@@ -188,7 +193,7 @@ func (s *Service) GetDraft(ctx context.Context, scope Scope, id string) (Draft, 
 		return d, err
 	}
 	defer tx.Rollback(ctx)
-	err = tx.QueryRow(ctx, `SELECT draft_id::text,revision,subject,recipients,body_text,updated_at,created_at FROM core.mail_drafts WHERE draft_id=$1`, id).Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.Text, &d.UpdatedAt, &d.CreatedAt)
+	err = tx.QueryRow(ctx, `SELECT draft_id::text,revision,subject,recipients,body_text,updated_at,created_at,mime_original FROM core.mail_drafts WHERE draft_id=$1`, id).Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.Text, &d.UpdatedAt, &d.CreatedAt, &d.MIME)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Draft{}, ErrNotFound
 	}

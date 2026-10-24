@@ -58,3 +58,47 @@ Migration 0007 permits draft restoration; existing immutable export snapshots no
 Mapped organization preserves each message's referenced flat folders/labels. Portable v3 adds frozen empty collection inventory and native parent relationships. Arbitrary provider hierarchy conversion remains unverified. The bounded MBOX path explicitly rejects drafts instead of silently turning them into received/sent mail. See [draft and mapping contracts](LOCAL_INBOX.md#portable-drafts-and-destination-collections); mandatory customer authority/scanner/delivery dependencies above remain unchanged.
 
 [Portable-v3 inventory](LOCAL_INBOX.md#empty-collections-and-hierarchy-portable-v3) is frozen as the first archive record and reconciled by separate collection counts, including empty-only mailboxes. It does not imply provider conversion or complete customer delivery acceptance.
+
+## Portable v4 draft MIME
+
+Migration 0009 adds a scoped immutable object reference to drafts. New bounded and
+resumable exports write `drafts/<id>.draft.eml`, identified by `draft` and
+`draft_mime` in a v4 manifest. Existing v1 messages, v2/v3 JSON draft masters and
+frozen historical export jobs remain readable. Version 2/3 reconciliation report
+schemas and legacy record counters are unchanged; manifest format is separate.
+
+MIME-backed drafts export the original bytes exactly, including From/Sender,
+Reply-To, To/Cc/Bcc, repeated/folded headers, charset/transfer encodings, HTML,
+inline parts and attachments. `original_bytes_preserved=true` and an empty
+`changes` list describe this byte preservation, not a scanner verdict. Plain-text
+composed drafts serialize as UTF-8 quoted-printable (explicit octets preserve mixed
+line endings), folded encoded Subject, To, MIME-Version, X-Unsent and Date from
+creation time. The manifest records generated headers/encoding/date and absent
+source From/Message-ID; it invents no sender identity. No existing rich content is
+converted to plain text. MIME size/complexity and the existing 64 KiB draft text
+projection limit apply; unsupported input is rejected and its import master kept.
+
+Import requires the typed manifest: a filename, X-Unsent header or Maildir D flag
+alone does not authorize converting ordinary received mail into a mutable draft.
+Original bytes, projection, accounting, hash and size are checked before import;
+new destination IDs and destination-scoped object references replace source
+identity. Source revision/timestamps remain provenance. The immutable import item
+and edit receipt reconcile interrupted commits without duplicate drafts. Old
+canonical JSON draft archives remain supported. MBOX output still explicitly
+refuses drafts because its draft metadata semantics are not established.
+
+`SaveMIMEDraft` and `ReadDraftMIME` are internal worker methods, not public download,
+send or scanner-bypass routes. Full MIME replacement uses expected revision and
+same-key receipts. The plain-text API rejects MIME-backed edits with HTTP 409
+`mime_draft_requires_full_mime_edit`; the current editor does not expose a rich
+MIME/attachment editor. Upload-before-SQL can leave an immutable unreferenced object
+on failure; same-key retry reuses it, no automatic deletion is performed. The SQL
+trigger also refuses legacy writers that would change the projection without
+replacing MIME or discard the MIME reference.
+
+Deployment remains pending. A future approved Mail worker needs INSERT/SELECT
+on the existing draft table and, for full MIME updates, column UPDATE on
+`mime_original` alongside existing edit columns. No live role/grant was changed.
+Rollback: stop MIME writers and export workers, retain all SQL and originals, and
+forward-repair with a compatible build. Do not run old exports against MIME-backed
+drafts: older code would omit their rich content. No down migration/data deletion.

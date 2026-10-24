@@ -432,7 +432,7 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 				entry.Properties["collection_count"] = len(item.Collections.Collections)
 				entry.Properties["conversion"] = "canonical-collection-inventory-v1"
 			}
-			if item.Draft != nil {
+			if item.Draft != nil || item.MIMEDraft {
 				entry.Properties["record_kind"] = "draft"
 			}
 			if e = i.discoverItem(ctx, entry, raw, index); e != nil {
@@ -497,6 +497,10 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 					}
 					if hash != m.Raw.SHA256 {
 						return nil
+					}
+					if m.DraftMIME != nil {
+						_, err = tx.Exec(ctx, "UPDATE core.mail_import_items SET properties=properties || jsonb_build_object('portable_metadata',$3::jsonb) WHERE job_id=$1 AND source_path=$2", i.job.ID, m.Path, encoded(m))
+						return err
 					}
 					if m.Draft != nil || m.Collections != nil {
 						return nil

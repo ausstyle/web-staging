@@ -52,3 +52,9 @@ Migration 0007 extends import items with scoped `draft_id,draft_receipt_id` bind
 Missing mappings retain the source bytes/metadata and report `organization_mapping_pending` with `COMPLETED_WITH_EXCEPTIONS`. Invalid destination scope/kind fails without partial mapping. Portable v3 adds complete native collection inventory and parent restoration, including empty nodes. Arbitrary provider hierarchy conversion and public wizard/admission/scanner integration remain pending. [Portable format and bounds](LOCAL_INBOX.md#portable-drafts-and-destination-collections) detail compatibility, retries and MBOX limitations.
 
 [Portable-v3 hierarchy and grant details](LOCAL_INBOX.md#empty-collections-and-hierarchy-portable-v3) explain explicit creation/mapping, split-part restoration and collection loss accounting.
+
+Portable-v4 draft MIME import and backward-compatible JSON drafts are described
+in [EXPORTS.md](EXPORTS.md#portable-v4-draft-mime). These are unsent draft records,
+with separate restore receipts; they never enter the received-message path.
+PST/OST conversion is investigated only and remains rejected. No direct arbitrary
+EML-to-draft inference or customer-facing import/download route is added.
