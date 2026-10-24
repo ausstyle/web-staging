@@ -1,3 +1,4 @@
+import { buildAdmittedGcsRequest } from "./provider_request.ts";
 import {
   type AuthenticatedCloudContext,
   cloudAdmissionHook,
@@ -160,6 +161,8 @@ Deno.test("Cloud protocol composes with structured admission start/chunk/status/
   const requests: AdmittedTransfer[] = [];
   const executor = {
     execute: async (r: AdmittedTransfer) => {
+      const built = await buildAdmittedGcsRequest(r, policy().signal, () => 10);
+      assert(built.init.redirect === "error");
       requests.push(r);
       if (r.operation.endsWith("start")) {
         return new Response(null, {
@@ -364,4 +367,39 @@ Deno.test("transfer snapshots bytes and operation before async hashing and reche
   }, () => ++clock === 1 ? 10 : 1000);
   await denied(() => t(startRequest(), policy().signal));
   assert(calls === 0);
+});
+
+Deno.test("provider builder reconstructs fixed request and revalidates body digest", async () => {
+  const { buildAdmittedGcsRequest } = await import("./provider_request.ts");
+  let checked: AdmittedTransfer | undefined;
+  const signal = policy().signal;
+  await cloudTransport(scope(), {
+    execute: async (i) => {
+      checked = i;
+      return new Response();
+    },
+  }, () => 10)(startRequest(), signal);
+  const built = await buildAdmittedGcsRequest(checked!, signal, () => 10);
+  assert(
+    built.url === startRequest().url && built.init.redirect === "error" &&
+      built.init.signal === signal,
+  );
+  assert(new TextDecoder().decode(built.init.body as Uint8Array) === "{}");
+  await denied(() =>
+    buildAdmittedGcsRequest(
+      { ...checked!, bodySha256: "0".repeat(64) },
+      signal,
+      () => 10,
+    )
+  );
+  await denied(() =>
+    buildAdmittedGcsRequest({ ...checked!, length: 99 }, signal, () => 10)
+  );
+  await denied(() =>
+    buildAdmittedGcsRequest(
+      { ...checked!, scope: { ...checked!.scope, key: "foreign/key" } },
+      signal,
+      () => 10,
+    )
+  );
 });
