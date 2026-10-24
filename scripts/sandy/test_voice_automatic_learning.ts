@@ -8,17 +8,17 @@ Deno.test("automatic voice persistence requires current consent/source epoch and
  try{
   await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;
    CREATE TABLE sandy_memory_settings(customer_id uuid PRIMARY KEY,enabled boolean,learning_enabled boolean,consent_at timestamptz,updated_at timestamptz);
-   CREATE TABLE sandy_voice_call_links(id uuid PRIMARY KEY,owner_customer_id uuid,revoked_at timestamptz);
-   CREATE TABLE sandy_voice_call_sessions(id uuid PRIMARY KEY,owner_customer_id uuid,link_id uuid,created_at timestamptz,state text,review_status text);
-   CREATE TABLE sandy_voice_private_auth(session_id uuid PRIMARY KEY,owner_customer_id uuid,verified_at timestamptz);
+   CREATE TABLE sandy_voice_call_links(id uuid PRIMARY KEY,owner_customer_id uuid,revoked_at timestamptz,expires_at timestamptz);
+   CREATE TABLE sandy_voice_call_sessions(id uuid PRIMARY KEY,owner_customer_id uuid,link_id uuid,created_at timestamptz,state text,review_status text,ended_at timestamptz);
+   CREATE TABLE sandy_voice_private_auth(session_id uuid PRIMARY KEY,owner_customer_id uuid,verified_at timestamptz,expires_at timestamptz);
    CREATE TABLE sandy_voice_transcript_turns(id integer PRIMARY KEY,session_id uuid,owner_customer_id uuid,role text,text text,created_at timestamptz);
    CREATE TABLE email_ai_profile_facts(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),customer_id uuid,category text,fact_key text,fact_value text,confidence text,status text,last_observed_at timestamptz,created_at timestamptz DEFAULT clock_timestamp(),supersedes_fact_id uuid);
    CREATE TABLE sandy_voice_memory_reviews(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),session_id uuid UNIQUE,owner_customer_id uuid,status text,summary text,candidates jsonb,committed_count integer,model text,error_code text,created_at timestamptz DEFAULT clock_timestamp(),completed_at timestamptz);
    CREATE TABLE sandy_voice_memory_facts(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),review_id uuid,owner_customer_id uuid,fact_key text,fact_value text,category text,decision text,rationale text,saved_profile_fact_id uuid,UNIQUE(review_id,fact_key));
    INSERT INTO sandy_memory_settings VALUES('${customer}',true,true,clock_timestamp()-interval '2 hours',clock_timestamp()-interval '2 hours');
-   INSERT INTO sandy_voice_call_links VALUES('${link}','${customer}',NULL);
-   INSERT INTO sandy_voice_call_sessions VALUES('${session}','${customer}','${link}',clock_timestamp()-interval '1 hour','ended',NULL);
-   INSERT INTO sandy_voice_private_auth VALUES('${session}','${customer}',clock_timestamp()-interval '1 hour');
+   INSERT INTO sandy_voice_call_links VALUES('${link}','${customer}',NULL,clock_timestamp()+interval '1 hour');
+   INSERT INTO sandy_voice_call_sessions VALUES('${session}','${customer}','${link}',clock_timestamp()-interval '1 hour','active',NULL,NULL);
+   INSERT INTO sandy_voice_private_auth VALUES('${session}','${customer}',clock_timestamp()-interval '1 hour',clock_timestamp()+interval '1 hour');
    INSERT INTO sandy_voice_transcript_turns VALUES(1,'${session}','${customer}','user','I like ordinary fixture coffee',clock_timestamp()-interval '30 minutes'),(2,'${session}','${other}','user','I own a foreign private fixture',clock_timestamp()-interval '30 minutes');
    INSERT INTO sandy_voice_memory_reviews(session_id,owner_customer_id,status)VALUES('${session}','${customer}','processing');`);
   const dependency=Deno.args[0];
@@ -36,7 +36,17 @@ Deno.test("automatic voice persistence requires current consent/source epoch and
   const persist=async(snapshot:any,result=proposal)=>(await db.query<{result:any}>("SELECT sandy_voice_automatic_learning_persist($1,$2,$3,$4)result",[session,customer,JSON.stringify(snapshot),JSON.stringify(result)])).rows[0].result;
   const totals=async()=>(await db.query<{facts:number;audit:number;summaries:number}>("SELECT(SELECT count(*)::int FROM email_ai_profile_facts)facts,(SELECT count(*)::int FROM sandy_voice_memory_facts)audit,(SELECT count(*)::int FROM sandy_voice_memory_reviews WHERE summary IS NOT NULL)summaries")).rows[0];
   assert.equal((await source(other)).ok,false);passed++;
-  const valid=await source();assert.equal(valid.ok,true);passed++;
+  let valid=await source();assert.equal(valid.ok,true);passed++;
+  // Historical ended calls may be reviewed only inside their actual private
+  // authority window. A later transcript is never evidence for derived writes.
+  await db.exec("UPDATE sandy_voice_call_sessions SET state='ended',ended_at=clock_timestamp()-interval '20 minutes'");
+  const historical=await source();assert.equal(historical.ok,true);assert.equal(historical.source_cutoff,historical.authorized_until);passed++;
+  await db.exec("INSERT INTO sandy_voice_transcript_turns VALUES(3,'"+session+"','"+customer+"','user','This is after private call authority',clock_timestamp()-interval '10 minutes')");
+  assert.equal((await persist(historical,{...proposal,candidates:[{...proposal.candidates[0],source_quote:'This is after private call authority'}]})).persisted,false);assert.deepEqual(await totals(),{facts:0,audit:0,summaries:0});passed++;
+  await db.exec("UPDATE sandy_voice_call_sessions SET state='active',ended_at=NULL;UPDATE sandy_voice_private_auth SET expires_at=clock_timestamp()-interval '2 hours'");
+  assert.equal((await source()).ok,false);assert.equal((await persist(valid)).persisted,false);passed++;
+  await db.exec("UPDATE sandy_voice_private_auth SET expires_at=clock_timestamp()+interval '1 hour'");
+  valid=await source();
   const policy=(await db.query("SELECT consent_at::text,updated_at::text FROM sandy_memory_settings WHERE customer_id=$1",[customer])).rows[0]as any;
   for(const setup of ["enabled=false","learning_enabled=false","consent_at=NULL","consent_at=clock_timestamp()+interval '1 hour'","updated_at=clock_timestamp()+interval '1 hour'"]){
    await db.exec("UPDATE sandy_memory_settings SET "+setup);assert.equal((await source()).ok,false);assert.equal((await persist(valid)).persisted,false);assert.deepEqual(await totals(),{facts:0,audit:0,summaries:0});passed++;

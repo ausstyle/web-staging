@@ -1,6 +1,6 @@
 /** Private consent/source snapshots. No customer identity or consent is created. */
 type Obj=Record<string,any>;
-const fields=["session_id","customer_id","link_id","session_created_at","private_verified_at","policy_updated_at","consent_at","source_not_before","source_cutoff"];
+const fields=["session_id","customer_id","link_id","session_created_at","private_verified_at","private_expires_at","link_expires_at","authorized_until","policy_updated_at","consent_at","source_not_before","source_cutoff"];
 const object=(v:unknown):v is Obj=>!!v&&typeof v==="object"&&!Array.isArray(v);
 export async function voiceLearningSource(db:any,sessionId:string,customerId:string,cutoff?:string):Promise<Obj|null>{
  try{
