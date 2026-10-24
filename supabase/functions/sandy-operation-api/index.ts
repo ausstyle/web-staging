@@ -1,3 +1,4 @@
+import { resolveCustomerMutationCertification } from "./customer_mutation_certification.ts";
 import { resolveTaskCancellationCertification } from "./task_cancellation_certification.ts";
 import { resolveMemoryCertification, type MemoryCertification } from "./memory_certification.ts";
 import { functionInvocationSessionHeaders } from "./function_invocation_session.ts";
@@ -1294,10 +1295,10 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     const entry: unknown = storedEntry;
     let memoryCertification: MemoryCertification | undefined;
     if (request.headers.has("x-sandy-certification-id")) {
-      if (delegation || customerKey || !user || !user.email_confirmed_at || !memoryAccess || body.action !== "execute" || !["memory.fact_correct", "tasks.update"].includes(operation) || !isObject(entry) || internalExecution || (body.channel !== undefined && !["api", "mcp"].includes(String(body.channel)))) return reply(403, { ok: false, error: "private_readiness_normal_customer_required", executed: false });
+      if (delegation || customerKey || !user || !user.email_confirmed_at || !memoryAccess || body.action !== "execute" || !(operation === "memory.fact_correct" || isCustomerMutationOperation(operation)) || !isObject(entry) || internalExecution || (body.channel !== undefined && !["api", "mcp"].includes(String(body.channel)))) return reply(403, { ok: false, error: "private_readiness_normal_customer_required", executed: false });
       let deploymentId = dependencies.memoryCertificationDeploymentId ?? "";
       if (!deploymentId) try { deploymentId = Deno.env.get("DENO_DEPLOYMENT_ID") || ""; } catch { /* unavailable source identity fails closed */ }
-      const readiness = await (operation === "tasks.update" ? resolveTaskCancellationCertification : resolveMemoryCertification)({ base, anon, token: bearer, readinessId: request.headers.get("x-sandy-certification-id")!, deploymentId, entry, args: body.arguments, customerId: portalCustomerId, request: fetchBackend });
+      const readiness = await (isCustomerMutationOperation(operation) ? resolveCustomerMutationCertification : resolveMemoryCertification)({ base, anon, token: bearer, readinessId: request.headers.get("x-sandy-certification-id")!, deploymentId, entry, args: body.arguments, customerId: portalCustomerId, request: fetchBackend });
       if (!readiness.ok) return reply(readiness.status, { ok: false, error: readiness.error, executed: false });
       memoryCertification = readiness.value;
     }
