@@ -258,9 +258,9 @@ export class Calls {
         payload.orderBy !== "timestamp desc" ||
         !Number.isInteger(payload.pageSize) || Number(payload.pageSize) < 1 ||
         Number(payload.pageSize) > 100 || typeof payload.filter !== "string" ||
-        !payload.filter.startsWith(
-          `logName="projects/${GCP_PROJECT}/logs/sandy-engineering-canary`,
-        ))
+        !new RegExp(
+          `^logName="projects/${GCP_PROJECT}/logs/sandy-engineering-canary(?:[-_][a-z0-9_-]{1,64})?" AND timestamp >= "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z" AND timestamp < "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z"$`,
+        ).test(payload.filter))
     ) fail("provider_scope_mismatch", 403);
     const mutation = method !== "GET" && !loggingQuery &&
       !(this.provider === "github" && url.pathname === "/graphql" &&

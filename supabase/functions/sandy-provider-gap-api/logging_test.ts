@@ -223,3 +223,42 @@ Deno.test("logging admission declares project-level metadata scope without prete
     "europe-west1-b",
   );
 });
+
+Deno.test("logging transport refuses appended filters and prefix lookalikes before dispatch", async () => {
+  const h = fixture();
+  const filter =
+    `logName="projects/${GCP_PROJECT}/logs/sandy-engineering-canary" AND timestamp >= "2026-10-24T00:50:00.000Z" AND timestamp < "2026-10-24T01:00:00.000Z"`;
+  for (
+    const bad of [
+      filter + " OR true",
+      filter + "\n",
+      filter.replace('canary"', 'canary-private/other"'),
+      filter.replace('canary"', 'canaryanything"'),
+      filter.replace(" AND timestamp <", " OR timestamp <"),
+      filter.replace("2026-10-24T01:00:00.000Z", ".*"),
+    ]
+  ) {
+    const calls = new Calls(
+      h.deps,
+      "fixture-token",
+      "gcp",
+      "gcp.logging.query",
+    );
+    await assert.rejects(
+      () =>
+        calls.request(
+          new URL("https://logging.googleapis.com/v2/entries:list"),
+          "POST",
+          {
+            resourceNames: [`projects/${GCP_PROJECT}`],
+            filter: bad,
+            orderBy: "timestamp desc",
+            pageSize: 2,
+          },
+        ),
+      (error: unknown) =>
+        error instanceof Refusal && error.code === "provider_scope_mismatch",
+    );
+  }
+  assert.equal(h.seen.length, 0);
+});
