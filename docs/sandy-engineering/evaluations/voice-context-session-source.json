@@ -5,7 +5,7 @@
   "migration_sha256": "d9aeafe5501572ae7d4ab61131ba6d4a16eae357858f5c734c40f40d26c3236a",
   "functions": {
     "sandy-voice-call": {
-      "version": 39,
+      "version": 40,
       "verify_jwt": false,
       "body_sha256": "1a3cc84d4f2ac4b88be1a403dd21398387129553838de6cd8ef88cd0e7b928a6",
       "before_files": {
@@ -17,7 +17,7 @@
       }
     },
     "sandy-voice-account-context": {
-      "version": 21,
+      "version": 22,
       "verify_jwt": false,
       "body_sha256": "c5940b2d6ea1b482c708b6be24c289e7dfa7420f14a6f96cc728250d11206989",
       "before_files": {
@@ -47,5 +47,25 @@
   ],
   "catalogue_changes": 0,
   "provider_operations_authorized": 0,
-  "media_acceptance_claimed": false
+  "media_acceptance_claimed": false,
+  "configuration_reconciliation": {
+    "source": "protected IAP configuration binding run40047740407",
+    "function_sources_changed": false,
+    "readback": [
+      {
+        "function": "sandy-voice-call",
+        "prior_version": 39,
+        "actual_version": 40,
+        "all_module_hashes_unchanged": true,
+        "JWT_preserved": true
+      },
+      {
+        "function": "sandy-voice-account-context",
+        "prior_version": 21,
+        "actual_version": 22,
+        "all_module_hashes_unchanged": true,
+        "JWT_preserved": true
+      }
+    ]
+  }
 }

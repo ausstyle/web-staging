@@ -18,8 +18,8 @@ class VoiceSourceTests(unittest.TestCase):
   self.assertEqual(digest((ROOT/m['migration']).read_bytes()),m['migration_sha256'])
   for item in m['functions'].values():
    for p,h in item['candidate_files'].items():self.assertEqual(digest((ROOT/'supabase/functions'/p).read_bytes()),h,p)
-  self.assertEqual(m['functions']['sandy-voice-call']['version'],39)
-  self.assertEqual(m['functions']['sandy-voice-account-context']['version'],21)
+  self.assertEqual(m['functions']['sandy-voice-call']['version'],40)
+  self.assertEqual(m['functions']['sandy-voice-account-context']['version'],22)
  def test_existing_voice_context_permissions_and_consent_fences_are_preserved(self):
   m=json.loads(MANIFEST.read_bytes())['functions']['sandy-voice-account-context']['before_files']
   s=(ROOT/'supabase/functions/sandy-voice-account-context/index.ts').read_text()
