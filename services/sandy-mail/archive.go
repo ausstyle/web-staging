@@ -16,9 +16,10 @@ import (
 // The caller retains the immutable master archive and persists inventory before
 // authorizing import. Nothing is extracted, rendered, executed or sent here.
 const MaxArchiveBytes int64 = 100 << 20
-const MaxArchiveEntries = 1000
+const MaxArchiveEntries = 1001 // 1,000 records plus the portable manifest
 
 type ArchiveItem struct {
+	Draft         *Draft    `json:"draft,omitempty"`
 	Path          string    `json:"path"`
 	Folder        string    `json:"folder"`
 	Size          int64     `json:"size"`
@@ -91,7 +92,7 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 	}
 	if name == "manifest.json" {
 		var manifest ExportManifest
-		if err = json.Unmarshal(raw, &manifest); err != nil || manifest.Version != 1 {
+		if err = json.Unmarshal(raw, &manifest); err != nil || (manifest.Version != 1 && manifest.Version != 2) {
 			a.exception(name, "invalid_portable_manifest")
 			return nil
 		}
@@ -100,6 +101,21 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 		return nil
 	}
 	item := ArchiveItem{Path: name, Folder: path.Dir(name), Size: size, SHA256: digest(raw), SourceTime: modified, Flags: []string{}}
+	if strings.HasPrefix(name, "drafts/") && strings.HasSuffix(name, ".draft.json") {
+		var d Draft
+		if json.Unmarshal(raw, &d) != nil || !validPortableDraft(d) || name != "drafts/"+d.DraftID+".draft.json" || string(encoded(d)) != string(raw) {
+			a.exception(name, "invalid_portable_draft")
+			return nil
+		}
+		item.Draft = &d
+		a.preview.Items = append(a.preview.Items, item)
+		if a.visit != nil {
+			if err = a.visit(item, raw); err != nil {
+				return fmt.Errorf("archive_visitor_failed")
+			}
+		}
+		return nil
+	}
 	parent := path.Base(path.Dir(name))
 	maildir := parent == "cur" || parent == "new"
 	if parent == "tmp" {
@@ -152,7 +168,7 @@ func (a *archiveInspector) finish(err error) (ArchivePreview, error) {
 		matched := map[string]bool{}
 		for _, i := range m.Messages {
 			found, ok := actual[i.Path]
-			if !ok || matched[i.Path] || found.SHA256 != i.Raw.SHA256 || found.Size != i.Raw.Size {
+			if !ok || matched[i.Path] || found.SHA256 != i.Raw.SHA256 || found.Size != i.Raw.Size || (found.Draft != nil) != (i.Draft != nil) || (i.Draft != nil && (m.Version != 2 || string(encoded(found.Draft)) != string(encoded(i.Draft)))) {
 				a.exception(i.Path, "portable_manifest_integrity_mismatch")
 			}
 			matched[i.Path] = true
@@ -162,6 +178,13 @@ func (a *archiveInspector) finish(err error) (ArchivePreview, error) {
 		}
 		if !m.Complete || m.PendingIngestions != 0 {
 			a.exception("manifest.json", "source_export_incomplete_or_pending")
+		}
+	}
+	if a.preview.PortableMetadata == nil {
+		for _, item := range a.preview.Items {
+			if item.Draft != nil {
+				a.exception(item.Path, "portable_manifest_required_for_draft")
+			}
 		}
 	}
 	a.preview.State = "READY"

@@ -121,6 +121,7 @@ type Draft struct {
 	To        []string  `json:"to"`
 	Text      string    `json:"text,omitempty"`
 	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time `json:"created_at"`
 }
 type DraftCursor struct {
 	UpdatedAt time.Time `json:"updated_at"`
@@ -187,7 +188,7 @@ func (s *Service) GetDraft(ctx context.Context, scope Scope, id string) (Draft, 
 		return d, err
 	}
 	defer tx.Rollback(ctx)
-	err = tx.QueryRow(ctx, `SELECT draft_id::text,revision,subject,recipients,body_text,updated_at FROM core.mail_drafts WHERE draft_id=$1`, id).Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.Text, &d.UpdatedAt)
+	err = tx.QueryRow(ctx, `SELECT draft_id::text,revision,subject,recipients,body_text,updated_at,created_at FROM core.mail_drafts WHERE draft_id=$1`, id).Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.Text, &d.UpdatedAt, &d.CreatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return Draft{}, ErrNotFound
 	}
@@ -441,14 +442,4 @@ func portableOrganization(ctx context.Context, tx pgx.Tx, id string) (*PortableO
 		out.Labels = append(out.Labels, c)
 	}
 	return out, nil
-}
-func rejectUnexportedDrafts(ctx context.Context, tx pgx.Tx) error {
-	var exists bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM core.mail_drafts)`).Scan(&exists); err != nil {
-		return err
-	}
-	if exists {
-		return errors.New("draft_export_not_supported_no_complete_mailbox_export")
-	}
-	return nil
 }

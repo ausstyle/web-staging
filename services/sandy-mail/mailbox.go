@@ -83,6 +83,7 @@ func (s *Service) ListOrganized(ctx context.Context, scope Scope, query string, 
 }
 
 type ExportItem struct {
+	Draft             *Draft                `json:"draft,omitempty"`
 	MessageID         string                `json:"message_id"`
 	InternetMessageID string                `json:"internet_message_id"`
 	Subject           string                `json:"subject"`
@@ -99,6 +100,7 @@ type ExportItem struct {
 	ImportOrigins     []json.RawMessage     `json:"import_origins,omitempty"`
 }
 type ExportManifest struct {
+	CounterUnit       string            `json:"counter_unit,omitempty"`
 	Version           int               `json:"version"`
 	ExportJobID       string            `json:"export_job_id,omitempty"`
 	PartNumber        int64             `json:"part_number,omitempty"`
@@ -141,9 +143,6 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	if err != nil {
 		return manifest, err
 	}
-	if err = rejectUnexportedDrafts(ctx, tx); err != nil {
-		return manifest, err
-	}
 	manifest = ExportManifest{Version: 1, Scope: scope, Limit: limit, Messages: []ExportItem{}}
 	err = tx.QueryRow(ctx, "SELECT name,transaction_timestamp() FROM core.mailboxes").Scan(&manifest.MailboxName, &manifest.SnapshotAt)
 	if err == pgx.ErrNoRows {
@@ -180,10 +179,36 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	if len(manifest.Messages) > limit {
 		return manifest, fmt.Errorf("export_requires_resumable_job_no_partial_success")
 	}
+	drafts, err := snapshotDrafts(ctx, tx)
+	if err != nil {
+		return manifest, err
+	}
+	draftBytes := int64(0)
+	for _, d := range drafts {
+		draftBytes += d.Raw.Size
+	}
+	if len(manifest.Messages)+len(drafts) > limit || draftBytes > 8<<20 {
+		return manifest, fmt.Errorf("export_requires_resumable_job_no_partial_success")
+	}
+	if len(drafts) > 0 {
+		manifest.Version = 2
+		manifest.CounterUnit = "archive_records_including_drafts"
+	}
+	manifest.Messages = append(manifest.Messages, drafts...)
 	tw := tar.NewWriter(output)
 	// Do not close a partial TAR on error: no final manifest/success is emitted.
 	for i := range manifest.Messages {
 		item := &manifest.Messages[i]
+		if item.Draft != nil {
+			raw := encoded(item.Draft)
+			if err = tw.WriteHeader(&tar.Header{Name: item.Path, Mode: 0600, Size: int64(len(raw)), ModTime: item.ReceivedAt}); err != nil {
+				return manifest, err
+			}
+			if _, err = tw.Write(raw); err != nil {
+				return manifest, err
+			}
+			continue
+		}
 		item.Organization, err = portableOrganization(ctx, tx, item.MessageID)
 		if err != nil {
 			return manifest, err

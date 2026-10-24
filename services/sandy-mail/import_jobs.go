@@ -262,6 +262,7 @@ type importItem struct {
 	Flags                             []string
 	Properties                        map[string]any
 	State, Delivery, Message, Receipt string
+	DraftID, DraftReceipt             string
 }
 
 func importedEnvelope(parsed Parsed, received time.Time) Envelope {
@@ -318,6 +319,9 @@ func (i *importSession) discoverItem(ctx context.Context, item importItem, raw [
 	parsed, parseErr := Parse(raw)
 	item.State = "PENDING"
 	code := ""
+	if item.Properties["record_kind"] == "draft" {
+		parseErr = nil
+	}
 	if parseErr != nil {
 		item.State = "EXCEPTION"
 		code = "malformed_mime_retained"
@@ -327,7 +331,7 @@ func (i *importSession) discoverItem(ctx context.Context, item importItem, raw [
 		item.Properties["received_time_source"] = "cutoff_missing_original"
 	}
 	item.Envelope.ReceivedAt = item.Envelope.ReceivedAt.UTC().Truncate(time.Microsecond)
-	if parseErr == nil {
+	if parseErr == nil && item.Properties["record_kind"] != "draft" {
 		item.Envelope = importedEnvelope(parsed, item.Envelope.ReceivedAt)
 		if len(item.Envelope.To) == 0 || len(item.Envelope.To) > 100 || len(item.Envelope.From) > 320 {
 			item.State = "EXCEPTION"
@@ -422,6 +426,9 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 				received = i.job.Spec.Cutoff
 			}
 			entry := importItem{Ordinal: index, Path: item.Path, Folder: item.Folder, Flags: item.Flags, Envelope: Envelope{ReceivedAt: received}, Properties: map[string]any{"source_time": item.SourceTime, "unmapped_flags": item.UnmappedFlags, "conversion": "byte-exact-eml", "received_time_source": "archive_time_or_explicit_cutoff"}}
+			if item.Draft != nil {
+				entry.Properties["record_kind"] = "draft"
+			}
 			if e = i.discoverItem(ctx, entry, raw, index); e != nil {
 				return e
 			}
@@ -449,7 +456,7 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 			return i.setState(ctx, "NEEDS_ACTION")
 		}
 		for _, exception := range preview.Exceptions {
-			if strings.Contains(exception.Code, "manifest") || exception.Code == "source_export_incomplete_or_pending" {
+			if strings.Contains(exception.Code, "manifest") || exception.Code == "invalid_portable_draft" || exception.Code == "source_export_incomplete_or_pending" {
 				if e = i.exception(ctx, "discovery", nil, "portable_manifest_requires_action", false, exception); e != nil {
 					return e
 				}
@@ -467,8 +474,10 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 					if len(m.Organization.Labels) > 20 {
 						return fmt.Errorf("portable_label_limit")
 					}
-					if e = i.exception(ctx, "organization:"+digest([]byte(m.Path)), nil, "organization_mapping_pending", false, map[string]any{"path": m.Path, "organization": m.Organization}); e != nil {
-						return e
+					if !i.hasOrganizationMapping(m.Organization) {
+						if e = i.exception(ctx, "organization:"+digest([]byte(m.Path)), nil, "organization_mapping_pending", false, map[string]any{"path": m.Path, "organization": m.Organization}); e != nil {
+							return e
+						}
 					}
 				}
 				e = i.tx(ctx, func(tx pgx.Tx) error {
@@ -481,6 +490,9 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 						return err
 					}
 					if hash != m.Raw.SHA256 {
+						return nil
+					}
+					if m.Draft != nil {
 						return nil
 					}
 					if len(m.Flags) > 100 {
@@ -525,7 +537,7 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 func (i *importSession) items(ctx context.Context, after int64, limit int) ([]importItem, error) {
 	result := []importItem{}
 	e := i.tx(ctx, func(tx pgx.Tx) error {
-		rows, e := tx.Query(ctx, `SELECT ordinal,source_path,source_folder,original_object,envelope,flags,properties,state,delivery_id,coalesce(message_id::text,''),coalesce(receipt_id::text,'') FROM core.mail_import_items WHERE job_id=$1 AND ordinal>$2 ORDER BY ordinal LIMIT $3`, i.job.ID, after, limit)
+		rows, e := tx.Query(ctx, `SELECT ordinal,source_path,source_folder,original_object,envelope,flags,properties,state,delivery_id,coalesce(message_id::text,''),coalesce(receipt_id::text,''),coalesce(draft_id::text,''),coalesce(draft_receipt_id::text,'') FROM core.mail_import_items WHERE job_id=$1 AND ordinal>$2 ORDER BY ordinal LIMIT $3`, i.job.ID, after, limit)
 		if e != nil {
 			return e
 		}
@@ -533,7 +545,7 @@ func (i *importSession) items(ctx context.Context, after int64, limit int) ([]im
 		for rows.Next() {
 			var item importItem
 			var object, env, properties []byte
-			if e = rows.Scan(&item.Ordinal, &item.Path, &item.Folder, &object, &env, &item.Flags, &properties, &item.State, &item.Delivery, &item.Message, &item.Receipt); e != nil {
+			if e = rows.Scan(&item.Ordinal, &item.Path, &item.Folder, &object, &env, &item.Flags, &properties, &item.State, &item.Delivery, &item.Message, &item.Receipt, &item.DraftID, &item.DraftReceipt); e != nil {
 				return e
 			}
 			if e = json.Unmarshal(object, &item.Object); e != nil {
@@ -564,7 +576,11 @@ func (i *importSession) importBatch(ctx context.Context, limit int) error {
 		return e
 	}
 	for _, item := range items {
-		if item.State != "EXCEPTION" {
+		if item.Properties["record_kind"] == "draft" && item.State != "EXCEPTION" {
+			if e = i.importDraft(ctx, item, count); e != nil {
+				return e
+			}
+		} else if item.State != "EXCEPTION" {
 			raw, err := i.service.Objects.Get(ctx, item.Object)
 			if err != nil {
 				return err
@@ -587,6 +603,9 @@ func (i *importSession) importBatch(ctx context.Context, limit int) error {
 					return e
 				}
 				if state == "PENDING" {
+					if e := i.restoreOrganization(ctx, tx, item, receipt.MessageID); e != nil {
+						return e
+					}
 					if _, e := tx.Exec(ctx, "UPDATE core.memberships SET flags=$2 WHERE message_id=$1", receipt.MessageID, item.Flags); e != nil {
 						return e
 					}
@@ -644,7 +663,11 @@ func (i *importSession) verifyBatch(ctx context.Context, limit int) error {
 		return e
 	}
 	for _, item := range items {
-		if item.State != "EXCEPTION" {
+		if item.Properties["record_kind"] == "draft" && item.State != "EXCEPTION" {
+			if e = i.verifyDraft(ctx, item); e != nil {
+				return e
+			}
+		} else if item.State != "EXCEPTION" {
 			message, raw, err := i.service.Retrieve(ctx, i.scope, item.Delivery)
 			if err != nil || message.Receipt.ID != item.Receipt || digest(raw) != item.Object.SHA256 || int64(len(raw)) != item.Object.Size {
 				if e = i.exception(ctx, "verify:"+item.Path, &item.Ordinal, "import_readback_failed", true, map[string]any{"path": item.Path}); e != nil {
@@ -668,6 +691,9 @@ func (i *importSession) verifyBatch(ctx context.Context, limit int) error {
 					return e
 				}
 				return i.setState(ctx, "NEEDS_ACTION")
+			}
+			if e = i.verifyOrganization(ctx, item); e != nil {
+				return e
 			}
 			original, err := i.service.Objects.Get(ctx, item.Object)
 			if err != nil || !bytes.Equal(original, raw) {

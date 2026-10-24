@@ -41,7 +41,12 @@ func (s *Service) ExportMailboxMBOXRD(ctx context.Context, scope Scope, out io.W
 	go func() { _, e := s.ExportMailbox(child, scope, writer, limit); writer.CloseWithError(e); done <- e }()
 	hash := sha256.New()
 	destination := io.MultiWriter(out, hash)
+	var conversionError error
 	preview, e := InspectTAR(reader, func(item ArchiveItem, raw []byte) error {
+		if item.Draft != nil {
+			conversionError = fmt.Errorf("drafts_require_portable_archive_not_mbox")
+			return conversionError
+		}
 		parsed, err := Parse(raw)
 		if err != nil {
 			return err
@@ -70,6 +75,9 @@ func (s *Service) ExportMailboxMBOXRD(ctx context.Context, scope Scope, out io.W
 		cancel()
 		reader.CloseWithError(e)
 		<-done
+		if conversionError != nil {
+			return result, conversionError
+		}
 		return result, e
 	}
 	if e = <-done; e != nil {

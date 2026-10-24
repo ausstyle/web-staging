@@ -20,6 +20,8 @@ const ImportChunkBytes = 1 << 20
 const MaxImportItems = 100000
 
 type ImportSpec struct {
+	CollectionMap map[string]string `json:"collection_map,omitempty"` // canonical admission binds source IDs to existing destination IDs
+
 	Key          string    `json:"key"`
 	Format       string    `json:"format"` // explicitly mboxrd, eml-tar or eml-zip
 	SourceSHA256 string    `json:"source_sha256"`
@@ -31,6 +33,17 @@ type ImportSpec struct {
 }
 
 func (s ImportSpec) valid() bool {
+	if len(s.CollectionMap) > 200 {
+		return false
+	}
+	used := map[string]bool{}
+	for source, dest := range s.CollectionMap {
+		if !idPattern.MatchString(source) || !idPattern.MatchString(dest) || used[dest] {
+			return false
+		}
+		used[dest] = true
+	}
+
 	if s.Key == "" || len(s.Key) > 200 || len(s.AdmissionRef) == 0 || len(s.AdmissionRef) > 200 || s.SourceSize <= 0 || s.SourceSize > MaxArchiveBytes || len(s.SourceSHA256) != 64 || len(s.Folder) > 1024 || s.Cutoff.IsZero() {
 		return false
 	}

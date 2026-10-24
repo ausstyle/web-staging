@@ -37,6 +37,7 @@ func (s ExportSpec) valid(now time.Time) bool {
 }
 
 type ExportJob struct {
+	ExpectedDrafts    int64      `json:"expected_drafts"`
 	ID                string     `json:"job_id"`
 	Spec              ExportSpec `json:"spec"`
 	SnapshotAt        time.Time  `json:"snapshot_at"`
@@ -89,7 +90,10 @@ func (e *exportSession) load(ctx context.Context, key string) error {
 		if err != nil {
 			return err
 		}
-		return json.Unmarshal(spec, &e.job.Spec)
+		if err = json.Unmarshal(spec, &e.job.Spec); err != nil {
+			return err
+		}
+		return tx.QueryRow(ctx, `SELECT count(*) FROM core.mail_export_items WHERE job_id=$1 AND snapshot->'draft' IS NOT NULL`, e.job.ID).Scan(&e.job.ExpectedDrafts)
 	})
 }
 func (e *exportSession) prefix() string {
@@ -134,9 +138,6 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
 	if err != pgx.ErrNoRows {
 		return ExportJob{}, err
 	}
-	if err = rejectUnexportedDrafts(ctx, tx); err != nil {
-		return ExportJob{}, err
-	}
 	job := ExportJob{ID: uuid(), Spec: spec, State: "BUILDING"}
 	if err = tx.QueryRow(ctx, "SELECT name,transaction_timestamp() FROM core.mailboxes").Scan(&job.MailboxName, &job.SnapshotAt); err == pgx.ErrNoRows {
 		return job, ErrNotFound
@@ -146,6 +147,13 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
 	if err = tx.QueryRow(ctx, "SELECT (SELECT count(*) FROM core.messages),(SELECT count(*) FROM core.ingestions WHERE state='pending')").Scan(&job.Expected, &job.PendingIngestions); err != nil {
 		return job, err
 	}
+	drafts, err := snapshotDrafts(ctx, tx)
+	if err != nil {
+		return job, err
+	}
+	job.ExpectedDrafts = int64(len(drafts))
+	messageCount := job.Expected
+	job.Expected += int64(len(drafts))
 	if job.Expected > 1000000 {
 		return job, fmt.Errorf("export_snapshot_partition_required")
 	}
@@ -169,6 +177,11 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
  FROM core.messages m LEFT JOIN core.memberships mb USING(tenant_id,account_id,mailbox_id,message_id) LEFT JOIN core.envelopes e USING(tenant_id,account_id,mailbox_id,message_id) LEFT JOIN core.mime_objects o USING(tenant_id,account_id,mailbox_id,message_id)`, job.ID)
 	if err != nil {
 		return job, err
+	}
+	for n, item := range drafts {
+		if _, err = tx.Exec(ctx, `INSERT INTO core.mail_export_items(tenant_id,account_id,mailbox_id,job_id,ordinal,snapshot) VALUES($1,$2,$3,$4,$5,$6)`, scope.Tenant, scope.Account, scope.Mailbox, job.ID, messageCount+int64(n)+1, encoded(item)); err != nil {
+			return job, err
+		}
 	}
 	_, err = tx.Exec(ctx, `INSERT INTO core.mail_export_exceptions(tenant_id,account_id,mailbox_id,job_id,source_key,code,retryable,evidence) SELECT tenant_id,account_id,mailbox_id,$1,'pending:'||delivery_id,'pending_ingestion_at_snapshot',false,jsonb_build_object('delivery_id',delivery_id,'raw_sha256',raw_sha256,'raw_size',raw_size) FROM core.ingestions WHERE state='pending'`, job.ID)
 	if err != nil {
@@ -287,6 +300,13 @@ func (e *exportSession) recordException(ctx context.Context, x ExportExclusion) 
 }
 
 func (e *exportSession) readOriginal(ctx context.Context, item ExportItem) ([]byte, error) {
+	if item.Draft != nil {
+		raw := encoded(item.Draft)
+		if !validPortableDraft(*item.Draft) || item.Path != "drafts/"+item.Draft.DraftID+".draft.json" || digest(raw) != item.Raw.SHA256 || int64(len(raw)) != item.Raw.Size {
+			return nil, ErrIntegrity
+		}
+		return raw, nil
+	}
 	prefix := "mail/v1/" + e.scope.Tenant + "/" + e.scope.Account + "/" + e.scope.Mailbox + "/"
 	if !idPattern.MatchString(item.MessageID) || item.Path != "messages/"+item.MessageID+".eml" || item.Flags == nil || item.ReceivedAt.IsZero() || !strings.HasPrefix(item.Raw.Key, prefix) || item.Raw.Size <= 0 {
 		return nil, ErrIntegrity
@@ -360,6 +380,10 @@ func (e *exportSession) build(ctx context.Context) error {
 		}
 		if _, err = tw.Write(raw); err != nil {
 			return err
+		}
+		if entry.item.Draft != nil {
+			manifest.Version = 2
+			manifest.CounterUnit = "archive_records_including_drafts"
 		}
 		manifest.Messages = append(manifest.Messages, entry.item)
 		part.Exported++
@@ -471,6 +495,9 @@ func (e *exportSession) copyPart(ctx context.Context, part ExportPart, offset in
 }
 
 type ExportReport struct {
+	ExpectedDrafts        int64     `json:"expected_drafts"`
+	ExportedDrafts        int64     `json:"exported_drafts"`
+	CounterUnit           string    `json:"counter_unit,omitempty"`
 	Version               int       `json:"version"`
 	Scope                 Scope     `json:"scope"`
 	JobID                 string    `json:"job_id"`
@@ -507,8 +534,15 @@ func (e *exportSession) verify(ctx context.Context) error {
 	if !errors.Is(err, ErrNotFound) {
 		return err
 	}
-	report := ExportReport{Version: 1, Scope: e.scope, JobID: e.job.ID, SnapshotAt: e.job.SnapshotAt, ExpiresAt: e.job.Spec.ExpiresAt, Expected: e.job.Expected, PendingIngestions: e.job.PendingIngestions, PartChainSHA256: e.job.VerifiedChain, State: "COMPLETE", Complete: true}
+	report := ExportReport{ExpectedDrafts: e.job.ExpectedDrafts, Version: 1, Scope: e.scope, JobID: e.job.ID, SnapshotAt: e.job.SnapshotAt, ExpiresAt: e.job.Spec.ExpiresAt, Expected: e.job.Expected, PendingIngestions: e.job.PendingIngestions, PartChainSHA256: e.job.VerifiedChain, State: "COMPLETE", Complete: true}
+	if report.ExpectedDrafts > 0 {
+		report.Version = 2
+		report.CounterUnit = "archive_records_including_drafts"
+	}
 	err = e.tx(ctx, func(tx pgx.Tx) error {
+		if err := tx.QueryRow(ctx, `SELECT count(*) FROM core.mail_export_items WHERE job_id=$1 AND state='EXPORTED' AND snapshot->'draft' IS NOT NULL`, e.job.ID).Scan(&report.ExportedDrafts); err != nil {
+			return err
+		}
 		var pending, items, partItems int64
 		if err := tx.QueryRow(ctx, "SELECT count(*),count(*) FILTER(WHERE state='EXPORTED'),count(*) FILTER(WHERE state='EXCEPTION'),count(*) FILTER(WHERE state='PENDING') FROM core.mail_export_items WHERE job_id=$1", e.job.ID).Scan(&items, &report.Exported, &report.Excluded, &pending); err != nil {
 			return err

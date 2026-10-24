@@ -293,8 +293,8 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 			}
 		}
 		var archive bytes.Buffer
-		_, err := s.ExportMailbox(ctx, scope, &archive, 100)
-		if err == nil || !strings.Contains(err.Error(), "draft_export_not_supported") || archive.Len() != 0 {
+		manifest, err := s.ExportMailbox(ctx, scope, &archive, 100)
+		if err != nil || manifest.Version != 2 || archive.Len() == 0 {
 			t.Fatal("draft silently omitted from complete export")
 		}
 		c, err := s.connection(ctx)
