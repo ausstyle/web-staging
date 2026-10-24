@@ -75,7 +75,7 @@ def functions(r,m,installed=False):
     return observed
 
 
-def schema(r,m,installed=False):
+def schema_components(r,m,installed=False):
     row=r.sql("SELECT encode(sha256(convert_to(p.prosrc,'UTF8')),'hex') sha,p.prosecdef,p.proconfig,pg_get_functiondef(p.oid) definition,p.proacl::text acl,has_function_privilege('authenticated',p.oid,'EXECUTE') customer,has_function_privilege('anon',p.oid,'EXECUTE') anon,has_function_privilege('service_role',p.oid,'EXECUTE') service FROM pg_proc p WHERE p.oid='public.sandy_api_customer_mutation(text,jsonb,text)'::regprocedure",True)[0]
     expected=m['shared_rpc_after_private_readiness_prosrc_sha256' if installed else 'shared_rpc_before_prosrc_sha256']
     if row['sha']!=expected or not row['prosecdef'] or row['proconfig']!=['search_path=pg_catalog, pg_temp'] or not row['customer'] or row['anon'] or row['service']:
@@ -86,8 +86,6 @@ def schema(r,m,installed=False):
     expected_history=[{'version':Path(p).name.split('_')[0],'statements':[(ROOT/p).read_text()]} for p in sorted(m['migrations'])] if installed else []
     if history!=expected_history:
         raise Blocked('migration_state_requires_reconciliation_no_reinstall')
-    flags=r.sql("SELECT api_exposed,ai_exposed,verified FROM public.sandy_operation_registry WHERE operation='memory.fact_correct'",True)
-    if flags!=[{'api_exposed':False,'ai_exposed':False,'verified':False}]:raise Blocked('private_certification_must_not_change_global_exposure')
     if installed:
         protected_sources=r.sql("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid IN('public.sandy_guard_memory_private_readiness_event()'::regprocedure,'public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)'::regprocedure) ORDER BY proname",True)
         repair=m.get('readiness_classification_repair')
@@ -101,6 +99,14 @@ def schema(r,m,installed=False):
         if trigger!=[{'tgenabled':'O','type':31,'internal':False,'fixed_guard':True}]:raise Blocked('private_readiness_guard_trigger_drift')
         security=r.sql("SELECT has_function_privilege('authenticated','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') customer,has_function_privilege('anon','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') anon,has_function_privilege('service_role','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') service",True)
         if security!=[{'customer':True,'anon':False,'service':False}]:raise Blocked('readiness_RPC_ACL_drift')
+    return row
+
+
+def schema(r,m,installed=False):
+    """Private certification always requires closed global flags."""
+    row=schema_components(r,m,installed)
+    flags=r.sql("SELECT api_exposed,ai_exposed,verified FROM public.sandy_operation_registry WHERE operation='memory.fact_correct'",True)
+    if flags!=[{'api_exposed':False,'ai_exposed':False,'verified':False}]:raise Blocked('private_certification_must_not_change_global_exposure')
     return row
 
 
