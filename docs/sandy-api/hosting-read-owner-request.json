@@ -1,0 +1,75 @@
+{
+  "schema": "sandy.hosting.read.owner-request.v1",
+  "status": "unapproved_source_package",
+  "candidate_change_id": "b26705ca-0dad-46df-9966-446a9cf402aa",
+  "source_commit": "4be0ba5950d110d6cb0bbd8434f9ddbf63e7b3b3",
+  "manifest_sha256": "ba221f869426f8b16d8dddde4f783e63bf95b2d818628bbd586645efe1be62ed",
+  "executor_sha256": "cce35425211605e5be8b8012ecab6e4408d3042e973baccdff0abb28a4b538dd",
+  "executor_file_sha256": {
+    "scripts/sandy/release_hosting_read.py": "9154bd3c226b50818dcb4db05d93e0ddf32d06c8c2d54e3cd9c0c616bf03c673",
+    "scripts/sandy/prepare_hosting_read_release.py": "f5b732d72d25f4a1412c777233211f3b4af033f07bc09c9f0e801ac4b78f7104",
+    "scripts/sandy/release_provider_response_fix.py": "c55788ac6c397020fb8c8df49adaf91d3d8cca3301cef97f253bedbbf38f1f9b",
+    "scripts/sandy/release_gcp_admin_read.py": "f41403e5b84120949d5c5f08efa3f15b6c3dfa7676e1c208813e5f7ba35eb1cc",
+    "scripts/sandy/release_web_canary.py": "5919bb2dc5278981bcad33a68352d347889ae8617a0e7a731370f692a939cf5f",
+    ".github/workflows/sandy-hosting-read-release.yml": "dfc8bb64cc06989e0dedd5e08061c93ee2ea408d19dedaa4c87ac0e8430f057a"
+  },
+  "owner_route": {
+    "endpoint": "https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-engineering-control",
+    "identity": "Existing normally authenticated Controller Owner; no workload impersonation",
+    "register": {
+      "action": "register",
+      "title": "Exact regional read provider and gateway release",
+      "problem": "Hosting needs scoped regional read contracts while existing runtime source and authorization must remain intact.",
+      "expected_behavior": "Release only sandy-provider-operation-api from v32 and sandy-operation-api from v64 in zmqlyygzqoidkcwdysok; source 4be0ba5950d110d6cb0bbd8434f9ddbf63e7b3b3; manifest ba221f869426f8b16d8dddde4f783e63bf95b2d818628bbd586645efe1be62ed; executor_sha256=cce35425211605e5be8b8012ecab6e4408d3042e973baccdff0abb28a4b538dd. Apply only supabase/migrations/20261024002500_sandy_cloud_run_region_contracts.sql, preserving other registry fields. Permit bounded source and contract rollback using verified private artifacts. Authority expires 24 hours after genuine Owner audit. No configuration, exposure, grants, credentials or IAM changes.",
+      "scope": [
+        "sandy-provider-operation-api",
+        "sandy-operation-api",
+        "supabase/migrations/20261024002500_sandy_cloud_run_region_contracts.sql"
+      ],
+      "risk": "normal",
+      "idempotency_key": "owner-hosting-read-ba221f869426f8b16d8dddde",
+      "change_purpose": "Release the source-preserving Cloud Run read contract dependency.",
+      "feature_improvement": "Explicit region selection with unchanged default and gate behavior.",
+      "regression_rules": [
+        "Preserve all Runtime/IAP source outside exact candidate changes.",
+        "No binding activation, exposure, IAM, credentials, grants or paid resource changes.",
+        "Stop on any version, source, contract, lease or authority drift; no automatic retry."
+      ],
+      "acceptance_criteria": [
+        "Independent source and executor CI successful.",
+        "Full prior private bundles and contract rows persisted and digest verified before dispatch.",
+        "All installed module hashes and JWT checked; later functional acceptance is separate."
+      ]
+    },
+    "approve": {
+      "action": "status",
+      "change_id": "RETURNED_REGISTER_CHANGE_ID",
+      "status": "approved",
+      "reason": "Source 4be0ba5950d110d6cb0bbd8434f9ddbf63e7b3b3; manifest ba221f869426f8b16d8dddde4f783e63bf95b2d818628bbd586645efe1be62ed; executor_sha256=cce35425211605e5be8b8012ecab6e4408d3042e973baccdff0abb28a4b538dd; approve exact two functions and migration with bounded source and contract rollback; no configuration or permission changes; maximum 24 hours."
+    }
+  },
+  "protected_workflow": "sandy-hosting-read-release.yml",
+  "workflow_order": [
+    "inspect",
+    "preflight",
+    "deploy",
+    "reconcile"
+  ],
+  "rollback_mode": "rollback",
+  "preimages": {
+    "sandy-provider-operation-api": {
+      "version": 32,
+      "bundle_sha256": "17f8d544c0ebe5df2aa31b411074f5285aed6739c4128c8e56eda99ec9e081df",
+      "modules": 57
+    },
+    "sandy-operation-api": {
+      "version": 64,
+      "bundle_sha256": "3cb377480b0fe8f236a60fd50ecf45620b80204e8c4c52ca8473a83066459b82",
+      "modules": 128
+    }
+  },
+  "configuration_installed": false,
+  "secrets_to_create": [],
+  "approval_record_created": false,
+  "functional_acceptance_claimed": false
+}
