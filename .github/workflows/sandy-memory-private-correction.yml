@@ -19,7 +19,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: sandy-engineering-mcp-deploy
+  group: ${{ github.event_name == 'pull_request' && format('sandy-memory-correction-check-{0}', github.event.pull_request.number) || 'sandy-engineering-mcp-deploy' }}
   cancel-in-progress: false
 jobs:
   validate:
