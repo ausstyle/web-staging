@@ -200,3 +200,33 @@ binding; (4) a shared API identity/contract release slot preserving current owne
 (5) signed macOS/Windows delivery identities and real two-device test hosts.
 No standing approval removal, IAM expansion, new cloud credentials or additional
 provider call was attempted. GitHub branch-protection inspection was not retried.
+
+## Production integration continuation — 24 October 2026
+
+PR245 was merged at `9f8ec7f8307ffd4906a10540c8eff77749b7bcdb`; its 37 local
+Deno tests and Chromium evidence remain the accepted source baseline. Further
+work is isolated on `sandy-cloud/production-integration-0012` from updated main.
+
+SC-02/08/09/12 now have an additional PostgreSQL commit adapter and candidate
+private additive schema: exact persisted intent/scan checks; canonical-owner
+admission/projection hooks on one transaction; immutable versions; quota/usage,
+outbox and receipt atomicity; authorized acknowledgement reconciliation. Thirteen
+new embedded PostgreSQL scenarios passed, including outbox/projection rollback,
+non-empty reservation settlement and forced-RLS denial after accidental grants.
+The production schema is NOT installed; owner hooks in the tests are synthetic.
+No company membership mapping, canonical gateway route or workload role is guessed.
+
+A committed-source release packager emits a hash manifest and review archive,
+excluding the local fixture issuer/server. The package is explicitly not yet
+installable. [Owner handoff](production-integration-handoff.md) lists the precise
+canonical identity, file writer, database role/release, provider and Mission
+bindings required for live integration. Inventory, USD10 provisioning/region/IAM
+and native signing gates remain pending through the parent. No gates were removed,
+no denied operation was retried and no existing files were copied or changed.
+
+This closes part of the production transaction source gap, not all WP-1 or any
+provider acceptance. Remaining independent source work includes production tree,
+share and device operations, pagination, transfer admission/expiry, rich parsing,
+backup/restore worker integration and native clients. Their implementation must
+use the owner contracts above; local tests alone do not establish those contracts.
+All deployment and AC-01–13 acceptance cells remain unchanged (pending).
