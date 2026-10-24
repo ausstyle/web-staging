@@ -346,6 +346,47 @@ func exerciseDraftMIME(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Co
 			}
 		})
 	}
+	t.Run("missing_mime_original_is_accounted_and_transient_reads_resume", func(t *testing.T) {
+		auth := &syntheticExportAuthority{scope: source}
+		for _, permanent := range []bool{true, false} {
+			spec := ExportSpec{Key: uuid(), AdmissionRef: "synthetic-local-export-test", ExpiresAt: time.Now().Add(time.Hour), PartitionMessages: 1, ExceptionPolicy: "stop"}
+			failure := errors.New("synthetic temporary read outage")
+			if permanent {
+				spec.ExceptionPolicy = "include-report"
+				failure = ErrObjectNotFound
+			}
+			broken := *s
+			broken.Objects = unavailableExportObject{ObjectStore: s.Objects, key: original.MIME.Key, failure: failure}
+			j, err := broken.CreateExport(ctx, source, spec, auth)
+			must(err)
+			if !permanent {
+				if _, err = broken.ResumeExport(ctx, source, spec.Key, auth); err == nil {
+					t.Fatal("outage reported success")
+				}
+				broken.Objects = s.Objects
+			}
+			for n := 0; n < 10 && j.State != "COMPLETE" && j.State != "COMPLETED_WITH_EXCEPTIONS"; n++ {
+				j, err = broken.ResumeExport(ctx, source, spec.Key, auth)
+				must(err)
+			}
+			report, err := broken.ReadExportReport(ctx, source, spec.Key, auth)
+			must(err)
+			if permanent {
+				if report.Complete || report.ExpectedDrafts != 1 || report.ExportedDrafts != 0 || report.Excluded != 1 || report.State != "COMPLETED_WITH_EXCEPTIONS" {
+					t.Fatal("missing draft silently completed", report)
+				}
+			} else {
+				if !report.Complete || report.ExportedDrafts != 1 {
+					t.Fatal("same snapshot did not recover", report)
+				}
+			}
+			exceptions, err := broken.ExportExceptionPage(ctx, source, spec.Key, "", auth)
+			must(err)
+			if len(exceptions) != 1 || exceptions[0].Resolved == permanent {
+				t.Fatal("loss/recovery accounting missing")
+			}
+		}
+	})
 	t.Run("legacy_json_drafts_remain_importable", func(t *testing.T) {
 		d := original
 		d.MIME = nil
