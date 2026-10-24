@@ -1002,6 +1002,60 @@ Deno.test("blob settlement uses one POST then immutable GET; failed settlement n
   }
 });
 
+Deno.test("tree settlement uses one POST then immutable GET; failed settlement never replays mutation", async () => {
+  const { createHash } = await import("node:crypto");
+  const { readVerifiedExecution } = await import(
+    "../_shared/sandy_execution_receipt_transport.ts"
+  );
+  const sha = createHash("sha1").update("tree 0\0").digest("hex");
+  for (const settled of [true, false]) {
+    const methods: string[] = [];
+    let proofs = 0;
+    const h = harness({
+      fetch: (_url, init) => {
+        methods.push(init?.method ?? "GET");
+        return Promise.resolve(
+          Response.json(
+            init?.method === "POST"
+              ? {
+                sha,
+                tree: [],
+                truncated: false,
+                url:
+                  `https://api.github.com/repos/ausstyle/web-staging/git/trees/${sha}`,
+              }
+              : { sha, tree: [], truncated: false },
+            { status: init?.method === "POST" ? 201 : 200 },
+          ),
+        );
+      },
+      verifyGithubMutation: (request) => {
+        proofs++;
+        assertEquals(request.admission_id, ADMISSION);
+        assertEquals(request.proof.kind, "github_tree");
+        return Promise.resolve({
+          allowed: settled,
+          verification_sha256: settled ? "a".repeat(64) : undefined,
+        });
+      },
+    });
+    const response = await h.call("github.git.trees.create", {
+      body: { tree: [] },
+    });
+    assertEquals(response.status, 200);
+    assertEquals(methods, ["POST", "GET"]);
+    assertEquals(proofs, 1);
+    assertEquals(h.finishes[0].outcome, "accepted");
+    const verification = readVerifiedExecution(
+      response,
+      "github.git.trees.create",
+      ADMISSION,
+    );
+    assertEquals(verification?.state, settled ? "succeeded" : "accepted");
+    assertEquals(verification?.effect_verified, settled);
+  }
+});
+
 Deno.test("Cloud Run hosting reads require verified regional binding and bind exact scope digest", async () => {
   const verifiedBindings = {
     cloud_run_read_region: {

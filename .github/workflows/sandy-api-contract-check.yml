@@ -8,6 +8,10 @@ on:
       - 'supabase/functions/sandy-deployment-api/**'
       - 'supabase/functions/sandy-provider-read-api/**'
       - 'supabase/functions/sandy-provider-operation-api/**'
+      - 'supabase/functions/_shared/sandy_github_*'
+      - 'supabase/functions/_shared/sandy_repository_artifact*'
+      - 'supabase/migrations/20261024013000_sandy_github_tree_settlement.sql'
+      - 'scripts/sandy/test_github_tree_settlement_postgres.mjs'
       - 'supabase/functions/sandy-provider-gap-api/**'
       - 'supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql'
       - 'scripts/sandy/*supabase*'
@@ -53,6 +57,10 @@ on:
       - 'supabase/functions/sandy-deployment-api/**'
       - 'supabase/functions/sandy-provider-read-api/**'
       - 'supabase/functions/sandy-provider-operation-api/**'
+      - 'supabase/functions/_shared/sandy_github_*'
+      - 'supabase/functions/_shared/sandy_repository_artifact*'
+      - 'supabase/migrations/20261024013000_sandy_github_tree_settlement.sql'
+      - 'scripts/sandy/test_github_tree_settlement_postgres.mjs'
       - 'supabase/functions/sandy-provider-gap-api/**'
       - 'supabase/migrations/20261023160000_sandy_missing_supabase_contracts.sql'
       - 'scripts/sandy/*supabase*'
@@ -98,16 +106,23 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: denoland/setup-deno@v2
         with:
           deno-version: '2.9.6'
       - name: Test provider projection, credentials and response boundaries
         run: deno test --allow-env --allow-read supabase/functions/sandy-provider-operation-api/index_test.ts
+      - name: Test immutable Git tree proofs and closed binary custody
+        run: |
+          deno test --allow-run=git --allow-read=/tmp --allow-write=/tmp supabase/functions/_shared/sandy_github_tree_readback_test.ts
+          deno test supabase/functions/_shared/sandy_repository_artifact_custody_test.ts
       - name: Test immutable Git blob proofs and settlement boundaries
         run: |
           deno test supabase/functions/_shared/sandy_github_blob_readback_test.ts supabase/functions/_shared/sandy_github_readback_test.ts
           npm install --prefix "$RUNNER_TEMP/sandy-blob-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
           node scripts/sandy/test_github_blob_settlement_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/sandy/test_github_tree_settlement_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
           node scripts/sandy/test_cloud_run_region_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
           PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_cloud_run_region_contracts.py
   supabase-gap-contract-tests:
