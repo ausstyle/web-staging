@@ -15,9 +15,17 @@ def load():
  slices.validate(s)
  return m,s,sql
 
+def gateway_dependencies(r,m):
+ from release_web_canary import original_sources
+ if set(m['gateway_dependencies'])!={'sandy-openai-gateway-v4','sandy-openai-context-guard'}:raise Blocked('fixed_existing_gateway_dependencies_required')
+ for slug,expected in m['gateway_dependencies'].items():
+  meta=json.loads(r.api('GET','/functions/'+slug));body=r.api('GET','/functions/'+slug+'/body');files=original_sources(body)
+  if meta.get('status')!='ACTIVE' or meta.get('version')!=expected['version'] or meta.get('verify_jwt')!=expected['verify_jwt'] or digest(body)!=expected['body_sha256'] or {k:digest(v) for k,v in files.items()}!=expected['files']:raise Blocked('actual_existing_gateway_dependency_changed')
+ return {'fixed_model_gateway_dependencies_verified':True}
 def invariants(r):
  return r.sql("SELECT c.relname,c.relrowsecurity,c.relforcerowsecurity,c.relacl::text acl,(SELECT jsonb_agg(to_jsonb(p) ORDER BY policyname) FROM pg_policies p WHERE p.schemaname='public' AND p.tablename=c.relname) policies,(SELECT jsonb_agg(pg_get_triggerdef(t.oid) ORDER BY t.tgname) FROM pg_trigger t WHERE t.tgrelid=c.oid AND NOT t.tgisinternal AND t.tgname<>'sandy_task_model_custody') triggers,has_table_privilege('service_role',c.oid,'UPDATE') service_update,has_table_privilege('authenticated',c.oid,'SELECT') customer_read FROM pg_class c WHERE c.oid IN('public.sandy_openai_request_audit'::regclass,'public.sandy_openai_context_policies'::regclass) ORDER BY c.relname",True)
 def schema(r,m,sql):
+ gateway_dependencies(r,m)
  if r.sql("SELECT statements FROM supabase_migrations.schema_migrations WHERE version='"+VERSION+"'",True)!=[{'statements':[sql]}]:raise Blocked('task_model_migration_history_mismatch')
  for name,args in FUNCTIONS.items():
   body=re.search(r'CREATE FUNCTION public\.'+name+r'\([^;]+?AS \$\$(.*?)\$\$;',sql,re.S)
@@ -37,7 +45,7 @@ def committed(m):
  return source
 
 def install(r,deploy=False):
- m,s,sql=load();slices.inspect(r,s)
+ m,s,sql=load();gateway_dependencies(r,m);slices.inspect(r,s)
  if r.sql("SELECT version FROM supabase_migrations.schema_migrations WHERE version='"+VERSION+"'",True):raise Blocked('schema_already_installed_use_source_resume_or_acceptance_only')
  if invariants(r)!=m['database_invariants']:raise Blocked('model_policy_audit_preimage_changed')
  if not deploy:return {'preflight_passed':True,'installed':False}

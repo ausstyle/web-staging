@@ -60,5 +60,23 @@
       "service_update": false,
       "customer_read": false
     }
-  ]
+  ],
+  "gateway_dependencies": {
+    "sandy-openai-gateway-v4": {
+      "version": 18,
+      "verify_jwt": false,
+      "body_sha256": "e7744a4f984be5895f8246866e6c3bcf3db2eab395eeddc544130ef681b3c32e",
+      "files": {
+        "index.ts": "b65511f02b2b968f384f4ef78d84e2038195f771e3f81c8c3d65d1fe012db277"
+      }
+    },
+    "sandy-openai-context-guard": {
+      "version": 18,
+      "verify_jwt": false,
+      "body_sha256": "bcd16d66cfabdc962c9cf6e04edb1c39d4eba77493d5e15e4e674eabdfd518fa",
+      "files": {
+        "index.ts": "fe823f19d130b5504e98baa0e3c63b3930448c714e1848597e46896cae883a99"
+      }
+    }
+  }
 }
