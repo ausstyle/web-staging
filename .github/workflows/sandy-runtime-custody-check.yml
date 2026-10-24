@@ -1,0 +1,47 @@
+name: Sandy proposed shared artifact custody checks
+on:
+  pull_request:
+    paths:
+      - 'packages/sandy-runtime-custody/**'
+      - '.github/workflows/sandy-runtime-custody-check.yml'
+permissions:
+  contents: read
+jobs:
+  isolated:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - run: deno test --no-lock --allow-read --allow-env packages/sandy-runtime-custody/journal_test.ts
+
+  multi-session:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+        env:
+          POSTGRES_USER: custody_fixture
+          POSTGRES_PASSWORD: isolated-ci-only
+          POSTGRES_DB: custody_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U custody_fixture -d custody_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: '2.9.6'
+      - uses: actions/checkout@v4
+        with:
+          ref: 6b0b30ff9b8c14909a05025a1d84cfe84819799f
+          path: cloud-contract
+          sparse-checkout: packages/sandy-cloud
+      - name: Real isolated PostgreSQL lock and rollback integration
+        env:
+          CUSTODY_TEST_DATABASE_URL: postgres://custody_fixture:isolated-ci-only@127.0.0.1:5432/custody_ci
+        run: deno test --no-lock --allow-read --allow-env --allow-net=127.0.0.1:5432 packages/sandy-runtime-custody/postgres_test.ts
