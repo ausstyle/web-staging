@@ -50,6 +50,7 @@ jobs:
           node-version: '24'
       - run: npm install --prefix /tmp/sandy-cloud-pg --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.3.14
       - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify.mts /tmp/sandy-cloud-pg/node_modules/@electric-sql/pglite/dist/index.js
+      - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify_bindings.mts /tmp/sandy-cloud-pg/node_modules/@electric-sql/pglite/dist/index.js
       - run: python3 packages/sandy-cloud/build_release.py --output /tmp/sandy-cloud-release
       - uses: actions/upload-artifact@v4
         with:

@@ -1,5 +1,15 @@
 import { isAgentPrincipal, isRuntimeConversationTask, type AgentPrincipal, type RuntimeConversationTask } from "./identity.ts";
 
+// Exact counts are evidence, not defaults. Missing/malformed transport metadata
+// must never become an authoritative zero in the model's initial context.
+function exactCount(result:any):number|null {
+ return !result?.error&&Number.isSafeInteger(result?.count)&&result.count>=0?result.count:null;
+}
+function completeIdentityRows(result:any,key:string):boolean {
+ return !result?.error&&Array.isArray(result.data)&&result.data.length<200&&
+  result.data.every((row:any)=>row&&typeof row[key]==='string'&&row[key].trim().length>0);
+}
+
 /** Shared read-only context dependency of the versioned conversation and
  * inspection services. The extracted 82-line fact collector is byte-identical
  * across the original three runtimes. A nullable conversation task can only
@@ -42,15 +52,15 @@ export async function collectRuntimeSnapshot(
    const total=db.from("sandy_web_turns").select("id",{count:"exact",head:true}).eq("customer_id",customerId);
    const current=conversationId?db.from("sandy_web_conversations").select("id").eq("id",conversationId).eq("customer_id",customerId).maybeSingle():Promise.resolve({data:null,error:null});
    const [allWeb,owned]=await Promise.all([total,current]);
-   if(allWeb.error||owned.error)activityFacts={status:"unavailable",scope:"web_only"};
+   if(exactCount(allWeb)===null||owned.error)activityFacts={status:"unavailable",scope:"web_only"};
    else{
-     activityFacts={status:"verified",scope:"web_only",all_web_messages:allWeb.count??0,
+     activityFacts={status:"verified",scope:"web_only",all_web_messages:exactCount(allWeb),
        current_conversation_messages:null,current_conversation_state:owned.data?"verified":"not_supplied_or_not_authorized"};
      if(owned.data){
        const {count,error}=await db.from("sandy_web_turns").select("id",{count:"exact",head:true})
          .eq("customer_id",customerId).eq("conversation_id",conversationId);
-       if(error)activityFacts.current_conversation_state="unavailable";
-       else activityFacts.current_conversation_messages=count??0;
+       if(exactCount({count,error})===null)activityFacts.current_conversation_state="unavailable";
+       else activityFacts.current_conversation_messages=count;
      }
    }
  }
@@ -66,28 +76,29 @@ export async function collectRuntimeSnapshot(
      db.from("sandy_whatsapp_identities").select("wa_id").eq("customer_id",customerId).eq("verification_status","verified").limit(200),
      db.from("email_customer_addresses").select("normalized_email").eq("customer_id",customerId).not("verified_at","is",null).limit(200)
    ]);
-   const hasIdentities=Array.isArray(identityResult.data)&&identityResult.data.length<200;
+   const hasIdentities=completeIdentityRows(identityResult,"wa_id");
    const ids=hasIdentities?[...new Set((identityResult.data||[]).map((x:any)=>x.wa_id).filter(Boolean))]:[];
    const whatsappResult=!identityResult.error&&hasIdentities?
      (ids.length?await db.from("sandy_whatsapp_messages").select("id",{count:"exact",head:true}).eq("direction","inbound").in("sender_wa_id",ids):{count:0,error:null}):{count:null,error:{code:"identity_lookup_unavailable"}};
    // Count only verified email senders; an empty verified-address list means UNKNOWN, not zero.
-   const emailIds=Array.isArray(addressResult.data)&&addressResult.data.length<200?
+   const emailIds=completeIdentityRows(addressResult,"normalized_email")?
      [...new Set(addressResult.data.map((x:any)=>String(x.normalized_email||"").toLowerCase()).filter(Boolean))]:[];
-   const emailAuthored=addressResult.error||addressResult.data?.length===200?{count:null,error:{code:"verified_addresses_unavailable"}}:
+   const emailAuthored=!completeIdentityRows(addressResult,"normalized_email")?{count:null,error:{code:"verified_addresses_unavailable"}}:
      (emailIds.length?await db.from("email_messages").select("id",{count:"exact",head:true})
        .eq("customer_id",customerId).eq("direction","incoming").in("sender_address",emailIds):
        {count:null,error:{code:"no_verified_sender_addresses"}});
    const counts={
-     web_messages:!webResult.error?webResult.count??0:null,
-     whatsapp_inbound_verified_identity:!whatsappResult.error?whatsappResult.count??0:null,
-     voice_user_turns:!voiceResult.error?voiceResult.count??0:null,
-     email_incoming_customer_linked:!emailResult.error?emailResult.count??0:null,
-     email_authored_by_verified_customer:!emailAuthored.error?emailAuthored.count??0:null
+     web_messages:exactCount(webResult),
+     whatsapp_inbound_verified_identity:exactCount(whatsappResult),
+     voice_user_turns:exactCount(voiceResult),
+     email_incoming_customer_linked:exactCount(emailResult),
+     email_authored_by_verified_customer:exactCount(emailAuthored)
    };
    const missing=Object.entries(counts).filter(([,v])=>v===null).map(([k])=>k);
    const verifiedOriginated=["web_messages","whatsapp_inbound_verified_identity","voice_user_turns"] as const;
-   const knownSubset=verifiedOriginated.every(k=>counts[k]!==null)?
+   const subset=verifiedOriginated.every(k=>counts[k]!==null)?
      verifiedOriginated.reduce((total,k)=>total+Number(counts[k]),0):null;
+   const knownSubset=Number.isSafeInteger(subset)?subset:null;
    communicationFacts={status:missing.length?"partial":"verified",scope:"customer_scoped_recorded_messages",
      counts,known_customer_originated_subset:knownSubset,missing_or_unverified:missing,
      source_provenance:{web:"sandy_web_turns customer_id",whatsapp:"sandy_whatsapp_messages inbound linked to verified sandy_whatsapp_identities",
