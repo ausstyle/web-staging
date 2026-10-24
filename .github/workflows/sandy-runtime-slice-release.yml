@@ -7,6 +7,8 @@ on:
       - 'scripts/sandy/test_runtime_capability_acceptance.py'
       - 'scripts/sandy/release_runtime_slice.py'
       - 'supabase/functions/_shared/sandy-agent-operations/runtime_snapshot*'
+      - 'supabase/functions/sandy-engineering-oidc-ingest/index.ts'
+      - 'scripts/sandy/test_v2_autonomous_api_qa.py'
       - 'supabase/functions/_shared/sandy-agent-operations/runtime_operational.ts'
       - 'scripts/sandy/test_runtime_slice_release.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
@@ -46,7 +48,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_capability_acceptance.py scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_grounding_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
+          python3 -m unittest scripts/sandy/test_runtime_capability_acceptance.py scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_grounding_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_v2_autonomous_api_qa.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
           python3 - <<'PY'
           import json
           from pathlib import Path
