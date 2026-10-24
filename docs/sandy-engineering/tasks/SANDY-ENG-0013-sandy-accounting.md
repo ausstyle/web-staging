@@ -1,5 +1,5 @@
 # Sandy Accounting — Product, Platform Architecture & Engineering Delivery Scope
-**Version:** 1.0 | **Date:** 24 October 2026 | **Status:** Proposed, not deployed or certified
+**Version:** 1.1 | **Date:** 24 October 2026 | **Status:** Proposed, not deployed or certified
 **Requirement floor:** Xero source F001–F352 and every named report catalogue entry
 
 
@@ -170,34 +170,146 @@ Australian Payday Super is in effect as at the document date. The published ATO 
 - Optional support for fuel-tax credits, WET, FBT instalments and other relevant BAS fields as configured; no assumption every organisation has every tax obligation.
 - Business-specific rate/version catalogue and accountant override with evidence; Sandy can suggest classifications, never represent unsupported advice as a definitive tax ruling.
 
-# 6. Sandy Intelligence — AI-native differentiator
+# 6. Sandy Intelligence — autonomous finance department
 
-Sandy Intelligence is a cross-channel assistant that consumes tenant-authorised facts from the ledger and related files, email, tasks and projects, then proposes or executes narrowly permitted business operations using canonical Sandy API tools. It must make clear whether it is observing, proposing, approved, posted, paid, lodged or verified. The deterministic accounting core runs independently of model availability.
+**Product mandate:** Sandy Accounting must be a complete, independently usable accounting system with an optional **autonomous AI finance department**. Sandy should continuously maintain the books, gather supporting evidence, forecast financial outcomes, identify risks and savings, and execute appropriately delegated work. The objective is to materially reduce the time owners and accountants spend using accounting software, not merely add a chatbot to otherwise manual workflows.
 
-| Intelligence capability | What Sandy actually does | Safeguard / evidence |
+**Financial truth boundary:** The deterministic accounting engine, authorised bank/provider evidence and statutory calculations are the authoritative facts. A model may read, explain, compare, recommend, prepare drafts and request authorised actions; its generated text cannot create a journal posting, change a payment beneficiary, represent an ATO lodgment or establish that money moved. Normal screens, APIs and reports remain functional without a generative model. This section is a **proposed requirement**, not an implemented Sandy capability.
+
+## 6.1 Mandatory intelligence capability register (SAI-001–SAI-015)
+
+The following 15 capabilities are normative Sandy Intelligence product requirements. They supplement rather than replace the Xero feature floor F001–F352 and the 87 Appendix B reports. "Existing v1.0 concept" means previously specified in this document, **not deployed**. All new or expanded behaviour remains unimplemented until proven by acceptance evidence.
+
+| ID / capability | Required outcome and user experience | Sources, actions and important boundaries | Relation to v1.0 |
+| --- | --- | --- | --- |
+| **SAI-001 Autonomous Bookkeeper** | Continuously ingest invoices, receipts, statements and card activity; resolve merchant and customer identity; propose account/GST/tracking/project allocations; match bank lines; group recurring transactions; learn from approved correction patterns; place only genuine exceptions in the review queue. | Original documents, bank/provider line IDs, historical approved coding and authoritative COA. Never fabricate a receipt, GST rate, payment or reconciliation. Auto-post only under narrow policy grants and deterministic validation. | Expanded bookkeeping autopilot + bank copilot. |
+| **SAI-002 Financial Evidence Intelligence** | Link every material journal, bill and payment to a navigable evidence bundle: source invoice, bank statement, contract, approval, relevant email and change history. Detect missing, duplicate, contradictory or stale evidence; request documents from authorised parties. | Sandy Mail, Sandy Cloud files, import provenance, contract revisions, bank feed and journal IDs. Evidence graph preserves immutable versions, hashes, citations, ACLs and retention. Missing evidence is visible, not invented. | New first-class evidence requirement. |
+| **SAI-003 Autonomous Cash Flow Manager** | Maintain daily/weekly 13-week and monthly 12-month forecasts for cash by bank account, company and consolidated group; show 30/60/90/180-day views; predict collections and obligations; compare forecast vs actual; recommend responses to upcoming shortages. | GL, AR/AP, payroll, PAYG/BAS, super, debt amortisation, recurring contracts and scenario assumptions. Label estimates, data freshness and uncertainty; no unapproved transfer, loan or supplier deferral. | Expanded scenario modelling / cash flow. |
+| **SAI-004 Supplier and Spending Intelligence** | Discover recurring subscriptions, telecoms, energy, insurance, leasing, lending and merchant fees; extract contract prices, notice periods, expiry and renewal terms; detect dormant services or increases; benchmark alternatives and prepare tender/renegotiation/switch recommendations. | Opt-in bank, supplier and contract evidence. Claims about third-party prices require dated, verifiable sources. Communications, termination, purchase or contract signature require permission; make transparent any referral revenue. | Expanded expense and contract steward. |
+| **SAI-005 AI Chief Financial Officer** | Explain performance and financial position, identify causes of margin movements, compare budget vs actual, model capital requirements and propose specific financial priorities with accountable owners. | Live reports, business units, projects, bank activity and forecast assumptions; show precise reporting period, cash/accrual basis and source drill-through. Analytics are not licensed personal financial advice. | Expanded financial Q&A and proactive controller. |
+| **SAI-006 Continuous Tax Intelligence** | Monitor potential BAS/IAS, GST, PAYG, TPAR and applicable tax issues through the period; identify suspect tax codes, invoices without required details, unapplied credits, statutory deadlines and draft lodgment packs. | Deterministic tax engine plus approved ATO rule versions and accountant review. Recommendations are clearly marked for review; no unapproved change to prior BAS periods or automatic lodgment. | Expanded close/tax assistant. |
+| **SAI-007 Autonomous Accounts Receivable** | Prioritise overdue customers, infer likely collection problems from approved history, prepare context-specific reminders, track payment promises, create follow-up tasks, reconcile replies and suppress collection activity for disputed or settled balances. | AR subledger, correspondence, customer contact permissions, reminders and verified delivery/provider receipts. Respect consent, hardship/dispute flags and quiet-hours rules. | Expanded smart debtor follow-up. |
+| **SAI-008 Payment and Fraud Intelligence** | Detect duplicate invoices and payments, altered beneficiary account numbers, supplier impersonation, unusual amounts or timing, suspicious requests, approval circumvention and inconsistent invoice-to-PO-to-receipt matches. | Transaction anomaly signals are leads, not findings of fraud. Freeze or escalate under predefined policy; beneficiary changes and releases require independent verification and maker-checker. | Expanded financial controls. |
+| **SAI-009 Multi-Company Financial Intelligence** | Provide authorised group cash and liabilities, multi-entity drill-down, intercompany balances, reciprocal matching, consolidation proposals, elimination workings and company comparison dashboards. | Isolate each company legally and technically; use explicit cross-company grants, FX rates, ownership percentage/effective dates and auditable elimination adjustments. | Expanded multi-company intelligence. |
+| **SAI-010 Payroll Intelligence** | Flag pay-rate changes, leave anomalies, missing timesheets, unusual overtime, PAYG/super differences and payroll funding constraints; prepare explanations and proposed corrections for payroll staff. | Sensitive employee, TFN, bank and remuneration data remain role-restricted. Award/EBA interpretation and statutory calculation use reviewed payroll engines and expert sign-off; never let model arithmetic replace payroll calculations. | New detailed extension to payroll. |
+| **SAI-011 Profitability Intelligence** | Analyse actual contribution and fully allocated profitability by customer, product, supplier, site, location, employee, project and division; explain variance and unallocated overhead. | Deterministic cost attribution, valuation, COGS, labour and tracked dimensions; publish the allocation policy and reconciliation back to P&L. Estimates must not silently become posted costs. | Expanded reporting and projects. |
+| **SAI-012 Predictive Intelligence** | Predict payment delays, shortfalls, revenue/cost pressures, debtor deterioration and cost outliers; show scenarios, confidence/uncertainty and prior forecast accuracy. | Training/feature sets use only authorised company data or expressly licensed aggregates; historic back-tests; forecasts never presented as certain facts or live transaction state. | Expanded forecasting and anomaly detection. |
+| **SAI-013 Continuous Compliance and Audit Agent** | Run recurring close-readiness checks, reconcile accounts, inspect unusual journals, suggest accruals/prepayments, verify supporting records, produce auditor/accountant working-paper packs and track every open exception to resolution. | Lock dates and period approvals remain authoritative; posted period amendments need privileged review and audit; sign-off by qualified staff is not replaced by AI. | Expanded close and accountant collaboration. |
+| **SAI-014 Natural-Language Accounting** | Let authorised users ask, create, delegate and review in everyday language over client portal, email, voice and WhatsApp: “Why did rent rise?”, “Code these bills”, “Prepare September accounts”. Every answer links to exact source records and names any incomplete connections. | User and company identity verified separately per channel; instruction-to-operation planning uses canonical Sandy API, typed arguments, explicit authority, human confirmation where required and receipts. Retrieved emails/documents cannot grant permission. | Expanded financial Q&A / JAX parity. |
+| **SAI-015 Business Opportunity Intelligence** | Identify material, verifiable opportunities including fee reduction, early-payment discounts, funding terms, recoverable customer costs, contract consolidation and revenue-leakage fixes; quantify assumptions and track realised outcomes. | Do not invent counterparty offers, licence status or tax entitlements; regulated credit advice, insurance broking, personal advice, tax-agent representation and commissions require separate analysis/approval. | New improvement agent. |
+
+**Flagship launch experiences:** SAI-001 autonomous bookkeeping, SAI-002 financial evidence, SAI-003 cash forecasting and SAI-004 supplier/spending improvements receive the highest design and usability priority. SAI-013 audit control, SAI-014 omnichannel operation and the mission system below are enabling capabilities, not optional safety afterthoughts.
+
+## 6.2 Common intelligence workflow and data contracts
+
+Every intelligence feature must follow one versioned, inspectable lifecycle:
+
+1. **Observe:** ingest permitted sources through Sandy's existing API, Mail, Files, banking, payroll or third-party adapters. Persist source identity, provider IDs, provenance, timestamp, timezone, checksum where applicable, freshness and import errors before acknowledgement.
+2. **Resolve:** map the observation to an authorised tenant, company, counterparty, agreement, invoice, account, project and period. Use exact identifiers before fuzzy matching; maintain explicit uncertain and contradictory entity links.
+3. **Explain/propose:** create a structured, evidence-linked suggestion that includes hypothesis, confidence, rules invoked, alternative treatments, affected amount, tax impact, current state and proposed action. Confidence is not permission.
+4. **Check:** validate company/actor grants, risk class, document and period locks, exact transaction version, rules, duplicates, segregation of duties, monetary caps and delegated budgets **on the server**.
+5. **Approve/execute:** use canonical versioned Sandy API operations, durable mission checkpoints and idempotency keys; distinguish draft, approval, posted, provider-accepted, settled and independently verified results.
+6. **Verify and learn:** independently read back ledger and provider state, attach external receipts, reconcile differences, record corrections, and update only review-approved organisation-specific conventions. Unexpected effects enter a supervised exception queue.
+
+Required new conceptual records (map to existing Sandy-owned aggregates first): \`finance_observations\`, \`finance_evidence_links\`, \`finance_entity_claims\`, \`finance_suggestions\`, \`finance_control_exceptions\`, \`finance_ai_policy_grants\`, \`finance_forecast_scenarios\`, \`finance_mission_templates\`, \`finance_opportunity_cases\`, \`finance_review_feedback\`, and read-model projections. **These are logical names, not authorisation to create duplicate tables.** Reuse Sandy Missions, Task, Memory, Universal Files, approvals and receipts. Only the Accounting domain owns accounting treatment and posted ledger facts.
+
+A record displayed as **"Sandy learned"** must include the authoritative prior correction, rule applicability, date and authorised reviewer. Maintain user-editable positive/negative examples and explicit **"do not apply this coding again"** constraints. Reject false generalisations across suppliers, companies or fiscal years. Model retraining on customer content is off unless separately and expressly authorised; no cross-tenant learned content or competitor pricing inferred from private clients.
+
+## 6.3 Configurable autonomy and delegated authority
+
+Offer three end-user autonomy modes **per company and optionally per workflow**, with a company-wide default and an exception policy:
+
+| Mode | Permitted behaviour by default | Visible UI |
 | --- | --- | --- |
-| Bookkeeping autopilot | Extract source bills/receipts; propose suppliers, tax, coding and dimensions; seek batch approval for unknown items | Evidence link + confidence + duplicate detection + configured monetary and GST rules. |
-| Bank reconciliation copilot | Find matches and counterparty context; suggest splits/transfers and narrate exceptions | Original bank line and book entry displayed side-by-side; reversible approval flow. |
-| Expense and contract steward | Discover subscriptions, telecom, utilities, insurance, finance commitments and uncategorised repeat spend; suggest contract requests and saving actions | Opt-in collection; no automatic cancellation, sharing, vendor contact or purchase without delegated permission. |
-| Financial question answering | “Why has margin fallen?” “Which invoices are overdue?” “Show cash by company.” | Report SQL/view output, visible period/basis, links to underlying lines; mark missing data. |
-| Proactive financial controller | Detect duplicates, incorrect GST, late payments, unusual vendors, payroll variances and nearing deadlines | Issue severity, reproducible test, proposed remedy, ownership and closure state. |
-| Smart debtor follow-up | Prepare personalised polite reminders, explain prior correspondence, suppress disputed invoices | Sent only after role-authorised approval or standing grant; actual delivery receipt. |
-| Close and tax assistant | Assemble month-end/BAS checklist, produce journal previews, reconcile balances and identify unresolved items | Hard gates for locked period, review and sign-off; never auto-lodge under vague authority. |
-| Multi-company intelligence | Compare companies, cross-company cash position and intercompany exposures | Strict entity boundaries, elimination entries and exportable consolidation workings. |
-| Scenario modelling | Explain 13-week cash outlook, debt coverage and payroll/supplier funding under scenarios | Clearly hypothetical estimates, assumptions, stale-data flags and confidence bands. |
-| Accountant collaboration | Draft client queries, request proof, explain journal proposals and prepare review packs | Accountant-only access, source links, approvals and audit. |
+| **Assist** | Read, explain, report, forecast and propose. No document mutation, external contact or posting. | "Suggestion" with sources and no effect. |
+| **Prepare** | Assist plus draft non-posted invoices/bills/journals, coding proposals, review packs and internal tasks under permission. No customer delivery or posting. | "Draft ready for review"; compare and approve. |
+| **Autopilot** | Prepare plus predefined bounded routine bookkeeping and internal reconciliations where deterministic tests pass; exception/amount thresholds, period controls and authorised standing grants limit actions. | "Automatically completed" only after verified posting/reconciliation evidence; detailed audit and undo/reversal path. |
 
-## 6.1 AI policy and risk classes
+Modes never override **risk classes R0–R4**, company permissions, licence obligations or external provider rules. Defaults are conservative; existing live tenant authorisations must not be broadened silently when a user selects Autopilot. Granular policy settings include amount/GST thresholds, named suppliers, bank accounts, transaction classes, company scope, weekdays/quiet hours, per-period budgets, review expiry, dual approval, allowed communications and financial-document access. Policy grants are expiring, revocable and version-bound; all running missions recheck before each consequential step.
 
-| Risk | Examples | Default control |
+| Risk | Examples | Mandatory gate |
 | --- | --- | --- |
-| R0 read only | Reports, search, summarise, forecast, citations | Authenticated data scope + evidence/freshness; no side effect. |
-| R1 reversible draft | Unposted invoice, coding draft, journal preview, internal task | Bounded standing grant if permitted; no external customer delivery. |
-| R2 business external | Send reminders, approve invoice, publish reports, alter bank rules | Explicit approval or tightly scoped, expiring delegation and receipt; dual approval as configured. |
-| R3 funds/payroll/ATO | Execute bank payment, refund, finalise payrun, STP filing, BAS lodgment, modify payroll bank details | Default explicit high-assurance owner/finance-authority confirmation; maker-checker for payment; independent external receipt. |
-| R4 destructive or privileged | Bulk correction of posted periods, delete/restore data, user rights, data exports, key changes | Privileged operator; change plan, separation of duties, immutable logs and safe rollback. |
+| **R0 read-only** | Source-linked report, forecast, financial answer, alert | Authenticated actor + live company/record ACL + freshness disclosure. |
+| **R1 reversible draft** | Unposted invoice, bookkeeping classification suggestion, internal task, journal preview | Scoped grant and input/version validation; draft state unmistakable. |
+| **R2 business external / accounting effect** | Send invoice/reminder, publish a report, approve sales/bill records, post ordinary journal, change banking rules | Explicit approval or tightly scoped expiring delegated authority; external delivery receipt or verified ledger readback. |
+| **R3 money, payroll, statutory filing** | Bank payment, refund, supplier-bank change, pay-run finalisation, STP/BAS submission, SuperStream disbursement | Strong owner/authorised-finance confirmation, appropriate maker-checker, validated destination and independent settlement or government/gateway acknowledgement. No generic "Autopilot" waiver. |
+| **R4 destructive / privileged** | Posted-period recode, large backfill, delete/restore, permissions, mass export, key rotation | Privileged authorised actor, before/after change plan, dual review where configured, immutable audit and specific rollback/forward-repair evidence. |
 
-AI prompt-injection defence: documents, emails, PDF descriptions and bank narrations are untrusted source data. They may influence extracted facts, never grant authority. Model output must be schema-validated; ledger/posting rules, payments, approval policy, tax mapping and multi-tenant access are enforced server-side. Conversation assertions never upgrade evidence state.
+For failed or timed-out external operations use explicit states \`UNKNOWN_OUTCOME\`, \`RECONCILIATION_REQUIRED\` or \`BLOCKED_EXTERNAL\` as appropriate; never retry a financial effect blindly and never confirm completion from model text alone.
+
+## 6.4 Sandy Financial Missions — complete outcomes, not isolated answers
+
+Missions are durable workflows shared with Sandy's existing Missions/Tasks/Controller, not a new autonomous scheduler. Every mission has an objective, company scope, sources, milestones, approvals, budget, owner, deadline, state, blockers, checkpoints and source-linked receipts.
+
+| Template | Example request | Bounded end-to-end steps | Completion evidence |
+| --- | --- | --- | --- |
+| **Monthly accounts close** | "Prepare September accounts for the accountant." | Gather bank statements/bills/receipts → match and code → request missing documents → reconcile control accounts and taxes → draft accruals, prepayments, depreciation and journal corrections → obtain approvals → compile P&L, balance sheet, GST schedules, workpapers and exceptions → deliver authorised pack. | Period-specific ledger ties, reconciliation summaries, signed approvals, document manifest, delivery receipt and outstanding exceptions. |
+| **Collect overdue debts** | "Follow up unpaid invoices over 30 days." | Identify genuine due balances → exclude disputes/settlements → review history → prepare personalised reminders → seek send authority → send → track receipts/replies/payment promises → reconcile collected cash. | Message provider receipts, verified payment state and unresolved promise queue. |
+| **Reduce ongoing spending** | "Review insurance and software costs." | Discover vendors/contracts → validate renewals and permissions → quantify current annual cost → research dated alternatives → prepare comparison/communications → obtain approval → negotiate/switch where authorised → track savings against baseline. | Valid quotes/contract revisions, actual invoice changes and verified realised savings; not hypothetical headline claims. |
+| **Cash shortage response** | "Keep the company funded through the next payroll." | Rebuild 13-week forecast → list required wages, super, taxes and supplier commitments → simulate debtor acceleration / optional deferral / funding alternatives → escalate policy/legality conflicts → execute only approved steps → track actual cash. | Source-linked scenario and verified subsequent bank/AR/AP states. |
+| **BAS readiness** | "Get the quarter ready for the accountant." | Reconcile GST controls → investigate incorrect tax treatment and missing invoices → assemble draft BAS/IAS and exceptions → accountant sign-off → if expressly authorised and accredited, submit/verify separately. | Draft BAS plus source reconciliation; actual ATO acknowledgement only if lawful transmission occurred. |
+
+A mission dashboard must show precise step progress including \`NOT_STARTED\`, \`IN_PROGRESS\`, \`AWAITING_DOCUMENT\`, \`AWAITING_APPROVAL\`, \`BLOCKED_EXTERNAL\`, \`VERIFYING\`, \`COMPLETED_VERIFIED\` and \`FAILED\`. Never mark the entire job complete when a step remains blocked. Support cancellation, resumability, correction, dependencies and a bounded retry budget. Delegating routine tasks does not delegate unlimited payment authority.
+
+## 6.5 Financial Intelligence Centre and recurring briefings
+
+Add **Intelligence** to the accounting navigation, with a quiet premium UI and no mandatory chatbot dependency. A personalised, company-aware landing page should contain:
+
+- **Today:** ledger/bookkeeping freshness, reconciliation coverage, new bills, balances, overdue debtors, payroll/super/tax obligations, outstanding receipt requests, tasks and approval queue.
+- **Financial health:** rolling P&L, cash and forecast headroom; margin/expense movements, debtor/creditor days, bank variance and comparison to target with live drill-down.
+- **Opportunities:** evidence-backed savings or revenue improvements with baseline cost, potential saving, research date, difficulty, owner, status and realised result.
+- **Financial control centre:** exceptions ranked by severity/materiality, affected amounts, related sources, risk class and suggested remediation; include dismiss-with-reason and repeat-prevention feedback.
+- **Missions:** new and active monthly close, collections, contract reviews, tax readiness and accountant handoffs, with checkpoint timeline and receipts.
+- **Autonomy controls:** current mode, standing grants, expiry, scope, approval thresholds, recently automated actions and instant pause/revoke.
+
+Provide an opt-in **Financial Intelligence Briefing** via authorised Sandy channels on a user-selected cadence (daily/weekly/monthly and event-triggered where supported). It presents only material new changes: cash position, 13-week runway, next critical obligations, emerging risk, exceptions requiring approval, collection progress and quantified savings opportunities. Users can inspect the source of every figure, silence topics and revoke delivery. Do not claim a briefing was sent until the provider receipt verifies delivery.
+
+**Experience principles:** straightforward accounting-language explanations, supporting sources one click away, separate actual vs forecast values, minimum alerts for trivial variations, and an accountant-oriented evidence mode. Every intelligence card offers "Why?", "Show source", "Approve", "Edit", "Not correct", "Delegate", or "Dismiss" only where authorised and actionable.
+
+## 6.6 Business-context financial intelligence
+
+Sandy's company graph should relate an organisation's legal entity, division, projects/sites, bank accounts, people, vendor contracts, recurring commitments, assets, financing, insurance and suppliers. This supports questions like "Why did electricity cost more at Site A?" and "What bills will hit cash before the 15th?" without requiring the user to restate previously authorised, current facts.
+
+Use a **permission-filtered business context graph** sourced from the accounting domain, contract file revisions and message metadata. Store contested claims explicitly. Business context must not silently merge unrelated organisations, private household finances or employee payroll data. For multi-company requests, the assistant must present which entities were included/excluded, period/basis, FX method, consolidation and elimination assumptions. Cross-company write actions always require separate exact company-authorised operations.
+
+Savings research and third-party quotations are external evidence, not automatic accounting postings. Show source URL or file, publication/offer date, assumptions, suitability limits, possible conflict/referral fee and whether an offer is independently confirmed. Financial, credit, insurance, taxation and legal advice requiring a regulated professional is escalated rather than improvised.
+
+## 6.7 Engineering performance, monitoring and cost controls
+
+- Store structured inputs, model/provider/version, policy version, trace ID, source-manifest hashes, uncertainty, proposed action, result state, approval ID and final independent receipt for every consequential AI action. Redact TFNs, passwords, employee remuneration, bank details and private documents from general observability logs.
+- Prioritise rules/exact matching/deterministic calculations for routine coding and reporting; invoke higher-cost reasoning only for genuinely ambiguous exceptions, explanations and planning, with bounded context and budgets. Never compromise correctness by silently downgrading a high-risk decision.
+- Monitor: manual minutes saved (measured rather than assumed), classification precision, auto-reconciliation accuracy, false-positive/false-negative exception rates, duplicate-prevention performance, source-link completeness, forecast calibration, mission verified-completion rate, realised rather than hypothetical savings, model cost per reviewed transaction and privacy/security denials.
+- Implement explainability and user corrections: a reviewer must be able to identify each rule and source, change a coding proposal, reject a pattern, reopen an issue, and inspect whether an automation rule subsequently changed. Corrections do not retroactively alter already-posted journals without a separate authorised adjustment.
+- Maintain security testing for malicious instructions embedded in invoices, banking references, email attachments and contracts; model responses never execute SQL, choose unrestricted file paths, emit arbitrary provider URLs or broaden access based on those sources.
+- Release feature flags per tenant/company/capability; run shadow scoring first, then supervised draft-only cohorts, followed by explicitly authorised bounded autopilot. Roll back AI automation without disabling manual accounting or losing evidence.
+
+## 6.8 Intelligence-specific acceptance gates
+
+These are additive to Section 14 AC01–AC13; use traceability **SAI ID → Sandy API operation(s) → source/module → test fixture → observed state → human/provider receipt → accepted limitation**. No AI feature receives an "implemented" claim from a rendered UI or mock-only demonstration.
+
+| Gate | Mandatory scenario and expected proof |
+| --- | --- |
+| **IA01 Bookkeeping** | Mixed 1,000-line bank/bill fixture including duplicates, partials, multi-currency and GST exceptions; deterministic ledger comparison, no duplicate posts and human review of uncertain cases. |
+| **IA02 Evidence** | For every posted fixture entry navigate evidence back to exact version/line; broken/missing/contradictory sources surface explicit unresolved exceptions; hashes and ACL revocation verified. |
+| **IA03 Forecast** | Reproduce 13-week/12-month projection from timestamped inputs, scenario deltas and a back-test; compare projected vs actual and clearly mark uncertainty/staleness. |
+| **IA04 Spending** | Recognise recurring contracts and notice periods, show dated comparable alternative, require consent for outbound quote requests, and never report savings before new verified invoices prove them. |
+| **IA05 CFO** | Answer "why did margin fall?" with actual period/basis, account-level arithmetic and source drill-down; missing company data and disputed allocations disclosed. |
+| **IA06 Tax** | GST/BAS exception fixtures with accountant-approved outcomes; no model-created rule change, false lodged state or locked-period edits. |
+| **IA07 Debtors** | Include disputed, paid, partially paid and promised-payment invoices; suppress inappropriate reminders, preserve approval and verify send receipt. |
+| **IA08 Fraud** | Beneficiary-change and invoice-spoofing test; prevent payment-release without out-of-band validation and maker-checker, including prompt-injected supporting documents. |
+| **IA09 Multi-company** | Deny 100 wrong-company read and write attempts including semantic retrieval; consolidated totals reconcile to included companies and explicit eliminations. |
+| **IA10 Payroll** | Restrict employee/TFN/private pay fields across chat, search, log and channels; manual/payroll-engine reference fixtures confirm all suggested variance calculations. |
+| **IA11 Profitability** | By-customer/project/site results trace to GL and allocation rules, sum to the same authorised P&L totals, and explain excluded overhead. |
+| **IA12 Predictions** | Forecast back-tests report calibration/accuracy and uncertainty; no unsupported certainty language or use of unauthorised cross-tenant data. |
+| **IA13 Audit close** | Month-end mission with incomplete source documents and a locked prior period refuses "complete", requires sign-off and exports an exact workpaper manifest. |
+| **IA14 Conversational operations** | Chat, email, voice and WhatsApp map to the same actor/company authorization, policy and typed API; revoke mid-mission; malicious source text cannot trigger payments or disclosures. |
+| **IA15 Opportunities** | Reproduce recommendation economics, source date, cost/benefit assumptions and conflict disclosure; proposed vs accepted vs implemented vs verified realised benefit remain distinct. |
+| **IA16 Modes and missions** | Toggle Assist/Prepare/Autopilot, pause/revoke delegation, test threshold/country/period exceptions, kill-restart a mission and verify no unauthorised or duplicate effect. |
+| **IA17 Briefings** | Permissioned recipient/channel/timezone, unsubscribe, non-disclosure of employee-sensitive fields, and actual outbound delivery receipt; deduplicate alerts. |
+| **IA18 AI unavailable / rollback** | Disable all AI services while GL, bank reconciliation, invoices, reports, payroll and tax computations remain usable; no data loss, broken links or pending-effect false successes. |
+
+**Risk principle:** a plausible narrative, confidence score or synthetic "completed" answer is never an independent financial proof.
+
 
 # 7. Recommended reference architecture
 
@@ -333,10 +445,22 @@ Relative sizing is engineering planning only. The full feature floor is mandator
 | WP4 — inventory/assets/projects | Item movements, stock valuation, assets, cost/timesheet, job profitability; F093–F103, F186–F193, F281–F292 | Valuation/COGS/depreciation schedules tie to GL and all source cases. |
 | WP5 — AU tax and payroll | STP, QE/payday super, BAS/TPAR, leave, holiday, payroll/employee life; F222–F233, F293–F342 | Regulatory pathway authorised; separate actual ATO/SSP and gateway acceptance. |
 | WP6 — reports and BI | Every Appendix B report, configurable dashboards, drill through, forecast and export; F198–F221, F343–F352 | Historical period comparisons and statutory tax/payroll reports tie to source entries. |
-| WP7 — Sandy Intelligence | Explainable workflows, annotations, task/approval/memory integration; F007, F018, F029, F195, F268, F321–F322, F351 + enhancements | AI never bypasses accounting approval or financial ACL; source provenance tested. |
+| WP7 — Sandy Intelligence | Deliver SAI-001–SAI-015, intelligence evidence graph, Assist/Prepare/Autopilot, financial missions, briefing, exception queue and integration with Sandy Missions/Tasks/Memory, Mail and Files; F007, F018, F029, F195, F268, F321–F322, F351. Stage flagship SAI-001–004 first without weakening safe operations. | Section 6 IA01–IA18 tests plus AC11 pass; exact financial source linkage and authority receipts. No AI-discovered fact creates a ledger posting without deterministic validation. |
 | WP8 — import/export, mobile and launch | Cross-vendor migration, accountant portals, mobile, backups, privacy, payment/super/SBR certifications and support | All 352 F-IDs plus report catalogue individually accepted; production canary and exit tested. |
 
-## 13.1 Target release classifications
+## 13.1 Sandy Intelligence staged implementation plan
+
+The accounting parity programme and intelligence development are parallel streams. A limited bookkeeping pilot does **not** become "full Xero parity" because it offers AI. Each SAI feature remains a specified requirement until its own IA test passes.
+
+| Intelligence stage | Scope and intended user outcome | Hard exit criterion |
+| --- | --- | --- |
+| **SI-P1 Automate Accounting** | SAI-001, SAI-002 and SAI-014 foundation; evidence graph, document/bank ingestion, coding proposals, review queues, draft preparation and initial configurable autonomy. | Real-source bank/ledger reconciliation; no unapproved posting; IA01, IA02, IA14, IA16, IA18 plus existing AC01–AC03, AC11. |
+| **SI-P2 Financial Control** | SAI-003, SAI-006–SAI-008, SAI-010, SAI-013; 13-week/12-month cash, debtor follow-up, tax/payroll anomaly detection, close missions, continuous control exceptions and opt-in briefings. | Source-linked forecasts with back-tests, no unauthorised filings/payments/reminders; IA03, IA06–IA08, IA10, IA13, IA17. |
+| **SI-P3 Autonomous Finance Department** | SAI-004, SAI-005, SAI-009, SAI-011, SAI-012 and SAI-015; supplier contract optimisation, cross-company CFO, profitability, predictive insights, realised-opportunity tracking and complex mission library. | Verifiable sourcing/assumptions, cross-company access control, measured outcomes and realised savings; IA04, IA05, IA09, IA11, IA12, IA15. |
+
+**Practical sequencing:** SAI-004 supplier-spend discovery and savings opportunity intake can start alongside SI-P1 under read-only/prepare permissions as a flagship demonstration, but regulated outreach/switching and verified savings must complete SI-P3 controls. The AI risk engine, evidence verification, company boundaries and tested manual fallback are **P0 for any intelligence pilot**, regardless of commercial phase label.
+
+## 13.2 Target release classifications
 
 | Stage | Can claim | Cannot claim |
 | --- | --- | --- |
@@ -361,7 +485,7 @@ Acceptance records must map requirement → canonical operation → source modul
 | AC08 Payday Super | Per-payday QE/super exact calculations, valid fund acceptance and late/rejected/returned/partial contribution exception control. |
 | AC09 Reports and BI | Each Appendix B report uses deterministic seeded ledger fixtures; figures drill to exact lines; PDFs/CSV/XLSX totals and period settings match. |
 | AC10 Migration and exit | Three representative Xero source companies plus MYOB, QuickBooks/Reckon fixtures; complete signed movement reconciliations and reimportable export manifest. |
-| AC11 AI governance | Malicious invoice prompt-injection; denied roles; unsafe payment; unsupported fact; stale or partial data; confidence threshold and approval expiry cannot cause misposting. |
+| AC11 AI governance | Section 6 IA01–IA18 mandatory: malicious source prompt-injection; cross-company and payroll privacy; exact financial provenance; altered supplier banking; authority modes and revocation; failed/partial missions; predictive calibration; provider receipt separation; unsupported fact, stale data and confidence cannot cause misposting. |
 | AC12 Failure and DR | Crash before/after post, outbox, PSP webhook, ATO/SSP submission, cloud outage; idempotent retry and independent restore without data drift. |
 | AC13 Source traceability | Every F001–F352 mapped to test and state, and each named report in Appendix B to output/validation. No untested or unavailable features silently pass. |
 
@@ -400,6 +524,8 @@ Proposed standard: NOT_STARTED; DESIGN_ONLY; CODE_PRESENT_UNVERIFIED; MOCK_TESTE
 - Sandy core engineering confirms no duplicate source-of-truth, API bypass, provider credential path or mission/approval engine.
 - Migration lead signs quantified source-to-target financial reconciliation and independent outbound export verification.
 - Production acceptance contains real provider receipts and owner sign-off; every unverified item remains explicitly blocked.
+- Each SAI-001–SAI-015 is traced to corresponding IA01–IA18 results, including source evidence, autonomy revocation, model fallbacks, forecasts and provider-effect verification.
+- Finance-domain and Sandy Missions/Memory/API owners confirm one authoritative posted ledger, one task/mission system, and no cross-tenant learning or unattended high-risk external actions.
 
 
 ---
@@ -1009,7 +1135,7 @@ The [U1] user attachment is the contractual feature floor. [S1]–[S18] were pub
 
 # Appendix D — Definition of full Xero parity and change control
 
-Any addition or functional change to this scope requires a new version and an acceptance-register delta: never mark a baseline requirement complete because a related API exists or a UI control appears. A fully accepted Sandy Accounting GA means all 352 F-ID functions, all 87 named report/tool entries, all statutory integrations required by the marketed service, all negative permission tests, and all migration/exit tests have signed, inspectable evidence. Any narrower product should be named and marketed explicitly as a limited edition, without claiming full replacement.
+Version 1.1 adds 15 intelligence capabilities (SAI-001–SAI-015), 18 explicit intelligence acceptance gates (IA01–IA18), financial missions, a briefing and a staged delivery plan. It does not reclassify any underlying Xero requirement as tested. Any addition or functional change to this scope requires a new version and an acceptance-register delta: never mark a baseline requirement complete because a related API exists or a UI control appears. A fully accepted Sandy Accounting GA means all 352 F-ID functions, all 87 named report/tool entries, all statutory integrations required by the marketed service, all negative permission tests, and all migration/exit tests have signed, inspectable evidence. Any narrower product should be named and marketed explicitly as a limited edition, without claiming full replacement.
 
-Release readiness is based on real accounting output and verified external effects, not speculative competitor equivalence. This is a scope, not a representation that Sandy Accounting already exists, has passed independent security testing, has been authorised as an ATO software provider or has completed integration agreements.
+Intelligence features should be marketed by separately proven scope stage; the SAI register is part of the intended product vision, not proof of completed development. Release readiness is based on real accounting output and verified external effects, not speculative competitor equivalence. This is a scope, not a representation that Sandy Accounting already exists, has passed independent security testing, has been authorised as an ATO software provider or has completed integration agreements.
 
