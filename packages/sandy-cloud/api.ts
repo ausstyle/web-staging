@@ -66,6 +66,14 @@ export function dispatch(
       return domain.complete(actor, w, key, args.id);
     case "uploads.expire":
       return domain.expireUploads(actor, w);
+    case "versions.restore":
+      return domain.restoreVersion(
+        actor,
+        w,
+        key,
+        args.versionId,
+        args.revision,
+      );
     case "versions.list":
       return domain.history(actor, w, args.nodeId);
     case "versions.download":

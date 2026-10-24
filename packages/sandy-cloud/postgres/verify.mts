@@ -1,3 +1,4 @@
+import { fixtureScanner, fixtureScanSchema } from "./fixture_scan.mts";
 // Isolated PostgreSQL engine, synthetic data only. No Supabase connection.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -40,6 +41,7 @@ const proof = {
 };
 let revoked = false, loseAck = false, failProjection = false;
 const owners: ProductionOwners = {
+  prepareTransaction: async () => {},
   async lockAdmission(tx, input) {
     // Test authority only. Production hook is supplied by the canonical owner.
     if (
@@ -48,7 +50,12 @@ const owners: ProductionOwners = {
     ) {
       throw Error("NOT_FOUND");
     }
-    return { customerId: customer, policyEpoch: 1 };
+    return {
+      customerId: customer,
+      policyEpoch: 1,
+      admissionId: "60000000-0000-4000-8000-000000000001",
+      expiresAt: i.expiresAt,
+    };
   },
   async projectVersion(tx, input) {
     await tx.query(
@@ -62,6 +69,7 @@ const owners: ProductionOwners = {
       ],
     );
     if (failProjection) throw Error("PROJECTION_FAILED");
+    return { expiresAt: i.expiresAt };
   },
 };
 const connection: SqlDatabase = {
@@ -74,7 +82,7 @@ const connection: SqlDatabase = {
     return result;
   },
 };
-const boundary = new PostgresCommitBoundary(connection, owners);
+const boundary = new PostgresCommitBoundary(connection, owners, fixtureScanner);
 let passed = 0;
 async function check(name: string, fn: () => Promise<void>) {
   await fn();
@@ -143,6 +151,9 @@ const empty = {
   digest: null,
 };
 try {
+  await db.exec(
+    "CREATE TABLE public.sandy_api_execution_admissions(id uuid,actor_id text,tenant_id text,state text,expires_at timestamptz); INSERT INTO public.sandy_api_execution_admissions VALUES('60000000-0000-4000-8000-000000000001','actor-a','tenant-a','consumed',clock_timestamp()+interval '1 hour')",
+  );
   await db.exec(`CREATE TABLE public.sandy_universal_files(id uuid PRIMARY KEY,
     owner_customer_id uuid NOT NULL,sha256 text,metadata jsonb NOT NULL DEFAULT '{}');
     CREATE ROLE fixture_unprivileged;`);
@@ -153,6 +164,7 @@ try {
   await db.exec(
     await readFile(new URL("./schema.sql", import.meta.url), "utf8"),
   );
+  await db.exec(fixtureScanSchema);
   await check(
     "candidate schema has no PUBLIC access, FORCE RLS denies accidental grants",
     async () => {
@@ -389,6 +401,61 @@ try {
       ]);
       await assert.rejects(boundary.commit(upload, verified), /QUOTA_EXCEEDED/);
       assert.deepEqual(await state(), empty);
+    },
+  );
+  await seed();
+  await check(
+    "caller mutation after scan cannot replace the verified generation",
+    async () => {
+      const upload = structuredClone(i), verified = structuredClone(proof);
+      const guarded = new PostgresCommitBoundary(connection, owners, {
+        verifyInTransaction: async (tx, input) => {
+          const evidence = await fixtureScanner.verifyInTransaction(tx, input);
+          upload.ref.generation = "unverified-generation";
+          upload.traceId = "replaced-trace";
+          return evidence;
+        },
+      });
+      await guarded.commit(upload, verified);
+      const receipt =
+        (await db.query("SELECT receipt FROM sandy_cloud.commit_receipts"))
+          .rows[0].receipt;
+      assert.equal(receipt.ref.generation, i.ref.generation);
+      assert.equal(receipt.traceId, i.traceId);
+      const version =
+        (await db.query("SELECT ref FROM sandy_cloud.versions")).rows[0].ref;
+      assert.deepEqual(version, i.ref);
+    },
+  );
+  await check(
+    "all boundary entry points retain original identity across preparation awaits",
+    async () => {
+      for (
+        const method of [
+          "authorize",
+          "lookup",
+          "assertScanClean",
+          "commit",
+        ] as const
+      ) {
+        await seed();
+        const upload = structuredClone(i), verified = structuredClone(proof);
+        const guarded = new PostgresCommitBoundary(connection, {
+          ...owners,
+          prepareTransaction: async () => {
+            upload.actorId = "foreign-actor";
+            upload.ref.tenantId = "foreign-tenant";
+          },
+        }, fixtureScanner);
+        if (method === "authorize" || method === "lookup") {
+          await guarded[method](upload);
+        } else await guarded[method](upload, verified);
+        assert.equal(
+          (await db.query("SELECT count(*)::int n FROM sandy_cloud.versions"))
+            .rows[0].n,
+          method === "commit" ? 1 : 0,
+        );
+      }
     },
   );
   console.log(

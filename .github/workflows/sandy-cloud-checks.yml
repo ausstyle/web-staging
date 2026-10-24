@@ -18,7 +18,7 @@ jobs:
         with:
           deno-version: '2.9.6'
       - run: deno fmt --check packages/sandy-cloud
-      - run: deno check packages/sandy-cloud/fixture_server.ts packages/sandy-cloud/sync.ts packages/sandy-cloud/backup.ts packages/sandy-cloud/postgres/commit.ts
+      - run: deno check packages/sandy-cloud/fixture_server.ts packages/sandy-cloud/sync.ts packages/sandy-cloud/backup.ts packages/sandy-cloud/postgres/commit.ts packages/sandy-cloud/postgres/runtime_integration.ts
       - run: deno test --allow-read=packages/sandy-cloud,/tmp --allow-write=/tmp packages/sandy-cloud/
   browser:
     runs-on: ubuntu-latest
@@ -51,9 +51,47 @@ jobs:
       - run: npm install --prefix /tmp/sandy-cloud-pg --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.3.14
       - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify.mts /tmp/sandy-cloud-pg/node_modules/@electric-sql/pglite/dist/index.js
       - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify_bindings.mts /tmp/sandy-cloud-pg/node_modules/@electric-sql/pglite/dist/index.js
+      - name: Read pinned Runtime source for isolated composition test
+        run: |
+          git fetch --no-tags origin cd6f6cf659e924bd0c9090445a7794ae122746ab
+          mkdir -p /tmp/sandy-cloud-runtime-source
+          git archive cd6f6cf659e924bd0c9090445a7794ae122746ab packages/sandy-runtime-custody/journal.ts packages/sandy-runtime-custody/attestation.ts packages/sandy-runtime-custody/schema.sql packages/sandy-runtime-custody/locking.ts packages/sandy-runtime-custody/cloud_reference.ts packages/sandy-runtime-custody/cloud_reference_schema.sql | tar -x -C /tmp/sandy-cloud-runtime-source
+          mkdir -p /tmp/sandy-cloud-runtime-source/packages/sandy-cloud/postgres
+          cp packages/sandy-cloud/postgres/commit.ts /tmp/sandy-cloud-runtime-source/packages/sandy-cloud/postgres/
+          cp packages/sandy-cloud/integrity.ts /tmp/sandy-cloud-runtime-source/packages/sandy-cloud/
+      - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify_runtime_scan.mts /tmp/sandy-cloud-pg/node_modules/@electric-sql/pglite/dist/index.js /tmp/sandy-cloud-runtime-source/packages/sandy-runtime-custody
       - run: python3 packages/sandy-cloud/build_release.py --output /tmp/sandy-cloud-release
       - uses: actions/upload-artifact@v4
         with:
           name: sandy-cloud-integration-source-${{ github.sha }}
           path: /tmp/sandy-cloud-release/
           retention-days: 14
+  postgres-multisession:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+          POSTGRES_DB: sandy_cloud_fixture
+        ports:
+          - '127.0.0.1:5432:5432'
+        options: >-
+          --health-cmd "pg_isready -U postgres -d sandy_cloud_fixture"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --prefix /tmp/sandy-cloud-pg --no-audit --no-fund --ignore-scripts pg@8.16.3
+      - name: Read pinned Runtime source only
+        run: |
+          git fetch --no-tags origin cd6f6cf659e924bd0c9090445a7794ae122746ab
+          mkdir -p /tmp/sandy-cloud-runtime-source
+          git archive cd6f6cf659e924bd0c9090445a7794ae122746ab packages/sandy-runtime-custody/journal.ts packages/sandy-runtime-custody/attestation.ts packages/sandy-runtime-custody/schema.sql packages/sandy-runtime-custody/locking.ts packages/sandy-runtime-custody/cloud_reference.ts packages/sandy-runtime-custody/cloud_reference_schema.sql | tar -x -C /tmp/sandy-cloud-runtime-source
+          mkdir -p /tmp/sandy-cloud-runtime-source/packages/sandy-cloud/postgres
+          cp packages/sandy-cloud/postgres/commit.ts /tmp/sandy-cloud-runtime-source/packages/sandy-cloud/postgres/
+          cp packages/sandy-cloud/integrity.ts /tmp/sandy-cloud-runtime-source/packages/sandy-cloud/
+      - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify_multisession.mts /tmp/sandy-cloud-pg/node_modules/pg/lib/index.js /tmp/sandy-cloud-runtime-source/packages/sandy-runtime-custody 5432

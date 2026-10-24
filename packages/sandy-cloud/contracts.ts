@@ -76,6 +76,10 @@ export const contracts: Record<string, Contract> = {
   ]),
   "uploads.complete": c({ id: "string" }, ["id"], true),
   "uploads.expire": c(),
+  "versions.restore": c({ versionId: "string", revision: "integer" }, [
+    "versionId",
+    "revision",
+  ], true),
   "versions.list": c({ nodeId: "string" }, ["nodeId"]),
   "versions.download": c({ id: "string" }, ["id"]),
   "changes.list": c({ after: "integer", epoch: "integer" }, ["after", "epoch"]),
