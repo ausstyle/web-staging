@@ -36,11 +36,34 @@ Deno.serve(async req=>{
    if(!uid(matter))return fail(400,"invalid_matter");
    const {data:m,error:me}=await db.from("sandy_legal_matters").select("id").eq("owner_customer_id",cid).eq("id",matter).maybeSingle();
    if(me||!m)return fail(404,"matter_not_found");
-   const {data,error}=await db.from("sandy_legal_financial_items")
-     .select("id,matter_id,proceeding_id,entry_type,title,counterparty,invoice_number,reference_number,issue_date,due_date,currency,gross_amount,outstanding_amount,verified_paid_amount,gst_amount,status,amount_basis,source_provider,source_attachment_name,source_document_url,source_message_url,notes,verified_at,updated_at,created_at")
-     .eq("owner_customer_id",cid).eq("matter_id",matter).order("created_at",{ascending:false}).limit(600);
-   if(error)return fail(503,"finance_list_failed");
-   return respond(200,{ok:true,items:data||[],truncated:(data||[]).length===600});
+   const columns="id,matter_id,proceeding_id,entry_type,title,counterparty,invoice_number,reference_number,issue_date,due_date,currency,gross_amount,outstanding_amount,verified_paid_amount,gst_amount,status,amount_basis,source_provider,source_attachment_name,source_document_url,source_message_url,notes,verified_at,updated_at,created_at";
+   const [own,linked]=await Promise.all([
+    db.from("sandy_legal_financial_items").select(columns).eq("owner_customer_id",cid).eq("matter_id",matter).order("created_at",{ascending:false}).limit(600),
+    db.from("sandy_legal_financial_matter_links").select("financial_item_id,relation_type,origin_description").eq("owner_customer_id",cid).eq("view_matter_id",matter).limit(600)
+   ]);
+   if(own.error||linked.error)return fail(503,"finance_list_failed");
+   const links=linked.data||[];
+   let linked_items:any[]=[];
+   if(links.length){
+    const ids=links.map(l=>l.financial_item_id);
+    const {data:items,error:ie}=await db.from("sandy_legal_financial_items").select(columns).eq("owner_customer_id",cid).in("id",ids).limit(600);
+    if(ie)return fail(503,"linked_finance_unavailable");
+    const all=items||[];
+    const originIds=[...new Set(all.map(f=>f.matter_id))];
+    const {data:origins,error:oe}=await db.from("sandy_legal_matters").select("id,title").eq("owner_customer_id",cid).in("id",originIds).limit(600);
+    if(oe)return fail(503,"related_matter_lookup_failed");
+    const originNames=new Map((origins||[]).map(m=>[m.id,m.title]));
+    const linkMap=new Map(links.map(l=>[l.financial_item_id,l]));
+    linked_items=all.map(f=>({
+      ...f,
+      relationship:linkMap.get(f.id)?.relation_type||"other_indemnity_evidence",
+      source_matter_title:originNames.get(f.matter_id)||linkMap.get(f.id)?.origin_description||"Related matter"
+    })).filter(f=>f.matter_id!==matter).sort((x,y)=>String(x.title).localeCompare(String(y.title)));
+   }
+   return respond(200,{
+    ok:true,items:own.data||[],linked_items,
+    truncated:(own.data||[]).length===600||links.length===600
+   });
   }
   if(action==="create"){
    const matter=o.matter_id,kind=str(o.entry_type,50),title=str(o.title,300),gross=money(o.gross_amount);
