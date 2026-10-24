@@ -1,0 +1,40 @@
+name: Activate approved hosting account API
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [preflight, deploy, reconcile, rollback]
+        default: preflight
+      owner_change_id:
+        description: Exact authenticated Owner activation record
+        required: false
+      artifact:
+        description: Private recovery artifact for rollback
+        required: false
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: sandy-provider-operation-api-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate bounded activation
+        run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_hosting_api_activation.py -v
+      - name: Execute selected protected mode
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          MODE: ${{ inputs.mode }}
+          OWNER_CHANGE: ${{ inputs.owner_change_id }}
+          ARTIFACT: ${{ inputs.artifact }}
+        run: python scripts/sandy/release_hosting_api_activation.py --mode "$MODE" --owner-change-id "$OWNER_CHANGE" --artifact "$ARTIFACT"
