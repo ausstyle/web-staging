@@ -44,3 +44,7 @@ These grants exist only on the disposable local/CI test role. No live grant or p
 Format references: [RFC4155](https://www.rfc-editor.org/rfc/rfc4155.html), [Dovecot source-header conventions](https://doc.dovecot.org/2.3/admin_manual/mailbox_formats/mbox/).
 
 Local optional scale fixture: `MAIL_TEST_BULK_1000=1 go test -race -v ./...` stages and reconciles 1,000 synthetic MBOX messages in batches of 100. This measurement is loopback PostgreSQL/filesystem work with race instrumentation, not Cloud SQL throughput or the required 100k/1m acceptance. Set `MAIL_TEST_OBJECT_DIR` to retain fixture objects beyond the test process.
+
+## Current folder/label metadata
+
+Portable originals retain source organization metadata after migration 0006. Until explicit destination mapping exists, imports of named folders/labels finish with `COMPLETED_WITH_EXCEPTIONS` and an item-path-specific `organization_mapping_pending` exception. Source IDs confer no destination access; metadata/master bytes remain preserved. This is not claimed as a complete hierarchy restore.

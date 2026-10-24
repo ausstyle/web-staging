@@ -46,3 +46,7 @@ For a **later separately admitted** export-worker release, the resource owner mu
 - No UPDATE snapshot, part descriptor, job target/specification, DELETE, DDL, owner inheritance or BYPASSRLS.
 
 Existing object create/get permissions must cover the admitted mailbox's private `/exports/<job-id>/` namespace. No object delete, IAM grant, identity creation, encryption-key creation or paid resource is included. The first-email canary needs none of these export tables/grants and stays pinned separately.
+
+## Migration 0006 follow-on
+
+Original-message snapshots preserve current folder/label metadata through the [local organisation contract](LOCAL_INBOX.md#portability-boundary). New exports reject mailboxes containing drafts until draft export exists; they never silently claim complete mailbox portability while omitting drafts. Old frozen jobs keep their original snapshots. No earlier canary migration or export evidence is changed.

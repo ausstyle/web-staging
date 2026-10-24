@@ -134,6 +134,9 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
 	if err != pgx.ErrNoRows {
 		return ExportJob{}, err
 	}
+	if err = rejectUnexportedDrafts(ctx, tx); err != nil {
+		return ExportJob{}, err
+	}
 	job := ExportJob{ID: uuid(), Spec: spec, State: "BUILDING"}
 	if err = tx.QueryRow(ctx, "SELECT name,transaction_timestamp() FROM core.mailboxes").Scan(&job.MailboxName, &job.SnapshotAt); err == pgx.ErrNoRows {
 		return job, ErrNotFound
@@ -159,6 +162,7 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
  'message_id',m.message_id,'internet_message_id',m.internet_message_id,'subject',m.subject,'path','messages/'||m.message_id::text||'.eml',
  'received_at',m.received_at,'sent_at',m.sent_at,'flags',mb.flags,'security_state',m.security_state,'headers',m.headers,
  'envelope',jsonb_build_object('from',e.sender,'to',e.recipients),
+ 'organization',(SELECT jsonb_build_object('version',org.revision,'folder',(SELECT jsonb_build_object('collection_id',c.collection_id,'kind',c.kind,'name',c.name) FROM core.mail_collections c WHERE (c.tenant_id,c.account_id,c.mailbox_id,c.collection_id)=(m.tenant_id,m.account_id,m.mailbox_id,org.folder_id)),'labels',coalesce((SELECT jsonb_agg(jsonb_build_object('collection_id',c.collection_id,'kind',c.kind,'name',c.name) ORDER BY c.collection_id) FROM core.mail_message_labels ml JOIN core.mail_collections c ON (c.tenant_id,c.account_id,c.mailbox_id,c.collection_id)=(ml.tenant_id,ml.account_id,ml.mailbox_id,ml.label_id) WHERE (ml.tenant_id,ml.account_id,ml.mailbox_id,ml.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id) AND ml.active),'[]'::jsonb)) FROM core.mail_message_organization org WHERE (org.tenant_id,org.account_id,org.mailbox_id,org.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id)),
  'raw',jsonb_build_object('key',o.object_key,'generation',o.generation,'sha256',o.sha256,'size',o.size_bytes),
  'attachments',coalesce((SELECT jsonb_agg(jsonb_build_object('key',a.object_key,'generation',a.generation,'sha256',a.sha256,'size',a.size_bytes) ORDER BY a.ordinal) FROM core.attachments a WHERE (a.tenant_id,a.account_id,a.mailbox_id,a.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id)),'[]'::jsonb),
  'import_origins',coalesce((SELECT jsonb_agg(jsonb_build_object('job_id',j.job_id,'source_sha256',j.spec->>'source_sha256','format',j.spec->>'format','source_path',i.source_path,'source_folder',i.source_folder,'flags',i.flags,'properties',i.properties) ORDER BY i.job_id,i.ordinal) FROM core.mail_import_items i JOIN core.mail_import_jobs j USING(tenant_id,account_id,mailbox_id,job_id) WHERE (i.tenant_id,i.account_id,i.mailbox_id,i.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id) AND i.state='VERIFIED'),'[]'::jsonb))

@@ -26,6 +26,13 @@ type MailboxItem struct {
 }
 
 func (s *Service) List(ctx context.Context, scope Scope, query string, after *Cursor, limit int) ([]MailboxItem, error) {
+	return s.ListOrganized(ctx, scope, query, after, limit, "all", "")
+}
+
+func (s *Service) ListOrganized(ctx context.Context, scope Scope, query string, after *Cursor, limit int, folder, label string) ([]MailboxItem, error) {
+	if err := validateOrganizationFilter(folder, label); err != nil {
+		return nil, err
+	}
 	if limit < 1 || limit > 100 || len(query) > 500 {
 		return nil, fmt.Errorf("invalid_query_bounds")
 	}
@@ -51,9 +58,12 @@ func (s *Service) List(ctx context.Context, scope Scope, query string, after *Cu
 	rows, err := tx.Query(ctx, `SELECT m.message_id::text,m.subject,m.received_at,m.security_state,mb.flags
  FROM core.messages m JOIN core.bodies b USING(tenant_id,account_id,mailbox_id,message_id)
  JOIN core.memberships mb USING(tenant_id,account_id,mailbox_id,message_id)
+ LEFT JOIN core.mail_message_organization org USING(tenant_id,account_id,mailbox_id,message_id)
  WHERE ($1='' OR to_tsvector('simple',m.subject) @@ websearch_to_tsquery('simple',$1) OR to_tsvector('simple',b.text_body) @@ websearch_to_tsquery('simple',$1))
  AND ($2::timestamptz IS NULL OR (m.received_at,m.message_id)<($2::timestamptz,$3::uuid))
- ORDER BY m.received_at DESC,m.message_id DESC LIMIT $4`, query, timestamp, id, limit)
+ AND ($5 IN ('','all') OR ($5='inbox' AND org.folder_id IS NULL) OR org.folder_id::text=$5)
+ AND ($6='' OR EXISTS(SELECT 1 FROM core.mail_message_labels ml WHERE ml.message_id=m.message_id AND ml.label_id::text=$6 AND ml.active))
+ ORDER BY m.received_at DESC,m.message_id DESC LIMIT $4`, query, timestamp, id, limit, folder, label)
 	if err != nil {
 		return nil, err
 	}
@@ -73,19 +83,20 @@ func (s *Service) List(ctx context.Context, scope Scope, query string, after *Cu
 }
 
 type ExportItem struct {
-	MessageID         string            `json:"message_id"`
-	InternetMessageID string            `json:"internet_message_id"`
-	Subject           string            `json:"subject"`
-	Path              string            `json:"path"`
-	ReceivedAt        time.Time         `json:"received_at"`
-	SentAt            *time.Time        `json:"sent_at"`
-	Flags             []string          `json:"flags"`
-	SecurityState     string            `json:"security_state"`
-	Headers           json.RawMessage   `json:"headers"`
-	Envelope          json.RawMessage   `json:"envelope"`
-	Raw               Object            `json:"raw"`
-	Attachments       []Object          `json:"attachments"`
-	ImportOrigins     []json.RawMessage `json:"import_origins,omitempty"`
+	MessageID         string                `json:"message_id"`
+	InternetMessageID string                `json:"internet_message_id"`
+	Subject           string                `json:"subject"`
+	Path              string                `json:"path"`
+	ReceivedAt        time.Time             `json:"received_at"`
+	SentAt            *time.Time            `json:"sent_at"`
+	Flags             []string              `json:"flags"`
+	SecurityState     string                `json:"security_state"`
+	Headers           json.RawMessage       `json:"headers"`
+	Envelope          json.RawMessage       `json:"envelope"`
+	Raw               Object                `json:"raw"`
+	Attachments       []Object              `json:"attachments"`
+	Organization      *PortableOrganization `json:"organization,omitempty"`
+	ImportOrigins     []json.RawMessage     `json:"import_origins,omitempty"`
 }
 type ExportManifest struct {
 	Version           int               `json:"version"`
@@ -130,6 +141,9 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	if err != nil {
 		return manifest, err
 	}
+	if err = rejectUnexportedDrafts(ctx, tx); err != nil {
+		return manifest, err
+	}
 	manifest = ExportManifest{Version: 1, Scope: scope, Limit: limit, Messages: []ExportItem{}}
 	err = tx.QueryRow(ctx, "SELECT name,transaction_timestamp() FROM core.mailboxes").Scan(&manifest.MailboxName, &manifest.SnapshotAt)
 	if err == pgx.ErrNoRows {
@@ -170,6 +184,10 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	// Do not close a partial TAR on error: no final manifest/success is emitted.
 	for i := range manifest.Messages {
 		item := &manifest.Messages[i]
+		item.Organization, err = portableOrganization(ctx, tx, item.MessageID)
+		if err != nil {
+			return manifest, err
+		}
 		ar, err := tx.Query(ctx, "SELECT object_key,generation,sha256,size_bytes FROM core.attachments WHERE message_id=$1 ORDER BY ordinal", item.MessageID)
 		if err != nil {
 			return manifest, err

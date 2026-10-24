@@ -23,3 +23,5 @@ Completion requires the scope’s full portability, security, recovery, client, 
 Catalogue reconciliation: main assigned SANDY-ENG-0013 to Accounting at `f3198b1`. Mail's previously unmerged entry moves to SANDY-ENG-0014; Accounting is preserved. Historical Mail evidence/source pins are unchanged. Follow-on migration 0005 adds resumable snapshot exports with mandatory canonical authority checks and explicit exclusions; customer-facing identity/scanner/encrypted-delivery integration remains pending.
 
 At main `a08f969d7b65a329c743428f557a514a14479bcb`, My Voices owns SANDY-ENG-0014. This still-unmerged Mail task now uses SANDY-ENG-0015; both My Voices and Accounting are preserved. The saved Mail architecture and first-email pins are unchanged.
+
+Local follow-on: migration 0006 implements draft and organization facts with forced RLS, expected revisions and transactional idempotency receipts. The local UI saves/reopens drafts, creates flat folders/labels, moves messages and filters by those collections. It has no send operation. Folder metadata portability is explicit; full draft export and destination hierarchy mapping remain unfinished.

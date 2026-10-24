@@ -13,23 +13,24 @@ import (
 // MessageView exposes no object locations or executable HTML. The caller must
 // bind scope through canonical identity; the local harness binds a fixed fixture.
 type MessageView struct {
-	MessageID         string           `json:"message_id"`
-	Subject           string           `json:"subject"`
-	From              string           `json:"from"`
-	To                []string         `json:"to"`
-	CC                []string         `json:"cc"`
-	EnvelopeFrom      string           `json:"envelope_from"`
-	EnvelopeTo        []string         `json:"envelope_to"`
-	ReceivedAt        time.Time        `json:"received_at"`
-	Text              string           `json:"text"`
-	HTMLSourceOnly    bool             `json:"html_source_only"`
-	SecurityState     string           `json:"security_state"`
-	Flags             []string         `json:"flags"`
-	Attachments       []AttachmentView `json:"attachments"`
-	ReceiptID         string           `json:"receipt_id"`
-	RawSHA256         string           `json:"raw_sha256"`
-	RawBytes          int64            `json:"raw_bytes"`
-	IntegrityVerified bool             `json:"integrity_verified"`
+	MessageID         string              `json:"message_id"`
+	Subject           string              `json:"subject"`
+	From              string              `json:"from"`
+	To                []string            `json:"to"`
+	CC                []string            `json:"cc"`
+	EnvelopeFrom      string              `json:"envelope_from"`
+	EnvelopeTo        []string            `json:"envelope_to"`
+	ReceivedAt        time.Time           `json:"received_at"`
+	Text              string              `json:"text"`
+	HTMLSourceOnly    bool                `json:"html_source_only"`
+	SecurityState     string              `json:"security_state"`
+	Flags             []string            `json:"flags"`
+	Attachments       []AttachmentView    `json:"attachments"`
+	ReceiptID         string              `json:"receipt_id"`
+	RawSHA256         string              `json:"raw_sha256"`
+	RawBytes          int64               `json:"raw_bytes"`
+	Organization      MessageOrganization `json:"organization"`
+	IntegrityVerified bool                `json:"integrity_verified"`
 }
 type AttachmentView struct {
 	Name            string `json:"name"`
@@ -122,6 +123,10 @@ func (s *Service) ViewMessage(ctx context.Context, scope Scope, id string) (Mess
 	}
 	if raw.SHA256 != receiptSHA || len(v.Attachments) != expectedAttachments {
 		return MessageView{}, ErrIntegrity
+	}
+	v.Organization, err = readOrganization(ctx, tx, id)
+	if err != nil {
+		return MessageView{}, err
 	}
 	if err = tx.Commit(ctx); err != nil {
 		return MessageView{}, err

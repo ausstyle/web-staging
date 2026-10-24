@@ -463,6 +463,14 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 		// first; foreign source tenant IDs are retained only as provenance.
 		if manifest := preview.PortableMetadata; manifest != nil {
 			for _, m := range manifest.Messages {
+				if m.Organization != nil && (m.Organization.Folder != nil || len(m.Organization.Labels) > 0) {
+					if len(m.Organization.Labels) > 20 {
+						return fmt.Errorf("portable_label_limit")
+					}
+					if e = i.exception(ctx, "organization:"+digest([]byte(m.Path)), nil, "organization_mapping_pending", false, map[string]any{"path": m.Path, "organization": m.Organization}); e != nil {
+						return e
+					}
+				}
 				e = i.tx(ctx, func(tx pgx.Tx) error {
 					var hash string
 					err := tx.QueryRow(ctx, "SELECT raw_sha256 FROM core.mail_import_items WHERE job_id=$1 AND source_path=$2", i.job.ID, m.Path).Scan(&hash)

@@ -53,10 +53,11 @@ func NewLocalInbox(s *Service, scope Scope, origin, token string) (http.Handler,
 }
 
 type localRequest struct {
-	Operation string          `json:"operation"`
-	Version   int             `json:"version"`
-	RequestID string          `json:"request_id"`
-	Arguments json.RawMessage `json:"arguments"`
+	Operation      string          `json:"operation"`
+	Version        int             `json:"version"`
+	RequestID      string          `json:"request_id"`
+	IdempotencyKey string          `json:"idempotency_key,omitempty"`
+	Arguments      json.RawMessage `json:"arguments"`
 }
 type localResult struct {
 	Operation   string `json:"operation"`
@@ -131,16 +132,23 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req localRequest
-	if decodeStrict(http.MaxBytesReader(w, r.Body, 8192), &req) != nil || req.Version != 1 || len(req.RequestID) == 0 || len(req.RequestID) > 100 {
+	if decodeStrict(http.MaxBytesReader(w, r.Body, 524288), &req) != nil || req.Version != 1 || len(req.RequestID) == 0 || len(req.RequestID) > 100 {
 		http.Error(w, "invalid_request", 400)
 		return
 	}
 	out := localResult{Operation: req.Operation, Version: 1, RequestID: req.RequestID, Environment: "local-postgresql-filesystem-synthetic", State: "FAILED"}
+	mutation := false
 	reply := func(status int, code string, result any) {
 		out.Error = code
 		out.Result = result
+		if code == "edit_outcome_unknown_retry_same_key" {
+			out.State = "UNKNOWN_OUTCOME"
+		}
 		if status == 200 {
 			out.State = "LOCAL_READ_SUCCESS"
+			if mutation {
+				out.State = "LOCAL_MUTATION_COMMITTED"
+			}
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(status)
@@ -156,19 +164,22 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
 	defer cancel()
 	var result any
+	who := EditIdentity{Actor: "synthetic-local:" + h.scope.Mailbox, Key: req.IdempotencyKey}
 	switch req.Operation {
 	case "mail.messages.list":
 		var a struct {
-			Query string  `json:"query"`
-			After *Cursor `json:"after"`
-			Limit int     `json:"limit"`
+			Query  string  `json:"query"`
+			After  *Cursor `json:"after"`
+			Limit  int     `json:"limit"`
+			Folder string  `json:"folder"`
+			Label  string  `json:"label"`
 		}
 		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil || a.Limit < 1 || a.Limit > 100 || len(a.Query) > 500 || (a.After != nil && (a.After.ReceivedAt.IsZero() || !idPattern.MatchString(a.After.MessageID))) {
 			reply(400, "invalid_arguments", nil)
 			return
 		}
 		var items []MailboxItem
-		items, err = h.service.List(ctx, h.scope, a.Query, a.After, a.Limit)
+		items, err = h.service.ListOrganized(ctx, h.scope, a.Query, a.After, a.Limit, a.Folder, a.Label)
 		var next *Cursor
 		if len(items) == a.Limit {
 			last := items[len(items)-1]
@@ -187,12 +198,82 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		result, err = h.service.ViewMessage(ctx, h.scope, a.MessageID)
+	case "mail.drafts.list":
+		var a struct {
+			After *DraftCursor `json:"after"`
+			Limit int          `json:"limit"`
+		}
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		var drafts []Draft
+		drafts, err = h.service.ListDrafts(ctx, h.scope, a.After, a.Limit)
+		var next *DraftCursor
+		if len(drafts) == a.Limit && len(drafts) > 0 {
+			last := drafts[len(drafts)-1]
+			next = &DraftCursor{last.UpdatedAt, last.DraftID}
+		}
+		result = struct {
+			Items []Draft      `json:"items"`
+			Next  *DraftCursor `json:"next"`
+		}{drafts, next}
+	case "mail.drafts.get":
+		var a struct {
+			DraftID string `json:"draft_id"`
+		}
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		result, err = h.service.GetDraft(ctx, h.scope, a.DraftID)
+	case "mail.drafts.save":
+		mutation = true
+		var a DraftInput
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		result, err = h.service.SaveDraft(ctx, h.scope, who, a)
+	case "mail.collections.list":
+		var a struct{}
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		result, err = h.service.ListCollections(ctx, h.scope)
+	case "mail.collections.create":
+		mutation = true
+		var a CollectionInput
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		result, err = h.service.CreateCollection(ctx, h.scope, who, a)
+	case "mail.messages.organize":
+		mutation = true
+		var a OrganizationInput
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		result, err = h.service.OrganizeMessage(ctx, h.scope, who, a)
 	default:
 		reply(404, "unsupported_operation", nil)
 		return
 	}
 	if err != nil {
 		switch {
+		case errors.Is(err, ErrEditInvalid):
+			reply(400, "invalid_arguments", nil)
+		case errors.Is(err, ErrEditStale):
+			reply(409, "resource_version_conflict_reload_before_editing", nil)
+		case errors.Is(err, ErrEditConflict):
+			reply(409, "edit_identity_or_name_conflict", nil)
+		case errors.Is(err, ErrEditLimit):
+			reply(422, "mailbox_edit_limit", nil)
+		case errors.Is(err, ErrEditUnknown):
+			reply(503, "edit_outcome_unknown_retry_same_key", nil)
 		case errors.Is(err, ErrNotFound):
 			reply(404, "message_not_found_or_not_authorized", nil)
 		case errors.Is(err, ErrIntegrity), errors.Is(err, ErrObjectNotFound):
@@ -203,6 +284,10 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if ctx.Err() != nil {
+		if mutation {
+			reply(503, "edit_outcome_unknown_retry_same_key", nil)
+			return
+		}
 		reply(503, "local_backend_unavailable_retry", nil)
 		return
 	}

@@ -123,7 +123,11 @@ func TestPostgresIntegration(t *testing.T) {
  GRANT INSERT ON core.mail_export_jobs,core.mail_export_items,core.mail_export_parts,core.mail_export_exceptions TO mail_test_worker;
  GRANT UPDATE(state,cursor,verified_part,verified_chain,report_object) ON core.mail_export_jobs TO mail_test_worker;
  GRANT UPDATE(state,part_number) ON core.mail_export_items TO mail_test_worker;
- GRANT UPDATE(code,retryable,resolved,evidence) ON core.mail_export_exceptions TO mail_test_worker;`)
+ GRANT UPDATE(code,retryable,resolved,evidence) ON core.mail_export_exceptions TO mail_test_worker;
+ GRANT INSERT ON core.mail_drafts,core.mail_collections,core.mail_message_organization,core.mail_message_labels,core.mail_edit_receipts TO mail_test_worker;
+ GRANT UPDATE(subject,recipients,body_text,revision,updated_at) ON core.mail_drafts TO mail_test_worker;
+ GRANT UPDATE(folder_id,revision) ON core.mail_message_organization TO mail_test_worker;
+ GRANT UPDATE(active) ON core.mail_message_labels TO mail_test_worker;`)
 	must(e)
 	workerCfg, e := pgxpool.ParseConfig(dsn)
 	must(e)
@@ -452,6 +456,7 @@ func TestPostgresIntegration(t *testing.T) {
 	t.Run("offline_import_jobs", func(t *testing.T) { exerciseImportJobs(t, &service, admin, ctx, r.Scope) })
 	t.Run("local_inbox_http", func(t *testing.T) { exerciseLocalInbox(t, &service, ctx, scopes) })
 	t.Run("resumable_exports", func(t *testing.T) { exerciseExportJobs(t, &service, admin, ctx, r.Scope) })
+	t.Run("drafts_and_organization", func(t *testing.T) { exerciseEdits(t, &service, admin, ctx) })
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {
 		var messages, receipts, events int
 		must(admin.QueryRow(ctx, `SELECT (SELECT count(*) FROM core.messages WHERE tenant_id=$1),(SELECT count(*) FROM core.inbound_receipts WHERE tenant_id=$1),(SELECT count(*) FROM core.outbox WHERE tenant_id=$1)`, r.Scope.Tenant).Scan(&messages, &receipts, &events))

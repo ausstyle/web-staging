@@ -75,4 +75,4 @@ Migration 0005 and [resumable exports](EXPORTS.md) add frozen SQL snapshots, che
 
 ## Local inbox reader
 
-[Run the local synthetic inbox](LOCAL_INBOX.md) for a real PostgreSQL-backed reader with keyword search, integrity-checked messages, safe text rendering and visible receipts. It uses a separate synthetic mailbox and loopback-only temporary session; no customer/cloud endpoint, sending or scanner verdict is implied.
+[Run the local synthetic inbox](LOCAL_INBOX.md) for a real PostgreSQL-backed inbox with keyword search, integrity-checked reading, revisioned plain-text drafts, custom flat folders/labels, safe rendering and visible receipts. It uses a separate synthetic mailbox and loopback-only temporary session; no customer/cloud endpoint, sending or scanner verdict is implied.
