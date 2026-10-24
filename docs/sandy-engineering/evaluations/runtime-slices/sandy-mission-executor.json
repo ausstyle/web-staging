@@ -1,20 +1,18 @@
 {
   "kind": "reviewed-runtime-slice-v1",
   "function": "sandy-mission-executor",
-  "version": 21,
+  "version": 23,
   "verify_jwt": false,
-  "body_sha256": "91f39a19c9c61c2a5e55d2f4753a6ebe75892407b5704e2746098429cd880aa3",
+  "body_sha256": "b7bc86473c92aceb0127958fe18b513dc81304afd262184c6eb1506979530c04",
   "before_files": {
-    "sandy-mission-executor/index.ts": "6f8c32b72c439f5d411469ec2049bca786f141a612282bd4d05114435bb29654",
-    "_shared/sandy-agent-operations/worker_mission_identity.ts": "0fe5ace44af6eff27ad0e56d25773bd1972dc33c029c70c1a49126a9a467bbdb",
-    "_shared/sandy-agent-operations/worker_mission.ts": "655f7f83c2347d93c9c11bc922abd1eb3b37456d39b89aefcf265082b5fba919",
+    "_shared/sandy-agent-operations/runtime_responses_transport.ts": "0529d47853a42e76a5c18c177c06e0c7212fdcf866639f21e6337afb3f36879a",
+    "_shared/sandy-agent-operations/worker_mission.ts": "30e84e39f39d0914ed01fb17c36405ab1ee8c01671fa213390b8d6c66db1b14a",
     "_shared/sandy-agent-operations/worker_mission_contract.ts": "abc5ef74a915e49ac627569225349339dd021b5829ce4417c81fa6eb0c2d4b25",
-    "_shared/sandy-agent-operations/runtime_responses_transport.ts": "0529d47853a42e76a5c18c177c06e0c7212fdcf866639f21e6337afb3f36879a"
+    "_shared/sandy-agent-operations/worker_mission_identity.ts": "0fe5ace44af6eff27ad0e56d25773bd1972dc33c029c70c1a49126a9a467bbdb",
+    "_shared/sandy-agent-operations/worker_model_result.ts": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf",
+    "sandy-mission-executor/index.ts": "6f8c32b72c439f5d411469ec2049bca786f141a612282bd4d05114435bb29654"
   },
   "replacements": {
-    "_shared/sandy-agent-operations/worker_mission.ts": "30e84e39f39d0914ed01fb17c36405ab1ee8c01671fa213390b8d6c66db1b14a",
-    "_shared/sandy-agent-operations/worker_model_result.ts": "1388dada39ef447ef4c45df7dbc3cce55ea15bd4a9db201423e6edcc63fdcedf"
-  },
-  "scope": "SANDY-ENG-0004 MTR-06 and MTR-07; completed model envelope before durable plan/draft/clarification review",
-  "functional_acceptance_passed": false
+    "_shared/sandy-agent-operations/worker_mission.ts": "dff42c536e04e560ac5d83b962b62b0ebdfe08b40b32f640227e6882f418b6b0"
+  }
 }

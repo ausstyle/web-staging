@@ -1,0 +1,16 @@
+# Runtime remaining scope — checkpoint 24 October 2026
+
+Supporting evidence map for the existing eight workstreams, not a replacement scope or a completion percentage. Preserve accepted effects. Runtime41 acceptance is event261/run40059532387; earlier failed capability event258 remains failed. Historical evidence below is carried forward only for its bounded scenario, not recertified by this checkpoint.
+
+| Workstream | Bounded evidence / current progress | Remaining acceptance |
+| --- | --- | --- |
+| Executive Orchestrator | Runtime41 normal-web capability summary independently matches111/111; Runtime39 channel-count answer accepted; exact deployment hashes retained | Representative multi-step/ambiguous-turn cohort, correct escalation and recovery; one summary answer does not establish general reasoning quality |
+| Missions / durable execution | Prior actual plan and internal draft receipts; current committed-draft acknowledgement repair has source fault tests | Live lost-ack fault acceptance, crashed-worker fencing/watchdog, durable waits and cancellation races, DAG/compensation,20-mission cohort and24-hour soak under0004 |
+| World Model / Memory | Prior normal-customer correction, disabled-memory/forgetting/foreign-conversation checks preserved | Cross-channel identity/consent continuity, ACL change during retrieval, provenance/freshness and representative correction/forgetting cohort; no claim from old version numbers alone |
+| Omnichannel intelligence | Normal-web channel counts accepted; existing LiveKit preserved | Actual authorized voice/email/WhatsApp continuity and delivery acceptance; counts are not delivery receipts; no customer communication requested for this slice |
+| Model Gateway / Meta-Intelligence | Actual model receipts and deployed source pins for accepted turns | Profile/budget/fallback behavior, uncertain provider outcomes and measured quality/latency cohort; API owner retains central provider contracts |
+| Truth / Commitment Engines | Ten-operation milestone reconciled with130 checks/23 immutable receipts, cleanup event250 | Broader long-running commitment/verification/compensation acceptance; custody activation still needs canonical authority/revokers, scanner/generation reader and exact security package |
+| Examiner / Evolution | Grounding/source deployment and independent bounded reviews exist | Frozen50-case/holdout regression cohort, independent outcome grading and bounded change/recovery acceptance; deployment is not examination success |
+| Computer execution | Existing computer work and IAP evidence preserved; no access expansion attempted | Authorized Linux/Windows/graphical lifecycle acceptance INF-01–07, actual target permissions/agent freshness and recovery. Earlier access blockers are unresolved evidence, not newly probed denials |
+
+PR301 remains OPEN DRAFT at6a35933 with its specific denied transition preserved; no task-count patch has been repackaged. Custody PR303 is source-only, activation not attempted; Cloud is addressing its authority-expiry-at-settlement finding before activation. Mail's cross-database contract work remains separately owned. No new identities, security grants, scanner trust or live customer communications were introduced here.
