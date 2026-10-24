@@ -1,0 +1,69 @@
+name: Publish verified existing memory correction
+on:
+  pull_request:
+    paths:
+      - 'scripts/sandy/*memory*'
+      - 'docs/sandy-engineering/evaluations/memory-correction-adapter-release.json'
+      - '.github/workflows/sandy-memory-normal-publication.yml'
+  workflow_dispatch:
+    inputs:
+      action:
+        type: choice
+        required: true
+        description: Publish only after actual private MCP proof; ordinary verification failure restores closed flags
+        options: [preflight, publish-and-verify, verify-existing]
+      acceptance_run_id:
+        type: string
+        required: true
+        description: Exact successful protected private acceptance run
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('sandy-memory-publication-check-{0}', github.event.pull_request.number) || 'sandy-engineering-mcp-deploy' }}
+  cancel-in-progress: false
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Protected evidence, immutable proof, normal Auth and rollback contracts
+        env:
+          PYTHONPATH: scripts/sandy
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 -m unittest scripts/sandy/test_memory_normal_publication.py scripts/sandy/test_memory_private_release.py -v
+  publish:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: validate
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify actual protected private proof, then publish one existing operation and test ordinary MCP
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          RELEASE_ACTION: ${{ inputs.action }}
+          ACCEPTANCE_RUN_ID: ${{ inputs.acceptance_run_id }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          args=()
+          if [ "$RELEASE_ACTION" = publish-and-verify ]; then args+=(--publish); fi
+          if [ "$RELEASE_ACTION" = verify-existing ]; then args+=(--verify-existing); fi
+          python3 scripts/sandy/publish_memory_correction.py --acceptance-run-id "$ACCEPTANCE_RUN_ID" "${args[@]}" --evidence-dir "$RUNNER_TEMP/memory-normal-publication"
+      - name: Independent ordinary publication and immutable receipt readback
+        if: inputs.action != 'preflight'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/publish_memory_correction.py --verify-existing --evidence-dir "$RUNNER_TEMP/memory-normal-publication-independent"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-normal-publication-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/memory-normal-publication/
+            ${{ runner.temp }}/memory-normal-publication-independent/
+          retention-days: 14
