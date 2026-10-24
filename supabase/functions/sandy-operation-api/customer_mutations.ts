@@ -187,6 +187,71 @@ export const customerMutationContracts = Object.fromEntries(
     description: string;
   }
 >;
+// Existing Memory Centre correction, with the same receipt transport. It stays
+// in the memory extension so Agenda access never grants private-memory authority.
+export const memoryCorrectionMutationContract = {
+  handler: "sandy-memory-centre",
+  permission_scope: "memory:write",
+  is_mutation: true,
+  input_schema: input({
+    id,
+    confirm: { const: true },
+    new_value: { type: ["string", "null"], minLength: 2, maxLength: 1000 },
+  }, ["id", "confirm", "new_value"]),
+  output_schema: {
+    type: "object",
+    additionalProperties: false,
+    required: [
+      "ok",
+      "contract_version",
+      "operation",
+      "mutation_id",
+      "reused",
+      "item",
+    ],
+    properties: {
+      ok: { const: true },
+      contract_version: { const: "1.0.0" },
+      operation: { const: "memory.fact_correct" },
+      mutation_id: id,
+      reused: { type: "boolean" },
+      item: {
+        type: "object",
+        additionalProperties: false,
+        required: [
+          "id",
+          "customer_id",
+          "original_fact_id",
+          "status",
+          "original_status",
+          "fact_value",
+          "supersedes_fact_id",
+          "rejection_id",
+          "rejected_value",
+          "corrected_value",
+        ],
+        properties: {
+          id,
+          customer_id: id,
+          original_fact_id: id,
+          status: { type: "string", enum: ["active", "rejected"] },
+          original_status: {
+            type: "string",
+            enum: ["active", "superseded", "rejected"],
+          },
+          fact_value: { type: "string", minLength: 1, maxLength: 2000 },
+          supersedes_fact_id: nullableUuid,
+          rejection_id: nullableUuid,
+          rejected_value: nullableText,
+          corrected_value: nullableText,
+        },
+      },
+    },
+  },
+} as const;
+export const memoryCorrectionContractSha256 =
+  "731b0f287fb36c073017f47fa7b5f4c4b525e3f7e04dfa6e73ace41c10a5cf6a";
+type ReceiptOperation = CustomerMutationOperation | "memory.fact_correct";
 const ajv = new Ajv({ strict: true, validateFormats: true, allErrors: false });
 for (const [name, format] of Object.entries(fullFormats)) {
   ajv.addFormat(name, format);
@@ -203,6 +268,12 @@ const outputValidators = new Map(
       ajv.compile(customerMutationContracts[operation].output_schema),
     ],
   ),
+);
+const memoryCorrectionInput = ajv.compile(
+  memoryCorrectionMutationContract.input_schema,
+);
+const memoryCorrectionOutput = ajv.compile(
+  memoryCorrectionMutationContract.output_schema,
 );
 export function isCustomerMutationOperation(
   operation: unknown,
@@ -264,6 +335,7 @@ export type CustomerMutationDb = {
   from(table: string): { select(columns: string): Query };
 };
 export type CustomerMutationDependencies = {
+  memoryCertification?: { id: string; apiDeploymentId: string };
   base: string;
   anon: string;
   // The concrete SDK carries recursive query generics. Keep that implementation
@@ -295,10 +367,27 @@ const failure = (
   },
 });
 function expectedEffect(
-  operation: CustomerMutationOperation,
+  operation: ReceiptOperation,
   args: Row,
   item: Row,
 ): boolean {
+  if (operation === "memory.fact_correct") {
+    if (!same(item.original_fact_id, args.id)) return false;
+    if (args.new_value === null) {
+      return same(item.id, args.id) && item.status === "rejected" &&
+        item.original_status === "rejected" && uuid(item.rejection_id) &&
+        item.corrected_value === null;
+    }
+    const value = String(args.new_value).trim();
+    if (item.status !== "active" || item.fact_value !== value) return false;
+    if (same(item.id, args.id)) {
+      return item.original_status === "active" && item.rejection_id === null &&
+        item.rejected_value === null && item.corrected_value === null;
+    }
+    return item.original_status === "superseded" &&
+      same(item.supersedes_fact_id, args.id) && uuid(item.rejection_id) &&
+      typeof item.rejected_value === "string" && item.corrected_value === value;
+  }
   if (!operation.endsWith(".create") && !same(item.id, args.id)) return false;
   if (
     typeof args.title === "string" &&
@@ -412,38 +501,125 @@ export async function executeCustomerMutation(
     return failure(503, "customer_authorisation_unavailable");
   }
 
+  return await executeMutationReceipt(
+    dependencies,
+    userJwt,
+    operation,
+    args,
+    customer,
+  );
+}
+
+/** A portal principal is a verified expectation, never the RPC's authority. The
+ * actual user JWT is forwarded; SQL independently derives its current customer. */
+export async function executeMemoryCorrection(
+  dependencies: Pick<
+    CustomerMutationDependencies,
+    "base" | "anon" | "fetch" | "memoryCertification"
+  >,
+  userJwt: string,
+  customer: string,
+  args: unknown,
+): Promise<CustomerMutationResult> {
+  if (
+    !uuid(customer) || !object(args) || memoryCorrectionInput(args) !== true ||
+    (typeof args.new_value === "string" && args.new_value.trim().length < 2)
+  ) return failure(400, "invalid_customer_mutation_arguments");
+  if (
+    !userJwt || !/^[A-Za-z0-9._~-]+$/.test(userJwt) ||
+    userJwt.startsWith("sandyop_") || userJwt.startsWith("sandy_api_")
+  ) return failure(401, "customer_session_required");
+  const result = await executeMutationReceipt(
+    dependencies,
+    userJwt,
+    "memory.fact_correct",
+    args,
+    customer,
+  );
+  if (result.body.executed === null) result.body.automatic_retry = false;
+  return result;
+}
+export function buildCustomerMutationReceiptRequest(
+  dependencies: Pick<
+    CustomerMutationDependencies,
+    "base" | "anon" | "memoryCertification"
+  >,
+  userJwt: string,
+  operation: ReceiptOperation,
+  args: Row,
+): { url: string; init: RequestInit } | null {
+  if (
+    !(operation === "memory.fact_correct"
+      ? memoryCorrectionInput(args) === true
+      : validateCustomerMutationArguments(operation, args)) ||
+    !/^[A-Za-z0-9._~-]+$/.test(userJwt) || userJwt.startsWith("sandyop_") ||
+    userJwt.startsWith("sandy_api_")
+  ) return null;
   let origin: URL;
   try {
     origin = new URL(dependencies.base);
   } catch {
-    return failure(503, "customer_backend_configuration_invalid");
+    return null;
   }
   if (
     origin.protocol !== "https:" || origin.username || origin.password ||
     origin.pathname !== "/" || origin.search || origin.hash
-  ) return failure(503, "customer_backend_configuration_invalid");
+  ) return null;
+  const certification = operation === "memory.fact_correct"
+    ? dependencies.memoryCertification
+    : undefined;
+  if (
+    certification &&
+    (!uuid(certification.id) ||
+      !/^zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_[1-9][0-9]{0,8}$/
+        .test(certification.apiDeploymentId))
+  ) return null;
   const { idempotency_key, ...fields } = args;
-  // Shared SQL applies the legacy file normalization once, before mutation.
+  return {
+    url: `${origin.origin}/rest/v1/rpc/sandy_api_customer_mutation`,
+    init: {
+      method: "POST",
+      redirect: "error",
+      headers: {
+        authorization: `Bearer ${userJwt}`,
+        apikey: dependencies.anon,
+        "content-type": "application/json",
+        ...(certification
+          ? {
+            "x-sandy-certification-id": certification.id,
+            "x-sandy-api-deployment-id": certification.apiDeploymentId,
+          }
+          : {}),
+      },
+      body: JSON.stringify({
+        p_operation: operation,
+        p_arguments: fields,
+        p_idempotency_key: idempotency_key,
+      }),
+      signal: AbortSignal.timeout(30000),
+    },
+  };
+}
+async function executeMutationReceipt(
+  dependencies: Pick<
+    CustomerMutationDependencies,
+    "base" | "anon" | "fetch" | "memoryCertification"
+  >,
+  userJwt: string,
+  operation: ReceiptOperation,
+  args: Row,
+  customer: string,
+): Promise<CustomerMutationResult> {
+  const request = buildCustomerMutationReceiptRequest(
+    dependencies,
+    userJwt,
+    operation,
+    args,
+  );
+  if (!request) return failure(503, "customer_backend_configuration_invalid");
   let response: Response;
   try {
-    response = await (dependencies.fetch ?? fetch)(
-      `${origin.origin}/rest/v1/rpc/sandy_api_customer_mutation`,
-      {
-        method: "POST",
-        redirect: "error",
-        headers: {
-          authorization: `Bearer ${userJwt}`,
-          apikey: dependencies.anon,
-          "content-type": "application/json",
-        },
-        body: JSON.stringify({
-          p_operation: operation,
-          p_arguments: fields,
-          p_idempotency_key: idempotency_key,
-        }),
-        signal: AbortSignal.timeout(30000),
-      },
-    );
+    response = await (dependencies.fetch ?? fetch)(request.url, request.init);
   } catch {
     return failure(502, "customer_mutation_outcome_unknown", true);
   }
@@ -476,7 +652,10 @@ export async function executeCustomerMutation(
     );
   }
   if (
-    !object(result) || outputValidators.get(operation)!(result) !== true ||
+    !object(result) ||
+    (operation === "memory.fact_correct"
+        ? memoryCorrectionOutput(result)
+        : outputValidators.get(operation)!(result)) !== true ||
     !object(result.item) || !same(
       result.item[
         operation.startsWith("files.") ? "owner_customer_id" : "customer_id"

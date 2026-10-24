@@ -12,6 +12,8 @@ MIGRATION='supabase/migrations/'+VERSION+'_sandy_durable_dispatch_schedule.sql'
 COMPONENT='sandy-orchestration-dispatch-schedule'
 GUARD_VERSION='20261024003100'
 GUARD_MIGRATION='supabase/migrations/'+GUARD_VERSION+'_sandy_dispatch_transport_guard.sql'
+MODERN_VERSION='20261024003400'
+MODERN_MIGRATION='supabase/migrations/'+MODERN_VERSION+'_sandy_modern_private_transport.sql'
 SLUG='sandy-orchestration-api'
 SOURCE_FILES={'sandy-orchestration-api/index.ts':'fcfcf09aa2f5cd2b76e95efdc1dd70213170dcceda9db395e21ef0c81e10de54','_shared/sandy_api_protocol.ts':'c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8'}
 
@@ -56,6 +58,11 @@ def verify(r,sql,require_active=True):
   if guard!=[{'statements':[guard_sql]}]:raise Blocked('installed_transport_guard_source_mismatch')
   reviewed=dict(re.findall(r'CREATE (?:OR REPLACE )?FUNCTION public\.(\w+)\([^$]*?AS \$\$(.*?)\$\$;',guard_sql,re.S))
   expected.update(reviewed)
+ modern=r.sql("SELECT statements FROM supabase_migrations.schema_migrations WHERE version='"+MODERN_VERSION+"'",True)
+ if modern:
+  modern_sql=(ROOT/MODERN_MIGRATION).read_text()
+  if modern!=[{'statements':[modern_sql]}]:raise Blocked('installed_modern_transport_source_mismatch')
+  expected.update(dict(re.findall(r'CREATE OR REPLACE FUNCTION public\.(\w+)\([^$]*?AS \$\$(.*?)\$\$;',modern_sql,re.S)))
  actual=r.sql("SELECT proname,prosrc,prosecdef,proconfig FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND proname IN ("+','.join(quote(name) for name in expected)+")",True)
  if len(actual)!=len(expected) or any(x['prosrc']!=expected[x['proname']] or not x['prosecdef'] or x['proconfig']!=['search_path=pg_catalog, pg_temp'] for x in actual):raise Blocked('installed_private_worker_source_mismatch')
  state=r.sql("SELECT enabled,transport_secret_id IS NOT NULL credential_bound,release_change_id,source_commit FROM public.sandy_orch_worker_control WHERE singleton",True)
@@ -67,22 +74,33 @@ def verify(r,sql,require_active=True):
  if acl!=[{'anon_tick':False,'user_tick':False,'service_tick':False,'service_configuration':False,'user_credential_binding':False}]:raise Blocked('private_timer_privileges_mismatch')
  return {'installed_source_verified':True,'timer_active':state[0]['enabled'],'transport_bound':state[0]['credential_bound'],'transport_guard_verified':bool(guard),'cadence':'every minute','existing_worker_version':15,'migration':VERSION,'tracking_change_id':state[0]['release_change_id'],'source_commit':state[0]['source_commit'],'jobs_created':0,'authority_expanded':False,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
-def install_transport_guard(r):
+def install_transport_guard(r,modern=False):
+ version=MODERN_VERSION if modern else GUARD_VERSION
+ migration=MODERN_MIGRATION if modern else GUARD_MIGRATION
  if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main':raise Blocked('protected_main_release_required')
- source=os.environ.get('GITHUB_SHA','');sql=(ROOT/GUARD_MIGRATION).read_text();base_sql=(ROOT/MIGRATION).read_text()
- if not re.fullmatch('[a-f0-9]{40}',source) or subprocess.check_output(['git','show',source+':'+GUARD_MIGRATION],cwd=ROOT)!=sql.encode():raise Blocked('committed_transport_guard_required')
- if r.sql("SELECT version FROM supabase_migrations.schema_migrations WHERE version='"+GUARD_VERSION+"'",True):raise Blocked('transport_guard_already_installed_reconcile_no_replay')
+ source=os.environ.get('GITHUB_SHA','');sql=(ROOT/migration).read_text();base_sql=(ROOT/MIGRATION).read_text()
+ if not re.fullmatch('[a-f0-9]{40}',source) or subprocess.check_output(['git','show',source+':'+migration],cwd=ROOT)!=sql.encode():raise Blocked('committed_transport_guard_required')
+ if r.sql("SELECT version FROM supabase_migrations.schema_migrations WHERE version='"+version+"'",True):raise Blocked('transport_guard_already_installed_reconcile_no_replay')
  state=verify(r,base_sql,require_active=False)
  if state['timer_active'] or state['transport_bound']:raise Blocked('reviewed_disabled_unbound_timer_required')
+ if modern and not state['transport_guard_verified']:raise Blocked('existing_installed_transport_guard_required')
+ if modern:
+  r.out.mkdir(mode=0o700,parents=True,exist_ok=False)
+  before=r.sql("SELECT pg_get_functiondef(oid) definition FROM pg_proc WHERE oid IN('public.sandy_orch_worker_bind_transport(text)'::regprocedure,'public.sandy_orch_worker_tick()'::regprocedure) ORDER BY proname",True)
+  if len(before)!=2:raise Blocked('exact_transport_preimages_required')
+  private_write(r.out,'modern-transport-preimages.json',json.dumps(before).encode())
+  private_write(r.out,'rollback-modern-transport.sql',("-- Manual recovery only after independent current-source readback; never replay provider effects.\nBEGIN;\nDO $$ BEGIN PERFORM 1 FROM public.sandy_orch_worker_control WHERE singleton AND NOT enabled AND transport_secret_id IS NULL AND release_change_id IS NULL AND source_commit IS NULL AND last_request_id IS NULL FOR UPDATE;IF NOT FOUND THEN RAISE EXCEPTION 'disabled_unbound_existing_timer_required';END IF;END $$;\n"+''.join(x['definition']+';\n' for x in before)+'COMMIT;\n').encode())
  tracking='740a56f8-a582-419f-a4d9-9440af5e57f9';holder='durable-transport-guard-'+uuid.uuid4().hex
  r.sql(f"DO $$ BEGIN INSERT INTO public.sandy_engineering_component_leases(component,holder,change_id,expected_source_sha256,expires_at) VALUES('{COMPONENT}','{holder}','{tracking}','{digest(sql.encode())}',clock_timestamp()+interval '10 minutes') ON CONFLICT(component) DO UPDATE SET holder=EXCLUDED.holder,change_id=EXCLUDED.change_id,expected_source_sha256=EXCLUDED.expected_source_sha256,expires_at=EXCLUDED.expires_at,acquired_at=clock_timestamp() WHERE public.sandy_engineering_component_leases.expires_at<=clock_timestamp();IF NOT FOUND THEN RAISE EXCEPTION 'component already leased';END IF;END $$")
+ dispatched=verified=False
  try:
   core=sql[sql.index('BEGIN;')+6:sql.rindex('COMMIT;')]
-  r.stage='install_additive_transport_guard'
-  r.sql("BEGIN;SELECT pg_advisory_xact_lock(hashtext('sandy-durable-transport-guard-install'));"+core+"INSERT INTO supabase_migrations.schema_migrations(version,statements,name,created_by,idempotency_key) VALUES('"+GUARD_VERSION+"',ARRAY["+quote(sql)+"],'sandy_dispatch_transport_guard','protected_github_management_release','sandy-durable-transport-guard-v2');INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('"+tracking+"','durable_dispatch_transport_guard_installed',NULL,jsonb_build_object('source_commit','"+source+"','authority_expanded',false,'credential_bound',false));COMMIT;")
-  result=verify(r,base_sql,require_active=False)
-  return {**result,'migration':GUARD_VERSION,'transport_guard_installed':True,'original_migration_reapplied':False,'authority_expanded':False,'Edge_deployments':0}
- finally:r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE component='{COMPONENT}' AND holder='{holder}'")
+  r.stage='install_additive_transport_guard';dispatched=True
+  r.sql("BEGIN;SELECT pg_advisory_xact_lock(hashtext('sandy-durable-transport-guard-install'));"+core+"INSERT INTO supabase_migrations.schema_migrations(version,statements,name,created_by,idempotency_key) VALUES('"+version+"',ARRAY["+quote(sql)+"],'sandy_dispatch_transport_guard','protected_github_management_release','sandy-durable-transport-guard-'||'"+version+"');INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('"+tracking+"','durable_dispatch_transport_guard_installed',NULL,jsonb_build_object('source_commit','"+source+"','authority_expanded',false,'credential_bound',false));COMMIT;")
+  result=verify(r,base_sql,require_active=False);verified=True
+  return {**result,'migration':version,'transport_guard_installed':True,'original_migration_reapplied':False,'authority_expanded':False,'Edge_deployments':0}
+ finally:
+  if not dispatched or verified:r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE component='{COMPONENT}' AND holder='{holder}'")
 
 
 def configure_existing(r,sql,change,source,bind_transport=True):
@@ -152,9 +170,9 @@ def accept_empty_queue(r):
  return {'private_worker_transport_verified':True,'private_worker_http_status':200,'transport_evidence_event':evidence[0]['id'],'transport_evidence_at':evidence[0]['occurred_at'],'runtime_key_exported':False,'jobs_claimed':0,'idle_timer_verified':True,'provider_execution_verified':False,'programme_code_execution_verified':False}
 
 if __name__=='__main__':
- p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--install-transport-guard',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');g.add_argument('--activate-bound-transport',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
+ p=argparse.ArgumentParser();g=p.add_mutually_exclusive_group();g.add_argument('--deploy',action='store_true');g.add_argument('--install-transport-guard',action='store_true');g.add_argument('--install-modern-transport-guard',action='store_true');g.add_argument('--verify-installed',action='store_true');g.add_argument('--accept-empty-queue',action='store_true');g.add_argument('--resume-configuration',metavar='EXISTING_CHANGE_UUID');g.add_argument('--activate-bound-transport',metavar='EXISTING_CHANGE_UUID');p.add_argument('--evidence-dir',required=True);a=p.parse_args();root=Path(a.evidence_dir);r=Installer(root/'source-preservation');report={'passed':False,'grant_changes':0,'provider_writes':0,'Edge_deployments':0}
  try:
-  result=install_transport_guard(r) if a.install_transport_guard else resume_configuration(r,a.activate_bound_transport,activate_bound=True) if a.activate_bound_transport else resume_configuration(r,a.resume_configuration) if a.resume_configuration else accept_empty_queue(r) if a.accept_empty_queue else run(r,a.deploy,a.verify_installed)
+  result=install_transport_guard(r,modern=a.install_modern_transport_guard) if a.install_transport_guard or a.install_modern_transport_guard else resume_configuration(r,a.activate_bound_transport,activate_bound=True) if a.activate_bound_transport else resume_configuration(r,a.resume_configuration) if a.resume_configuration else accept_empty_queue(r) if a.accept_empty_queue else run(r,a.deploy,a.verify_installed)
   report.update(result,passed=True)
  except Exception as e:report.update(error=str(e) if isinstance(e,Blocked) else 'release_failed_or_unknown_reconcile_before_retry',stage=r.stage,last_management_request=r.last_request)
  root.mkdir(parents=True,exist_ok=True);private_write(root,'durable-dispatch-release.json',json.dumps(report,indent=2).encode());print('::notice title=Durable dispatcher timer release::'+json.dumps(report));raise SystemExit(0 if report['passed'] else 1)

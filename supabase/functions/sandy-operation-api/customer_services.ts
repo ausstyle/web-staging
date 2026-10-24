@@ -57,6 +57,7 @@ const uuid = (value: unknown): value is string =>
 const sameId = (a: unknown, b: unknown) =>
   uuid(a) && uuid(b) && a.toLowerCase() === b.toLowerCase();
 export type CustomerServiceDependencies = {
+  memoryCertification?: { id: string; apiDeploymentId: string };
   base: string;
   anon: string;
   service: string;
@@ -134,7 +135,8 @@ export function buildCustomerServiceRequest(
     ? { ...args, op: c.action }
     : { ...args, action: c.action };
   return {
-    url: base.origin + (c.rpc ? "/rest/v1/rpc/" + c.rpc : "/functions/v1/" + c.handler),
+    url: base.origin +
+      (c.rpc ? "/rest/v1/rpc/" + c.rpc : "/functions/v1/" + c.handler),
     init: {
       method: "POST",
       redirect: "error",

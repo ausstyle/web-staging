@@ -1,0 +1,4823 @@
+{
+  "observed_at_utc": "2026-10-23T23:59:49.743194+00:00",
+  "delegation_version": 6,
+  "delegation_expires_at": "2026-11-21 09:51:26.753549+00",
+  "delegation_active": true,
+  "targets": {
+    "gcp": [
+      "elaborate-haven-511518-a5"
+    ],
+    "github": [
+      "ausstyle/web-staging"
+    ],
+    "supabase": [
+      "zmqlyygzqoidkcwdysok"
+    ]
+  },
+  "classes": {
+    "gcp": [
+      "metadata_read",
+      "guest_read",
+      "guest_files_write",
+      "guest_services_write",
+      "guest_packages_write"
+    ],
+    "github": [
+      "metadata_read",
+      "source_read",
+      "code_write",
+      "git_write",
+      "pull_request_write"
+    ],
+    "supabase": [
+      "metadata_read"
+    ]
+  },
+  "permissions_modified": false,
+  "acceptance_inferred": false,
+  "family_counts_by_overlapping_disposition": {
+    "separate_authority_or_mapping_review": 47,
+    "closed_exposure": 149,
+    "own_receipt_or_conditionally_authorized_recovery": 2,
+    "exposed_class_candidate_not_execution_authority": 72,
+    "outside_current_standing_classes": 7,
+    "missing_registry": 2,
+    "exact_legacy_fixture_only": 7
+  },
+  "families": [
+    {
+      "family_id": 1,
+      "requirement": "GET /v1/capabilities \u2014 executable operations, scopes and verification.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "google_cloud.mcp.authenticated_discovery"
+        ],
+        "closed_exposure": [
+          "system.registry.list",
+          "system.registry.summary"
+        ]
+      }
+    },
+    {
+      "family_id": 2,
+      "requirement": "GET /v1/capabilities/{operation} \u2014 schema, handler and required grants.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "google_cloud.mcp.authenticated_discovery"
+        ],
+        "closed_exposure": [
+          "system.registry.describe"
+        ]
+      }
+    },
+    {
+      "family_id": 3,
+      "requirement": "POST /v1/operations/{operation}:execute \u2014 synchronous/asynchronous execution.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.jobs.approve_read",
+          "deployment.jobs.execute",
+          "deployment.jobs.request",
+          "orchestration.operations.enqueue"
+        ]
+      }
+    },
+    {
+      "family_id": 4,
+      "requirement": "GET /v1/jobs/{jobId} \u2014 status, provider request IDs and result.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.jobs.get",
+          "deployment.jobs.list"
+        ],
+        "separate_authority_or_mapping_review": [
+          "deployment.jobs.status",
+          "orchestration.jobs.get"
+        ],
+        "own_receipt_or_conditionally_authorized_recovery": [
+          "system.execution.get",
+          "system.lifecycle.get"
+        ]
+      }
+    },
+    {
+      "family_id": 5,
+      "requirement": "GET /v1/jobs/{jobId}/events \u2014 structured progress events.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.jobs.events"
+        ],
+        "separate_authority_or_mapping_review": [
+          "orchestration.jobs.events"
+        ]
+      }
+    },
+    {
+      "family_id": 6,
+      "requirement": "POST /v1/jobs/{jobId}:cancel \u2014 cancel eligible job.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.jobs.cancel",
+          "orchestration.jobs.cancel"
+        ]
+      }
+    },
+    {
+      "family_id": 7,
+      "requirement": "POST /v1/jobs/{jobId}:retry \u2014 retry idempotent failed steps.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.jobs.retry",
+          "orchestration.jobs.retry"
+        ]
+      }
+    },
+    {
+      "family_id": 8,
+      "requirement": "POST /v1/jobs/{jobId}:rollback \u2014 verified compensation.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "engineering.rollback.approve",
+          "engineering.rollback.create_pr",
+          "engineering.rollback.prepare",
+          "engineering.rollback.request",
+          "engineering.rollback.validate",
+          "engineering.rollback.verify"
+        ],
+        "own_receipt_or_conditionally_authorized_recovery": [
+          "system.lifecycle.compensate",
+          "system.lifecycle.get",
+          "system.lifecycle.verify"
+        ]
+      }
+    },
+    {
+      "family_id": 9,
+      "requirement": "GET /v1/audit?resource=... \u2014 tamper-evident audit.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.audit.list",
+          "system.audit.checkpoint"
+        ],
+        "separate_authority_or_mapping_review": [
+          "system.audit.list",
+          "system.audit.verify"
+        ]
+      }
+    },
+    {
+      "family_id": 10,
+      "requirement": "POST /v1/plans:validate \u2014 dry-run, permissions, cost and blast radius.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "deployment.management.preflight",
+          "deployment.management.release.preflight",
+          "orchestration.plans.validate"
+        ]
+      }
+    },
+    {
+      "family_id": 11,
+      "requirement": "POST /v1/plans:execute \u2014 multi-service dependency graph.",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "deployment.jobs.execute",
+          "deployment.jobs.request",
+          "orchestration.plans.execute"
+        ],
+        "separate_authority_or_mapping_review": [
+          "orchestration.plans.get"
+        ]
+      }
+    },
+    {
+      "family_id": 12,
+      "requirement": "gcp.organizations.list/get",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.organizations.get",
+          "gcp.organizations.list"
+        ]
+      }
+    },
+    {
+      "family_id": 13,
+      "requirement": "gcp.folders.list/create/move/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.folders.create",
+          "gcp.folders.delete",
+          "gcp.folders.list",
+          "gcp.folders.move"
+        ]
+      }
+    },
+    {
+      "family_id": 14,
+      "requirement": "gcp.projects.list/get/create/update/move/delete/undelete",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.projects.create",
+          "gcp.projects.delete",
+          "gcp.projects.list_filtered",
+          "gcp.projects.move",
+          "gcp.projects.patch",
+          "gcp.projects.search_filtered",
+          "gcp.projects.undelete"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.projects.get",
+          "gcp.projects.list"
+        ]
+      }
+    },
+    {
+      "family_id": 15,
+      "requirement": "gcp.services.list/enable/disable",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.services.disable",
+          "gcp.services.enable"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.services.list"
+        ]
+      }
+    },
+    {
+      "family_id": 16,
+      "requirement": "gcp.quotas.get/request",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.quotas.get",
+          "gcp.quotas.list",
+          "gcp.quotas.preferences.get",
+          "gcp.quotas.preferences.list"
+        ],
+        "closed_exposure": [
+          "gcp.quotas.preferences.update",
+          "gcp.quotas.request"
+        ]
+      }
+    },
+    {
+      "family_id": 17,
+      "requirement": "gcp.iam.policy.get/set",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.folders.iam_permissions.test",
+          "gcp.folders.iam_policy.get",
+          "gcp.folders.iam_policy.set",
+          "gcp.organizations.iam_permissions.test",
+          "gcp.organizations.iam_policy.get",
+          "gcp.organizations.iam_policy.set",
+          "gcp.projects.iam_policy.set",
+          "google_cloud.iam.grant_deployment",
+          "google_cloud.iam.runtime_prepare",
+          "google_cloud.mcp.public_ingress",
+          "google_cloud.mcp.registry_writer_grant"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.projects.iam_permissions.test",
+          "gcp.projects.iam_policy.get"
+        ],
+        "separate_authority_or_mapping_review": [
+          "google_cloud.cloud_run.permissions",
+          "google_cloud.iam.project_policy_read"
+        ]
+      }
+    },
+    {
+      "family_id": 18,
+      "requirement": "gcp.iam.roles.list/create/update/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.iam.roles.create",
+          "gcp.iam.roles.delete",
+          "gcp.iam.roles.patch"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.iam.roles.list"
+        ]
+      }
+    },
+    {
+      "family_id": 19,
+      "requirement": "gcp.serviceAccounts.list/create/update/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.service_accounts.create",
+          "gcp.service_accounts.delete",
+          "gcp.service_accounts.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.service_accounts.list"
+        ]
+      }
+    },
+    {
+      "family_id": 20,
+      "requirement": "gcp.serviceAccounts.keys.rotate",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.service_accounts.keys.delete",
+          "gcp.service_accounts.keys.disable",
+          "gcp.service_accounts.keys.enable",
+          "gcp.service_accounts.keys.rotate",
+          "system.credentials.provider.revoke"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.service_accounts.keys.get",
+          "gcp.service_accounts.keys.list"
+        ]
+      }
+    },
+    {
+      "family_id": 21,
+      "requirement": "gcp.workloadIdentity.configure",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.workload_identity.pools.add_attestation_rule",
+          "gcp.workload_identity.pools.create",
+          "gcp.workload_identity.pools.delete",
+          "gcp.workload_identity.pools.iam_policy.set",
+          "gcp.workload_identity.pools.list_attestation_rules",
+          "gcp.workload_identity.pools.namespaces.create",
+          "gcp.workload_identity.pools.namespaces.delete",
+          "gcp.workload_identity.pools.namespaces.get",
+          "gcp.workload_identity.pools.namespaces.list",
+          "gcp.workload_identity.pools.namespaces.managed_identities.add_attestation_rule",
+          "gcp.workload_identity.pools.namespaces.managed_identities.create",
+          "gcp.workload_identity.pools.namespaces.managed_identities.delete",
+          "gcp.workload_identity.pools.namespaces.managed_identities.get",
+          "gcp.workload_identity.pools.namespaces.managed_identities.list",
+          "gcp.workload_identity.pools.namespaces.managed_identities.list_attestation_rules",
+          "gcp.workload_identity.pools.namespaces.managed_identities.operations.get",
+          "gcp.workload_identity.pools.namespaces.managed_identities.patch",
+          "gcp.workload_identity.pools.namespaces.managed_identities.remove_attestation_rule",
+          "gcp.workload_identity.pools.namespaces.managed_identities.set_attestation_rules",
+          "gcp.workload_identity.pools.namespaces.managed_identities.undelete",
+          "gcp.workload_identity.pools.namespaces.managed_identities.workload_sources.operations.get",
+          "gcp.workload_identity.pools.namespaces.operations.get",
+          "gcp.workload_identity.pools.namespaces.patch",
+          "gcp.workload_identity.pools.namespaces.undelete",
+          "gcp.workload_identity.pools.operations.get",
+          "gcp.workload_identity.pools.patch",
+          "gcp.workload_identity.pools.remove_attestation_rule",
+          "gcp.workload_identity.pools.set_attestation_rules",
+          "gcp.workload_identity.pools.undelete",
+          "gcp.workload_identity.providers.create",
+          "gcp.workload_identity.providers.delete",
+          "gcp.workload_identity.providers.keys.create",
+          "gcp.workload_identity.providers.keys.delete",
+          "gcp.workload_identity.providers.keys.get",
+          "gcp.workload_identity.providers.keys.list",
+          "gcp.workload_identity.providers.keys.operations.get",
+          "gcp.workload_identity.providers.keys.undelete",
+          "gcp.workload_identity.providers.operations.get",
+          "gcp.workload_identity.providers.patch",
+          "gcp.workload_identity.providers.undelete"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.workload_identity.pools.get",
+          "gcp.workload_identity.pools.iam_permissions.test",
+          "gcp.workload_identity.pools.iam_policy.get",
+          "gcp.workload_identity.pools.list",
+          "gcp.workload_identity.providers.get",
+          "gcp.workload_identity.providers.list"
+        ]
+      }
+    },
+    {
+      "family_id": 22,
+      "requirement": "gcp.osLogin.grant/revoke",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.os_login.profiles.get_login_profile",
+          "gcp.os_login.profiles.import_ssh_public_key",
+          "gcp.os_login.public_keys.create",
+          "gcp.os_login.public_keys.delete",
+          "gcp.os_login.public_keys.get",
+          "gcp.os_login.public_keys.patch",
+          "video.ssh.iam_grant"
+        ]
+      }
+    },
+    {
+      "family_id": 23,
+      "requirement": "gcp.billing.accounts.list",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.billing.accounts.list"
+        ]
+      }
+    },
+    {
+      "family_id": 24,
+      "requirement": "gcp.billing.projects.link/unlink",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.billing.projects.link",
+          "gcp.billing.projects.unlink"
+        ]
+      }
+    },
+    {
+      "family_id": 25,
+      "requirement": "gcp.budgets.manage",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.budgets.create",
+          "gcp.budgets.delete",
+          "gcp.budgets.get",
+          "gcp.budgets.list",
+          "gcp.budgets.patch"
+        ]
+      }
+    },
+    {
+      "family_id": 26,
+      "requirement": "gcp.compute.instances.list/get/create/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "gcp.compute.instances.get"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.instances.create",
+          "gcp.compute.instances.delete"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.compute.instances.get",
+          "gcp.compute.instances.list"
+        ]
+      }
+    },
+    {
+      "family_id": 27,
+      "requirement": "gcp.compute.instances.start/stop/reset/suspend/resume",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.instances.reset",
+          "gcp.compute.instances.resume",
+          "gcp.compute.instances.start",
+          "gcp.compute.instances.stop",
+          "gcp.compute.instances.suspend"
+        ]
+      }
+    },
+    {
+      "family_id": 28,
+      "requirement": "gcp.compute.instances.resize/setMachineType/setLabels/setTags/setMetadata",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.instances.set_labels",
+          "gcp.compute.instances.set_machine_type",
+          "gcp.compute.instances.set_metadata",
+          "gcp.compute.instances.set_tags"
+        ]
+      }
+    },
+    {
+      "family_id": 29,
+      "requirement": "gcp.compute.instances.attachDisk/detachDisk",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.instances.attach_disk",
+          "gcp.compute.instances.detach_disk"
+        ]
+      }
+    },
+    {
+      "family_id": 30,
+      "requirement": "gcp.disks.create/resize/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.disks.create",
+          "gcp.disks.delete",
+          "gcp.disks.resize"
+        ]
+      }
+    },
+    {
+      "family_id": 31,
+      "requirement": "gcp.compute.images.create/list/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.images.create",
+          "gcp.compute.images.delete"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.compute.images.list"
+        ]
+      }
+    },
+    {
+      "family_id": 32,
+      "requirement": "gcp.snapshots.create/list/restore/delete",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.instant_snapshot_groups.create",
+          "gcp.instant_snapshot_groups.delete",
+          "gcp.instant_snapshot_groups.get",
+          "gcp.instant_snapshot_groups.iam_permissions.test",
+          "gcp.instant_snapshot_groups.iam_policy.get",
+          "gcp.instant_snapshot_groups.iam_policy.set",
+          "gcp.instant_snapshot_groups.list",
+          "gcp.instant_snapshots.create",
+          "gcp.instant_snapshots.delete",
+          "gcp.instant_snapshots.get",
+          "gcp.instant_snapshots.iam_permissions.test",
+          "gcp.instant_snapshots.iam_policy.get",
+          "gcp.instant_snapshots.iam_policy.set",
+          "gcp.instant_snapshots.list",
+          "gcp.instant_snapshots.list_aggregated",
+          "gcp.instant_snapshots.set_labels",
+          "gcp.region_instant_snapshot_groups.create",
+          "gcp.region_instant_snapshot_groups.delete",
+          "gcp.region_instant_snapshot_groups.get",
+          "gcp.region_instant_snapshot_groups.iam_permissions.test",
+          "gcp.region_instant_snapshot_groups.iam_policy.get",
+          "gcp.region_instant_snapshot_groups.iam_policy.set",
+          "gcp.region_instant_snapshot_groups.list",
+          "gcp.region_instant_snapshots.create",
+          "gcp.region_instant_snapshots.delete",
+          "gcp.region_instant_snapshots.get",
+          "gcp.region_instant_snapshots.iam_permissions.test",
+          "gcp.region_instant_snapshots.iam_policy.get",
+          "gcp.region_instant_snapshots.iam_policy.set",
+          "gcp.region_instant_snapshots.list",
+          "gcp.region_instant_snapshots.set_labels",
+          "gcp.region_snapshot_settings.get",
+          "gcp.region_snapshot_settings.patch",
+          "gcp.region_snapshots.create",
+          "gcp.region_snapshots.delete",
+          "gcp.region_snapshots.get",
+          "gcp.region_snapshots.iam_permissions.test",
+          "gcp.region_snapshots.iam_policy.get",
+          "gcp.region_snapshots.iam_policy.set",
+          "gcp.region_snapshots.list",
+          "gcp.region_snapshots.set_labels",
+          "gcp.region_snapshots.update_kms_key",
+          "gcp.snapshot_settings.get",
+          "gcp.snapshot_settings.patch",
+          "gcp.snapshots.create",
+          "gcp.snapshots.delete",
+          "gcp.snapshots.iam_permissions.test",
+          "gcp.snapshots.iam_policy.get",
+          "gcp.snapshots.iam_policy.set",
+          "gcp.snapshots.set_labels",
+          "gcp.snapshots.update_kms_key"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.snapshots.get",
+          "gcp.snapshots.list"
+        ]
+      }
+    },
+    {
+      "family_id": 33,
+      "requirement": "gcp.compute.instances.serialOutput",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.instances.serial_output"
+        ]
+      }
+    },
+    {
+      "family_id": 34,
+      "requirement": "gcp.compute.operations.get/wait",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "gcp.compute.global_operations.get",
+        "gcp.compute.global_operations.wait",
+        "gcp.compute.zone_operations.get",
+        "gcp.compute.zone_operations.wait"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.compute.global_operations.get",
+          "gcp.compute.global_operations.wait",
+          "gcp.compute.zone_operations.get",
+          "gcp.compute.zone_operations.wait"
+        ],
+        "closed_exposure": [
+          "gcp.region_operations.get",
+          "gcp.region_operations.wait"
+        ]
+      }
+    },
+    {
+      "family_id": 35,
+      "requirement": "gcp.vm.access.bootstrap/rotate/revoke",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.access.bootstrap",
+          "gcp.vm.access.revoke",
+          "gcp.vm.access.rotate",
+          "video.ssh.iam_grant"
+        ],
+        "separate_authority_or_mapping_review": [
+          "google_cloud.vm.bootstrap_probe"
+        ]
+      }
+    },
+    {
+      "family_id": 36,
+      "requirement": "gcp.vm.ssh.exec",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.ssh.exec"
+        ]
+      }
+    },
+    {
+      "family_id": 37,
+      "requirement": "gcp.vm.winrm.exec",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.winrm.exec"
+        ]
+      }
+    },
+    {
+      "family_id": 38,
+      "requirement": "gcp.vm.files.upload/download",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vm.files.download",
+          "gcp.vm.files.upload"
+        ]
+      }
+    },
+    {
+      "family_id": 39,
+      "requirement": "gcp.vm.packages.install/update/remove",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vm.packages.install",
+          "gcp.vm.packages.remove",
+          "gcp.vm.packages.update"
+        ]
+      }
+    },
+    {
+      "family_id": 40,
+      "requirement": "gcp.vm.services.start/stop/restart/status",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vm.services.restart",
+          "gcp.vm.services.start",
+          "gcp.vm.services.status",
+          "gcp.vm.services.stop",
+          "gcp.vm.tasks.get"
+        ],
+        "separate_authority_or_mapping_review": [
+          "google_cloud.vm.service_status"
+        ]
+      }
+    },
+    {
+      "family_id": 41,
+      "requirement": "gcp.vm.reboot",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.reboot"
+        ]
+      }
+    },
+    {
+      "family_id": 42,
+      "requirement": "gcp.vm.firewallGuest.manage",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.firewall_guest.manage"
+        ]
+      }
+    },
+    {
+      "family_id": 43,
+      "requirement": "gcp.vm.agent.install/update/status",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "gcp.vm.agent.status"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.agent.install",
+          "gcp.vm.agent.update",
+          "video.osconfig.enable",
+          "video.osconfig.vm_prepare"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vm.agent.status"
+        ]
+      }
+    },
+    {
+      "family_id": 44,
+      "requirement": "gcp.vm.bootstrap.getLogs",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vm.bootstrap.get_logs"
+        ],
+        "separate_authority_or_mapping_review": [
+          "google_cloud.vm.bootstrap_status"
+        ]
+      }
+    },
+    {
+      "family_id": 45,
+      "requirement": "gcp.compute.instanceGroups.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.autoscalers.create",
+          "gcp.autoscalers.delete",
+          "gcp.autoscalers.get",
+          "gcp.autoscalers.iam_permissions.test",
+          "gcp.autoscalers.list",
+          "gcp.autoscalers.list_aggregated",
+          "gcp.autoscalers.patch",
+          "gcp.autoscalers.update",
+          "gcp.compute.instance_groups.add_instances",
+          "gcp.compute.instance_groups.create",
+          "gcp.compute.instance_groups.delete",
+          "gcp.compute.instance_groups.iam_permissions.test",
+          "gcp.compute.instance_groups.list_aggregated",
+          "gcp.compute.instance_groups.list_instances",
+          "gcp.compute.instance_groups.remove_instances",
+          "gcp.compute.instance_groups.set_named_ports",
+          "gcp.instance_group_manager_resize_requests.cancel",
+          "gcp.instance_group_manager_resize_requests.create",
+          "gcp.instance_group_manager_resize_requests.delete",
+          "gcp.instance_group_manager_resize_requests.get",
+          "gcp.instance_group_manager_resize_requests.list",
+          "gcp.instance_group_managers.abandon_instances",
+          "gcp.instance_group_managers.apply_updates_to_instances",
+          "gcp.instance_group_managers.create",
+          "gcp.instance_group_managers.create_instances",
+          "gcp.instance_group_managers.delete",
+          "gcp.instance_group_managers.delete_instances",
+          "gcp.instance_group_managers.delete_per_instance_configs",
+          "gcp.instance_group_managers.get",
+          "gcp.instance_group_managers.list",
+          "gcp.instance_group_managers.list_aggregated",
+          "gcp.instance_group_managers.list_errors",
+          "gcp.instance_group_managers.list_managed_instances",
+          "gcp.instance_group_managers.list_per_instance_configs",
+          "gcp.instance_group_managers.patch",
+          "gcp.instance_group_managers.patch_per_instance_configs",
+          "gcp.instance_group_managers.recreate_instances",
+          "gcp.instance_group_managers.resize",
+          "gcp.instance_group_managers.resume_instances",
+          "gcp.instance_group_managers.set_instance_template",
+          "gcp.instance_group_managers.set_target_pools",
+          "gcp.instance_group_managers.start_instances",
+          "gcp.instance_group_managers.stop_instances",
+          "gcp.instance_group_managers.suspend_instances",
+          "gcp.instance_group_managers.update_per_instance_configs",
+          "gcp.region_autoscalers.create",
+          "gcp.region_autoscalers.delete",
+          "gcp.region_autoscalers.get",
+          "gcp.region_autoscalers.iam_permissions.test",
+          "gcp.region_autoscalers.list",
+          "gcp.region_autoscalers.patch",
+          "gcp.region_autoscalers.update",
+          "gcp.region_instance_group_manager_resize_requests.cancel",
+          "gcp.region_instance_group_manager_resize_requests.create",
+          "gcp.region_instance_group_manager_resize_requests.delete",
+          "gcp.region_instance_group_manager_resize_requests.get",
+          "gcp.region_instance_group_manager_resize_requests.list",
+          "gcp.region_instance_group_managers.abandon_instances",
+          "gcp.region_instance_group_managers.apply_updates_to_instances",
+          "gcp.region_instance_group_managers.create",
+          "gcp.region_instance_group_managers.create_instances",
+          "gcp.region_instance_group_managers.delete",
+          "gcp.region_instance_group_managers.delete_instances",
+          "gcp.region_instance_group_managers.delete_per_instance_configs",
+          "gcp.region_instance_group_managers.get",
+          "gcp.region_instance_group_managers.list",
+          "gcp.region_instance_group_managers.list_errors",
+          "gcp.region_instance_group_managers.list_managed_instances",
+          "gcp.region_instance_group_managers.list_per_instance_configs",
+          "gcp.region_instance_group_managers.patch",
+          "gcp.region_instance_group_managers.patch_per_instance_configs",
+          "gcp.region_instance_group_managers.recreate_instances",
+          "gcp.region_instance_group_managers.resize",
+          "gcp.region_instance_group_managers.resume_instances",
+          "gcp.region_instance_group_managers.set_instance_template",
+          "gcp.region_instance_group_managers.set_target_pools",
+          "gcp.region_instance_group_managers.start_instances",
+          "gcp.region_instance_group_managers.stop_instances",
+          "gcp.region_instance_group_managers.suspend_instances",
+          "gcp.region_instance_group_managers.update_per_instance_configs",
+          "gcp.region_instance_groups.get",
+          "gcp.region_instance_groups.iam_permissions.test",
+          "gcp.region_instance_groups.list",
+          "gcp.region_instance_groups.list_instances",
+          "gcp.region_instance_groups.set_named_ports"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.compute.instance_groups.get",
+          "gcp.compute.instance_groups.list"
+        ]
+      }
+    },
+    {
+      "family_id": 46,
+      "requirement": "gcp.compute.templates.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.compute.templates.create",
+          "gcp.compute.templates.delete",
+          "gcp.compute.templates.iam_permissions.test",
+          "gcp.compute.templates.iam_policy.get",
+          "gcp.compute.templates.iam_policy.set",
+          "gcp.compute.templates.list_aggregated",
+          "gcp.region_instance_templates.create",
+          "gcp.region_instance_templates.delete",
+          "gcp.region_instance_templates.get",
+          "gcp.region_instance_templates.list"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.compute.templates.get",
+          "gcp.compute.templates.list"
+        ]
+      }
+    },
+    {
+      "family_id": 47,
+      "requirement": "gcp.vpc.networks.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.network_attachments.create",
+          "gcp.network_attachments.delete",
+          "gcp.network_attachments.get",
+          "gcp.network_attachments.iam_permissions.test",
+          "gcp.network_attachments.iam_policy.get",
+          "gcp.network_attachments.iam_policy.set",
+          "gcp.network_attachments.list",
+          "gcp.network_attachments.list_aggregated",
+          "gcp.network_attachments.patch",
+          "gcp.network_profiles.get",
+          "gcp.network_profiles.list",
+          "gcp.vpc.networks.add_peering",
+          "gcp.vpc.networks.cancel_request_remove_peering",
+          "gcp.vpc.networks.create",
+          "gcp.vpc.networks.delete",
+          "gcp.vpc.networks.get_effective_firewalls",
+          "gcp.vpc.networks.list_peering_routes",
+          "gcp.vpc.networks.patch",
+          "gcp.vpc.networks.remove_peering",
+          "gcp.vpc.networks.request_remove_peering",
+          "gcp.vpc.networks.switch_to_custom_mode",
+          "gcp.vpc.networks.update_peering"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vpc.networks.get",
+          "gcp.vpc.networks.list"
+        ]
+      }
+    },
+    {
+      "family_id": 48,
+      "requirement": "gcp.vpc.subnets.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vpc.subnets.create",
+          "gcp.vpc.subnets.delete",
+          "gcp.vpc.subnets.expand_ip_cidr_range",
+          "gcp.vpc.subnets.iam_permissions.test",
+          "gcp.vpc.subnets.iam_policy.get",
+          "gcp.vpc.subnets.iam_policy.set",
+          "gcp.vpc.subnets.list_aggregated",
+          "gcp.vpc.subnets.list_usable",
+          "gcp.vpc.subnets.patch",
+          "gcp.vpc.subnets.set_private_ip_google_access"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vpc.subnets.get",
+          "gcp.vpc.subnets.list"
+        ]
+      }
+    },
+    {
+      "family_id": 49,
+      "requirement": "gcp.vpc.routes.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.vpc.routes.create",
+          "gcp.vpc.routes.delete",
+          "gcp.vpc.routes.iam_permissions.test"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vpc.routes.get",
+          "gcp.vpc.routes.list"
+        ]
+      }
+    },
+    {
+      "family_id": 50,
+      "requirement": "gcp.firewalls.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "gcp.firewalls.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.firewalls.create",
+          "gcp.firewalls.delete",
+          "gcp.firewalls.iam_permissions.test",
+          "gcp.firewalls.patch",
+          "gcp.firewalls.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.firewalls.get",
+          "gcp.firewalls.list"
+        ]
+      }
+    },
+    {
+      "family_id": 51,
+      "requirement": "gcp.networkPolicies.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.firewall_policies.add_association.bound",
+          "gcp.firewall_policies.add_rule.bound",
+          "gcp.firewall_policies.clone_rules.bound",
+          "gcp.firewall_policies.create.bound",
+          "gcp.firewall_policies.delete.bound",
+          "gcp.firewall_policies.get.bound",
+          "gcp.firewall_policies.get_association.bound",
+          "gcp.firewall_policies.get_rule.bound",
+          "gcp.firewall_policies.iam_permissions.test",
+          "gcp.firewall_policies.iam_policy.get",
+          "gcp.firewall_policies.iam_policy.set",
+          "gcp.firewall_policies.list.bound",
+          "gcp.firewall_policies.list_associations.bound",
+          "gcp.firewall_policies.move.bound",
+          "gcp.firewall_policies.patch.bound",
+          "gcp.firewall_policies.patch_rule.bound",
+          "gcp.firewall_policies.remove_association.bound",
+          "gcp.firewall_policies.remove_rule.bound",
+          "gcp.managed_rulesets.get",
+          "gcp.managed_rulesets.list",
+          "gcp.network_edge_security_services.create",
+          "gcp.network_edge_security_services.delete",
+          "gcp.network_edge_security_services.get",
+          "gcp.network_edge_security_services.list_aggregated",
+          "gcp.network_edge_security_services.patch",
+          "gcp.network_policies.add_association",
+          "gcp.network_policies.add_packet_mirroring_rule",
+          "gcp.network_policies.add_rule",
+          "gcp.network_policies.clone_rules",
+          "gcp.network_policies.create",
+          "gcp.network_policies.delete",
+          "gcp.network_policies.get_association",
+          "gcp.network_policies.get_packet_mirroring_rule",
+          "gcp.network_policies.get_rule",
+          "gcp.network_policies.iam_permissions.test",
+          "gcp.network_policies.iam_policy.get",
+          "gcp.network_policies.iam_policy.set",
+          "gcp.network_policies.list_aggregated",
+          "gcp.network_policies.patch",
+          "gcp.network_policies.patch_packet_mirroring_rule",
+          "gcp.network_policies.patch_rule",
+          "gcp.network_policies.remove_association",
+          "gcp.network_policies.remove_packet_mirroring_rule",
+          "gcp.network_policies.remove_rule",
+          "gcp.region_network_firewall_policies.add_association",
+          "gcp.region_network_firewall_policies.add_rule",
+          "gcp.region_network_firewall_policies.clone_rules",
+          "gcp.region_network_firewall_policies.create",
+          "gcp.region_network_firewall_policies.delete",
+          "gcp.region_network_firewall_policies.get",
+          "gcp.region_network_firewall_policies.get_association",
+          "gcp.region_network_firewall_policies.get_effective_firewalls",
+          "gcp.region_network_firewall_policies.get_rule",
+          "gcp.region_network_firewall_policies.iam_permissions.test",
+          "gcp.region_network_firewall_policies.iam_policy.get",
+          "gcp.region_network_firewall_policies.iam_policy.set",
+          "gcp.region_network_firewall_policies.list",
+          "gcp.region_network_firewall_policies.patch",
+          "gcp.region_network_firewall_policies.patch_association",
+          "gcp.region_network_firewall_policies.patch_rule",
+          "gcp.region_network_firewall_policies.remove_association",
+          "gcp.region_network_firewall_policies.remove_rule",
+          "gcp.region_security_policies.add_rule",
+          "gcp.region_security_policies.create",
+          "gcp.region_security_policies.delete",
+          "gcp.region_security_policies.get",
+          "gcp.region_security_policies.get_rule",
+          "gcp.region_security_policies.list",
+          "gcp.region_security_policies.patch",
+          "gcp.region_security_policies.patch_rule",
+          "gcp.region_security_policies.remove_rule",
+          "gcp.region_security_policies.set_labels",
+          "gcp.security_policies.add_rule",
+          "gcp.security_policies.create",
+          "gcp.security_policies.delete",
+          "gcp.security_policies.get",
+          "gcp.security_policies.get_rule",
+          "gcp.security_policies.list",
+          "gcp.security_policies.list_aggregated",
+          "gcp.security_policies.list_preconfigured_expression_sets",
+          "gcp.security_policies.patch",
+          "gcp.security_policies.patch_rule",
+          "gcp.security_policies.remove_rule",
+          "gcp.security_policies.set_labels"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.network_policies.get",
+          "gcp.network_policies.list"
+        ]
+      }
+    },
+    {
+      "family_id": 52,
+      "requirement": "gcp.nat.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.nat.routers.create",
+          "gcp.nat.routers.delete",
+          "gcp.nat.routers.delete_named_set",
+          "gcp.nat.routers.delete_route_policy",
+          "gcp.nat.routers.get_named_set",
+          "gcp.nat.routers.get_nat_ip_info",
+          "gcp.nat.routers.get_nat_mapping_info",
+          "gcp.nat.routers.get_route_policy",
+          "gcp.nat.routers.get_router_status",
+          "gcp.nat.routers.list_aggregated",
+          "gcp.nat.routers.list_bgp_routes",
+          "gcp.nat.routers.list_named_sets",
+          "gcp.nat.routers.list_route_policies",
+          "gcp.nat.routers.patch",
+          "gcp.nat.routers.patch_named_set",
+          "gcp.nat.routers.patch_route_policy",
+          "gcp.nat.routers.preview",
+          "gcp.nat.routers.update",
+          "gcp.nat.routers.update_named_set",
+          "gcp.nat.routers.update_route_policy"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.nat.routers.get",
+          "gcp.nat.routers.list"
+        ]
+      }
+    },
+    {
+      "family_id": 53,
+      "requirement": "gcp.vpn.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.external_vpn_gateways.create",
+          "gcp.external_vpn_gateways.delete",
+          "gcp.external_vpn_gateways.get",
+          "gcp.external_vpn_gateways.iam_permissions.test",
+          "gcp.external_vpn_gateways.list",
+          "gcp.external_vpn_gateways.set_labels",
+          "gcp.target_vpn_gateways.create",
+          "gcp.target_vpn_gateways.delete",
+          "gcp.target_vpn_gateways.get",
+          "gcp.target_vpn_gateways.list",
+          "gcp.target_vpn_gateways.list_aggregated",
+          "gcp.target_vpn_gateways.set_labels",
+          "gcp.vpn.gateways.create",
+          "gcp.vpn.gateways.delete",
+          "gcp.vpn.gateways.get_status",
+          "gcp.vpn.gateways.iam_permissions.test",
+          "gcp.vpn.gateways.list_aggregated",
+          "gcp.vpn.gateways.set_labels",
+          "gcp.vpn.tunnels.create",
+          "gcp.vpn.tunnels.delete",
+          "gcp.vpn.tunnels.list_aggregated",
+          "gcp.vpn.tunnels.set_labels"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.vpn.gateways.get",
+          "gcp.vpn.gateways.list",
+          "gcp.vpn.tunnels.get",
+          "gcp.vpn.tunnels.list"
+        ]
+      }
+    },
+    {
+      "family_id": 54,
+      "requirement": "gcp.addresses.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.addresses.global.create",
+          "gcp.addresses.global.delete",
+          "gcp.addresses.global.iam_permissions.test",
+          "gcp.addresses.global.move",
+          "gcp.addresses.global.set_labels",
+          "gcp.addresses.regional.create",
+          "gcp.addresses.regional.delete",
+          "gcp.addresses.regional.iam_permissions.test",
+          "gcp.addresses.regional.list_aggregated",
+          "gcp.addresses.regional.move",
+          "gcp.addresses.regional.set_labels"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.addresses.global.get",
+          "gcp.addresses.global.list",
+          "gcp.addresses.regional.get",
+          "gcp.addresses.regional.list"
+        ]
+      }
+    },
+    {
+      "family_id": 55,
+      "requirement": "gcp.dns.zones.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.dns.dns_keys.get",
+          "gcp.dns.dns_keys.list",
+          "gcp.dns.managed_zone_operations.get",
+          "gcp.dns.managed_zone_operations.list",
+          "gcp.dns.outbound_endpoints.create",
+          "gcp.dns.outbound_endpoints.delete",
+          "gcp.dns.outbound_endpoints.get",
+          "gcp.dns.outbound_endpoints.list",
+          "gcp.dns.outbound_endpoints.patch",
+          "gcp.dns.policies.create",
+          "gcp.dns.policies.delete",
+          "gcp.dns.policies.get",
+          "gcp.dns.policies.list",
+          "gcp.dns.policies.patch",
+          "gcp.dns.policies.update",
+          "gcp.dns.response_policies.create",
+          "gcp.dns.response_policies.delete",
+          "gcp.dns.response_policies.get",
+          "gcp.dns.response_policies.list",
+          "gcp.dns.response_policies.patch",
+          "gcp.dns.response_policies.update",
+          "gcp.dns.zones.create",
+          "gcp.dns.zones.delete",
+          "gcp.dns.zones.iam_permissions.test",
+          "gcp.dns.zones.iam_policy.get",
+          "gcp.dns.zones.iam_policy.set",
+          "gcp.dns.zones.patch",
+          "gcp.dns.zones.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.dns.zones.get",
+          "gcp.dns.zones.list"
+        ]
+      }
+    },
+    {
+      "family_id": 56,
+      "requirement": "gcp.dns.records.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.dns.changes.create",
+          "gcp.dns.changes.get",
+          "gcp.dns.changes.list",
+          "gcp.dns.records.create",
+          "gcp.dns.records.delete",
+          "gcp.dns.records.patch",
+          "gcp.dns.response_policy_rules.create",
+          "gcp.dns.response_policy_rules.delete",
+          "gcp.dns.response_policy_rules.get",
+          "gcp.dns.response_policy_rules.list",
+          "gcp.dns.response_policy_rules.patch",
+          "gcp.dns.response_policy_rules.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.dns.records.get",
+          "gcp.dns.records.list"
+        ]
+      }
+    },
+    {
+      "family_id": 57,
+      "requirement": "gcp.loadBalancers.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.backend_buckets.add_signed_url_key",
+          "gcp.backend_buckets.create",
+          "gcp.backend_buckets.delete",
+          "gcp.backend_buckets.delete_signed_url_key",
+          "gcp.backend_buckets.get",
+          "gcp.backend_buckets.iam_permissions.test",
+          "gcp.backend_buckets.iam_policy.get",
+          "gcp.backend_buckets.iam_policy.set",
+          "gcp.backend_buckets.list",
+          "gcp.backend_buckets.list_aggregated",
+          "gcp.backend_buckets.list_usable",
+          "gcp.backend_buckets.patch",
+          "gcp.backend_buckets.set_edge_security_policy",
+          "gcp.backend_buckets.update",
+          "gcp.global_forwarding_rules.create",
+          "gcp.global_forwarding_rules.delete",
+          "gcp.global_forwarding_rules.get",
+          "gcp.global_forwarding_rules.list",
+          "gcp.global_forwarding_rules.patch",
+          "gcp.global_forwarding_rules.set_labels",
+          "gcp.global_forwarding_rules.set_target",
+          "gcp.global_network_endpoint_groups.attach_network_endpoints",
+          "gcp.global_network_endpoint_groups.create",
+          "gcp.global_network_endpoint_groups.delete",
+          "gcp.global_network_endpoint_groups.detach_network_endpoints",
+          "gcp.global_network_endpoint_groups.get",
+          "gcp.global_network_endpoint_groups.list",
+          "gcp.global_network_endpoint_groups.list_network_endpoints",
+          "gcp.load_balancers.backends.add_signed_url_key",
+          "gcp.load_balancers.backends.create",
+          "gcp.load_balancers.backends.delete",
+          "gcp.load_balancers.backends.delete_signed_url_key",
+          "gcp.load_balancers.backends.effective_security_policies.capture",
+          "gcp.load_balancers.backends.get_health",
+          "gcp.load_balancers.backends.iam_permissions.test",
+          "gcp.load_balancers.backends.iam_policy.get",
+          "gcp.load_balancers.backends.iam_policy.set",
+          "gcp.load_balancers.backends.list_aggregated",
+          "gcp.load_balancers.backends.list_usable",
+          "gcp.load_balancers.backends.patch",
+          "gcp.load_balancers.backends.set_edge_security_policy",
+          "gcp.load_balancers.backends.set_security_policy",
+          "gcp.load_balancers.backends.update",
+          "gcp.load_balancers.forwarding_rules.create",
+          "gcp.load_balancers.forwarding_rules.delete",
+          "gcp.load_balancers.forwarding_rules.list_aggregated",
+          "gcp.load_balancers.forwarding_rules.patch",
+          "gcp.load_balancers.forwarding_rules.set_labels",
+          "gcp.load_balancers.forwarding_rules.set_target",
+          "gcp.network_endpoint_groups.attach_network_endpoints",
+          "gcp.network_endpoint_groups.create",
+          "gcp.network_endpoint_groups.delete",
+          "gcp.network_endpoint_groups.detach_network_endpoints",
+          "gcp.network_endpoint_groups.get",
+          "gcp.network_endpoint_groups.iam_permissions.test",
+          "gcp.network_endpoint_groups.list",
+          "gcp.network_endpoint_groups.list_aggregated",
+          "gcp.network_endpoint_groups.list_network_endpoints",
+          "gcp.region_backend_buckets.create",
+          "gcp.region_backend_buckets.delete",
+          "gcp.region_backend_buckets.get",
+          "gcp.region_backend_buckets.iam_permissions.test",
+          "gcp.region_backend_buckets.iam_policy.get",
+          "gcp.region_backend_buckets.iam_policy.set",
+          "gcp.region_backend_buckets.list",
+          "gcp.region_backend_buckets.list_usable",
+          "gcp.region_backend_buckets.patch",
+          "gcp.region_backend_services.create",
+          "gcp.region_backend_services.delete",
+          "gcp.region_backend_services.get",
+          "gcp.region_backend_services.get_health",
+          "gcp.region_backend_services.iam_permissions.test",
+          "gcp.region_backend_services.iam_policy.get",
+          "gcp.region_backend_services.iam_policy.set",
+          "gcp.region_backend_services.list",
+          "gcp.region_backend_services.list_usable",
+          "gcp.region_backend_services.patch",
+          "gcp.region_backend_services.set_security_policy",
+          "gcp.region_backend_services.update",
+          "gcp.region_network_endpoint_groups.attach_network_endpoints",
+          "gcp.region_network_endpoint_groups.create",
+          "gcp.region_network_endpoint_groups.delete",
+          "gcp.region_network_endpoint_groups.detach_network_endpoints",
+          "gcp.region_network_endpoint_groups.get",
+          "gcp.region_network_endpoint_groups.list",
+          "gcp.region_network_endpoint_groups.list_network_endpoints",
+          "gcp.region_target_http_proxies.create",
+          "gcp.region_target_http_proxies.delete",
+          "gcp.region_target_http_proxies.get",
+          "gcp.region_target_http_proxies.list",
+          "gcp.region_target_http_proxies.set_url_map",
+          "gcp.region_target_https_proxies.create",
+          "gcp.region_target_https_proxies.delete",
+          "gcp.region_target_https_proxies.get",
+          "gcp.region_target_https_proxies.list",
+          "gcp.region_target_https_proxies.patch",
+          "gcp.region_target_https_proxies.set_ssl_certificates",
+          "gcp.region_target_https_proxies.set_url_map",
+          "gcp.region_target_tcp_proxies.create",
+          "gcp.region_target_tcp_proxies.delete",
+          "gcp.region_target_tcp_proxies.get",
+          "gcp.region_target_tcp_proxies.list",
+          "gcp.region_url_maps.create",
+          "gcp.region_url_maps.delete",
+          "gcp.region_url_maps.get",
+          "gcp.region_url_maps.list",
+          "gcp.region_url_maps.patch",
+          "gcp.region_url_maps.update",
+          "gcp.region_url_maps.validate",
+          "gcp.service_attachments.create",
+          "gcp.service_attachments.delete",
+          "gcp.service_attachments.get",
+          "gcp.service_attachments.iam_permissions.test",
+          "gcp.service_attachments.iam_policy.get",
+          "gcp.service_attachments.iam_policy.set",
+          "gcp.service_attachments.list",
+          "gcp.service_attachments.list_aggregated",
+          "gcp.service_attachments.patch",
+          "gcp.target_grpc_proxies.create",
+          "gcp.target_grpc_proxies.delete",
+          "gcp.target_grpc_proxies.get",
+          "gcp.target_grpc_proxies.list",
+          "gcp.target_grpc_proxies.patch",
+          "gcp.target_http_proxies.create",
+          "gcp.target_http_proxies.delete",
+          "gcp.target_http_proxies.get",
+          "gcp.target_http_proxies.list",
+          "gcp.target_http_proxies.list_aggregated",
+          "gcp.target_http_proxies.patch",
+          "gcp.target_http_proxies.set_url_map",
+          "gcp.target_https_proxies.create",
+          "gcp.target_https_proxies.delete",
+          "gcp.target_https_proxies.get",
+          "gcp.target_https_proxies.list",
+          "gcp.target_https_proxies.list_aggregated",
+          "gcp.target_https_proxies.patch",
+          "gcp.target_https_proxies.set_certificate_map",
+          "gcp.target_https_proxies.set_quic_override",
+          "gcp.target_https_proxies.set_ssl_certificates",
+          "gcp.target_https_proxies.set_ssl_policy",
+          "gcp.target_https_proxies.set_url_map",
+          "gcp.target_pools.add_health_check",
+          "gcp.target_pools.add_instance",
+          "gcp.target_pools.create",
+          "gcp.target_pools.delete",
+          "gcp.target_pools.get",
+          "gcp.target_pools.get_health",
+          "gcp.target_pools.iam_permissions.test",
+          "gcp.target_pools.list",
+          "gcp.target_pools.list_aggregated",
+          "gcp.target_pools.remove_health_check",
+          "gcp.target_pools.remove_instance",
+          "gcp.target_pools.set_backup",
+          "gcp.target_pools.set_security_policy",
+          "gcp.target_ssl_proxies.create",
+          "gcp.target_ssl_proxies.delete",
+          "gcp.target_ssl_proxies.get",
+          "gcp.target_ssl_proxies.iam_permissions.test",
+          "gcp.target_ssl_proxies.list",
+          "gcp.target_ssl_proxies.set_backend_service",
+          "gcp.target_ssl_proxies.set_certificate_map",
+          "gcp.target_ssl_proxies.set_proxy_header",
+          "gcp.target_ssl_proxies.set_ssl_certificates",
+          "gcp.target_ssl_proxies.set_ssl_policy",
+          "gcp.target_tcp_proxies.create",
+          "gcp.target_tcp_proxies.delete",
+          "gcp.target_tcp_proxies.get",
+          "gcp.target_tcp_proxies.iam_permissions.test",
+          "gcp.target_tcp_proxies.list",
+          "gcp.target_tcp_proxies.list_aggregated",
+          "gcp.target_tcp_proxies.set_backend_service",
+          "gcp.target_tcp_proxies.set_proxy_header",
+          "gcp.url_maps.create",
+          "gcp.url_maps.delete",
+          "gcp.url_maps.get",
+          "gcp.url_maps.iam_permissions.test",
+          "gcp.url_maps.invalidate_cache",
+          "gcp.url_maps.list",
+          "gcp.url_maps.list_aggregated",
+          "gcp.url_maps.patch",
+          "gcp.url_maps.update",
+          "gcp.url_maps.validate"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.load_balancers.backends.get",
+          "gcp.load_balancers.backends.list",
+          "gcp.load_balancers.forwarding_rules.get",
+          "gcp.load_balancers.forwarding_rules.list"
+        ]
+      }
+    },
+    {
+      "family_id": 58,
+      "requirement": "gcp.certificates.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.certificates.create",
+          "gcp.certificates.delete",
+          "gcp.certificates.list_aggregated",
+          "gcp.region_ssl_certificates.create",
+          "gcp.region_ssl_certificates.delete",
+          "gcp.region_ssl_certificates.get",
+          "gcp.region_ssl_certificates.list",
+          "gcp.region_ssl_policies.create",
+          "gcp.region_ssl_policies.delete",
+          "gcp.region_ssl_policies.get",
+          "gcp.region_ssl_policies.list",
+          "gcp.region_ssl_policies.list_available_features",
+          "gcp.region_ssl_policies.patch",
+          "gcp.ssl_policies.create",
+          "gcp.ssl_policies.delete",
+          "gcp.ssl_policies.get",
+          "gcp.ssl_policies.list",
+          "gcp.ssl_policies.list_aggregated",
+          "gcp.ssl_policies.list_available_features",
+          "gcp.ssl_policies.patch"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.certificates.get",
+          "gcp.certificates.list"
+        ]
+      }
+    },
+    {
+      "family_id": 59,
+      "requirement": "gcp.healthChecks.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.health_checks.create",
+          "gcp.health_checks.delete",
+          "gcp.health_checks.iam_permissions.test",
+          "gcp.health_checks.list_aggregated",
+          "gcp.health_checks.patch",
+          "gcp.health_checks.update",
+          "gcp.http_health_checks.create",
+          "gcp.http_health_checks.delete",
+          "gcp.http_health_checks.get",
+          "gcp.http_health_checks.iam_permissions.test",
+          "gcp.http_health_checks.list",
+          "gcp.http_health_checks.patch",
+          "gcp.http_health_checks.update",
+          "gcp.https_health_checks.create",
+          "gcp.https_health_checks.delete",
+          "gcp.https_health_checks.get",
+          "gcp.https_health_checks.iam_permissions.test",
+          "gcp.https_health_checks.list",
+          "gcp.https_health_checks.patch",
+          "gcp.https_health_checks.update",
+          "gcp.region_composite_health_checks.create",
+          "gcp.region_composite_health_checks.delete",
+          "gcp.region_composite_health_checks.get",
+          "gcp.region_composite_health_checks.get_health",
+          "gcp.region_composite_health_checks.iam_permissions.test",
+          "gcp.region_composite_health_checks.list",
+          "gcp.region_composite_health_checks.list_aggregated",
+          "gcp.region_composite_health_checks.patch",
+          "gcp.region_health_aggregation_policies.create",
+          "gcp.region_health_aggregation_policies.delete",
+          "gcp.region_health_aggregation_policies.get",
+          "gcp.region_health_aggregation_policies.iam_permissions.test",
+          "gcp.region_health_aggregation_policies.list",
+          "gcp.region_health_aggregation_policies.list_aggregated",
+          "gcp.region_health_aggregation_policies.patch",
+          "gcp.region_health_check_services.create",
+          "gcp.region_health_check_services.delete",
+          "gcp.region_health_check_services.get",
+          "gcp.region_health_check_services.iam_permissions.test",
+          "gcp.region_health_check_services.list",
+          "gcp.region_health_check_services.list_aggregated",
+          "gcp.region_health_check_services.patch",
+          "gcp.region_health_checks.create",
+          "gcp.region_health_checks.delete",
+          "gcp.region_health_checks.get",
+          "gcp.region_health_checks.iam_permissions.test",
+          "gcp.region_health_checks.list",
+          "gcp.region_health_checks.patch",
+          "gcp.region_health_checks.update",
+          "gcp.region_health_sources.create",
+          "gcp.region_health_sources.delete",
+          "gcp.region_health_sources.get",
+          "gcp.region_health_sources.get_health",
+          "gcp.region_health_sources.iam_permissions.test",
+          "gcp.region_health_sources.list",
+          "gcp.region_health_sources.list_aggregated",
+          "gcp.region_health_sources.patch",
+          "gcp.region_notification_endpoints.create",
+          "gcp.region_notification_endpoints.delete",
+          "gcp.region_notification_endpoints.get",
+          "gcp.region_notification_endpoints.iam_permissions.test",
+          "gcp.region_notification_endpoints.list",
+          "gcp.region_notification_endpoints.list_aggregated"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.health_checks.get",
+          "gcp.health_checks.list"
+        ]
+      }
+    },
+    {
+      "family_id": 60,
+      "requirement": "gcp.cloudRun.services.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "gcp.cloud_run.services.get",
+        "gcp.cloud_run.services.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.cloud_run.services.create",
+          "gcp.cloud_run.services.delete",
+          "gcp.cloud_run.services.iam_permissions.test",
+          "gcp.cloud_run.services.iam_policy.get",
+          "gcp.cloud_run.services.iam_policy.set",
+          "gcp.cloud_run.services.patch",
+          "gcp.cloud_run.services.revisions.delete",
+          "gcp.cloud_run.services.revisions.export_status",
+          "gcp.cloud_run.services.revisions.get",
+          "gcp.cloud_run.services.revisions.list",
+          "google_cloud.mcp.cloud_run_deploy",
+          "google_cloud.mcp.public_ingress"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.cloud_run.services.get",
+          "gcp.cloud_run.services.list"
+        ],
+        "separate_authority_or_mapping_review": [
+          "google_cloud.cloud_run.permissions",
+          "google_cloud.cloud_run.status"
+        ]
+      }
+    },
+    {
+      "family_id": 61,
+      "requirement": "gcp.cloudRun.jobs.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.cloud_run.jobs.create",
+          "gcp.cloud_run.jobs.delete",
+          "gcp.cloud_run.jobs.executions.cancel",
+          "gcp.cloud_run.jobs.executions.delete",
+          "gcp.cloud_run.jobs.executions.export_status",
+          "gcp.cloud_run.jobs.executions.get",
+          "gcp.cloud_run.jobs.executions.list",
+          "gcp.cloud_run.jobs.executions.tasks.get",
+          "gcp.cloud_run.jobs.executions.tasks.list",
+          "gcp.cloud_run.jobs.iam_permissions.test",
+          "gcp.cloud_run.jobs.iam_policy.get",
+          "gcp.cloud_run.jobs.iam_policy.set",
+          "gcp.cloud_run.jobs.patch",
+          "gcp.cloud_run.jobs.run"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.cloud_run.jobs.get",
+          "gcp.cloud_run.jobs.list"
+        ]
+      }
+    },
+    {
+      "family_id": 62,
+      "requirement": "gcp.gke.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.kubernetes.clusters.check_autopilot_compatibility",
+          "gcp.kubernetes.clusters.fetch_cluster_upgrade_info",
+          "gcp.kubernetes.clusters.get",
+          "gcp.kubernetes.clusters.list",
+          "gcp.kubernetes.node_pools.fetch_node_pool_upgrade_info",
+          "gcp.kubernetes.node_pools.get",
+          "gcp.kubernetes.node_pools.list",
+          "gcp.kubernetes.operations.get",
+          "gcp.kubernetes.operations.list"
+        ],
+        "closed_exposure": [
+          "gcp.kubernetes.clusters.complete_control_plane_upgrade",
+          "gcp.kubernetes.clusters.complete_ip_rotation",
+          "gcp.kubernetes.clusters.create",
+          "gcp.kubernetes.clusters.delete",
+          "gcp.kubernetes.clusters.get_jwks.capture",
+          "gcp.kubernetes.clusters.set_addons",
+          "gcp.kubernetes.clusters.set_legacy_abac",
+          "gcp.kubernetes.clusters.set_locations",
+          "gcp.kubernetes.clusters.set_logging",
+          "gcp.kubernetes.clusters.set_maintenance_policy",
+          "gcp.kubernetes.clusters.set_master_auth",
+          "gcp.kubernetes.clusters.set_monitoring",
+          "gcp.kubernetes.clusters.set_network_policy",
+          "gcp.kubernetes.clusters.set_resource_labels",
+          "gcp.kubernetes.clusters.start_ip_rotation",
+          "gcp.kubernetes.clusters.update",
+          "gcp.kubernetes.clusters.update_master",
+          "gcp.kubernetes.clusters.well-known.get_openid-configuration",
+          "gcp.kubernetes.node_pools.complete_upgrade",
+          "gcp.kubernetes.node_pools.create",
+          "gcp.kubernetes.node_pools.delete",
+          "gcp.kubernetes.node_pools.rollback",
+          "gcp.kubernetes.node_pools.set_autoscaling",
+          "gcp.kubernetes.node_pools.set_management",
+          "gcp.kubernetes.node_pools.set_size",
+          "gcp.kubernetes.node_pools.update",
+          "gcp.kubernetes.operations.cancel"
+        ]
+      }
+    },
+    {
+      "family_id": 63,
+      "requirement": "gcp.artifacts.repositories.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.artifacts.files.download.capture",
+          "gcp.artifacts.repositories.apt.upload.media",
+          "gcp.artifacts.repositories.apt_artifacts.import",
+          "gcp.artifacts.repositories.attachments.create",
+          "gcp.artifacts.repositories.attachments.delete",
+          "gcp.artifacts.repositories.attachments.get",
+          "gcp.artifacts.repositories.attachments.list",
+          "gcp.artifacts.repositories.check_prewarmed_artifact.bound",
+          "gcp.artifacts.repositories.create",
+          "gcp.artifacts.repositories.delete",
+          "gcp.artifacts.repositories.docker_images.get",
+          "gcp.artifacts.repositories.docker_images.list",
+          "gcp.artifacts.repositories.export.bound",
+          "gcp.artifacts.repositories.files.delete",
+          "gcp.artifacts.repositories.files.get",
+          "gcp.artifacts.repositories.files.list",
+          "gcp.artifacts.repositories.files.patch",
+          "gcp.artifacts.repositories.files.upload.media",
+          "gcp.artifacts.repositories.generic.upload.media",
+          "gcp.artifacts.repositories.go.upload.media",
+          "gcp.artifacts.repositories.googet.upload.media",
+          "gcp.artifacts.repositories.googet_artifacts.import",
+          "gcp.artifacts.repositories.iam_permissions.test",
+          "gcp.artifacts.repositories.iam_policy.get",
+          "gcp.artifacts.repositories.iam_policy.set",
+          "gcp.artifacts.repositories.kfp.upload.media",
+          "gcp.artifacts.repositories.maven_artifacts.get",
+          "gcp.artifacts.repositories.maven_artifacts.list",
+          "gcp.artifacts.repositories.npm_packages.get",
+          "gcp.artifacts.repositories.npm_packages.list",
+          "gcp.artifacts.repositories.packages.delete",
+          "gcp.artifacts.repositories.packages.get",
+          "gcp.artifacts.repositories.packages.list",
+          "gcp.artifacts.repositories.packages.patch",
+          "gcp.artifacts.repositories.packages.tags.create",
+          "gcp.artifacts.repositories.packages.tags.delete",
+          "gcp.artifacts.repositories.packages.tags.get",
+          "gcp.artifacts.repositories.packages.tags.list",
+          "gcp.artifacts.repositories.packages.tags.patch",
+          "gcp.artifacts.repositories.packages.versions.batch_delete",
+          "gcp.artifacts.repositories.packages.versions.delete",
+          "gcp.artifacts.repositories.packages.versions.get",
+          "gcp.artifacts.repositories.packages.versions.list",
+          "gcp.artifacts.repositories.packages.versions.patch",
+          "gcp.artifacts.repositories.patch",
+          "gcp.artifacts.repositories.prewarm_artifact.bound",
+          "gcp.artifacts.repositories.prewarmed_artifacts.list",
+          "gcp.artifacts.repositories.python_packages.get",
+          "gcp.artifacts.repositories.python_packages.list",
+          "gcp.artifacts.repositories.remove_prewarmed_artifact.bound",
+          "gcp.artifacts.repositories.rules.create",
+          "gcp.artifacts.repositories.rules.delete",
+          "gcp.artifacts.repositories.rules.get",
+          "gcp.artifacts.repositories.rules.list",
+          "gcp.artifacts.repositories.rules.patch",
+          "gcp.artifacts.repositories.yum.upload.media",
+          "gcp.artifacts.repositories.yum_artifacts.import",
+          "google_cloud.mcp.container_build",
+          "google_cloud.mcp.registry_writer_grant",
+          "provider.artifacts.read_private"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.artifacts.repositories.get",
+          "gcp.artifacts.repositories.list"
+        ]
+      }
+    },
+    {
+      "family_id": 64,
+      "requirement": "gcp.storage.buckets.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.storage.buckets.create",
+          "gcp.storage.buckets.delete",
+          "gcp.storage.buckets.get",
+          "gcp.storage.buckets.get_storage_layout",
+          "gcp.storage.buckets.iam_permissions.test",
+          "gcp.storage.buckets.iam_policy.get",
+          "gcp.storage.buckets.iam_policy.set",
+          "gcp.storage.buckets.list",
+          "gcp.storage.buckets.lock_retention_policy.bound",
+          "gcp.storage.buckets.patch",
+          "gcp.storage.buckets.relocate.bound",
+          "gcp.storage.buckets.restore.bound",
+          "gcp.storage.buckets.update.bound",
+          "gcp.storage.notifications.create",
+          "gcp.storage.notifications.delete",
+          "gcp.storage.notifications.get",
+          "gcp.storage.notifications.list"
+        ]
+      }
+    },
+    {
+      "family_id": 65,
+      "requirement": "gcp.storage.objects.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.storage.folders.create",
+          "gcp.storage.folders.delete",
+          "gcp.storage.folders.delete_recursive.bound",
+          "gcp.storage.folders.get",
+          "gcp.storage.folders.list",
+          "gcp.storage.folders.rename",
+          "gcp.storage.managed_folders.create",
+          "gcp.storage.managed_folders.delete",
+          "gcp.storage.managed_folders.get",
+          "gcp.storage.managed_folders.iam_permissions.test",
+          "gcp.storage.managed_folders.iam_policy.get",
+          "gcp.storage.managed_folders.iam_policy.set",
+          "gcp.storage.managed_folders.list",
+          "gcp.storage.managed_folders.update.bound",
+          "gcp.storage.objects.bulk_restore.bound",
+          "gcp.storage.objects.compose.bound",
+          "gcp.storage.objects.copy.bound",
+          "gcp.storage.objects.delete",
+          "gcp.storage.objects.get",
+          "gcp.storage.objects.iam_permissions.test.bound",
+          "gcp.storage.objects.iam_policy.get.bound",
+          "gcp.storage.objects.iam_policy.set.bound",
+          "gcp.storage.objects.list",
+          "gcp.storage.objects.move.bound",
+          "gcp.storage.objects.patch",
+          "gcp.storage.objects.restore",
+          "gcp.storage.objects.rewrite.bound",
+          "gcp.storage.objects.update.bound",
+          "gcp.storage.objects.upload.media",
+          "gcp.storage.objects.view_full_context.bound"
+        ]
+      }
+    },
+    {
+      "family_id": 66,
+      "requirement": "gcp.secrets.createVersion/access/rotate/revoke",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.secrets.access",
+          "gcp.secrets.create",
+          "gcp.secrets.create_version",
+          "gcp.secrets.delete",
+          "gcp.secrets.enable_managed_rotation",
+          "gcp.secrets.iam_permissions.test",
+          "gcp.secrets.iam_policy.get",
+          "gcp.secrets.iam_policy.set",
+          "gcp.secrets.patch",
+          "gcp.secrets.rotate",
+          "gcp.secrets.versions.destroy",
+          "gcp.secrets.versions.disable",
+          "gcp.secrets.versions.enable"
+        ],
+        "outside_current_standing_classes": [
+          "gcp.secrets.get",
+          "gcp.secrets.list",
+          "gcp.secrets.versions.get",
+          "gcp.secrets.versions.list"
+        ]
+      }
+    },
+    {
+      "family_id": 67,
+      "requirement": "gcp.logging.query/sinks.manage",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.logging.buckets.create",
+          "gcp.logging.buckets.create_async",
+          "gcp.logging.buckets.delete",
+          "gcp.logging.buckets.links.create",
+          "gcp.logging.buckets.links.delete",
+          "gcp.logging.buckets.links.get",
+          "gcp.logging.buckets.links.list",
+          "gcp.logging.buckets.patch",
+          "gcp.logging.buckets.undelete",
+          "gcp.logging.buckets.update_async",
+          "gcp.logging.exclusions.create",
+          "gcp.logging.exclusions.delete",
+          "gcp.logging.exclusions.patch",
+          "gcp.logging.logs.delete",
+          "gcp.logging.metrics.create",
+          "gcp.logging.metrics.delete",
+          "gcp.logging.metrics.update",
+          "gcp.logging.sinks.create",
+          "gcp.logging.sinks.delete",
+          "gcp.logging.sinks.patch",
+          "gcp.logging.sinks.update.bound",
+          "gcp.logging.views.create",
+          "gcp.logging.views.delete",
+          "gcp.logging.views.iam_permissions.test",
+          "gcp.logging.views.iam_policy.set",
+          "gcp.logging.views.logs.list",
+          "gcp.logging.views.patch"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.logging.buckets.get",
+          "gcp.logging.buckets.list",
+          "gcp.logging.exclusions.get",
+          "gcp.logging.exclusions.list",
+          "gcp.logging.logs.list",
+          "gcp.logging.metrics.get",
+          "gcp.logging.metrics.list",
+          "gcp.logging.sinks.get",
+          "gcp.logging.sinks.list",
+          "gcp.logging.views.get",
+          "gcp.logging.views.iam_policy.get",
+          "gcp.logging.views.list"
+        ]
+      }
+    },
+    {
+      "family_id": 68,
+      "requirement": "gcp.monitoring.metrics/alerts.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.monitoring.alert_policies.create",
+          "gcp.monitoring.alert_policies.delete",
+          "gcp.monitoring.alert_policies.patch",
+          "gcp.monitoring.groups.create",
+          "gcp.monitoring.groups.delete",
+          "gcp.monitoring.groups.members.list",
+          "gcp.monitoring.groups.update",
+          "gcp.monitoring.metric_descriptors.create",
+          "gcp.monitoring.metric_descriptors.delete",
+          "gcp.monitoring.notification_channels.create",
+          "gcp.monitoring.notification_channels.delete",
+          "gcp.monitoring.notification_channels.get_verification_code.capture",
+          "gcp.monitoring.notification_channels.patch",
+          "gcp.monitoring.notification_channels.send_verification_code",
+          "gcp.monitoring.notification_channels.verify",
+          "gcp.monitoring.snoozes.create",
+          "gcp.monitoring.snoozes.patch",
+          "gcp.monitoring.uptime_checks.create",
+          "gcp.monitoring.uptime_checks.delete",
+          "gcp.monitoring.uptime_checks.patch"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.monitoring.alert_policies.get",
+          "gcp.monitoring.alert_policies.list",
+          "gcp.monitoring.alerts.get",
+          "gcp.monitoring.alerts.list",
+          "gcp.monitoring.groups.get",
+          "gcp.monitoring.groups.list",
+          "gcp.monitoring.metric_descriptors.get",
+          "gcp.monitoring.metric_descriptors.list",
+          "gcp.monitoring.notification_channels.get",
+          "gcp.monitoring.notification_channels.list",
+          "gcp.monitoring.resource_descriptors.get",
+          "gcp.monitoring.resource_descriptors.list",
+          "gcp.monitoring.snoozes.get",
+          "gcp.monitoring.snoozes.list",
+          "gcp.monitoring.uptime_checks.get",
+          "gcp.monitoring.uptime_checks.list"
+        ]
+      }
+    },
+    {
+      "family_id": 69,
+      "requirement": "gcp.scheduler.jobs.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.scheduler.jobs.create",
+          "gcp.scheduler.jobs.delete",
+          "gcp.scheduler.jobs.patch",
+          "gcp.scheduler.jobs.pause",
+          "gcp.scheduler.jobs.resume",
+          "gcp.scheduler.jobs.run"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.scheduler.jobs.get",
+          "gcp.scheduler.jobs.list"
+        ]
+      }
+    },
+    {
+      "family_id": 70,
+      "requirement": "gcp.pubsub.topics/subscriptions.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.pubsub.schemas.commit",
+          "gcp.pubsub.schemas.create",
+          "gcp.pubsub.schemas.delete",
+          "gcp.pubsub.schemas.delete_revision",
+          "gcp.pubsub.schemas.get",
+          "gcp.pubsub.schemas.iam_permissions.test",
+          "gcp.pubsub.schemas.iam_policy.get",
+          "gcp.pubsub.schemas.iam_policy.set",
+          "gcp.pubsub.schemas.list",
+          "gcp.pubsub.schemas.list_revisions",
+          "gcp.pubsub.schemas.rollback",
+          "gcp.pubsub.schemas.validate",
+          "gcp.pubsub.schemas.validate_message",
+          "gcp.pubsub.snapshots.create",
+          "gcp.pubsub.snapshots.delete",
+          "gcp.pubsub.snapshots.get",
+          "gcp.pubsub.snapshots.iam_permissions.test",
+          "gcp.pubsub.snapshots.iam_policy.get",
+          "gcp.pubsub.snapshots.iam_policy.set",
+          "gcp.pubsub.snapshots.list.bound",
+          "gcp.pubsub.snapshots.patch",
+          "gcp.pubsub.subscriptions.acknowledge",
+          "gcp.pubsub.subscriptions.create",
+          "gcp.pubsub.subscriptions.delete",
+          "gcp.pubsub.subscriptions.detach",
+          "gcp.pubsub.subscriptions.iam_permissions.test",
+          "gcp.pubsub.subscriptions.iam_policy.get",
+          "gcp.pubsub.subscriptions.iam_policy.set",
+          "gcp.pubsub.subscriptions.modify_ack_deadline",
+          "gcp.pubsub.subscriptions.modify_push_config",
+          "gcp.pubsub.subscriptions.patch",
+          "gcp.pubsub.subscriptions.pull",
+          "gcp.pubsub.subscriptions.seek",
+          "gcp.pubsub.topics.create",
+          "gcp.pubsub.topics.delete",
+          "gcp.pubsub.topics.iam_permissions.test",
+          "gcp.pubsub.topics.iam_policy.get",
+          "gcp.pubsub.topics.iam_policy.set",
+          "gcp.pubsub.topics.patch",
+          "gcp.pubsub.topics.publish",
+          "gcp.pubsub.topics.snapshots.list",
+          "gcp.pubsub.topics.subscriptions.list"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.pubsub.subscriptions.get",
+          "gcp.pubsub.subscriptions.list",
+          "gcp.pubsub.topics.get",
+          "gcp.pubsub.topics.list"
+        ]
+      }
+    },
+    {
+      "family_id": 71,
+      "requirement": "gcp.tasks.queues.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.tasks.queues.create",
+          "gcp.tasks.queues.delete",
+          "gcp.tasks.queues.iam_permissions.test",
+          "gcp.tasks.queues.iam_policy.get",
+          "gcp.tasks.queues.iam_policy.set",
+          "gcp.tasks.queues.patch",
+          "gcp.tasks.queues.pause",
+          "gcp.tasks.queues.purge",
+          "gcp.tasks.queues.resume",
+          "gcp.tasks.queues.tasks.batch_create",
+          "gcp.tasks.queues.tasks.batch_delete",
+          "gcp.tasks.queues.tasks.buffer",
+          "gcp.tasks.queues.tasks.create",
+          "gcp.tasks.queues.tasks.delete",
+          "gcp.tasks.queues.tasks.get",
+          "gcp.tasks.queues.tasks.list",
+          "gcp.tasks.queues.tasks.run"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.tasks.queues.get",
+          "gcp.tasks.queues.list"
+        ]
+      }
+    },
+    {
+      "family_id": 72,
+      "requirement": "gcp.security.findings.list",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.security.findings.list"
+        ]
+      }
+    },
+    {
+      "family_id": 73,
+      "requirement": "gcp.kms.keys.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.kms.crypto_key_versions.asymmetric_decrypt.capture",
+          "gcp.kms.crypto_key_versions.asymmetric_sign.capture",
+          "gcp.kms.crypto_key_versions.decapsulate.capture",
+          "gcp.kms.crypto_key_versions.export_trusted_key_wrapped_crypto_key_version.capture",
+          "gcp.kms.crypto_key_versions.get_public_key.capture",
+          "gcp.kms.crypto_key_versions.import_trusted_key_wrapped_crypto_key_version.capture",
+          "gcp.kms.crypto_key_versions.mac_sign.capture",
+          "gcp.kms.crypto_key_versions.mac_verify.capture",
+          "gcp.kms.crypto_key_versions.raw_decrypt.capture",
+          "gcp.kms.crypto_key_versions.raw_encrypt.capture",
+          "gcp.kms.crypto_keys.decrypt.capture",
+          "gcp.kms.crypto_keys.encrypt.capture",
+          "gcp.kms.ekm_config.iam_permissions.test",
+          "gcp.kms.ekm_config.iam_policy.get",
+          "gcp.kms.ekm_config.iam_policy.set",
+          "gcp.kms.ekm_connections.create",
+          "gcp.kms.ekm_connections.get",
+          "gcp.kms.ekm_connections.iam_permissions.test",
+          "gcp.kms.ekm_connections.iam_policy.get",
+          "gcp.kms.ekm_connections.iam_policy.set",
+          "gcp.kms.ekm_connections.list",
+          "gcp.kms.ekm_connections.patch",
+          "gcp.kms.ekm_connections.verify_connectivity",
+          "gcp.kms.key_rings.create",
+          "gcp.kms.key_rings.delete",
+          "gcp.kms.key_rings.iam_permissions.test",
+          "gcp.kms.key_rings.iam_policy.get",
+          "gcp.kms.key_rings.iam_policy.set",
+          "gcp.kms.key_rings.import_jobs.create",
+          "gcp.kms.key_rings.import_jobs.get",
+          "gcp.kms.key_rings.import_jobs.iam_permissions.test",
+          "gcp.kms.key_rings.import_jobs.iam_policy.get",
+          "gcp.kms.key_rings.import_jobs.iam_policy.set",
+          "gcp.kms.key_rings.import_jobs.list",
+          "gcp.kms.keys.create",
+          "gcp.kms.keys.crypto_key_versions.create",
+          "gcp.kms.keys.crypto_key_versions.delete",
+          "gcp.kms.keys.crypto_key_versions.destroy",
+          "gcp.kms.keys.crypto_key_versions.get",
+          "gcp.kms.keys.crypto_key_versions.import",
+          "gcp.kms.keys.crypto_key_versions.list",
+          "gcp.kms.keys.crypto_key_versions.patch",
+          "gcp.kms.keys.crypto_key_versions.restore",
+          "gcp.kms.keys.delete",
+          "gcp.kms.keys.iam_permissions.test",
+          "gcp.kms.keys.iam_policy.get",
+          "gcp.kms.keys.iam_policy.set",
+          "gcp.kms.keys.patch",
+          "gcp.kms.keys.update_primary_version",
+          "gcp.kms.operations.get"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "gcp.kms.key_rings.get",
+          "gcp.kms.key_rings.list",
+          "gcp.kms.keys.get",
+          "gcp.kms.keys.list"
+        ]
+      }
+    },
+    {
+      "family_id": 74,
+      "requirement": "gcp.backups.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gcp.backup.data_sources.fetch_access_token.capture",
+          "gcp.backupdr.data_source_references.fetch_for_resource_type",
+          "gcp.backupdr.data_source_references.get",
+          "gcp.backupdr.data_source_references.list",
+          "gcp.backupdr.management_servers.create",
+          "gcp.backupdr.management_servers.delete",
+          "gcp.backupdr.management_servers.get",
+          "gcp.backupdr.management_servers.iam_permissions.test",
+          "gcp.backupdr.management_servers.iam_policy.get",
+          "gcp.backupdr.management_servers.iam_policy.set",
+          "gcp.backupdr.management_servers.list",
+          "gcp.backupdr.management_servers.ms_compliance_metadata",
+          "gcp.backupdr.resource_backup_configs.fetch",
+          "gcp.backupdr.resource_backup_configs.list",
+          "gcp.backups.associations.create",
+          "gcp.backups.associations.delete",
+          "gcp.backups.associations.fetch_for_resource_type",
+          "gcp.backups.associations.patch",
+          "gcp.backups.associations.trigger_backup",
+          "gcp.backups.backups.delete",
+          "gcp.backups.backups.fetch_for_resource_type",
+          "gcp.backups.backups.patch",
+          "gcp.backups.backups.restore",
+          "gcp.backups.data_sources.abandon_backup.bound",
+          "gcp.backups.data_sources.finalize_backup.bound",
+          "gcp.backups.data_sources.initiate_backup.bound",
+          "gcp.backups.data_sources.patch",
+          "gcp.backups.data_sources.remove",
+          "gcp.backups.data_sources.set_internal_status.bound",
+          "gcp.backups.operations.cancel",
+          "gcp.backups.operations.delete",
+          "gcp.backups.plans.create",
+          "gcp.backups.plans.delete",
+          "gcp.backups.plans.patch",
+          "gcp.backups.plans.revisions.get",
+          "gcp.backups.plans.revisions.list",
+          "gcp.backups.vaults.create",
+          "gcp.backups.vaults.delete",
+          "gcp.backups.vaults.fetch_usable",
+          "gcp.backups.vaults.patch"
+        ],
+        "outside_current_standing_classes": [
+          "gcp.backups.associations.get",
+          "gcp.backups.associations.list",
+          "gcp.backups.backups.get",
+          "gcp.backups.backups.list",
+          "gcp.backups.data_sources.get",
+          "gcp.backups.data_sources.list",
+          "gcp.backups.operations.get",
+          "gcp.backups.operations.list",
+          "gcp.backups.plans.get",
+          "gcp.backups.plans.list",
+          "gcp.backups.vaults.get",
+          "gcp.backups.vaults.iam_permissions.test",
+          "gcp.backups.vaults.list"
+        ]
+      }
+    },
+    {
+      "family_id": 75,
+      "requirement": "supabase.orgs.list",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "supabase.orgs.list"
+        ]
+      }
+    },
+    {
+      "family_id": 76,
+      "requirement": "supabase.projects.list/get/create/update/pause/restore/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "missing_registry": [
+          "supabase.projects.create",
+          "supabase.projects.list"
+        ],
+        "closed_exposure": [
+          "supabase.projects.delete",
+          "supabase.projects.pause",
+          "supabase.projects.restore",
+          "supabase.projects.update"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.projects.get"
+        ]
+      }
+    },
+    {
+      "family_id": 77,
+      "requirement": "supabase.project.config.get/set",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.project.config.postgrest.get",
+        "supabase.project.config.realtime.get"
+      ],
+      "operation_disposition": {
+        "outside_current_standing_classes": [
+          "supabase.project.config.auth.get"
+        ],
+        "closed_exposure": [
+          "supabase.project.config.auth.set",
+          "supabase.project.config.postgrest.set",
+          "supabase.project.config.realtime.set",
+          "supabase.project.config.storage.set",
+          "supabase.v1_get_database_disk",
+          "supabase.v1_get_project_disk_autoscale_config",
+          "supabase.v1_modify_database_disk",
+          "supabase.v1_shutdown_realtime"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "supabase.project.config.postgrest.get",
+          "supabase.project.config.realtime.get",
+          "supabase.project.config.storage.get"
+        ]
+      }
+    },
+    {
+      "family_id": 78,
+      "requirement": "supabase.network.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.network.ssl.get"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.network.bans.delete",
+          "supabase.network.restrictions.apply",
+          "supabase.network.restrictions.set",
+          "supabase.network.ssl.set",
+          "supabase.v1_list_all_network_bans_enriched"
+        ],
+        "outside_current_standing_classes": [
+          "supabase.network.bans.list"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.network.restrictions.get"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "supabase.network.ssl.get"
+        ]
+      }
+    },
+    {
+      "family_id": 79,
+      "requirement": "supabase.domains.*",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.domains.activate",
+          "supabase.domains.create",
+          "supabase.domains.delete",
+          "supabase.domains.reverify"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.domains.get"
+        ]
+      }
+    },
+    {
+      "family_id": 80,
+      "requirement": "supabase.branches.create/list/get/merge/delete",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.branches.create",
+          "supabase.branches.delete.bound",
+          "supabase.branches.diff.bound",
+          "supabase.branches.get_config.bound",
+          "supabase.branches.merge.bound",
+          "supabase.branches.push.bound",
+          "supabase.branches.reset.bound",
+          "supabase.branches.restore.bound",
+          "supabase.branches.update_config.bound",
+          "supabase.v1_disable_preview_branching"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.branches.get",
+          "supabase.branches.list"
+        ]
+      }
+    },
+    {
+      "family_id": 81,
+      "requirement": "supabase.db.diff",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.db.diff"
+        ]
+      }
+    },
+    {
+      "family_id": 82,
+      "requirement": "supabase.db.migrations.plan/apply/list/repair/verify",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exact_legacy_fixture_only": [
+          "supabase.db.migrations.apply"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.db.migrations.list"
+        ],
+        "closed_exposure": [
+          "supabase.db.migrations.plan",
+          "supabase.db.migrations.repair",
+          "supabase.db.migrations.verify"
+        ]
+      }
+    },
+    {
+      "family_id": 83,
+      "requirement": "supabase.functions.list/get/deploy/delete/invoke/logs",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.logs.query"
+      ],
+      "operation_disposition": {
+        "exact_legacy_fixture_only": [
+          "supabase.deploy_edge_function",
+          "supabase.logs.query"
+        ],
+        "closed_exposure": [
+          "supabase.functions.delete",
+          "supabase.functions.get",
+          "supabase.functions.list"
+        ],
+        "missing_registry": [
+          "supabase.functions.invoke"
+        ]
+      }
+    },
+    {
+      "family_id": 84,
+      "requirement": "supabase.functions.secrets.list/set/delete/rotate",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.functions.secrets.delete",
+          "supabase.functions.secrets.rotate"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.functions.secrets.list"
+        ],
+        "exact_legacy_fixture_only": [
+          "supabase.functions.secrets.set"
+        ]
+      }
+    },
+    {
+      "family_id": 85,
+      "requirement": "supabase.project.logs.query",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.logs.query"
+      ],
+      "operation_disposition": {
+        "exact_legacy_fixture_only": [
+          "supabase.logs.query"
+        ]
+      }
+    },
+    {
+      "family_id": 86,
+      "requirement": "supabase.project.health",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "supabase.project.health"
+        ]
+      }
+    },
+    {
+      "family_id": 87,
+      "requirement": "supabase.backups.list/restore",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "supabase.backups.list"
+        ],
+        "closed_exposure": [
+          "supabase.backups.restore",
+          "supabase.backups.restore_pitr",
+          "supabase.backups.schedule.set",
+          "supabase.v1_undo"
+        ],
+        "outside_current_standing_classes": [
+          "supabase.backups.schedule.get"
+        ]
+      }
+    },
+    {
+      "family_id": 88,
+      "requirement": "supabase.sql.query",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.sql.query"
+        ]
+      }
+    },
+    {
+      "family_id": 89,
+      "requirement": "supabase.sql.execute",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.sql.execute"
+        ]
+      }
+    },
+    {
+      "family_id": 90,
+      "requirement": "supabase.sql.transaction",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.sql.transaction"
+        ]
+      }
+    },
+    {
+      "family_id": 91,
+      "requirement": "supabase.schema.tables/views/materializedViews.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "supabase.database.openapi.paths.list"
+        ],
+        "closed_exposure": [
+          "supabase.schema.materialized_views.create",
+          "supabase.schema.materialized_views.drop",
+          "supabase.schema.materialized_views.refresh",
+          "supabase.schema.tables.add_column",
+          "supabase.schema.tables.alter_column",
+          "supabase.schema.tables.create",
+          "supabase.schema.tables.drop",
+          "supabase.schema.tables.drop_column",
+          "supabase.schema.tables.rename",
+          "supabase.schema.views.create",
+          "supabase.schema.views.drop",
+          "supabase.schema.views.replace"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.schema.materialized_views.list",
+          "supabase.schema.tables.list",
+          "supabase.schema.views.list"
+        ]
+      }
+    },
+    {
+      "family_id": 92,
+      "requirement": "supabase.schema.functions/procedures/triggers.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.schema.functions.create",
+          "supabase.schema.functions.drop",
+          "supabase.schema.functions.get",
+          "supabase.schema.functions.replace",
+          "supabase.schema.procedures.create",
+          "supabase.schema.procedures.drop",
+          "supabase.schema.procedures.replace",
+          "supabase.schema.triggers.create",
+          "supabase.schema.triggers.disable",
+          "supabase.schema.triggers.drop",
+          "supabase.schema.triggers.enable"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.schema.functions.list",
+          "supabase.schema.triggers.list"
+        ]
+      }
+    },
+    {
+      "family_id": 93,
+      "requirement": "supabase.schema.indexes/constraints/types/extensions.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.schema.constraints.add",
+          "supabase.schema.constraints.drop",
+          "supabase.schema.constraints.validate",
+          "supabase.schema.extensions.create",
+          "supabase.schema.extensions.drop",
+          "supabase.schema.extensions.update",
+          "supabase.schema.indexes.create",
+          "supabase.schema.indexes.drop",
+          "supabase.schema.types.create",
+          "supabase.schema.types.drop",
+          "supabase.schema.types.enum.add_value",
+          "supabase.schema.types.enum.rename_value"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.schema.constraints.list",
+          "supabase.schema.extensions.list",
+          "supabase.schema.indexes.list",
+          "supabase.schema.types.list"
+        ]
+      }
+    },
+    {
+      "family_id": 94,
+      "requirement": "supabase.database.roles/grants/defaultPrivileges.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.default_privileges.grant",
+          "supabase.database.default_privileges.revoke",
+          "supabase.database.grants.grant",
+          "supabase.database.grants.revoke",
+          "supabase.database.roles.alter",
+          "supabase.database.roles.create",
+          "supabase.database.roles.drop"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.database.default_privileges.list",
+          "supabase.database.grants.list",
+          "supabase.database.roles.list"
+        ]
+      }
+    },
+    {
+      "family_id": 95,
+      "requirement": "supabase.database.rls.policies.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.rls.disable",
+          "supabase.database.rls.enable",
+          "supabase.database.rls.policies.alter",
+          "supabase.database.rls.policies.create",
+          "supabase.database.rls.policies.drop"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.database.rls.policies.list"
+        ]
+      }
+    },
+    {
+      "family_id": 96,
+      "requirement": "supabase.database.replication.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.replication.publications.alter",
+          "supabase.database.replication.publications.create",
+          "supabase.database.replication.publications.drop",
+          "supabase.database.replication.publications.list"
+        ]
+      }
+    },
+    {
+      "family_id": 97,
+      "requirement": "supabase.data.insert/upsert/update/delete/bulkImport/bulkExport",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.data.bulk_export",
+          "supabase.data.bulk_import",
+          "supabase.data.delete",
+          "supabase.data.insert",
+          "supabase.data.update",
+          "supabase.data.upsert"
+        ]
+      }
+    },
+    {
+      "family_id": 98,
+      "requirement": "supabase.database.inspect/explain/analyze/vacuum/reindex",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.database.disk.utilization.get",
+        "supabase.database.readonly.get"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.analyze",
+          "supabase.database.explain",
+          "supabase.database.maintenance.receipt.get",
+          "supabase.database.postgres.config.set",
+          "supabase.database.reindex",
+          "supabase.database.vacuum"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "supabase.database.disk.utilization.get",
+          "supabase.database.readonly.get"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.database.inspect"
+        ]
+      }
+    },
+    {
+      "family_id": 99,
+      "requirement": "supabase.database.connections/pooler/slowQueries/locks",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.database.pooler.config.get"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.connections.cancel",
+          "supabase.database.connections.terminate",
+          "supabase.database.pooler.config.set",
+          "supabase.database.slow_queries.list",
+          "supabase.v1_get_pooler_config"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.database.connections.list",
+          "supabase.database.locks.list"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "supabase.database.pooler.config.get",
+          "supabase.database.postgres.config.get"
+        ]
+      }
+    },
+    {
+      "family_id": 100,
+      "requirement": "supabase.database.backup/snapshot/restore/verify",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.backups.restore_point.create"
+        ],
+        "outside_current_standing_classes": [
+          "supabase.backups.restore_point.get"
+        ]
+      }
+    },
+    {
+      "family_id": 101,
+      "requirement": "supabase.database.cron/jobs.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.cron.jobs.create",
+          "supabase.database.cron.jobs.delete",
+          "supabase.database.cron.jobs.update"
+        ],
+        "separate_authority_or_mapping_review": [
+          "supabase.database.cron.jobs.list"
+        ]
+      }
+    },
+    {
+      "family_id": 102,
+      "requirement": "supabase.database.webhooks.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.database.webhooks.enable",
+          "supabase.database.webhooks.list"
+        ]
+      }
+    },
+    {
+      "family_id": 103,
+      "requirement": "supabase.auth.users.list/get/create/update/disable/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.auth.users.create",
+          "supabase.auth.users.delete",
+          "supabase.auth.users.disable",
+          "supabase.auth.users.get",
+          "supabase.auth.users.list",
+          "supabase.auth.users.update"
+        ]
+      }
+    },
+    {
+      "family_id": 104,
+      "requirement": "supabase.auth.providers/config/hooks/sessions/mfa.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.auth.mfa.factors.delete",
+          "supabase.auth.mfa.factors.list",
+          "supabase.auth.sessions.list",
+          "supabase.v1_create_a_sso_provider",
+          "supabase.v1_create_legacy_signing_key",
+          "supabase.v1_create_project_signing_key",
+          "supabase.v1_create_project_tpa_integration",
+          "supabase.v1_delete_a_sso_provider",
+          "supabase.v1_delete_project_tpa_integration",
+          "supabase.v1_get_a_sso_provider",
+          "supabase.v1_get_legacy_signing_key",
+          "supabase.v1_get_project_signing_key",
+          "supabase.v1_get_project_signing_keys",
+          "supabase.v1_get_project_tpa_integration",
+          "supabase.v1_list_all_sso_provider",
+          "supabase.v1_list_project_tpa_integrations",
+          "supabase.v1_remove_project_signing_key",
+          "supabase.v1_update_a_sso_provider",
+          "supabase.v1_update_project_signing_key"
+        ]
+      }
+    },
+    {
+      "family_id": 105,
+      "requirement": "supabase.storage.buckets.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.storage.buckets.create",
+          "supabase.storage.buckets.delete",
+          "supabase.storage.buckets.empty",
+          "supabase.storage.buckets.get",
+          "supabase.storage.buckets.list",
+          "supabase.storage.buckets.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "supabase.storage.buckets.metadata.list"
+        ]
+      }
+    },
+    {
+      "family_id": 106,
+      "requirement": "supabase.storage.objects.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.storage.objects.copy",
+          "supabase.storage.objects.delete",
+          "supabase.storage.objects.download",
+          "supabase.storage.objects.exists",
+          "supabase.storage.objects.get",
+          "supabase.storage.objects.list",
+          "supabase.storage.objects.move",
+          "supabase.storage.objects.update",
+          "supabase.storage.objects.upload"
+        ]
+      }
+    },
+    {
+      "family_id": 107,
+      "requirement": "supabase.storage.policies.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.storage.policies.create",
+          "supabase.storage.policies.delete",
+          "supabase.storage.policies.list",
+          "supabase.storage.policies.update"
+        ]
+      }
+    },
+    {
+      "family_id": 108,
+      "requirement": "supabase.realtime.channels/permissions/publications.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.realtime.channels.create",
+          "supabase.realtime.channels.delete",
+          "supabase.realtime.channels.get",
+          "supabase.realtime.channels.list",
+          "supabase.realtime.channels.subscribe",
+          "supabase.realtime.channels.update",
+          "supabase.realtime.permissions.create",
+          "supabase.realtime.permissions.delete",
+          "supabase.realtime.permissions.list",
+          "supabase.realtime.permissions.update"
+        ]
+      }
+    },
+    {
+      "family_id": 109,
+      "requirement": "supabase.vault.secrets.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.vault.secrets.create_version",
+          "supabase.vault.secrets.delete",
+          "supabase.vault.secrets.managed.create",
+          "supabase.vault.secrets.managed.delete",
+          "supabase.vault.secrets.managed.get",
+          "supabase.vault.secrets.managed.list",
+          "supabase.vault.secrets.managed.update",
+          "system.credentials.provider.activate",
+          "system.credentials.provider.adopt",
+          "system.credentials.provider.reconcile",
+          "system.credentials.provider.rollback",
+          "system.credentials.provider.verify"
+        ]
+      }
+    },
+    {
+      "family_id": 110,
+      "requirement": "supabase.logs.query",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "supabase.logs.query"
+      ],
+      "operation_disposition": {
+        "exact_legacy_fixture_only": [
+          "supabase.logs.query"
+        ]
+      }
+    },
+    {
+      "family_id": 111,
+      "requirement": "supabase.tenant.export/erase/restore",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.tenant.consent.get",
+          "supabase.tenant.consent.set",
+          "supabase.tenant.content.export",
+          "supabase.tenant.content.exports.available",
+          "supabase.tenant.content.exports.download",
+          "supabase.tenant.content.exports.get",
+          "supabase.tenant.content.exports.purge",
+          "supabase.tenant.erase",
+          "supabase.tenant.export",
+          "supabase.tenant.exports.download",
+          "supabase.tenant.exports.get",
+          "supabase.tenant.exports.purge",
+          "supabase.tenant.financial.export",
+          "supabase.tenant.financial.exports.available",
+          "supabase.tenant.financial.exports.download",
+          "supabase.tenant.financial.exports.get",
+          "supabase.tenant.financial.exports.purge",
+          "supabase.tenant.manifests.erase",
+          "supabase.tenant.manifests.export",
+          "supabase.tenant.manifests.exports.get",
+          "supabase.tenant.manifests.exports.purge",
+          "supabase.tenant.manifests.restore",
+          "supabase.tenant.protected_resources.inventory",
+          "supabase.tenant.restore",
+          "supabase.tenant.support.erase",
+          "supabase.tenant.support.restore",
+          "supabase.tenant.support.snapshot",
+          "supabase.tenant.support.snapshots.get",
+          "supabase.tenant.support.snapshots.purge"
+        ]
+      }
+    },
+    {
+      "family_id": 112,
+      "requirement": "supabase.compliance.audit",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "supabase.compliance.audit",
+          "supabase.compliance.hold.create",
+          "supabase.compliance.retention.extend",
+          "supabase.tenant.consent.get",
+          "supabase.tenant.consent.set"
+        ]
+      }
+    },
+    {
+      "family_id": 113,
+      "requirement": "github.apps.installations.list/verify",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.apps.installations.list",
+          "github.apps.installations.verify"
+        ]
+      }
+    },
+    {
+      "family_id": 114,
+      "requirement": "github.repos.list/get/create/update/archive/delete",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.repos.get",
+        "github.repos.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.repos.archive",
+          "github.repos.delete",
+          "github.repos.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.repos.get",
+          "github.repos.list"
+        ],
+        "separate_authority_or_mapping_review": [
+          "github.write.preflight"
+        ]
+      }
+    },
+    {
+      "family_id": 115,
+      "requirement": "github.refs.list/create/update/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.refs.create",
+        "github.refs.list",
+        "github.refs.update"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.refs.create",
+          "github.refs.list",
+          "github.refs.update"
+        ],
+        "outside_current_standing_classes": [
+          "github.refs.delete"
+        ]
+      }
+    },
+    {
+      "family_id": 116,
+      "requirement": "github.branches.list/protect",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.branches.list"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.branches.list"
+        ],
+        "closed_exposure": [
+          "github.branches.protect"
+        ]
+      }
+    },
+    {
+      "family_id": 117,
+      "requirement": "github.files.get/create/update/delete",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.files.content.get",
+        "github.files.create",
+        "github.files.delete",
+        "github.files.metadata.get",
+        "github.files.update"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.files.content.get",
+          "github.files.create",
+          "github.files.delete",
+          "github.files.metadata.get"
+        ],
+        "exact_legacy_fixture_only": [
+          "github.files.update"
+        ],
+        "closed_exposure": [
+          "github.files.upsert",
+          "github.push_files",
+          "github.read",
+          "github.update_file"
+        ]
+      }
+    },
+    {
+      "family_id": 118,
+      "requirement": "github.git.blobs/trees/commits.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.commit",
+        "github.git.commits.create",
+        "github.git.commits.get",
+        "github.git.trees.get"
+      ],
+      "operation_disposition": {
+        "exact_legacy_fixture_only": [
+          "github.commit"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.git.blobs.create",
+          "github.git.commits.create",
+          "github.git.commits.get",
+          "github.git.trees.create",
+          "github.git.trees.get"
+        ],
+        "closed_exposure": [
+          "github.git.get_blob"
+        ]
+      }
+    },
+    {
+      "family_id": 119,
+      "requirement": "github.pullRequests.list/create/update/review/merge/close",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.pull_requests.list"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.pull_requests.create",
+          "github.pull_requests.list"
+        ],
+        "closed_exposure": [
+          "github.pull_requests.merge",
+          "github.pull_requests.review",
+          "github.pull_requests.update"
+        ]
+      }
+    },
+    {
+      "family_id": 120,
+      "requirement": "github.issues.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.issues.get",
+        "github.issues.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.activity.list_repo_events",
+          "github.activity.list_repo_notifications_for_authenticated_user",
+          "github.activity.mark_repo_notifications_as_read",
+          "github.issues.add_assignees",
+          "github.issues.add_blocked_by_dependency",
+          "github.issues.add_issue_field_values",
+          "github.issues.add_labels",
+          "github.issues.add_relates_to",
+          "github.issues.add_sub_issue",
+          "github.issues.approve_suggestion",
+          "github.issues.assignee.check",
+          "github.issues.assignee_on_issue.check",
+          "github.issues.create",
+          "github.issues.create_comment",
+          "github.issues.delete_comment",
+          "github.issues.delete_issue_field_value",
+          "github.issues.dismiss_suggestion",
+          "github.issues.get_comment",
+          "github.issues.get_event",
+          "github.issues.get_parent",
+          "github.issues.list_assignees",
+          "github.issues.list_comments",
+          "github.issues.list_comments_for_repo",
+          "github.issues.list_dependencies_blocked_by",
+          "github.issues.list_dependencies_blocking",
+          "github.issues.list_events",
+          "github.issues.list_events_for_repo",
+          "github.issues.list_events_for_timeline",
+          "github.issues.list_issue_field_values_for_issue",
+          "github.issues.list_labels_on_issue",
+          "github.issues.list_relates_to",
+          "github.issues.list_sub_issues",
+          "github.issues.list_suggestions",
+          "github.issues.lock",
+          "github.issues.pin_comment",
+          "github.issues.remove_all_labels",
+          "github.issues.remove_assignees",
+          "github.issues.remove_dependency_blocked_by",
+          "github.issues.remove_label",
+          "github.issues.remove_relates_to",
+          "github.issues.remove_sub_issue",
+          "github.issues.reprioritize_sub_issue",
+          "github.issues.set_issue_field_values",
+          "github.issues.set_labels",
+          "github.issues.unlock",
+          "github.issues.unpin_comment",
+          "github.issues.update",
+          "github.issues.update_comment",
+          "github.reactions.create_for_commit_comment",
+          "github.reactions.create_for_issue",
+          "github.reactions.create_for_issue_comment",
+          "github.reactions.delete_for_commit_comment",
+          "github.reactions.delete_for_issue",
+          "github.reactions.delete_for_issue_comment",
+          "github.reactions.list_for_commit_comment",
+          "github.reactions.list_for_issue",
+          "github.reactions.list_for_issue_comment",
+          "github.repos.delete_commit_comment",
+          "github.repos.get_commit_comment",
+          "github.repos.list_commit_comments_for_repo",
+          "github.repos.update_commit_comment"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.issues.get",
+          "github.issues.list"
+        ]
+      }
+    },
+    {
+      "family_id": 121,
+      "requirement": "github.labels.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.labels.get",
+        "github.labels.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.labels.create",
+          "github.labels.delete",
+          "github.labels.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.labels.get",
+          "github.labels.list"
+        ]
+      }
+    },
+    {
+      "family_id": 122,
+      "requirement": "github.milestones.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.milestones.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.issues.list_labels_for_milestone",
+          "github.milestones.create",
+          "github.milestones.delete",
+          "github.milestones.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.milestones.get",
+          "github.milestones.list"
+        ]
+      }
+    },
+    {
+      "family_id": 123,
+      "requirement": "github.discussions.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "github.discussions.categories.list"
+        ],
+        "closed_exposure": [
+          "github.discussions.close",
+          "github.discussions.comments.create",
+          "github.discussions.comments.delete",
+          "github.discussions.comments.get",
+          "github.discussions.comments.list",
+          "github.discussions.comments.mark_answer",
+          "github.discussions.comments.unmark_answer",
+          "github.discussions.comments.update",
+          "github.discussions.create",
+          "github.discussions.delete",
+          "github.discussions.get",
+          "github.discussions.list",
+          "github.discussions.reopen",
+          "github.discussions.replies.list",
+          "github.discussions.update"
+        ]
+      }
+    },
+    {
+      "family_id": 124,
+      "requirement": "github.tags.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.tags.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.git.create_tag",
+          "github.git.get_tag"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.tags.list"
+        ]
+      }
+    },
+    {
+      "family_id": 125,
+      "requirement": "github.releases.create/publish/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.releases.create",
+          "github.releases.delete",
+          "github.releases.update"
+        ]
+      }
+    },
+    {
+      "family_id": 126,
+      "requirement": "github.packages.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.packages.delete",
+          "github.packages.restore",
+          "github.packages.versions.delete",
+          "github.packages.versions.restore"
+        ],
+        "separate_authority_or_mapping_review": [
+          "github.packages.get",
+          "github.packages.list",
+          "github.packages.versions.get",
+          "github.packages.versions.list"
+        ]
+      }
+    },
+    {
+      "family_id": 127,
+      "requirement": "github.actions.workflows.list/dispatch/enable/disable",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.actions.workflows.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.actions.workflows.disable",
+          "github.actions.workflows.dispatch",
+          "github.actions.workflows.enable"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.actions.workflows.list"
+        ]
+      }
+    },
+    {
+      "family_id": 128,
+      "requirement": "github.actions.runs.get/cancel/rerun",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.actions.runs.get"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.actions.runs.cancel",
+          "github.actions.runs.rerun"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.actions.runs.get"
+        ]
+      }
+    },
+    {
+      "family_id": 129,
+      "requirement": "github.actions.artifacts.list/download/delete",
+      "constituents_reviewed": true,
+      "unreviewed_candidates_are_not_scope_expansion": false,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.actions.artifacts.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.actions.artifacts.delete",
+          "github.actions.artifacts.download.capture",
+          "provider.artifacts.read_private"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.actions.artifacts.list"
+        ]
+      }
+    },
+    {
+      "family_id": 130,
+      "requirement": "github.checks.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.checks.runs.get",
+        "github.checks.runs.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.checks.create_suite",
+          "github.checks.get_suite",
+          "github.checks.list_annotations",
+          "github.checks.list_for_suite",
+          "github.checks.list_suites_for_ref",
+          "github.checks.rerequest_run",
+          "github.checks.rerequest_suite",
+          "github.checks.runs.create",
+          "github.checks.runs.update",
+          "github.checks.set_suites_preferences"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.checks.runs.get",
+          "github.checks.runs.list"
+        ]
+      }
+    },
+    {
+      "family_id": 131,
+      "requirement": "github.statuses.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.statuses.combined.get",
+        "github.statuses.list"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.statuses.combined.get",
+          "github.statuses.list"
+        ],
+        "closed_exposure": [
+          "github.statuses.create"
+        ]
+      }
+    },
+    {
+      "family_id": 132,
+      "requirement": "github.deployments.create/status",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.deployments.list",
+        "github.deployments.statuses.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.deployments.create",
+          "github.deployments.statuses.create",
+          "github.repos.delete_deployment",
+          "github.repos.get_deployment",
+          "github.repos.get_deployment_status"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.deployments.list",
+          "github.deployments.statuses.list"
+        ]
+      }
+    },
+    {
+      "family_id": 133,
+      "requirement": "github.environments.list/update",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.environments.get",
+        "github.environments.list"
+      ],
+      "operation_disposition": {
+        "exposed_class_candidate_not_execution_authority": [
+          "github.environments.get",
+          "github.environments.list"
+        ],
+        "closed_exposure": [
+          "github.environments.update",
+          "github.repos.create_deployment_branch_policy",
+          "github.repos.create_deployment_protection_rule",
+          "github.repos.delete_an_environment",
+          "github.repos.delete_deployment_branch_policy",
+          "github.repos.disable_deployment_protection_rule",
+          "github.repos.get_all_deployment_protection_rules",
+          "github.repos.get_custom_deployment_protection_rule",
+          "github.repos.get_deployment_branch_policy",
+          "github.repos.list_custom_deployment_rule_integrations",
+          "github.repos.list_deployment_branch_policies",
+          "github.repos.update_deployment_branch_policy"
+        ]
+      }
+    },
+    {
+      "family_id": 134,
+      "requirement": "github.repoSecrets.set/remove",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.actions.get_repo_secret",
+          "github.repo_secrets.remove",
+          "github.repo_secrets.rotate",
+          "github.repo_secrets.set"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.repo_secrets.list",
+          "github.repo_secrets.public_key.get"
+        ]
+      }
+    },
+    {
+      "family_id": 135,
+      "requirement": "github.variables.set/remove",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.actions.create_environment_variable",
+          "github.actions.delete_environment_variable",
+          "github.actions.get_environment_variable",
+          "github.actions.get_repo_variable",
+          "github.actions.list_environment_variables",
+          "github.actions.update_environment_variable",
+          "github.variables.create",
+          "github.variables.list",
+          "github.variables.remove",
+          "github.variables.set"
+        ]
+      }
+    },
+    {
+      "family_id": 136,
+      "requirement": "github.environmentSecrets.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.environment_secrets.delete",
+          "github.environment_secrets.set"
+        ],
+        "separate_authority_or_mapping_review": [
+          "github.environment_secrets.get",
+          "github.environment_secrets.list",
+          "github.environment_secrets.public_key.get"
+        ]
+      }
+    },
+    {
+      "family_id": 137,
+      "requirement": "github.webhooks.list/create/update/delete/deliveries/redeliver",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.repos.get_webhook",
+          "github.repos.get_webhook_config_for_repo",
+          "github.repos.get_webhook_delivery",
+          "github.repos.ping_webhook",
+          "github.repos.test_push_webhook",
+          "github.repos.update_webhook_config_for_repo",
+          "github.webhooks.create",
+          "github.webhooks.delete",
+          "github.webhooks.redeliver",
+          "github.webhooks.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.webhooks.deliveries.list",
+          "github.webhooks.list"
+        ]
+      }
+    },
+    {
+      "family_id": 138,
+      "requirement": "github.collaborators/teams/permissions.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.collaborators.list",
+        "github.collaborators.permission.get"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.collaborators.add",
+          "github.collaborators.check",
+          "github.collaborators.remove",
+          "github.repos.delete_invitation",
+          "github.repos.list_invitations",
+          "github.repos.list_teams",
+          "github.repos.update_invitation"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.collaborators.list",
+          "github.collaborators.permission.get"
+        ]
+      }
+    },
+    {
+      "family_id": 139,
+      "requirement": "github.rulesets.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [
+        "github.rulesets.list"
+      ],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.repos.get_branch_rules",
+          "github.repos.get_repo_rule_suite",
+          "github.repos.get_repo_rule_suites",
+          "github.repos.get_repo_ruleset_history",
+          "github.repos.get_repo_ruleset_version",
+          "github.rulesets.create",
+          "github.rulesets.delete",
+          "github.rulesets.update"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.rulesets.get",
+          "github.rulesets.list"
+        ]
+      }
+    },
+    {
+      "family_id": 140,
+      "requirement": "github.audit.list",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.audit.list"
+        ]
+      }
+    },
+    {
+      "family_id": 141,
+      "requirement": "github.security.alerts/list",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.code_security.get_configuration_for_repository",
+          "github.dependabot.get_alert",
+          "github.dependabot.update_alert",
+          "github.repos.disable_vulnerability_alerts",
+          "github.repos.enable_vulnerability_alerts",
+          "github.secret_scanning.get_alert",
+          "github.secret_scanning.list_alerts_for_repo",
+          "github.secret_scanning.list_locations_for_alert",
+          "github.secret_scanning.update_alert",
+          "github.security.vulnerability_alerts.check",
+          "github.security_advisories.create_fork",
+          "github.security_advisories.create_private_vulnerability_report",
+          "github.security_advisories.create_repository_advisory",
+          "github.security_advisories.create_repository_advisory_cve_request",
+          "github.security_advisories.get_repository_advisory",
+          "github.security_advisories.list_repository_advisories",
+          "github.security_advisories.update_repository_advisory"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.security.dependabot.alerts.list"
+        ]
+      }
+    },
+    {
+      "family_id": 142,
+      "requirement": "github.codeScanning.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "github.code_scanning.commit_autofix",
+          "github.code_scanning.create_autofix",
+          "github.code_scanning.create_variant_analysis",
+          "github.code_scanning.delete_analysis",
+          "github.code_scanning.delete_codeql_database",
+          "github.code_scanning.get_ai_scan_enablement",
+          "github.code_scanning.get_alert",
+          "github.code_scanning.get_analysis",
+          "github.code_scanning.get_autofix",
+          "github.code_scanning.get_codeql_database",
+          "github.code_scanning.get_default_setup",
+          "github.code_scanning.get_sarif",
+          "github.code_scanning.get_variant_analysis",
+          "github.code_scanning.get_variant_analysis_repo_task",
+          "github.code_scanning.list_alert_instances",
+          "github.code_scanning.list_codeql_databases",
+          "github.code_scanning.list_recent_analyses",
+          "github.code_scanning.update_ai_scan_enablement",
+          "github.code_scanning.update_alert",
+          "github.code_scanning.update_default_setup",
+          "github.code_scanning.upload_sarif"
+        ],
+        "exposed_class_candidate_not_execution_authority": [
+          "github.security.code_scanning.alerts.list"
+        ]
+      }
+    },
+    {
+      "family_id": 143,
+      "requirement": "sandy.tenancy_and_subscription.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agenda.access.revoke",
+          "agenda.categories.create",
+          "agenda.categories.delete",
+          "agenda.categories.update",
+          "agenda.companies.create",
+          "agenda.delegation.create",
+          "agenda.delegation.invite",
+          "agenda.delegation.respond",
+          "agenda.delegation.revoke",
+          "agenda.pins.save",
+          "agenda.shared_tasks.create",
+          "agenda.shared_tasks.update",
+          "agenda.sharing.accept_link",
+          "agenda.sharing.create",
+          "agenda.suggestions.decide",
+          "agenda.tasks.archive_tree",
+          "agenda.tasks.comment",
+          "agenda.tasks.complete_tree",
+          "agenda.tasks.create",
+          "agenda.tasks.dependency",
+          "agenda.tasks.interpret",
+          "agenda.tasks.update",
+          "customer.profile.get"
+        ],
+        "separate_authority_or_mapping_review": [
+          "agenda.overview",
+          "agenda.pins.list",
+          "agenda.tasks.history"
+        ]
+      }
+    },
+    {
+      "family_id": 144,
+      "requirement": "sandy.authentication_and_security.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agenda.access.revoke",
+          "agenda.categories.create",
+          "agenda.categories.delete",
+          "agenda.categories.update",
+          "agenda.companies.create",
+          "agenda.delegation.create",
+          "agenda.delegation.invite",
+          "agenda.delegation.respond",
+          "agenda.delegation.revoke",
+          "agenda.pins.save",
+          "agenda.shared_tasks.create",
+          "agenda.shared_tasks.update",
+          "agenda.sharing.accept_link",
+          "agenda.sharing.create",
+          "agenda.suggestions.decide",
+          "agenda.tasks.archive_tree",
+          "agenda.tasks.comment",
+          "agenda.tasks.complete_tree",
+          "agenda.tasks.create",
+          "agenda.tasks.dependency",
+          "agenda.tasks.interpret",
+          "agenda.tasks.update",
+          "customer.addresses.list",
+          "customer.keys.create",
+          "customer.keys.revoke",
+          "product.executions.get",
+          "system.credentials.issue",
+          "system.credentials.revoke"
+        ],
+        "separate_authority_or_mapping_review": [
+          "agenda.overview",
+          "agenda.pins.list",
+          "agenda.tasks.history",
+          "customer.keys.list"
+        ]
+      }
+    },
+    {
+      "family_id": 145,
+      "requirement": "sandy.connections_composio.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.connections.list",
+          "agent.runtime.connections.preflight",
+          "agent.runtime.operational.connections",
+          "composio.auth_configs.initialize",
+          "composio.auth_configs.provision",
+          "composio.awareness.refresh",
+          "composio.connections.assign",
+          "composio.connections.connect",
+          "composio.connections.disconnect",
+          "composio.connections.sync",
+          "composio.discover_toolkits",
+          "composio.execute_read"
+        ],
+        "separate_authority_or_mapping_review": [
+          "composio.auth_configs.list",
+          "composio.companies.list",
+          "composio.connections.list",
+          "composio.connections.resolve",
+          "composio.credentials.verify",
+          "composio.discover_tools",
+          "composio.execution_status",
+          "composio.status",
+          "composio.toolkits.list"
+        ]
+      }
+    },
+    {
+      "family_id": 146,
+      "requirement": "sandy.email_and_microsoft_graph.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.operational.communication",
+          "graph.attachments.download",
+          "graph.attachments.get",
+          "graph.attachments.list",
+          "graph.delta.next",
+          "graph.delta.start",
+          "graph.drafts.attachments.add",
+          "graph.drafts.attachments.delete",
+          "graph.drafts.attachments.get",
+          "graph.drafts.attachments.list",
+          "graph.drafts.confirm_send",
+          "graph.drafts.create",
+          "graph.drafts.delete",
+          "graph.drafts.forward_create",
+          "graph.drafts.get",
+          "graph.drafts.reply_all_create",
+          "graph.drafts.reply_create",
+          "graph.drafts.update",
+          "graph.drafts.verify_sent",
+          "graph.mail_folders.create",
+          "graph.mail_folders.delete",
+          "graph.mail_folders.get",
+          "graph.mail_folders.list",
+          "graph.mail_folders.update",
+          "graph.mail_rules.create",
+          "graph.mail_rules.delete",
+          "graph.mail_rules.get",
+          "graph.mail_rules.list",
+          "graph.mail_rules.update",
+          "graph.mailboxes.get",
+          "graph.mailboxes.list",
+          "graph.messages.delete",
+          "graph.messages.get",
+          "graph.messages.list",
+          "graph.messages.mark_read",
+          "graph.messages.move",
+          "graph.messages.search",
+          "graph.messages.set_categories",
+          "graph.subscriptions.delete",
+          "graph.subscriptions.ensure",
+          "graph.subscriptions.get"
+        ]
+      }
+    },
+    {
+      "family_id": 147,
+      "requirement": "sandy.google_gmail.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "gmail.drafts.confirm_send",
+          "gmail.drafts.prepare"
+        ],
+        "separate_authority_or_mapping_review": [
+          "gmail.messages.recent",
+          "gmail.messages.search"
+        ]
+      }
+    },
+    {
+      "family_id": 148,
+      "requirement": "sandy.calendar_and_scheduling.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "calendar.cancel",
+          "calendar.client.attachments.download",
+          "calendar.client.attachments.list",
+          "calendar.client.overview",
+          "calendar.client.timezone.get",
+          "calendar.conflicts",
+          "calendar.create",
+          "calendar.get",
+          "calendar.list",
+          "calendar.update"
+        ],
+        "closed_exposure": [
+          "calendar.client.attachments.confirm",
+          "calendar.client.attachments.delete",
+          "calendar.client.attachments.prepare",
+          "calendar.client.events.create",
+          "calendar.client.events.update",
+          "calendar.client.reviews.decide",
+          "calendar.client.sources.preferences",
+          "calendar.client.sources.reconcile",
+          "calendar.client.tasks.link",
+          "calendar.client.tasks.reschedule",
+          "calendar.client.timezone.observe",
+          "calendar.client.timezone.set_home"
+        ]
+      }
+    },
+    {
+      "family_id": 149,
+      "requirement": "sandy.whatsapp.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.operational.communication",
+          "whatsapp.account.get",
+          "whatsapp.identities.list",
+          "whatsapp.media.download",
+          "whatsapp.media.get",
+          "whatsapp.media.upload",
+          "whatsapp.messages.get",
+          "whatsapp.messages.list",
+          "whatsapp.messages.mark_read",
+          "whatsapp.messages.media.download",
+          "whatsapp.messages.media.get",
+          "whatsapp.messages.send_text",
+          "whatsapp.phone.get",
+          "whatsapp.requests.get",
+          "whatsapp.requests.list",
+          "whatsapp.templates.list",
+          "whatsapp.templates.send",
+          "whatsapp.topics.get",
+          "whatsapp.topics.list"
+        ]
+      }
+    },
+    {
+      "family_id": 150,
+      "requirement": "sandy.voice_sip_and_video.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.operational.communication",
+          "video.osconfig.enable",
+          "video.osconfig.vm_prepare",
+          "video.ssh.iam_grant"
+        ],
+        "separate_authority_or_mapping_review": [
+          "cloud.video.target_status",
+          "deployment.video.provision_policy"
+        ]
+      }
+    },
+    {
+      "family_id": 151,
+      "requirement": "sandy.web_chat_and_conversations.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.conversation.respond",
+          "agent.runtime.history.search",
+          "agent.runtime.operational.activity",
+          "agent.runtime.operational.communication",
+          "agent.runtime.operational.environment",
+          "workspace.chat.ask",
+          "workspace.conversations.create",
+          "workspace.topics.refresh"
+        ],
+        "separate_authority_or_mapping_review": [
+          "workspace.conversations.history",
+          "workspace.conversations.list",
+          "workspace.history",
+          "workspace.overview",
+          "workspace.search",
+          "workspace.topics.list",
+          "workspace.topics.thread"
+        ]
+      }
+    },
+    {
+      "family_id": 152,
+      "requirement": "sandy.memory_and_social_graph.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.context.memory.search",
+          "agent.runtime.history.search",
+          "memory.enrich_answer",
+          "memory.enrich_question",
+          "memory.enrich_skip",
+          "memory.fact_correct",
+          "memory.forget",
+          "memory.get_to_know_question",
+          "memory.insight",
+          "memory.life_done",
+          "memory.life_file",
+          "memory.life_goal",
+          "memory.life_task",
+          "memory.remember",
+          "memory.report_error",
+          "memory.settings",
+          "memory.task_add",
+          "memory.task_delete",
+          "memory.task_status",
+          "social.people.create",
+          "social.people.update",
+          "social.relationships.create",
+          "social.relationships.delete",
+          "workspace.topics.refresh"
+        ],
+        "separate_authority_or_mapping_review": [
+          "memory.ask",
+          "memory.biography",
+          "memory.evidence",
+          "memory.life_brief",
+          "memory.life_search",
+          "memory.life_spaces",
+          "memory.overview",
+          "memory.search",
+          "memory.tree",
+          "social.people.list",
+          "workspace.topics.list"
+        ]
+      }
+    },
+    {
+      "family_id": 153,
+      "requirement": "sandy.agenda_tasks_and_projects.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agenda.access.revoke",
+          "agenda.categories.create",
+          "agenda.categories.delete",
+          "agenda.categories.update",
+          "agenda.companies.create",
+          "agenda.delegation.create",
+          "agenda.delegation.invite",
+          "agenda.delegation.respond",
+          "agenda.delegation.revoke",
+          "agenda.pins.save",
+          "agenda.shared_tasks.create",
+          "agenda.shared_tasks.update",
+          "agenda.sharing.accept_link",
+          "agenda.sharing.create",
+          "agenda.suggestions.decide",
+          "agenda.tasks.archive_tree",
+          "agenda.tasks.comment",
+          "agenda.tasks.complete_tree",
+          "agenda.tasks.create",
+          "agenda.tasks.dependency",
+          "agenda.tasks.interpret",
+          "agenda.tasks.update",
+          "agent.runtime.context.tasks.find",
+          "agent.runtime.context.tasks.get",
+          "agent.runtime.images.request_approval",
+          "agent.runtime.tasks.list",
+          "agent.runtime.tasks.request_client_action",
+          "calendar.client.attachments.confirm",
+          "calendar.client.attachments.delete",
+          "calendar.client.attachments.prepare",
+          "calendar.client.events.create",
+          "calendar.client.events.update",
+          "calendar.client.reviews.decide",
+          "calendar.client.sources.preferences",
+          "calendar.client.sources.reconcile",
+          "calendar.client.tasks.link",
+          "calendar.client.tasks.reschedule",
+          "calendar.client.timezone.observe",
+          "calendar.client.timezone.set_home",
+          "memory.enrich_answer",
+          "memory.enrich_question",
+          "memory.enrich_skip",
+          "memory.fact_correct",
+          "memory.forget",
+          "memory.get_to_know_question",
+          "memory.insight",
+          "memory.life_done",
+          "memory.life_file",
+          "memory.life_goal",
+          "memory.life_task",
+          "memory.remember",
+          "memory.report_error",
+          "memory.settings",
+          "memory.task_add",
+          "memory.task_delete",
+          "memory.task_status",
+          "task_files.confirm",
+          "task_files.delete",
+          "task_files.prepare"
+        ],
+        "separate_authority_or_mapping_review": [
+          "agenda.overview",
+          "agenda.pins.list",
+          "agenda.tasks.history",
+          "calendar.client.attachments.download",
+          "calendar.client.attachments.list",
+          "calendar.client.overview",
+          "calendar.client.timezone.get",
+          "memory.ask",
+          "memory.biography",
+          "memory.life_search",
+          "memory.search",
+          "task_files.counts",
+          "task_files.download",
+          "task_files.list",
+          "tasks.archive",
+          "tasks.complete",
+          "tasks.create",
+          "tasks.get",
+          "tasks.list",
+          "tasks.update",
+          "workspace.command_centre",
+          "workspace.overview",
+          "workspace.search"
+        ]
+      }
+    },
+    {
+      "family_id": 154,
+      "requirement": "sandy.missions_and_autonomous_work.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.execution_plan.draft",
+          "agent.missions.plan.prepare",
+          "agent.missions.questions.review",
+          "agent.missions.work_product.prepare",
+          "agent.runtime.images.request_approval",
+          "agent.runtime.tasks.request_client_action",
+          "workspace.chat.ask",
+          "workspace.missions.answer",
+          "workspace.missions.create",
+          "workspace.missions.deliverables.review",
+          "workspace.missions.files.confirm",
+          "workspace.missions.files.prepare",
+          "workspace.missions.request_client",
+          "workspace.missions.resume",
+          "workspace.missions.review"
+        ],
+        "separate_authority_or_mapping_review": [
+          "workspace.command_centre",
+          "workspace.missions.files.download",
+          "workspace.missions.list",
+          "workspace.missions.questions"
+        ]
+      }
+    },
+    {
+      "family_id": 155,
+      "requirement": "sandy.controller_and_qa.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "separate_authority_or_mapping_review": [
+          "agent.evaluations.list",
+          "controller.activity",
+          "controller.context.audit",
+          "controller.deployment.approvals",
+          "controller.examiner.acceptance",
+          "controller.examiner.account",
+          "controller.examiner.efficiency",
+          "controller.examiner.production.list",
+          "controller.examiner.report",
+          "controller.examiner.results",
+          "controller.examiner.run.get",
+          "controller.examiner.runs",
+          "controller.missions.get",
+          "controller.missions.list",
+          "controller.overview",
+          "controller.self_tasks.list",
+          "controller.supervisor.overview",
+          "controller.supervisor.work",
+          "deployment.executor.capabilities",
+          "deployment.executor.policy",
+          "deployment.executor.preflight",
+          "deployment.executor.ready",
+          "deployment.management.preflight",
+          "deployment.management.release.preflight",
+          "deployment.video.provision_policy",
+          "engineering.change.artifact",
+          "engineering.change.auto_approve",
+          "engineering.change.get",
+          "engineering.change.list",
+          "engineering.change.register",
+          "engineering.change.status",
+          "engineering.change.test",
+          "engineering.implementation.request",
+          "engineering.job.approve",
+          "engineering.job.auto_approve",
+          "engineering.job.execute",
+          "engineering.job.status",
+          "engineering.models.readiness",
+          "engineering.preflight",
+          "engineering.rollback.approve",
+          "engineering.rollback.create_pr",
+          "engineering.rollback.prepare",
+          "engineering.rollback.request",
+          "engineering.rollback.validate",
+          "engineering.rollback.verify",
+          "github.management.verify",
+          "github.write.preflight",
+          "google_cloud.mcp.authenticated_discovery",
+          "google_cloud.mcp.build_permissions",
+          "google_cloud.mcp.build_preflight",
+          "google_cloud.mcp.build_status",
+          "google_cloud.mcp.endpoint_probe",
+          "supabase.management.verify"
+        ],
+        "closed_exposure": [
+          "agent.missions.plan.prepare",
+          "agent.missions.questions.review",
+          "agent.missions.work_product.prepare",
+          "agent.reliability.diagnosis.propose",
+          "agent.runtime.connections.preflight",
+          "agent.runtime.operational.capabilities",
+          "controller.deployment.approve",
+          "controller.examiner.production.run",
+          "controller.examiner.run",
+          "controller.qa.update",
+          "controller.roadmap.update",
+          "controller.self_tasks.update",
+          "controller.supervisor.investigate",
+          "controller.supervisor.jobs.update",
+          "deployment.functions.register",
+          "deployment.jobs.approve_read",
+          "deployment.jobs.execute",
+          "deployment.management.deploy_smoke",
+          "engineering.change.artifacts",
+          "engineering.change.detail",
+          "engineering.change.events",
+          "engineering.change.tests",
+          "engineering.changes.list",
+          "engineering.models.canary",
+          "engineering.video.link_job",
+          "github.job.reconcile",
+          "google_cloud.mcp.build_bootstrap",
+          "google_cloud.mcp.builder_project_grant",
+          "google_cloud.mcp.cloud_run_deploy",
+          "google_cloud.mcp.container_build",
+          "google_cloud.mcp.public_ingress",
+          "google_cloud.mcp.registry_writer_grant",
+          "google_cloud.mcp.release_temp_iam",
+          "system.capabilities",
+          "system.catalog",
+          "system.connections",
+          "system.coverage",
+          "system.operation_catalog",
+          "system.operation_status",
+          "system.runtime"
+        ]
+      }
+    },
+    {
+      "family_id": 156,
+      "requirement": "sandy.files_and_documents.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.documents.search",
+          "agent.runtime.context.files.find",
+          "calendar.client.attachments.confirm",
+          "calendar.client.attachments.delete",
+          "calendar.client.attachments.prepare",
+          "calendar.client.events.create",
+          "calendar.client.events.update",
+          "calendar.client.reviews.decide",
+          "calendar.client.sources.preferences",
+          "calendar.client.sources.reconcile",
+          "calendar.client.tasks.link",
+          "calendar.client.tasks.reschedule",
+          "calendar.client.timezone.observe",
+          "calendar.client.timezone.set_home",
+          "files.library.description.set",
+          "files.library.state.set",
+          "graph.attachments.download",
+          "graph.attachments.get",
+          "graph.attachments.list",
+          "graph.drafts.attachments.add",
+          "graph.drafts.attachments.delete",
+          "graph.drafts.attachments.get",
+          "graph.drafts.attachments.list",
+          "task_files.confirm",
+          "task_files.delete",
+          "task_files.prepare",
+          "workspace.missions.files.confirm",
+          "workspace.missions.files.prepare"
+        ],
+        "separate_authority_or_mapping_review": [
+          "calendar.client.attachments.download",
+          "calendar.client.attachments.list",
+          "calendar.client.overview",
+          "calendar.client.timezone.get",
+          "files.archive",
+          "files.get",
+          "files.library.download",
+          "files.library.history",
+          "files.library.list",
+          "files.list",
+          "files.rename",
+          "files.search",
+          "files.set_description",
+          "task_files.counts",
+          "task_files.download",
+          "task_files.list",
+          "workspace.missions.files.download"
+        ]
+      }
+    },
+    {
+      "family_id": 157,
+      "requirement": "sandy.notifications_and_alerts.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "notifications.file_alerts.get",
+          "notifications.file_alerts.list",
+          "notifications.file_alerts.reopen",
+          "notifications.file_alerts.resolve",
+          "notifications.improvements.get",
+          "notifications.improvements.list",
+          "notifications.inbox.acknowledge",
+          "notifications.inbox.get",
+          "notifications.inbox.list",
+          "notifications.preferences.get",
+          "notifications.preferences.update",
+          "notifications.quiet_hours.get",
+          "notifications.quiet_hours.update",
+          "notifications.subscriptions.list",
+          "notifications.subscriptions.update",
+          "notifications.templates.create",
+          "notifications.templates.delete",
+          "notifications.templates.get",
+          "notifications.templates.list",
+          "notifications.templates.update"
+        ]
+      }
+    },
+    {
+      "family_id": 158,
+      "requirement": "sandy.payments_and_commerce.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "commerce.accounts.close",
+          "commerce.accounts.create",
+          "commerce.accounts.get",
+          "commerce.accounts.list",
+          "commerce.accounts.update",
+          "commerce.audit.list",
+          "commerce.configuration.get",
+          "commerce.configuration.update",
+          "commerce.consent.get",
+          "commerce.consent.revoke",
+          "commerce.consent.set",
+          "commerce.entries.create",
+          "commerce.entries.delete",
+          "commerce.entries.get",
+          "commerce.entries.list",
+          "commerce.entries.post",
+          "commerce.entries.reverse",
+          "commerce.entries.update",
+          "commerce.executions.get",
+          "commerce.invoice_forward.receipt",
+          "commerce.invoice_forward.request",
+          "commerce.invoices.create",
+          "commerce.invoices.forwarding_status.get",
+          "commerce.invoices.get",
+          "commerce.invoices.issue",
+          "commerce.invoices.list",
+          "commerce.invoices.reconcile_forwarding_status",
+          "commerce.invoices.update",
+          "commerce.invoices.void",
+          "commerce.plans.archive",
+          "commerce.plans.create",
+          "commerce.plans.get",
+          "commerce.plans.list",
+          "commerce.plans.update",
+          "commerce.prices.archive",
+          "commerce.prices.create",
+          "commerce.prices.get",
+          "commerce.prices.list",
+          "commerce.processor.capabilities",
+          "commerce.reconciliation.get",
+          "commerce.reconciliation.list",
+          "commerce.reconciliation.preview",
+          "commerce.reconciliation.review",
+          "commerce.reconciliation.run",
+          "commerce.reports.account_ledger",
+          "commerce.reports.income_expense",
+          "commerce.reports.trial_balance",
+          "commerce.statements.delete",
+          "commerce.statements.get",
+          "commerce.statements.import",
+          "commerce.statements.list"
+        ]
+      }
+    },
+    {
+      "family_id": 159,
+      "requirement": "sandy.customer_lifecycle_and_support.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "commerce.consent.get",
+          "commerce.consent.revoke",
+          "commerce.consent.set",
+          "commerce.entitlements.check",
+          "commerce.entitlements.grant",
+          "commerce.entitlements.list",
+          "commerce.entitlements.revoke",
+          "customer.addresses.list",
+          "customer.profile.get",
+          "customer.profile.update",
+          "product.executions.get",
+          "support.cases.close",
+          "support.cases.create",
+          "support.cases.get",
+          "support.cases.list",
+          "support.cases.reopen",
+          "support.cases.update",
+          "support.comments.create",
+          "support.comments.list"
+        ]
+      }
+    },
+    {
+      "family_id": 160,
+      "requirement": "sandy.search_agents_tools_and_ai.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.documents.search",
+          "agent.execution_plan.draft",
+          "agent.missions.plan.prepare",
+          "agent.missions.questions.review",
+          "agent.missions.work_product.prepare",
+          "agent.reliability.diagnosis.propose",
+          "agent.runtime.connections.preflight",
+          "agent.runtime.conversation.respond",
+          "agent.runtime.images.request_approval",
+          "agent.runtime.operational.capabilities",
+          "agent.web.research",
+          "engineering.models.canary",
+          "memory.enrich_answer",
+          "memory.enrich_question",
+          "memory.enrich_skip",
+          "memory.fact_correct",
+          "memory.forget",
+          "memory.get_to_know_question",
+          "memory.insight",
+          "memory.life_done",
+          "memory.life_file",
+          "memory.life_goal",
+          "memory.life_task",
+          "memory.remember",
+          "memory.report_error",
+          "memory.settings",
+          "memory.task_add",
+          "memory.task_delete",
+          "memory.task_status",
+          "workspace.chat.ask",
+          "workspace.topics.refresh"
+        ],
+        "separate_authority_or_mapping_review": [
+          "agent.evaluations.list",
+          "engineering.models.readiness",
+          "gmail.messages.recent",
+          "gmail.messages.search",
+          "memory.ask",
+          "memory.biography",
+          "memory.life_search",
+          "memory.search",
+          "workspace.search"
+        ]
+      }
+    },
+    {
+      "family_id": 161,
+      "requirement": "sandy.product_configuration.*",
+      "constituents_reviewed": false,
+      "unreviewed_candidates_are_not_scope_expansion": true,
+      "fully_accepted": false,
+      "current_contract_successes": [],
+      "operation_disposition": {
+        "closed_exposure": [
+          "agent.runtime.operational.capabilities",
+          "agent.runtime.operational.environment",
+          "agent.runtime.operational.versions",
+          "commerce.configuration.get",
+          "commerce.configuration.update",
+          "commerce.entitlements.check",
+          "commerce.entitlements.grant",
+          "commerce.entitlements.list",
+          "commerce.entitlements.revoke",
+          "commerce.executions.get",
+          "commerce.plans.archive",
+          "commerce.plans.create",
+          "commerce.plans.get",
+          "commerce.plans.list",
+          "commerce.plans.update",
+          "commerce.prices.archive",
+          "commerce.prices.create",
+          "commerce.prices.get",
+          "commerce.prices.list",
+          "notifications.preferences.get",
+          "notifications.preferences.update",
+          "notifications.templates.create",
+          "notifications.templates.delete",
+          "notifications.templates.get",
+          "notifications.templates.list",
+          "notifications.templates.update",
+          "product.configuration.providers.get",
+          "product.configuration.providers.list",
+          "product.configuration.providers.restore",
+          "product.configuration.providers.update",
+          "product.configuration.snapshots.get",
+          "product.configuration.snapshots.list",
+          "product.executions.get"
+        ]
+      }
+    }
+  ],
+  "source_sha256": {
+    "requirements": "576c7ae94c9651eb351f78bcaa4b47641e57de50f757b5f49c0cbd78af1c1d48",
+    "disposition": "aeeace7ec668398d9d02031eaec3b51117c5bc231b83e1ca9fcfb390a2c4a2b7",
+    "fixture": "01407020d4c182f86cbe2048bd2a7fb02f4d04a33b8ba1396b9cd2b7275edd38",
+    "registry": "86441641bb0d66be39ab204cb03c2aaeb29486856d7671a2a5262f366151e41e",
+    "delegation": "0a5776c8823009bec2a2e3d8068e2cdd6a2726409fcb851be8e0db07737d3f18"
+  }
+}

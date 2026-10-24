@@ -1,3 +1,7 @@
+import {
+  buildCustomerMutationReceiptRequest,
+  executeMemoryCorrection,
+} from "./customer_mutations.ts";
 import { Ajv } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
 import { memoryOperationContracts as sourceContracts } from "./memory_contracts.ts";
@@ -74,6 +78,14 @@ export function buildMemoryOperationRequest(
     base.protocol !== "https:" || base.username || base.password ||
     base.pathname !== "/" || base.search || base.hash
   ) return null;
+  if (operation === "memory.fact_correct") {
+    return buildCustomerMutationReceiptRequest(
+      deps,
+      userToken,
+      operation,
+      args,
+    );
+  }
   const c = memoryOperationContracts[operation];
   return {
     url: base.origin + "/functions/v1/sandy-memory-centre?op=" + c.action,
@@ -216,6 +228,27 @@ export async function executeMemoryOperation(
       error: "invalid_operation_arguments",
       executed: false,
     });
+  }
+  if (operation === "memory.fact_correct") {
+    if (!userToken || [deps.service, deps.anon].includes(userToken)) {
+      return reply(503, {
+        ok: false,
+        error: "memory_user_session_required",
+        executed: false,
+      });
+    }
+    const outcome = await executeMemoryCorrection(
+      deps,
+      userToken,
+      p.portalCustomerId,
+      args,
+    );
+    return reply(
+      outcome.status,
+      outcome.status === 200 && object(outcome.body.result)
+        ? outcome.body.result
+        : outcome.body,
+    );
   }
   const request = buildMemoryOperationRequest(deps, userToken, operation, args);
   if (!request) {

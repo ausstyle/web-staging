@@ -811,7 +811,8 @@ export function createProviderOperationHandler(
         {
           ok: false,
           error: code,
-          executed: true,
+          // Admission consumed, but no operation request was dispatched.
+          executed: false,
           admission_id,
           request_state: "failed",
           receipt_recorded: recorded,
@@ -825,7 +826,7 @@ export function createProviderOperationHandler(
       return response(424, {
         ok: false,
         error: "provider_credential_unavailable",
-        executed: true,
+        executed: false,
         admission_id,
         request_state: "failed",
         receipt_recorded: recorded,
@@ -1021,6 +1022,8 @@ export function createProviderOperationHandler(
         ? "provider_conflict"
         : status === 412
         ? "provider_precondition_failed"
+        : status === 400
+        ? "provider_request_invalid"
         : "provider_request_failed";
       const state = op.is_mutation && status >= 500 ? "unknown" : "failed";
       const recorded = await finish(state, status, provider_request_id, {
@@ -1036,7 +1039,7 @@ export function createProviderOperationHandler(
           ? 404
           : status === 429
           ? 429
-          : status === 409 || status === 412
+          : status === 400 || status === 409 || status === 412
           ? status
           : 502,
         {

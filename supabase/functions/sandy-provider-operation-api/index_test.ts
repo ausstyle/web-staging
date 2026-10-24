@@ -239,6 +239,59 @@ Deno.test("replayed grant cannot repeat provider execution", async () => {
   assertEquals(h.requests.length, 0);
   assertEquals(identities, 0);
 });
+Deno.test("credential failures settle admission without claiming provider execution", async () => {
+  for (const fails of ["empty", "throw"] as const) {
+    for (const recordsReceipt of [true, false]) {
+      const h = harness({
+        credentialForExecution: () => {
+          if (fails === "throw") throw Error("private credential failure");
+          return Promise.resolve("");
+        },
+        ...(recordsReceipt ? {} : {
+          finishExecution: () => Promise.resolve({ allowed: false }),
+        }),
+      });
+      const response = await h.call();
+      const value = await response.json();
+      assertEquals(response.status, 424);
+      assertEquals(value.executed, false);
+      assertEquals(value.request_state, "failed");
+      assertEquals(value.receipt_recorded, recordsReceipt);
+      assertEquals(value.admission_id, ADMISSION);
+      assertEquals(h.consumes(), 1);
+      assertEquals(h.requests.length, 0);
+      assertEquals(JSON.stringify(value).includes("private credential"), false);
+      if (recordsReceipt) assertEquals(h.finishes[0].outcome, "failed");
+    }
+  }
+});
+Deno.test("provider rejected query remains a 400 with a failed receipt and private body", async () => {
+  let providerCalls = 0;
+  const h = harness({
+    fetch: async () => {
+      providerCalls++;
+      return Response.json({ error: "private upstream details" }, {
+        status: 400,
+      });
+    },
+  });
+  const response = await h.call("gcp.compute.global_operations.list", {
+    query: {
+      maxResults: 1,
+      filter: "status = DONE",
+      orderBy: "creationTimestamp desc",
+    },
+  });
+  const value = await response.json();
+  assertEquals(response.status, 400);
+  assertEquals(value.error, "provider_request_invalid");
+  assertEquals(value.provider_http_status, 400);
+  assertEquals(value.executed, true);
+  assertEquals(value.request_state, "failed");
+  assertEquals(providerCalls, 1);
+  assertEquals(h.finishes[0].outcome, "failed");
+  assertEquals(JSON.stringify(value).includes("private upstream"), false);
+});
 Deno.test("safe metadata projection strips provider credential fields and records digest receipt", async () => {
   const h = harness();
   const result = await h.call();
@@ -895,4 +948,56 @@ Deno.test("reference-publication security is descriptor based rather than a cano
   assertEquals(response.status, 403);
   assertEquals(observed, [alias.operation, "PATCH"]);
   assertEquals(h.requests.length, 0);
+});
+
+Deno.test("blob settlement uses one POST then immutable GET; failed settlement never replays mutation", async () => {
+  const { createHash } = await import("node:crypto");
+  const { readVerifiedExecution } = await import(
+    "../_shared/sandy_execution_receipt_transport.ts"
+  );
+  const sha = createHash("sha1").update("blob 5\0hello").digest("hex");
+  for (const settled of [true, false]) {
+    const methods: string[] = [];
+    let proofs = 0;
+    const h = harness({
+      fetch: (_url, init) => {
+        methods.push(init?.method ?? "GET");
+        return Promise.resolve(
+          Response.json(
+            init?.method === "POST"
+              ? {
+                sha,
+                url:
+                  `https://api.github.com/repos/ausstyle/web-staging/git/blobs/${sha}`,
+              }
+              : { sha, size: 5, encoding: "base64", content: btoa("hello") },
+            { status: init?.method === "POST" ? 201 : 200 },
+          ),
+        );
+      },
+      verifyGithubMutation: (request) => {
+        proofs++;
+        assertEquals(request.admission_id, ADMISSION);
+        assertEquals(request.proof.kind, "github_blob");
+        return Promise.resolve({
+          allowed: settled,
+          verification_sha256: settled ? "a".repeat(64) : undefined,
+        });
+      },
+    });
+    const response = await h.call("github.git.blobs.create", {
+      body: { content: "hello", encoding: "utf-8" },
+    });
+    assertEquals(response.status, 200);
+    assertEquals(methods, ["POST", "GET"]);
+    assertEquals(proofs, 1);
+    assertEquals(h.finishes[0].outcome, "accepted");
+    const verification = readVerifiedExecution(
+      response,
+      "github.git.blobs.create",
+      ADMISSION,
+    );
+    assertEquals(verification?.state, settled ? "succeeded" : "accepted");
+    assertEquals(verification?.effect_verified, settled);
+  }
 });

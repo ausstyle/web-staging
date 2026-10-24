@@ -67,3 +67,11 @@ test("worker claim binds caller and admission; successful result and failures re
   f.admin.credentials.expiry_date = Date.now() + 3600000;
   await assert.rejects(() => readAdministrator(f.connection), /administrator_token_expiry_invalid/);
 });
+test("metadata ID tokens accept only the two protected fixed audiences", async () => {
+  const audiences=[];
+  const connect=metadataConnection(async()=>new Response(runtimeAccount,{headers:{"Metadata-Flavor":"Google"}}),{fetchIdToken:async value=>{audiences.push(value);return "fixture";}});
+  const c=await connect();
+  await c.identityToken();await c.identityToken("sandy-gcp-iap-repair-zmqlyygzqoidkcwdysok");
+  assert.throws(()=>c.identityToken("https://unapproved.example.invalid"),/protected_worker_audience_required/);
+  assert.deepEqual(audiences,[workerAudience,"sandy-gcp-iap-repair-zmqlyygzqoidkcwdysok"]);
+});

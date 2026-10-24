@@ -3,6 +3,7 @@ import { missionClarificationOperation, missionPlanningOperation, missionPlannin
 import { missionClarificationRequest, missionPlanningRequest, missionPlanningSource } from "./worker_mission_planning_profiles.ts";
 import { missionPlanMilestones, missionQuestionCandidates } from "./worker_mission_planning_records.ts";
 import { fixedRuntimeResponses } from "./runtime_responses_transport.ts";
+import { completedWorkerModelPayload } from "./worker_model_result.ts";
 type Obj = Record<string, any>;
 export type MissionPlanningDependencies = { db: any; openaiKey: string; fetch?: typeof fetch };
 export type MissionPlanningOutcome = { status: number; body: Obj; legacy: Obj };
@@ -19,7 +20,7 @@ async function modelPayload(response: Response): Promise<Obj | null> {
   try { for (;;) { const item = await reader.read(); if (item.done) break; size += item.value.length; if (size > 2 * 1024 * 1024) { await reader.cancel(); return null; } parts.push(item.value); }
     const bytes = new Uint8Array(size); let offset = 0; for (const part of parts) { bytes.set(part, offset); offset += part.length; }
     const payload = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes));
-    return object(payload) && typeof payload.id === "string" && payload.id.length > 0 && payload.id.length <= 512 && Array.isArray(payload.output) && payload.status !== "incomplete" && payload.status !== "failed" && payload.error == null ? payload : null;
+    return completedWorkerModelPayload(payload) ? payload : null;
   } catch { return null; }
 }
 function outputText(payload: Obj) { return payload.output.flatMap((v: any) => (Array.isArray(v?.content) ? v.content : []).filter((c: any) => c?.type === "output_text" && typeof c.text === "string").map((c: any) => c.text)).join(""); }

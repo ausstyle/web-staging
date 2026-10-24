@@ -24,6 +24,7 @@ MODULES = {
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
         '_shared/sandy-agent-operations/identity.ts',
         '_shared/sandy-agent-operations/runtime_conversation.ts',
+        '_shared/sandy-agent-operations/runtime_model_metrics.ts',
         '_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts',
     },
     'sandy-examiner-full-cycle': {
@@ -35,7 +36,11 @@ MODULES = {
         '_shared/sandy-executive/outcome.ts',
         '_shared/sandy-executive/assessment.ts',
     },
-    'sandy-vm-protocol-api': {'sandy-vm-protocol-api/winrm.ts'},
+    'sandy-vm-protocol-api': {
+        'sandy-vm-protocol-api/executor.ts',
+        'sandy-vm-protocol-api/ssh.ts',
+        'sandy-vm-protocol-api/winrm.ts',
+    },
     'sandy-master-computer': {
         'sandy-master-computer/index.ts',
         '_shared/sandy-agent-operations/worker_computer_identity.ts',
@@ -50,6 +55,14 @@ MODULES = {
         '_shared/sandy-executive/rollout.ts', '_shared/sandy-executive/history.ts',
         '_shared/sandy-executive/outcome.ts', '_shared/sandy-agent-operations/voice_source.ts',
         '_shared/sandy-executive/temporal_context.ts',
+    },
+    'sandy-mission-executor': {
+        '_shared/sandy-agent-operations/worker_mission.ts',
+        '_shared/sandy-agent-operations/worker_model_result.ts',
+    },
+    'sandy-mission-runner': {
+        '_shared/sandy-agent-operations/worker_mission_planning.ts',
+        '_shared/sandy-agent-operations/worker_model_result.ts',
     },
     'sandy-engineering-oidc-ingest': {
         'sandy-engineering-oidc-ingest/index.ts',
