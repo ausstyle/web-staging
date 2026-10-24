@@ -46,7 +46,7 @@ func (s *Service) snapshotDrafts(ctx context.Context, tx pgx.Tx, scope Scope) ([
 		if !validPortableDraft(d) {
 			return nil, ErrIntegrity
 		}
-		item, err := s.draftMIMEExport(ctx, scope, d)
+		item, err := draftMIMESnapshot(scope, d)
 		if err != nil {
 			return nil, err
 		}

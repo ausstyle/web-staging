@@ -185,27 +185,24 @@ func (s *Service) ReadDraftMIME(ctx context.Context, scope Scope, id string) ([]
 	}
 	return s.Objects.Get(ctx, *d.MIME)
 }
-func (s *Service) draftMIMEExport(ctx context.Context, scope Scope, d Draft) (ExportItem, error) {
-	var raw []byte
-	var err error
+
+// Freeze object identity only; object I/O happens outside the resumable snapshot
+// transaction, when constructing a part and accounting for unavailable bytes.
+func draftMIMESnapshot(scope Scope, d Draft) (ExportItem, error) {
+	var o Object
 	if d.MIME == nil {
-		raw, err = GenerateDraftMIME(d)
-	} else if validDraftObject(scope, *d.MIME) {
-		raw, err = s.Objects.Get(ctx, *d.MIME)
+		raw, err := GenerateDraftMIME(d)
+		if err != nil {
+			return ExportItem{}, err
+		}
+		o = Object{SHA256: digest(raw), Size: int64(len(raw))}
 	} else {
-		err = ErrIntegrity
-	}
-	if err != nil {
-		return ExportItem{}, err
-	}
-	if !draftProjectionMatches(d, raw) {
-		return ExportItem{}, ErrIntegrity
-	}
-	accounting := draftAccounting(d)
-	o := Object{SHA256: digest(raw), Size: int64(len(raw))}
-	if d.MIME != nil {
+		if !validDraftObject(scope, *d.MIME) {
+			return ExportItem{}, ErrIntegrity
+		}
 		o = *d.MIME
 	}
+	accounting := draftAccounting(d)
 	return ExportItem{Draft: &d, DraftMIME: &accounting, MessageID: d.DraftID, Subject: d.Subject, Path: "drafts/" + d.DraftID + ".draft.eml", ReceivedAt: d.UpdatedAt, Raw: o}, nil
 }
 func (s *Service) readDraftExport(ctx context.Context, scope Scope, item ExportItem) ([]byte, error) {
@@ -224,6 +221,9 @@ func (s *Service) readDraftExport(ctx context.Context, scope Scope, item ExportI
 	}
 	if err != nil {
 		return nil, err
+	}
+	if !draftProjectionMatches(*item.Draft, raw) {
+		return nil, ErrIntegrity
 	}
 	return checked(item.Raw, raw)
 }
