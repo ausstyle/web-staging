@@ -191,7 +191,24 @@ async function startSandyAI(){
  sandyWorkspaceAllowed=true;
  const button=$("sandyAI");button.disabled=true;button.textContent="Connecting Sandy…";
  try{
+  // Resolve the selected voice only for this authenticated Sandy room host.
+  // Provider or permission errors leave the existing Coral voice unchanged.
+  const selectedVoiceRequest=(async()=>{
+    try{
+      const auth=await db.auth.getSession(), token=auth.data.session?.access_token;
+      if(!token)return "coral";
+      const r=await fetch("https://zmqlyygzqoidkcwdysok.supabase.co/functions/v1/sandy-my-voices",{
+        method:"POST",
+        headers:{"authorization":"Bearer "+token,"apikey":"sb_publishable_OVP7LUMDhtcymPRzZuCK3Q_8JkLC3ts","content-type":"application/json"},
+        body:JSON.stringify({action:"resolve"}),signal:AbortSignal.timeout(3500)
+      });
+      if(!r.ok)return "coral";
+      const result=await r.json();
+      return result.source==="custom"&&result.voice&&typeof result.voice.id==="string"&&/^voice_[\w-]+$/.test(result.voice.id)?{id:result.voice.id}:"coral";
+    }catch{return "coral";}
+  })();
   const session=await api("sandy_live_session",{meeting_id:meetingId,consent:true});
+  const sandySelectedVoice=await selectedVoiceRequest;
   const audioStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
   sandyInput=audioStream;
   sandyMixer=new AudioContext();sandyMixDestination=sandyMixer.createMediaStreamDestination();sandyMixer.createMediaStreamSource(audioStream).connect(sandyMixDestination);await sandyMixer.resume();
@@ -259,7 +276,7 @@ async function startSandyAI(){
     }
   };
   sandyEvents.onopen=()=>{$("callStatus").textContent="Sandy connected · live transcript starting";
-    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{voice:"coral",speed:1}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}},{type:"function",name:"sandy_tasks_read",description:"Read the signed-in host’s Sandy Tasks: counts, approvals, tasks due soon and tasks in progress. Use this tool when asked about tasks, agenda, deadlines, outstanding items, or assignments. Read-only; do not claim that you can edit tasks.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
+    sandyEvents.send(JSON.stringify({type:"session.update",session:{type:"realtime",audio:{input:{transcription:{model:"gpt-4o-mini-transcribe"},turn_detection:{type:"server_vad",create_response:false,interrupt_response:false,silence_duration_ms:450}},output:{voice:sandySelectedVoice,speed:1}},output_modalities:["audio"],tools:[{type:"function",name:"sandy_workspace_overview",description:"Read the current authorized Sandy workspace overview (tasks and attention) to answer the host. Read-only; do not use for changes or messages.",parameters:{type:"object",properties:{},additionalProperties:false}},{type:"function",name:"sandy_tasks_read",description:"Read the signed-in host’s Sandy Tasks: counts, approvals, tasks due soon and tasks in progress. Use this tool when asked about tasks, agenda, deadlines, outstanding items, or assignments. Read-only; do not claim that you can edit tasks.",parameters:{type:"object",properties:{},additionalProperties:false}}],tool_choice:"auto"}}));
   };
   for(const track of sandyMixDestination.stream.getAudioTracks())peer.addTrack(track,sandyMixDestination.stream);
   await syncRoomAiTerms();

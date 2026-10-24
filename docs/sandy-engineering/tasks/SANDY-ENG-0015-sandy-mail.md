@@ -1,7 +1,7 @@
-# SANDY-ENG-0014 — Sandy Mail implementation and acceptance
+# SANDY-ENG-0015 — Sandy Mail implementation and acceptance
 
 Status: IMPLEMENTING (local first-ingest foundation; deployed acceptance blocked)  
-Version: 1.1  
+Version: 1.2  
 Priority: P2 product; user-directed first milestone is database structure and synthetic first email  
 Owner: Sandy Mail workstream; API/infrastructure retain shared release ownership  
 Created: 2026-10-24  
@@ -21,3 +21,5 @@ Safety/rollback: no live SMTP/MX, real mailbox imports, external mail, shared-re
 Completion requires the scope’s full portability, security, recovery, client, operational and independent acceptance gates, not just this first local milestone. Source branch: `feat/sandy-mail-first-ingest`; new PR begins in draft.
 
 Catalogue reconciliation: main assigned SANDY-ENG-0013 to Accounting at `f3198b1`. Mail's previously unmerged entry moves to SANDY-ENG-0014; Accounting is preserved. Historical Mail evidence/source pins are unchanged. Follow-on migration 0005 adds resumable snapshot exports with mandatory canonical authority checks and explicit exclusions; customer-facing identity/scanner/encrypted-delivery integration remains pending.
+
+At main `a08f969d7b65a329c743428f557a514a14479bcb`, My Voices owns SANDY-ENG-0014. This still-unmerged Mail task now uses SANDY-ENG-0015; both My Voices and Accounting are preserved. The saved Mail architecture and first-email pins are unchanged.

@@ -154,11 +154,21 @@
     },
     {
       "scope_id": "SANDY-ENG-0014",
+      "title": "My Voices \u2014 Consent-based Personal Voice Cloning",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0014-my-voices.md",
+      "source_version": "1.0",
+      "status": "IMPLEMENTING",
+      "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0015",
       "title": "Sandy Mail Implementation and Acceptance",
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
-      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0014-sandy-mail.md",
-      "source_version": "1.1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0015-sandy-mail.md",
+      "source_version": "1.2",
       "status": "IMPLEMENTING",
       "priority": "P2"
     }
