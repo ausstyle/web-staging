@@ -2,6 +2,9 @@
  * These tests do not claim a real Owner login, token or provider effect. */
 import {PGlite} from 'npm:@electric-sql/pglite@0.3.14';
 import assert from 'node:assert/strict';
+import {Ajv} from 'npm:ajv@8.17.1';
+import {fullFormats} from 'npm:ajv-formats@3.0.1/dist/formats.js';
+import {orchestrationContracts} from '../../supabase/functions/sandy-orchestration-api/contracts.ts';
 const owner='10000000-0000-4000-8000-000000000001',actor='10000000-0000-4000-8000-000000000002',session='10000000-0000-4000-8000-000000000003',delegation='10000000-0000-4000-8000-000000000004',worker='10000000-0000-4000-8000-000000000005';
 Deno.test('delegated read jobs reuse original durable queue without Owner substitution',async(t)=>{
  const db=new PGlite();try{
@@ -100,6 +103,20 @@ Deno.test('delegated read jobs reuse original durable queue without Owner substi
   assert.equal(await value('SELECT attempts v FROM public.sandy_orch_jobs WHERE id=$1',[known.created.job_id]),1);
   assert.equal(await value('SELECT result v FROM public.sandy_orch_jobs WHERE id=$1',[known.created.job_id]),null);
   assert.equal(await value('SELECT execution_admission_id v FROM public.sandy_orch_attempts WHERE job_id=$1',[known.created.job_id]),known.admission);
+  assert.equal(await value('SELECT outcome v FROM public.sandy_orch_attempts WHERE job_id=$1',[known.created.job_id]),'unknown');
+  // Use the actual public status projection expression, without impersonating
+  // an Owner or relaxing the workload's separate status authorization route.
+  const jobFunction=original.slice(original.indexOf('CREATE FUNCTION public.sandy_orch_job('),original.indexOf('CREATE FUNCTION public.sandy_orch_events_page('));
+  const start=jobFunction.indexOf(" RETURN jsonb_build_object('ok',true,'job',")+8,end=jobFunction.indexOf(';\nEND $$;',start);assert.ok(start>8&&end>start);
+  const projection=jobFunction.slice(start,end);
+  const publicStatus=await value('SELECT '+projection.replaceAll('p_job_id','$1')+' v FROM public.sandy_orch_jobs record_row WHERE id=$1',[known.created.job_id]);
+  const validator=new Ajv({strict:true,allErrors:true,allowUnionTypes:true});
+  for(const [name,format] of Object.entries(fullFormats))validator.addFormat(name,format);
+  const schema=orchestrationContracts.find(x=>x.operation==='orchestration.jobs.get')!.output_schema;
+  assert.equal(validator.validate(schema,publicStatus),true,JSON.stringify(validator.errors));
+  assert.equal(publicStatus.job.provider_execution_completed,false);
+  assert.equal(validator.validate(schema,{...publicStatus,job:{...publicStatus.job,latest_attempt:{...publicStatus.job.latest_attempt,outcome:'lease_expired_canonical_read_observed'}}}),false);
+
   assert.equal(await value("SELECT count(*)::integer v FROM public.sandy_orch_events WHERE job_id=$1 AND event_type='expired_read_canonical_receipt_observed'",[known.created.job_id]),1);
   assert.equal((await value('SELECT public.sandy_orch_workload_job($1,true) v',[independent.job_id])).state,'cancelled');
   assert.equal((await claim()).claims.length,0);

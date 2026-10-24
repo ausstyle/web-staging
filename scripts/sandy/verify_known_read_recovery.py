@@ -36,7 +36,7 @@ def exercise(r):
  SELECT j.state,j.attempts,j.result IS NULL durable_result_unavailable,t.execution_admission_id,t.outcome,
  (SELECT count(*) FROM public.sandy_orch_events WHERE job_id=j.id AND event_type='expired_read_canonical_receipt_observed') recovery_events
  FROM public.sandy_orch_jobs j JOIN public.sandy_orch_attempts t ON t.job_id=j.id AND t.attempt=1 WHERE j.id='"""+JOB+"""';ROLLBACK;""")
- expected=[{'state':'needs_reconciliation','attempts':1,'durable_result_unavailable':True,'execution_admission_id':ADMISSION,'outcome':'lease_expired_canonical_read_observed','recovery_events':1}]
+ expected=[{'state':'needs_reconciliation','attempts':1,'durable_result_unavailable':True,'execution_admission_id':ADMISSION,'outcome':'unknown','recovery_events':1}]
  if result!=expected:raise Blocked('known_read_fault_recovery_not_verified')
  if snapshot(r)!=before:raise Blocked('fault_fixture_rollback_not_verified')
  receipt={'passed':True,'migration':VERSION,'fixture_job_id':JOB,'existing_provider_admission':ADMISSION,'actual_database_fault_recovery':result[0],'fixture_rollback_verified':True,'provider_calls':0,'new_jobs':0,'Owner_sessions':0,'provider_result_replayed':False,'full_autonomous_code_release_accepted':False}

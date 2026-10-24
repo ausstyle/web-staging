@@ -33,7 +33,7 @@ BEGIN
   IF known_receipt IS NOT NULL THEN
    UPDATE public.sandy_orch_jobs SET state='needs_reconciliation',error_code='known_provider_read_result_requires_reconciliation',updated_at=now(),finished_at=now() WHERE id=record_row.id;
    UPDATE public.sandy_orch_outbox SET worker_id=NULL,lease_token=NULL,lease_until=NULL WHERE job_id=record_row.id;
-   UPDATE public.sandy_orch_attempts SET finished_at=now(),outcome='lease_expired_canonical_read_observed',execution_admission_id=(known_receipt->>'admission_id')::uuid
+   UPDATE public.sandy_orch_attempts SET finished_at=now(),outcome='unknown',execution_admission_id=(known_receipt->>'admission_id')::uuid
     WHERE job_id=record_row.id AND attempt=record_row.attempts AND finished_at IS NULL;
    INSERT INTO public.sandy_orch_events(job_id,event_type,details) VALUES(record_row.id,'expired_read_canonical_receipt_observed',
     known_receipt||jsonb_build_object('safe_to_retry',false,'durable_result_available',false,'provider_execution_claimed_by_this_recovery',false));
