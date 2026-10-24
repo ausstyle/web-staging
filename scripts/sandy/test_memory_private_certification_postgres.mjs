@@ -26,9 +26,12 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
     "utf8",
   );
   await db.exec(sql);
+  await db.exec("CREATE SCHEMA supabase_migrations;CREATE TABLE supabase_migrations.schema_migrations(version text);INSERT INTO supabase_migrations.schema_migrations VALUES('20261024004200');");
+  await db.exec(await readFile(new URL("../../supabase/migrations/20261024004210_sandy_memory_readiness_artifact_classification.sql",import.meta.url),"utf8"));
+  await db.exec("ALTER TABLE sandy_engineering_artifacts ADD CHECK(artifact_type IN('github_commit','github_file','supabase_migration','edge_function','deployment_job','configuration','other')),ADD CHECK(rollback_strategy IN('git_revert','redeploy_prior','forward_migration','manual_review')); ");
   const manifest=JSON.parse(await readFile(new URL("../../docs/sandy-engineering/evaluations/memory-correction-adapter-release.json",import.meta.url),"utf8"));
   const sourceRows=(await db.query("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid IN('public.sandy_guard_memory_private_readiness_event()'::regprocedure,'public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)'::regprocedure) ORDER BY proname")).rows;
-  assert.deepEqual(sourceRows,manifest.private_schema_sources);passed++;
+  assert.deepEqual(sourceRows,manifest.readiness_classification_repair.candidate_sources);passed++;
   assert.deepEqual((await db.query("SELECT tgenabled,tgtype::int type,tgisinternal internal,tgfoid='public.sandy_guard_memory_private_readiness_event()'::regprocedure fixed_guard FROM pg_trigger WHERE tgrelid='public.sandy_engineering_change_events'::regclass AND tgname='sandy_memory_private_readiness_event_guard'")).rows,[{tgenabled:'O',type:31,internal:false,fixed_guard:true}]);passed++;
 
   assert.equal(
@@ -56,6 +59,7 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
     "SELECT error_contract->>'contract_sha256' sha FROM sandy_operation_registry",
   )).rows[0].sha;
   const metadata = {
+    kind:"runtime_private_certification",
     schema_version: 1,
     operation: "memory.fact_correct",
     fixture_user_id: actor,
@@ -71,7 +75,7 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
     expires_at: new Date(Date.now() + 600000).toISOString(),
   };
   await db.query(
-    "INSERT INTO sandy_engineering_artifacts(id,change_id,artifact_type,target,rollback_strategy,metadata) VALUES($1,$2,'runtime_private_certification','memory.fact_correct','revoke_readiness_only',$3)",
+    "INSERT INTO sandy_engineering_artifacts(id,change_id,artifact_type,target,rollback_strategy,metadata) VALUES($1,$2,'configuration','memory.fact_correct','manual_review',$3)",
     [artifact, change, JSON.stringify(metadata)],
   );
   const proof = async (
@@ -118,6 +122,12 @@ await runMemoryReceiptTests(async ({ db, actor, customer, foreign }) => {
   await assert.rejects(install(), (e) => e.code === "42501");
   passed++;
   await claims(false);
+  for (const change of ["artifact_type='runtime_private_certification'", "rollback_strategy='revoke_readiness_only'"]) {
+    await assert.rejects(db.query("UPDATE sandy_engineering_artifacts SET "+change+" WHERE id=$1",[artifact]),e=>e.code==='23514');passed++;
+  }
+  await db.query("UPDATE sandy_engineering_artifacts SET metadata=metadata-'kind' WHERE id=$1",[artifact]);
+  await assert.rejects(install(),/fixed readiness artifact required/);passed++;
+  await db.query("UPDATE sandy_engineering_artifacts SET metadata=$2 WHERE id=$1",[artifact,JSON.stringify(metadata)]);
   for (const [disable,restore] of [
     ["UPDATE auth.users SET raw_user_meta_data='{}'", "UPDATE auth.users SET raw_user_meta_data='{\"sandy_api_isolated_session_test\":true}'"],
     ["UPDATE email_customers SET google_drive_folder_status='pending'", "UPDATE email_customers SET google_drive_folder_status='excluded'"],

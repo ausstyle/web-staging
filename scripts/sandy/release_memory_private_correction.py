@@ -90,7 +90,13 @@ def schema(r,m,installed=False):
     if flags!=[{'api_exposed':False,'ai_exposed':False,'verified':False}]:raise Blocked('private_certification_must_not_change_global_exposure')
     if installed:
         protected_sources=r.sql("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid IN('public.sandy_guard_memory_private_readiness_event()'::regprocedure,'public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)'::regprocedure) ORDER BY proname",True)
-        if protected_sources!=m['private_schema_sources']:raise Blocked('private_readiness_source_or_owner_drift')
+        repair=m.get('readiness_classification_repair')
+        repair_history=r.sql("SELECT version,statements FROM supabase_migrations.schema_migrations WHERE version='20261024004210'",True)
+        expected_sources=m['private_schema_sources']
+        if repair_history:
+            if not repair or repair_history!=[{'version':'20261024004210','statements':[(ROOT/repair['migration']).read_text()]}]:raise Blocked('readiness_repair_history_drift')
+            expected_sources=repair['candidate_sources']
+        if protected_sources!=expected_sources:raise Blocked('private_readiness_source_or_owner_drift')
         trigger=r.sql("SELECT tgenabled,tgtype::int type,tgisinternal internal,tgfoid='public.sandy_guard_memory_private_readiness_event()'::regprocedure fixed_guard FROM pg_trigger WHERE tgrelid='public.sandy_engineering_change_events'::regclass AND tgname='sandy_memory_private_readiness_event_guard'",True)
         if trigger!=[{'tgenabled':'O','type':31,'internal':False,'fixed_guard':True}]:raise Blocked('private_readiness_guard_trigger_drift')
         security=r.sql("SELECT has_function_privilege('authenticated','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') customer,has_function_privilege('anon','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') anon,has_function_privilege('service_role','public.sandy_api_memory_private_readiness(uuid,text,text,uuid,text)','EXECUTE') service",True)
