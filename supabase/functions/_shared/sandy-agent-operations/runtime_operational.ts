@@ -43,12 +43,17 @@ export async function runtimeOperationalOperation(principal: AgentPrincipal, ope
       db.from("sandy_module_status").select("module_key,module_group,deployed_version,deployment_state,operational_status,remaining_steps,evidence,last_tested_at,observed_at").limit(250),
       db.from("sandy_master_modules").select("module_key,module_name,description,component_patterns,sort_order,acceptance_requirements").order("sort_order"),
     ]);
-    return caps.error || integrations.error ? { error: "capability_catalog_unavailable" } : {
+    const observedAt = Date.now();
+    return [caps, integrations, moduleRegistry, masterRegistry].some(result => result.error || !Array.isArray(result.data)) ? { error: "capability_catalog_unavailable" } : {
       ok: true, source: ["sandy_capability_catalog", "sandy_ai_integrations"],
       capabilities: (caps.data || []).filter((x: Obj) => Array.isArray(x.channels) && x.channels.includes(facts.channel)).map((x: Obj) => ({ key: x.feature_key, verified_at: x.last_verified_at, verification_note: x.verification_note })),
       integration_configuration: (integrations.data || []).map((x: Obj) => ({ key: x.integration_key, enabled: x.enabled, status: x.deployment_status, verified_at: x.last_verified_at })),
-      module_status_source: "sandy_module_status", master_modules: masterRegistry.error ? [] : masterRegistry.data,
-      modules: moduleRegistry.error ? [] : (moduleRegistry.data || []).map((m: Obj) => ({ ...m, operational_status: !m.last_tested_at || Date.now() - Date.parse(m.last_tested_at) >= 86400000 ? "unverified" : m.operational_status, stale: !m.last_tested_at || Date.now() - Date.parse(m.last_tested_at) >= 86400000 })),
+      module_status_source: "sandy_module_status", master_modules: masterRegistry.data,
+      modules: moduleRegistry.data.map((m: Obj) => {
+        const testedAt = typeof m.last_tested_at === "string" ? Date.parse(m.last_tested_at) : NaN;
+        const stale = !Number.isFinite(testedAt) || testedAt > observedAt || observedAt - testedAt >= 86400000;
+        return { ...m, operational_status: stale ? "unverified" : m.operational_status, stale };
+      }),
       note: "A configured or deployed feature is not necessarily operational or authorised for the current customer.",
     };
   }

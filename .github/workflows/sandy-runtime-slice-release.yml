@@ -3,8 +3,10 @@ on:
   pull_request:
     paths:
       - 'scripts/sandy/runtime_channel_activity_acceptance.py'
+      - 'scripts/sandy/runtime_capability_acceptance.py'
       - 'scripts/sandy/release_runtime_slice.py'
       - 'supabase/functions/_shared/sandy-agent-operations/runtime_snapshot*'
+      - 'supabase/functions/_shared/sandy-agent-operations/runtime_operational.ts'
       - 'scripts/sandy/test_runtime_slice_release.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
       - 'scripts/sandy/test_mission_truth_acceptance.py'
@@ -20,7 +22,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native, computer-truth, durable-receipts, grounding]
+        options: [runtime-programme, runtime, capability-truth, graphical, channels, acceptance-bridge, missions, native, computer-truth, durable-receipts, grounding]
 permissions:
   contents: read
 concurrency:
@@ -101,7 +103,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import os, subprocess, sys
-          options={'runtime':'sandy-agent-runtime-v4','durable-receipts':'sandy-orchestration-api'}
+          options={'capability-truth':'sandy-agent-runtime-v4','runtime':'sandy-agent-runtime-v4','durable-receipts':'sandy-orchestration-api'}
           # Grounding selects only the two independently captured source slices;
           # native and other components retain their separate preimage guards.
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
@@ -132,6 +134,12 @@ jobs:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/runtime_channel_activity_acceptance.py --output "$RUNNER_TEMP/runtime-slices/channel-activity-acceptance.json"
+      - name: Verify normal customer capability freshness answer once
+        if: inputs.component == 'capability-truth'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/runtime_capability_acceptance.py --output "$RUNNER_TEMP/runtime-slices/capability-acceptance.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
