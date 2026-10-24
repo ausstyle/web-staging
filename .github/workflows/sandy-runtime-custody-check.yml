@@ -21,7 +21,7 @@ jobs:
     timeout-minutes: 10
     services:
       postgres:
-        image: postgres:16.10
+        image: postgres:17.6@sha256:00bc86618629af00d2937fdc5a5d63db3ff8450acf52f0636ec813c7f4902929
         env:
           POSTGRES_USER: custody_fixture
           POSTGRES_PASSWORD: isolated-ci-only
@@ -38,7 +38,7 @@ jobs:
           deno-version: '2.9.6'
       - uses: actions/checkout@v4
         with:
-          ref: e175386b711afbc0055e39ce8feb132f0c8e9a08
+          ref: 6b0b30ff9b8c14909a05025a1d84cfe84819799f
           path: cloud-contract
           sparse-checkout: packages/sandy-cloud
       - name: Real isolated PostgreSQL lock and rollback integration

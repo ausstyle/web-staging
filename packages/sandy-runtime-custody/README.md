@@ -103,11 +103,15 @@ server installation dependency, never a caller-selected digest callback or ident
 The canonical operation/contract hash and actual signer/reader still require owner
 installation records; no fixture operation is registered.
 
-The new CI job uses disposable PostgreSQL16.10 and independent connections. It checks
+The new CI job uses disposable PostgreSQL17.6 (the same image digest as Cloud’s review) and independent connections. It checks
 single-claim/lost-ack behavior, scanner/session/company revocation ordering, file lock
 upgrade serialization, late-plan rejection and actual deadlock rollback without retry.
 It composes the reference implementation with Cloud source pinned to
-`e175386b711afbc0055e39ce8feb132f0c8e9a08`. Local type checking is not reported as a
+`6b0b30ff9b8c14909a05025a1d84cfe84819799f`. Its shared scan interface blob is unchanged
+from e175386. Cloud’s eight full commit/RLS/backend-death scenarios remain its own
+evidence and are not recreated here; Runtime tests its distinct claim journal,
+complete gates and new reference binding (including default-deny reference reads).
+Local type checking is not reported as a
 multi-session pass; the CI result is required. Live scanner identity, generation reads,
 canonical identity/status resolvers, revoker adoption and schema/RLS release remain
 explicit production integration dependencies.

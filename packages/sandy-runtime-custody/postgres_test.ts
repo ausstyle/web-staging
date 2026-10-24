@@ -1,6 +1,6 @@
 // Actual multi-connection PostgreSQL tests. CI-only isolated database; no live URL.
 import assert from 'node:assert/strict';
-import pg from 'npm:pg@8.13.1';
+import pg from 'npm:pg@8.16.3';
 import {recordCloudReference,canonicalCloudReferences} from './cloud_reference.ts';
 import {intentDigest} from '../sandy-cloud/postgres/commit.ts';
 import type {UploadIntent} from '../sandy-cloud/integrity.ts';
@@ -8,11 +8,17 @@ import {ArtifactJournal,type AdmissionBinding} from './journal.ts';
 import {scanBytes,type ScanAttestation} from './attestation.ts';
 import {lockCustodyPlan,lockCustodyResources,requireCustodyResources,scopedResourceId,type CustodyLockPlan} from './locking.ts';
 const url=Deno.env.get('CUSTODY_TEST_DATABASE_URL');
+let initialized=false;
 const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),v=>v.toString(16).padStart(2,'0')).join('');
 const latch=()=>{let resolve!:()=>void;return {promise:new Promise<void>(r=>resolve=r),release:()=>resolve()};};
 async function setup(tenant:string|null=null){
- if(!url||new URL(url).hostname!=='127.0.0.1'||new URL(url).pathname!=='/custody_ci')throw Error('ISOLATED_LOCAL_DATABASE_REQUIRED');
+ if(url!=='postgres://custody_fixture:isolated-ci-only@127.0.0.1:5432/custody_ci')throw Error('ISOLATED_LOCAL_DATABASE_REQUIRED');
  const pool=new pg.Pool({connectionString:url,max:8});
+ if(!initialized){
+  const existing=await pool.query("SELECT tablename FROM pg_tables WHERE schemaname IN('public','sandy_artifact_custody','sandy_cloud')");
+  if(existing.rows.length){await pool.end();throw Error('FRESH_DISPOSABLE_DATABASE_REQUIRED');}
+  initialized=true;
+ }
  await pool.query(`DROP SCHEMA IF EXISTS sandy_artifact_custody CASCADE;DROP SCHEMA IF EXISTS sandy_cloud CASCADE;DROP TABLE IF EXISTS public.sandy_universal_files,public.sandy_api_execution_admissions,public.fixture_authority CASCADE;
  CREATE TABLE public.sandy_universal_files(id uuid PRIMARY KEY,owner_customer_id uuid,revision int DEFAULT 0);
  CREATE TABLE public.sandy_api_execution_admissions(id uuid PRIMARY KEY,actor_id uuid,tenant_id text,operation text,input_sha256 text,contract_sha256 text,scope_sha256 text,state text,expires_at timestamptz);
@@ -133,5 +139,10 @@ Deno.test({name:'real PostgreSQL canonical Cloud reference uses pinned Cloud dig
   await assert.rejects(f.db.transaction(async tx=>{await lockCustodyPlan(tx,f.plan);return canonicalCloudReferences.lock(tx,{...i,ref:{...i.ref,key:'substituted'}},f.plan.fileId);}),/CANONICAL_CLOUD_REFERENCE_REFUSED/);
   await assert.rejects(f.pool.query("UPDATE sandy_artifact_custody.cloud_scan_references SET binding='{}'"),/IMMUTABLE_SCAN_RECEIPT/);
   assert.equal((await f.pool.query('SELECT count(*)::int n FROM sandy_artifact_custody.claims')).rows[0].n,0);
+  const rls=await f.pool.connect();try{
+   await rls.query('CREATE ROLE custody_untrusted NOLOGIN NOBYPASSRLS;GRANT USAGE ON SCHEMA sandy_artifact_custody TO custody_untrusted;GRANT SELECT ON sandy_artifact_custody.cloud_scan_references TO custody_untrusted;SET ROLE custody_untrusted');
+   assert.equal((await rls.query('SELECT count(*)::int n FROM sandy_artifact_custody.cloud_scan_references')).rows[0].n,0);
+  }finally{await rls.query('RESET ROLE');rls.release();}
+
  }finally{await f.pool.end();}
 }});
