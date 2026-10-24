@@ -85,7 +85,7 @@ jobs:
         run: >-
           python3 scripts/sandy/reconcile_existing_iap_candidate.py
           --original-dir "$RUNNER_TEMP/original-iap-candidate"
-          --output-dir "$RUNNER_TEMP/iap-existing-acceptance"
+          --output-dir "$RUNNER_TEMP/iap-existing-acceptance" --skip-known-log-permission
       - uses: actions/download-artifact@v4
         if: ${{ inputs.mode == 'diagnostics' }}
         with:
@@ -115,7 +115,7 @@ jobs:
         run: >-
           python3 scripts/sandy/reconcile_existing_iap_candidate.py
           --original-dir "$RUNNER_TEMP/original-iap-candidate"
-          --output-dir "$RUNNER_TEMP/iap-existing-acceptance" --final
+          --output-dir "$RUNNER_TEMP/iap-existing-acceptance" --final --skip-known-log-permission
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -46,6 +46,13 @@ class TwoPhaseReadback(unittest.TestCase):
     r.phase(None,out);r.phase(None,out,True)
    self.assertTrue((out/'initial-health-request-logs.json').exists());self.assertTrue((out/'final-health-request-logs.json').exists())
    self.assertTrue((out/'iap-final-provider-readback.json').exists());self.assertEqual(notice.call_count,4)
+ def test_known_logging_denial_is_not_probed_again_in_diagnostics(self):
+  import tempfile
+  from pathlib import Path
+  with tempfile.TemporaryDirectory() as directory,mock.patch.object(r,'verify',return_value=({'passed':True},{},{})),mock.patch.object(r,'logs') as logs,mock.patch.object(r,'notice'):
+   root=Path(directory);r.phase(None,root,skip_known_log_permission=True)
+   value=json.loads((root/'initial-health-request-logs.json').read_text())
+  logs.assert_not_called();self.assertTrue(value['read_skipped']);self.assertEqual(value['evidence_run_id'],'40049214245')
  def test_unexpected_failure_records_only_bounded_class_not_exception_payload(self):
   import tempfile
   from pathlib import Path
@@ -78,6 +85,7 @@ class AcceptanceOnlyWorkflow(unittest.TestCase):
   self.assertIn('run-id: 40047740407',source);self.assertIn(r.SOURCE,source)
   self.assertIn("if: ${{ always() && steps.auth.outcome == 'success' }}",source)
   self.assertIn('--final',source);self.assertIn('sandy-engineering-mcp-deploy',source)
+  self.assertEqual(source.count('--skip-known-log-permission'),2)
   self.assertIn('default: diagnostics',source);self.assertIn("if: ${{ inputs.mode == 'acceptance' }}",source)
   self.assertIn('scripts/sandy/diagnose_iap_routing.py',source)
 if __name__=='__main__':unittest.main()
