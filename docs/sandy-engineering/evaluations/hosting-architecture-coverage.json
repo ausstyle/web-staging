@@ -274,7 +274,8 @@
       "text": "1. Customer creates a site with region, runtime/template, resource caps and entitlement.",
       "text_sha256": "b382aa01bc7a6cf1822dee01c709a419968610ceef9181af4f878acb815220ae",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -283,7 +284,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-02",
@@ -296,7 +297,8 @@
       "text": "2. Control plane persists request and idempotency key, validates payment/quotas and reserves capacity.",
       "text_sha256": "58a3e17faf2535f30b95c480c312b5371d3aecbb3e1960ead8c2a1c3cf8be964",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -305,7 +307,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-03",
@@ -318,7 +320,8 @@
       "text": "3. Build uploads/imports Git source or an approved artifact; isolates build; runs malware/dependency scanning, SBOM/provenance checks and secrets detection; stores immutable artifact digest in Artifact Registry/Cloud Storage.",
       "text_sha256": "a03877e21a7cd710d5d9aa859655ca00c1d4170f8e829bbbef1dc9e96df881bc",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -327,7 +330,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-04",
@@ -340,7 +343,8 @@
       "text": "4. Provisioning worker creates/updates Cloud Run service using an immutable digest, service-specific identity, constrained CPU/memory/concurrency, request timeout, autoscaling max instances and egress policy. Reject privileged containers and unapproved container capability.",
       "text_sha256": "08d8e619ba6ee29556568b2cc4affec187323b332284f85625ac6d42c2c604a1",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -349,7 +353,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-05",
@@ -362,7 +366,8 @@
       "text": "5. Worker observes Google Cloud service revision, health checks, traffic split, logs and metrics before reporting VERIFIED_SUCCESS.",
       "text_sha256": "0a50d835dd27e858c7006b6c22630b7d3c41ac8f8e2cfa65576401647e2f29a6",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -371,7 +376,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-06",
@@ -384,7 +389,8 @@
       "text": "6. Customer obtains a default Sandy subdomain on a controlled parent zone; custom-domain flow described below.",
       "text_sha256": "a66e1fc1b73273943780cea583645eb1305a0f68d474db47b27e014833009723",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -393,7 +399,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-07",
@@ -406,7 +412,8 @@
       "text": "7. Rollouts use staged revisions, optional traffic-split canary and forward rollback to last-known-good digest, with readback and receipts. Never silently replay uncertain cloud writes.",
       "text_sha256": "31ec92730089ea4c46661d494fd0bd773e16fa02b2edf8dead491f4d96705788",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -415,7 +422,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-08",
@@ -428,7 +435,8 @@
       "text": "Support static sites via a minimal immutable web container or a dedicated static-serving strategy evaluated for cost; do not force every static asset through expensive always-on instances.",
       "text_sha256": "c2f550072ee8e3d00156e015f3fab7ddb3161b2db10c3290726854bd312353ac",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -437,7 +445,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S5-01",
