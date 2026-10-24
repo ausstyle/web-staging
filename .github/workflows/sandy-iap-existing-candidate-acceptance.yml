@@ -1,10 +1,18 @@
 name: Verify Existing Sandy IAP Candidate
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Read provider routing diagnostics only, or run separately authorized acceptance after its blocker is resolved
+        type: choice
+        required: true
+        default: diagnostics
+        options: [diagnostics, acceptance]
   pull_request:
     paths:
       - '.github/workflows/sandy-iap-existing-candidate-acceptance.yml'
       - 'scripts/sandy/reconcile_existing_iap_candidate.py'
+      - 'scripts/sandy/diagnose_iap_routing.py'
       - 'scripts/sandy/test_existing_iap_candidate.py'
       - 'scripts/sandy/verify_iap_closed_candidate*'
 permissions:
@@ -44,12 +52,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
+          gh api repos/ausstyle/web-staging/actions/runs/40049214245 > "$RUNNER_TEMP/prior-run.json"
           gh api repos/ausstyle/web-staging/actions/runs/40047740407 > "$RUNNER_TEMP/original-run.json"
           python3 - <<'PY'
           import json,os,pathlib
           r=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'original-run.json').read_text())
           assert r['head_sha']=='9ca456d2705c649388d6a12a714a648e6ebea472' and r['run_attempt']==1 and r['status']=='completed'
           assert r['path']=='.github/workflows/sandy-engineering-mcp-deploy.yml' and r['repository']['full_name']=='ausstyle/web-staging'
+          prior=json.loads((pathlib.Path(os.environ['RUNNER_TEMP'])/'prior-run.json').read_text())
+          assert prior['head_sha']=='0b6d5a91f11348d95d3ca540075e257288e3948a' and prior['run_attempt']==1 and prior['status']=='completed'
+          assert prior['path']=='.github/workflows/sandy-iap-existing-candidate-acceptance.yml' and prior['repository']['full_name']=='ausstyle/web-staging'
           PY
       - uses: actions/download-artifact@v4
         with:
@@ -73,8 +85,23 @@ jobs:
         run: >-
           python3 scripts/sandy/reconcile_existing_iap_candidate.py
           --original-dir "$RUNNER_TEMP/original-iap-candidate"
+          --output-dir "$RUNNER_TEMP/iap-existing-acceptance" --skip-known-log-permission
+      - uses: actions/download-artifact@v4
+        if: ${{ inputs.mode == 'diagnostics' }}
+        with:
+          github-token: ${{ github.token }}
+          repository: ausstyle/web-staging
+          run-id: 40049214245
+          name: sandy-iap-existing-acceptance-40049214245
+          path: ${{ runner.temp }}/prior-iap-acceptance
+      - name: Read existing ingress and routing metadata and recover previous final proof without application requests
+        if: ${{ inputs.mode == 'diagnostics' }}
+        run: >-
+          python3 scripts/sandy/diagnose_iap_routing.py
+          --prior-dir "$RUNNER_TEMP/prior-iap-acceptance"
           --output-dir "$RUNNER_TEMP/iap-existing-acceptance"
       - name: Diagnose health and verify normal authenticated denial only if healthy
+        if: ${{ inputs.mode == 'acceptance' }}
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           SANDY_IAP_ACCEPTANCE_SOURCE_COMMIT: 9ca456d2705c649388d6a12a714a648e6ebea472
@@ -88,7 +115,7 @@ jobs:
         run: >-
           python3 scripts/sandy/reconcile_existing_iap_candidate.py
           --original-dir "$RUNNER_TEMP/original-iap-candidate"
-          --output-dir "$RUNNER_TEMP/iap-existing-acceptance" --final
+          --output-dir "$RUNNER_TEMP/iap-existing-acceptance" --final --skip-known-log-permission
       - uses: actions/upload-artifact@v4
         if: always()
         with:
