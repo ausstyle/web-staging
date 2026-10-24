@@ -335,7 +335,7 @@ export type CustomerMutationDb = {
   from(table: string): { select(columns: string): Query };
 };
 export type CustomerMutationDependencies = {
-  memoryCertification?: { id: string; apiDeploymentId: string };
+  memoryCertification?: { id: string; apiDeploymentId: string; profile?: "customer_mutations_v1"; operation?: string };
   base: string;
   anon: string;
   // The concrete SDK carries recursive query generics. Keep that implementation
@@ -565,10 +565,11 @@ export function buildCustomerMutationReceiptRequest(
     origin.protocol !== "https:" || origin.username || origin.password ||
     origin.pathname !== "/" || origin.search || origin.hash
   ) return null;
-  const certification = (operation === "memory.fact_correct" || operation === "tasks.update")
+  const certification = (operation === "memory.fact_correct" || operation === "tasks.update" || dependencies.memoryCertification?.profile === "customer_mutations_v1")
     ? dependencies.memoryCertification
     : undefined;
-  if (certification && operation === "tasks.update" &&
+  if (certification?.profile === "customer_mutations_v1" && certification.operation !== operation) return null;
+  if (certification && certification.profile !== "customer_mutations_v1" && operation === "tasks.update" &&
     (args.status !== "cancelled" || Object.keys(args).sort().join(",") !== "id,idempotency_key,status")) return null;
   if (
     certification &&

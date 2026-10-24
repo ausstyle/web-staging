@@ -22,7 +22,7 @@ def load():
  migration=(ROOT/m['migration']).read_text()
  if digest(migration.encode())!=m['migration_sha256'] or subprocess.check_output(['git','show',pin+':'+m['migration']],cwd=ROOT)!=migration.encode():raise Blocked('reviewed_migration_changed')
  return m,sources,migration
-def memory_prerequisite(r,m):
+def memory_prerequisite(r,m,*,post_binding_readback=False):
  # Compose the reviewed, now-published memory capability with the exact later
  # shared mutation RPC. Reuse both strict validators instead of requiring the
  # obsolete closed-memory rollout state or copying provider execution logic.
@@ -34,9 +34,17 @@ def memory_prerequisite(r,m):
  memory_release.schema_components(r,composed,installed=True)
  cancel_release.schema(r,cancel,installed=True)
  slug='sandy-api-mcp';expected=cancel['functions'][slug]
+ # One independently reviewed configuration propagation: installing the three
+ # runtime bindings advanced metadata 23 -> 24 without changing either module.
+ # The original installer continues to require its immutable version23 input.
+ if post_binding_readback is not False and post_binding_readback is not True:
+  raise Blocked('reviewed_MCP_configuration_readback_required')
+ if post_binding_readback and (expected['before_version']!=23 or len(expected['candidate_files'])!=2):
+  raise Blocked('reviewed_MCP24_source_baseline_required')
+ expected_version=24 if post_binding_readback else expected['before_version']
  meta=json.loads(r.api('GET','/functions/'+slug));files=original_sources(r.api('GET','/functions/'+slug+'/body'))
  if (meta.get('status')!='ACTIVE' or meta.get('verify_jwt') is not True
-  or meta.get('version')!=expected['before_version']
+  or meta.get('version')!=expected_version
   or {p:digest(v) for p,v in files.items()}!=expected['candidate_files']):
   raise Blocked('preserved_memory_MCP_source_or_ingress_changed')
  retired=r.sql("SELECT count(*)::int unretired FROM public.sandy_engineering_artifacts a WHERE a.artifact_type='configuration' AND a.metadata->>'kind' IN('runtime_private_certification','runtime_task_cancel_certification') AND EXISTS(SELECT 1 FROM public.sandy_engineering_change_events e WHERE e.event_type IN('memory_private_readiness_installed','task_cancel_private_readiness_installed') AND e.detail->>'artifact_id'=a.id::text) AND (NOT EXISTS(SELECT 1 FROM public.sandy_engineering_change_events e WHERE e.event_type IN('memory_private_readiness_revoked','task_cancel_private_readiness_revoked') AND e.detail->>'artifact_id'=a.id::text) OR EXISTS(SELECT 1 FROM auth.sessions s WHERE s.user_id=(a.metadata->>'fixture_user_id')::uuid) OR EXISTS(SELECT 1 FROM public.sandy_memory_portal_accounts p WHERE p.auth_user_id=(a.metadata->>'fixture_user_id')::uuid) OR NOT EXISTS(SELECT 1 FROM auth.users u WHERE u.id=(a.metadata->>'fixture_user_id')::uuid AND u.banned_until>clock_timestamp()))",True)
@@ -71,9 +79,9 @@ def inspect(r,m,sources):
   before[slug]=r.read(slug,expected);after[slug]=candidate(slug,before[slug][2],sources)
   if {k:digest(v) for k,v in after[slug].items()}!=expected['candidate_files']:raise Blocked('reviewed_candidate_module_map_changed')
  return before,after,state
-def verify_installed(r,m,migration):
+def verify_installed(r,m,migration,*,post_binding_readback=False):
  report=verify_prerequisite(r)
- memory_prerequisite(r,m)
+ memory_prerequisite(r,m,post_binding_readback=post_binding_readback)
  for slug,expected in m['functions'].items():
   meta=json.loads(r.api('GET','/functions/'+slug));files=original_sources(r.api('GET','/functions/'+slug+'/body'))
   if meta.get('version',0)<=expected['version'] or meta.get('verify_jwt')!=expected['verify_jwt'] or {k:digest(v) for k,v in files.items()}!=expected['candidate_files']:raise Blocked('installed_full_source_or_ingress_mismatch')
@@ -83,7 +91,7 @@ def verify_installed(r,m,migration):
  for row in expected_registry:
   if row['operation']=='engineering.implementation.request':row['input_schema']={'oneOf':[row['input_schema']]+json.loads(variants[1])}
  if registry(r)!=expected_registry:raise Blocked('installed_job_contract_or_existing_flags_changed')
- return {**report,'full_module_maps_independently_verified':True,'existing_verification_and_exposure_flags_preserved':True,'memory_schema_MCP_and_private_controls_preserved':True,'provider_execution_verified':False}
+ return {**report,'full_module_maps_independently_verified':True,'existing_verification_and_exposure_flags_preserved':True,'memory_schema_MCP_and_private_controls_preserved':True,'preserved_MCP_metadata_version':24 if post_binding_readback else 23,'provider_execution_verified':False}
 def run(r,m,sources,migration,deploy=False):
  before,after,state=inspect(r,m,sources)
  if not deploy:return {'passed':True,'preflight_passed':True,'installed':False,'IAM_changes':0,'grant_changes':0,'functions_before':{s:x[0]['version'] for s,x in before.items()}}
