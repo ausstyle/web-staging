@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'supabase/functions/sandy-mission-executor/process_cohort_test.ts'
+      - 'packages/sandy-mission-recovery/**'
       - 'supabase/migrations/20261021010060_sandy_mission_work_product.sql'
       - 'supabase/migrations/20261018004600_sandy_mission_single_active_stage_guard.sql'
       - '.github/workflows/sandy-mission-process-cohort.yml'
