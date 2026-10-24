@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fixed existing-service metadata and prior artifact diagnostics, no requests."""
+"""Fixed existing-service metadata and prior artifact diagnostics, no application requests."""
 import argparse,json,re
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -33,7 +33,7 @@ def routing(value):
    if tag not in ['sandy-api-review','sandy-iap-repair-review'] or not isinstance(name,str) or not re.fullmatch('sandy-engineering-mcp-[a-z0-9-]{1,120}',name):raise Blocked('fixed_candidate_routing_metadata_required')
    tags.append({'tag':tag,'revision':name,'provider_url':route_url(row.get('url')),'percent':row.get('percent',0)})
  conditions=[{'type':c['type'],'status':c.get('status') if c.get('status') in ['True','False','Unknown'] else 'unrecognized'} for c in status.get('conditions',[]) if c.get('type') in ['Ready','RoutesReady','ConfigurationsReady']]
- return {'annotations':selected,'provider_service_url':route_url(status.get('url')),'provider_default_urls':urls,'candidate_routes':tags,'provider_conditions':conditions,'requests_sent':0,'configuration_changed':False}
+ return {'annotations':selected,'provider_service_url':route_url(status.get('url')),'provider_default_urls':urls,'candidate_routes':tags,'provider_conditions':conditions,'application_requests_sent':0,'configuration_changed':False}
 
 def prior_artifact(directory):
  report={'run_id':'40049214245','raw_artifact_payload_recorded':False}

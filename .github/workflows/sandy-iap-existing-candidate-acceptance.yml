@@ -94,7 +94,7 @@ jobs:
           run-id: 40049214245
           name: sandy-iap-existing-acceptance-40049214245
           path: ${{ runner.temp }}/prior-iap-acceptance
-      - name: Read existing ingress and routing metadata and recover previous final proof without HTTP requests
+      - name: Read existing ingress and routing metadata and recover previous final proof without application requests
         if: ${{ inputs.mode == 'diagnostics' }}
         run: >-
           python3 scripts/sandy/diagnose_iap_routing.py

@@ -57,7 +57,7 @@ class RoutingDiagnostics(unittest.TestCase):
  def test_only_provider_allowlisted_ingress_and_routes_are_recorded(self):
   value={'metadata':{'annotations':{'run.googleapis.com/ingress':'internal','run.googleapis.com/default-url-disabled':'true','PRIVATE':'SECRET','run.googleapis.com/urls':'["https://fixed.a.run.app","https://other.invalid?token=SECRET"]'}},'status':{'url':'https://fixed.a.run.app','traffic':[{'revisionName':r.REVISION,'tag':'sandy-iap-repair-review','url':'https://fixed.a.run.app'}],'conditions':[{'type':'Ready','status':'True','message':'PRIVATE_PAYLOAD'}]},'spec':{'secret':'SECRET'}}
   result=routing.routing(value);text=json.dumps(result)
-  self.assertNotIn('PRIVATE',text);self.assertNotIn('SECRET',text);self.assertEqual(result['requests_sent'],0)
+  self.assertNotIn('PRIVATE',text);self.assertNotIn('SECRET',text);self.assertEqual(result['application_requests_sent'],0)
   self.assertEqual(result['annotations']['run.googleapis.com/ingress'],'internal');self.assertEqual(result['annotations']['run.googleapis.com/default-url-disabled'],'true')
   self.assertEqual(result['provider_default_urls'],['https://fixed.a.run.app'])
  def test_prior_artifact_recovers_health_and_persisted_proof_without_raw_payload(self):
