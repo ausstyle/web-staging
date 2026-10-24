@@ -47,3 +47,11 @@ Local evidence files are synthetic. `release_ref=local-source-under-test` does n
 ## Dependency handoff
 
 The immediate next executable step is authenticated read-only inventory and target binding by the existing infrastructure/API release owner, followed by the exact synthetic Cloud SQL/GCS canary. No live recipient is needed for that step. Creating a provider test mailbox, exposing an ingress, granting access or changing DNS requires its own exact review/authority. Full scope remains in progress; implementation, deployment and independent acceptance are distinct.
+
+## Recorded local evidence
+
+- [Pinned-source synthetic canary](evidence/pinned-source-canary.json): source `31065a116cfc8862e80904370d600d3d174e9b71`, receipt `54f8b468-6662-4466-a534-dd921d72ec99`, message `747b62ee-d7c3-43fd-9af7-11a4859ffa7d`. Fresh-process retrieval and duplicate retry returned the same receipt.
+- [Fresh PostgreSQL test log](evidence/fresh-database-tests.txt): 23 test/subtest cases passed under the race detector, with both migrations applied to an initially empty database. `go vet` and module checksum verification passed.
+- [Direct SQL and byte readback](evidence/independent-readback.json), [fresh-process read](evidence/fresh-process-readback.json), and [local SQL dump/restore](evidence/local-restore.json) use the test-run fixture. These are distinct verification methods by the implementing agent; they are not independent reviewer or cloud-provider acceptance.
+- [Source/build manifest](evidence/source-manifest.json) and [build metadata](evidence/build-info.txt) pin tested source and binary.
+- [Vulnerability scan limitation](evidence/vulnerability-check.txt): `vuln.go.dev` returned HTTP 403; no clean vulnerability assertion is made. Repeat this check in an authorized network before release.
