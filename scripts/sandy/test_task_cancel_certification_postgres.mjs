@@ -57,5 +57,9 @@ INSERT INTO sandy_operation_registry(operation,handler,permission_scope,is_mutat
  assert.equal((await db.query("SELECT verified FROM sandy_operation_registry WHERE operation='tasks.update'")).rows[0].verified,false);
  await claims(false);await db.query("INSERT INTO sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES($1,'task_cancel_private_readiness_revoked',NULL,$2)",[change,JSON.stringify({artifact_id:artifact})]);await claims();
  assert.equal((await proof()).ok,false);
+ const sources={private_schema_sources:(await db.query("SELECT proname,encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha,prosecdef,proconfig,pg_get_userbyid(proowner) owner FROM pg_proc WHERE oid IN('public.sandy_guard_task_cancel_private_readiness_event()'::regprocedure,'public.sandy_api_task_cancel_private_readiness(uuid,text,text,uuid,text)'::regprocedure) ORDER BY proname")).rows,shared_rpc_after:(await db.query("SELECT encode(sha256(convert_to(prosrc,'UTF8')),'hex') sha FROM pg_proc WHERE oid='public.sandy_api_customer_mutation(text,jsonb,text)'::regprocedure")).rows[0].sha};
+ const manifest=JSON.parse(await readFile(new URL('../../docs/sandy-engineering/evaluations/task-cancel-adapter-release.json',import.meta.url),'utf8'));
+ assert.deepEqual(sources.private_schema_sources,manifest.private_schema_sources);
+ assert.equal(sources.shared_rpc_after,manifest.shared_rpc_after_private_readiness_prosrc_sha256);
  console.log(JSON.stringify({task_cancel_private_profile_assertions:12,actual_same_RPC:true,network_used:false,registry_verified:false}));
 });
