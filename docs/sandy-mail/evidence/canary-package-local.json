@@ -1,0 +1,43 @@
+{
+  "source_commit": "a135eb69bdcf16d66b9e7e3edf27f9e85c868a33",
+  "scope_pr239_head": "b1d499f8dd946b6fda11e0cfcaa1f508ec435a08",
+  "reconciled_main_commit": "36a50fa9e2d010f87eaaa207fe32b5bd359c57ec",
+  "main_mail_path_overlap": false,
+  "environment": "local-postgresql-17-filesystem-not-cloudsql-gcs",
+  "go_test_and_subtest_pass_count": 35,
+  "python_release_test_methods": 5,
+  "go_race": true,
+  "go_vet": true,
+  "module_checksums_verified": true,
+  "binary_vcs_modified": false,
+  "artifacts_sha256": {
+    "README.md": "397f428f9b0d89d3c9bf1006c1e7df3774ecc25b9c80a5eb6474d1321d440317",
+    "build-info.txt": "e5f935fa81c6e4a8c478c08dd10d6e010ab33b5cb39b50ea7329193506436a35",
+    "mail-fixture": "a796e5406ab16a26f9226b43fad6f4a4784aa6a284a0b28ad854cb37bea57700",
+    "original-first-email-readback.json": "29735471e963732dbc0cefd9770a79e8c6bffb303c3a2dc63f54da51629debd7",
+    "run_canary.py": "d81856770ab0fe22fcb26fab23bc1a949cf1d3543142d47bc72f27a003f075fe",
+    "source.tar.gz": "cc951aa35f0197397fccb72357ec91413f3fe415e74922499368013c60b1d5d1"
+  },
+  "archive_fixture": {
+    "source_messages": 6,
+    "restored_messages": 6,
+    "same_source_replay_receipts": 6,
+    "byte_exact": true,
+    "scope": "raw MIME and attachment bytes; full flags/folder job persistence not implemented"
+  },
+  "local_container": {
+    "image": "sha256:e0093b9386fc2502365f34a5783a5908cbc62e497ed75e6c8d944c37667ecb4d",
+    "build": "offline vendor from checksum-verified module cache; precommit working-tree build",
+    "uid": "65532:65532",
+    "smoke": "network none, root filesystem read-only, all capabilities dropped; rejected missing action as expected",
+    "published": false
+  },
+  "original_first_email_receipt_preserved": "54f8b468-6662-4466-a534-dd921d72ec99",
+  "new_binary_fresh_process_read_original_receipt": true,
+  "cloud_deployed": false,
+  "independent_provider_acceptance": false,
+  "cloud_operations_submitted": 0,
+  "blocked_action": "Run protected synthetic canary against reconciled Cloud SQL/GCS target",
+  "blocker_status": "missing verified inventory and existing admitted execution target; no provider write denied or pending; no uncertain cloud write",
+  "resource_and_access_proposal": "../deployment-request.md"
+}

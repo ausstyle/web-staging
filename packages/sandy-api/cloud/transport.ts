@@ -99,11 +99,16 @@ export function cloudTransport(
     !Number.isSafeInteger(s.offset) || s.offset < 0 || s.offset > s.size ||
     !Number.isSafeInteger(s.expiresAt)
   ) invalid();
+  const unexpired = () => {
+    const checkedAt = now();
+    return Number.isSafeInteger(checkedAt) && checkedAt >= 0 &&
+      checkedAt < s.expiresAt;
+  };
   return async (r, signal) => {
     signal.throwIfAborted();
     const operation = r.operation;
     if (
-      now() >= s.expiresAt ||
+      !unexpired() ||
       !Object.hasOwn(cloudTransferContracts, operation)
     ) invalid();
     const u = url(r.url);
@@ -176,7 +181,7 @@ export function cloudTransport(
       (b) => b.toString(16).padStart(2, "0"),
     ).join("");
     signal.throwIfAborted();
-    if (now() >= s.expiresAt) invalid();
+    if (!unexpired()) invalid();
     return await executor.execute({
       contractVersion: "sandy.cloud.transfer.v1",
       operation: cloudTransferContracts[operation],

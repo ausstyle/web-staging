@@ -1,0 +1,25 @@
+{
+  "environment": "real-local-postgresql-filesystem-chromium",
+  "checks": [
+    "real_backend_four_persisted_messages_and_session_fragment_removed",
+    "hostile_html_is_text_no_remote_images_no_attachment_download",
+    "real_keyword_search_and_message_read",
+    "interrupted_search_old_response_does_not_overwrite_new_results",
+    "network_interruption_is_error_retry_reads_persisted_backend",
+    "desktop_mobile_reader_and_receipt_visible_without_horizontal_overflow",
+    "lost_save_response_replays_identical_key_and_receipt_without_duplicate_draft",
+    "two_real_editors_reject_stale_save_retain_text_and_explicitly_reload_latest",
+    "real_folder_move_label_filter_remove_and_inbox_restore_preserve_original",
+    "server_restart_revokes_session_preserves_exact_receipt_and_messages",
+    "draft_revision_and_collections_survive_process_restart_and_mobile_editing",
+    "no_external_browser_requests_or_uncaught_script_errors"
+  ],
+  "passed": 12,
+  "draft_id": "62530703-ebe4-4373-ad8d-867328143c27",
+  "draft_version": 3,
+  "lost_response_receipt_id": "d9537c17-861f-4e8f-8347-d34cf2b0a1af",
+  "cloud_deployed": false,
+  "external_messages_sent": 0,
+  "independent_acceptance": false,
+  "source_revision": "a0f7a37e62c96baf6301ad18feedaf34db9ace6a"
+}

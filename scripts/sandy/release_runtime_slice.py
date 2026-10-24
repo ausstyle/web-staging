@@ -23,6 +23,8 @@ MODULES = {
         '_shared/sandy-agent-operations/runtime_records.ts',
         '_shared/sandy-agent-operations/runtime_memory.ts',
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
+        '_shared/sandy-agent-operations/runtime_snapshot.ts',
+        '_shared/sandy-agent-operations/runtime_operational.ts',
         '_shared/sandy-agent-operations/identity.ts',
         '_shared/sandy-agent-operations/runtime_conversation.ts',
         '_shared/sandy-agent-operations/runtime_model_metrics.ts',
@@ -139,6 +141,18 @@ def candidate(m, before):
     return result
 
 
+def source_snapshot(slug,metadata,body,files):
+    # Digest-only evidence; no source bytes, customer data or authority is stored.
+    if slug not in MODULES or metadata.get('slug')!=slug or metadata.get('status')!='ACTIVE':
+        raise Blocked('reviewed_active_source_snapshot_required')
+    entry=files.get(slug+'/index.ts',files.get('index.ts'))
+    if not entry or type(metadata.get('version')) is not int or type(metadata.get('verify_jwt')) is not bool:
+        raise Blocked('exact_source_snapshot_configuration_required')
+    return {'contract':'reviewed-runtime-source-snapshot-v1','function':slug,
+            'metadata_version':metadata['version'],'verify_jwt':metadata['verify_jwt'],
+            'bundle_sha256':digest(body),'entrypoint_sha256':digest(entry),'module_digests':hashes(files)}
+
+
 def installed_hashes(m):
     result = dict(m['before_files'])
     if m.get('source_layout') == FLAT_INDEX_LAYOUT:
@@ -245,7 +259,8 @@ def release(r, m, deploy=False, manifest_path=None):
                   'source_commit':source,'tracking_change_id':change,
                   'all_module_digests_verified':True,'JWT_configuration_preserved':True,
                   'rollback_preimage_preserved':True,'functional_acceptance_passed':False,
-                  'IAM_changes':0,'grant_changes':0,'Cloud_Run_traffic_changes':0}
+                  'IAM_changes':0,'grant_changes':0,'Cloud_Run_traffic_changes':0,
+                  'source_snapshot':source_snapshot(slug,installed,installed_body,after)}
         r.sql(f"INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES('{change}','runtime_slice_source_verified',NULL,{quote(json.dumps(result))}::jsonb)")
         return result
     except Exception:

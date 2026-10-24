@@ -1,0 +1,24 @@
+/workspace/sandy-mail-evidence/releases/a135eb6/mail-fixture: go1.27.3
+	path	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-fixture
+	mod	github.com/ausstyle/web-staging/services/sandy-mail	(devel)	
+	dep	cloud.google.com/go/compute/metadata	v0.3.0	h1:Tz+eQXMEqDIKRsmY3cHTL6FVaynIjX2QxYC4trgAKZc=
+	dep	github.com/emersion/go-message	v0.18.2	h1:rl55SQdjd9oJcIoQNhubD2Acs1E6IzlZISRTK7x/Lpg=
+	dep	github.com/jackc/pgpassfile	v1.0.0	h1:/6Hmqy13Ss2zCq62VdNG8tM1wchn8zjSGOBJ6icpsIM=
+	dep	github.com/jackc/pgservicefile	v0.0.0-20240606120523-5a60cdf6a761	h1:iCEnooe7UlwOQYpKFhBabPMi4aNAfoODPEFNiAnClxo=
+	dep	github.com/jackc/pgx/v5	v5.11.0	h1:IzBBtyK9AHqf98cctWFifYSci2hgQR/cd56wB4p+ogg=
+	dep	github.com/jackc/puddle/v2	v2.2.2	h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo=
+	dep	golang.org/x/oauth2	v0.37.0	h1:JUlcxA8oAtauLfiH8FX2/FkAWHAdi0QtGCGc+hofE98=
+	dep	golang.org/x/sync	v0.24.0	h1:iqiDrGoDgyuvAKrhLQthUEzU/R378N78gXbBjxed7oA=
+	dep	golang.org/x/text	v0.43.0	h1:1QivrlhwAsnMOcqgOdl9my7s9OyZl8O5/UGUTJVXoWc=
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	-trimpath=true
+	build	DefaultGODEBUG=tracebacklabels=0,x509sslcertoverrideplatform=0
+	build	CGO_ENABLED=0
+	build	GOARCH=amd64
+	build	GOOS=linux
+	build	GOAMD64=v1
+	build	vcs=git
+	build	vcs.revision=a135eb69bdcf16d66b9e7e3edf27f9e85c868a33
+	build	vcs.time=2026-10-24T00:39:52Z
+	build	vcs.modified=false

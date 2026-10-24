@@ -1,0 +1,49 @@
+{
+  "configured_cloudsql_connection": "",
+  "configured_gcs_bucket": "",
+  "database": "sandy_mail_test",
+  "environment": "local",
+  "external_messages_sent": 0,
+  "message": {
+    "receipt": {
+      "receipt_id": "dd19f54c-b30d-429a-b372-bd5b1aa10a1e",
+      "message_id": "ab6b99e4-c472-4a41-8527-dcba68d539b7",
+      "delivery_id": "synthetic-first-001",
+      "raw": {
+        "key": "mail/v1/85a2fa7c-eb8b-4dd7-9edb-7558080e0f6e/6fccda03-b197-4476-86a6-6d4dca77452d/d6d37907-2a84-4688-b12b-f527fc870f93/2c5f71bcabcbcad12e378fea8548dc64fc9209afc4a44cdb871b260bf8491395/original.eml",
+        "generation": 1,
+        "sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+        "size": 1101
+      },
+      "recovery_ledger": {
+        "key": "mail/v1/85a2fa7c-eb8b-4dd7-9edb-7558080e0f6e/6fccda03-b197-4476-86a6-6d4dca77452d/d6d37907-2a84-4688-b12b-f527fc870f93/2c5f71bcabcbcad12e378fea8548dc64fc9209afc4a44cdb871b260bf8491395/intake.json",
+        "generation": 1,
+        "sha256": "f6465305114f2bdf8d25e6b151c4266e23012cf1c0ea1eba22f4058128a291fc",
+        "size": 654
+      },
+      "attachment_count": 1,
+      "release_ref": "local-source-under-test",
+      "observed_at": "2026-10-24T00:17:21.890511Z"
+    },
+    "subject": "Sandy Mail synthetic first ingest \u2713",
+    "internet_message_id": "<sandy-synthetic-first-001@example.invalid>",
+    "text": "Synthetic fixture only. No private mail. No external delivery.\r\nReceipt test \u2713\n",
+    "display_html": "<pre>Synthetic fixture only. No private mail. No external delivery.\r\nReceipt test \u2713\n</pre>",
+    "security_state": "quarantined",
+    "attachments": [
+      {
+        "key": "mail/v1/85a2fa7c-eb8b-4dd7-9edb-7558080e0f6e/6fccda03-b197-4476-86a6-6d4dca77452d/d6d37907-2a84-4688-b12b-f527fc870f93/2c5f71bcabcbcad12e378fea8548dc64fc9209afc4a44cdb871b260bf8491395/parts/0",
+        "generation": 1,
+        "sha256": "78c696a93e4fcb4a88f4e9581262e928ab70aefc303d38983b6c51d6fc02bbff",
+        "size": 33
+      }
+    ]
+  },
+  "provider_identity_independently_verified": false,
+  "raw_byte_equal": true,
+  "scope": {
+    "Tenant": "85a2fa7c-eb8b-4dd7-9edb-7558080e0f6e",
+    "Account": "6fccda03-b197-4476-86a6-6d4dca77452d",
+    "Mailbox": "d6d37907-2a84-4688-b12b-f527fc870f93"
+  }
+}

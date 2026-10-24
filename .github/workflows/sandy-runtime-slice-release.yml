@@ -2,7 +2,9 @@ name: Release reviewed Runtime slices
 on:
   pull_request:
     paths:
+      - 'scripts/sandy/runtime_channel_activity_acceptance.py'
       - 'scripts/sandy/release_runtime_slice.py'
+      - 'supabase/functions/_shared/sandy-agent-operations/runtime_snapshot*'
       - 'scripts/sandy/test_runtime_slice_release.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
       - 'scripts/sandy/test_mission_truth_acceptance.py'
@@ -18,7 +20,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native, computer-truth, durable-receipts]
+        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native, computer-truth, durable-receipts, grounding]
 permissions:
   contents: read
 concurrency:
@@ -39,7 +41,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_grounding_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -54,6 +56,7 @@ jobs:
       - name: Exercise real handler with isolated transport and privacy fixtures
         run: |
           deno test --allow-read --allow-env --import-map=scripts/sandy/testing/fallback_import_map.json scripts/sandy/fallback_runtime_test.ts
+          deno test --no-lock --allow-read --allow-env supabase/functions/_shared/sandy-agent-operations/runtime_snapshot_test.ts
           deno test supabase/functions/_shared/sandy-agent-operations/runtime_memory_test.ts supabase/functions/_shared/sandy-agent-operations/runtime_model_policy_test.ts
           deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
           deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
@@ -74,7 +77,7 @@ jobs:
           --allow-net=127.0.0.1 --allow-env=WS_NO_BUFFER_UTIL,WS_NO_UTF_8_VALIDATE
           supabase/functions/sandy-vm-protocol-api/winrm_test.ts
       - name: Verify existing-queue timer and private credential isolation
-        run: deno test --no-lock --allow-read scripts/sandy/test_durable_dispatch_schedule.ts scripts/sandy/test_superseded_architect_outcomes.ts
+        run: deno test --no-lock --allow-read scripts/sandy/test_durable_dispatch_schedule.ts scripts/sandy/test_superseded_architect_outcomes.ts scripts/sandy/test_delegated_durable_reads.ts scripts/sandy/test_existing_proposal_source_sync.ts
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -99,11 +102,12 @@ jobs:
           python3 - <<'PY'
           import os, subprocess, sys
           options={'runtime':'sandy-agent-runtime-v4','durable-receipts':'sandy-orchestration-api'}
-          # The installed Examiner slice is not a deployment choice. Native's
-          # next release has an independently captured v3 preimage guard.
+          # Grounding selects only the two independently captured source slices;
+          # native and other components retain their separate preimage guards.
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
           extra['missions']=['sandy-mission-runner','sandy-mission-executor']
           extra['native']=['sandy-vm-protocol-api']
+          extra['grounding']=['sandy-agent-runtime-v4','sandy-examiner-full-cycle']
           extra['computer-truth']=['sandy-computer-worker']
           extra['runtime-programme']=['sandy-agent-runtime-v4','sandy-email-runtime-canary','sandy-voice-account-context','sandy-master-computer','sandy-engineering-oidc-ingest']
           selected=extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
@@ -117,11 +121,17 @@ jobs:
               subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--verify-installed','--evidence-dir',out+'-readback'],check=True)
           PY
       - name: Verify Examiner sources; actual acceptance uses the protected OIDC workflow
-        if: inputs.component == 'runtime-programme'
+        if: inputs.component == 'runtime-programme' || inputs.component == 'grounding'
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/verify_examiner_receipt_context.py --output "$RUNNER_TEMP/runtime-slices/examiner-installed-source.json"
+      - name: Verify normal customer channel-count answer once
+        if: inputs.component == 'runtime'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/runtime_channel_activity_acceptance.py --output "$RUNNER_TEMP/runtime-slices/channel-activity-acceptance.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

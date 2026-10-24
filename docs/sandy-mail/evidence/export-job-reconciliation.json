@@ -1,0 +1,36 @@
+{
+  "cloud_deployed": false,
+  "environment": "local-postgresql-filesystem-not-cloudsql-gcs",
+  "job_key": "8e638397-0205-4ae8-ac29-5af7cd4c926c",
+  "raw_messages_checked": 1000,
+  "report": {
+    "version": 1,
+    "scope": {
+      "Tenant": "da5b46d3-1954-4b9f-b6db-9b210d309874",
+      "Account": "62db463a-8003-41f1-ba14-316f6ad3a2df",
+      "Mailbox": "5e38972d-769c-46a8-a437-941360f06957"
+    },
+    "job_id": "f98ddd6d-cd39-4495-9d12-77525213c5a3",
+    "snapshot_at": "2026-10-24T01:31:20.453803Z",
+    "expires_at": "2026-10-24T02:31:20.422609Z",
+    "expected_messages": 1000,
+    "exported_messages": 1000,
+    "excluded_messages": 0,
+    "pending_ingestions": 0,
+    "part_count": 10,
+    "archive_bytes": 3584000,
+    "part_chain_sha256": "aa1bbea4ab1129e561d15b0af3197c432ba37537a15a72e29b86716fad046b42",
+    "state": "COMPLETE",
+    "complete": true,
+    "customer_delivered": false,
+    "independent_acceptance": false
+  },
+  "restored_flags_verified": 1000,
+  "restored_messages": 1000,
+  "restored_scope": {
+    "Tenant": "da5b46d3-1954-4b9f-b6db-9b210d309874",
+    "Account": "62db463a-8003-41f1-ba14-316f6ad3a2df",
+    "Mailbox": "a2ccc5c8-8b5a-4713-81f9-7df1f3788e34"
+  },
+  "source_revision": "a515e125aaa5353b5f4390b194f6bb4499c2524f"
+}

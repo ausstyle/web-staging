@@ -1,0 +1,29 @@
+{
+  "contracts": {
+    "tasks.create": "adf9fc55cfdd23f7cab23864a3ff9d811bc1008eda718efd1780c0e61d314f3d",
+    "tasks.update": "d14a757c041f6f6658d50093aa6de841f8300da480a7db76e6936dd8f44ddedf",
+    "tasks.complete": "cdea3fa30e988574a2684e3529abd2bb4df38ca19c6d1edc2728a1251afc3a30",
+    "tasks.archive": "ef688481fef6ae638aea0f046c3ebab0c7241a32c95d61761046d1bddaaa0ee6",
+    "calendar.create": "cfa3ec3b0f209edd438af98546a6ff2659e2f48bcca08cdf0bd9c8c3ae3b9af6",
+    "calendar.update": "3de2256cf563456ab345af428495bf5d5186c389db288eb9a1f020bdb281d9f3",
+    "calendar.cancel": "44a3bf8dec3e699ae425a6408407e8cd80672e64dc31cf7a6bdedfe6ce26c368",
+    "files.rename": "cfc7e70a32a2fef57c401a4db0b172009962f95ed98d3f2eedf2a549cc0e5ef9",
+    "files.set_description": "5a25bda4e07d5b98cf0a012653029f7b81caf8a32134dadef2d3d484ad634d01",
+    "files.archive": "f187e978f4d18a23a2a14ea97bc6096476cfd2513ae68940925171696cae325d"
+  },
+  "bundle_sha256": "d25812379110342b5ff7fbd363a6adec85ab58e0a6351dd22eea7d9c196403cb",
+  "max_mutations": 26,
+  "operation_limits": {
+    "tasks.create": 1,
+    "tasks.update": 10,
+    "tasks.complete": 1,
+    "tasks.archive": 1,
+    "calendar.create": 1,
+    "calendar.update": 4,
+    "calendar.cancel": 1,
+    "files.rename": 3,
+    "files.set_description": 3,
+    "files.archive": 1
+  },
+  "analysis_mode": "normal_queue_literal_title_only_no_model"
+}

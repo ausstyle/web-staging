@@ -1,0 +1,57 @@
+{
+  "source_commit": "31065a116cfc8862e80904370d600d3d174e9b71",
+  "build_info": "build-info.txt",
+  "environment": "local-postgresql-17-filesystem",
+  "first_ingest": {
+    "configured_cloudsql_connection": "",
+    "configured_gcs_bucket": "",
+    "database": "sandy_mail_test",
+    "environment": "local",
+    "external_messages_sent": 0,
+    "message": {
+      "receipt": {
+        "receipt_id": "54f8b468-6662-4466-a534-dd921d72ec99",
+        "message_id": "747b62ee-d7c3-43fd-9af7-11a4859ffa7d",
+        "delivery_id": "synthetic-first-001",
+        "raw": {
+          "key": "mail/v1/23900000-0000-4000-8000-000000000001/23900000-0000-4000-8000-000000000002/23900000-0000-4000-8000-000000000003/2c5f71bcabcbcad12e378fea8548dc64fc9209afc4a44cdb871b260bf8491395/original.eml",
+          "generation": 1,
+          "sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+          "size": 1101
+        },
+        "recovery_ledger": {
+          "key": "mail/v1/23900000-0000-4000-8000-000000000001/23900000-0000-4000-8000-000000000002/23900000-0000-4000-8000-000000000003/2c5f71bcabcbcad12e378fea8548dc64fc9209afc4a44cdb871b260bf8491395/intake.json",
+          "generation": 1,
+          "sha256": "978ad07b789ca485d28457ed1f2295cd72b84b3d7140f230a21d605a937df791",
+          "size": 654
+        },
+        "attachment_count": 1,
+        "release_ref": "31065a116cfc8862e80904370d600d3d174e9b71",
+        "observed_at": "2026-10-24T00:19:31.381632Z"
+      },
+      "subject": "Sandy Mail synthetic first ingest \u2713",
+      "internet_message_id": "<sandy-synthetic-first-001@example.invalid>",
+      "text": "Synthetic fixture only. No private mail. No external delivery.\r\nReceipt test \u2713\n",
+      "display_html": "<pre>Synthetic fixture only. No private mail. No external delivery.\r\nReceipt test \u2713\n</pre>",
+      "security_state": "quarantined",
+      "attachments": [
+        {
+          "key": "mail/v1/23900000-0000-4000-8000-000000000001/23900000-0000-4000-8000-000000000002/23900000-0000-4000-8000-000000000003/2c5f71bcabcbcad12e378fea8548dc64fc9209afc4a44cdb871b260bf8491395/parts/0",
+          "generation": 1,
+          "sha256": "78c696a93e4fcb4a88f4e9581262e928ab70aefc303d38983b6c51d6fc02bbff",
+          "size": 33
+        }
+      ]
+    },
+    "provider_identity_independently_verified": false,
+    "raw_byte_equal": true,
+    "scope": {
+      "Tenant": "23900000-0000-4000-8000-000000000001",
+      "Account": "23900000-0000-4000-8000-000000000002",
+      "Mailbox": "23900000-0000-4000-8000-000000000003"
+    }
+  },
+  "fresh_process_read_same_receipt": true,
+  "retry_same_receipt": true,
+  "provider_acceptance": false
+}
