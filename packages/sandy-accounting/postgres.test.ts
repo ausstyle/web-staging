@@ -28,14 +28,7 @@ test(
       "/sandy_accounting_test",
       "Never run against customer databases",
     );
-    const types = {
-      getTypeParser(oid: number, format?: "text" | "binary") {
-        return oid === 1082
-          ? (value: string) => new Date(value + "T00:00:00.000Z")
-          : pg.types.getTypeParser(oid, format);
-      },
-    };
-    const admin = new pg.Pool({ connectionString, types, max: 3 });
+    const admin = new pg.Pool({ connectionString, max: 3 });
     let pool: pg.Pool | undefined;
     try {
       // Fail if a schema already exists: no destructive reset and no unknown database reuse.
@@ -67,7 +60,6 @@ test(
       applicationUrl.password = "synthetic-test-only";
       pool = new pg.Pool({
         connectionString: applicationUrl.toString(),
-        types,
         max: 12,
       });
       const db = new PostgresDatabase(pool),
@@ -314,8 +306,10 @@ test(
         connect: async () => {
           const client = await pool!.connect();
           return {
-            query: async (sql: string, params: unknown[] = []) => {
-              const result = await client.query(sql, params);
+            query: async (sql: string | pg.QueryConfig, params?: unknown[]) => {
+              const result = typeof sql === "string"
+                ? await client.query(sql, params)
+                : await client.query(sql);
               if (sql === "COMMIT" && loseAck) {
                 loseAck = false;
                 throw Error("synthetic_ack_loss");

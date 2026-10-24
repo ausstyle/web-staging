@@ -78,8 +78,11 @@ test alone does **not** prove multi-process PostgreSQL concurrency. The separate
 `postgres.test.ts` suite runs the same service against PostgreSQL 17.6 with a
 12-connection pool and a restricted application login. It covers duplicate and
 distinct concurrent postings, approval/payment races, lock-wait revocation and a
-genuinely committed transaction whose acknowledgement is deliberately lost. Its
-connection URL must target loopback and `sandy_accounting_test`; the fixture
+genuinely committed transaction whose acknowledgement is deliberately lost. The
+date parser is owned by the adapter per query, so calendar dates remain stable
+across Sydney, Los Angeles and UTC process timezones without changing shared
+driver settings. The CI integration job runs under Australia/Sydney.
+The connection URL must target loopback and `sandy_accounting_test`; the fixture
 requires a fresh database and never resets an existing schema. CI supplies a
 disposable PostgreSQL service. Production Cloud SQL placement, HA/PITR,
 production role separation and target-specific acceptance remain required.

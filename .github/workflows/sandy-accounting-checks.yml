@@ -30,8 +30,9 @@ jobs:
         with:
           node-version: '24'
       - run: npm ci --prefix packages/sandy-accounting --ignore-scripts --no-audit --no-fund
-      - run: node --test packages/sandy-accounting/postgres.test.ts
+      - run: node --test packages/sandy-accounting/postgres.test.ts packages/sandy-accounting/postgres_date.test.ts
         env:
+          TZ: Australia/Sydney
           ACCOUNTING_TEST_PG_URL: postgresql://postgres:synthetic-test-only@127.0.0.1:5432/sandy_accounting_test
   accounting:
     runs-on: ubuntu-latest
