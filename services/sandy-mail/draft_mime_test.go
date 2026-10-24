@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
+	_ "embed"
 	"encoding/json"
 	"errors"
 	"io"
@@ -16,47 +17,9 @@ import (
 )
 
 // Authored solely for this test. Every address is reserved .invalid; no copied mail.
-var syntheticDraftMIME = []byte(strings.ReplaceAll(`From: Synthetic Author <author@example.invalid>
-Sender: Synthetic Sender <sender@example.invalid>
-Reply-To: Synthetic Replies <reply@example.invalid>
-To: Synthetic To <to@example.invalid>
-Cc: Synthetic Cc <cc@example.invalid>
-Bcc: Synthetic Bcc <bcc@example.invalid>
-Subject: =?UTF-8?Q?Synthetic_caf=C3=A9_draft?=
-Date: Sat, 24 Oct 2026 12:00:00 +0000
-Message-ID: <purely-synthetic-draft@example.invalid>
-X-Synthetic-Provenance: authored-in-draft_mime_test.go
-X-Repeated: first
-X-Repeated: second
-X-Folded: preserve
- this exact folding
-MIME-Version: 1.0
-X-Unsent: 1
-Content-Type: multipart/mixed; boundary="synthetic-mixed"
-
---synthetic-mixed
-Content-Type: multipart/alternative; boundary="synthetic-alt"
-
---synthetic-alt
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Synthetic caf=E9
---synthetic-alt
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: base64
-
-PGI+U3ludGhldGljIGNhZsOpPC9iPjxpbWcgc3JjPSJodHRwczovL2V4YW1wbGUuaW52YWxpZC90cmFjayI+
---synthetic-alt--
---synthetic-mixed
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename*=utf-8''synthetic-%E2%98%81.bin
-Content-ID: <synthetic-attachment>
-Content-Transfer-Encoding: base64
-
-AAECA/9TWU5USEVUSUM=
---synthetic-mixed--
-`, "\n", "\r\n"))
+//
+//go:embed testdata/rich-draft.eml
+var syntheticDraftMIME []byte
 
 func TestDraftMIMEEncoding(t *testing.T) {
 	for _, text := range []string{"", "plain", "mixed\r\nline\nend\r", strings.Repeat("☁️ 日本語\r\n", 100), "=literal\t "} {

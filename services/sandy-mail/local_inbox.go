@@ -226,7 +226,44 @@ func (h *localInbox) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			reply(400, "invalid_arguments", nil)
 			return
 		}
-		result, err = h.service.GetDraft(ctx, h.scope, a.DraftID)
+		var draft Draft
+		draft, err = h.service.GetDraft(ctx, h.scope, a.DraftID)
+		available := draft.MIME != nil
+		draft.MIME = nil
+		result = struct {
+			Draft
+			MIMEAvailable bool `json:"mime_available"`
+		}{draft, available}
+	case "mail.drafts.mime.import":
+		mutation = true
+		var a struct {
+			DraftID         string `json:"draft_id"`
+			ExpectedVersion int64  `json:"expected_version"`
+			MIME            []byte `json:"mime_base64"`
+		}
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		if err = validateLocalDraftMIME(a.MIME); err == nil {
+			var receipt EditReceipt
+			receipt, err = h.service.SaveMIMEDraft(ctx, h.scope, who, a.DraftID, a.ExpectedVersion, a.MIME)
+			receipt.MIMEObjects = nil // object locations remain in the durable private receipt
+			result = receipt
+		}
+	case "mail.drafts.mime.view", "mail.drafts.mime.export":
+		var a struct {
+			DraftID string `json:"draft_id"`
+		}
+		if decodeStrict(strings.NewReader(string(req.Arguments)), &a) != nil {
+			reply(400, "invalid_arguments", nil)
+			return
+		}
+		if req.Operation == "mail.drafts.mime.view" {
+			result, err = h.service.ViewDraftMIME(ctx, h.scope, a.DraftID)
+		} else {
+			result, err = h.service.ExportDraftMIME(ctx, h.scope, a.DraftID)
+		}
 	case "mail.drafts.save":
 		mutation = true
 		var a DraftInput

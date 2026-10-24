@@ -25,19 +25,24 @@ var ErrEditLimit = errors.New("mailbox_edit_limit")
 // The local harness supplies a fixed synthetic actor. Production admission/audit
 // integration remains mandatory; these internal methods do not authenticate users.
 type EditIdentity struct{ Actor, Key string }
+type EditMIMEObjects struct {
+	Current  *Object `json:"current"`
+	Previous *Object `json:"previous,omitempty"`
+}
 type EditReceipt struct {
-	ReceiptID  string    `json:"receipt_id"`
-	Operation  string    `json:"operation"`
-	ResourceID string    `json:"resource_id"`
-	Version    int64     `json:"version"`
-	ObservedAt time.Time `json:"observed_at"`
+	MIMEObjects *EditMIMEObjects `json:"mime_objects,omitempty"`
+	ReceiptID   string           `json:"receipt_id"`
+	Operation   string           `json:"operation"`
+	ResourceID  string           `json:"resource_id"`
+	Version     int64            `json:"version"`
+	ObservedAt  time.Time        `json:"observed_at"`
 }
 
 func lockEdit(ctx context.Context, tx pgx.Tx, scope Scope, key string) error {
 	_, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(hashtextextended($1,0))`, "mail-edit:"+scope.Tenant+":"+scope.Account+":"+scope.Mailbox+":"+key)
 	return err
 }
-func (s *Service) applyEdit(ctx context.Context, scope Scope, who EditIdentity, operation string, input any, apply func(pgx.Tx) (string, int64, error)) (EditReceipt, error) {
+func (s *Service) applyEdit(ctx context.Context, scope Scope, who EditIdentity, operation string, input any, apply func(pgx.Tx) (string, int64, error), objects ...*EditMIMEObjects) (EditReceipt, error) {
 	var out EditReceipt
 	if !scope.valid() || !idPattern.MatchString(who.Key) || len(who.Actor) == 0 || len(who.Actor) > 200 {
 		return out, ErrEditInvalid
@@ -86,7 +91,10 @@ func (s *Service) applyEdit(ctx context.Context, scope Scope, who EditIdentity, 
 		}
 		return out, err
 	}
-	out = EditReceipt{uuid(), operation, resource, version, time.Now().UTC()}
+	out = EditReceipt{ReceiptID: uuid(), Operation: operation, ResourceID: resource, Version: version, ObservedAt: time.Now().UTC()}
+	if len(objects) > 0 {
+		out.MIMEObjects = objects[0]
+	}
 	encoded, err := json.Marshal(out)
 	if err != nil {
 		return EditReceipt{}, err

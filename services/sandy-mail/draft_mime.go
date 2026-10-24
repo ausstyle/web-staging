@@ -142,12 +142,13 @@ func (s *Service) SaveMIMEDraft(ctx context.Context, scope Scope, who EditIdenti
 		Expected int64
 		SHA256   string
 	}{id, expected, digest(raw)}
+	refs := &EditMIMEObjects{Current: &o}
 	return s.applyEdit(ctx, scope, who, "mail.drafts.mime.save", input, func(tx pgx.Tx) (string, int64, error) {
 		if err := lockEdit(ctx, tx, scope, "drafts"); err != nil {
 			return "", 0, err
 		}
 		var revision int64
-		err := tx.QueryRow(ctx, `SELECT revision FROM core.mail_drafts WHERE draft_id=$1 FOR UPDATE`, id).Scan(&revision)
+		err := tx.QueryRow(ctx, `SELECT revision,mime_original FROM core.mail_drafts WHERE draft_id=$1 FOR UPDATE`, id).Scan(&revision, &refs.Previous)
 		if errors.Is(err, pgx.ErrNoRows) {
 			if expected != 0 {
 				return "", 0, ErrEditStale
@@ -170,7 +171,7 @@ func (s *Service) SaveMIMEDraft(ctx context.Context, scope Scope, who EditIdenti
 		}
 		_, err = tx.Exec(ctx, `UPDATE core.mail_drafts SET subject=$2,recipients=$3,body_text=$4,mime_original=$5,revision=revision+1,updated_at=clock_timestamp() WHERE draft_id=$1`, id, d.Subject, d.To, d.Text, encoded(o))
 		return id, revision + 1, err
-	})
+	}, refs)
 }
 func (s *Service) ReadDraftMIME(ctx context.Context, scope Scope, id string) ([]byte, error) {
 	d, err := s.GetDraft(ctx, scope, id)

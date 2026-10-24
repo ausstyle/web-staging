@@ -27,3 +27,11 @@ gap; it does not establish Mail universal-file identities or make Cloud SQL and
 internal Supabase one transaction. Mail must receive a reviewed cross-service
 commit/revocation/reconciliation contract from API/Runtime before activation.
 No Mail copy of the scanner trust journal, keys or lock authority was added.
+
+Follow-up at actual PR303 head `c9786bdeb96721b58e8dce6486f5663044d7ae4b`
+found no custody-package changes from `cd6f6cf`. The
+[Mail commit/revocation proposal](custody-protocol.md) now names the exact protocol,
+state transitions, source tests and owner changes: a ten-field Mail proof variant,
+current-authority status with a proof digest, the existing Runtime CAS/fence/outbox
+adapter and canonical Mail/universal-file/transport mapping. No cross-database
+atomicity, installed adapter or parallel scanner trust is inferred.
