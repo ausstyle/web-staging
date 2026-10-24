@@ -114,6 +114,7 @@
     margin: 12px 0 5px;
   }
   input,
+  textarea,
   select {
     width: 100%;
     padding: 10px;
@@ -229,7 +230,7 @@
 <div id="overview"><div class="grid"><div class="card"><p>Book bank balance</p><div id="bank-total" class="value">—</div></div><div class="card"><p>Receivables outstanding</p><div id="ar-total" class="value">—</div></div><div class="card"><p>Payables outstanding</p><div id="ap-total" class="value">—</div></div><div class="card"><p>Accrual profit · October 2026</p><div id="profit-total" class="value">—</div></div></div>
 <section><h2>Your first reconciled workflow</h2><p>Start with a synthetic opening balance, draft and approve an invoice, record a receipt, then match its statement line. Every report links back to the posted journal.</p><button id="opening" class="primary">Post synthetic opening balance · $1,000</button><p class="muted">Fixed fixture evidence. No statutory tax treatment or external payment is assumed.</p></section></div>
 <div id="sales" hidden><section><h2>Draft a synthetic document</h2><form id="document-form"><div class="row"><div><label for="kind">Document type</label><select id="kind"><option value="invoice">Customer invoice</option><option value="bill">Supplier bill</option></select></div><div><label for="number">Document number</label><input id="number" value="DEMO-001" required maxlength="60"></div></div><label for="contact">Synthetic contact</label><input id="contact" value="Demo customer" required maxlength="100"><label for="coding-account">Ledger account</label><select id="coding-account" required></select><label for="net">Amount (AUD, no tax in this fixture)</label><input id="net" value="100.00" inputmode="decimal" required pattern="[0-9]+(\.[0-9]{1,2})?"><div class="row"><div><label for="issued">Issue date</label><input id="issued" type="date" value="2026-10-02" required></div><div><label for="due">Due date</label><input id="due" type="date" value="2026-10-20" required></div></div><button id="save-document" class="primary">Save draft</button><button id="cancel-edit" type="button" hidden>Cancel editing</button></form></section><section><h2>Documents</h2><div id="documents" class="overflow"></div></section></div>
-<div id="banking" hidden><section><h2>Import a synthetic statement line</h2><form id="statement-form"><label for="source-key">Source line ID (deduplicated)</label><input id="source-key" value="DEMO-STMT-001" required><label for="statement-amount">Signed amount · receipts positive, payments negative</label><input id="statement-amount" value="100.00" required pattern="-?[0-9]+(\.[0-9]{1,2})?"><label for="statement-date">Statement date</label><input id="statement-date" type="date" value="2026-10-03" required><label for="reference">Reference</label><input id="reference" value="Demo invoice receipt" required><button class="primary">Import line</button></form></section><section><h2>Statement lines</h2><div id="statements" class="overflow"></div><p class="muted">Imported lines are separate from posted book transactions. Exact match suggestions are in Intelligence; approve each proposed match there.</p></section><section><h2>Active reconciliations</h2><div id="matches"></div></section></div>
+<div id="banking" hidden><section><h2>Preview a synthetic CSV statement</h2><p>Signed AUD amounts, ISO dates and stable source IDs are required. Preview every row before importing. These fixed synthetic files have no bank connection.</p><form id="csv-form"><label for="csv-fixture">Synthetic file</label><select id="csv-fixture"></select><label for="csv-upload">Or select a copy of a provided synthetic CSV</label><input id="csv-upload" type="file" accept=".csv,text/csv"><label for="csv-content">CSV source</label><textarea id="csv-content" rows="7" readonly></textarea><button>Preview CSV</button><button id="csv-reset" type="button">Reset CSV review</button></form><div id="csv-preview"></div><button id="csv-import" hidden>Import reviewed CSV</button><pre id="csv-receipt" hidden></pre><button id="csv-history">View import history</button></section><section><h2>Reconciliation review</h2><p>Compare remaining statement amounts with posted bank entries. Suggestions require your review; unresolved or ambiguous lines remain visible.</p><button id="review-bank">Review unmatched lines</button><div id="bank-review"></div></section><section><h2>Import a synthetic statement line</h2><form id="statement-form"><label for="source-key">Source line ID (deduplicated)</label><input id="source-key" value="DEMO-STMT-001" required><label for="statement-amount">Signed amount · receipts positive, payments negative</label><input id="statement-amount" value="100.00" required pattern="-?[0-9]+(\.[0-9]{1,2})?"><label for="statement-date">Statement date</label><input id="statement-date" type="date" value="2026-10-03" required><label for="reference">Reference</label><input id="reference" value="Demo invoice receipt" required><button class="primary">Import line</button></form></section><section><h2>Statement lines</h2><div id="statements" class="overflow"></div><p class="muted">Imported lines are separate from posted book transactions. Exact match suggestions are in Intelligence; approve each proposed match there.</p></section><section><h2>Active reconciliations</h2><div id="matches"></div></section></div>
 <div id="reports" hidden><section><h2>Reports</h2><form id="report-form"><label for="report-type">Report</label><select id="report-type"><option value="trial_balance">Trial balance</option><option value="profit_and_loss">Profit and loss</option><option value="balance_sheet">Balance sheet</option><option value="general_ledger">General ledger detail</option><option value="aged_receivables">Aged receivables</option><option value="aged_payables">Aged payables</option><option value="bank_reconciliation">Bank reconciliation</option></select><label for="report-basis">Basis</label><select id="report-basis"><option value="accrual">Accrual</option><option value="cash">Cash</option></select><label for="report-from">From (optional)</label><input id="report-from" type="date"><label for="report-date">Through</label><input id="report-date" type="date" value="2026-10-31" required><button class="primary">Run report</button></form><p class="muted">Debit-positive balances; credits negative. Balance sheet profit is shown separately as current earnings. Cash views support profit and loss, balance sheet, trial balance and general ledger. Ageing and bank reconciliation use accrual facts. Cash tax allocation is not a GST/BAS determination. The remaining catalogue reports are unfinished.</p><div id="report-output" class="overflow"></div></section></div>
 <div id="intelligence" hidden><section><h2>Review suggestions</h2><p>Evidence-linked deterministic matching. Suggestions have no ledger effect until you approve a match. This fixture uses no generative model.</p><button id="suggest">Find exact bank matches</button><div id="suggestions"></div></section><section><h2>Cash scenario</h2><p>Use posted bank balances and approved outstanding invoices/bills as at 31 October. Assumes 100% collection on due dates; overdue amounts fall in the first bucket. Payroll, tax and unrecorded commitments are excluded.</p><button id="forecast">Calculate 13-week scenario</button><pre id="forecast-output"></pre></section></div>
 <div id="controls" hidden><section><h2>Chart of accounts</h2><p>Account classifications remain fixed. Protected or previously used accounts cannot be archived; historical postings and corrections retain their account.</p><form id="account-form"><label for="account-code">Account code</label><input id="account-code" required maxlength="60" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,59}"><label for="account-name">Account name</label><input id="account-name" required maxlength="120"><label for="account-kind">Classification</label><select id="account-kind"><option value="expense">Expense</option><option value="revenue">Revenue</option><option value="asset">Asset</option><option value="liability">Liability</option><option value="equity">Equity</option></select><button>Create account</button></form><div id="accounts"></div></section><section><h2>Period controls</h2><p>A lock prevents backdated postings and changes to reconciliations. Reopening is not exposed in this alpha.</p><form id="lock-form"><label for="lock-date">Lock through</label><input id="lock-date" type="date" value="2026-09-30" required><button>Lock period</button></form><p id="lock-state"></p></section><section><h2>Audit trail</h2><p>Each committed command records its actor, policy reference, input digest and result digest. Hash chaining is tamper evidence, not protection from a database administrator.</p><button id="audit">Verify audit chain</button><pre id="audit-output"></pre></section><section><h2>Posted journals</h2><div id="journals"></div></section></div>
@@ -239,6 +240,7 @@
   <script type="module" nonce="__NONCE__">
   const $ = (s) => document.querySelector(s), nonce = "__NONCE__";
   let workspace, lastFailed, busy = false, source, editingDocument = null;
+  let csvFiles = [], csvDecisions = [], csvPreview = null;
   const esc = (s) =>
     String(s ?? "").replace(
       /[&<>"']/g,
@@ -433,7 +435,11 @@
               if (
                 latest.lines.length !== 1 ||
                 !/^0(?:\.0+)?$/.test(latest.lines[0].tax)
-              ) throw Error("This draft contains line details this editor does not support.");
+              ) {
+                throw Error(
+                  "This draft contains line details this editor does not support.",
+                );
+              }
               editingDocument = latest;
               $("#kind").value = latest.kind;
               $("#kind").disabled = true;
@@ -737,6 +743,179 @@
       endEditing();
     });
   };
+  function selectCsv() {
+    const file = csvFiles[Number($("#csv-fixture").value)];
+    $("#csv-content").value = file?.csv ?? "";
+    csvDecisions = [];
+    csvPreview = null;
+    $("#csv-import").hidden = true;
+    $("#csv-preview").replaceChildren();
+    $("#csv-receipt").hidden = true;
+  }
+  $("#csv-fixture").onchange = selectCsv;
+  $("#csv-reset").onclick = selectCsv;
+  $("#csv-upload").onchange = () =>
+    action(async () => {
+      csvPreview = null;
+      $("#csv-import").hidden = true;
+      $("#csv-preview").replaceChildren();
+      const file = $("#csv-upload").files[0];
+      if (!file) return;
+      if (file.size > 200000) {
+        throw Error("CSV exceeds the 200 KB fixture limit.");
+      }
+      const csv = new TextDecoder("utf-8", { fatal: true, ignoreBOM: true })
+        .decode(await file.arrayBuffer());
+      const sha = await hash(csv);
+      const index = csvFiles.findIndex((source) => source.source.sha256 === sha);
+      if (index < 0) {
+        throw Error(
+          "Only copies of the provided synthetic CSV files are accepted in this workspace.",
+        );
+      }
+      $("#csv-fixture").value = String(index);
+      selectCsv();
+    });
+  async function previewCsv() {
+    const file = csvFiles[Number($("#csv-fixture").value)];
+    const args = {
+      bank_account: "bank",
+      csv: file.csv,
+      source: file.source,
+      decisions: csvDecisions,
+    };
+    csvPreview = null;
+    $("#csv-import").hidden = true;
+    const result = await api("accounting.banking.statements.csv.preview", args);
+    csvPreview = { args, result };
+    $("#csv-preview").innerHTML = table(
+      ["Record", "Source ID", "Date", "Amount", "Reference", "Review"],
+      result.rows.map(
+        (row) => [
+          esc(row.record),
+          esc(row.source_key),
+          esc(row.effective_date),
+          esc(row.amount),
+          esc(row.reference),
+          esc(
+            row.status + (row.error ? ": " + row.error : "") +
+              (row.existing
+                ? " · existing " + row.existing.effective_date + " $" +
+                  row.existing.amount + " " + row.existing.reference
+                : ""),
+          ),
+        ],
+      ),
+    );
+    for (const error of result.errors) {
+      const p = document.createElement("p");
+      p.textContent = error;
+      $("#csv-preview").append(p);
+    }
+    for (
+      const row of result.rows.filter((row) =>
+        row.status === "POSSIBLE_DUPLICATE"
+      )
+    ) {
+      const form = document.createElement("form");
+      form.dataset.csvRecord = row.record;
+      form.innerHTML = "<p>Record " + esc(row.record) +
+        ": possible duplicate of " + esc(row.possible_duplicate_keys.join(", ")) +
+        " (" + esc(row.possible_duplicate_count) +
+        " candidates; up to 20 IDs shown)" +
+        '</p><label>Review reason<input name="reason" required maxlength="300"></label><button name="decision" value="KEEP_DISTINCT">Keep distinct transaction</button><button name="decision" value="SKIP">Skip duplicate row</button>';
+      form.onsubmit = (event) => {
+        event.preventDefault();
+        const decision = {
+          record: row.record,
+          decision: event.submitter.value,
+          reason: form.elements.reason.value,
+        };
+        action(async () => {
+          csvDecisions = [
+            ...csvDecisions.filter((d) => d.record !== row.record),
+            decision,
+          ];
+          await previewCsv();
+        });
+      };
+      $("#csv-preview").append(form);
+    }
+    $("#csv-import").hidden = !result.can_import;
+  }
+  $("#csv-form").onsubmit = (event) => {
+    event.preventDefault();
+    action(previewCsv);
+  };
+  $("#csv-import").onclick = () =>
+    action(async () => {
+      if (!csvPreview?.result.can_import) {
+        throw Error("Preview and resolve exceptions first.");
+      }
+      const { args, result } = csvPreview;
+      const receipt = await api("accounting.banking.statements.csv.import", {
+        ...args,
+        expected_revision: result.book_revision,
+        preview_digest: result.preview_digest,
+      });
+      $("#csv-receipt").textContent = JSON.stringify(receipt, null, 2);
+      $("#csv-receipt").hidden = false;
+      csvPreview = null;
+      $("#csv-import").hidden = true;
+    });
+  $("#csv-history").onclick = () =>
+    action(async () => {
+      $("#detail-title").textContent = "Statement import history";
+      $("#detail-output").textContent = JSON.stringify(
+        await api("accounting.banking.statements.imports.get", {
+          bank_account: "bank",
+        }),
+        null,
+        2,
+      );
+      $("#detail").showModal();
+    });
+  async function reviewBank() {
+    const review = await api("accounting.intelligence.matches.propose");
+    $("#bank-review").replaceChildren();
+    if (!review.queue.length) {
+      $("#bank-review").textContent = "No unmatched statement lines.";
+    }
+    for (const row of review.queue) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.dataset.statementSource = row.source_key;
+      const title = document.createElement("h3");
+      title.textContent = row.reference;
+      const detail = document.createElement("p");
+      detail.textContent = row.effective_date.slice(0, 10) + " · statement $" +
+        row.amount + " · remaining $" + row.remaining + " · " + row.status;
+      card.append(title, detail);
+      for (const candidate of row.candidates) {
+        const line = document.createElement("p");
+        line.textContent = "Posted bank entry · " + candidate.narration + " · $" +
+          candidate.amount + (candidate.ambiguous
+            ? " · ambiguous: choose only after checking evidence"
+            : "");
+        const approve = document.createElement("button");
+        approve.textContent = "Approve match";
+        approve.onclick = () =>
+          action(async () => {
+            await api("accounting.banking.reconcile.apply", {
+              statement_id: row.statement_id,
+              journal_id: candidate.journal_id,
+              ordinal: candidate.ordinal,
+              amount: candidate.amount,
+            });
+            await reviewBank();
+          });
+        line.append(drill(candidate.journal_id), approve);
+        card.append(line);
+      }
+      $("#bank-review").append(card);
+    }
+  }
+  $("#review-bank").onclick = () => action(reviewBank);
   $("#statement-form").onsubmit = (e) => {
     e.preventDefault();
     action(() =>
@@ -853,6 +1032,14 @@
     ),
     locator: "rows 1–3",
   };
-  await action(async () => {});
+  await action(async () => {
+    const response = await fetch("/fixture/statement-csv");
+    if (!response.ok) throw Error("Synthetic CSV fixtures unavailable.");
+    csvFiles = (await response.json()).files;
+    $("#csv-fixture").replaceChildren(
+      ...csvFiles.map((file, index) => new Option(file.name, String(index))),
+    );
+    selectCsv();
+  });
   </script>
 </html>

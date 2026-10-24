@@ -2569,16 +2569,24 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/statement_csv.ts",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/statement_csv.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/csv_browser_test.py"
       ],
-      "remaining": "Immutable separate statement store; full imports pending.",
+      "remaining": "Immutable separate statement store with CSV receipt/record provenance; full imports pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.banking.statements.import"
+        "accounting.banking.statements.csv.preview",
+        "accounting.banking.statements.csv.import",
+        "accounting.banking.statements.imports.get",
+        "accounting.workspace.get"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -2588,13 +2596,28 @@
       "required_outcome": "Distinguish imported sources and reconciliation progress.",
       "module": "Banking & reconciliation",
       "work_package": "WP3",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/statement_csv.ts",
+        "packages/sandy-accounting/workspace.html"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/statement_csv.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/csv_browser_test.py"
+      ],
+      "remaining": "CSV source hashes, per-record outcomes and reconciliation states; broader feed/source lifecycle pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.banking.statements.csv.preview",
+        "accounting.banking.statements.csv.import",
+        "accounting.banking.statements.imports.get",
+        "accounting.workspace.get"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -2606,16 +2629,24 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/statement_csv.ts",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/statement_csv.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/csv_browser_test.py"
       ],
-      "remaining": "Synthetic structured import; CSV/OFX/QIF and real sources pending.",
+      "remaining": "Source-hashed explicit-format CSV preview/import, duplicate/conflict detection and recorded keep/skip review; vendor mapping, OFX/QIF and real sources pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.banking.statements.import"
+        "accounting.banking.statements.csv.preview",
+        "accounting.banking.statements.csv.import",
+        "accounting.banking.statements.imports.get",
+        "accounting.workspace.get"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -2640,13 +2671,27 @@
       "required_outcome": "Compare a bank line with an existing or proposed accounting transaction.",
       "module": "Banking & reconciliation",
       "work_package": "WP3",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/statement_csv.ts",
+        "packages/sandy-accounting/workspace.html"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/statement_csv.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/csv_browser_test.py"
+      ],
+      "remaining": "Statement-versus-posted-entry review queue with residuals, ambiguity and unresolved exceptions; new coding workflow pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.intelligence.matches.propose",
+        "accounting.banking.reconcile.apply",
+        "accounting.banking.reconcile.reverse"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -2673,12 +2718,17 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/statement_csv.ts",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/statement_csv.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/csv_browser_test.py"
       ],
-      "remaining": "Exact match proposal/review; broad search workflow pending.",
+      "remaining": "Exact account/date/residual match proposal and review; ambiguous shared candidates flagged; broad search workflow pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
@@ -2727,12 +2777,17 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/statement_csv.ts",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/statement_csv.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/csv_browser_test.py"
       ],
-      "remaining": "Partial/multiple matches with no overmatching; intelligence acceptance pending.",
+      "remaining": "Residual partial/multiple matches with no overmatching, reviewable ambiguity/lock exceptions and immutable undo; intelligence acceptance pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [

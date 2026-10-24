@@ -117,6 +117,12 @@ CREATE TABLE accounting.allocation_reversals (
  FOREIGN KEY(tenant_id,company_id,allocation_id) REFERENCES accounting.allocations,
  FOREIGN KEY(tenant_id,company_id,journal_id) REFERENCES accounting.journals
 );
+CREATE TABLE accounting.statement_imports (
+ tenant_id text NOT NULL, company_id text NOT NULL, id text NOT NULL, bank_account text NOT NULL,
+ actor_id text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), source jsonb NOT NULL,
+ preview_digest text NOT NULL, rows jsonb NOT NULL,
+ PRIMARY KEY(tenant_id,company_id,id), FOREIGN KEY(tenant_id,company_id,bank_account) REFERENCES accounting.accounts
+);
 CREATE TABLE accounting.matches (
  tenant_id text NOT NULL, company_id text NOT NULL, id text NOT NULL, statement_id text NOT NULL,
  journal_id text NOT NULL, ordinal integer NOT NULL, amount numeric NOT NULL CHECK(amount<>0 AND amount=trunc(amount)),
@@ -282,10 +288,10 @@ CREATE INDEX accounting_matches_journal ON accounting.matches(tenant_id,company_
 CREATE FUNCTION accounting.immutable() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN RAISE EXCEPTION 'record_immutable'; END $$;
 DO $$ DECLARE t text; BEGIN
- FOREACH t IN ARRAY ARRAY['document_versions','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
+ FOREACH t IN ARRAY ARRAY['statement_imports','document_versions','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
   EXECUTE format('CREATE TRIGGER immutable BEFORE UPDATE OR DELETE ON accounting.%I FOR EACH ROW EXECUTE FUNCTION accounting.immutable()',t);
  END LOOP;
- FOREACH t IN ARRAY ARRAY['books','accounts','journals','lines','documents','document_versions','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
+ FOREACH t IN ARRAY ARRAY['books','accounts','journals','lines','documents','statement_imports','document_versions','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
   EXECUTE format('ALTER TABLE accounting.%I ENABLE ROW LEVEL SECURITY',t);
   EXECUTE format('ALTER TABLE accounting.%I FORCE ROW LEVEL SECURITY',t);
   EXECUTE format('CREATE POLICY company_isolation ON accounting.%I TO accounting_fixture USING (tenant_id=current_setting(''accounting.tenant'',true) AND company_id=current_setting(''accounting.company'',true)) WITH CHECK (tenant_id=current_setting(''accounting.tenant'',true) AND company_id=current_setting(''accounting.company'',true))',t);

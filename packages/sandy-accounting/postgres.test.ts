@@ -69,6 +69,14 @@ test(
           sha256: await contentHash(SYNTHETIC_SOURCE),
           locator: "rows 1-3",
         };
+      const csvText =
+        "source_key,date,amount,reference\nPG-CSV-1,2026-10-01,1000.00,Synthetic bank receipt\n";
+      const csvSource = {
+        ...source,
+        file_id: "synthetic-pg-csv",
+        locator: "whole CSV file",
+        sha256: await contentHash(csvText),
+      };
       let revoked = false, authorizationSeen: (() => void) | undefined;
       const boundary: Boundary = {
         now: () => "2026-10-24T02:00:00.000Z",
@@ -85,8 +93,10 @@ test(
           };
         },
         async evidence(_actor, _company, e) {
-          return e.file_id === source.file_id && e.sha256 === source.sha256 &&
-            e.revision === source.revision && e.locator === source.locator;
+          return [source, csvSource].some((s) =>
+            e.file_id === s.file_id && e.sha256 === s.sha256 &&
+            e.revision === s.revision && e.locator === s.locator
+          );
         },
       };
       const app = new Accounting(db, boundary);
@@ -538,13 +548,96 @@ test(
         [versions.at(-1).snapshot.journal_id],
       )).rows;
       assert.equal(posted[0].amount, editWon ? "4000" : "2500");
+      const csvArgs = {
+        bank_account: "bank",
+        csv: csvText,
+        source: csvSource,
+        decisions: [],
+      };
+      const csvPreview = await run(
+        "accounting.banking.statements.csv.preview",
+        csvArgs,
+      );
+      const csvCommand = {
+        ...csvArgs,
+        expected_revision: csvPreview.book_revision,
+        preview_digest: csvPreview.preview_digest,
+      };
+      const csvRace = await Promise.allSettled([
+        run("accounting.banking.statements.csv.import", csvCommand, "pg-csv-a"),
+        run("accounting.banking.statements.csv.import", csvCommand, "pg-csv-b"),
+      ]);
+      assert.equal(csvRace.filter((r) => r.status === "fulfilled").length, 1);
+      assert.match(
+        (csvRace.find((r) => r.status === "rejected") as PromiseRejectedResult)
+          .reason.message,
+        /version_conflict/,
+      );
+      const winnerIndex = csvRace.findIndex((r) => r.status === "fulfilled");
+      const imported =
+        (csvRace[winnerIndex] as PromiseFulfilledResult<any>).value;
+      const csvReplays = await Promise.all(Array.from({ length: 12 }, () =>
+        run(
+          "accounting.banking.statements.csv.import",
+          csvCommand,
+          winnerIndex === 0 ? "pg-csv-a" : "pg-csv-b",
+        )));
+      assert.ok(csvReplays.every((r) => r.import_id === imported.import_id));
+      const repeatedPreview = await run(
+        "accounting.banking.statements.csv.preview",
+        csvArgs,
+      );
+      const repeated = await run("accounting.banking.statements.csv.import", {
+        ...csvArgs,
+        expected_revision: repeatedPreview.book_revision,
+        preview_digest: repeatedPreview.preview_digest,
+      });
+      assert.equal(repeated.inserted, 0);
+      assert.equal(repeated.duplicates, 1);
+      const matchArgs = {
+        statement_id: imported.rows[0].statement_id,
+        journal_id: results[0].journal_id,
+        ordinal: 0,
+        amount: "1000.00",
+      };
+      const matchRace = await Promise.allSettled([
+        run("accounting.banking.reconcile.apply", matchArgs),
+        run("accounting.banking.reconcile.apply", matchArgs),
+      ]);
+      assert.equal(
+        matchRace.filter((r) => r.status === "fulfilled").length,
+        1,
+      );
+      assert.match(
+        (matchRace.find((r) =>
+          r.status === "rejected"
+        ) as PromiseRejectedResult).reason.message,
+        /overmatched/,
+      );
+      const match = matchRace.find((r) => r.status === "fulfilled")!.value;
+      await run("accounting.banking.reconcile.reverse", {
+        match_id: match.match_id,
+        reason: "Synthetic reviewed undo",
+      });
+      assert.equal(
+        (await admin.query(
+          "SELECT count(*)::int n FROM accounting.statements WHERE source_key='PG-CSV-1'",
+        )).rows[0].n,
+        1,
+      );
+      assert.equal(
+        (await run("accounting.banking.statements.imports.get", {
+          bank_account: "bank",
+        })).imports.length,
+        2,
+      );
       const audit = await app.execute("synthetic", {
         operation: "accounting.audit.verify",
         contract_version: "1",
         company_id: "c1",
         arguments: {},
       });
-      assert.equal(audit.events, editWon ? 117 : 116);
+      assert.equal(audit.events, editWon ? 121 : 120);
       assert.equal(audit.valid, true);
     } finally {
       await pool?.end();

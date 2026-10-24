@@ -36,6 +36,9 @@ const server = createServer(async (req, res) => {
     res.end(html.replaceAll("__NONCE__", token));
     return;
   }
+  if (req.method === "GET" && req.url === "/fixture/statement-csv") {
+    return json(200, { files: f.csvFiles });
+  }
   if (req.method !== "POST" || req.url !== "/api/run") {
     return json(404, { error: "not_found" });
   }

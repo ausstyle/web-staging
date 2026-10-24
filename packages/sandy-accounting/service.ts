@@ -1,6 +1,14 @@
-import { date, decimal, digest, minor, roundRatio } from "./money.ts";
+import {
+  contentHash,
+  date,
+  decimal,
+  digest,
+  minor,
+  roundRatio,
+} from "./money.ts";
 import { forecast } from "./forecast.ts";
 import { allocate, type Component } from "./allocation.ts";
+import { type CsvLine, parseStatementCsv } from "./statement_csv.ts";
 
 export type Row = Record<string, any>;
 export interface Sql {
@@ -66,6 +74,9 @@ export const operations = {
   "accounting.documents.credit.reverse": "R2",
   "accounting.documents.void": "R2",
   "accounting.banking.statements.import": "R2",
+  "accounting.banking.statements.csv.preview": "R0",
+  "accounting.banking.statements.csv.import": "R2",
+  "accounting.banking.statements.imports.get": "R0",
   "accounting.banking.reconcile.apply": "R2",
   "accounting.banking.reconcile.reverse": "R2",
   "accounting.reporting.run": "R0",
@@ -178,6 +189,9 @@ export class Accounting {
       )).rows[0];
       if (prior) {
         check(prior.input_digest === hash, "idempotency_conflict");
+        if (request.operation === "accounting.banking.statements.csv.import") {
+          await this.evidence(ctx, [request.arguments.source]);
+        }
         return prior.result;
       }
       const result = await this.mutate(ctx, request);
@@ -886,6 +900,78 @@ export class Accounting {
           version: d.version + 1,
         };
       }
+      case "accounting.banking.statements.csv.import": {
+        exact(a, [
+          "bank_account",
+          "csv",
+          "source",
+          "decisions",
+          "expected_revision",
+          "preview_digest",
+        ]);
+        check(
+          String(a.expected_revision) === String(c.book.revision),
+          "version_conflict",
+        );
+        const preview = await this.csvPreview(c, a);
+        check(
+          a.preview_digest === preview.preview_digest,
+          "csv_preview_changed",
+        );
+        check(preview.can_import, "csv_review_errors");
+        const fresh = preview.rows.filter((row: Row) => row.status === "NEW");
+        if (fresh.length) {
+          await this.mutate(c, {
+            ...r,
+            operation: "accounting.banking.statements.import",
+            arguments: {
+              bank_account: a.bank_account,
+              lines: fresh.map((row: Row) => ({
+                source_key: row.source_key,
+                effective_date: row.effective_date,
+                amount: row.amount,
+                reference: row.reference,
+                evidence: [a.source],
+              })),
+            },
+          });
+        }
+        const saved = (await c.tx.query(
+          "SELECT source_key,id FROM accounting.statements WHERE tenant_id=$1 AND company_id=$2 AND bank_account=$3",
+          [...c.scope, a.bank_account],
+        )).rows;
+        const ids = new Map(saved.map((row) => [row.source_key, row.id]));
+        const rows = preview.rows.map((row: Row) => ({
+          ...row,
+          statement_id: row.status === "SKIPPED"
+            ? null
+            : ids.get(row.source_key),
+        }));
+        const importId = id();
+        await c.tx.query(
+          "INSERT INTO accounting.statement_imports(tenant_id,company_id,id,bank_account,actor_id,source,preview_digest,rows) VALUES($1,$2,$3,$4,$5,$6,$7,$8)",
+          [
+            ...c.scope,
+            importId,
+            a.bank_account,
+            c.actor.actor_id,
+            JSON.stringify(a.source),
+            preview.preview_digest,
+            JSON.stringify(rows),
+          ],
+        );
+        return {
+          import_id: importId,
+          state: "IMPORTED",
+          inserted: fresh.length,
+          duplicates:
+            rows.filter((row: Row) => row.status === "DUPLICATE").length,
+          skipped: rows.filter((row: Row) => row.status === "SKIPPED").length,
+          rows,
+          ledger_mutated: false,
+          reconciled: false,
+        };
+      }
       case "accounting.banking.statements.import": {
         exact(a, ["bank_account", "lines"]);
         await this.account(c, a.bank_account, "bank");
@@ -1077,6 +1163,127 @@ export class Accounting {
     check(d, "document_unavailable");
     return d;
   }
+  async csvPreview(c: Context, a: Row): Promise<Row> {
+    await this.account(c, a.bank_account, "bank");
+    await this.evidence(c, [a.source]);
+    check(
+      typeof a.csv === "string" &&
+        new TextEncoder().encode(a.csv).length <= 200000,
+      "csv_size_or_encoding",
+    );
+    check(
+      typeof a.csv === "string" && await contentHash(a.csv) === a.source.sha256,
+      "csv_source_hash_mismatch",
+    );
+    check(
+      Array.isArray(a.decisions) && a.decisions.length <= 2000,
+      "csv_decisions",
+    );
+    const decisions = new Map<number, Row>();
+    for (const decision of a.decisions) {
+      exact(decision, ["record", "decision", "reason"]);
+      integer(decision.record, "record", 2001);
+      check(
+        decision.record >= 2 && !decisions.has(decision.record),
+        "csv_decision_record",
+      );
+      check(
+        ["KEEP_DISTINCT", "SKIP"].includes(decision.decision),
+        "csv_decision",
+      );
+      text(decision.reason, "reason");
+      check(decision.reason.trim().length > 0, "csv_decision_reason");
+      decisions.set(decision.record, decision);
+    }
+    let parsed: CsvLine[];
+    const errors: string[] = [];
+    try {
+      parsed = parseStatementCsv(a.csv, c.book.precision);
+    } catch (error) {
+      errors.push((error as Error).message);
+      parsed = [];
+    }
+    const existing: Row[] = (await c.tx.query(
+      "SELECT id,source_key,effective_date,amount::text,reference FROM accounting.statements WHERE tenant_id=$1 AND company_id=$2 AND bank_account=$3 ORDER BY source_key,id",
+      [...c.scope, a.bank_account],
+    )).rows.map((row) => ({
+      ...row,
+      effective_date: row.effective_date.toISOString().slice(0, 10),
+      amount: decimal(BigInt(row.amount), c.book.precision),
+    }));
+    const seen = new Map(existing.map((row) => [row.source_key, row]));
+    const fingerprint = (row: Row) =>
+      JSON.stringify([row.effective_date, row.amount, row.reference]);
+    const fingerprints = new Map<string, string[]>();
+    for (const row of existing) {
+      const group = fingerprints.get(fingerprint(row)) ?? [];
+      group.push(row.source_key);
+      fingerprints.set(fingerprint(row), group);
+    }
+    const rows: Row[] = [];
+    for (const line of parsed) {
+      const decision = decisions.get(line.record);
+      const row: Row = { ...line, status: "NEW", statement_id: null };
+      const old = seen.get(line.source_key);
+      if (line.error) row.status = "INVALID";
+      else if (old) {
+        row.status = fingerprint(old) === fingerprint(line)
+          ? "DUPLICATE"
+          : "SOURCE_CONFLICT";
+        row.statement_id = old.id ?? null;
+        if (row.status === "SOURCE_CONFLICT") {
+          row.existing = {
+            effective_date: old.effective_date,
+            amount: old.amount,
+            reference: old.reference,
+          };
+        }
+      } else {
+        const possible = fingerprints.get(fingerprint(line));
+        if (possible?.length) {
+          row.possible_duplicate_count = possible.length;
+          row.possible_duplicate_keys = possible.slice(0, 20).sort();
+          row.status = decision?.decision === "KEEP_DISTINCT"
+            ? "NEW"
+            : decision?.decision === "SKIP"
+            ? "SKIPPED"
+            : "POSSIBLE_DUPLICATE";
+          if (decision) {
+            row.review = decision;
+            decisions.delete(line.record);
+          }
+        }
+        if (row.status === "NEW" || row.status === "POSSIBLE_DUPLICATE") {
+          seen.set(line.source_key, row);
+          const group = possible ?? [];
+          group.push(line.source_key);
+          fingerprints.set(fingerprint(line), group);
+        }
+      }
+      rows.push(row);
+    }
+    check(decisions.size === 0, "csv_decision_target");
+    const can_import = errors.length === 0 && rows.length > 0 &&
+      rows.every((row) => ["NEW", "DUPLICATE", "SKIPPED"].includes(row.status));
+    const preview_digest = await digest({
+      scope: c.scope,
+      bank_account: a.bank_account,
+      source: a.source,
+      rows,
+      errors,
+    });
+    return {
+      state: "PREVIEW",
+      bank_account: a.bank_account,
+      source: a.source,
+      book_revision: String(c.book.revision),
+      preview_digest,
+      can_import,
+      errors,
+      rows,
+      ledger_mutated: false,
+    };
+  }
   async paid(c: Context, documentId: string) {
     return BigInt(
       (await c.tx.query(
@@ -1195,6 +1402,20 @@ export class Accounting {
   }
   async read(c: Context, r: Request): Promise<Row> {
     const a = r.arguments;
+    if (r.operation === "accounting.banking.statements.csv.preview") {
+      exact(a, ["bank_account", "csv", "source", "decisions"]);
+      return this.csvPreview(c, a);
+    }
+    if (r.operation === "accounting.banking.statements.imports.get") {
+      exact(a, ["bank_account"]);
+      await this.account(c, a.bank_account, "bank");
+      const imports = (await c.tx.query(
+        "SELECT id,actor_id,created_at,source,preview_digest,rows FROM accounting.statement_imports WHERE tenant_id=$1 AND company_id=$2 AND bank_account=$3 ORDER BY created_at,id",
+        [...c.scope, a.bank_account],
+      )).rows;
+      for (const entry of imports) await this.evidence(c, [entry.source]);
+      return { imports };
+    }
     if (r.operation === "accounting.documents.history") {
       exact(a, ["document_id"]);
       const d = await this.document(c, a.document_id);
@@ -1361,43 +1582,106 @@ export class Accounting {
       exact(a, []);
       const matches = await this.activeMatches(c);
       const statements = (await c.tx.query(
-        "SELECT * FROM accounting.statements WHERE tenant_id=$1 AND company_id=$2",
+        "SELECT * FROM accounting.statements WHERE tenant_id=$1 AND company_id=$2 ORDER BY effective_date,source_key,id",
         c.scope,
       )).rows;
       const lines = (await c.tx.query(
-        "SELECT l.*,j.effective_date,j.currency FROM accounting.lines l JOIN accounting.journals j ON j.tenant_id=l.tenant_id AND j.company_id=l.company_id AND j.id=l.journal_id WHERE l.tenant_id=$1 AND l.company_id=$2 AND j.state='POSTED'",
+        "SELECT l.*,j.effective_date,j.currency,j.narration,j.evidence FROM accounting.lines l JOIN accounting.journals j ON j.tenant_id=l.tenant_id AND j.company_id=l.company_id AND j.id=l.journal_id JOIN accounting.accounts a ON a.tenant_id=l.tenant_id AND a.company_id=l.company_id AND a.id=l.account_id WHERE l.tenant_id=$1 AND l.company_id=$2 AND j.state='POSTED' AND a.control='bank' ORDER BY j.effective_date,l.journal_id,l.ordinal",
         c.scope,
       )).rows;
-      const suggestions = [];
-      for (const s of statements) {
-        for (const l of lines) {
-          if (
-            l.account_id === s.bank_account && l.currency === c.book.currency &&
-            l.amount === s.amount &&
-            l.effective_date.getTime() === s.effective_date.getTime() &&
-            !matches.some((m) =>
-              m.statement_id === s.id ||
-              (m.journal_id === l.journal_id && m.ordinal === l.ordinal)
-            )
-          ) {
-            suggestions.push({
+      const usedStatements = new Map<string, bigint>(),
+        usedLines = new Map<string, bigint>();
+      const key = (line: Row) =>
+        JSON.stringify([line.journal_id, line.ordinal]);
+      for (const match of matches) {
+        usedStatements.set(
+          match.statement_id,
+          (usedStatements.get(match.statement_id) ?? 0n) + BigInt(match.amount),
+        );
+        usedLines.set(
+          key(match),
+          (usedLines.get(key(match)) ?? 0n) + BigInt(match.amount),
+        );
+      }
+      const queue: Row[] = [];
+      const candidateUses = new Map<string, number>();
+      for (const statement of statements) {
+        const remaining = BigInt(statement.amount) -
+          (usedStatements.get(statement.id) ?? 0n);
+        if (remaining === 0n) continue;
+        await this.evidence(c, statement.evidence);
+        const locked = c.book.locked_through &&
+          statement.effective_date <= c.book.locked_through;
+        const candidates: Row[] = [];
+        if (!locked) {
+          for (const line of lines) {
+            const available = BigInt(line.amount) -
+              (usedLines.get(key(line)) ?? 0n);
+            if (
+              line.account_id !== statement.bank_account ||
+              line.currency !== c.book.currency ||
+              line.effective_date.getTime() !==
+                statement.effective_date.getTime() ||
+              available !== remaining ||
+              (c.book.locked_through &&
+                line.effective_date <= c.book.locked_through)
+            ) continue;
+            await this.evidence(c, line.evidence);
+            candidates.push({
               state: "SUGGESTION",
-              rule: "exact_account_date_amount_v1",
-              statement_id: s.id,
-              journal_id: l.journal_id,
-              ordinal: l.ordinal,
-              amount: decimal(BigInt(s.amount), c.book.precision),
+              rule: "exact_account_date_remaining_amount_v2",
+              statement_id: statement.id,
+              journal_id: line.journal_id,
+              ordinal: line.ordinal,
+              amount: decimal(remaining, c.book.precision),
+              narration: line.narration,
+              effective_date: line.effective_date,
               approval_required: true,
             });
+            candidateUses.set(
+              key(line),
+              (candidateUses.get(key(line)) ?? 0) + 1,
+            );
           }
+        }
+        queue.push({
+          statement_id: statement.id,
+          source_key: statement.source_key,
+          reference: statement.reference,
+          effective_date: statement.effective_date,
+          amount: decimal(BigInt(statement.amount), c.book.precision),
+          remaining: decimal(remaining, c.book.precision),
+          status: locked
+            ? "PERIOD_LOCKED"
+            : candidates.length
+            ? "EXACT_MATCH"
+            : "NO_EXACT_MATCH",
+          partially_matched: usedStatements.has(statement.id),
+          candidates,
+        });
+      }
+      for (const item of queue) {
+        if (
+          item.candidates.length > 1 ||
+          item.candidates.some((candidate: Row) =>
+            candidateUses.get(key(candidate))! > 1
+          )
+        ) item.status = "AMBIGUOUS_MATCH";
+        else if (item.status === "EXACT_MATCH" && item.partially_matched) {
+          item.status = "PARTIAL_MATCH";
+        }
+        for (const candidate of item.candidates) {
+          candidate.ambiguous = item.status === "AMBIGUOUS_MATCH";
         }
       }
       return {
-        suggestions,
+        suggestions: queue.flatMap((item) => item.candidates),
+        queue,
+        exceptions: queue.filter((item) => item.status !== "EXACT_MATCH"),
         ledger_mutated: false,
         model_used: false,
         limitation:
-          "Exact matching only; duplicate candidates require reviewer choice.",
+          "Account, date and remaining-amount equality only. Every candidate requires review; ambiguous or unmatched lines are never auto-posted.",
       };
     }
     exact(a, ["report", "from", "through", "basis"], [

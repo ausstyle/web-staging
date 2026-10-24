@@ -28,7 +28,8 @@ explicitly synthetic worksheet.
 
 Browser verification: `python3 browser_test.py` (Playwright and Chromium
 required). It creates temporary books and checks actual UI actions, balances and
-source drilldown. Evidence goes to `/tmp/sandy-accounting-browser-evidence/`.
+source drilldown. `python3 csv_browser_test.py` additionally verifies CSV preview,
+duplicates/conflicts, exception review and reversible matching. Evidence goes to `/tmp/sandy-accounting-browser-evidence/`.
 The 10,000-voucher test takes several minutes; it uses an independent integer
 balance oracle and does not claim regulatory coverage.
 
@@ -62,6 +63,13 @@ balance oracle and does not claim regulatory coverage.
   untaxed line; full multi-line replacement is available through the service.
   Revision reads recheck every historical source, including superseded tax
   evidence. Competing edits and approvals cannot silently overwrite each other.
+- Source-bound [CSV preview/import](STATEMENT_CSV.md), exact and possible duplicate
+  review, immutable per-record import receipts and explicit keep/skip reasons.
+  The local workspace accepts only the provided synthetic files. It never calls
+  a bank feed or creates ledger entries from statement text.
+- Reconciliation review shows remaining statement amounts alongside existing
+  bank postings, ambiguous candidates, unresolved lines and locked periods.
+  Exact residual suggestions remain unapproved until a reviewer selects a match.
 - Separate immutable bank statement lines, source-key deduplication,
   partial/multiple matching, duplicate-match protection and append-only undo.
   Match suggestions do not post or reconcile anything.
@@ -128,7 +136,7 @@ contracts without dual-write loss.
 
 ## Known limits
 
-No customer-ready onboarding, full COA editing/import/export, statutory cash-tax rules, tax calculation
+No customer-ready onboarding, vendor-specific CSV mapping or OFX/QIF imports, full COA editing/import/export, statutory cash-tax rules, tax calculation
 rule packs, payroll, STP/BAS/SuperStream submission, real bank feed, payment
 rail, invoice sending, standalone credit/refund/recurring lifecycle, tracked
 inventory, assets, projects, lossless migration/export or full report catalogue.

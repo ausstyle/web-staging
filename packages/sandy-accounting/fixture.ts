@@ -10,6 +10,7 @@ import {
   type Request,
   type Row,
 } from "./service.ts";
+import { syntheticCsvFiles } from "./synthetic_csv.ts";
 import { contentHash, digest } from "./money.ts";
 
 export const SYNTHETIC_SOURCE =
@@ -76,6 +77,17 @@ export async function fixture(dataDir?: string) {
     sha256: await contentHash(SYNTHETIC_SOURCE),
     locator: "rows 1–3",
   };
+  const csvFiles = await Promise.all(
+    syntheticCsvFiles.map(async (file) => ({
+      ...file,
+      source: {
+        file_id: file.file_id,
+        revision: "1",
+        sha256: await contentHash(file.csv),
+        locator: "whole CSV file",
+      },
+    })),
+  );
   let revoked = false, evidenceRevoked = false;
   const boundary: Boundary = {
     now: () => new Date("2026-10-24T02:00:00.000Z").toISOString(),
@@ -95,9 +107,11 @@ export async function fixture(dataDir?: string) {
     },
     async evidence(actor: Actor, company: string, e: Evidence) {
       return !evidenceRevoked && actor.tenant_id === "synthetic-tenant" &&
-        company === "synthetic-company" && e.file_id === source.file_id &&
-        e.revision === source.revision && e.sha256 === source.sha256 &&
-        e.locator === source.locator;
+        company === "synthetic-company" &&
+        [source, ...csvFiles.map((file) => file.source)].some((allowed) =>
+          e.file_id === allowed.file_id && e.revision === allowed.revision &&
+          e.sha256 === allowed.sha256 && e.locator === allowed.locator
+        );
     },
   };
   const app = new Accounting(db as unknown as Database, boundary);
@@ -148,6 +162,7 @@ export async function fixture(dataDir?: string) {
     boundary,
     run,
     source,
+    csvFiles,
     journal,
     document,
     revoke: () => {

@@ -38,10 +38,12 @@ partial={
  'F136':'Partial payment recording; no money movement.',
  'F153':'Bank/statement comparison and reconciliation report; real feeds pending.',
  'F155':'Posted journal drilldown; broader linked transaction UI pending.',
- 'F158':'Immutable separate statement store; full imports pending.',
- 'F160':'Synthetic structured import; CSV/OFX/QIF and real sources pending.',
- 'F164':'Exact match proposal/review; broad search workflow pending.',
- 'F167':'Partial/multiple matches with no overmatching; intelligence acceptance pending.',
+ 'F158':'Immutable separate statement store with CSV receipt/record provenance; full imports pending.',
+ 'F159':'CSV source hashes, per-record outcomes and reconciliation states; broader feed/source lifecycle pending.',
+ 'F162':'Statement-versus-posted-entry review queue with residuals, ambiguity and unresolved exceptions; new coding workflow pending.',
+ 'F160':'Source-hashed explicit-format CSV preview/import, duplicate/conflict detection and recorded keep/skip review; vendor mapping, OFX/QIF and real sources pending.',
+ 'F164':'Exact account/date/residual match proposal and review; ambiguous shared candidates flagged; broad search workflow pending.',
+ 'F167':'Residual partial/multiple matches with no overmatching, reviewable ambiguity/lock exceptions and immutable undo; intelligence acceptance pending.',
  'F175':'Posted journal list; full journal lifecycle tabs/filtering pending.',
  'F178':'Effective date/narration; tax treatment and auto-reversal schedule pending.',
  'F179':'Explicit manual-journal cash inclusion, preserved on reversal; autofill and full editor pending.',
@@ -62,6 +64,9 @@ for f in features:
     f['canonical_registry_state']='NOT_INSTALLED'
     if f['id'] in partial:
         f.update(status='CODE_PRESENT_UNVERIFIED',delivery_paths=['packages/sandy-accounting/service.ts','packages/sandy-accounting/schema.sql'],test_paths=['packages/sandy-accounting/core.test.ts'],remaining=partial[f['id']])
+        if f['id'] in ['F158','F159','F160','F162','F164','F167']:
+            f['delivery_paths']+=['packages/sandy-accounting/statement_csv.ts','packages/sandy-accounting/workspace.html']
+            f['test_paths']+=['packages/sandy-accounting/statement_csv.test.ts','packages/sandy-accounting/postgres.test.ts','packages/sandy-accounting/csv_browser_test.py']
         if f['id'] in ['F036','F038','F040','F042','F126','F128','F132']:
             f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
             f['test_paths']+=['packages/sandy-accounting/drafts.test.ts','packages/sandy-accounting/postgres.test.ts','packages/sandy-accounting/browser_test.py']
@@ -77,6 +82,8 @@ for f in features:
         f['operations']=['accounting.reporting.run','accounting.workspace.get'] if n in [13,153,175,207,212] else ['accounting.sales.invoice.draft'] if n in [36,38,40] else ['accounting.documents.approve'] if n in [42,132] else ['accounting.documents.void','accounting.documents.payment.reverse'] if n==45 else ['accounting.documents.payment.record'] if n in [46,136] else ['accounting.payables.bill.draft'] if n in [120,126,128,131] else ['accounting.reporting.drilldown'] if n in [155,208] else ['accounting.banking.statements.import'] if n in [158,160] else ['accounting.intelligence.matches.propose','accounting.banking.reconcile.apply','accounting.banking.reconcile.reverse'] if n in [164,167] else ['accounting.audit.verify'] if n==197 else ['accounting.organisations.period.lock'] if n==272 else ['accounting.ledger.journal.post','accounting.ledger.journal.reverse']
         if n in [36,38,40,42,126,128,132]:f['operations']+=['accounting.documents.draft.update','accounting.documents.history']
         if 186<=n<=189:f['operations']=['accounting.accounts.create','accounting.accounts.archive','accounting.workspace.get']
+        if n in [158,159,160]:f['operations']=['accounting.banking.statements.csv.preview','accounting.banking.statements.csv.import','accounting.banking.statements.imports.get','accounting.workspace.get']
+        if n==162:f['operations']=['accounting.intelligence.matches.propose','accounting.banking.reconcile.apply','accounting.banking.reconcile.reverse']
         if n in [51,124]:f['operations']=['accounting.documents.credit.record','accounting.documents.credit.reverse']
 reports=[]
 b=text.split('# Appendix B —',1)[1].split('# Appendix C —',1)[0]
