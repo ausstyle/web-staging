@@ -88,6 +88,17 @@ jobs:
         run: >-
           python3 scripts/sandy/verify_iap_transport_installation.py
           --output "$RUNNER_TEMP/iap-transport-installed-prerequisites.json"
+      # Previous protected IAP runtime bindings persist across release attempts.
+      # Abort BEFORE moving the shared candidate tag; never overwrite old
+      # bindings or create an orphaned new tagged candidate on a blind retry.
+      - name: Detect existing IAP bindings before changing Cloud Run
+        if: ${{ inputs.iap_repair_transport }}
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+        run: |
+          set -euo pipefail
+          PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_check_existing_iap_binding.py -v
+          python3 scripts/sandy/check_existing_iap_binding.py
       - name: Preserve current revision and deploy a candidate without changing traffic
         env:
           PROJECT: ${{ vars.SANDY_GCP_PROJECT_ID }}
