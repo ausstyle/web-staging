@@ -1,6 +1,6 @@
 import io,json,tempfile,unittest,zipfile,contextlib
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock,patch
 from verify_customer_mutation_private_mcp import CustomerMutationAcceptance,fixture_docx,storage_object_absent,await_storage_absent
 class CustomerMutationAcceptanceTests(unittest.TestCase):
  def test_real_tiny_DOCX_contains_only_fixed_synthetic_content(self):
@@ -45,6 +45,17 @@ class CustomerMutationAcceptanceTests(unittest.TestCase):
    read=Mock(return_value=response);pause=Mock()
    with self.assertRaisesRegex(RuntimeError,'storage_fixture_state_unknown'):await_storage_absent(read,pause)
    read.assert_called_once();pause.assert_not_called()
+ def test_auth_retirement_precedes_potentially_slow_storage_polling(self):
+  r=self.runner();r.report={'cleanup':{}};r.retire=Mock()
+  r.fixtures=[{'customer':'10000000-0000-4000-8000-000000000001','blob_path':'fixture'}]
+  r.r._sql.return_value=[{'display_name':'Isolated Sandy API service acceptance','google_drive_folder_status':'excluded'}]
+  retired=[]
+  def retire_auth(_):retired.append(True)
+  def read(*args):
+   self.assertEqual(retired,[True]);return 400,b'{"statusCode":"404","error":"not_found"}'
+  r.storage=Mock(side_effect=read)
+  with patch('verify_customer_mutation_private_mcp.PrivateMemoryAcceptance.cleanup',retire_auth):r.cleanup()
+  self.assertTrue(r.report['cleanup']['storage_and_fixture_retirement_complete'])
  def runner(self):
   r=CustomerMutationAcceptance.__new__(CustomerMutationAcceptance);r.nonce='1'*32;r.fixtures=[];r.report={};r.save=Mock();r.keys={'service_role':'private.provider.fixture','anon':'public.fixture'};r.r=Mock();return r
  def test_storage_administration_cannot_choose_an_unowned_path_or_external_target(self):

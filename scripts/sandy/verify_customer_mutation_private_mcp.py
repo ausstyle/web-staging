@@ -190,7 +190,7 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
         self.check('no_broad_operation_publication_or_verification',flags==[{'verified':0}])
         self.report['independent_effect_counts']=effects;self.retire();denied,_=self.mutate('files.rename',{'id':f['file'],'name':'After retirement'},'file_rename_0');self.check('revocation_blocks_replay',denied.get('api_status')==403 and denied.get('is_error') is True)
     def cleanup(self):
-        self.retire();failures=[];owned_customers=set();q=self.r._quote
+        self.retire();failures=[];owned_customers=set();storage_fixtures=[];q=self.r._quote
         for f in self.fixtures:
             if not f.get('customer'):continue
             owned=self.r._sql('SELECT display_name,google_drive_folder_status FROM public.email_customers WHERE id='+q(f['customer']),True)
@@ -198,7 +198,10 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
             owned_customers.add(f['customer'])
             if f.get('file'):
                 self.r._sql('BEGIN;DELETE FROM public.sandy_universal_files WHERE id='+q(f['file'])+' AND owner_customer_id='+q(f['customer'])+' AND metadata->>\'customer_mutation_fixture\'='+q(self.nonce)+';DELETE FROM public.sandy_task_analysis_queue WHERE customer_id='+q(f['customer'])+" AND state IN('complete','failed','skipped','pending');COMMIT;")
-            if f.get('blob_path'):
+            if f.get('blob_path'):storage_fixtures.append(f)
+        try:PrivateMemoryAcceptance.cleanup(self)
+        finally:
+            for f in storage_fixtures:
                 try:
                     status,payload=self.storage(f,'read')
                     if status==200:
@@ -209,8 +212,6 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
                 except Exception as error:
                     code=str(error) if isinstance(error,RuntimeError) and re.fullmatch('[A-Za-z0-9_]{1,120}',str(error)) else type(error).__name__
                     failures.append({'fixture_index':self.fixtures.index(f),'code':code})
-        try:PrivateMemoryAcceptance.cleanup(self)
-        finally:
             for f in self.fixtures:
                 if f.get('customer') in owned_customers:
                     self.r._sql('BEGIN;DELETE FROM public.sandy_agenda_categories WHERE customer_id='+q(f['customer'])+' AND name LIKE \'Isolated mutation fixture %\';DELETE FROM public.sandy_agenda_companies WHERE customer_id='+q(f['customer'])+' AND name LIKE \'Isolated mutation fixture %\';COMMIT;')

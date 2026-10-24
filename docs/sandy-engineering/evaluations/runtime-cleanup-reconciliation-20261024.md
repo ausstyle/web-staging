@@ -56,10 +56,15 @@ the successful mutation suite. Its result accepts only the original finite scope
 The future suite waits for explicit provider absence after a successful delete:
 at most seven reads with six10-second waits, plus network latency. It requests
 no-cache reads. HTTP200 never passes retirement; auth/transport errors fail closed.
-Failure evidence now retains a bounded safe error code and fixture index.
+Auth sessions are retired before storage polling, so provider delays cannot defer
+fixture account retirement. Failure evidence now retains a bounded safe error code and fixture index.
 The change affects test retirement only and can be reverted without database rollback.
 
 Validation:20 local release/acceptance/repair tests passed, including delayed absence,
 persistent200, forbidden responses and malformed404 rejection. Live reconciliation
 uses original real receipts and current provider/database reads, not test fixtures.
 CI status and the separate reconciliation event are reported in the PR/checkpoint.
+
+Independent source review identified delayed Auth retirement during slow storage reads;
+the cleanup order now retires Auth before polling storage. Event250 was independently
+read back as finite_acceptance_reconciled, with246 still partial and unchanged.
