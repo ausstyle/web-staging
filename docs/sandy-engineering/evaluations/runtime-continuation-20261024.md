@@ -1,6 +1,6 @@
 # Runtime continuation reconciliation — 24 October 2026
 
-Scope: existing SANDY-ENG-0001 programme and its eight implementation workstreams. This is an evidence checkpoint, not a replacement scope or acceptance certificate. Repository baseline: `6040a355ada43f8975d09217629219c64f0e3268`. No production mutation or new customer/provider acceptance was executed by this continuation.
+Scope: existing SANDY-ENG-0001 programme and its eight implementation workstreams. This is an evidence checkpoint, not a replacement scope or acceptance certificate. Repository baseline: `6040a355ada43f8975d09217629219c64f0e3268`. This paragraph describes the initial readback checkpoint; the subsequent approved production outcomes below supersede its earlier pending gates.
 
 ## Authority and numbering
 
@@ -48,3 +48,16 @@ The parent directed continuation of [PR288](https://github.com/ausstyle/web-stag
 Automatic approval review denied this merge too, citing absent specific approval/recorded review and the previous failed release check. The merge did not execute and has not been retried. A specific merge approval question is pending. Once genuinely authorized, preserve normal protections and use only `finite-acceptance-only` in `sandy-customer-mutation-certification.yml`, following fresh exact-source readback. Do not rerun installation, public-memory or narrow-cancellation effects. Any fixture credential creation or access expansion must satisfy the current explicit user restrictions; the independent audit is evidence, not new authority.
 
 Parent-supplied independent audit references to retain without rerunning: memory correction [40045285019](https://github.com/ausstyle/web-staging/actions/runs/40045285019), events 196/197; normal-customer cancellation [40045879270](https://github.com/ausstyle/web-staging/actions/runs/40045879270); source profile/model turn [40045141069](https://github.com/ausstyle/web-staging/actions/runs/40045141069); grounding installation [40046920541](https://github.com/ausstyle/web-staging/actions/runs/40046920541); expired-read database recovery [40048700276](https://github.com/ausstyle/web-staging/actions/runs/40048700276). Counts of receipts do not establish full-scope acceptance.
+
+
+## Approved execution update
+
+Specific user approval resolved both merge denials. PR288 merged at `19c90aff7247df113a34796d52367b8fd19e352b`; PR283 merged at `bfbabd3d01ceabd6924dd20262cb2e05ce046416`. The earlier pending approval paragraphs are historical, not current blockers.
+
+PR283 protected run [40052280301](https://github.com/ausstyle/web-staging/actions/runs/40052280301) passed installation, independent source verification and actual existing 02:05 UTC cron continuation. Durable event233 confirms all three original proposals resumed to source review against Runtime38/Examiner23. Independent Architect review remains required.
+
+Finite-only run [40052204122](https://github.com/ausstyle/web-staging/actions/runs/40052204122) passed exact API65/MCP24/worker21 source readback, skipped installation and prior memory/cancellation effects, then failed the first task creation at PostgreSQL COMMIT. Event232 has zero mutation receipts. Live logs identify SQLSTATE42501 in the deferred task ownership guard after the RPC security context exits. [Draft PR297](https://github.com/ausstyle/web-staging/pull/297), source `5bac526cb7e5a83665bb5ee77ee17192de6ebb9b`, reproduces and repairs this in isolated PostgreSQL without grant changes; it is not deployed.
+
+Both exact fixture tenants now have zero task/calendar/company/category/queue/file rows and storage objects by independent SQL; provider logs show both object deletions returned200. The original partial-cleanup report remains immutable. Its response classifier still needs reconciliation. The CLI credential returns401 and artifact downloads encounter proxy403; connected GitHub tools remain available.
+
+Main advanced separately to `a08f969d7b65a329c743428f557a514a14479bcb`, adding My Voices scope0014 and related implementation. Those files were not overwritten. The thirteen-scope count above is a baseline observation, not a claim about this later catalogue.
