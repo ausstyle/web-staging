@@ -2,7 +2,9 @@ name: Release reviewed Runtime slices
 on:
   pull_request:
     paths:
+      - 'scripts/sandy/runtime_channel_activity_acceptance.py'
       - 'scripts/sandy/release_runtime_slice.py'
+      - 'supabase/functions/_shared/sandy-agent-operations/runtime_snapshot*'
       - 'scripts/sandy/test_runtime_slice_release.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
       - 'scripts/sandy/test_mission_truth_acceptance.py'
@@ -54,6 +56,7 @@ jobs:
       - name: Exercise real handler with isolated transport and privacy fixtures
         run: |
           deno test --allow-read --allow-env --import-map=scripts/sandy/testing/fallback_import_map.json scripts/sandy/fallback_runtime_test.ts
+          deno test --no-lock --allow-read --allow-env supabase/functions/_shared/sandy-agent-operations/runtime_snapshot_test.ts
           deno test supabase/functions/_shared/sandy-agent-operations/runtime_memory_test.ts supabase/functions/_shared/sandy-agent-operations/runtime_model_policy_test.ts
           deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
           deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
@@ -123,6 +126,12 @@ jobs:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: python3 scripts/sandy/verify_examiner_receipt_context.py --output "$RUNNER_TEMP/runtime-slices/examiner-installed-source.json"
+      - name: Verify normal customer channel-count answer once
+        if: inputs.component == 'runtime'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/runtime_channel_activity_acceptance.py --output "$RUNNER_TEMP/runtime-slices/channel-activity-acceptance.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
