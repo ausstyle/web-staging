@@ -1,7 +1,7 @@
 {
   "baseline_catalogue_sha256": "ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef",
-  "reviewed_catalogue_sha256": "b849c1a24fb35afaf8a6834122269f54121eaabc36fa02e7fd9d987622981afa",
-  "unchanged_catalogue_without_revisions_sha256": "fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e",
+  "reviewed_catalogue_sha256": "8cb0c034d74ac29c770699dbcb7f6e47592b83b5d3f7cdf6d8c20c04c88969d7",
+  "unchanged_catalogue_without_revisions_sha256": "e351c29b7e83ca8f7e4465ebf5a7416899bd53d3892a4c5cdb177deba7ac6168",
   "revisions": [
     {
       "operation": "github.files.content.get",
@@ -11,6 +11,22 @@
       "purpose": "Readonly CI and dotfile source delivery; other 594 contracts and write authority unchanged",
       "prior_revision_migration": "supabase/migrations/20261022042000_sandy_repository_source_ranges.sql",
       "prior_contract_sha256": "ded0ad6b40a43c7de6ee5e69ead81726f2ddbc7aed5ca725ebe4f972745cc311"
+    },
+    {
+      "operation": "gcp.cloud_run.services.list",
+      "before_contract_sha256": "ad8434eb282fa18f82550223acd62a633daad0072af1dd8a5d10a79232dbe7a2",
+      "after_contract_sha256": "5546d66eef72f51f1dd71a03d8ca7ebfee4e3a3646e2c505d1d7cd37d9ad0611",
+      "migration": "supabase/migrations/20261024002500_sandy_cloud_run_region_contracts.sql",
+      "purpose": "Source-only expiring verified regional read binding; live activation and approval not implied",
+      "production_deployed": false
+    },
+    {
+      "operation": "gcp.cloud_run.services.get",
+      "before_contract_sha256": "29606689e560dd6bf4e6b2fb056686de44497fa61778a394074d9d25b26a5f39",
+      "after_contract_sha256": "e114b33c6a5def2e2e26f22785bb226d908181da4c01f849293e381a429b40d2",
+      "migration": "supabase/migrations/20261024002500_sandy_cloud_run_region_contracts.sql",
+      "purpose": "Source-only expiring verified regional read binding; live activation and approval not implied",
+      "production_deployed": false
     }
   ]
 }

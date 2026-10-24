@@ -49,5 +49,20 @@ class ModelMetricsAcceptance(RuntimeMemoryAcceptance):
   self.check('source_preserved_through_acceptance',self.source()==source)
   self.report['functional_outcome_verification_claimed']=False
 
-if __name__=='__main__':
- p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);a=p.parse_args();raise SystemExit(0 if ModelMetricsAcceptance(a.output).run() else 1)
+def safe_failure_classification(report):
+ safe=lambda value: isinstance(value,str) and re.fullmatch('[A-Za-z0-9_]{1,120}',value) is not None
+ return {'kind':'runtime_metrics_acceptance_failed','error_class':report.get('runner_error') if safe(report.get('runner_error')) else 'unclassified',
+  'error_code':report.get('runner_error_code') if safe(report.get('runner_error_code')) else None,
+  'failed_checks':[c['name'] for c in report.get('checks',[]) if isinstance(c,dict) and c.get('passed') is False and safe(c.get('name'))][:20],
+  'cleanup_complete':report.get('cleanup',{}).get('complete') is True,'provider_response_contents_included':False}
+
+def main():
+ p=argparse.ArgumentParser(description=__doc__);p.add_argument('--output',type=Path,required=True);a=p.parse_args()
+ try:
+  acceptance=ModelMetricsAcceptance(a.output);passed=acceptance.run()
+  if not passed:print('::error title=Runtime telemetry acceptance::'+json.dumps(safe_failure_classification(acceptance.report)))
+  return 0 if passed else 1
+ except Exception as error:
+  print('::error title=Runtime telemetry acceptance::'+json.dumps(safe_failure_classification({'runner_error':type(error).__name__})))
+  return 1
+if __name__=='__main__':raise SystemExit(main())

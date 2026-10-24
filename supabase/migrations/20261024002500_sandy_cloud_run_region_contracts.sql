@@ -1,0 +1,9 @@
+BEGIN;
+-- Contract-only proposal. Preserve every exposure, verification and permission flag.
+DO $guard$ BEGIN
+ IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='gcp.cloud_run.services.list' AND handler='sandy-provider-operation-api' AND error_contract->>'contract_sha256'='ad8434eb282fa18f82550223acd62a633daad0072af1dd8a5d10a79232dbe7a2') THEN RAISE EXCEPTION 'cloud_run_contract_baseline_changed'; END IF;
+ IF NOT EXISTS(SELECT 1 FROM public.sandy_operation_registry WHERE operation='gcp.cloud_run.services.get' AND handler='sandy-provider-operation-api' AND error_contract->>'contract_sha256'='29606689e560dd6bf4e6b2fb056686de44497fa61778a394074d9d25b26a5f39') THEN RAISE EXCEPTION 'cloud_run_contract_baseline_changed'; END IF;
+END $guard$;
+UPDATE public.sandy_operation_registry SET input_schema='{"$defs":{},"additionalProperties":false,"properties":{"query":{"additionalProperties":false,"properties":{"pageSize":{"type":"integer"},"pageToken":{"maxLength":4096,"type":"string"},"showDeleted":{"type":"boolean"}},"required":[],"type":"object"},"region":{"enum":["europe-west1","europe-west8"],"type":"string"}},"required":[],"type":"object"}'::jsonb,error_contract=jsonb_set(error_contract,'{contract_sha256}',to_jsonb('5546d66eef72f51f1dd71a03d8ca7ebfee4e3a3646e2c505d1d7cd37d9ad0611'::text)) WHERE operation='gcp.cloud_run.services.list';
+UPDATE public.sandy_operation_registry SET input_schema='{"$defs":{},"additionalProperties":false,"properties":{"path":{"additionalProperties":false,"properties":{"name":{"maxLength":1024,"minLength":1,"pattern":"^projects/[^/]+/locations/[^/]+/services/[^/]+$","type":"string"}},"required":["name"],"type":"object"}},"required":["path"],"type":"object"}'::jsonb,error_contract=jsonb_set(error_contract,'{contract_sha256}',to_jsonb('e114b33c6a5def2e2e26f22785bb226d908181da4c01f849293e381a429b40d2'::text)) WHERE operation='gcp.cloud_run.services.get';
+COMMIT;

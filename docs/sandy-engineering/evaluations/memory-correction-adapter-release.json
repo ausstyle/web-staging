@@ -361,5 +361,146 @@
     "required_metadata_kind": "runtime_private_certification",
     "global_flags_changed": false,
     "new_grants": 0
+  },
+  "ordinary_publication_contract": {
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "confirm": {
+          "const": true
+        },
+        "new_value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "minLength": 2,
+          "maxLength": 1000
+        },
+        "idempotency_key": {
+          "type": "string",
+          "minLength": 12,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9:_-]+$"
+        }
+      },
+      "required": [
+        "id",
+        "confirm",
+        "new_value",
+        "idempotency_key"
+      ],
+      "additionalProperties": false
+    },
+    "output_schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ok",
+        "contract_version",
+        "operation",
+        "mutation_id",
+        "reused",
+        "item"
+      ],
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "operation": {
+          "const": "memory.fact_correct"
+        },
+        "mutation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reused": {
+          "type": "boolean"
+        },
+        "item": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "customer_id",
+            "original_fact_id",
+            "status",
+            "original_status",
+            "fact_value",
+            "supersedes_fact_id",
+            "rejection_id",
+            "rejected_value",
+            "corrected_value"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "customer_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "original_fact_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "rejected"
+              ]
+            },
+            "original_status": {
+              "type": "string",
+              "enum": [
+                "active",
+                "superseded",
+                "rejected"
+              ]
+            },
+            "fact_value": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 2000
+            },
+            "supersedes_fact_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            },
+            "rejection_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "format": "uuid"
+            },
+            "rejected_value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "corrected_value": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    }
   }
 }

@@ -1,3 +1,4 @@
+import hostingAccounts from "./hosting_accounts.json" with { type: "json" };
 import catalogue from "./contracts.json" with { type: "json" };
 import { canonicalJson } from "../_shared/sandy_api_protocol.ts";
 import {
@@ -5,7 +6,11 @@ import {
   provisioningOperations,
 } from "./provisioning_operations.ts";
 export const onboardingOperations: Readonly<Record<string, CustomerOperation>> =
-  Object.freeze({ ...catalogue, ...provisioningOperations });
+  Object.freeze({
+    ...catalogue,
+    ...provisioningOperations,
+    ...hostingAccounts,
+  });
 export const onboardingRequiresPortal = (operation: string) =>
   onboardingOperations[operation]?.requires_portal === true;
 export function onboardingContractMatches(

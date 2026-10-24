@@ -1,5 +1,5 @@
 """Safety and reproducibility checks for additive provider constituents."""
-import hashlib,json,unittest
+import copy,hashlib,json,unittest
 from pathlib import Path
 from provider_scope_expansion import DEDICATED_PROVIDER_READS,resource_assignments
 from build_provider_operations import SENSITIVE,EXPANSION_SENSITIVE
@@ -14,7 +14,7 @@ class ExpansionContractsTest(unittest.TestCase):
   reviewed=json.loads((BASE/'reviewed_contract_revisions.json').read_text())
   self.assertEqual(reviewed['baseline_catalogue_sha256'],'ce94c1a10b4ceb0e61123ccc563cec05b08190a6089233e8a535ee4c0abb18ef')
   self.assertEqual(hashlib.sha256((BASE/'contracts.json').read_bytes()).hexdigest(),reviewed['reviewed_catalogue_sha256'])
-  revisions=reviewed['revisions'];self.assertEqual([r['operation'] for r in revisions],['github.files.content.get'])
+  revisions=reviewed['revisions'];self.assertEqual([r['operation'] for r in revisions],['github.files.content.get','gcp.cloud_run.services.list','gcp.cloud_run.services.get'])
   for revision in revisions:
    operation=next(o for o in self.baseline if o['operation']==revision['operation'])
    self.assertEqual(operation['contract_sha256'],revision['after_contract_sha256'])
@@ -26,7 +26,20 @@ class ExpansionContractsTest(unittest.TestCase):
   data=json.loads((BASE/'contracts.json').read_text());data['operations']=[o for o in self.baseline if o['operation'] not in {r['operation'] for r in revisions}]
   unchanged=hashlib.sha256(json.dumps(data,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
   self.assertEqual(unchanged,reviewed['unchanged_catalogue_without_revisions_sha256'])
-  self.assertEqual(unchanged,'fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e')
+  self.assertEqual(unchanged,'e351c29b7e83ca8f7e4465ebf5a7416899bd53d3892a4c5cdb177deba7ac6168')
+  # Reconstruct the exact previous canonical catalogue except the already
+  # reviewed GitHub content contract. Preserve its old independent hash anchor.
+  restored=copy.deepcopy(json.loads((BASE/'contracts.json').read_text()))
+  for operation in restored['operations']:
+   if operation['operation'] in {'gcp.cloud_run.services.list','gcp.cloud_run.services.get'}:
+    operation.pop('regional_read_scope')
+    operation['input_schema']['properties'].pop('region',None)
+    operation.pop('contract_sha256')
+    operation['contract_sha256']=hashlib.sha256(json.dumps(operation,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+    revision=next(r for r in revisions if r['operation']==operation['operation'])
+    self.assertEqual(operation['contract_sha256'],revision['before_contract_sha256'])
+  restored['operations']=[o for o in restored['operations'] if o['operation']!='github.files.content.get']
+  self.assertEqual(hashlib.sha256(json.dumps(restored,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest(),'fef01b4c0eb2d6af5a0f377377324dc85a0ede0e2c8f9614c848119abb3e0e3e')
   # Also verify the reviewed operation's embedded digest independently.
   ranged=next(o for o in self.baseline if o['operation']=='github.files.content.get')
   unsigned={k:v for k,v in ranged.items() if k!='contract_sha256'}

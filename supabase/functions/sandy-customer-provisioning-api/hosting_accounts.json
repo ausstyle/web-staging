@@ -1,0 +1,218 @@
+{
+  "hosting.accounts.create": {
+    "operation": "hosting.accounts.create",
+    "contract_version": "1.0.0",
+    "handler": "sandy-customer-provisioning-api",
+    "permission_scope": "hosting:accounts:create",
+    "is_mutation": true,
+    "requires_portal": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "plan",
+        "idempotency_key"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "plan": {
+          "enum": [
+            "starter",
+            "business",
+            "premium"
+          ]
+        },
+        "idempotency_key": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[a-f0-9-]+$"
+        }
+      }
+    },
+    "output_schema": {
+      "type": "object",
+      "required": [
+        "ok",
+        "executed",
+        "request_id",
+        "reused",
+        "operation",
+        "result",
+        "contract_version",
+        "request_state",
+        "reconciliation_required"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "executed": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reused": {
+          "type": "boolean"
+        },
+        "operation": {
+          "const": "hosting.accounts.create"
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "account_id",
+            "requested_plan",
+            "state",
+            "version",
+            "provider_resources_created",
+            "billing_activated"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "requested_plan": {
+              "enum": [
+                "starter",
+                "business",
+                "premium"
+              ]
+            },
+            "state": {
+              "const": "logical_only"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "provider_resources_created": {
+              "const": false
+            },
+            "billing_activated": {
+              "const": false
+            }
+          }
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "request_state": {
+          "const": "succeeded"
+        },
+        "reconciliation_required": {
+          "const": false
+        }
+      }
+    },
+    "description": "Non-billable logical hosting account create. No provider resources or paid entitlement.",
+    "contract_sha256": "722f1ce5b93597c98b94c579065924c6a130664d64630a3e3a85373d195f6113"
+  },
+  "hosting.accounts.get": {
+    "operation": "hosting.accounts.get",
+    "contract_version": "1.0.0",
+    "handler": "sandy-customer-provisioning-api",
+    "permission_scope": "hosting:accounts:read",
+    "is_mutation": false,
+    "requires_portal": true,
+    "input_schema": {
+      "type": "object",
+      "required": [
+        "account_id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "account_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^[a-f0-9-]+$"
+        }
+      }
+    },
+    "output_schema": {
+      "type": "object",
+      "required": [
+        "ok",
+        "executed",
+        "request_id",
+        "reused",
+        "operation",
+        "result",
+        "contract_version",
+        "request_state",
+        "reconciliation_required"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "ok": {
+          "const": true
+        },
+        "executed": {
+          "const": true
+        },
+        "request_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "reused": {
+          "type": "boolean"
+        },
+        "operation": {
+          "const": "hosting.accounts.get"
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "account_id",
+            "requested_plan",
+            "state",
+            "version",
+            "provider_resources_created",
+            "billing_activated"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "account_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "requested_plan": {
+              "enum": [
+                "starter",
+                "business",
+                "premium"
+              ]
+            },
+            "state": {
+              "const": "logical_only"
+            },
+            "version": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "provider_resources_created": {
+              "const": false
+            },
+            "billing_activated": {
+              "const": false
+            }
+          }
+        },
+        "contract_version": {
+          "const": "1.0.0"
+        },
+        "request_state": {
+          "const": "succeeded"
+        },
+        "reconciliation_required": {
+          "const": false
+        }
+      }
+    },
+    "description": "Non-billable logical hosting account get. No provider resources or paid entitlement.",
+    "contract_sha256": "46b0f418b7c93fa5a6b7c3f179e96433faedf1f2197466019768875bdefb029e"
+  }
+}

@@ -1,3 +1,4 @@
+import { cloudRunReadRegion } from "./cloud_run_read_region.ts";
 /** Reviewed, fixed-provider execution. Internal service identity and one-use policy grants only. */
 import { Ajv, type ValidateFunction } from "npm:ajv@8.17.1";
 import { fullFormats } from "npm:ajv-formats@3.0.1/dist/formats.js";
@@ -355,7 +356,10 @@ function scalarPath(value: unknown, reserved: boolean): string {
     ? s.split("/").map(encodeURIComponent).join("/")
     : encodeURIComponent(s);
 }
-function verifyGcpResource(value: unknown): void {
+function verifyGcpResource(
+  value: unknown,
+  selectedRegion = catalogue.gcp_region,
+): void {
   if (typeof value !== "string") return;
   // Resource references anywhere in the request cannot escape the configured project.
   const project = value.match(/(?:^|\/)projects\/([^/]+)/);
@@ -369,14 +373,14 @@ function verifyGcpResource(value: unknown): void {
   ) throw new Error("provider_external_resource_reference");
   const location = value.match(/(?:^|\/)locations\/([^/]+)/);
   if (
-    location && !([catalogue.gcp_region, "global", "-"].includes(location[1]))
+    location && !([selectedRegion, "global", "-"].includes(location[1]))
   ) throw new Error("provider_region_scope_mismatch");
   const zone = value.match(/(?:^|\/)zones\/([^/]+)/);
   if (zone && zone[1] !== catalogue.gcp_zone) {
     throw new Error("provider_zone_scope_mismatch");
   }
   const region = value.match(/(?:^|\/)regions\/([^/]+)/);
-  if (region && region[1] !== catalogue.gcp_region) {
+  if (region && region[1] !== selectedRegion) {
     throw new Error("provider_region_scope_mismatch");
   }
   if (
@@ -384,10 +388,16 @@ function verifyGcpResource(value: unknown): void {
     !value.endsWith(`@${catalogue.gcp_project_id}.iam.gserviceaccount.com`)
   ) throw new Error("provider_service_account_scope_mismatch");
 }
-function inspectGcpReferences(value: unknown, depth = 0): void {
+function inspectGcpReferences(
+  value: unknown,
+  depth = 0,
+  selectedRegion = catalogue.gcp_region,
+): void {
   if (depth > 40) throw new Error("provider_request_depth");
   if (Array.isArray(value)) {
-    for (const child of value) inspectGcpReferences(child, depth + 1);
+    for (const child of value) {
+      inspectGcpReferences(child, depth + 1, selectedRegion);
+    }
   } else if (object(value)) {
     for (const [key, child] of Object.entries(value)) {
       if (
@@ -402,7 +412,7 @@ function inspectGcpReferences(value: unknown, depth = 0): void {
       if (
         ["region", "location"].includes(key) && typeof child === "string" &&
         !child.includes("/") &&
-        ![catalogue.gcp_region, "global"].includes(child)
+        ![selectedRegion, "global"].includes(child)
       ) throw new Error("provider_region_scope_mismatch");
       if (
         key === "zone" && typeof child === "string" && !child.includes("/") &&
@@ -412,12 +422,12 @@ function inspectGcpReferences(value: unknown, depth = 0): void {
         ["zones", "locations"].includes(key) && Array.isArray(child) &&
         child.some((v) =>
           typeof v === "string" && !v.includes("/") &&
-          ![catalogue.gcp_region, catalogue.gcp_zone, "global"].includes(v)
+          ![selectedRegion, catalogue.gcp_zone, "global"].includes(v)
         )
       ) throw new Error("provider_region_scope_mismatch");
-      inspectGcpReferences(child, depth + 1);
+      inspectGcpReferences(child, depth + 1, selectedRegion);
     }
-  } else verifyGcpResource(value);
+  } else verifyGcpResource(value, selectedRegion);
 }
 export function bindProviderRequest(
   op: ProviderOperation,
@@ -433,10 +443,26 @@ export function bindProviderRequest(
     op.provider === "gcp" &&
     !/^https:\/\/[a-z0-9-]+\.googleapis\.com$/.test(host)
   ) throw new Error("provider_host_not_allowed");
-  if (op.provider === "gcp") inspectGcpReferences(args);
+  const selectedRegion = cloudRunReadRegion(
+    op.operation,
+    args,
+    config.verifiedBindings,
+  );
+  if (op.provider === "gcp") inspectGcpReferences(args, 0, selectedRegion);
   const supplied = object(args.path) ? args.path : {};
   const path = op.path.replace(/\{(\+?)([^}]+)\}/g, (_, reserved, name) => {
-    const fixed = (op.fixed_bindings as JsonObject)[name];
+    let fixed = (op.fixed_bindings as JsonObject)[name];
+    if (op.operation === "gcp.cloud_run.services.list" && name === "parent") {
+      if (
+        op.provider !== "gcp" || op.method !== "GET" ||
+        host !== "https://run.googleapis.com" ||
+        op.path !== "/v2/{+parent}/services" ||
+        fixed !==
+          `projects/${catalogue.gcp_project_id}/locations/${catalogue.gcp_region}`
+      ) throw Error("provider_catalogue_integrity_failed");
+      fixed =
+        `projects/${catalogue.gcp_project_id}/locations/${selectedRegion}`;
+    }
     const value = typeof fixed === "string"
       ? substituteBinding(fixed, config.verifiedBindings)
       : fixed ?? supplied[name];
@@ -681,7 +707,7 @@ export function createProviderOperationHandler(
     let scope: JsonObject;
     try {
       scope = !fixedCatalogue && providerOperations[op.operation]
-        ? providerExecutionScope(op.operation, deps)
+        ? providerExecutionScope(op.operation, deps, args)
         : descriptorExecutionScope(op, deps);
       url = bindProviderRequest(op, args, deps);
     } catch (error) {
@@ -975,6 +1001,32 @@ export function createProviderOperationHandler(
           receipt_recorded: recorded,
         });
       }
+    }
+    // Recheck the short-lived regional configuration after token acquisition.
+    // Expiry or removal cannot dispatch a provider request under an old scope.
+    try {
+      cloudRunReadRegion(op.operation, args, deps.verifiedBindings);
+      if (
+        scope.region_binding_expires_at !== undefined &&
+        scope.region_binding_expires_at !==
+          deps.verifiedBindings?.cloud_run_read_region?.expires_at
+      ) {
+        throw Error("provider_regional_binding_changed");
+      }
+    } catch {
+      const recorded = await finish("failed", null, null, {
+        error: "provider_regional_binding_unavailable",
+        provider_attempted: false,
+      });
+      return response(424, {
+        ok: false,
+        error: "provider_regional_binding_unavailable",
+        executed: false,
+        operation: op.operation,
+        admission_id,
+        request_state: "failed",
+        receipt_recorded: recorded,
+      });
     }
     let upstream: Response;
     let text: string;
