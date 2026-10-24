@@ -4,9 +4,9 @@ Authority: PR239 / Sandy Mail v1.0 §§6.1–6.2. This is an internal Mail-domai
 
 ## Source and resumable state
 
-Migration 0004 adds `mail_import_jobs`, `mail_import_sources`, `mail_import_items`, `mail_import_checkpoints`, `mail_import_exceptions` and `mail_import_reconciliation`. All use composite tenant/account/mailbox keys, FKs, forced RLS and revoked public privileges. Import receipts are constrained to the same scope/message. Source bytes, raw object identities and reconciliation records are not runtime-updateable.
+Migration 0004 adds `mail_import_jobs`, `mail_import_sources`, `mail_import_items`, `mail_import_checkpoints`, `mail_import_exceptions` and `mail_import_reconciliation`. All use composite tenant/account/mailbox keys, FKs, forced RLS and revoked public privileges. Import receipts are constrained to the same scope/message. Source object bytes are immutable; imported-item raw object identities and reconciliation records are not runtime-updateable.
 
-`StageImport` accepts an already authorized stream, declared SHA-256/size, stable scoped job key, source format/folder, cutoff and admission reference. It writes the untouched source as immutable 1 MiB chunks, checks the aggregate digest/length, stores an immutable source manifest, then permits discovery. Partial upload bytes remain referenced; retry reads the same input from its beginning and reuses content-addressed chunks. Upload-byte-range continuation and GCS resumable-upload sessions are still pending. A changed spec under the same job key conflicts. A completed source is reused by declared identity rather than consuming a second input stream.
+`StageImport` accepts an already authorized stream, declared SHA-256/size, stable scoped job key, source format/folder, cutoff and admission reference. It writes the untouched source as immutable 1 MiB chunks, checks the aggregate digest/length, stores an immutable source manifest, then permits discovery. Partial upload objects remain retained; the active staging manifest records the latest prefix, and superseded incomplete chunks remain available for owner reconciliation; retry reads the same input from its beginning and reuses content-addressed chunks. Upload-byte-range continuation and GCS resumable-upload sessions are still pending. A changed spec under the same job key conflicts. A completed source is reused by declared identity rather than consuming a second input stream.
 
 `ResumeImport` advances one bounded phase batch:
 
@@ -42,3 +42,5 @@ For a later separately admitted import-worker release, the resource owner must r
 These grants exist only on the disposable local/CI test role. No live grant or persistent access change has been requested or applied.
 
 Format references: [RFC4155](https://www.rfc-editor.org/rfc/rfc4155.html), [Dovecot source-header conventions](https://doc.dovecot.org/2.3/admin_manual/mailbox_formats/mbox/).
+
+Local optional scale fixture: `MAIL_TEST_BULK_1000=1 go test -race -v ./...` stages and reconciles 1,000 synthetic MBOX messages in batches of 100. This measurement is loopback PostgreSQL/filesystem work with race instrumentation, not Cloud SQL throughput or the required 100k/1m acceptance. Set `MAIL_TEST_OBJECT_DIR` to retain fixture objects beyond the test process.

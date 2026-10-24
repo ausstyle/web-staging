@@ -1,0 +1,27 @@
+{
+  "cloud_deployed": false,
+  "environment": "local-postgresql-17-filesystem-not-cloudsql-gcs",
+  "independent_provider_acceptance": false,
+  "original_raw_sha256": "e40f91b3022c27ccfa93566c32206198a893a07ca93fee5379ceb39d413a6541",
+  "reconciliation": {
+    "version": 1,
+    "job_id": "fe789f76-12d6-42ce-b69a-a2c86e5db80e",
+    "scope": {
+      "Tenant": "8b5a4bea-6160-4036-ace5-99cd08b89379",
+      "Account": "1e60143a-64df-40bd-98f0-07b5a7b720ec",
+      "Mailbox": "b7967caf-e273-429d-af1d-f033d2ade6da"
+    },
+    "source_sha256": "71fb648b0946a8e4bcd7f24f7df9bbf24198cc3850865a322b6fe7c299808294",
+    "source_size": 3633,
+    "expected": 3,
+    "verified": 3,
+    "exceptions": 0,
+    "pending": 0,
+    "verified_bytes": 3471,
+    "item_chain_sha256": "38d736f05f7835ecfccf2c96d826386a10dda8606ee26beae95218e9de816768",
+    "state": "COMPLETE",
+    "independent_acceptance": false
+  },
+  "same_message_id_distinct_source_items": 3,
+  "source_revision": "10ae99536f1742783d503a52900fb77229ea25c7"
+}

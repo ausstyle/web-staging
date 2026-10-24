@@ -1,0 +1,118 @@
+=== RUN   TestArchiveMaildirAndEMLBytePreservation
+--- PASS: TestArchiveMaildirAndEMLBytePreservation (0.01s)
+=== RUN   TestArchiveExceptionsAndUnsafeInputs
+=== RUN   TestArchiveExceptionsAndUnsafeInputs/../escape.eml
+=== RUN   TestArchiveExceptionsAndUnsafeInputs//absolute.eml
+=== RUN   TestArchiveExceptionsAndUnsafeInputs/a/../escape.eml
+=== RUN   TestArchiveExceptionsAndUnsafeInputs/a\escape.eml
+--- PASS: TestArchiveExceptionsAndUnsafeInputs (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs/../escape.eml (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs//absolute.eml (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs/a/../escape.eml (0.00s)
+    --- PASS: TestArchiveExceptionsAndUnsafeInputs/a\escape.eml (0.00s)
+=== RUN   TestArchiveBoundsAndManifest
+--- PASS: TestArchiveBoundsAndManifest (0.59s)
+=== RUN   TestArchiveCorruptionAndEntryLimit
+--- PASS: TestArchiveCorruptionAndEntryLimit (0.03s)
+=== RUN   TestParserAndLimits
+--- PASS: TestParserAndLimits (0.07s)
+=== RUN   TestLocalObjectImmutability
+--- PASS: TestLocalObjectImmutability (0.00s)
+=== RUN   TestPostgresIntegration
+=== RUN   TestPostgresIntegration/synthetic_seed_repeat_and_collision
+=== NAME  TestPostgresIntegration
+    ingest_test.go:159: first-email receipt=d5cf69e4-a3a8-44b7-9407-2ba6dc8d65bc message=c03bc813-1eb1-471d-aabb-6e185469dff8 sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244 bytes=1101
+=== RUN   TestPostgresIntegration/concurrent_retries
+=== RUN   TestPostgresIntegration/same_identity_different_input
+=== RUN   TestPostgresIntegration/same_message_id_distinct_delivery
+=== RUN   TestPostgresIntegration/tenant_account_mailbox_isolation
+=== RUN   TestPostgresIntegration/missing_context_and_privileges
+=== RUN   TestPostgresIntegration/wrong_scope_write
+=== RUN   TestPostgresIntegration/recover_after_raw
+=== RUN   TestPostgresIntegration/recover_after_objects
+=== RUN   TestPostgresIntegration/recover_before_commit
+=== RUN   TestPostgresIntegration/recover_after_commit
+=== RUN   TestPostgresIntegration/malformed_mime_retained_pending
+=== RUN   TestPostgresIntegration/corruption_and_missing_object
+=== RUN   TestPostgresIntegration/scoped_search_and_keyset
+=== RUN   TestPostgresIntegration/portable_eml_snapshot_export
+=== RUN   TestPostgresIntegration/portable_export_restore_replay
+    ingest_test.go:446: synthetic archive source=6 restored=6 replay_receipts=6 bytes=26624
+=== RUN   TestPostgresIntegration/offline_import_jobs
+=== RUN   TestPostgresIntegration/offline_import_jobs/mbox_jobs_flags_receipts_and_master_export
+    import_jobs_test.go:68: import-job=fe789f76-12d6-42ce-b69a-a2c86e5db80e expected=3 verified=3 exceptions=0 source_sha256=71fb648b0946a8e4bcd7f24f7df9bbf24198cc3850865a322b6fe7c299808294
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_stage_chunk
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_discovery_object
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_ingest
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_before_item_commit
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_item_commit
+=== RUN   TestPostgresIntegration/offline_import_jobs/resume_import_after_report_object
+=== RUN   TestPostgresIntegration/offline_import_jobs/maildir_explicit_exceptions_and_provenance
+=== RUN   TestPostgresIntegration/offline_import_jobs/ambiguous_mbox_cannot_complete
+=== RUN   TestPostgresIntegration/offline_import_jobs/source_outage_retries_without_losing_cursor
+=== RUN   TestPostgresIntegration/offline_import_jobs/mbox_export_restore_with_portable_metadata
+=== RUN   TestPostgresIntegration/offline_import_jobs/concurrent_import_claim_is_nonblocking
+=== RUN   TestPostgresIntegration/offline_import_jobs/chunked_master_and_malformed_message_reconcile
+=== RUN   TestPostgresIntegration/offline_import_jobs/import_table_rls_and_column_grants
+=== RUN   TestPostgresIntegration/offline_import_jobs/metadata_change_does_not_get_overwritten_or_false_complete
+=== RUN   TestPostgresIntegration/offline_import_jobs/bulk_mbox_checkpoint_reconciliation
+    import_jobs_test.go:417: LOCAL_ONLY_BULK job=4a9fcf88-324a-4df8-ab11-c21c9c7201cf messages=1000 bytes=1155000 elapsed_seconds=32.498 messages_per_second=30.77 source_sha256=1d25bb6ad3b3046460ef685a3bf24080b9dc998323adcad227d20fdf9503aa7e
+=== RUN   TestPostgresIntegration/offline_import_jobs/bad_source_hash_and_recovery
+=== RUN   TestPostgresIntegration/receipt_outbox_atomicity
+--- PASS: TestPostgresIntegration (41.75s)
+    --- PASS: TestPostgresIntegration/synthetic_seed_repeat_and_collision (0.01s)
+    --- PASS: TestPostgresIntegration/concurrent_retries (0.10s)
+    --- PASS: TestPostgresIntegration/same_identity_different_input (0.01s)
+    --- PASS: TestPostgresIntegration/same_message_id_distinct_delivery (0.02s)
+    --- PASS: TestPostgresIntegration/tenant_account_mailbox_isolation (0.04s)
+    --- PASS: TestPostgresIntegration/missing_context_and_privileges (0.00s)
+    --- PASS: TestPostgresIntegration/wrong_scope_write (0.00s)
+    --- PASS: TestPostgresIntegration/recover_after_raw (0.03s)
+    --- PASS: TestPostgresIntegration/recover_after_objects (0.02s)
+    --- PASS: TestPostgresIntegration/recover_before_commit (0.02s)
+    --- PASS: TestPostgresIntegration/recover_after_commit (0.02s)
+    --- PASS: TestPostgresIntegration/malformed_mime_retained_pending (0.01s)
+    --- PASS: TestPostgresIntegration/corruption_and_missing_object (0.01s)
+    --- PASS: TestPostgresIntegration/scoped_search_and_keyset (0.01s)
+    --- PASS: TestPostgresIntegration/portable_eml_snapshot_export (0.02s)
+    --- PASS: TestPostgresIntegration/portable_export_restore_replay (0.15s)
+    --- PASS: TestPostgresIntegration/offline_import_jobs (41.10s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/mbox_jobs_flags_receipts_and_master_export (0.95s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_stage_chunk (0.74s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_discovery_object (0.60s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_ingest (0.53s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_before_item_commit (0.43s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_item_commit (0.40s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/resume_import_after_report_object (0.42s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/maildir_explicit_exceptions_and_provenance (0.31s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/ambiguous_mbox_cannot_complete (0.12s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/source_outage_retries_without_losing_cursor (0.39s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/mbox_export_restore_with_portable_metadata (0.77s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/concurrent_import_claim_is_nonblocking (0.38s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/chunked_master_and_malformed_message_reconcile (1.20s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/import_table_rls_and_column_grants (0.36s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/metadata_change_does_not_get_overwritten_or_false_complete (0.29s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/bulk_mbox_checkpoint_reconciliation (32.83s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/bad_source_hash_and_recovery (0.37s)
+    --- PASS: TestPostgresIntegration/receipt_outbox_atomicity (0.00s)
+=== RUN   TestMBOXRDLosslessAndResumable
+--- PASS: TestMBOXRDLosslessAndResumable (0.00s)
+=== RUN   TestMBOXRDAmbiguityFailsClosed
+--- PASS: TestMBOXRDAmbiguityFailsClosed (0.00s)
+=== RUN   TestGCSCreateOnlyGenerationAndIntegrityContract
+--- PASS: TestGCSCreateOnlyGenerationAndIntegrityContract (0.00s)
+=== RUN   TestGCSOutagesAndRedirectsFailClosed
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/301
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/403
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/429
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/500
+=== RUN   TestGCSOutagesAndRedirectsFailClosed/503
+--- PASS: TestGCSOutagesAndRedirectsFailClosed (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/301 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/403 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/429 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/500 (0.00s)
+    --- PASS: TestGCSOutagesAndRedirectsFailClosed/503 (0.00s)
+PASS
+ok  	github.com/ausstyle/web-staging/services/sandy-mail	43.492s
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-fixture	[no test files]
