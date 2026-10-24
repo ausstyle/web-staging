@@ -6,6 +6,8 @@ from release_gcp_admin_read import Installer,digest,quote
 from release_web_canary import ROOT,Blocked,original_sources,private_write
 from prepare_iap_repair_transport import patch,patch_gateway,verify_candidate
 from verify_iap_transport_installation import verify as verify_prerequisite
+import release_memory_private_correction as memory_release
+import release_task_cancel_certification as cancel_release
 MANIFEST=ROOT/'docs/sandy-engineering/evaluations/iap-repair-transport-release.json'
 PROPOSAL='52d56740-59c8-4db1-b7e6-a137c7699b86';VERSION='20261024006000'
 SOURCE_PATHS=['sandy-engineering-control/iap_repair.ts','sandy-engineering-control/iap_repair_jobs.ts','sandy-operation-api/iap_repair_authorization.ts','_shared/sandy_iap_repair_contract.ts']
@@ -20,6 +22,27 @@ def load():
  migration=(ROOT/m['migration']).read_text()
  if digest(migration.encode())!=m['migration_sha256'] or subprocess.check_output(['git','show',pin+':'+m['migration']],cwd=ROOT)!=migration.encode():raise Blocked('reviewed_migration_changed')
  return m,sources,migration
+def memory_prerequisite(r,m):
+ # Compose the reviewed, now-published memory capability with the exact later
+ # shared mutation RPC. Reuse both strict validators instead of requiring the
+ # obsolete closed-memory rollout state or copying provider execution logic.
+ if digest(memory_release.MANIFEST.read_bytes())!=m.get('preserved_memory_release_manifest_sha256') or digest(cancel_release.MANIFEST.read_bytes())!=m.get('preserved_cancellation_release_manifest_sha256'):
+  raise Blocked('reviewed_memory_release_manifest_changed')
+ memory,_=memory_release.load();cancel,_=cancel_release.load()
+ composed=copy.deepcopy(memory)
+ composed['shared_rpc_after_private_readiness_prosrc_sha256']=cancel['shared_rpc_after_private_readiness_prosrc_sha256']
+ memory_release.schema_components(r,composed,installed=True)
+ cancel_release.schema(r,cancel,installed=True)
+ slug='sandy-api-mcp';expected=cancel['functions'][slug]
+ meta=json.loads(r.api('GET','/functions/'+slug));files=original_sources(r.api('GET','/functions/'+slug+'/body'))
+ if (meta.get('status')!='ACTIVE' or meta.get('verify_jwt') is not True
+  or meta.get('version')!=expected['before_version']
+  or {p:digest(v) for p,v in files.items()}!=expected['candidate_files']):
+  raise Blocked('preserved_memory_MCP_source_or_ingress_changed')
+ retired=r.sql("SELECT count(*)::int unretired FROM public.sandy_engineering_artifacts a WHERE a.artifact_type='configuration' AND a.metadata->>'kind' IN('runtime_private_certification','runtime_task_cancel_certification') AND EXISTS(SELECT 1 FROM public.sandy_engineering_change_events e WHERE e.event_type IN('memory_private_readiness_installed','task_cancel_private_readiness_installed') AND e.detail->>'artifact_id'=a.id::text) AND (NOT EXISTS(SELECT 1 FROM public.sandy_engineering_change_events e WHERE e.event_type IN('memory_private_readiness_revoked','task_cancel_private_readiness_revoked') AND e.detail->>'artifact_id'=a.id::text) OR EXISTS(SELECT 1 FROM auth.sessions s WHERE s.user_id=(a.metadata->>'fixture_user_id')::uuid) OR EXISTS(SELECT 1 FROM public.sandy_memory_portal_accounts p WHERE p.auth_user_id=(a.metadata->>'fixture_user_id')::uuid) OR NOT EXISTS(SELECT 1 FROM auth.users u WHERE u.id=(a.metadata->>'fixture_user_id')::uuid AND u.banned_until>clock_timestamp()))",True)
+ if retired!=[{'unretired':0}]:raise Blocked('private_acceptance_requires_full_retirement_before_IAP_release')
+ return cancel
+
 def registry(r):
  return r.sql("SELECT operation,input_schema,handler,is_mutation,api_exposed,ai_exposed,verified,permission_scope FROM public.sandy_operation_registry WHERE operation IN ('engineering.implementation.request','engineering.job.execute') ORDER BY operation",True)
 def preserved(r):
@@ -40,6 +63,9 @@ def inspect(r,m,sources):
  if registry(r)!=m['registry_before']:raise Blocked('existing_engineering_contract_changed')
  state=preserved(r)
  if len(state)!=1 or state[0]['admin_read_revision']!=1 or state[0]['canary_revision']!=6 or state[0]['iap_repair_revision']!=0 or not state[0]['no_iap_grant'] or state[0]['owner_iap_events']!=0:raise Blocked('reviewed_existing_authority_state_required')
+ memory=memory_prerequisite(r,m)
+ if m['functions']['sandy-operation-api']['before_files']!=memory['functions']['sandy-operation-api']['candidate_files']:
+  raise Blocked('reviewed_API_preimage_must_preserve_installed_memory_modules')
  before={};after={}
  for slug,expected in m['functions'].items():
   before[slug]=r.read(slug,expected);after[slug]=candidate(slug,before[slug][2],sources)
@@ -47,6 +73,7 @@ def inspect(r,m,sources):
  return before,after,state
 def verify_installed(r,m,migration):
  report=verify_prerequisite(r)
+ memory_prerequisite(r,m)
  for slug,expected in m['functions'].items():
   meta=json.loads(r.api('GET','/functions/'+slug));files=original_sources(r.api('GET','/functions/'+slug+'/body'))
   if meta.get('version',0)<=expected['version'] or meta.get('verify_jwt')!=expected['verify_jwt'] or {k:digest(v) for k,v in files.items()}!=expected['candidate_files']:raise Blocked('installed_full_source_or_ingress_mismatch')
@@ -56,7 +83,7 @@ def verify_installed(r,m,migration):
  for row in expected_registry:
   if row['operation']=='engineering.implementation.request':row['input_schema']={'oneOf':[row['input_schema']]+json.loads(variants[1])}
  if registry(r)!=expected_registry:raise Blocked('installed_job_contract_or_existing_flags_changed')
- return {**report,'full_module_maps_independently_verified':True,'existing_verification_and_exposure_flags_preserved':True,'provider_execution_verified':False}
+ return {**report,'full_module_maps_independently_verified':True,'existing_verification_and_exposure_flags_preserved':True,'memory_schema_MCP_and_private_controls_preserved':True,'provider_execution_verified':False}
 def run(r,m,sources,migration,deploy=False):
  before,after,state=inspect(r,m,sources)
  if not deploy:return {'passed':True,'preflight_passed':True,'installed':False,'IAM_changes':0,'grant_changes':0,'functions_before':{s:x[0]['version'] for s,x in before.items()}}
@@ -82,6 +109,7 @@ def run(r,m,sources,migration,deploy=False):
    r.stage='install_'+slug;r.read(slug,m['functions'][slug])
    if r.sql("SELECT count(*)::int held FROM public.sandy_engineering_component_leases WHERE holder="+quote(r.holder)+" AND expires_at>clock_timestamp()",True)!=[{'held':2}]:raise Blocked('source_lease_lost')
    if preserved(r)!=state:raise Blocked('independent_authority_changed_reconcile_before_dispatch')
+   memory_prerequisite(r,m)
    private_write(r.out,slug+'.upload-receipt.json',r.upload(slug,after[slug],m['functions'][slug]['verify_jwt']))
    meta=json.loads(r.api('GET','/functions/'+slug));body=r.api('GET','/functions/'+slug+'/body');private_write(r.out,slug+'.after.metadata.json',json.dumps(meta).encode());private_write(r.out,slug+'.after.body',body)
    if meta.get('version')!=m['functions'][slug]['version']+1 or meta.get('status')!='ACTIVE' or meta.get('verify_jwt')!=m['functions'][slug]['verify_jwt']:raise Blocked('deployment_unknown_outcome_reconcile_no_retry')

@@ -48,8 +48,29 @@ with sync_playwright() as p:
     page.get_by_label('Folder name',exact=True).fill('Denied')
     page.get_by_role('button',name='Save',exact=True).click()
     page.get_by_role('status').get_by_text('FORBIDDEN',exact=True).wait_for()
+    page.get_by_role('button',name='Cancel',exact=True).click()
+    page.get_by_label('Synthetic test identity',exact=True).select_option('alice')
+    page.evaluate("""async () => {
+      const f=(await (await fetch('/fixtures')).json()).find(f=>f.id==='alice');
+      const parentResponse=await fetch('/api',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+f.token},body:JSON.stringify({operation:'nodes.folder',workspaceId:'personal-a',idempotencyKey:crypto.randomUUID(),args:{name:'Pagination test'}})});
+      if(!parentResponse.ok) throw Error('pagination parent creation failed');
+      const parent=(await parentResponse.json()).result;
+      for(let i=0;i<101;i++) {
+        const r=await fetch('/api',{method:'POST',headers:{'content-type':'application/json',authorization:'Bearer '+f.token},body:JSON.stringify({operation:'nodes.folder',workspaceId:'personal-a',idempotencyKey:crypto.randomUUID(),args:{parentId:parent.id,name:'Paged '+String(i).padStart(3,'0')}})});
+        if(!r.ok) throw Error('pagination fixture creation failed');
+      }
+    }""")
+    page.get_by_role('button',name='Refresh',exact=True).click()
+    page.get_by_role('button',name='▸ Pagination test',exact=True).click()
+    page.get_by_role('button',name='Next page',exact=True).wait_for()
+    assert page.locator('tbody tr').count()==100
+    page.get_by_role('button',name='Next page',exact=True).click()
+    page.get_by_role('button',name='▸ Paged 100',exact=True).wait_for()
+    assert page.locator('tbody tr').count()==1
+    assert page.get_by_role('button',name='Next page',exact=True).count()==0
+    page.screenshot(path='/tmp/sandy-cloud-evidence/drive-pagination.png',full_page=True)
     assert not errors,errors
     browser.close()
-    report={'passed':True,'environment':'loopback fixture / real Chromium','checks':['upload','exact downloaded bytes','snapshot','trash','restore into new folder','restored downloaded bytes','second tenant sees no files','reader write denied'],'provider_acceptance':False}
+    report={'passed':True,'environment':'loopback fixture / real Chromium','checks':['upload','exact downloaded bytes','snapshot','trash','restore into new folder','restored downloaded bytes','second tenant sees no files','reader write denied','bounded 100-row folder page','next page contains remaining entries'],'provider_acceptance':False}
     Path('/tmp/sandy-cloud-evidence/browser.json').write_text(json.dumps(report,indent=2))
     print(json.dumps(report))

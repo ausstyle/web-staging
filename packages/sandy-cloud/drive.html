@@ -369,7 +369,7 @@
         );
       });
     }
-    async function refresh() {
+    async function refresh(cursor) {
       if (!workspace) return;
       status("");
       $("title").textContent = view === "backups"
@@ -412,10 +412,13 @@
         );
         return;
       }
-      nodes = await api("nodes.list", {
+      const page = await api("nodes.page", {
         parentId: parents.at(-1)?.id ?? null,
         trash: view === "trash",
+        limit: 100,
+        ...(cursor ? { cursor } : {}),
       });
+      nodes = page.items;
       render(nodes, ["Name", "Type", "Revision", "Actions"], (n) => {
         const name = n.kind === "directory"
           ? button("▸ " + n.name, async () => {
@@ -520,6 +523,25 @@
           actions,
         ];
       });
+      if (cursor || page.nextCursor) {
+        const pager = document.createElement("nav");
+        pager.setAttribute("aria-label", "Folder pages");
+        pager.append(
+          text(
+            "span",
+            `${nodes.length} entries on this page · ${page.total} in this listing. `,
+          ),
+        );
+        if (page.nextCursor) {
+          pager.append(button("Next page", () => refresh(page.nextCursor)));
+        }
+        pager.append(button("Refresh listing", () => refresh()));
+        $("content").append(pager);
+        status(
+          "Listing captured at revision " + page.sequence +
+            ". Refresh to see changes.",
+        );
+      }
     }
     function render(items, headers, row) {
       $("content").replaceChildren();

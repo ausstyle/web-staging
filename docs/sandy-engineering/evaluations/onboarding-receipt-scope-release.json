@@ -1,0 +1,29 @@
+{
+  "scope": "SANDY-ENG-0006",
+  "kind": "existing_customer_identity_receipt_scope_v1",
+  "function": "public.sandy_customer_onboarding_execute(text,jsonb,uuid)",
+  "migration": "supabase/migrations/20261024004400_sandy_onboarding_receipt_scope.sql",
+  "migration_sha256": "c99d8ca9a328b7941e7c19b0cad0a60aeefc5fb1fb839194ac4dd28fdebd5e4a",
+  "before_prosrc_sha256": "02703d0659ee09dd482b174e2f1480cf3b66535e8686e42230325981b662fe8a",
+  "candidate_prosrc_sha256": "64eb168a000eecf6a12add83839030c55434528ae400204f89bc8473b10a9bec",
+  "source_only": true,
+  "live_acceptance_verified": false,
+  "new_stores": 0,
+  "new_operations": 0,
+  "new_authority": false,
+  "original_execution_surface": {
+    "function": "sandy-customer-provisioning-api",
+    "version": 10,
+    "verify_jwt": true,
+    "bundle_sha256": "271ce5ac663f6ca6a688e7c901220b2ac3fe6704689d0d74c845cb71b3a7d99e"
+  },
+  "preserved": {
+    "immutable_receipts": true,
+    "function_OID": true,
+    "authenticated_only_ACL": true,
+    "normal_fresh_onboarding": true,
+    "existing_current_primary_email_authorization": true,
+    "explicit_portal_revocation": true
+  },
+  "acceptance_boundary": "Source-pinned isolated PostgreSQL proves missing/mismatched binding denial; production normal-session missing-binding/recovery acceptance awaits reviewed release; no account merging or fabricated verified channels."
+}
