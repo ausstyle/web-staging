@@ -1,11 +1,11 @@
-// Generated from supabase/functions/_shared/sandy_mcp_transport.mjs; SHA256 75236f6d909be64613c4c189441ac603e11e4050e2be347e74bde2ebd0580041; do not edit.
+// Generated from supabase/functions/_shared/sandy_mcp_transport.mjs; SHA256 372facdcce94957b7de32f06a323a59857b1a1fdc7dc794ce142010e4a8a2b67; do not edit.
 /** MCP transport metadata only. API owns identity, grants and all execution. */
 const object = value => value !== null && typeof value === "object" && !Array.isArray(value);
 const uuid = value => typeof value === "string" && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(value);
 
 export function executionMetadataHeaders(metadata) {
   const headers = {};
-  for (const [key, header] of [["approvalId", "x-sandy-approval-id"], ["requestId", "x-sandy-request-id"]]) {
+  for (const [key, header] of [["approvalId", "x-sandy-approval-id"], ["requestId", "x-sandy-request-id"], ["certificationId", "x-sandy-certification-id"]]) {
     const value = metadata?.[key];
     if (value !== undefined) {
       if (!uuid(value)) return null;

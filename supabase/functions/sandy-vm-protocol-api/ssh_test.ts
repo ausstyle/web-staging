@@ -184,7 +184,7 @@ Deno.test("SSH: actual governed handler composes synthetic owner/grant policy wi
           }],
           networkInterfaces: [{ accessConfigs: [{ natIP: "34.0.0.10" }] }],
         }),
-      sshExecute: async (endpoint, actual) => {
+      sshExecute: async (endpoint, actual, options) => {
         assert.equal(endpoint.address, "34.0.0.10");
         assert.equal(endpoint.port, 22);
         assert.equal(endpoint.privateKey, f.endpoint.privateKey);
@@ -193,7 +193,7 @@ Deno.test("SSH: actual governed handler composes synthetic owner/grant policy wi
           ...endpoint,
           address: f.endpoint.address,
           port: f.endpoint.port,
-        }, actual);
+        }, actual, options);
       },
       saveResult: async (_c, result) => {
         captures++;
@@ -248,6 +248,32 @@ Deno.test("SSH: actual governed handler composes synthetic owner/grant policy wi
     assert(!JSON.stringify(body).includes("PRIVATE KEY"));
   } finally {
     await f.close();
+  }
+});
+Deno.test("SSH: authority loss after authenticated handshake refuses before exec and late policy replies cannot outlive deadline", async () => {
+  for (const delayed of [false, true]) {
+    const f = await fixture();
+    let checks = 0, release: (() => void) | undefined;
+    const waiting = new Promise<void>((resolve) => { release = resolve; });
+    try {
+      const executing = sshExecute(f.endpoint, "whoami", {
+        timeoutMs: 1500,
+        beforeCommand: () => {
+          checks++;
+          if (delayed) return waiting;
+          return Promise.reject(Error("private authorization backend detail"));
+        },
+      });
+      await assert.rejects(executing, (error) =>
+        error instanceof ProtocolRefusal && !error.mayHaveExecuted &&
+        error.code === (delayed ? "ssh_dispatch_authorization_timeout" : "ssh_dispatch_authorization_refused") &&
+        !error.message.includes("private"));
+      release!();
+      await new Promise((resolve) => setTimeout(resolve, 10));
+      assert.equal(checks, 1);
+      assert(f.counts().authentications > 0);
+      assert.deepEqual(f.commands, []);
+    } finally { release!(); await f.close(); }
   }
 });
 Deno.test("SSH: wrong host key refuses before authentication or exec and reveals no private material", async () => {

@@ -99,7 +99,12 @@ export type WinrmResult = {
 export async function winrmExecute(
   endpoint: WinrmEndpoint,
   command: string,
-  options: { timeoutMs?: number; maxOutputBytes?: number } = {},
+  options: {
+    timeoutMs?: number;
+    maxOutputBytes?: number;
+    /** Server-owned authority recheck after shell creation, before Command. */
+    beforeCommand?: () => Promise<void>;
+  } = {},
 ): Promise<WinrmResult> {
   if (
     typeof command !== "string" || !command.length ||
@@ -184,6 +189,24 @@ export async function winrmExecute(
       !shellIds.every((v) => v === shellIds[0] && UUID.test(v))
     ) throw new ProtocolRefusal("winrm_shell_identity_invalid", true);
     shell = shellIds[0];
+    if (options.beforeCommand) {
+      const remaining = limit - (performance.now() - started);
+      if (remaining <= 0) throw new ProtocolRefusal("winrm_execution_timeout", true);
+      let timer: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([
+          Promise.resolve().then(options.beforeCommand),
+          new Promise<never>((_resolve, reject) => {
+            timer = setTimeout(() => reject(new ProtocolRefusal("winrm_execution_timeout", true)), remaining);
+          }),
+        ]);
+      } catch (error) {
+        if (error instanceof ProtocolRefusal && error.code === "winrm_execution_timeout") throw error;
+        throw new ProtocolRefusal("winrm_dispatch_authorization_refused", true);
+      } finally {
+        clearTimeout(timer);
+      }
+    }
     const encoded = Buffer.from(command, "utf16le").toString("base64"),
       createdCommand = await request(
         "Command",

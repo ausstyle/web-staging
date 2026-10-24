@@ -6,6 +6,7 @@ on:
       - 'scripts/sandy/test_runtime_slice_release.py'
       - 'scripts/sandy/mission_truth_acceptance.py'
       - 'scripts/sandy/test_mission_truth_acceptance.py'
+      - 'scripts/sandy/test_runtime_slice_workflow.py'
       - 'docs/sandy-engineering/evaluations/runtime-slices/**'
       - '.github/workflows/sandy-runtime-slice-release.yml'
       - 'supabase/migrations/2026102400*.sql'
@@ -17,11 +18,12 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions]
+        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native]
 permissions:
   contents: read
 concurrency:
-  group: sandy-engineering-mcp-deploy
+  # Validation cannot occupy or replace the protected production deploy queue.
+  group: ${{ github.event_name == 'workflow_dispatch' && 'sandy-engineering-mcp-deploy' || format('sandy-runtime-slice-pr-{0}', github.event.pull_request.number) }}
   cancel-in-progress: false
 jobs:
   validate-runtime-slices:
@@ -37,7 +39,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -95,10 +97,11 @@ jobs:
           python3 - <<'PY'
           import os, subprocess, sys
           options={'runtime':'sandy-agent-runtime-v4'}
-          # Previously installed Examiner/native slices are intentionally not
-          # deployment choices. Each new batch has exact fresh preimage guards.
+          # The installed Examiner slice is not a deployment choice. Native's
+          # next release has an independently captured v3 preimage guard.
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
           extra['missions']=['sandy-mission-runner','sandy-mission-executor']
+          extra['native']=['sandy-vm-protocol-api']
           extra['runtime-programme']=['sandy-agent-runtime-v4','sandy-email-runtime-canary','sandy-voice-account-context','sandy-master-computer','sandy-engineering-oidc-ingest']
           selected=extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
           # Check every preimage before the first provider mutation.

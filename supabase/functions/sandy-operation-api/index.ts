@@ -1,3 +1,4 @@
+import { resolveMemoryCertification, type MemoryCertification } from "./memory_certification.ts";
 import { functionInvocationSessionHeaders } from "./function_invocation_session.ts";
 import {
   engineeringProofFor,
@@ -155,6 +156,7 @@ import {
  * never enables an executor or certifies a production deployment.
  */
 export type OperationDependencies = {
+  memoryCertificationDeploymentId?: string;
   base: string;
   service: string;
   anon: string;
@@ -1284,7 +1286,16 @@ export function createOperationHandler(dependencies: OperationDependencies) {
       .select(registryColumns).eq("operation", operation).maybeSingle();
     if (error) return reply(503, { error: "operation_registry_unavailable" });
     const entry: unknown = storedEntry;
-    if (!isObject(entry) || entry.api_exposed !== true) {
+    let memoryCertification: MemoryCertification | undefined;
+    if (request.headers.has("x-sandy-certification-id")) {
+      if (delegation || customerKey || !user || !user.email_confirmed_at || !memoryAccess || body.action !== "execute" || operation !== "memory.fact_correct" || !isObject(entry) || internalExecution || (body.channel !== undefined && !["api", "mcp"].includes(String(body.channel)))) return reply(403, { ok: false, error: "private_readiness_normal_customer_required", executed: false });
+      let deploymentId = dependencies.memoryCertificationDeploymentId ?? "";
+      if (!deploymentId) try { deploymentId = Deno.env.get("DENO_DEPLOYMENT_ID") || ""; } catch { /* unavailable source identity fails closed */ }
+      const readiness = await resolveMemoryCertification({ base, anon, token: bearer, readinessId: request.headers.get("x-sandy-certification-id")!, deploymentId, entry, args: body.arguments, customerId: portalCustomerId, request: fetchBackend });
+      if (!readiness.ok) return reply(readiness.status, { ok: false, error: readiness.error, executed: false });
+      memoryCertification = readiness.value;
+    }
+    if (!isObject(entry) || (entry.api_exposed !== true && !memoryCertification)) {
       return reply(404, { error: "operation_not_registered" });
     }
     const boundContract = delegation?.boundExecution?.registryContract;
@@ -1300,13 +1311,13 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         executed: false,
       });
     }
-    if (body.channel === "mcp" && entry.ai_exposed !== true) {
+    if (body.channel === "mcp" && entry.ai_exposed !== true && !memoryCertification) {
       return reply(403, {
         error: "operation_not_mcp_exposed",
         executed: false,
       });
     }
-    if (!enabledEntry(entry)) {
+    if (!enabledEntry(entry) && !(memoryCertification && enabledEntry({ ...entry, api_exposed: true }))) {
       return reply(422, {
         ok: false,
         error: "executor_not_implemented_or_not_enabled",
@@ -1368,7 +1379,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         },
       });
     }
-    const handler = allowedHandlers[entry.operation];
+    const handler = allowedHandlers[operation];
     const inputValidation = schemaValid(
       entry.input_schema,
       body.arguments ?? {},
@@ -1410,7 +1421,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
     if (
       (entry.is_mutation === true ||
         providerOperations[operation]?.requires_grant === true) &&
-      entry.verified !== true &&
+      entry.verified !== true && !memoryCertification &&
       !engineeringProofFor(delegation)?.standingOperations?.includes(operation)
     ) {
       return reply(424, {
@@ -1426,7 +1437,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
         operation,
       ) === true,
     );
-    if (extensionReady && !extensionReady.executable) {
+    if (extensionReady && !extensionReady.executable && !memoryCertification) {
       return reply(424, {
         ok: false,
         operation,
@@ -1668,6 +1679,7 @@ export function createOperationHandler(dependencies: OperationDependencies) {
             service,
             principal: customerServicePrincipal,
             fetch: fetchBackend,
+            ...(memoryCertification ? { memoryCertification } : {}),
             emailConfirmed: !!dispatchUser.email_confirmed_at,
             ...(userDb ? { userDb } : {}),
           },

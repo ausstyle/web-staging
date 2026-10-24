@@ -69,8 +69,13 @@ Deno.test("all21 remaining Memory branches are fixed typed mutations, including 
     assert(request, operation);
     const url = new URL(request.url);
     eq(url.origin, x.deps.base);
-    eq(url.pathname, "/functions/v1/sandy-memory-centre");
-    eq(url.searchParams.get("op"), c.action);
+    if (operation === "memory.fact_correct") {
+      eq(url.pathname, "/rest/v1/rpc/sandy_api_customer_mutation");
+      eq(JSON.parse(String(request.init.body)).p_operation, operation);
+    } else {
+      eq(url.pathname, "/functions/v1/sandy-memory-centre");
+      eq(url.searchParams.get("op"), c.action);
+    }
     eq(
       new Headers(request.init.headers).get("authorization"),
       `Bearer ${user}`,

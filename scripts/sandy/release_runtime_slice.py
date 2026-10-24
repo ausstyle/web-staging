@@ -35,7 +35,11 @@ MODULES = {
         '_shared/sandy-executive/outcome.ts',
         '_shared/sandy-executive/assessment.ts',
     },
-    'sandy-vm-protocol-api': {'sandy-vm-protocol-api/winrm.ts'},
+    'sandy-vm-protocol-api': {
+        'sandy-vm-protocol-api/executor.ts',
+        'sandy-vm-protocol-api/ssh.ts',
+        'sandy-vm-protocol-api/winrm.ts',
+    },
     'sandy-master-computer': {
         'sandy-master-computer/index.ts',
         '_shared/sandy-agent-operations/worker_computer_identity.ts',

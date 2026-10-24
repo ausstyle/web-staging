@@ -162,7 +162,7 @@ def original_sources(bundle: bytes) -> dict[str, bytes]:
                     raise Blocked("ambiguous_deployed_source")
                 # Plain JavaScript/JSON can be stored byte-for-byte without a
                 # source map. TypeScript still requires its original map.
-                if not length and name.endswith((".js", ".json")):
+                if not length and name.endswith((".js", ".mjs", ".json")):
                     if source_offset + source_size > source_length:
                         raise Blocked("truncated_deployed_bundle")
                     result[name[7:]] = bundle[source_start + source_offset:source_start + source_offset + source_size]
