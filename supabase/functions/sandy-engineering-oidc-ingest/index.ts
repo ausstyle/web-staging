@@ -604,6 +604,12 @@ Deno.serve(async(req:Request)=>{
     let selectionAudit:any={};
     let dynamicCandidates:any[]=[];
     let latestDesignRunKey:string|null=null;
+    // A count oracle cannot assess a general conversation-memory prompt.
+    // Reject a generated/refilled mismatch before charging a QA execution.
+    const webHistoryCountIntent=(question:string)=>
+      /\b(?:how many|number of|count|total)\b/i.test(question)&&
+      /\bweb(?:\s+chat)?\b/i.test(question)&&
+      /\b(?:messages?|turns?|chats?)\b/i.test(question);
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
@@ -613,12 +619,7 @@ Deno.serve(async(req:Request)=>{
       const disallow=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
       const actionRequest=/\b(?:please|can you|could you|would you)\s+(?:send|delete|create|book|invite|make changes|archive|complete a task)\b/i;
       const explicitlyReadOnly=/\b(?:do not|don't|without|only inspect|read.only|no changes|not asking you to|just check)\b/i;
-      // A count oracle cannot assess a general conversation-memory prompt.
-      // Reject a generated/refilled mismatch before charging a QA execution.
-      const webHistoryCountIntent=(question:string)=>
-        /\b(?:how many|number of|count|total)\b/i.test(question)&&
-        /\bweb(?:\s+chat)?\b/i.test(question)&&
-        /\b(?:messages?|turns?|chats?)\b/i.test(question);
+
       dynamicCandidates=(design||[]).flatMap((run:any)=>(Array.isArray(run.proposals)?run.proposals:[]).map((x:any)=>({...x,design_run_key:run.run_key}))).filter((x:any)=>
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
         !(disallow.test(x.question)||(actionRequest.test(x.question)&&!explicitlyReadOnly.test(x.question)))&&x.execution_status==="shadow_not_executed"&&
