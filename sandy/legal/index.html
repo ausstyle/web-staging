@@ -238,8 +238,11 @@ function financeCard(x){
  if(x.entry_type==="trust_statement")content.append(E("p","small muted","Reconciliation snapshot — not a second invoice"));
  if(x.notes){const details=E("details","");details.style.marginTop="10px";details.append(E("summary","small link","View provenance and notes"),E("p","small muted",x.notes));content.append(details);}
  if(x.source_provider==="outlook")content.append(E("p","small muted","Source: Outlook"+(x.source_attachment_name?" · "+x.source_attachment_name:"")+" · record retained"));
+ if(x.source_provider==="drive"&&x.source_attachment_name){
+  content.append(E("p","small muted","Original document inside archived ZIP: "+x.source_attachment_name));
+ }
  const actions=E("div","actions");
- const link=financeSource(x.source_document_url,"View source ↗");if(link){link.className="btn small";actions.append(link);}
+ const link=financeSource(x.source_document_url,x.source_provider==="drive"&&x.source_message_url!==x.source_document_url?"Open source archive ↗":"View source ↗");if(link){link.className="btn small";actions.append(link);}
  if(!["disputed","closed"].includes(x.status))actions.append(B("Dispute",async()=>{if(!confirm("Flag this financial record as disputed? This does not notify the law firm."))return;try{await financeApi("update",{id:x.id,expected_updated_at:x.updated_at,status:"disputed"});await openMatter(state.matter.id,state.tab);notify("Marked as disputed.")}catch(e){notify(e.message,true)}},"small"));
  box.append(content,actions);return box;
 }
