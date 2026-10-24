@@ -24,10 +24,19 @@ def admission(r):
 def inspect(r,m,after=False):
     meta=json.loads(r.api('GET','/functions/'+TARGET));body=r.api('GET','/functions/'+TARGET+'/body')
     files=original_sources(body);f=m['function']
-    if (meta.get('status')!='ACTIVE' or meta.get('verify_jwt') is not True or meta.get('import_map') is True
-        or meta.get('version')!=f['expected_prior_version']+int(after)
-        or {n:sha(b) for n,b in files.items()}!=f['after_files' if after else 'before_files']
-        or not after and sha(body)!=f['prior_bundle_sha256']): raise Blocked('live_preimage_changed_or_outcome_unknown')
+    expected=f['after_files' if after else 'before_files'];actual={n:sha(b) for n,b in files.items()}
+    checks={'active':meta.get('status')=='ACTIVE','jwt_enabled':meta.get('verify_jwt') is True,
+        'no_import_map':meta.get('import_map') is not True,
+        'version_matches':meta.get('version')==f['expected_prior_version']+int(after),
+        'modules_match':actual==expected,'bundle_matches':after or sha(body)==f['prior_bundle_sha256']}
+    if not all(checks.values()):
+        # Only bounded metadata and digests: never source bodies, credentials or responses.
+        detail={'checks':checks,'observed_version':meta.get('version'),
+            'expected_version':f['expected_prior_version']+int(after),'observed_bundle_sha256':sha(body),
+            'missing_modules':sorted(set(expected)-set(actual)),
+            'unexpected_module_count':len(set(actual)-set(expected)),
+            'changed_modules':{n:actual[n] for n in expected if n in actual and actual[n]!=expected[n]}}
+        raise Blocked('live_preimage_changed_or_outcome_unknown:'+json.dumps(detail,sort_keys=True))
     return meta,body,files
 def protected():
     if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main' or os.environ.get('GITHUB_REPOSITORY')!='ausstyle/web-staging':

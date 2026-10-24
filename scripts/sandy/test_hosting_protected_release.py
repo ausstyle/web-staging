@@ -40,6 +40,24 @@ class LiveVersionTests(unittest.TestCase):
                 else:
                     with self.assertRaises(h.Blocked):h.inspect(r,m,after)
 
+class PreimageDiagnosticTests(unittest.TestCase):
+    def test_each_guard_still_blocks_and_reports_only_bounded_diagnostics(self):
+        body=b'private body';files={'known.ts':b'private source'}
+        good={'status':'ACTIVE','verify_jwt':True,'import_map':False,'version':12}
+        base={'expected_prior_version':12,'before_files':{'known.ts':h.sha(files['known.ts'])},'prior_bundle_sha256':h.sha(body)}
+        for key,changes in [('active',{'status':'INACTIVE'}),('jwt_enabled',{'verify_jwt':False}),('no_import_map',{'import_map':True}),('version_matches',{'version':13}),('modules_match',{}),('bundle_matches',{})]:
+            meta={**good,**changes};manifest={**base}
+            if key=='modules_match':manifest['before_files']={'known.ts':'wrong'}
+            if key=='bundle_matches':manifest['prior_bundle_sha256']='wrong'
+            r=Fake([])
+            r.api=lambda method,path: body if path.endswith('/body') else json.dumps(meta).encode()
+            with patch.object(h,'original_sources',return_value=files),self.assertRaises(h.Blocked) as error:
+                h.inspect(r,{'function':manifest})
+            detail=json.loads(str(error.exception).split(':',1)[1])
+            self.assertFalse(detail['checks'][key])
+            self.assertNotIn('private',str(error.exception))
+            self.assertFalse(r.calls)
+
 class RecoveryTests(unittest.TestCase):
     def test_missing_recovery_cannot_write(self):
         r=Fake([])
