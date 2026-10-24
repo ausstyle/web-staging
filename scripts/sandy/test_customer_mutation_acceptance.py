@@ -1,7 +1,7 @@
 import io,json,tempfile,unittest,zipfile,contextlib
 from pathlib import Path
 from unittest.mock import Mock
-from verify_customer_mutation_private_mcp import CustomerMutationAcceptance,fixture_docx,storage_object_absent
+from verify_customer_mutation_private_mcp import CustomerMutationAcceptance,fixture_docx,storage_object_absent,await_storage_absent
 class CustomerMutationAcceptanceTests(unittest.TestCase):
  def test_real_tiny_DOCX_contains_only_fixed_synthetic_content(self):
   raw=fixture_docx();self.assertLessEqual(len(raw),2048)
@@ -34,6 +34,17 @@ class CustomerMutationAcceptanceTests(unittest.TestCase):
     with contextlib.redirect_stdout(stdout):self.assertFalse(r.run())
     notice=json.loads(stdout.getvalue().split('::',2)[2]);self.assertEqual(notice['error_class'],'RuntimeError');self.assertEqual(notice['runner_error_code'],code)
     self.assertNotIn('private.fixture.jwt',stdout.getvalue());r.r._sql.assert_not_called()
+ def test_delayed_storage_absence_retries_reads_only_and_requires_missing_object(self):
+  missing=(400,b'{"statusCode":"404","error":"not_found"}')
+  read=Mock(side_effect=[(200,b'old bytes'),(200,b'old bytes'),missing]);pause=Mock()
+  await_storage_absent(read,pause);self.assertEqual(read.call_count,3);self.assertEqual(pause.call_count,2)
+  read=Mock(return_value=(200,b'old bytes'));pause=Mock()
+  with self.assertRaisesRegex(RuntimeError,'storage_fixture_not_retired'):await_storage_absent(read,pause)
+  self.assertEqual(read.call_count,7);self.assertEqual(pause.call_count,6)
+  for response in [(403,b'forbidden'),(404,b'proxy missing'),(500,b'error')]:
+   read=Mock(return_value=response);pause=Mock()
+   with self.assertRaisesRegex(RuntimeError,'storage_fixture_state_unknown'):await_storage_absent(read,pause)
+   read.assert_called_once();pause.assert_not_called()
  def runner(self):
   r=CustomerMutationAcceptance.__new__(CustomerMutationAcceptance);r.nonce='1'*32;r.fixtures=[];r.report={};r.save=Mock();r.keys={'service_role':'private.provider.fixture','anon':'public.fixture'};r.r=Mock();return r
  def test_storage_administration_cannot_choose_an_unowned_path_or_external_target(self):

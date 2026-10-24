@@ -32,6 +32,16 @@ def storage_object_absent(status,payload):
     try:error=json.loads(payload)
     except (ValueError,TypeError):return False
     return status in [400,404] and isinstance(error,dict) and str(error.get('statusCode'))=='404' and error.get('error')=='not_found'
+def await_storage_absent(read, pause=time.sleep):
+    # Deletes can complete before cached authenticated reads stop returning bytes.
+    # Retry reads only; never repeat deletion or accept a 200 as retirement.
+    for attempt in range(7):
+        status,payload=read()
+        if storage_object_absent(status,payload):return
+        if status!=200:raise RuntimeError('storage_fixture_state_unknown')
+        if attempt<6:pause(10)
+    raise RuntimeError('storage_fixture_not_retired')
+
 class CustomerMutationAcceptance(PrivateMemoryAcceptance):
     def __init__(self,output,manifest):
         super().__init__(output);self.manifest=manifest.resolve();self.spec=json.loads(SPEC.read_text());self.prefix='customer_mutation_cert_'+self.nonce+':'
@@ -61,6 +71,7 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
         elif action=='delete':method='DELETE';url=BASE+'/storage/v1/object/'+BUCKET;raw=json.dumps({'prefixes':[path]}).encode()
         else:raise RuntimeError('storage_fixture_action_denied')
         headers={'authorization':'Bearer '+self.keys['service_role'],'apikey':self.keys['service_role'],'content-type':MIME if action=='upload' else 'application/json'}
+        if action=='read':headers['cache-control']='no-cache'
         request=urllib.request.Request(url,method=method,headers=headers,data=raw)
         try:response=self.r._opener.open(request,timeout=60)
         except urllib.error.HTTPError as error:response=error
@@ -194,15 +205,17 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
                         status,_=self.storage(f,'delete')
                         if status!=200:raise RuntimeError('storage_fixture_delete_failed')
                     elif not storage_object_absent(status,payload):raise RuntimeError('storage_fixture_state_unknown')
-                    status,payload=self.storage(f,'read')
-                    if not storage_object_absent(status,payload):raise RuntimeError('storage_fixture_not_retired')
-                except Exception as error:failures.append(type(error).__name__)
+                    await_storage_absent(lambda:self.storage(f,'read'))
+                except Exception as error:
+                    code=str(error) if isinstance(error,RuntimeError) and re.fullmatch('[A-Za-z0-9_]{1,120}',str(error)) else type(error).__name__
+                    failures.append({'fixture_index':self.fixtures.index(f),'code':code})
         try:PrivateMemoryAcceptance.cleanup(self)
         finally:
             for f in self.fixtures:
                 if f.get('customer') in owned_customers:
                     self.r._sql('BEGIN;DELETE FROM public.sandy_agenda_categories WHERE customer_id='+q(f['customer'])+' AND name LIKE \'Isolated mutation fixture %\';DELETE FROM public.sandy_agenda_companies WHERE customer_id='+q(f['customer'])+' AND name LIKE \'Isolated mutation fixture %\';COMMIT;')
-            self.report['cleanup']['storage_and_fixture_retirement_complete']=not failures;self.save()
+            self.report['cleanup']['storage_and_fixture_retirement_complete']=not failures
+            self.report['cleanup']['retirement_failures']=failures;self.save()
         if failures:raise RuntimeError('storage_or_fixture_retirement_incomplete')
     def run(self):
         try:self.prepare();self.exercise()
