@@ -8,6 +8,10 @@ import {bindRuntimeOperationalContext,runtimeOperationalOperation} from './runti
 async function fixture(overrides:Record<string,unknown>={}){
  const pg=new PGlite();const customer=crypto.randomUUID(),foreign=crypto.randomUUID(),task=crypto.randomUUID(),conversation=crypto.randomUUID();
  await pg.exec(`CREATE TABLE sandy_agent_tasks(id text,customer_id text,channel text,request_id text,status text,user_request text,plan jsonb);
+ CREATE TABLE sandy_capability_catalog(feature_key text,channels jsonb,last_verified_at text,verification_note text);
+ CREATE TABLE sandy_ai_integrations(integration_key text,enabled boolean,deployment_status text,last_verified_at text);
+ CREATE TABLE sandy_module_status(module_key text,operational_status text,last_tested_at text);
+ CREATE TABLE sandy_master_modules(module_key text,sort_order int);
  CREATE TABLE sandy_v2_runtime_policy(policy_key text,mode text);
  CREATE TABLE sandy_composio_connections(customer_id text);
  CREATE TABLE sandy_agenda_companies(customer_id text,id text,name text);
@@ -31,10 +35,11 @@ async function fixture(overrides:Record<string,unknown>={}){
  const db={from(table:string){
   assert.match(table,/^[a-z_][a-z0-9_]*$/);const clauses:string[]=[],values:unknown[]=[];let count=false,single=false,limit=10000;
   const filter=(column:string,operator:string,value:unknown)=>{assert.match(column,/^[a-z_][a-z0-9_]*$/);values.push(value);clauses.push(`${column} ${operator} $${values.length}`);return builder;};
-  const builder:any={select(_columns:string,options:any){count=options?.count==='exact';return builder;},eq:(k:string,v:unknown)=>filter(k,'=',v),in:(k:string,v:unknown[])=>filter(k,'= ANY',v),not(k:string,op:string,v:unknown){assert.equal(op,'is');assert.equal(v,null);assert.match(k,/^[a-z_][a-z0-9_]*$/);clauses.push(k+' IS NOT NULL');return builder;},limit(n:number){limit=n;return builder;},maybeSingle(){single=true;return builder;},async then(resolve:any,reject:any){try{
+  const builder:any={select(_columns:string,options:any){count=options?.count==='exact';return builder;},eq:(k:string,v:unknown)=>filter(k,'=',v),in:(k:string,v:unknown[])=>filter(k,'= ANY',v),not(k:string,op:string,v:unknown){assert.equal(op,'is');assert.equal(v,null);assert.match(k,/^[a-z_][a-z0-9_]*$/);clauses.push(k+' IS NOT NULL');return builder;},order(_column:string){return builder;},limit(n:number){limit=n;return builder;},maybeSingle(){single=true;return builder;},async then(resolve:any,reject:any){try{
    // ANY needs parentheses around its bind parameter.
    const where=clauses.map(x=>x.replace(/= ANY (\$\d+)/,'= ANY ($1)')).join(' AND ');
    const rows=(await pg.query(`SELECT * FROM ${table}${where?' WHERE '+where:''} LIMIT ${limit}`,values)).rows;
+   if(Object.hasOwn(overrides,table+"_result"))return resolve(overrides[table+"_result"]);
    return resolve({data:single?rows[0]??null:rows,error:null,count:count?(Object.hasOwn(overrides,table)?overrides[table]:rows.length):null});
   }catch(error){return reject(error);}}};return builder;
  }};
@@ -68,4 +73,28 @@ Deno.test('genuine empty counts survive; malformed identity rows do not become z
  await f.pg.query("INSERT INTO sandy_whatsapp_identities VALUES($1,NULL,'verified')",[f.customer]);
  r=await f.inspect();assert.equal(r.communication.counts.whatsapp_inbound_verified_identity,null);assert.equal(r.communication.known_customer_originated_subset,null);
  }finally{await f.pg.close();}
+});
+
+Deno.test('capability inspection rejects malformed/future/stale verification evidence on real SQL rows',async()=>{
+ const f=await fixture();const originalNow=Date.now,now=Date.parse('2026-10-24T04:00:00Z');
+ try{
+  Date.now=()=>now;
+  const cases:[string,string|null,boolean][]=[['missing',null,true],['invalid','not-a-date',true],['future',new Date(now+1).toISOString(),true],['expired',new Date(now-86400000).toISOString(),true],['recent',new Date(now-86399999).toISOString(),false],['current',new Date(now).toISOString(),false]];
+  for(const [key,timestamp] of cases)await f.pg.query("INSERT INTO sandy_module_status VALUES($1,'operational',$2)",[key,timestamp]);
+  const {capability}=await f.inspect();
+  const result=await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability);
+  assert.equal(result.ok,true);
+  for(const [key,,stale] of cases){const row=result.modules.find((m:any)=>m.module_key===key);assert.equal(row.stale,stale,key);assert.equal(row.operational_status,stale?'unverified':'operational',key);}
+ }finally{Date.now=originalNow;await f.pg.close();}
+});
+Deno.test('unavailable capability registries never report a successful empty catalogue',async()=>{
+ for(const table of ['sandy_capability_catalog','sandy_ai_integrations','sandy_module_status','sandy_master_modules']){
+  for(const invalid of [{data:[],error:{message:'synthetic private diagnostic'}},{data:null,error:null},{data:{},error:null}]){
+   const f=await fixture({[table+'_result']:invalid});try{
+    const {capability}=await f.inspect();
+    assert.deepEqual(await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability),{error:'capability_catalog_unavailable'});
+   }finally{await f.pg.close();}
+  }
+ }
+ const f=await fixture();try{const {capability}=await f.inspect();const result=await runtimeOperationalOperation(f.principal,'agent.runtime.operational.capabilities',f.db,capability);assert.equal(result.ok,true);assert.deepEqual(result.modules,[]);assert.deepEqual(result.master_modules,[]);}finally{await f.pg.close();}
 });

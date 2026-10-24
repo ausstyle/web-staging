@@ -1,9 +1,9 @@
 {
   "kind": "reviewed-runtime-slice-v1",
   "function": "sandy-agent-runtime-v4",
-  "version": 38,
+  "version": 39,
   "verify_jwt": false,
-  "body_sha256": "e647a9be9523429e0f234f96015df4db40551c4da9f34c8a7d3864e9a5724793",
+  "body_sha256": "b1ddb8b3813d3ee9401c6394697aea8ced40e481e3e05745786cd7c4a041f36e",
   "before_files": {
     "_shared/sandy-agent-operations/connected-gmail.ts": "a3372903acd1e89f09e199778cd72d107174d36b81c55e06b6478f8032408a8c",
     "_shared/sandy-agent-operations/contracts.ts": "7759f8a595048778ef112006898b2ebca942d63755202302dbe2383917ef58e2",
@@ -22,7 +22,7 @@
     "_shared/sandy-agent-operations/runtime_record_contracts.ts": "9aac024b23bb0823090f506190e0e5d64dede7fc272d2a318bd406f62c338058",
     "_shared/sandy-agent-operations/runtime_records.ts": "11d12b4ed55f646d776b9c32aa1226dc4285c53b3e9c0dcc080791a85a634440",
     "_shared/sandy-agent-operations/runtime_responses_transport.ts": "917741bf8b92ef5a7f03dcdfea81ad0f03ad8fc645862147b47def6c345143be",
-    "_shared/sandy-agent-operations/runtime_snapshot.ts": "c42980cc1b2e3c353c18dbdc77c49c699a90f60644a05186900433f74899a338",
+    "_shared/sandy-agent-operations/runtime_snapshot.ts": "c4097b5d4ac00bf19c4ef7346939c509a575d081ba2f6fc2f09d153f6d6283ab",
     "_shared/sandy-agent-operations/service.ts": "19e42131cf9525d3280d168e80672df089d073a5151c53ba665fb0203124821f",
     "_shared/sandy-agent-operations/voice_source.ts": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04",
     "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
@@ -39,6 +39,6 @@
     "sandy-agent-runtime-v4/version-awareness.js": "ee8ac38d54136ab291736f211f713f542bbc6c83af6460081f06a35782fe06c9"
   },
   "replacements": {
-    "_shared/sandy-agent-operations/runtime_snapshot.ts": "c4097b5d4ac00bf19c4ef7346939c509a575d081ba2f6fc2f09d153f6d6283ab"
+    "_shared/sandy-agent-operations/runtime_operational.ts": "f76c1b5fe5842b15da55dcdcfa3dc55c246856d5491939b9e906d5273bbeee4d"
   }
 }
