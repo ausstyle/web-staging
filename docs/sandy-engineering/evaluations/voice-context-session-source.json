@@ -1,0 +1,51 @@
+{
+  "kind": "source-only-normal-customer-voice-context-v1",
+  "deployed": false,
+  "migration": "supabase/migrations/20261024005400_sandy_voice_context_session.sql",
+  "migration_sha256": "d9aeafe5501572ae7d4ab61131ba6d4a16eae357858f5c734c40f40d26c3236a",
+  "functions": {
+    "sandy-voice-call": {
+      "version": 39,
+      "verify_jwt": false,
+      "body_sha256": "1a3cc84d4f2ac4b88be1a403dd21398387129553838de6cd8ef88cd0e7b928a6",
+      "before_files": {
+        "index.ts": "cc3962893674f75b78bff5a415ef193c38a2c7b6d17b77e3b41e160ab4c19a99"
+      },
+      "candidate_files": {
+        "sandy-voice-call/context_session.ts": "f3a693bd40db78cd720e1b351dca11b62e89ce4d85ec49d483fdef35a664faae",
+        "sandy-voice-call/index.ts": "bfde878c5ea6bb4cbb34fe8e5e0485005e8980eaa764745fd783f4c08eb1342f"
+      }
+    },
+    "sandy-voice-account-context": {
+      "version": 21,
+      "verify_jwt": false,
+      "body_sha256": "c5940b2d6ea1b482c708b6be24c289e7dfa7420f14a6f96cc728250d11206989",
+      "before_files": {
+        "_shared/sandy-agent-operations/voice_source.ts": "12e6dc28e101ff2ad640f3e0c0b229468d3ef943de5109b5ab63810d85ba7c04",
+        "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+        "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
+        "sandy-voice-account-context/executive.ts": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee",
+        "sandy-voice-account-context/index.ts": "bc8970c26dcda925e72b7e58a1e1485ae7cc4013b6ab184029c9834cec8c45a5"
+      },
+      "candidate_files": {
+        "_shared/sandy-agent-operations/voice_source.ts": "87bfa56876949f7e3aaf9d552945d1883f72b523f836438eb2180b803ab38e75",
+        "_shared/sandy-executive/history.ts": "515e51aed1a0f5a3590a39fc8f9c16564d0e9035e3c8e10b6b26c1c311e52ae9",
+        "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+        "_shared/sandy-executive/rollout.ts": "6bd422158e6b432fcc56898331aaf42cb90e6fc9d125982e3d7cba5163170e9e",
+        "_shared/sandy-executive/temporal_context.ts": "3ebccebcb26ce9fd2c73a259aa9463f192f1a978a34e6b7b9c6455895b3b1730",
+        "sandy-voice-account-context/executive.ts": "6050ea450b5cf9fab456f9cf2572732e25c75f839b2f7269158444b27958d0ee",
+        "sandy-voice-account-context/index.ts": "a745ca845915db164a59ccf86b064fd8086d2cb51f9422f8134bfc4844baa838"
+      }
+    }
+  },
+  "rollback_preconditions": [
+    "Revoke only the new context issuer RPC execution permission before source rollback.",
+    "Revoke context_only links and run private expiry cleanup until independent readback confirms zero usable context grants/private tokens.",
+    "Restore preserved exact source/auth metadata; keep additive schema and immutable receipts."
+  ],
+  "catalogue_changes": 0,
+  "provider_operations_authorized": 0,
+  "media_acceptance_claimed": false
+}
