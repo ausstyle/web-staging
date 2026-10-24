@@ -949,3 +949,54 @@ Deno.test("reference-publication security is descriptor based rather than a cano
   assertEquals(observed, [alias.operation, "PATCH"]);
   assertEquals(h.requests.length, 0);
 });
+
+Deno.test("blob settlement uses one POST then immutable GET; failed settlement never replays mutation", async () => {
+  const { createHash } = await import("node:crypto");
+  const { readVerifiedExecution } = await import(
+    "../_shared/sandy_execution_receipt_transport.ts"
+  );
+  const sha = createHash("sha1").update("blob 5\0hello").digest("hex");
+  for (const settled of [true, false]) {
+    const methods: string[] = [];
+    let proofs = 0;
+    const h = harness({
+      fetch: (_url, init) => {
+        methods.push(init?.method ?? "GET");
+        return Promise.resolve(
+          Response.json(
+            init?.method === "POST"
+              ? {
+                sha,
+                url:
+                  `https://api.github.com/repos/ausstyle/web-staging/git/blobs/${sha}`,
+              }
+              : { sha, size: 5, encoding: "base64", content: btoa("hello") },
+          ),
+        );
+      },
+      verifyGithubMutation: (request) => {
+        proofs++;
+        assertEquals(request.admission_id, ADMISSION);
+        assertEquals(request.proof.kind, "github_blob");
+        return Promise.resolve({
+          allowed: settled,
+          verification_sha256: settled ? "a".repeat(64) : undefined,
+        });
+      },
+    });
+    const response = await h.call("github.git.blobs.create", {
+      body: { content: "hello", encoding: "utf-8" },
+    });
+    assertEquals(response.status, 200);
+    assertEquals(methods, ["POST", "GET"]);
+    assertEquals(proofs, 1);
+    assertEquals(h.finishes[0].outcome, "accepted");
+    const verification = readVerifiedExecution(
+      response,
+      "github.git.blobs.create",
+      ADMISSION,
+    );
+    assertEquals(verification?.state, settled ? "succeeded" : "accepted");
+    assertEquals(verification?.effect_verified, settled);
+  }
+});
