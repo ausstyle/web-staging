@@ -26,11 +26,11 @@ def build():
             implementation = ['supabase/functions/sandy-customer-provisioning-api/hosting_accounts.json',
                               'supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql']
         if section == '4':
-            implementation = ['PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf']
+            implementation = ['PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf', 'supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs']
         if section == '14':
             implementation = ['scripts/sandy/release_hosting_accounts.py', '.github/workflows/sandy-hosting-account-release.yml']
         if section == '6':
-            implementation = ['supabase/functions/_shared/sandy-hosting/dns_plan.mjs']
+            implementation = ['supabase/functions/_shared/sandy-hosting/dns_plan.mjs', 'supabase/functions/_shared/sandy-hosting/domain_challenge.mjs']
         rows.append({'id': 'HOST-S' + section + '-' + str(sum(r['section'] == section for r in rows) + 1).zfill(2),
                      'section': section, 'section_title': title, 'source_lines': [pending[0][0], pending[-1][0]],
                      'text': text, 'text_sha256': hashlib.sha256(text.encode()).hexdigest(),
@@ -39,8 +39,8 @@ def build():
                      'live_acceptance_categories': categories.get(section, []),
                      'live_acceptance_status': 'not_verified', 'provider_receipts': [],
                      'remaining': ('Logical create/get only; no paid provisioning, role expansion or lifecycle.' if section in ('2', '3', '7', '8') else
-                                   'Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending.' if section == '4' else
-                                   'Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending.' if section == '6' else
+                                   'Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending.' if section == '4' else
+                                   'Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending.' if section == '6' else
                                    'Bounded account executor source only; genuine Owner admission, deployment, customer canary and rollback exercise pending.' if section == '14' else
                                    'Implement and independently verify this scope block; do not infer completion from source or registry metadata.')})
         pending.clear()

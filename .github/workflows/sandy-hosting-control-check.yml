@@ -42,7 +42,7 @@ jobs:
           python scripts/sandy/build_hosting_scope_coverage.py
           git diff --exit-code -- docs/sandy-engineering/evaluations/hosting-architecture-coverage.json
       - name: Test read-only DNS plans and guarded inverses
-        run: node --test supabase/functions/_shared/sandy-hosting/dns_plan.test.mjs
+        run: node --test supabase/functions/_shared/sandy-hosting/*.test.mjs
       - name: Test existing Auth transport and hosting account contract
         run: deno test --allow-read --allow-env supabase/functions/sandy-customer-provisioning-api/index_test.ts supabase/functions/sandy-customer-provisioning-api/hosting_accounts_test.ts
       - name: Test shared gateway compatibility
