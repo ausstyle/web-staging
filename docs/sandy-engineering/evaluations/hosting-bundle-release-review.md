@@ -1,0 +1,9 @@
+# Logical account bundle-pin correction
+
+Protected preflight [40102469434](https://github.com/ausstyle/web-staging/actions/runs/40102469434) ran in preflight mode and failed only the raw bundle digest comparison. Every module digest, v12, JWT, status and import-map check passed. No release intent, migrations or account table exists. The prior MCP-reported digest did not match bytes downloaded by the protected executor; the reason for that discrepancy is not established.
+
+Pin the observed Management bundle SHA256 `271ce5ac663f6ca6a688e7c901220b2ac3fe6704689d0d74c845cb71b3a7d99e`. New manifest SHA256 `8f4995fe40f523f06a372fa5de08a8ff802960108f4e7435245e2f618f2c51b2`. All module/migration hashes, source `1dee65da7b68f12d147d11e3f02befae06416ef2` and version guards are unchanged. Do not substitute a module-only comparison or reuse the prior manifest approval. If a fresh download differs again, stop and investigate; never chase changing hashes automatically.
+
+Successor proposed change `e6d65289-ce3d-41bd-8b1e-086f89ffa813` preserves old approved record `6b60ac54-9308-414c-bf39-f0b7ca6abc25` as history. Once published, [review the exact correction](https://ausstyle.github.io/web-staging/sandy/controller/?change=e6d65289-ce3d-41bd-8b1e-086f89ffa813#changes) and select **Approve logical hosting account release**. Approval does not dispatch. Then use the existing protected release workflow on main; all live checks remain mandatory. Do not rerun the old workflow commit.
+
+Impact remains the existing account handler and two additive migrations, with operation exposure disabled. No paid infrastructure, DNS, traffic, IAM, credentials, shared-service deployments or standing grants. Guarded rollback restores the captured handler and retains account/audit/schema data. No live customer acceptance is claimed.
