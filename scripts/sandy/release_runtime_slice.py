@@ -22,6 +22,8 @@ MODULES = {
         '_shared/sandy-agent-operations/runtime_records.ts',
         '_shared/sandy-agent-operations/runtime_memory.ts',
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
+        '_shared/sandy-agent-operations/runtime_snapshot.ts',
+        '_shared/sandy-agent-operations/runtime_operational.ts',
         '_shared/sandy-agent-operations/identity.ts',
         '_shared/sandy-agent-operations/runtime_conversation.ts',
         '_shared/sandy-agent-operations/runtime_model_metrics.ts',
