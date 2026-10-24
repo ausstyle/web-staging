@@ -63,5 +63,31 @@ Deno.test('existing durable dispatcher timer is fixed, private, bounded and disa
   await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',['fixture-secret-'.repeat(12)]),/disabled_unactivated_existing_timer_required/);
   await db.exec("SELECT set_config('fixture.role','authenticated',false)");await assert.rejects(db.query('SELECT public.sandy_orch_worker_transport_state()'),/private_worker_configuration_required/);
  });
+ await t.step('03400 adds only supported modern private transport format and preserves independent authority controls',async()=>{
+  await db.exec("SELECT set_config('fixture.role','service_role',false);UPDATE public.sandy_orch_worker_control SET enabled=false,transport_secret_id=NULL,release_change_id=NULL,source_commit=NULL,last_request_id=NULL,last_requested_at=NULL");
+  await db.exec(await Deno.readTextFile('supabase/migrations/20261024003400_sandy_modern_private_transport.sql'));
+  const modern='sb_secret_'+'A_-1'.repeat(8),legacy='eyJmaXh0dXJlIjp0cnVlfQ.'+'YQ'.repeat(50)+'.c2lnbmF0dXJl';
+  for(const invalid of ['sb_secret_'+'a'.repeat(19),'sb_secret_'+'a'.repeat(129),'sb_secret_'+'!'.repeat(32),'sb_publishable_'+'a'.repeat(32),'opaque-long-key'.repeat(12)]){
+   await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',[invalid]),/private_worker_transport_binding_required/);
+  }
+  await db.exec("SELECT set_config('fixture.role','authenticated',false)");
+  await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',[modern]),/private_worker_transport_binding_required/);
+  await db.exec("SELECT set_config('fixture.role','service_role',false)");
+  assert.deepEqual(await value('SELECT public.sandy_orch_worker_bind_transport($1) v',[legacy]),{ok:true,bound:true,authority_expanded:false});
+  await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',[modern]),/transport_replacement_requires_separate_configuration/);
+  // Fixture-only reset: production replacement remains explicitly prohibited.
+  await db.exec('UPDATE public.sandy_orch_worker_control SET transport_secret_id=NULL');
+  assert.deepEqual(await value('SELECT public.sandy_orch_worker_bind_transport($1) v',[modern]),{ok:true,bound:true,authority_expanded:false});
+  assert.deepEqual(await value('SELECT public.sandy_orch_worker_bind_transport($1) v',[modern]),{ok:true,bound:true,authority_expanded:false});
+  await db.exec("UPDATE public.sandy_orch_worker_control SET enabled=true,release_change_id='740a56f8-a582-419f-a4d9-9440af5e57f9',source_commit=repeat('b',40),last_requested_at=NULL");
+  await assert.rejects(db.query('SELECT public.sandy_orch_worker_bind_transport($1)',[modern]),/disabled_unactivated_existing_timer_required/);
+  const count=await value('SELECT count(*)::integer v FROM net.fixture_requests');
+  assert.equal((await value('SELECT public.sandy_orch_worker_tick() v')).state,'dispatch_requested');
+  assert.equal(await value('SELECT count(*)::integer v FROM net.fixture_requests'),count+1);
+  const headers=await value('SELECT headers v FROM net.fixture_requests ORDER BY id DESC LIMIT 1');assert.equal(headers.apikey,modern);assert.equal(headers.authorization,'Bearer '+modern);
+  for(const role of ['anon','authenticated','service_role'])assert.equal(await value(`SELECT has_function_privilege('${role}','public.sandy_orch_worker_tick()','EXECUTE') v`),false);
+  assert.equal(await value("SELECT has_function_privilege('authenticated','public.sandy_orch_worker_bind_transport(text)','EXECUTE') v"),false);
+  assert.equal(JSON.stringify(await value('SELECT jsonb_agg(detail) v FROM public.sandy_engineering_change_events')).includes(modern),false);
+ });
  }finally{await db.close();}
 });
