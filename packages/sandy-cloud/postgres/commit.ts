@@ -29,6 +29,12 @@ export interface CanonicalAdmission {
   policyEpoch: number;
 }
 export interface ProductionOwners {
+  /** Non-authorizing discovery, complete Runtime gates, then discovery recheck.
+   * Must run before any canonical authority/domain row locks. */
+  prepareTransaction(
+    tx: SqlTransaction,
+    intent: Readonly<UploadIntent>,
+  ): Promise<void>;
   /** Resolve authenticated actor/session/device and API-tenant/customer/company
    * membership from canonical sources. Lock relevant revocation/policy rows until
    * commit; reject unestablished shares. Never trust identity from request JSON.
@@ -96,7 +102,8 @@ export class PostgresCommitBoundary implements CommitBoundary {
   ) {}
 
   private async admitted(tx: SqlTransaction, i: Readonly<UploadIntent>) {
-    // Domain locks follow authority locks, always workspace -> intent -> file.
+    await this.owners.prepareTransaction(tx, i);
+    // Full Runtime gates precede authority and domain row locks.
     const admitted = await this.owners.lockAdmission(tx, i);
     if (
       !admitted || !Number.isSafeInteger(admitted.policyEpoch) ||

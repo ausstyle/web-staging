@@ -127,6 +127,7 @@ const projection = canonicalFileProjection({
   },
 });
 const boundary = new PostgresCommitBoundary(connection, {
+  prepareTransaction: async () => {},
   lockAdmission: admission,
   projectVersion: projection,
 }, fixtureScanner);

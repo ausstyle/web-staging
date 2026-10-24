@@ -318,3 +318,17 @@ ordinary merge commits preserving API-owned versions, passed five checks and
 merged at `7179f62c06d9594b8659326a371eaa64e0867b2c`. PR306 now targets main and
 contains only Cloud-scoped differences. No force push or shared scope edits were
 used. Source merge is not live schema or product deployment.
+
+### Runtime complete-plan integration follow-up (2026-10-24)
+
+- [x] Adopt PR303 `cd6f6cf` canonical reference loader and complete gates before
+  Cloud authority/domain row locks; no parallel custody authority.
+- [x] Record/read actual Runtime references in combined acceptance; 8 embedded
+  cases and 9 real PostgreSQL multi-session cases, including writer reassignment,
+  actor/session/scanner revocation, rollback and backend loss. See
+  `runtime-combined-acceptance-20261024.md` for limits and source evidence.
+- [x] Consolidate the finite live activation dependencies in
+  `minimal-activation-proposal-20261024.md`; no unresolved interface design handoff.
+- [ ] Bind and independently accept actual live identity/writer/revoker/provider
+  installations through the existing protected release path. No live activation,
+  trust, paid resource, production-readiness or full-scope acceptance is implied.

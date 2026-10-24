@@ -41,6 +41,7 @@ const proof = {
 };
 let revoked = false, loseAck = false, failProjection = false;
 const owners: ProductionOwners = {
+  prepareTransaction: async () => {},
   async lockAdmission(tx, input) {
     // Test authority only. Production hook is supplied by the canonical owner.
     if (

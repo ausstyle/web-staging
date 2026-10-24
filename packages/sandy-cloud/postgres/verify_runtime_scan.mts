@@ -1,3 +1,4 @@
+import { integrateRuntimeCustody } from "./runtime_integration.ts";
 /** Executes the pinned Runtime journal unchanged, in an ephemeral PostgreSQL
  * fixture. Ephemeral test signing material never leaves this process/database.
  */
@@ -12,16 +13,17 @@ import {
   type SqlDatabase,
   type SqlTransaction,
 } from "./commit.ts";
-import {
-  cloudScanBindingDigest,
-  type ScanBinding,
-  sharedScanOwner,
-} from "./shared_scan.ts";
+import { cloudScanBindingDigest, type ScanBinding } from "./shared_scan.ts";
 import { completeUpload } from "../integrity.ts";
 const { PGlite } = await import(pathToFileURL(process.argv[2]).href);
 const runtimeRoot = process.argv[3];
 const { ArtifactJournal } = await import(
   pathToFileURL(runtimeRoot + "/journal.ts").href
+);
+const { lockCustodyPlan, lockCustodyResources, scopedResourceId } =
+  await import(pathToFileURL(runtimeRoot + "/locking.ts").href);
+const { canonicalCloudReferences, recordCloudReference } = await import(
+  pathToFileURL(runtimeRoot + "/cloud_reference.ts").href
 );
 const { scanBytes } = await import(
   pathToFileURL(runtimeRoot + "/attestation.ts").href
@@ -71,6 +73,36 @@ binding.bindingSha256 = cloudScanBindingDigest(
   { intent, fileId, admission },
   binding,
 );
+const context = {
+  actorId: intent.actorId,
+  apiTenantId: intent.ref.tenantId,
+  admissionId: binding.admissionId,
+  sessionId: id(10),
+  companyId: id(11),
+  deviceId: id(12),
+};
+const plan = {
+  actorId: intent.actorId,
+  customerId,
+  tenantId: intent.ref.tenantId,
+  admissionId: binding.admissionId,
+  fileId,
+  artifactId: binding.artifactId,
+  receiptId,
+  scanner: { issuer: "fixture", release: "ephemeral" },
+  sessionId: context.sessionId,
+  companyId: context.companyId,
+  cloud: {
+    workspaceId: intent.ref.workspaceId,
+    intentId: intent.id,
+    writerAssignmentId: "fixture-writer-assignment",
+  },
+};
+const codec = {
+  operation: binding.operation,
+  contractSha256: binding.contractSha256,
+  digest: cloudScanBindingDigest,
+};
 let transactions = 0,
   pinned: SqlTransaction | undefined,
   failProjection = false;
@@ -91,6 +123,7 @@ const connection: SqlDatabase = {
 const journal = new ArtifactJournal(connection, {
   lockAndResolve: async (tx: SqlTransaction) => {
     assert.equal(tx, pinned);
+    await lockCustodyPlan(tx, plan);
     return {
       customerId,
       tenantId: intent.ref.tenantId,
@@ -98,13 +131,20 @@ const journal = new ArtifactJournal(connection, {
     };
   },
 });
-const scanner = sharedScanOwner(journal, {
-  lock: async (tx) => {
+const composition = integrateRuntimeCustody({
+  context,
+  runtime: { lockCustodyPlan, canonicalCloudReferences, journal },
+  writer: { discover: async () => plan.cloud.writerAssignmentId },
+  contract: { operation: binding.operation, sha256: binding.contractSha256 },
+  lockAdmission: async (tx) => {
     assert.equal(tx, pinned);
-    return { receiptId, binding };
+    return admission;
   },
-}, { operation: binding.operation, sha256: binding.contractSha256 });
+  projectVersion: async () => {},
+});
+const scanner = composition.scanner;
 const owners: ProductionOwners = {
+  ...composition.owners,
   lockAdmission: async () => admission,
   projectVersion: async (tx, { receipt }) => {
     assert.equal(tx, pinned);
@@ -148,6 +188,15 @@ async function seed() {
       new Date(expiresAt),
     ],
   );
+  await connection.transaction(async (tx) => {
+    await lockCustodyPlan(tx, plan);
+    await recordCloudReference(
+      tx,
+      { intent, fileId, receiptId, binding },
+      journal,
+      codec,
+    );
+  });
 }
 async function counts() {
   return (await db.query(`SELECT
@@ -184,6 +233,9 @@ try {
     await readFile(new URL("./schema.sql", import.meta.url), "utf8"),
   );
   await db.exec(await readFile(runtimeRoot + "/schema.sql", "utf8"));
+  await db.exec(
+    await readFile(runtimeRoot + "/cloud_reference_schema.sql", "utf8"),
+  );
   const pair = await crypto.subtle.generateKey({ name: "Ed25519" }, true, [
     "sign",
     "verify",
@@ -260,6 +312,65 @@ try {
         )).rows[0].n,
         1,
       );
+    },
+  );
+  await check(
+    "missing writer assignment refuses complete plan before authority or projection",
+    async () => {
+      let authorized = false, projected = false, locked = false;
+      const absent = integrateRuntimeCustody({
+        context,
+        runtime: {
+          lockCustodyPlan: async () => {
+            locked = true;
+          },
+          canonicalCloudReferences,
+          journal,
+        },
+        writer: { discover: async () => null },
+        contract: {
+          operation: binding.operation,
+          sha256: binding.contractSha256,
+        },
+        lockAdmission: async () => {
+          authorized = true;
+          return admission;
+        },
+        projectVersion: async () => {
+          projected = true;
+        },
+      });
+      await assert.rejects(
+        new PostgresCommitBoundary(connection, absent.owners, absent.scanner)
+          .commit(intent, proof),
+        /CLOUD_COMPLETE_PLAN_REFUSED/,
+      );
+      assert.equal(authorized, false);
+      assert.equal(projected, false);
+      assert.equal(locked, false);
+      assert.deepEqual(await counts(), empty);
+    },
+  );
+  await check(
+    "canonical reference cannot substitute a different authenticated admission",
+    async () => {
+      const foreign = integrateRuntimeCustody({
+        context: { ...context, admissionId: id(99) },
+        runtime: { lockCustodyPlan, canonicalCloudReferences, journal },
+        writer: { discover: async () => plan.cloud.writerAssignmentId },
+        contract: {
+          operation: binding.operation,
+          sha256: binding.contractSha256,
+        },
+        lockAdmission: owners.lockAdmission,
+        projectVersion: owners.projectVersion,
+      });
+      await assert.rejects(
+        new PostgresCommitBoundary(connection, foreign.owners, foreign.scanner)
+          .commit(intent, proof),
+        /CLOUD_COMPLETE_PLAN_REFUSED/,
+      );
+      assert.deepEqual(await counts(), empty);
     },
   );
   await check(
@@ -368,7 +479,7 @@ try {
     JSON.stringify({
       suite: "cloud-runtime-shared-scan",
       passed,
-      runtimeCommit: "ab2cfa4fb29fc5ba72a72fb77c0665fd1181ae55",
+      runtimeCommit: "cd6f6cf659e924bd0c9090445a7794ae122746ab",
       providerExecuted: false,
       liveDatabaseUsed: false,
       productionTrustActivated: false,

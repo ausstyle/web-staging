@@ -82,3 +82,19 @@ ephemeral PostgreSQL database and ephemeral synthetic signing material. CI
 fetches only pinned source; it does not merge or deploy Runtime. See the Cloud
 alignment review for exact reference-loader, global lock-order, scanner trust
 and release gates.
+
+## Complete-plan assembly (PR303 cd6f6cf)
+
+Use `integrateRuntimeCustody` with Runtime's actual `lockCustodyPlan`,
+`canonicalCloudReferences` and journal, the authenticated API context, and the
+canonical writer assignment discovery callback. `prepareTransaction` is required
+and runs before admission or domain row locks on every boundary path. Discovery
+is not authorization; any identity/assignment change after gates aborts.
+Production assembly must never use the no-op preparation in the isolated legacy
+fixtures. Both combined Runtime suites exercise the real preparation and loader.
+
+Runtime's reference schema follows both base schemas. All live revokers must
+participate in the complete gate protocol, including devices through actor gates.
+See `docs/sandy-cloud/runtime-combined-acceptance-20261024.md` for evidence and
+`docs/sandy-cloud/minimal-activation-proposal-20261024.md` for the single finite
+activation dependency list. The packaged bundle remains non-installable source.

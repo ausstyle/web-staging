@@ -1,3 +1,4 @@
+import { integrateRuntimeCustody } from "./runtime_integration.ts";
 /** Real PostgreSQL sessions. LOCAL SYNTHETIC DATABASE ONLY; no production target. */
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -9,18 +10,19 @@ import {
   type SqlDatabase,
   type SqlTransaction,
 } from "./commit.ts";
-import {
-  cloudScanBindingDigest,
-  type ScanBinding,
-  sharedScanOwner,
-} from "./shared_scan.ts";
+import { cloudScanBindingDigest, type ScanBinding } from "./shared_scan.ts";
 const pg = (await import(pathToFileURL(process.argv[2]).href)).default;
 const runtime = process.argv[3], port = Number(process.argv[4]);
 if (!Number.isInteger(port) || port < 1024 || port > 65535) {
   throw Error("LOCAL_FIXTURE_PORT_REQUIRED");
 }
-const { ArtifactJournal, lockCanonicalScope } = await import(
+const { ArtifactJournal } = await import(
   pathToFileURL(runtime + "/journal.ts").href
+);
+const { lockCustodyPlan, lockCustodyResources, scopedResourceId } =
+  await import(pathToFileURL(runtime + "/locking.ts").href);
+const { canonicalCloudReferences, recordCloudReference } = await import(
+  pathToFileURL(runtime + "/cloud_reference.ts").href
 );
 const { scanBytes } = await import(
   pathToFileURL(runtime + "/attestation.ts").href
@@ -83,18 +85,43 @@ binding.bindingSha256 = cloudScanBindingDigest(
   { intent, fileId, admission },
   binding,
 );
-const lockScope = {
+const context = {
   actorId: intent.actorId,
+  apiTenantId: intent.ref.tenantId,
   admissionId: binding.admissionId,
-  tenantId: intent.ref.tenantId,
+  sessionId: id(10),
+  companyId: id(11),
+  deviceId: id(12),
+};
+const plan = {
+  actorId: intent.actorId,
   customerId,
+  tenantId: intent.ref.tenantId,
+  admissionId: binding.admissionId,
+  fileId,
+  artifactId: binding.artifactId,
+  receiptId,
+  scanner: { issuer: "fixture", release: "ephemeral" },
+  sessionId: context.sessionId,
+  companyId: context.companyId,
+  cloud: {
+    workspaceId: intent.ref.workspaceId,
+    intentId: intent.id,
+    writerAssignmentId: "fixture-writer-assignment",
+  },
+};
+const codec = {
+  operation: binding.operation,
+  contractSha256: binding.contractSha256,
+  digest: cloudScanBindingDigest,
 };
 const active = new Set<SqlTransaction>();
 const pids = new Set<number>();
 const connection: SqlDatabase = {
   transaction: async (fn) => {
     const client = await pool.connect();
-    client.on("error", () => {});
+    const ignoreError = () => {};
+    client.on("error", ignoreError);
     let began = false;
     try {
       await client.query("BEGIN");
@@ -113,13 +140,14 @@ const connection: SqlDatabase = {
       throw e;
     } finally {
       active.delete(client);
+      client.removeListener("error", ignoreError);
       client.release();
     }
   },
 };
 async function resolve(tx: SqlTransaction) {
   assert(active.has(tx), "must use active pinned transaction");
-  await lockCanonicalScope(tx, lockScope);
+  await lockCustodyPlan(tx, plan);
   const { rows } = await tx.query(
     "SELECT enabled,revision FROM fixture_authority WHERE actor=$1 FOR SHARE",
     [intent.actorId],
@@ -132,17 +160,30 @@ async function resolve(tx: SqlTransaction) {
   };
 }
 const journal = new ArtifactJournal(connection, { lockAndResolve: resolve });
-const scanner = sharedScanOwner(journal, {
-  lock: async (tx) => {
-    assert(active.has(tx));
-    return { receiptId, binding };
+const discoverWriter = async (tx: SqlTransaction) =>
+  String(
+    (await tx.query("SELECT assignment FROM fixture_writer WHERE file_id=$1", [
+      fileId,
+    ])).rows[0]?.assignment ?? "",
+  );
+const composition = integrateRuntimeCustody({
+  context,
+  runtime: { lockCustodyPlan, canonicalCloudReferences, journal },
+  writer: { discover: discoverWriter },
+  contract: { operation: binding.operation, sha256: binding.contractSha256 },
+  lockAdmission: async (tx) => {
+    await resolve(tx);
+    return admission;
   },
-}, { operation: binding.operation, sha256: binding.contractSha256 });
+  projectVersion: async () => {},
+});
+const scanner = composition.scanner;
 function boundary(
   onProjection: (tx: SqlTransaction) => Promise<void> = async () => {},
   database: SqlDatabase = connection,
 ) {
   return new PostgresCommitBoundary(database, {
+    ...composition.owners,
     lockAdmission: async (tx) => {
       await resolve(tx);
       return admission;
@@ -193,7 +234,7 @@ const zero = {
 async function seed() {
   // Fixture resets only; runner accepts no remote host/URL/database argument.
   await db.exec(
-    "TRUNCATE sandy_cloud.workspaces CASCADE; UPDATE sandy_universal_files SET sha256=NULL; UPDATE fixture_authority SET enabled=true,revision=1",
+    "TRUNCATE sandy_cloud.workspaces CASCADE; UPDATE sandy_universal_files SET sha256=NULL; UPDATE fixture_authority SET enabled=true,revision=1; UPDATE fixture_writer SET assignment='fixture-writer-assignment'",
   );
   await db.query(
     "INSERT INTO sandy_cloud.workspaces VALUES($1,$2,$3,100,0,3,1)",
@@ -218,6 +259,15 @@ async function seed() {
       new Date(expiry),
     ],
   );
+  await connection.transaction(async (tx) => {
+    await lockCustodyPlan(tx, plan);
+    await recordCloudReference(
+      tx,
+      { intent, fileId, receiptId, binding },
+      journal,
+      codec,
+    );
+  });
 }
 let passed = 0;
 async function check(name: string, fn: () => Promise<void>) {
@@ -243,9 +293,14 @@ try {
  CREATE TABLE sandy_api_execution_admissions(id uuid PRIMARY KEY,actor_id uuid,tenant_id uuid,operation text,input_sha256 text,contract_sha256 text,
  scope_sha256 text,state text,expires_at timestamptz);
  CREATE TABLE fixture_authority(actor uuid PRIMARY KEY,enabled boolean,revision integer);
+ CREATE TABLE fixture_writer(file_id uuid PRIMARY KEY,assignment text NOT NULL);
  CREATE ROLE fixture_reader; CREATE ROLE fixture_table_owner;
  ALTER DEFAULT PRIVILEGES GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO fixture_reader;`,
   );
+  await db.query("INSERT INTO fixture_writer VALUES($1,$2)", [
+    fileId,
+    plan.cloud.writerAssignmentId,
+  ]);
   await db.query("INSERT INTO fixture_authority VALUES($1,true,1)", [
     intent.actorId,
   ]);
@@ -273,6 +328,9 @@ try {
     await readFile(new URL("./projection.sql", import.meta.url), "utf8"),
   );
   await db.exec(await readFile(runtime + "/schema.sql", "utf8"));
+  await db.exec(
+    await readFile(runtime + "/cloud_reference_schema.sql", "utf8"),
+  );
   const keys = await crypto.subtle.generateKey({ name: "Ed25519" }, true, [
     "sign",
     "verify",
@@ -397,7 +455,10 @@ try {
       const revoke = connection.transaction(async (tx) => {
         revokerPid = (await tx.query("SELECT pg_backend_pid() pid")).rows[0]
           .pid as number;
-        await lockCanonicalScope(tx, lockScope);
+        await lockCustodyResources(tx, [{
+          kind: "session",
+          id: context.sessionId,
+        }]);
         await tx.query(
           "UPDATE fixture_authority SET enabled=false,revision=revision+1",
         );
@@ -424,7 +485,10 @@ try {
       const revoke = connection.transaction(async (tx) => {
         revokePid = (await tx.query("SELECT pg_backend_pid() pid")).rows[0]
           .pid as number;
-        await lockCanonicalScope(tx, lockScope);
+        await lockCustodyResources(tx, [{
+          kind: "actor",
+          id: context.actorId,
+        }]);
         await tx.query(
           "UPDATE fixture_authority SET enabled=false,revision=revision+1",
         );
@@ -442,6 +506,7 @@ try {
           }),
       };
       const pending = new PostgresCommitBoundary(captured, {
+        ...composition.owners,
         lockAdmission: async (tx) => {
           await resolve(tx);
           return admission;
@@ -573,7 +638,61 @@ try {
     },
   );
   await check(
-    "scanner withdrawal waits on shared receipt validation and refuses the next commit",
+    "writer reassignment between discovery and complete locks aborts before projection",
+    async () => {
+      const discovered = gate(), resume = gate();
+      let reads = 0, projected = false;
+      const assembly = integrateRuntimeCustody({
+        context,
+        runtime: { lockCustodyPlan, canonicalCloudReferences, journal },
+        writer: {
+          discover: async (tx) => {
+            const found = await discoverWriter(tx);
+            if (++reads === 1) {
+              discovered.open();
+              await resume.promise;
+            }
+            return found;
+          },
+        },
+        contract: {
+          operation: binding.operation,
+          sha256: binding.contractSha256,
+        },
+        lockAdmission: composition.owners.lockAdmission,
+        projectVersion: async () => {
+          projected = true;
+        },
+      });
+      const pending = new PostgresCommitBoundary(
+        connection,
+        assembly.owners,
+        assembly.scanner,
+      ).commit(intent, proof);
+      const refused = assert.rejects(pending, /CLOUD_COMPLETE_PLAN_REFUSED/);
+      await discovered.promise;
+      try {
+        await connection.transaction(async (tx) => {
+          await lockCustodyResources(tx, [
+            { kind: "writer", id: plan.cloud.writerAssignmentId },
+            { kind: "writer", id: "replacement-writer" },
+            { kind: "file", id: fileId },
+          ]);
+          await tx.query(
+            "UPDATE fixture_writer SET assignment='replacement-writer' WHERE file_id=$1",
+            [fileId],
+          );
+        });
+      } finally {
+        resume.open();
+      }
+      await refused;
+      assert.equal(projected, false);
+      assert.deepEqual(await counts(), zero);
+    },
+  );
+  await check(
+    "scanner withdrawal waits on the complete gate and refuses subsequent scan validation",
     async () => {
       const entered = gate(), release = gate();
       let writerPid = 0, scannerPid = 0;
@@ -587,6 +706,10 @@ try {
       const withdrawal = connection.transaction(async (tx) => {
         scannerPid = (await tx.query("SELECT pg_backend_pid() pid")).rows[0]
           .pid as number;
+        await lockCustodyResources(tx, [{
+          kind: "scanner",
+          id: scopedResourceId("fixture", "ephemeral"),
+        }]);
         await tx.query(
           "UPDATE sandy_artifact_custody.scanner_releases SET revoked_at=clock_timestamp()",
         );
@@ -599,12 +722,11 @@ try {
       }
       await Promise.all([a, withdrawal]);
       assert.deepEqual(await counts(), one);
-      await seed();
       await assert.rejects(
-        boundary().commit(intent, proof),
+        boundary().assertScanClean(intent, proof),
         /SCANNER_RELEASE_UNTRUSTED/,
       );
-      assert.deepEqual(await counts(), zero);
+      assert.deepEqual(await counts(), one);
     },
   );
   console.log(
@@ -613,7 +735,7 @@ try {
       passed,
       distinctBackendPids: pids.size,
       postgres: (await db.query("SHOW server_version")).rows[0].server_version,
-      runtimeCommit: "ab2cfa4fb29fc5ba72a72fb77c0665fd1181ae55",
+      runtimeCommit: "cd6f6cf659e924bd0c9090445a7794ae122746ab",
       localSyntheticOnly: true,
       productionRelationVerified: false,
       productionTrustActivated: false,
