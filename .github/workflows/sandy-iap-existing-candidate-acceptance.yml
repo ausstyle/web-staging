@@ -24,7 +24,7 @@ jobs:
         with:
           deno-version: '2.9.6'
       - run: |
-          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_existing_iap_candidate.py scripts/sandy/test_iap_runtime_binding.py -v
+          PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_existing_iap_candidate.py scripts/sandy/test_iap_transport_release.py scripts/sandy/test_iap_runtime_binding.py -v
           deno test scripts/sandy/verify_iap_closed_candidate_test.ts
   acceptance:
     if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
