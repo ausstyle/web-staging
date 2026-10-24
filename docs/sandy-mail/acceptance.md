@@ -178,3 +178,9 @@ Outlook/provider acceptance. Objects remain under
 `/workspace/sandy-mail-evidence/mime-roundtrip-objects`, PostgreSQL on loopback
 55444. The Google canary binary remains SHA256
 `a796e5406ab16a26f9226b43fad6f4a4784aa6a284a0b28ad854cb37bea57700`.
+
+Follow-up test source `6d577a9` passed the targeted race suite after reconciling
+main: [MIME loss/recovery log](evidence/mime-loss-tests.txt). A missing original
+produces one explicit excluded draft and `COMPLETED_WITH_EXCEPTIONS`; a transient
+read outage resumes the same frozen snapshot and retains a resolved exception.
+No source object was deleted to simulate these failures.
