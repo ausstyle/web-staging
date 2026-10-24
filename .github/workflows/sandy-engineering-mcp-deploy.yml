@@ -51,7 +51,7 @@ jobs:
           npm ci --ignore-scripts --no-audit --no-fund
           python3 ../../scripts/sandy/sync_mcp_transport.py --check
           npm test
-          PYTHONPATH=../../scripts/sandy python3 -m unittest ../../scripts/sandy/test_check_existing_iap_binding.py -v
+          PYTHONPATH=../../scripts/sandy python3 ../../scripts/sandy/test_check_existing_iap_binding.py -v
   deploy:
     # Main pushes validate source only. A release owner dispatches the bounded
     # deployment after prerequisite reconciliation; no accidental candidate or
