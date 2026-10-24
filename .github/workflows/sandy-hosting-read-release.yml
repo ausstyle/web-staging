@@ -1,0 +1,48 @@
+name: Release exact Owner-approved regional read contracts
+on:
+  workflow_dispatch:
+    inputs:
+      candidate_change_id:
+        description: Existing candidate record containing the exact reviewed manifest
+        required: true
+        default: b26705ca-0dad-46df-9966-446a9cf402aa
+      owner_change_id:
+        description: Genuine Owner release record for both functions and exact migration; required except inspect/reconcile
+        required: false
+      mode:
+        type: choice
+        options: [inspect, preflight, deploy, reconcile, rollback]
+        default: inspect
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: sandy-provider-operation-api-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Test exact regional release and recovery guards
+        run: PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=scripts/sandy python3 -m unittest scripts/sandy/test_hosting_read_release.py scripts/sandy/test_hosting_read_executor.py -v
+      - name: Execute only the pinned mode through the existing protected environment
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_CHANGE_ID: ${{ inputs.candidate_change_id }}
+          OWNER_CHANGE_ID: ${{ inputs.owner_change_id }}
+          RELEASE_MODE: ${{ inputs.mode }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 scripts/sandy/release_hosting_read.py \
+            --candidate-change-id "$CANDIDATE_CHANGE_ID" \
+            --owner-change-id "$OWNER_CHANGE_ID" --mode "$RELEASE_MODE" \
+            --evidence-dir "$RUNNER_TEMP/hosting-read-release"
+      # Full recovery bytes remain only in existing private Supabase artifacts.
+      # No production source or bearer material is uploaded to Actions artifacts.
