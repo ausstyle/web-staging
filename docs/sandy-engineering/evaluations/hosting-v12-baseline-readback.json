@@ -1,0 +1,20 @@
+{
+  "function": "sandy-customer-provisioning-api",
+  "observed_version": 12,
+  "verify_jwt": true,
+  "bundle_sha256": "da928eeabca32420e5c50a9363f7746ec618f364ad0a6236fb3504732cfa6284",
+  "actual_module_sha256": {
+    "sandy-customer-provisioning-api/index.ts": "f3828119f92faa14902a7f2787bd6aa8c7170dfd01f8ddf34f6a027f2ec6b971",
+    "sandy-customer-provisioning-api/provisioning_operations.ts": "76218ddaf4be4aa5a3f1022905ba5a94a2b55de5344a46e923ac0e5e5f3acbf7",
+    "sandy-customer-provisioning-api/provisioning_manifest.json": "1068dd94ac6d82bf6fd4db3a2a677e3aaa2ddd8e7fa03be4d6008909de2e574c",
+    "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+    "sandy-customer-provisioning-api/gateway.ts": "9941224d3323879a394f99b8c475a5eab3056a9e009338edb244833c478dff82",
+    "sandy-customer-provisioning-api/contracts.json": "f5b5eb8b93fe719a2d194dfdac66edca5ed9cc92abc51ac042397e8d79ae1021"
+  },
+  "exact_prior_module_match": true,
+  "exact_prior_bundle_match": true,
+  "live_hosting_route_present": false,
+  "account_schema_and_registry_present": false,
+  "active_component_leases_observed": false,
+  "deployment_performed": false
+}

@@ -1,5 +1,7 @@
 # Hosting control-plane source readiness
 
+Current release review: [verified v12 baseline refresh](hosting-v12-release-review.md). The v10/version-10 approval details below are historical and must not be used for dispatch.
+
 Authoritative scope: [hosting architecture v1](../../sandy-cloud-hosting-architecture-engineering-scope-v1.md), PR #234 head `c318e66508243fb756ee159f1eb6ad3db865e4cd`, merged as `0b040c03a461a71ea6df21aa76dab08c8a21295a`. This implements a bounded part of #203 and #226, under SANDY-ENG-0005 and SANDY-ENG-0010; it is not a replacement scope. Reuse registered change `20a92691-558e-4939-8b61-6d777375c765` through the protected release process.
 
 ## Source
