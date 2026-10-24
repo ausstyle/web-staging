@@ -36,11 +36,19 @@ export async function runWorkloadRead(deps:Deps,claim:Obj,worker:string):Promise
   const parsed=await responseJson(reply),envelope=executionEnvelope(parsed,dispatch.dispatch_id);status=envelope?.status??reply.status;observed=envelope?.body??null;
   if(!envelope&&parsed&&['invalid_runtime_credential','engineering_session_unavailable','engineering_operation_scope_denied','runtime_authentication_required'].includes(parsed.error)&&reply.status>=400){observed={ok:false,error:parsed.error,executed:false,automatic_retry:false};}
  }catch{/* No redispatch. Existing read-only lease/retry policy handles uncertainty. */}
- let outcome='unknown',error='workload_read_transport_outcome_unknown';
- const success=status!==null&&status>=200&&status<300&&observed?.ok===true&&observed.executed===true&&observed.request_state==='observed'&&uuid(observed.admission_id)&&Number.isInteger(observed.provider_http_status)&&observed.provider_http_status>=200&&observed.provider_http_status<300;
+ // Sandy API keeps the provider contract under result and adds the immutable
+ // admission/request identity outside it. Do not treat an outer API wrapper as
+ // a provider receipt or accept a nested receipt for another dispatch.
+ const projected=object(observed?.result)&&observed?.request_id===dispatch.dispatch_id&&
+  observed.operation===dispatch.operation&&observed.result.operation===dispatch.operation&&
+  observed.result.contract_version==='1.0.0'&&observed.result.admission_id===observed.admission_id
+  ? observed.result : null;
+ const provider=projected;
+ let outcome='unknown',error=observed?.ok===true&&!projected?'provider_receipt_contract_mismatch':'workload_read_transport_outcome_unknown';
+ const success=status!==null&&status>=200&&status<300&&observed?.ok===true&&observed.executed===true&&provider?.ok===true&&provider.executed===true&&provider.request_state==='observed'&&uuid(provider.admission_id)&&Number.isInteger(provider.provider_http_status)&&provider.provider_http_status>=200&&provider.provider_http_status<300;
  if(success){outcome='succeeded';error='';}
- else if(status!==null&&observed&&observed.executed!==null){outcome=observed.automatic_retry===false?'failed':status===429||status>=500?'retryable':'failed';error=observed.error==='engineering_session_unavailable'?'engineering_session_unavailable':outcome==='retryable'?'transient_provider_failure':'canonical_executor_refused';}
- const finished=await rpc(deps,'sandy_orch_finish',{p_job_id:claim.job_id,p_lease_token:claim.lease_token,p_worker_id:worker,p_dispatch_id:dispatch.dispatch_id,p_outcome:outcome,p_result:success?observed:null,p_error_code:error||null,p_provider_request_id:typeof observed?.provider_request_id==='string'?observed.provider_request_id:null,p_execution_admission_id:uuid(observed?.admission_id)?observed!.admission_id:null});
+ else if(status!==null&&observed?.ok===false&&observed.executed!==null){outcome=observed.automatic_retry===false?'failed':status===429||status>=500?'retryable':'failed';error=observed.error==='engineering_session_unavailable'?'engineering_session_unavailable':outcome==='retryable'?'transient_provider_failure':'canonical_executor_refused';}
+ const finished=await rpc(deps,'sandy_orch_finish',{p_job_id:claim.job_id,p_lease_token:claim.lease_token,p_worker_id:worker,p_dispatch_id:dispatch.dispatch_id,p_outcome:outcome,p_result:success?provider:null,p_error_code:error||null,p_provider_request_id:typeof provider?.provider_request_id==='string'?provider.provider_request_id:null,p_execution_admission_id:uuid(provider?.admission_id)?provider!.admission_id:null});
  const persisted=finished?.ok===true&&finished.job_id===claim.job_id&&finished.receipt_outcome===outcome&&typeof finished.reused==='boolean'&&['queued','succeeded','failed','needs_reconciliation','dead_letter'].includes(finished.state)&&(outcome!=='succeeded'||finished.state==='succeeded');
  return {job_id:claim.job_id,state:persisted?finished!.state:'receipt_persistence_unknown',persisted,...(persisted?{}:{reconciliation_required:true})};
 }

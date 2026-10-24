@@ -450,6 +450,7 @@ Deno.test("Known transaction denials preserve backend error and execution state"
       [409, "Review the Sandy draft in Missions before completing this task"],
       [409, "idempotency_key_conflict"],
       [424, "operation_requires_live_verification"],
+      [429, "private_readiness_budget_exhausted"],
       [404, "customer_item_not_found"],
     ] as [number, string][]
   ) {
