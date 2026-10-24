@@ -29,6 +29,20 @@ class BoundaryTests(unittest.TestCase):
         with patch.object(r,'api',side_effect=h.Blocked('unknown')) as api:
             with self.assertRaises(h.Blocked):h.upload(r,{})
             self.assertEqual(api.call_count,1)
+class RecoveryTests(unittest.TestCase):
+    def test_missing_recovery_cannot_write(self):
+        r=Fake([])
+        with patch.object(h,'admission'),patch.object(h,'protected'),patch.object(h,'inspect'):
+            with self.assertRaisesRegex(h.Blocked,'recovery_artifact_not_found'):
+                h.rollback(r,'10000000-0000-4000-8000-000000000001')
+        self.assertTrue(all(read for _,read in r.calls))
+    def test_wrong_manifest_recovery_cannot_write(self):
+        r=Fake([{'metadata':{'manifest_sha256':'wrong','bundle_transfer_state':'complete'}}])
+        with patch.object(h,'admission'),patch.object(h,'protected'),patch.object(h,'inspect'):
+            with self.assertRaisesRegex(h.Blocked,'recovery_not_verified'):
+                h.rollback(r,'10000000-0000-4000-8000-000000000001')
+        self.assertTrue(all(read for _,read in r.calls))
+
 class ExecutionTests(unittest.TestCase):
     def exercise(self, prior=0, upload_error=False):
         r=Fake([]);r.holder='fixture-holder';order=[]
