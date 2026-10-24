@@ -1,0 +1,32 @@
+{
+  "environment": "synthetic local Linux; no provider execution",
+  "observed_at": "2026-10-24T00:26:19.163704+00:00",
+  "deno_tests_passed": 37,
+  "browser_report": "local-browser.json",
+  "provider_acceptance": false,
+  "sources": {
+    "packages/sandy-cloud/README.md": "376ac10765288832dfa6ab9b7c526ebd80bd06b7c0c27a45064a5b00a8ecd89b",
+    "packages/sandy-cloud/api.ts": "45f0f5db2be6b6d99c410ba52f30b0b7208646a3a893c4854ad3b7b80e5f8652",
+    "packages/sandy-cloud/api_test.ts": "dcea0e483927122994c1af1014e44e76d8080e8fa7697aa5bf70050152dcf8ce",
+    "packages/sandy-cloud/backup.ts": "a33220e6d4230661721c98821ca13879ac11711f70423eaa1e535eb73d7178d2",
+    "packages/sandy-cloud/backup_test.ts": "7db88e175b5bcbf4bdb77f5bac488919529d42511e1df91fd4d0605ff1b8af42",
+    "packages/sandy-cloud/browser_test.py": "eeee9e16bf133443d116fe69c61345c43e2f516630366b655352fb1fed36d993",
+    "packages/sandy-cloud/contracts.ts": "accbef4832ea2ea845444bdae70336ab383bc9c9032b8127087f3042aa36c11f",
+    "packages/sandy-cloud/domain.ts": "99b53346d798c245474e748335adf0a2058949e68e3e4be9f433e5530d155833",
+    "packages/sandy-cloud/domain_test.ts": "da0921cc454f17835d8f5a27c6cfaad5fc848e1cb164aa558ddec02afb014708",
+    "packages/sandy-cloud/drive.html": "5cd7c2e3824e3b3561e173ea92cf5d17bacee9d617653c4f6e0506cce7e8f9d8",
+    "packages/sandy-cloud/fixture_server.ts": "4aba279d307472f8a5f97e5adae139e930aeb81c0a45546aeb64c49483ba9b14",
+    "packages/sandy-cloud/gcs_protocol.ts": "a451011ab3f2abec11bfc3cc4449f1ade57bb74a7b783e3cbab128fd5d815e53",
+    "packages/sandy-cloud/gcs_protocol_test.ts": "341444ec1a7082030ae7e8d2a22f78dc51ff07d862d211cf66c0c4940acab592",
+    "packages/sandy-cloud/integrity.ts": "75959515b37a99129315edc3ac7ec6ab2718ca8ed7fe1099631070c5ce6a5013",
+    "packages/sandy-cloud/integrity_test.ts": "c9c2d9d9b0e7e1738f6b193e3b8994b2691edf3b3d624798f9a194c36f4f7877",
+    "packages/sandy-cloud/intelligence_restore_test.ts": "ca60feb07768095f28540284a8d4b4cdd962ed1a030ed66636b301ff289c3440",
+    "packages/sandy-cloud/restore.ts": "5fcb608fd01bd6520134c66a02e44e0881af6dcf03ed068ace8ea1455f22ad51",
+    "packages/sandy-cloud/restore_disk_test.ts": "d30226926c8fe12fdd194d29a5fcc84a64b1c00e1aee3a966b215735392c9768",
+    "packages/sandy-cloud/restore_local.ts": "909ebc78fad08a2959b285a7382c4bee67432a4a4917caf4be997f81e1aab418",
+    "packages/sandy-cloud/run_browser_test.py": "54d3b868a040909c99f02796130a86f650fb688c651b585bc796f870cd6f012c",
+    "packages/sandy-cloud/schema.sql": "754131baa4db3f2a2b0830293980c87cd76c3d69b0f1c07ddd040b9b062eadfc",
+    "packages/sandy-cloud/sync.ts": "96c1387de3a5904224fd0eec267b30629b39e41b8dea5ef19a79d48587a9d9a7",
+    "packages/sandy-cloud/sync_test.ts": "cf1ecc571e0c805a4ff0a7e54e73bcdea46b807ac1ed7e93db397d40c3c15ffa"
+  }
+}
