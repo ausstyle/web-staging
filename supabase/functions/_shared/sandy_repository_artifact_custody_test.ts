@@ -462,3 +462,35 @@ Deno.test("revocation after revalidation is fenced at seal without retry or clea
   assert.equal(f.stats.seal, 1);
   assert.equal(f.stats.discard, 0);
 });
+
+Deno.test("invalid time evidence cannot open or publish artifact bytes", async () => {
+  for (const invalid of [NaN, Infinity, -Infinity, -1, 1.5]) {
+    const f = await fixture(new Uint8Array([1]));
+    await assert.rejects(() =>
+      stageRepositoryArtifact(
+        f.c,
+        f.owner,
+        new AbortController().signal,
+        () => invalid,
+      )
+    );
+    assert.equal(f.stats.open, 0);
+    assert.equal(f.stats.seal, 0);
+  }
+  const f = await fixture(new Uint8Array([1]));
+  let clock = 10;
+  f.owner.revalidate = async () => {
+    clock = NaN;
+    return true;
+  };
+  await assert.rejects(() =>
+    stageRepositoryArtifact(
+      f.c,
+      f.owner,
+      new AbortController().signal,
+      () => clock,
+    )
+  );
+  assert.equal(f.stats.seal, 0);
+  assert.equal(f.stats.discard, 1);
+});

@@ -133,6 +133,10 @@ export async function stageRepositoryArtifact(
 ): Promise<{ privateHandle: string; proof: ArtifactProof }> {
   signal = AbortSignal.any([signal, AbortSignal.timeout(30000)]);
   const c = Object.freeze({ ...context });
+  const unexpired = (expiresAt: number) => {
+    const current = now();
+    return Number.isSafeInteger(current) && current >= 0 && current < expiresAt;
+  };
   if (
     ![c.artifactId, c.actorId, c.admissionId, c.customerId].every(id) ||
     (c.tenantId !== null && !id(c.tenantId)) ||
@@ -158,7 +162,7 @@ export async function stageRepositoryArtifact(
       !reference(a.generation) || !reference(a.scanReceiptId) ||
       !digest(a.sha256) || a.bindingSha256 !== binding ||
       !Number.isSafeInteger(a.size) || a.size < 0 || a.size > 8 * 1024 * 1024 ||
-      !Number.isSafeInteger(a.expiresAt) || a.expiresAt <= now()
+      !Number.isSafeInteger(a.expiresAt) || !unexpired(a.expiresAt)
     ) fail();
     const scan = await owner.verifyScan(a, binding);
     if (
@@ -167,7 +171,7 @@ export async function stageRepositoryArtifact(
       scan.sha256 !== a.sha256 || scan.size !== a.size ||
       scan.bindingSha256 !== binding || scan.verdict !== "clean" ||
       !reference(scan.scannerIdentity) || !reference(scan.scannerVersion) ||
-      !Number.isSafeInteger(scan.expiresAt) || scan.expiresAt <= now()
+      !Number.isSafeInteger(scan.expiresAt) || !unexpired(scan.expiresAt)
     ) {
       fail("REPOSITORY_ARTIFACT_SCAN_REQUIRED");
     }
@@ -201,7 +205,7 @@ export async function stageRepositoryArtifact(
       try {
         for (;;) {
           signal.throwIfAborted();
-          if (fence.expiresAt <= now()) fail();
+          if (!unexpired(fence.expiresAt)) fail();
           const item = await reader.read();
           signal.throwIfAborted();
           if (item.done) break;
@@ -231,11 +235,13 @@ export async function stageRepositoryArtifact(
       };
       // Capture expected proof before handing it to an asynchronous owner.
       const expected = await argumentDigest(proof);
-      if (fence.expiresAt <= now() || await owner.revalidate(c, a) !== true) {
+      if (
+        !unexpired(fence.expiresAt) || await owner.revalidate(c, a) !== true
+      ) {
         fail();
       }
       signal.throwIfAborted();
-      if (fence.expiresAt <= now()) fail();
+      if (!unexpired(fence.expiresAt)) fail();
       sealing = true;
       const result = await staging.seal(Object.freeze(proof), fence);
       if (
