@@ -46,7 +46,7 @@ class CustomerMutationAcceptanceTests(unittest.TestCase):
    with self.assertRaisesRegex(RuntimeError,'storage_fixture_state_unknown'):await_storage_absent(read,pause)
    read.assert_called_once();pause.assert_not_called()
  def test_auth_retirement_precedes_potentially_slow_storage_polling(self):
-  r=self.runner();r.report={'cleanup':{}};r.retire=Mock()
+  r=self.runner();r.report={'cleanup':{}};r.retire=Mock();r.r._quote=lambda v:repr(v)
   r.fixtures=[{'customer':'10000000-0000-4000-8000-000000000001','blob_path':'fixture'}]
   r.r._sql.return_value=[{'display_name':'Isolated Sandy API service acceptance','google_drive_folder_status':'excluded'}]
   retired=[]
