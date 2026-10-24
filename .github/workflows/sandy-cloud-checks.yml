@@ -18,7 +18,7 @@ jobs:
         with:
           deno-version: '2.9.6'
       - run: deno fmt --check packages/sandy-cloud
-      - run: deno check packages/sandy-cloud/fixture_server.ts packages/sandy-cloud/sync.ts packages/sandy-cloud/backup.ts
+      - run: deno check packages/sandy-cloud/fixture_server.ts packages/sandy-cloud/sync.ts packages/sandy-cloud/backup.ts packages/sandy-cloud/postgres/commit.ts
       - run: deno test --allow-read=packages/sandy-cloud,/tmp --allow-write=/tmp packages/sandy-cloud/
   browser:
     runs-on: ubuntu-latest
@@ -39,4 +39,20 @@ jobs:
         with:
           name: sandy-cloud-browser-${{ github.run_id }}
           path: /tmp/sandy-cloud-evidence/
+          retention-days: 14
+  postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --prefix /tmp/sandy-cloud-pg --no-audit --no-fund --ignore-scripts @electric-sql/pglite@0.3.14
+      - run: node --experimental-transform-types packages/sandy-cloud/postgres/verify.mts /tmp/sandy-cloud-pg/node_modules/@electric-sql/pglite/dist/index.js
+      - run: python3 packages/sandy-cloud/build_release.py --output /tmp/sandy-cloud-release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sandy-cloud-integration-source-${{ github.sha }}
+          path: /tmp/sandy-cloud-release/
           retention-days: 14
