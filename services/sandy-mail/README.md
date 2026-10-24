@@ -72,3 +72,7 @@ Migration 0004 and [offline import workers](IMPORTS.md) now implement chunked im
 ## Resumable export backend
 
 Migration 0005 and [resumable exports](EXPORTS.md) add frozen SQL snapshots, checkpointed EML/TAR partitions, generation/hash readback, explicit exclusions and byte-offset reads. A canonical `ExportAuthority` adapter is mandatory; no production authority implementation or public download endpoint is supplied. The earlier bounded-export limitations describe that older helper. This follow-on implements durable generation/resume, while actual customer reauth/MFA/scanner policy, encrypted delivery, expiring links, audit and production scale still require shared integration and acceptance.
+
+## Local inbox reader
+
+[Run the local synthetic inbox](LOCAL_INBOX.md) for a real PostgreSQL-backed reader with keyword search, integrity-checked messages, safe text rendering and visible receipts. It uses a separate synthetic mailbox and loopback-only temporary session; no customer/cloud endpoint, sending or scanner verdict is implied.

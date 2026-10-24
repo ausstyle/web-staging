@@ -450,6 +450,7 @@ func TestPostgresIntegration(t *testing.T) {
 		t.Logf("synthetic archive source=%d restored=%d replay_receipts=%d bytes=%d", len(exported.Messages), len(manifest.Messages), len(receipts), archive.Len())
 	})
 	t.Run("offline_import_jobs", func(t *testing.T) { exerciseImportJobs(t, &service, admin, ctx, r.Scope) })
+	t.Run("local_inbox_http", func(t *testing.T) { exerciseLocalInbox(t, &service, ctx, scopes) })
 	t.Run("resumable_exports", func(t *testing.T) { exerciseExportJobs(t, &service, admin, ctx, r.Scope) })
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {
 		var messages, receipts, events int
