@@ -478,13 +478,73 @@ test(
         })).profit,
         "30.00",
       );
+      const editInput = {
+        contact: "Synthetic draft customer",
+        number: "PG-EDIT-RACE",
+        issued: "2026-10-02",
+        due: "2026-10-20",
+        currency: "AUD",
+        control_account: "ar",
+        evidence: [source],
+        lines: [{
+          description: "Original service",
+          account_id: "sales",
+          net: "25.00",
+          tax: "0.00",
+          tax_account: null,
+          tax_rule_ref: null,
+        }],
+      };
+      const editable = await run("accounting.sales.invoice.draft", editInput);
+      const editRace = await Promise.allSettled([
+        run("accounting.documents.draft.update", {
+          ...editInput,
+          document_id: editable.document_id,
+          expected_version: 1,
+          lines: [{ ...editInput.lines[0], net: "40.00" }],
+        }),
+        run("accounting.documents.approve", {
+          document_id: editable.document_id,
+          expected_version: 1,
+        }),
+      ]);
+      assert.equal(editRace.filter((r) => r.status === "fulfilled").length, 1);
+      assert.match(
+        (editRace.find((r) => r.status === "rejected") as PromiseRejectedResult)
+          .reason.message,
+        /version_conflict/,
+      );
+      const editWon = editRace.find((r) =>
+        r.status === "fulfilled"
+      )!.value.state === "DRAFT";
+      if (editWon) {
+        await run("accounting.documents.approve", {
+          document_id: editable.document_id,
+          expected_version: 2,
+        });
+      }
+      const versions = (await run("accounting.documents.history", {
+        document_id: editable.document_id,
+      })).revisions;
+      assert.equal(versions.length, editWon ? 3 : 2);
+      assert.equal(versions[0].snapshot.lines[0].net, "25.00");
+      assert.equal(
+        versions.at(-1).snapshot.lines[0].net,
+        editWon ? "40.00" : "25.00",
+      );
+      assert.ok(versions.every((r: any) => r.actor_id === "a1"));
+      const posted = (await admin.query(
+        "SELECT amount::text FROM accounting.lines WHERE journal_id=$1 AND ordinal=0",
+        [versions.at(-1).snapshot.journal_id],
+      )).rows;
+      assert.equal(posted[0].amount, editWon ? "4000" : "2500");
       const audit = await app.execute("synthetic", {
         operation: "accounting.audit.verify",
         contract_version: "1",
         company_id: "c1",
         arguments: {},
       });
-      assert.equal(audit.events, 114);
+      assert.equal(audit.events, editWon ? 117 : 116);
       assert.equal(audit.valid, true);
     } finally {
       await pool?.end();

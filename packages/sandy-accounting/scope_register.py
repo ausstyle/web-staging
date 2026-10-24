@@ -22,19 +22,19 @@ for line in text.splitlines():
 assert [f['id'] for f in features]==[f'F{i:03}' for i in range(1,353)]
 partial={
  'F013':'Statement/book totals and unmatched line IDs; dashboard styling and full work queues pending.',
- 'F036':'Basic invoice identity/dates; controlled sequence management pending.',
+ 'F036':'Version-protected invoice draft header editing and immutable revision history; controlled sequence management pending.',
  'F038':'Exact net/tax lines; quantity, discounts, tracking and item pricing pending.',
  'F040':'Versioned source reference and exact totals; real file adapter/PDF pending.',
- 'F042':'Draft/approve workflow; outbound sends remain unavailable.',
+ 'F042':'Draft/edit/approve workflow with stale-review rejection; outbound sends remain unavailable.',
  'F045':'Dated invoice/bill void and payment-record reversal; partial credits/refunds pending.',
  'F046':'Partial receipt recording; reminders and verified provider payments pending.',
  'F051':'Applied customer credits against unpaid original lines, dated reversals and historical AR; standalone credits/refunds/reallocation pending.',
  'F120':'Contact/number uniqueness; fuzzy duplicate review pending.',
  'F124':'Applied supplier credits and reversal; recurring bills, standalone credits/refunds and PO integration pending.',
- 'F126':'Basic supplier bill header; foreign-currency documents pending.',
+ 'F126':'Version-protected supplier draft header editing and immutable revision history; foreign-currency documents pending.',
  'F128':'Exact net/tax lines; item/tracking pending.',
  'F131':'Deterministic totals; independent tax review pending.',
- 'F132':'Draft/approve workflow; full approvals integration pending.',
+ 'F132':'Draft/edit/approve workflow with stale-review rejection; full approvals integration pending.',
  'F136':'Partial payment recording; no money movement.',
  'F153':'Bank/statement comparison and reconciliation report; real feeds pending.',
  'F155':'Posted journal drilldown; broader linked transaction UI pending.',
@@ -62,6 +62,9 @@ for f in features:
     f['canonical_registry_state']='NOT_INSTALLED'
     if f['id'] in partial:
         f.update(status='CODE_PRESENT_UNVERIFIED',delivery_paths=['packages/sandy-accounting/service.ts','packages/sandy-accounting/schema.sql'],test_paths=['packages/sandy-accounting/core.test.ts'],remaining=partial[f['id']])
+        if f['id'] in ['F036','F038','F040','F042','F126','F128','F132']:
+            f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
+            f['test_paths']+=['packages/sandy-accounting/drafts.test.ts','packages/sandy-accounting/postgres.test.ts','packages/sandy-accounting/browser_test.py']
         if f['id'] in ['F045','F046','F136']:
             f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
             f['test_paths']+=['packages/sandy-accounting/corrections.test.ts','packages/sandy-accounting/temporal.test.ts','packages/sandy-accounting/browser_test.py']
@@ -72,6 +75,7 @@ for f in features:
             f['test_paths']+=['packages/sandy-accounting/cash.test.ts','packages/sandy-accounting/credits.test.ts','packages/sandy-accounting/postgres.test.ts','packages/sandy-accounting/browser_test.py']
         n=int(f['id'][1:])
         f['operations']=['accounting.reporting.run','accounting.workspace.get'] if n in [13,153,175,207,212] else ['accounting.sales.invoice.draft'] if n in [36,38,40] else ['accounting.documents.approve'] if n in [42,132] else ['accounting.documents.void','accounting.documents.payment.reverse'] if n==45 else ['accounting.documents.payment.record'] if n in [46,136] else ['accounting.payables.bill.draft'] if n in [120,126,128,131] else ['accounting.reporting.drilldown'] if n in [155,208] else ['accounting.banking.statements.import'] if n in [158,160] else ['accounting.intelligence.matches.propose','accounting.banking.reconcile.apply','accounting.banking.reconcile.reverse'] if n in [164,167] else ['accounting.audit.verify'] if n==197 else ['accounting.organisations.period.lock'] if n==272 else ['accounting.ledger.journal.post','accounting.ledger.journal.reverse']
+        if n in [36,38,40,42,126,128,132]:f['operations']+=['accounting.documents.draft.update','accounting.documents.history']
         if 186<=n<=189:f['operations']=['accounting.accounts.create','accounting.accounts.archive','accounting.workspace.get']
         if n in [51,124]:f['operations']=['accounting.documents.credit.record','accounting.documents.credit.reverse']
 reports=[]

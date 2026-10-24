@@ -58,6 +58,8 @@ export const operations = {
   "accounting.sales.invoice.draft": "R1",
   "accounting.payables.bill.draft": "R1",
   "accounting.documents.approve": "R2",
+  "accounting.documents.draft.update": "R1",
+  "accounting.documents.history": "R0",
   "accounting.documents.payment.record": "R2",
   "accounting.documents.payment.reverse": "R2",
   "accounting.documents.credit.record": "R2",
@@ -144,8 +146,8 @@ export class Accounting {
       );
       await tx.query("SET LOCAL ROLE accounting_fixture");
       await tx.query(
-        "SELECT set_config('accounting.tenant',$1,true),set_config('accounting.company',$2,true)",
-        [actor.tenant_id, request.company_id],
+        "SELECT set_config('accounting.tenant',$1,true),set_config('accounting.company',$2,true),set_config('accounting.actor',$3,true)",
+        [actor.tenant_id, request.company_id, actor.actor_id],
       );
       const scope = [actor.tenant_id, request.company_id];
       const book = (await tx.query(
@@ -467,8 +469,11 @@ export class Accounting {
         return { locked_through: a.through };
       }
       case "accounting.sales.invoice.draft":
-      case "accounting.payables.bill.draft": {
+      case "accounting.payables.bill.draft":
+      case "accounting.documents.draft.update": {
+        const editing = r.operation === "accounting.documents.draft.update";
         exact(a, [
+          ...(editing ? ["document_id", "expected_version"] : []),
           "contact",
           "number",
           "issued",
@@ -484,7 +489,16 @@ export class Accounting {
         text(a.contact, "contact");
         text(a.number, "number");
         check(a.currency === c.book.currency, "document_fx_not_supported");
-        const kind = r.operation.includes("invoice") ? "invoice" : "bill";
+        const original = editing ? await this.document(c, a.document_id) : null;
+        if (original) {
+          check(original.version === a.expected_version, "version_conflict");
+          check(
+            !original.journal_id && !original.void_journal_id,
+            "draft_required",
+          );
+        }
+        const kind = original?.kind ??
+          (r.operation.includes("invoice") ? "invoice" : "bill");
         await this.account(
           c,
           a.control_account,
@@ -524,9 +538,11 @@ export class Accounting {
             );}
           total += net + tax;
         }
-        const documentId = id();
+        const documentId = original?.id ?? id();
         await c.tx.query(
-          "INSERT INTO accounting.documents(tenant_id,company_id,id,kind,contact,number,issued,due,currency,lines,total,control_account,evidence) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
+          editing
+            ? "UPDATE accounting.documents SET kind=$4,contact=$5,number=$6,issued=$7,due=$8,currency=$9,lines=$10,total=$11,control_account=$12,evidence=$13,version=version+1 WHERE tenant_id=$1 AND company_id=$2 AND id=$3"
+            : "INSERT INTO accounting.documents(tenant_id,company_id,id,kind,contact,number,issued,due,currency,lines,total,control_account,evidence) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)",
           [
             ...c.scope,
             documentId,
@@ -546,7 +562,7 @@ export class Accounting {
           document_id: documentId,
           state: "DRAFT",
           total: decimal(total, c.book.precision),
-          version: 1,
+          version: original ? original.version + 1 : 1,
         };
       }
       case "accounting.documents.approve": {
@@ -1179,6 +1195,21 @@ export class Accounting {
   }
   async read(c: Context, r: Request): Promise<Row> {
     const a = r.arguments;
+    if (r.operation === "accounting.documents.history") {
+      exact(a, ["document_id"]);
+      const d = await this.document(c, a.document_id);
+      const revisions = (await c.tx.query(
+        "SELECT version,actor_id,recorded_at,snapshot FROM accounting.document_versions WHERE tenant_id=$1 AND company_id=$2 AND document_id=$3 ORDER BY version",
+        [...c.scope, d.id],
+      )).rows;
+      for (const revision of revisions) {
+        await this.evidence(c, revision.snapshot.evidence);
+        for (const line of revision.snapshot.lines) {
+          if (line.tax_rule_ref) await this.evidence(c, [line.tax_rule_ref]);
+        }
+      }
+      return { document_id: d.id, revisions };
+    }
     if (r.operation === "accounting.intelligence.cashflow.forecast") {
       exact(a, ["as_of", "horizon", "collection_probability_bps"]);
       date(a.as_of);

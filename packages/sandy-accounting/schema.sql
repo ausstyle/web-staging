@@ -93,6 +93,18 @@ CREATE TABLE accounting.allocations (
  PRIMARY KEY(tenant_id,company_id,id), FOREIGN KEY(tenant_id,company_id,document_id) REFERENCES accounting.documents,
  FOREIGN KEY(tenant_id,company_id,journal_id) REFERENCES accounting.journals
 );
+CREATE TABLE accounting.document_versions (
+ tenant_id text NOT NULL, company_id text NOT NULL, document_id text NOT NULL,
+ version integer NOT NULL CHECK(version>0), actor_id text NOT NULL CHECK(length(actor_id)>0), recorded_at timestamptz NOT NULL DEFAULT now(), snapshot jsonb NOT NULL,
+ PRIMARY KEY(tenant_id,company_id,document_id,version), FOREIGN KEY(tenant_id,company_id,document_id) REFERENCES accounting.documents
+);
+CREATE FUNCTION accounting.record_document_version() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ INSERT INTO accounting.document_versions(tenant_id,company_id,document_id,version,actor_id,snapshot)
+ VALUES(NEW.tenant_id,NEW.company_id,NEW.id,NEW.version,current_setting('accounting.actor',true),to_jsonb(NEW)||jsonb_build_object('total',NEW.total::text));
+ RETURN NEW;
+END $$;
+CREATE TRIGGER document_version AFTER INSERT OR UPDATE ON accounting.documents FOR EACH ROW EXECUTE FUNCTION accounting.record_document_version();
 CREATE TABLE accounting.statements (
  tenant_id text NOT NULL, company_id text NOT NULL, id text NOT NULL, bank_account text NOT NULL,
  source_key text NOT NULL, effective_date date NOT NULL, amount numeric NOT NULL CHECK(amount<>0 AND amount=trunc(amount)),
@@ -149,6 +161,10 @@ CREATE TABLE accounting.events (
 );
 CREATE FUNCTION accounting.guard_document() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
+ IF OLD.journal_id IS NULL AND NEW.journal_id IS NULL AND OLD.void_journal_id IS NULL AND NEW.void_journal_id IS NULL THEN
+  IF ROW(OLD.tenant_id,OLD.company_id,OLD.id,OLD.kind) IS DISTINCT FROM ROW(NEW.tenant_id,NEW.company_id,NEW.id,NEW.kind) OR NEW.version<>OLD.version+1 THEN RAISE EXCEPTION 'document_identity_immutable'; END IF;
+  RETURN NEW;
+ END IF;
  IF (to_jsonb(OLD)-ARRAY['version','journal_id','void_journal_id'])<>(to_jsonb(NEW)-ARRAY['version','journal_id','void_journal_id']) OR NEW.version<>OLD.version+1 OR (OLD.journal_id IS NOT NULL AND NEW.journal_id IS DISTINCT FROM OLD.journal_id) OR (OLD.void_journal_id IS NOT NULL AND NEW.void_journal_id IS DISTINCT FROM OLD.void_journal_id) THEN RAISE EXCEPTION 'document_immutable'; END IF;
  IF NEW.journal_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM accounting.journals WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id AND id=NEW.journal_id AND state='POSTED' AND source=NEW.kind) THEN RAISE EXCEPTION 'invalid_document_posting'; END IF;
  IF NEW.void_journal_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM accounting.journals WHERE tenant_id=NEW.tenant_id AND company_id=NEW.company_id AND id=NEW.void_journal_id AND state='POSTED' AND source='document_void' AND reversal_of=NEW.journal_id) THEN RAISE EXCEPTION 'invalid_document_void'; END IF;
@@ -266,10 +282,10 @@ CREATE INDEX accounting_matches_journal ON accounting.matches(tenant_id,company_
 CREATE FUNCTION accounting.immutable() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN RAISE EXCEPTION 'record_immutable'; END $$;
 DO $$ DECLARE t text; BEGIN
- FOREACH t IN ARRAY ARRAY['credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
+ FOREACH t IN ARRAY ARRAY['document_versions','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
   EXECUTE format('CREATE TRIGGER immutable BEFORE UPDATE OR DELETE ON accounting.%I FOR EACH ROW EXECUTE FUNCTION accounting.immutable()',t);
  END LOOP;
- FOREACH t IN ARRAY ARRAY['books','accounts','journals','lines','documents','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
+ FOREACH t IN ARRAY ARRAY['books','accounts','journals','lines','documents','document_versions','credits','credit_reversals','allocations','allocation_reversals','statements','matches','match_reversals','commands','events'] LOOP
   EXECUTE format('ALTER TABLE accounting.%I ENABLE ROW LEVEL SECURITY',t);
   EXECUTE format('ALTER TABLE accounting.%I FORCE ROW LEVEL SECURITY',t);
   EXECUTE format('CREATE POLICY company_isolation ON accounting.%I TO accounting_fixture USING (tenant_id=current_setting(''accounting.tenant'',true) AND company_id=current_setting(''accounting.company'',true)) WITH CHECK (tenant_id=current_setting(''accounting.tenant'',true) AND company_id=current_setting(''accounting.company'',true))',t);

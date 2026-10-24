@@ -228,17 +228,17 @@
 <div id="status" role="status" aria-live="polite"></div><button id="retry" hidden>Retry the same request</button>
 <div id="overview"><div class="grid"><div class="card"><p>Book bank balance</p><div id="bank-total" class="value">—</div></div><div class="card"><p>Receivables outstanding</p><div id="ar-total" class="value">—</div></div><div class="card"><p>Payables outstanding</p><div id="ap-total" class="value">—</div></div><div class="card"><p>Accrual profit · October 2026</p><div id="profit-total" class="value">—</div></div></div>
 <section><h2>Your first reconciled workflow</h2><p>Start with a synthetic opening balance, draft and approve an invoice, record a receipt, then match its statement line. Every report links back to the posted journal.</p><button id="opening" class="primary">Post synthetic opening balance · $1,000</button><p class="muted">Fixed fixture evidence. No statutory tax treatment or external payment is assumed.</p></section></div>
-<div id="sales" hidden><section><h2>Draft a synthetic document</h2><form id="document-form"><div class="row"><div><label for="kind">Document type</label><select id="kind"><option value="invoice">Customer invoice</option><option value="bill">Supplier bill</option></select></div><div><label for="number">Document number</label><input id="number" value="DEMO-001" required maxlength="60"></div></div><label for="contact">Synthetic contact</label><input id="contact" value="Demo customer" required maxlength="100"><label for="coding-account">Ledger account</label><select id="coding-account" required></select><label for="net">Amount (AUD, no tax in this fixture)</label><input id="net" value="100.00" inputmode="decimal" required pattern="[0-9]+(\.[0-9]{1,2})?"><div class="row"><div><label for="issued">Issue date</label><input id="issued" type="date" value="2026-10-02" required></div><div><label for="due">Due date</label><input id="due" type="date" value="2026-10-20" required></div></div><button class="primary">Save draft</button></form></section><section><h2>Documents</h2><div id="documents" class="overflow"></div></section></div>
+<div id="sales" hidden><section><h2>Draft a synthetic document</h2><form id="document-form"><div class="row"><div><label for="kind">Document type</label><select id="kind"><option value="invoice">Customer invoice</option><option value="bill">Supplier bill</option></select></div><div><label for="number">Document number</label><input id="number" value="DEMO-001" required maxlength="60"></div></div><label for="contact">Synthetic contact</label><input id="contact" value="Demo customer" required maxlength="100"><label for="coding-account">Ledger account</label><select id="coding-account" required></select><label for="net">Amount (AUD, no tax in this fixture)</label><input id="net" value="100.00" inputmode="decimal" required pattern="[0-9]+(\.[0-9]{1,2})?"><div class="row"><div><label for="issued">Issue date</label><input id="issued" type="date" value="2026-10-02" required></div><div><label for="due">Due date</label><input id="due" type="date" value="2026-10-20" required></div></div><button id="save-document" class="primary">Save draft</button><button id="cancel-edit" type="button" hidden>Cancel editing</button></form></section><section><h2>Documents</h2><div id="documents" class="overflow"></div></section></div>
 <div id="banking" hidden><section><h2>Import a synthetic statement line</h2><form id="statement-form"><label for="source-key">Source line ID (deduplicated)</label><input id="source-key" value="DEMO-STMT-001" required><label for="statement-amount">Signed amount · receipts positive, payments negative</label><input id="statement-amount" value="100.00" required pattern="-?[0-9]+(\.[0-9]{1,2})?"><label for="statement-date">Statement date</label><input id="statement-date" type="date" value="2026-10-03" required><label for="reference">Reference</label><input id="reference" value="Demo invoice receipt" required><button class="primary">Import line</button></form></section><section><h2>Statement lines</h2><div id="statements" class="overflow"></div><p class="muted">Imported lines are separate from posted book transactions. Exact match suggestions are in Intelligence; approve each proposed match there.</p></section><section><h2>Active reconciliations</h2><div id="matches"></div></section></div>
 <div id="reports" hidden><section><h2>Reports</h2><form id="report-form"><label for="report-type">Report</label><select id="report-type"><option value="trial_balance">Trial balance</option><option value="profit_and_loss">Profit and loss</option><option value="balance_sheet">Balance sheet</option><option value="general_ledger">General ledger detail</option><option value="aged_receivables">Aged receivables</option><option value="aged_payables">Aged payables</option><option value="bank_reconciliation">Bank reconciliation</option></select><label for="report-basis">Basis</label><select id="report-basis"><option value="accrual">Accrual</option><option value="cash">Cash</option></select><label for="report-from">From (optional)</label><input id="report-from" type="date"><label for="report-date">Through</label><input id="report-date" type="date" value="2026-10-31" required><button class="primary">Run report</button></form><p class="muted">Debit-positive balances; credits negative. Balance sheet profit is shown separately as current earnings. Cash views support profit and loss, balance sheet, trial balance and general ledger. Ageing and bank reconciliation use accrual facts. Cash tax allocation is not a GST/BAS determination. The remaining catalogue reports are unfinished.</p><div id="report-output" class="overflow"></div></section></div>
 <div id="intelligence" hidden><section><h2>Review suggestions</h2><p>Evidence-linked deterministic matching. Suggestions have no ledger effect until you approve a match. This fixture uses no generative model.</p><button id="suggest">Find exact bank matches</button><div id="suggestions"></div></section><section><h2>Cash scenario</h2><p>Use posted bank balances and approved outstanding invoices/bills as at 31 October. Assumes 100% collection on due dates; overdue amounts fall in the first bucket. Payroll, tax and unrecorded commitments are excluded.</p><button id="forecast">Calculate 13-week scenario</button><pre id="forecast-output"></pre></section></div>
 <div id="controls" hidden><section><h2>Chart of accounts</h2><p>Account classifications remain fixed. Protected or previously used accounts cannot be archived; historical postings and corrections retain their account.</p><form id="account-form"><label for="account-code">Account code</label><input id="account-code" required maxlength="60" pattern="[A-Za-z0-9][A-Za-z0-9_-]{0,59}"><label for="account-name">Account name</label><input id="account-name" required maxlength="120"><label for="account-kind">Classification</label><select id="account-kind"><option value="expense">Expense</option><option value="revenue">Revenue</option><option value="asset">Asset</option><option value="liability">Liability</option><option value="equity">Equity</option></select><button>Create account</button></form><div id="accounts"></div></section><section><h2>Period controls</h2><p>A lock prevents backdated postings and changes to reconciliations. Reopening is not exposed in this alpha.</p><form id="lock-form"><label for="lock-date">Lock through</label><input id="lock-date" type="date" value="2026-09-30" required><button>Lock period</button></form><p id="lock-state"></p></section><section><h2>Audit trail</h2><p>Each committed command records its actor, policy reference, input digest and result digest. Hash chaining is tamper evidence, not protection from a database administrator.</p><button id="audit">Verify audit chain</button><pre id="audit-output"></pre></section><section><h2>Posted journals</h2><div id="journals"></div></section></div>
   </main>
   <dialog
-    id="detail"><button id="close-detail">Close</button><h2>Journal and evidence</h2><pre id="detail-output"></pre></dialog>
+    id="detail"><button id="close-detail">Close</button><h2 id="detail-title">Journal and evidence</h2><pre id="detail-output"></pre></dialog>
   <script type="module" nonce="__NONCE__">
   const $ = (s) => document.querySelector(s), nonce = "__NONCE__";
-  let workspace, lastFailed, busy = false, source;
+  let workspace, lastFailed, busy = false, source, editingDocument = null;
   const esc = (s) =>
     String(s ?? "").replace(
       /[&<>"']/g,
@@ -328,6 +328,7 @@
     b.textContent = "View journal";
     b.onclick = () =>
       action(async () => {
+        $("#detail-title").textContent = "Journal and evidence";
         $("#detail-output").textContent = JSON.stringify(
           await api("accounting.reporting.drilldown", { journal_id: id }),
           null,
@@ -401,7 +402,53 @@
         esc(d.void_journal_id ? "Voided" : d.journal_id ? "Approved" : "Draft") +
         " · total $" + esc(d.total) + " · remaining $" + esc(d.remaining) +
         "</p>";
+      const history = document.createElement("button");
+      history.textContent = "View revisions";
+      history.onclick = () =>
+        action(async () => {
+          const result = await api("accounting.documents.history", {
+            document_id: d.id,
+          });
+          $("#detail-title").textContent = "Document revisions";
+          $("#detail-output").textContent = JSON.stringify(result, null, 2);
+          $("#detail").showModal();
+        });
+      div.append(history);
       if (!d.journal_id) {
+        // This form supports one untaxed line; the API supports full line replacement.
+        if (d.lines.length === 1 && /^0(?:\.0+)?$/.test(d.lines[0].tax)) {
+          const edit = document.createElement("button");
+          edit.textContent = "Edit " + d.number;
+          edit.onclick = () =>
+            action(async () => {
+              const result = await api("accounting.documents.history", {
+                document_id: d.id,
+              });
+              const latest = result.revisions.at(-1).snapshot;
+              if (latest.journal_id) {
+                throw Error(
+                  "Document already approved; refresh before continuing.",
+                );
+              }
+              if (
+                latest.lines.length !== 1 ||
+                !/^0(?:\.0+)?$/.test(latest.lines[0].tax)
+              ) throw Error("This draft contains line details this editor does not support.");
+              editingDocument = latest;
+              $("#kind").value = latest.kind;
+              $("#kind").disabled = true;
+              codingAccounts();
+              $("#coding-account").value = latest.lines[0].account_id;
+              for (const field of ["number", "contact", "issued", "due"]) {
+                $("#" + field).value = latest[field];
+              }
+              $("#net").value = latest.lines[0].net;
+              $("#save-document").textContent = "Save changes";
+              $("#cancel-edit").hidden = false;
+              $("#number").focus();
+            });
+          div.append(edit);
+        }
         const b = document.createElement("button");
         b.textContent = "Approve " + d.number;
         b.onclick = () =>
@@ -645,24 +692,40 @@
         }],
       }, "ui-synthetic-opening-v1")
     );
+  function endEditing() {
+    editingDocument = null;
+    $("#kind").disabled = false;
+    $("#save-document").textContent = "Save draft";
+    $("#cancel-edit").hidden = true;
+  }
+  $("#cancel-edit").onclick = endEditing;
   $("#document-form").onsubmit = (e) => {
     e.preventDefault();
     const kind = $("#kind").value;
-    action(() =>
-      api(
-        kind === "invoice"
+    action(async () => {
+      await api(
+        editingDocument
+          ? "accounting.documents.draft.update"
+          : kind === "invoice"
           ? "accounting.sales.invoice.draft"
           : "accounting.payables.bill.draft",
         {
+          ...(editingDocument
+            ? {
+              document_id: editingDocument.id,
+              expected_version: editingDocument.version,
+            }
+            : {}),
           contact: $("#contact").value,
           number: $("#number").value,
           issued: $("#issued").value,
           due: $("#due").value,
           currency: "AUD",
           control_account: kind === "invoice" ? "ar" : "ap",
-          evidence: [source],
+          evidence: editingDocument?.evidence ?? [source],
           lines: [{
-            description: "Synthetic service",
+            description: editingDocument?.lines[0].description ??
+              "Synthetic service",
             account_id: $("#coding-account").value,
             net: $("#net").value,
             tax: "0.00",
@@ -670,8 +733,9 @@
             tax_rule_ref: null,
           }],
         },
-      )
-    );
+      );
+      endEditing();
+    });
   };
   $("#statement-form").onsubmit = (e) => {
     e.preventDefault();

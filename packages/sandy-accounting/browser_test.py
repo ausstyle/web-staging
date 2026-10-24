@@ -39,6 +39,33 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             page.get_by_role('button',name='Sales & purchases',exact=True).click()
             page.get_by_role('button',name='Save draft',exact=True).click();saved()
             expect(page.locator('#documents')).to_contain_text('Draft')
+            stale=browser.new_page()
+            stale.on('pageerror', lambda e: errors.append(str(e)))
+            stale.goto('http://127.0.0.1:4314')
+            expect(stale.locator('#status')).to_contain_text('Completed local request')
+            stale.get_by_role('button',name='Sales & purchases',exact=True).click()
+            stale.get_by_role('button',name='Edit DEMO-001',exact=True).click()
+            expect(stale.get_by_role('button',name='Save changes',exact=True)).to_be_visible()
+            expect(stale.locator('#status')).to_contain_text('Completed local request')
+            for amount in ['125.00', '100.00']:
+                page.get_by_role('button',name='Edit DEMO-001',exact=True).click();saved()
+                expect(page.locator('#kind')).to_be_disabled()
+                page.locator('#net').fill(amount)
+                page.get_by_role('button',name='Save changes',exact=True).click();saved()
+                expect(page.locator('#kind')).to_be_enabled()
+                expect(page.locator('#documents')).to_contain_text('total $'+amount)
+            stale.locator('#net').fill('80.00')
+            stale.get_by_role('button',name='Save changes',exact=True).click()
+            expect(stale.locator('#status')).to_have_text('version_conflict')
+            expect(stale.locator('#net')).to_have_value('80.00')
+            stale.get_by_role('button',name='Cancel editing',exact=True).click()
+            expect(stale.get_by_role('button',name='Save draft',exact=True)).to_be_visible()
+            stale.close()
+            page.get_by_role('button',name='View revisions',exact=True).click();saved()
+            revisions=json.loads(page.locator('#detail-output').inner_text())['revisions']
+            assert [r['snapshot']['lines'][0]['net'] for r in revisions]==['100.00','125.00','100.00']
+            assert all(r['snapshot']['journal_id'] is None for r in revisions)
+            page.locator('#close-detail').click()
             page.get_by_role('button',name='Approve DEMO-001',exact=True).click();saved()
             page.get_by_role('button',name='Record payment',exact=True).click();saved()
             expect(page.locator('#documents')).to_contain_text('remaining $0.00')
@@ -182,7 +209,7 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             assert json.loads(page.locator('#audit-output').inner_text())['valid']
             assert not errors, errors
             browser.close()
-            (OUT/'result.json').write_text(json.dumps({'status':'PASSED','class':'LOCAL_SYNTHETIC_BROWSER','expected_bank':'1100.00','expected_profit':'100.00','credit_partial_receipt_cash_profit':'130.00','credit_partial_receipt_accrual_profit':'180.00','supplier_historical_ap':['60.00','100.00','0.00'],'unmatched_supplier_statement_retained':True,'expected_statement_difference':'-40.00','provider_verified':False,'independently_accepted':False,'page_errors':errors},indent=2)+'\n')
+            (OUT/'result.json').write_text(json.dumps({'status':'PASSED','class':'LOCAL_SYNTHETIC_BROWSER','draft_revision_amounts':['100.00','125.00','100.00'],'stale_draft_edit_denied_and_input_preserved':True,'expected_bank':'1100.00','expected_profit':'100.00','credit_partial_receipt_cash_profit':'130.00','credit_partial_receipt_accrual_profit':'180.00','supplier_historical_ap':['60.00','100.00','0.00'],'unmatched_supplier_statement_retained':True,'expected_statement_difference':'-40.00','provider_verified':False,'independently_accepted':False,'page_errors':errors},indent=2)+'\n')
             print((OUT/'result.json').read_text())
     finally:
         proc.terminate()

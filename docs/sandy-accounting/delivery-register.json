@@ -549,16 +549,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
-      "remaining": "Basic invoice identity/dates; controlled sequence management pending.",
+      "remaining": "Version-protected invoice draft header editing and immutable revision history; controlled sequence management pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.sales.invoice.draft"
+        "accounting.sales.invoice.draft",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -586,16 +592,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Exact net/tax lines; quantity, discounts, tracking and item pricing pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.sales.invoice.draft"
+        "accounting.sales.invoice.draft",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -623,16 +635,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Versioned source reference and exact totals; real file adapter/PDF pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.sales.invoice.draft"
+        "accounting.sales.invoice.draft",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -660,16 +678,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
-      "remaining": "Draft/approve workflow; outbound sends remain unavailable.",
+      "remaining": "Draft/edit/approve workflow with stale-review rejection; outbound sends remain unavailable.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.documents.approve"
+        "accounting.documents.approve",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -1989,16 +2013,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
-      "remaining": "Basic supplier bill header; foreign-currency documents pending.",
+      "remaining": "Version-protected supplier draft header editing and immutable revision history; foreign-currency documents pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.payables.bill.draft"
+        "accounting.payables.bill.draft",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -2026,16 +2056,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
       "remaining": "Exact net/tax lines; item/tracking pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.payables.bill.draft"
+        "accounting.payables.bill.draft",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
@@ -2100,16 +2136,22 @@
       "status": "CODE_PRESENT_UNVERIFIED",
       "delivery_paths": [
         "packages/sandy-accounting/service.ts",
-        "packages/sandy-accounting/schema.sql"
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
       ],
       "test_paths": [
-        "packages/sandy-accounting/core.test.ts"
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/drafts.test.ts",
+        "packages/sandy-accounting/postgres.test.ts",
+        "packages/sandy-accounting/browser_test.py"
       ],
-      "remaining": "Draft/approve workflow; full approvals integration pending.",
+      "remaining": "Draft/edit/approve workflow with stale-review rejection; full approvals integration pending.",
       "deployed": false,
       "independently_accepted": false,
       "operations": [
-        "accounting.documents.approve"
+        "accounting.documents.approve",
+        "accounting.documents.draft.update",
+        "accounting.documents.history"
       ],
       "canonical_registry_state": "NOT_INSTALLED"
     },

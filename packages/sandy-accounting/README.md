@@ -56,6 +56,12 @@ balance oracle and does not claim regulatory coverage.
   with a required reason, payment history and journal drilldown. A matched
   payment must be unreconciled before correction; its statement evidence stays
   visible and unmatched until separately resolved.
+- Invoice/bill draft replacement validates the complete document, checks its
+  expected version and preserves immutable actor/timestamp revisions in the same
+  transaction. Approval freezes financial fields. The workspace edits a single
+  untaxed line; full multi-line replacement is available through the service.
+  Revision reads recheck every historical source, including superseded tax
+  evidence. Competing edits and approvals cannot silently overwrite each other.
 - Separate immutable bank statement lines, source-key deduplication,
   partial/multiple matching, duplicate-match protection and append-only undo.
   Match suggestions do not post or reconcile anything.
