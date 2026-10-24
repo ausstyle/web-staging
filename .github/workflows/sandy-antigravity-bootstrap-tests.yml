@@ -1,0 +1,22 @@
+name: Antigravity Linux bootstrap safety
+on:
+  pull_request:
+    paths:
+      - 'scripts/sandy/antigravity/**'
+      - '.github/workflows/sandy-antigravity-bootstrap-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  source-safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check bootstrap scripts and offline guard tests
+        run: |
+          set -euo pipefail
+          bash -n scripts/sandy/antigravity/bootstrap.sh
+          bash -n scripts/sandy/antigravity/verify.sh
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover \
+            -s scripts/sandy/antigravity -p 'test_*.py' -v
