@@ -7,6 +7,10 @@ on:
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
       - 'supabase/migrations/20261024004*.sql'
       - 'scripts/sandy/*customer_mutation*'
+      - 'scripts/sandy/*customer*guard*'
+      - 'scripts/sandy/fixtures/task_company_guard_live.sql'
+      - 'supabase/migrations/20261024022000_sandy_customer_task_guard_commit.sql'
+      - 'docs/sandy-engineering/evaluations/customer-task-guard-release.json'
       - 'scripts/sandy/fixtures/customer_mutation_contracts_v1.json'
       - 'docs/sandy-engineering/evaluations/customer-mutation-private-release.json'
       - '.github/workflows/sandy-customer-mutation-certification.yml'
@@ -16,7 +20,7 @@ on:
         type: choice
         required: true
         description: Install once, or acceptance-only on the already installed exact sources
-        options: [preflight, install-and-certify, acceptance-only, finite-acceptance-only]
+        options: [preflight, install-and-certify, acceptance-only, finite-acceptance-only, repair-task-guard]
 permissions:
   contents: read
 concurrency:
@@ -38,7 +42,7 @@ jobs:
         env:
           PYTHONPATH: scripts/sandy
           PYTHONDONTWRITEBYTECODE: '1'
-        run: python3 -m unittest scripts/sandy/test_customer_mutation_release.py scripts/sandy/test_customer_mutation_acceptance.py -v
+        run: python3 -m unittest scripts/sandy/test_customer_mutation_release.py scripts/sandy/test_customer_mutation_acceptance.py scripts/sandy/test_customer_task_guard_release.py -v
       - name: Actual API/MCP handler and contract regressions
         run: >-
           deno test --no-lock --allow-read
@@ -64,7 +68,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
+      - name: Repair only the canonical task guard on installed sources
+        if: inputs.action == 'repair-task-guard'
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: python3 scripts/sandy/release_customer_task_guard.py --deploy --evidence-dir "$RUNNER_TEMP/customer-mutation/task-guard-repair"
       - name: Preserve exact source, install once or read back existing installation
+        if: inputs.action != 'repair-task-guard'
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           RELEASE_ACTION: ${{ inputs.action }}

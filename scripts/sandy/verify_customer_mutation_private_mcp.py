@@ -45,7 +45,8 @@ class CustomerMutationAcceptance(PrivateMemoryAcceptance):
             if subprocess.check_output(['git','show',sha+':'+str(p.relative_to(ROOT))],cwd=ROOT)!=p.read_bytes():raise RuntimeError('committed_source_required')
         from release_customer_mutation_certification import MANIFEST,load,functions,schema
         if self.manifest!=MANIFEST.resolve():raise RuntimeError('fixed_reviewed_customer_manifest_required')
-        manifest,_=load();admin=Installer(self.output.parent/'ten-write-source-readback');observed=functions(admin,manifest,True);schema(admin,manifest,True);source={}
+        from release_customer_task_guard import state as task_guard_state
+        manifest,_=load();admin=Installer(self.output.parent/'ten-write-source-readback');observed=functions(admin,manifest,True);schema(admin,manifest,True);task_guard_state(admin,True);source={}
         for slug,(meta,body,files) in observed.items():
             self.check(slug+'_actual_reviewed_source',True)
             source[slug]={'version':meta['version'],'deployment_id':'zmqlyygzqoidkcwdysok_'+meta['id']+'_'+str(meta['version']),'bundle_sha256':digest(body)}

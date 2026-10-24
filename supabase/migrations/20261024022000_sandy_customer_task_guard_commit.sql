@@ -12,11 +12,12 @@ BEGIN
  END IF;
  IF NOT EXISTS (SELECT 1 FROM pg_trigger t JOIN pg_proc p ON p.oid=t.tgfoid
  WHERE t.tgrelid='public.sandy_tasks'::regclass AND t.tgname='sandy_agenda_task_company_check'
- AND t.tgdeferrable AND t.tginitdeferred AND t.tgenabled='O'
+ AND t.tgdeferrable AND t.tginitdeferred AND t.tgenabled='O' AND t.tgtype=21 AND NOT t.tgisinternal AND t.tgqual IS NULL AND t.tgattr=''::int2vector
  AND p.oid='public.sandy_agenda_task_company_guard()'::regprocedure AND NOT p.prosecdef
  AND encode(sha256(convert_to(p.prosrc,'UTF8')),'hex')='877199298ed083b4afe1a579fc366b1158c5517b7f748d1064d08e10e58e5cd5') THEN
   RAISE EXCEPTION 'reviewed deferred task guard changed';
  END IF;
+ IF (SELECT count(*) FROM pg_constraint WHERE connamespace='public'::regnamespace AND conname='sandy_agenda_task_company_check') <> 1 THEN RAISE EXCEPTION 'task constraint name must be unique';END IF;
  EXECUTE replace(definition,anchor,$replacement$
  -- PostgREST commits after this SECURITY DEFINER function returns. Flush only
  -- the existing task constraint before recording a receipt, while its reads
