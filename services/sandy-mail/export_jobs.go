@@ -37,17 +37,18 @@ func (s ExportSpec) valid(now time.Time) bool {
 }
 
 type ExportJob struct {
-	ExpectedDrafts    int64      `json:"expected_drafts"`
-	ID                string     `json:"job_id"`
-	Spec              ExportSpec `json:"spec"`
-	SnapshotAt        time.Time  `json:"snapshot_at"`
-	MailboxName       string     `json:"mailbox_name"`
-	Expected          int64      `json:"expected_messages"`
-	PendingIngestions int64      `json:"pending_ingestions"`
-	State             string     `json:"state"`
-	Cursor            int64      `json:"cursor"`
-	VerifiedPart      int64      `json:"verified_part"`
-	VerifiedChain     string     `json:"verified_chain"`
+	ExpectedCollections int64      `json:"expected_collections"`
+	ExpectedDrafts      int64      `json:"expected_drafts"`
+	ID                  string     `json:"job_id"`
+	Spec                ExportSpec `json:"spec"`
+	SnapshotAt          time.Time  `json:"snapshot_at"`
+	MailboxName         string     `json:"mailbox_name"`
+	Expected            int64      `json:"expected_messages"`
+	PendingIngestions   int64      `json:"pending_ingestions"`
+	State               string     `json:"state"`
+	Cursor              int64      `json:"cursor"`
+	VerifiedPart        int64      `json:"verified_part"`
+	VerifiedChain       string     `json:"verified_chain"`
 }
 type exportSession struct {
 	*importSession
@@ -93,7 +94,7 @@ func (e *exportSession) load(ctx context.Context, key string) error {
 		if err = json.Unmarshal(spec, &e.job.Spec); err != nil {
 			return err
 		}
-		return tx.QueryRow(ctx, `SELECT count(*) FROM core.mail_export_items WHERE job_id=$1 AND snapshot->'draft' IS NOT NULL`, e.job.ID).Scan(&e.job.ExpectedDrafts)
+		return tx.QueryRow(ctx, `SELECT count(*) FILTER(WHERE snapshot->'draft' IS NOT NULL),coalesce(sum(jsonb_array_length(snapshot->'collections'->'collections')),0) FROM core.mail_export_items WHERE job_id=$1`, e.job.ID).Scan(&e.job.ExpectedDrafts, &e.job.ExpectedCollections)
 	})
 }
 func (e *exportSession) prefix() string {
@@ -152,8 +153,16 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
 		return job, err
 	}
 	job.ExpectedDrafts = int64(len(drafts))
-	messageCount := job.Expected
-	job.Expected += int64(len(drafts))
+	collection, err := snapshotCollections(ctx, tx)
+	if err != nil {
+		return job, err
+	}
+	collectionCount := int64(len(collection))
+	if len(collection) > 0 {
+		job.ExpectedCollections = int64(len(collection[0].Collections.Collections))
+	}
+	messageCount := job.Expected + collectionCount
+	job.Expected += int64(len(drafts)) + collectionCount
 	if job.Expected > 1000000 {
 		return job, fmt.Errorf("export_snapshot_partition_required")
 	}
@@ -166,17 +175,22 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
 	}
 	// LEFT JOIN ensures missing related facts cannot silently remove source items.
 	_, err = tx.Exec(ctx, `INSERT INTO core.mail_export_items(tenant_id,account_id,mailbox_id,job_id,ordinal,snapshot)
- SELECT m.tenant_id,m.account_id,m.mailbox_id,$1,row_number() OVER(ORDER BY m.received_at,m.message_id),jsonb_build_object(
+ SELECT m.tenant_id,m.account_id,m.mailbox_id,$1,row_number() OVER(ORDER BY m.received_at,m.message_id)+$2,jsonb_build_object(
  'message_id',m.message_id,'internet_message_id',m.internet_message_id,'subject',m.subject,'path','messages/'||m.message_id::text||'.eml',
  'received_at',m.received_at,'sent_at',m.sent_at,'flags',mb.flags,'security_state',m.security_state,'headers',m.headers,
  'envelope',jsonb_build_object('from',e.sender,'to',e.recipients),
- 'organization',(SELECT jsonb_build_object('version',org.revision,'folder',(SELECT jsonb_build_object('collection_id',c.collection_id,'kind',c.kind,'name',c.name) FROM core.mail_collections c WHERE (c.tenant_id,c.account_id,c.mailbox_id,c.collection_id)=(m.tenant_id,m.account_id,m.mailbox_id,org.folder_id)),'labels',coalesce((SELECT jsonb_agg(jsonb_build_object('collection_id',c.collection_id,'kind',c.kind,'name',c.name) ORDER BY c.collection_id) FROM core.mail_message_labels ml JOIN core.mail_collections c ON (c.tenant_id,c.account_id,c.mailbox_id,c.collection_id)=(ml.tenant_id,ml.account_id,ml.mailbox_id,ml.label_id) WHERE (ml.tenant_id,ml.account_id,ml.mailbox_id,ml.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id) AND ml.active),'[]'::jsonb)) FROM core.mail_message_organization org WHERE (org.tenant_id,org.account_id,org.mailbox_id,org.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id)),
+ 'organization',(SELECT jsonb_build_object('version',org.revision,'folder',(SELECT jsonb_build_object('collection_id',c.collection_id,'kind',c.kind,'name',c.name,'parent_id',c.parent_id) FROM core.mail_collections c WHERE (c.tenant_id,c.account_id,c.mailbox_id,c.collection_id)=(m.tenant_id,m.account_id,m.mailbox_id,org.folder_id)),'labels',coalesce((SELECT jsonb_agg(jsonb_build_object('collection_id',c.collection_id,'kind',c.kind,'name',c.name,'parent_id',c.parent_id) ORDER BY c.collection_id) FROM core.mail_message_labels ml JOIN core.mail_collections c ON (c.tenant_id,c.account_id,c.mailbox_id,c.collection_id)=(ml.tenant_id,ml.account_id,ml.mailbox_id,ml.label_id) WHERE (ml.tenant_id,ml.account_id,ml.mailbox_id,ml.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id) AND ml.active),'[]'::jsonb)) FROM core.mail_message_organization org WHERE (org.tenant_id,org.account_id,org.mailbox_id,org.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id)),
  'raw',jsonb_build_object('key',o.object_key,'generation',o.generation,'sha256',o.sha256,'size',o.size_bytes),
  'attachments',coalesce((SELECT jsonb_agg(jsonb_build_object('key',a.object_key,'generation',a.generation,'sha256',a.sha256,'size',a.size_bytes) ORDER BY a.ordinal) FROM core.attachments a WHERE (a.tenant_id,a.account_id,a.mailbox_id,a.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id)),'[]'::jsonb),
  'import_origins',coalesce((SELECT jsonb_agg(jsonb_build_object('job_id',j.job_id,'source_sha256',j.spec->>'source_sha256','format',j.spec->>'format','source_path',i.source_path,'source_folder',i.source_folder,'flags',i.flags,'properties',i.properties) ORDER BY i.job_id,i.ordinal) FROM core.mail_import_items i JOIN core.mail_import_jobs j USING(tenant_id,account_id,mailbox_id,job_id) WHERE (i.tenant_id,i.account_id,i.mailbox_id,i.message_id)=(m.tenant_id,m.account_id,m.mailbox_id,m.message_id) AND i.state='VERIFIED'),'[]'::jsonb))
- FROM core.messages m LEFT JOIN core.memberships mb USING(tenant_id,account_id,mailbox_id,message_id) LEFT JOIN core.envelopes e USING(tenant_id,account_id,mailbox_id,message_id) LEFT JOIN core.mime_objects o USING(tenant_id,account_id,mailbox_id,message_id)`, job.ID)
+ FROM core.messages m LEFT JOIN core.memberships mb USING(tenant_id,account_id,mailbox_id,message_id) LEFT JOIN core.envelopes e USING(tenant_id,account_id,mailbox_id,message_id) LEFT JOIN core.mime_objects o USING(tenant_id,account_id,mailbox_id,message_id)`, job.ID, collectionCount)
 	if err != nil {
 		return job, err
+	}
+	for _, item := range collection {
+		if _, err = tx.Exec(ctx, `INSERT INTO core.mail_export_items(tenant_id,account_id,mailbox_id,job_id,ordinal,snapshot) VALUES($1,$2,$3,$4,1,$5)`, scope.Tenant, scope.Account, scope.Mailbox, job.ID, encoded(item)); err != nil {
+			return job, err
+		}
 	}
 	for n, item := range drafts {
 		if _, err = tx.Exec(ctx, `INSERT INTO core.mail_export_items(tenant_id,account_id,mailbox_id,job_id,ordinal,snapshot) VALUES($1,$2,$3,$4,$5,$6)`, scope.Tenant, scope.Account, scope.Mailbox, job.ID, messageCount+int64(n)+1, encoded(item)); err != nil {
@@ -300,6 +314,13 @@ func (e *exportSession) recordException(ctx context.Context, x ExportExclusion) 
 }
 
 func (e *exportSession) readOriginal(ctx context.Context, item ExportItem) ([]byte, error) {
+	if item.Collections != nil {
+		raw := encoded(item.Collections)
+		if _, err := orderedCollections(*item.Collections); err != nil || item.Path != "collections.json" || digest(raw) != item.Raw.SHA256 || int64(len(raw)) != item.Raw.Size {
+			return nil, ErrIntegrity
+		}
+		return raw, nil
+	}
 	if item.Draft != nil {
 		raw := encoded(item.Draft)
 		if !validPortableDraft(*item.Draft) || item.Path != "drafts/"+item.Draft.DraftID+".draft.json" || digest(raw) != item.Raw.SHA256 || int64(len(raw)) != item.Raw.Size {
@@ -351,6 +372,10 @@ func (e *exportSession) build(ctx context.Context) error {
 	output := &exportChunkWriter{ctx: ctx, session: e, part: &part, hash: sha256.New()}
 	tw := tar.NewWriter(output)
 	manifest := ExportManifest{Version: 1, ExportJobID: e.job.ID, PartNumber: number, ExpectedMessages: len(entries), Scope: e.scope, MailboxName: e.job.MailboxName, SnapshotAt: e.job.SnapshotAt, Messages: []ExportItem{}, Complete: true, Limit: e.job.Spec.PartitionMessages}
+	if e.job.ExpectedCollections > 0 {
+		manifest.Version = 3
+		manifest.CounterUnit = "archive_records_including_collection_inventory"
+	}
 	excluded := map[int64]bool{}
 	for _, entry := range entries {
 		if err = e.check(ctx, "build_item"); err != nil {
@@ -381,9 +406,13 @@ func (e *exportSession) build(ctx context.Context) error {
 		if _, err = tw.Write(raw); err != nil {
 			return err
 		}
-		if entry.item.Draft != nil {
+		if entry.item.Draft != nil && manifest.Version < 2 {
 			manifest.Version = 2
 			manifest.CounterUnit = "archive_records_including_drafts"
+		}
+		if entry.item.Collections != nil {
+			manifest.Version = 3
+			manifest.CounterUnit = "archive_records_including_collection_inventory"
 		}
 		manifest.Messages = append(manifest.Messages, entry.item)
 		part.Exported++
@@ -495,6 +524,8 @@ func (e *exportSession) copyPart(ctx context.Context, part ExportPart, offset in
 }
 
 type ExportReport struct {
+	ExpectedCollections   int64     `json:"expected_collections"`
+	ExportedCollections   int64     `json:"exported_collections"`
 	ExpectedDrafts        int64     `json:"expected_drafts"`
 	ExportedDrafts        int64     `json:"exported_drafts"`
 	CounterUnit           string    `json:"counter_unit,omitempty"`
@@ -534,12 +565,19 @@ func (e *exportSession) verify(ctx context.Context) error {
 	if !errors.Is(err, ErrNotFound) {
 		return err
 	}
-	report := ExportReport{ExpectedDrafts: e.job.ExpectedDrafts, Version: 1, Scope: e.scope, JobID: e.job.ID, SnapshotAt: e.job.SnapshotAt, ExpiresAt: e.job.Spec.ExpiresAt, Expected: e.job.Expected, PendingIngestions: e.job.PendingIngestions, PartChainSHA256: e.job.VerifiedChain, State: "COMPLETE", Complete: true}
+	report := ExportReport{ExpectedCollections: e.job.ExpectedCollections, ExpectedDrafts: e.job.ExpectedDrafts, Version: 1, Scope: e.scope, JobID: e.job.ID, SnapshotAt: e.job.SnapshotAt, ExpiresAt: e.job.Spec.ExpiresAt, Expected: e.job.Expected, PendingIngestions: e.job.PendingIngestions, PartChainSHA256: e.job.VerifiedChain, State: "COMPLETE", Complete: true}
 	if report.ExpectedDrafts > 0 {
 		report.Version = 2
 		report.CounterUnit = "archive_records_including_drafts"
 	}
+	if report.ExpectedCollections > 0 {
+		report.Version = 3
+		report.CounterUnit = "archive_records_including_collection_inventory"
+	}
 	err = e.tx(ctx, func(tx pgx.Tx) error {
+		if err := tx.QueryRow(ctx, `SELECT coalesce(sum(jsonb_array_length(snapshot->'collections'->'collections')),0) FROM core.mail_export_items WHERE job_id=$1 AND state='EXPORTED'`, e.job.ID).Scan(&report.ExportedCollections); err != nil {
+			return err
+		}
 		if err := tx.QueryRow(ctx, `SELECT count(*) FROM core.mail_export_items WHERE job_id=$1 AND state='EXPORTED' AND snapshot->'draft' IS NOT NULL`, e.job.ID).Scan(&report.ExportedDrafts); err != nil {
 			return err
 		}

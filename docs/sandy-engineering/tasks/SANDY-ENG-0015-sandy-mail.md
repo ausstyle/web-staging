@@ -1,7 +1,7 @@
 # SANDY-ENG-0015 — Sandy Mail implementation and acceptance
 
 Status: IMPLEMENTING (local first-ingest foundation; deployed acceptance blocked)  
-Version: 1.3
+Version: 1.4
 Priority: P2 product; user-directed first milestone is database structure and synthetic first email  
 Owner: Sandy Mail workstream; API/infrastructure retain shared release ownership  
 Created: 2026-10-24  
@@ -25,3 +25,5 @@ Catalogue reconciliation: main assigned SANDY-ENG-0013 to Accounting at `f3198b1
 At main `a08f969d7b65a329c743428f557a514a14479bcb`, My Voices owns SANDY-ENG-0014. This still-unmerged Mail task now uses SANDY-ENG-0015; both My Voices and Accounting are preserved. The saved Mail architecture and first-email pins are unchanged.
 
 Local follow-on: migration 0006 implements draft and organization facts with forced RLS, expected revisions and transactional idempotency receipts. The local UI saves/reopens drafts, creates flat folders/labels, moves messages and filters by those collections. It has no send operation. Migration 0007 adds lossless typed draft archives and resumable receipt-bound restoration. Explicit source-to-destination flat folder/label mapping restores organization transactionally; missing mapping remains an accounted exception. Arbitrary provider hierarchy conversion and customer-facing authority/scanner/delivery integration remain unfinished.
+
+Migration 0008 preserves complete native collection inventories, empty folders/labels and parent relationships through bounded/resumable export/import. Folder creation and the local UI support nested parents (200 total collections, depth 32); sibling names are unique. Explicit restore creation or a complete destination map is part of the admitted import specification, with atomic graph/receipt creation, immutable source inventory, restart reconciliation and per-collection loss counts. Provider-specific hierarchy/PST conversion remains unverified. [Runtime custody compatibility review](../../sandy-mail/scanner-custody-review.md) identifies exact API/scanner/transaction dependencies at PR303 ab2cfa4; no trust or schema from that proposal is activated. [PST investigation](../../sandy-mail/pst-conversion-investigation.md) records established upstream candidates and the missing synthetic conversion acceptance evidence.

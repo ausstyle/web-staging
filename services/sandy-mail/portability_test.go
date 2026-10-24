@@ -270,16 +270,22 @@ func exercisePortability(t *testing.T, s *Service, admin *pgx.Conn, ctx context.
 		}
 		report, err := s.ImportReport(ctx, dest, j.Spec.Key)
 		must(err)
-		if report.Verified != 2 || report.Exceptions != 0 {
+		if report.Verified != 3 || report.Exceptions != 0 {
 			t.Fatal(report)
 		}
 		var restored bytes.Buffer
 		round, err := s.ExportMailbox(ctx, dest, &restored, 100)
 		must(err)
-		if len(round.Messages) != 2 {
+		if len(round.Messages) != 3 {
 			t.Fatal("mixed records lost")
 		}
 		for _, m := range round.Messages {
+			if m.Collections != nil {
+				if len(m.Collections.Collections) != 2 {
+					t.Fatal("collection inventory lost")
+				}
+				continue
+			}
 			if m.Draft != nil {
 				if m.Draft.Text != input.Text {
 					t.Fatal("draft content lost")

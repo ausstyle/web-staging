@@ -17,7 +17,7 @@ function canNavigate(){
  if(draftDirty&&!confirm('This draft has unsaved changes. Leave without saving these changes?'))return false;
  draftDirty=false;draft=null;return true;
 }
-function lockEditFields(locked){document.querySelectorAll('#draft-fields, #organization-fields, #create-collection input, #create-collection select, #create-collection button').forEach(n=>n.disabled=locked);}
+function lockEditFields(locked){document.querySelectorAll('#draft-fields, #organization-fields, #create-collection input, #create-collection select, #create-collection button').forEach(n=>n.disabled=locked);el('collection-parent').disabled=locked||el('collection-kind').value!=='folder';}
 function beginEdit(operation,args,onSaved){
  if(pendingEdit){status('Resolve the pending edit first.',runEdit);return;}
  pendingEdit={operation,args:JSON.parse(JSON.stringify(args)),key:crypto.randomUUID(),onSaved,inFlight:false};runEdit();
@@ -34,13 +34,15 @@ async function runEdit(){
   else{status('Save is unconfirmed: '+e.message+'. Retry uses the same edit key.',runEdit);}
  }
 }
+function collectionPath(c){const names=[c.name];let parent=c.parent_id;const seen=new Set([c.collection_id]);while(parent&&!seen.has(parent)&&names.length<32){seen.add(parent);const p=collections.find(x=>x.collection_id===parent);if(!p)break;names.unshift(p.name);parent=p.parent_id;}return names.join(" / ");}
 async function loadCollections(){
  const epoch=++collectionEpoch;
  try{const result=await invoke('mail.collections.list',{});if(epoch!==collectionEpoch)return;collections=result;
-  for(const kind of ['folder','label']){const container=el(kind==='folder'?'folders':'labels');container.replaceChildren();for(const c of collections.filter(x=>x.kind===kind)){const b=node('button',c.name,'collection');b.dataset.collectionId=c.collection_id;b.addEventListener('click',()=>navigateMessages(kind==='folder'?c.collection_id:'all',kind==='label'?c.collection_id:''));container.append(b);}}
+  for(const kind of ['folder','label']){const container=el(kind==='folder'?'folders':'labels');container.replaceChildren();for(const c of collections.filter(x=>x.kind===kind)){const b=node('button',collectionPath(c),'collection');b.dataset.collectionId=c.collection_id;b.addEventListener('click',()=>navigateMessages(kind==='folder'?c.collection_id:'all',kind==='label'?c.collection_id:''));container.append(b);}}
+ const parent=el('collection-parent'),selected=parent.value;parent.replaceChildren();const top=node('option','Top level');top.value='';parent.append(top);for(const c of collections.filter(x=>x.kind==='folder')){const o=node('option',collectionPath(c));o.value=c.collection_id;parent.append(o);}parent.value=collections.some(c=>c.collection_id===selected)?selected:'';
  }catch(e){if(epoch===collectionEpoch)status('Folders and labels unavailable: '+e.message,loadCollections);}
 }
-function viewTitle(){if(view==='drafts')return 'Drafts';if(label)return collections.find(c=>c.collection_id===label)?.name||'Label';if(folder==='inbox')return 'Inbox';return collections.find(c=>c.collection_id===folder)?.name||'All mail';}
+function viewTitle(){if(view==='drafts')return 'Drafts';if(label)return collections.find(c=>c.collection_id===label)?.name||'Label';if(folder==='inbox')return 'Inbox';const selected=collections.find(c=>c.collection_id===folder);return selected?collectionPath(selected):'All mail';}
 function renderList(){
  el('messages').replaceChildren();
  for(const item of items){const b=node('button',undefined,'message');b.dataset.messageId=item.message_id||item.draft_id;
@@ -62,7 +64,7 @@ function navigateMessages(newFolder='inbox',newLabel=''){if(!canNavigate())retur
 function organizationEditor(m){
  const fieldset=node('fieldset');fieldset.id='organization-fields';fieldset.append(node('legend','Folder and labels'));
  const folderLabel=node('label','Folder');folderLabel.htmlFor='folder-choice';const select=node('select');select.id='folder-choice';const inbox=node('option','Inbox');inbox.value='';select.append(inbox);
- for(const c of collections.filter(x=>x.kind==='folder')){const o=node('option',c.name);o.value=c.collection_id;select.append(o);}select.value=m.organization.folder_id||'';fieldset.append(folderLabel,select);
+ for(const c of collections.filter(x=>x.kind==='folder')){const o=node('option',collectionPath(c));o.value=c.collection_id;select.append(o);}select.value=m.organization.folder_id||'';fieldset.append(folderLabel,select);
  const labels=node('div',undefined,'label-options');for(const c of collections.filter(x=>x.kind==='label')){const l=node('label');const input=node('input');input.type='checkbox';input.value=c.collection_id;input.checked=m.organization.label_ids.includes(c.collection_id);l.append(input,node('span',c.name));labels.append(l);}fieldset.append(labels);
  const save=node('button','Save organization');save.type='button';save.addEventListener('click',()=>beginEdit('mail.messages.organize',{message_id:m.message_id,expected_version:m.organization.version,folder_id:select.value||null,label_ids:[...labels.querySelectorAll('input:checked')].map(n=>n.value)},async r=>{await loadList();status('Organization saved locally. Receipt '+r.receipt_id+' · version '+r.version+'.');}));fieldset.append(save);return fieldset;
 }
@@ -93,6 +95,8 @@ el('inbox-nav').addEventListener('click',()=>navigateMessages());
 el('drafts-nav').addEventListener('click',()=>{if(!canNavigate())return;view='drafts';loadList();});
 el('new-draft').addEventListener('click',()=>{if(!canNavigate())return;++readEpoch;readController?.abort();++listEpoch;listController?.abort();renderDraft({draft_id:crypto.randomUUID(),version:0,subject:'',to:[],text:''});status('New local draft. Save to persist it.');});
 el('more').addEventListener('click',()=>{if(pendingEdit||draftDirty){status('Save or resolve the current draft before loading another page.',pendingEdit?runEdit:undefined);return;}loadList(true);});el('retry').addEventListener('click',()=>retryAction?.());
-el('create-collection').addEventListener('submit',e=>{e.preventDefault();beginEdit('mail.collections.create',{collection_id:crypto.randomUUID(),kind:el('collection-kind').value,name:el('collection-name').value},async r=>{el('collection-name').value='';await loadCollections();if(selectedMessage)await openMessage(selectedMessage);status('Folder or label created locally. Receipt '+r.receipt_id+'.');});});
+el('create-collection').addEventListener('submit',e=>{e.preventDefault();beginEdit('mail.collections.create',{collection_id:crypto.randomUUID(),kind:el('collection-kind').value,name:el('collection-name').value,parent_id:el('collection-kind').value==='folder'?(el('collection-parent').value||null):null},async r=>{el('collection-name').value='';await loadCollections();if(selectedMessage)await openMessage(selectedMessage);status('Folder or label created locally. Receipt '+r.receipt_id+'.');});});
 function connectFragment(){const bootstrap=new URLSearchParams(location.hash.slice(1)).get('session');if(location.hash)history.replaceState(null,'',location.pathname);if(bootstrap){el('token').value=bootstrap;el('connect').click();}}
 window.addEventListener('hashchange',connectFragment);window.addEventListener('beforeunload',e=>{if(draftDirty||pendingEdit){e.preventDefault();e.returnValue='';}});connectFragment();
+
+el('collection-kind').addEventListener('change',()=>{el('collection-parent').disabled=el('collection-kind').value!=='folder';});

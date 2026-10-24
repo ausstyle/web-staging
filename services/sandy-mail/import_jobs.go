@@ -263,6 +263,7 @@ type importItem struct {
 	Properties                        map[string]any
 	State, Delivery, Message, Receipt string
 	DraftID, DraftReceipt             string
+	CollectionReceipt                 string
 }
 
 func importedEnvelope(parsed Parsed, received time.Time) Envelope {
@@ -319,7 +320,7 @@ func (i *importSession) discoverItem(ctx context.Context, item importItem, raw [
 	parsed, parseErr := Parse(raw)
 	item.State = "PENDING"
 	code := ""
-	if item.Properties["record_kind"] == "draft" {
+	if item.Properties["record_kind"] == "draft" || item.Properties["record_kind"] == "collections" {
 		parseErr = nil
 	}
 	if parseErr != nil {
@@ -331,7 +332,7 @@ func (i *importSession) discoverItem(ctx context.Context, item importItem, raw [
 		item.Properties["received_time_source"] = "cutoff_missing_original"
 	}
 	item.Envelope.ReceivedAt = item.Envelope.ReceivedAt.UTC().Truncate(time.Microsecond)
-	if parseErr == nil && item.Properties["record_kind"] != "draft" {
+	if parseErr == nil && item.Properties["record_kind"] != "draft" && item.Properties["record_kind"] != "collections" {
 		item.Envelope = importedEnvelope(parsed, item.Envelope.ReceivedAt)
 		if len(item.Envelope.To) == 0 || len(item.Envelope.To) > 100 || len(item.Envelope.From) > 320 {
 			item.State = "EXCEPTION"
@@ -426,6 +427,11 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 				received = i.job.Spec.Cutoff
 			}
 			entry := importItem{Ordinal: index, Path: item.Path, Folder: item.Folder, Flags: item.Flags, Envelope: Envelope{ReceivedAt: received}, Properties: map[string]any{"source_time": item.SourceTime, "unmapped_flags": item.UnmappedFlags, "conversion": "byte-exact-eml", "received_time_source": "archive_time_or_explicit_cutoff"}}
+			if item.Collections != nil {
+				entry.Properties["record_kind"] = "collections"
+				entry.Properties["collection_count"] = len(item.Collections.Collections)
+				entry.Properties["conversion"] = "canonical-collection-inventory-v1"
+			}
 			if item.Draft != nil {
 				entry.Properties["record_kind"] = "draft"
 			}
@@ -492,7 +498,7 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 					if hash != m.Raw.SHA256 {
 						return nil
 					}
-					if m.Draft != nil {
+					if m.Draft != nil || m.Collections != nil {
 						return nil
 					}
 					if len(m.Flags) > 100 {
@@ -537,7 +543,7 @@ func (i *importSession) discover(ctx context.Context, limit int) error {
 func (i *importSession) items(ctx context.Context, after int64, limit int) ([]importItem, error) {
 	result := []importItem{}
 	e := i.tx(ctx, func(tx pgx.Tx) error {
-		rows, e := tx.Query(ctx, `SELECT ordinal,source_path,source_folder,original_object,envelope,flags,properties,state,delivery_id,coalesce(message_id::text,''),coalesce(receipt_id::text,''),coalesce(draft_id::text,''),coalesce(draft_receipt_id::text,'') FROM core.mail_import_items WHERE job_id=$1 AND ordinal>$2 ORDER BY ordinal LIMIT $3`, i.job.ID, after, limit)
+		rows, e := tx.Query(ctx, `SELECT ordinal,source_path,source_folder,original_object,envelope,flags,properties,state,delivery_id,coalesce(message_id::text,''),coalesce(receipt_id::text,''),coalesce(draft_id::text,''),coalesce(draft_receipt_id::text,''),coalesce(collection_receipt_id::text,'') FROM core.mail_import_items WHERE job_id=$1 AND ordinal>$2 ORDER BY ordinal LIMIT $3`, i.job.ID, after, limit)
 		if e != nil {
 			return e
 		}
@@ -545,7 +551,7 @@ func (i *importSession) items(ctx context.Context, after int64, limit int) ([]im
 		for rows.Next() {
 			var item importItem
 			var object, env, properties []byte
-			if e = rows.Scan(&item.Ordinal, &item.Path, &item.Folder, &object, &env, &item.Flags, &properties, &item.State, &item.Delivery, &item.Message, &item.Receipt, &item.DraftID, &item.DraftReceipt); e != nil {
+			if e = rows.Scan(&item.Ordinal, &item.Path, &item.Folder, &object, &env, &item.Flags, &properties, &item.State, &item.Delivery, &item.Message, &item.Receipt, &item.DraftID, &item.DraftReceipt, &item.CollectionReceipt); e != nil {
 				return e
 			}
 			if e = json.Unmarshal(object, &item.Object); e != nil {
@@ -576,7 +582,11 @@ func (i *importSession) importBatch(ctx context.Context, limit int) error {
 		return e
 	}
 	for _, item := range items {
-		if item.Properties["record_kind"] == "draft" && item.State != "EXCEPTION" {
+		if item.Properties["record_kind"] == "collections" && item.State != "EXCEPTION" {
+			if e = i.importCollections(ctx, item, count); e != nil {
+				return e
+			}
+		} else if item.Properties["record_kind"] == "draft" && item.State != "EXCEPTION" {
 			if e = i.importDraft(ctx, item, count); e != nil {
 				return e
 			}
@@ -638,6 +648,9 @@ func (i *importSession) importBatch(ctx context.Context, limit int) error {
 }
 
 type ImportReconciliation struct {
+	ExpectedCollections   int64  `json:"expected_collections"`
+	VerifiedCollections   int64  `json:"verified_collections"`
+	UnverifiedCollections int64  `json:"unverified_collections"`
 	Version               int    `json:"version"`
 	JobID                 string `json:"job_id"`
 	Scope                 Scope  `json:"scope"`
@@ -663,7 +676,11 @@ func (i *importSession) verifyBatch(ctx context.Context, limit int) error {
 		return e
 	}
 	for _, item := range items {
-		if item.Properties["record_kind"] == "draft" && item.State != "EXCEPTION" {
+		if item.Properties["record_kind"] == "collections" && item.State != "EXCEPTION" {
+			if e = i.verifyCollections(ctx, item); e != nil {
+				return e
+			}
+		} else if item.Properties["record_kind"] == "draft" && item.State != "EXCEPTION" {
 			if e = i.verifyDraft(ctx, item); e != nil {
 				return e
 			}
@@ -745,6 +762,12 @@ func (i *importSession) verifyBatch(ctx context.Context, limit int) error {
 		}
 		if e := tx.QueryRow(ctx, `SELECT count(*),count(*) FILTER(WHERE state='VERIFIED'),count(*) FILTER(WHERE state='EXCEPTION'),count(*) FILTER(WHERE state='PENDING'),coalesce(sum(raw_size) FILTER(WHERE state='VERIFIED'),0) FROM core.mail_import_items WHERE job_id=$1`, i.job.ID).Scan(&report.Expected, &report.Verified, &report.Exceptions, &report.Pending, &report.VerifiedBytes); e != nil {
 			return e
+		}
+		if e := tx.QueryRow(ctx, `SELECT coalesce(sum((properties->>'collection_count')::int),0),coalesce(sum((properties->>'collection_count')::int) FILTER(WHERE state='VERIFIED'),0),coalesce(sum((properties->>'collection_count')::int) FILTER(WHERE state<>'VERIFIED'),0) FROM core.mail_import_items WHERE job_id=$1 AND properties->>'record_kind'='collections'`, i.job.ID).Scan(&report.ExpectedCollections, &report.VerifiedCollections, &report.UnverifiedCollections); e != nil {
+			return e
+		}
+		if report.ExpectedCollections > 0 {
+			report.Version = 3
 		}
 		var sourceExceptions, unresolvedRetry int64
 		if e := tx.QueryRow(ctx, "SELECT count(*) FILTER(WHERE item_ordinal IS NULL),count(*) FILTER(WHERE retryable) FROM core.mail_import_exceptions WHERE job_id=$1 AND NOT resolved", i.job.ID).Scan(&sourceExceptions, &unresolvedRetry); e != nil {

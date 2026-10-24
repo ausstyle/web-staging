@@ -116,7 +116,7 @@ func TestPostgresIntegration(t *testing.T) {
  REVOKE UPDATE ON core.mail_import_jobs,core.mail_import_sources,core.mail_import_items,core.mail_import_checkpoints,core.mail_import_exceptions,core.mail_import_reconciliation FROM mail_test_worker;
  GRANT UPDATE(state,inventory_complete,updated_at) ON core.mail_import_jobs TO mail_test_worker;
  GRANT UPDATE(manifest,complete) ON core.mail_import_sources TO mail_test_worker;
- GRANT UPDATE(state,message_id,receipt_id,draft_id,draft_receipt_id,flags,envelope,properties) ON core.mail_import_items TO mail_test_worker;
+ GRANT UPDATE(state,message_id,receipt_id,draft_id,draft_receipt_id,collection_receipt_id,flags,envelope,properties) ON core.mail_import_items TO mail_test_worker;
  GRANT UPDATE(cursor,item_count,chain_sha256) ON core.mail_import_checkpoints TO mail_test_worker;
  GRANT UPDATE(code,retryable,evidence,resolved) ON core.mail_import_exceptions TO mail_test_worker;
  GRANT UPDATE(flags) ON core.memberships TO mail_test_worker;
@@ -456,6 +456,7 @@ func TestPostgresIntegration(t *testing.T) {
 	t.Run("offline_import_jobs", func(t *testing.T) { exerciseImportJobs(t, &service, admin, ctx, r.Scope) })
 	t.Run("local_inbox_http", func(t *testing.T) { exerciseLocalInbox(t, &service, ctx, scopes) })
 	t.Run("resumable_exports", func(t *testing.T) { exerciseExportJobs(t, &service, admin, ctx, r.Scope) })
+	t.Run("collection_hierarchy_portability", func(t *testing.T) { exerciseCollectionPortability(t, &service, admin, ctx) })
 	t.Run("portable_drafts_and_mapping", func(t *testing.T) { exercisePortability(t, &service, admin, ctx) })
 	t.Run("drafts_and_organization", func(t *testing.T) { exerciseEdits(t, &service, admin, ctx) })
 	t.Run("receipt_outbox_atomicity", func(t *testing.T) {

@@ -83,6 +83,7 @@ func (s *Service) ListOrganized(ctx context.Context, scope Scope, query string, 
 }
 
 type ExportItem struct {
+	Collections       *CollectionInventory  `json:"collections,omitempty"`
 	Draft             *Draft                `json:"draft,omitempty"`
 	MessageID         string                `json:"message_id"`
 	InternetMessageID string                `json:"internet_message_id"`
@@ -179,6 +180,10 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	if len(manifest.Messages) > limit {
 		return manifest, fmt.Errorf("export_requires_resumable_job_no_partial_success")
 	}
+	collection, err := snapshotCollections(ctx, tx)
+	if err != nil {
+		return manifest, err
+	}
 	drafts, err := snapshotDrafts(ctx, tx)
 	if err != nil {
 		return manifest, err
@@ -187,7 +192,7 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	for _, d := range drafts {
 		draftBytes += d.Raw.Size
 	}
-	if len(manifest.Messages)+len(drafts) > limit || draftBytes > 8<<20 {
+	if len(manifest.Messages)+len(drafts)+len(collection) > limit || draftBytes > 8<<20 {
 		return manifest, fmt.Errorf("export_requires_resumable_job_no_partial_success")
 	}
 	if len(drafts) > 0 {
@@ -195,12 +200,20 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 		manifest.CounterUnit = "archive_records_including_drafts"
 	}
 	manifest.Messages = append(manifest.Messages, drafts...)
+	if len(collection) > 0 {
+		manifest.Messages = append(collection, manifest.Messages...)
+		manifest.Version = 3
+		manifest.CounterUnit = "archive_records_including_collection_inventory"
+	}
 	tw := tar.NewWriter(output)
 	// Do not close a partial TAR on error: no final manifest/success is emitted.
 	for i := range manifest.Messages {
 		item := &manifest.Messages[i]
-		if item.Draft != nil {
+		if item.Draft != nil || item.Collections != nil {
 			raw := encoded(item.Draft)
+			if item.Collections != nil {
+				raw = encoded(item.Collections)
+			}
 			if err = tw.WriteHeader(&tar.Header{Name: item.Path, Mode: 0600, Size: int64(len(raw)), ModTime: item.ReceivedAt}); err != nil {
 				return manifest, err
 			}
