@@ -24,7 +24,7 @@ class RefuseUnsafeReplay(unittest.TestCase):
 
 class PreserveInstalledMemory(unittest.TestCase):
  def fixture(self):
-  manifest={'shared_rpc_after_private_readiness_prosrc_sha256':'reviewed04300','functions':{'sandy-api-mcp':{'before_version':23,'candidate_files':{'mcp.ts':release.digest(b'memory')}}}}
+  manifest={'shared_rpc_after_private_readiness_prosrc_sha256':'reviewed04300','functions':{'sandy-api-mcp':{'before_version':23,'candidate_files':{'mcp.ts':release.digest(b'memory'),'protocol.ts':release.digest(b'protocol')}}}}
   r=mock.Mock();r.api.side_effect=[b'{"status":"ACTIVE","verify_jwt":true,"version":23}',b'preserved bundle'];r.sql.return_value=[{'unretired':0}]
   pin=release.digest(b'reviewed memory manifest')
   return r,manifest,{'preserved_memory_release_manifest_sha256':pin,'preserved_cancellation_release_manifest_sha256':pin}
@@ -34,7 +34,7 @@ class PreserveInstalledMemory(unittest.TestCase):
   stack.enter_context(mock.patch.object(release.memory_release.MANIFEST.__class__,'read_bytes',return_value=b'reviewed memory manifest'))
   stack.enter_context(mock.patch.object(release.memory_release,'load',return_value=(m,{})))
   stack.enter_context(mock.patch.object(release.cancel_release,'load',return_value=(m,{})))
-  stack.enter_context(mock.patch.object(release,'original_sources',return_value={'mcp.ts':source}))
+  stack.enter_context(mock.patch.object(release,'original_sources',return_value={'mcp.ts':source,'protocol.ts':b'protocol'}))
   return stack
  def test_read_only_memory_and_current_shared_RPC_controls_and_complete_MCP_are_required(self):
   r,m,iap=self.fixture()
@@ -46,6 +46,20 @@ class PreserveInstalledMemory(unittest.TestCase):
   for source,unretired,error in [(b'changed',0,'preserved_memory_MCP_source_or_ingress_changed'),(b'memory',1,'private_acceptance_requires_full_retirement')]:
    r,m,iap=self.fixture();r.sql.return_value=[{'unretired':unretired}]
    with self.guards(m,source),mock.patch.object(release.memory_release,'schema_components'),mock.patch.object(release.cancel_release,'schema'),self.assertRaisesRegex(Blocked,error):release.memory_prerequisite(r,iap)
+   r.upload.assert_not_called()
+ def test_actual_post_secret_metadata24_with_two_unchanged_modules_is_acceptance_only(self):
+  r,m,iap=self.fixture();r.api.side_effect=[b'{"status":"ACTIVE","verify_jwt":true,"version":24}',b'unchanged2modulebody']
+  with self.guards(m),mock.patch.object(release.memory_release,'schema_components'),mock.patch.object(release.cancel_release,'schema'):
+   self.assertEqual(release.memory_prerequisite(r,iap,post_binding_readback=True),m)
+  # The same real propagated version must still fail the original installer.
+  r,m,iap=self.fixture();r.api.side_effect=[b'{"status":"ACTIVE","verify_jwt":true,"version":24}',b'unchanged2modulebody']
+  with self.guards(m),mock.patch.object(release.memory_release,'schema_components'),mock.patch.object(release.cancel_release,'schema'),self.assertRaisesRegex(Blocked,'preserved_memory_MCP_source_or_ingress_changed'):release.memory_prerequisite(r,iap)
+  r.upload.assert_not_called()
+ def test_post_binding_acceptance_rejects_unreviewed_version_source_and_JWT_drift(self):
+  import json
+  for version,jwt,source in [(23,True,b'memory'),(25,True,b'memory'),(24,False,b'memory'),(24,True,b'changed')]:
+   r,m,iap=self.fixture();r.api.side_effect=[json.dumps({'status':'ACTIVE','verify_jwt':jwt,'version':version}).encode(),b'body']
+   with self.guards(m,source),mock.patch.object(release.memory_release,'schema_components'),mock.patch.object(release.cancel_release,'schema'),self.assertRaisesRegex(Blocked,'preserved_memory_MCP_source_or_ingress_changed'):release.memory_prerequisite(r,iap,post_binding_readback=True)
    r.upload.assert_not_called()
  def test_changed_shared_RPC_or_acceptance_proof_stops_before_source_or_upload(self):
   for target in ['schema_components','schema']:

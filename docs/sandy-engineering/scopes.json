@@ -143,6 +143,16 @@
       "priority": "P2"
     },
     {
+      "scope_id": "SANDY-ENG-0013",
+      "title": "Sandy Accounting \u2014 Australian Accounting, Payroll and Sandy Intelligence",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0013-sandy-accounting.md",
+      "source_version": "1.0",
+      "status": "DRAFT",
+      "priority": "P2"
+    },
+    {
       "scope_id": "SANDY-ENG-0014",
       "title": "Sandy Mail Implementation and Acceptance",
       "scope_kind": "task",
