@@ -45,6 +45,8 @@ Format references: [RFC4155](https://www.rfc-editor.org/rfc/rfc4155.html), [Dove
 
 Local optional scale fixture: `MAIL_TEST_BULK_1000=1 go test -race -v ./...` stages and reconciles 1,000 synthetic MBOX messages in batches of 100. This measurement is loopback PostgreSQL/filesystem work with race instrumentation, not Cloud SQL throughput or the required 100k/1m acceptance. Set `MAIL_TEST_OBJECT_DIR` to retain fixture objects beyond the test process.
 
-## Current folder/label metadata
+## Drafts and explicit collection mapping
 
-Portable originals retain source organization metadata after migration 0006. Until explicit destination mapping exists, imports of named folders/labels finish with `COMPLETED_WITH_EXCEPTIONS` and an item-path-specific `organization_mapping_pending` exception. Source IDs confer no destination access; metadata/master bytes remain preserved. This is not claimed as a complete hierarchy restore.
+Migration 0007 extends import items with scoped `draft_id,draft_receipt_id` bindings; the later import worker additionally needs UPDATE on those columns and the existing draft/organization edit permissions. It creates no live grant. Typed portable-v2 drafts restore as unsent drafts with immutable edit receipts, original content/revision/timestamps and new destination IDs. Explicit `ImportSpec.collection_map` binds source collection IDs to existing destination IDs under the admitted job specification. Scope/kind checks and initial organization/checkpoint updates are transactional; no name-based auto-mapping or collection provisioning occurs.
+
+Missing mappings retain the source bytes/metadata and report `organization_mapping_pending` with `COMPLETED_WITH_EXCEPTIONS`. Invalid destination scope/kind fails without partial mapping. Arbitrary provider hierarchy conversion, empty collection inventory and public wizard/admission/scanner integration remain pending. [Portable format and bounds](LOCAL_INBOX.md#portable-drafts-and-destination-collections) detail compatibility, retries and MBOX limitations.

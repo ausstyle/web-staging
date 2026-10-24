@@ -50,3 +50,9 @@ Existing object create/get permissions must cover the admitted mailbox's private
 ## Migration 0006 follow-on
 
 Original-message snapshots preserve current folder/label metadata through the [local organisation contract](LOCAL_INBOX.md#portability-boundary). New exports reject mailboxes containing drafts until draft export exists; they never silently claim complete mailbox portability while omitting drafts. Old frozen jobs keep their original snapshots. No earlier canary migration or export evidence is changed.
+
+## Portable draft extension
+
+Migration 0007 permits draft restoration; existing immutable export snapshots now include unsent drafts alongside messages. Portable-v2 TAR parts carry canonical `.draft.json` records with hashes and typed manifest entries. Source changes after snapshot creation do not alter the archive. Source draft revision, timestamps, subject, recipients and plain text survive restoration exactly; imported destination IDs are new. Legacy `*_messages` JSON counters count all archive records when `counter_unit=archive_records_including_drafts`; reports also expose `expected_drafts` and `exported_drafts`. Message-only v1 snapshots remain compatible.
+
+Mapped organization preserves each message's referenced flat folders/labels. Empty collection inventory and arbitrary provider hierarchies are not yet a full-account exit solution. The bounded MBOX path explicitly rejects drafts instead of silently turning them into received/sent mail. See [draft and mapping contracts](LOCAL_INBOX.md#portable-drafts-and-destination-collections); mandatory customer authority/scanner/delivery dependencies above remain unchanged.
