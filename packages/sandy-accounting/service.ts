@@ -46,6 +46,8 @@ export const operations = {
   "accounting.ledger.journal.post": "R2",
   "accounting.ledger.journal.reverse": "R2",
   "accounting.organisations.period.lock": "R2",
+  "accounting.accounts.create": "R2",
+  "accounting.accounts.archive": "R2",
   "accounting.sales.invoice.draft": "R1",
   "accounting.payables.bill.draft": "R1",
   "accounting.documents.approve": "R2",
@@ -363,6 +365,45 @@ export class Accounting {
   async mutate(c: Context, r: Request): Promise<Row> {
     const a = r.arguments;
     switch (r.operation) {
+      case "accounting.accounts.create": {
+        exact(a, ["account_id", "name", "kind", "expected_revision"]);
+        check(
+          String(a.expected_revision) === String(c.book.revision),
+          "version_conflict",
+        );
+        check(
+          typeof a.account_id === "string" &&
+            /^[A-Za-z0-9][A-Za-z0-9_-]{0,59}$/.test(a.account_id),
+          "invalid_account_id",
+        );
+        text(a.name, "account_name", 120);
+        check(a.name.trim() === a.name, "invalid_account_name");
+        check(
+          ["asset", "liability", "equity", "revenue", "expense"].includes(
+            a.kind,
+          ),
+          "invalid_account_kind",
+        );
+        const account = (await c.tx.query(
+          "INSERT INTO accounting.accounts(tenant_id,company_id,id,name,kind,control,active) VALUES($1,$2,$3,$4,$5,NULL,true) RETURNING *",
+          [...c.scope, a.account_id, a.name, a.kind],
+        )).rows[0];
+        return { account, state: "ACTIVE" };
+      }
+      case "accounting.accounts.archive": {
+        exact(a, ["account_id", "expected_revision", "reason"]);
+        check(
+          String(a.expected_revision) === String(c.book.revision),
+          "version_conflict",
+        );
+        text(a.reason, "reason");
+        await this.account(c, a.account_id);
+        const account = (await c.tx.query(
+          "UPDATE accounting.accounts SET active=false WHERE tenant_id=$1 AND company_id=$2 AND id=$3 RETURNING *",
+          [...c.scope, a.account_id],
+        )).rows[0];
+        return { account, state: "ARCHIVED", reason: a.reason };
+      }
       case "accounting.ledger.journal.post": {
         // Subledger control accounts only change through their owning service.
         check(Array.isArray(a.lines), "journal_lines");

@@ -182,6 +182,18 @@ BEGIN
  RETURN NEW;
 END $$;
 CREATE TRIGGER unmatch_guard BEFORE INSERT ON accounting.match_reversals FOR EACH ROW EXECUTE FUNCTION accounting.guard_unmatch();
+CREATE FUNCTION accounting.guard_account() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+ IF TG_OP='DELETE' THEN RAISE EXCEPTION 'account_delete_forbidden'; END IF;
+ PERFORM 1 FROM accounting.books WHERE tenant_id=OLD.tenant_id AND company_id=OLD.company_id FOR UPDATE;
+ IF (to_jsonb(OLD)-'active')<>(to_jsonb(NEW)-'active') OR NOT OLD.active OR NEW.active THEN RAISE EXCEPTION 'account_identity_immutable'; END IF;
+ IF OLD.control IS NOT NULL THEN RAISE EXCEPTION 'protected_account'; END IF;
+ IF EXISTS(SELECT 1 FROM accounting.lines WHERE tenant_id=OLD.tenant_id AND company_id=OLD.company_id AND account_id=OLD.id)
+  OR EXISTS(SELECT 1 FROM accounting.documents d WHERE d.tenant_id=OLD.tenant_id AND d.company_id=OLD.company_id AND (d.control_account=OLD.id OR EXISTS(SELECT 1 FROM jsonb_array_elements(d.lines) l WHERE l->>'account_id'=OLD.id OR l->>'tax_account'=OLD.id)))
+  OR EXISTS(SELECT 1 FROM accounting.statements WHERE tenant_id=OLD.tenant_id AND company_id=OLD.company_id AND bank_account=OLD.id) THEN RAISE EXCEPTION 'account_in_use'; END IF;
+ RETURN NEW;
+END $$;
+CREATE TRIGGER account_guard BEFORE UPDATE OR DELETE ON accounting.accounts FOR EACH ROW EXECUTE FUNCTION accounting.guard_account();
 CREATE INDEX accounting_allocations_document ON accounting.allocations(tenant_id,company_id,document_id);
 CREATE INDEX accounting_allocations_journal ON accounting.allocations(tenant_id,company_id,journal_id);
 CREATE INDEX accounting_matches_statement ON accounting.matches(tenant_id,company_id,statement_id);
@@ -200,4 +212,5 @@ DO $$ DECLARE t text; BEGIN
 END $$;
 GRANT SELECT, INSERT ON ALL TABLES IN SCHEMA accounting TO accounting_fixture;
 GRANT UPDATE ON accounting.books, accounting.journals, accounting.documents TO accounting_fixture;
+GRANT UPDATE(active) ON accounting.accounts TO accounting_fixture;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA accounting FROM PUBLIC;

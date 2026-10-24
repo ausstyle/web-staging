@@ -343,13 +343,51 @@ test(
         )).rows[0].n,
         1,
       );
+      const chartRevision =
+        (await run("accounting.workspace.get", {})).book.revision;
+      const chartChanges = await Promise.allSettled(
+        ["expense-a", "expense-b"].map((account_id) =>
+          run("accounting.accounts.create", {
+            account_id,
+            name: "Synthetic expense",
+            kind: "expense",
+            expected_revision: chartRevision,
+          })
+        ),
+      );
+      assert.equal(
+        chartChanges.filter((r) => r.status === "fulfilled").length,
+        1,
+      );
+      assert.equal(
+        chartChanges.filter((r) => r.status === "rejected").length,
+        1,
+      );
+      const chartAccount = chartChanges.find((r) =>
+        r.status === "fulfilled"
+      )!.value.account;
+      await run("accounting.accounts.archive", {
+        account_id: chartAccount.id,
+        expected_revision:
+          (await run("accounting.workspace.get", {})).book.revision,
+        reason: "Synthetic unused account",
+      });
+      await assert.rejects(
+        run("accounting.accounts.archive", {
+          account_id: "bank",
+          expected_revision:
+            (await run("accounting.workspace.get", {})).book.revision,
+          reason: "Protected control test",
+        }),
+        /protected_account/,
+      );
       const audit = await app.execute("synthetic", {
         operation: "accounting.audit.verify",
         contract_version: "1",
         company_id: "c1",
         arguments: {},
       });
-      assert.equal(audit.events, 107);
+      assert.equal(audit.events, 109);
       assert.equal(audit.valid, true);
     } finally {
       await pool?.end();

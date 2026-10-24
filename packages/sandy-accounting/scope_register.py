@@ -43,6 +43,10 @@ partial={
  'F175':'Posted journal list; full journal lifecycle tabs/filtering pending.',
  'F178':'Effective date/narration; tax treatment and auto-reversal schedule pending.',
  'F182':'Evidence-backed posting through service; full draft editor pending.',
+ 'F186':'Scoped ledger accounts and document coding; richer COA configuration pending.',
+ 'F187':'Five account classes and archived-state browsing; full filtering/exports pending.',
+ 'F188':'Create classified accounts through guarded service/UI; import/export/print/tax defaults pending.',
+ 'F189':'Protected/in-use account archival denied, classification/deletion immutable; full adviser-controlled lifecycle pending.',
  'F197':'Append-only command audit chain; shared audit integration pending.',
  'F207':'Seven basic deterministic reports; entire 87-report contract remains open.',
  'F208':'Exact journal-line contributors; live file ACL integration pending.',
@@ -58,8 +62,12 @@ for f in features:
         if f['id'] in ['F045','F046','F136']:
             f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
             f['test_paths']+=['packages/sandy-accounting/corrections.test.ts','packages/sandy-accounting/temporal.test.ts','packages/sandy-accounting/browser_test.py']
+        if f['id'] in ['F186','F187','F188','F189']:
+            f['delivery_paths']+=['packages/sandy-accounting/workspace.html']
+            f['test_paths']+=['packages/sandy-accounting/accounts.test.ts','packages/sandy-accounting/browser_test.py']
         n=int(f['id'][1:])
         f['operations']=['accounting.reporting.run','accounting.workspace.get'] if n in [13,153,175,207,212] else ['accounting.sales.invoice.draft'] if n in [36,38,40] else ['accounting.documents.approve'] if n in [42,132] else ['accounting.documents.void','accounting.documents.payment.reverse'] if n==45 else ['accounting.documents.payment.record'] if n in [46,136] else ['accounting.payables.bill.draft'] if n in [120,126,128,131] else ['accounting.reporting.drilldown'] if n in [155,208] else ['accounting.banking.statements.import'] if n in [158,160] else ['accounting.intelligence.matches.propose','accounting.banking.reconcile.apply','accounting.banking.reconcile.reverse'] if n in [164,167] else ['accounting.audit.verify'] if n==197 else ['accounting.organisations.period.lock'] if n==272 else ['accounting.ledger.journal.post','accounting.ledger.journal.reverse']
+        if 186<=n<=189:f['operations']=['accounting.accounts.create','accounting.accounts.archive','accounting.workspace.get']
 reports=[]
 b=text.split('# Appendix B —',1)[1].split('# Appendix C —',1)[0]
 category=''

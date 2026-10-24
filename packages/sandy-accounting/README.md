@@ -34,6 +34,12 @@ balance oracle and does not claim regulatory coverage.
 
 ## Implemented foundation
 
+- Chart-of-accounts creation and archival with immutable classifications,
+  optimistic review revision, protected controls and a database guard against
+  archiving any account referenced by drafts, postings or statement history.
+  The workspace browses active/archived accounts and codes invoice/bill lines
+  to active revenue/expense accounts. Tax defaults and full COA import/export
+  remain open.
 - TypeScript application service with exact decimal strings / BigInt
   calculations and NUMERIC PostgreSQL storage. Input precision is rejected
   rather than silently rounded; FX is a sourced rational with explicit
@@ -96,7 +102,7 @@ contracts without dual-write loss.
 
 ## Known limits
 
-No customer-ready onboarding, COA editing, cash-basis reporting, tax calculation
+No customer-ready onboarding, full COA editing/import/export, cash-basis reporting, tax calculation
 rule packs, payroll, STP/BAS/SuperStream submission, real bank feed, payment
 rail, invoice sending, full credit/refund/recurring lifecycle, tracked
 inventory, assets, projects, lossless migration/export or full report catalogue.

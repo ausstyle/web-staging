@@ -2964,13 +2964,25 @@
       "required_outcome": "Classify transactions using ledger accounts.",
       "module": "Chart, fixed assets & evidence",
       "work_package": "WP1",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/accounts.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Scoped ledger accounts and document coding; richer COA configuration pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.accounts.create",
+        "accounting.accounts.archive",
+        "accounting.workspace.get"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -2979,13 +2991,25 @@
       "required_outcome": "Browse assets, liabilities, equity, expenses, revenue and archived accounts.",
       "module": "Chart, fixed assets & evidence",
       "work_package": "WP1",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/accounts.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Five account classes and archived-state browsing; full filtering/exports pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.accounts.create",
+        "accounting.accounts.archive",
+        "accounting.workspace.get"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -2994,13 +3018,25 @@
       "required_outcome": "Add accounts, import/export, print and change selected tax rates.",
       "module": "Chart, fixed assets & evidence",
       "work_package": "WP1",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/accounts.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Create classified accounts through guarded service/UI; import/export/print/tax defaults pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.accounts.create",
+        "accounting.accounts.archive",
+        "accounting.workspace.get"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {
@@ -3009,13 +3045,25 @@
       "required_outcome": "Restrict deletion or archiving of protected/in-use accounts.",
       "module": "Chart, fixed assets & evidence",
       "work_package": "WP1",
-      "status": "NOT_STARTED",
-      "delivery_paths": [],
-      "test_paths": [],
-      "remaining": "Full function acceptance pending.",
+      "status": "CODE_PRESENT_UNVERIFIED",
+      "delivery_paths": [
+        "packages/sandy-accounting/service.ts",
+        "packages/sandy-accounting/schema.sql",
+        "packages/sandy-accounting/workspace.html"
+      ],
+      "test_paths": [
+        "packages/sandy-accounting/core.test.ts",
+        "packages/sandy-accounting/accounts.test.ts",
+        "packages/sandy-accounting/browser_test.py"
+      ],
+      "remaining": "Protected/in-use account archival denied, classification/deletion immutable; full adviser-controlled lifecycle pending.",
       "deployed": false,
       "independently_accepted": false,
-      "operations": [],
+      "operations": [
+        "accounting.accounts.create",
+        "accounting.accounts.archive",
+        "accounting.workspace.get"
+      ],
       "canonical_registry_state": "NOT_INSTALLED"
     },
     {

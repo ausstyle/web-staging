@@ -72,17 +72,33 @@ with tempfile.TemporaryDirectory(prefix='accounting-browser-') as books:
             assert scenario['state']=='FORECAST' and len(scenario['buckets'])==13
             assert scenario['buckets'][-1]['closing']=='1100.00'
             assert scenario['ledger_mutated'] is False
+            # Create a real ledger classification, retire an unused account, and code a bill.
+            page.get_by_role('button',name='Controls & audit',exact=True).click()
+            for code, name in [('office','Office supplies'),('unused','Unused synthetic expense')]:
+                page.locator('#account-code').fill(code)
+                page.locator('#account-name').fill(name)
+                page.get_by_role('button',name='Create account',exact=True).click();saved()
+            unused=page.locator('[data-account-code="unused"]')
+            unused.locator('input[name="reason"]').fill('Synthetic unused account')
+            unused.get_by_role('button',name='Archive account',exact=True).click();saved()
+            expect(unused).to_contain_text('Archived')
             # Supplier lifecycle uses only the workspace controls, including corrections.
             page.get_by_role('button',name='Sales & purchases',exact=True).click()
             page.locator('#kind').select_option('bill')
             page.locator('#number').fill('SUPPLIER-001')
             page.locator('#contact').fill('Synthetic supplier')
+            page.locator('#coding-account').select_option('office')
             page.get_by_role('button',name='Save draft',exact=True).click();saved()
             bill = page.locator('[data-document-number="SUPPLIER-001"]')
             bill.get_by_role('button',name='Approve SUPPLIER-001',exact=True).click();saved()
             bill.locator('input[name="amount"]').fill('40.00')
             bill.get_by_role('button',name='Record payment',exact=True).click();saved()
             expect(bill).to_contain_text('remaining $60.00')
+            page.get_by_role('button',name='Controls & audit',exact=True).click()
+            office=page.locator('[data-account-code="office"]')
+            office.locator('input[name="reason"]').fill('Attempt to archive used account')
+            office.get_by_role('button',name='Archive account',exact=True).click()
+            expect(page.locator('#status')).to_have_text('account_in_use')
             page.get_by_role('button',name='Banking',exact=True).click()
             page.locator('#source-key').fill('SUPPLIER-DEBIT')
             page.locator('#statement-amount').fill('-40.00')
