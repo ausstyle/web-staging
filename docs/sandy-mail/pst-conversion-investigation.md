@@ -14,3 +14,24 @@ The candidate worker must read a hash-pinned source mounted read-only, run witho
 For an eventual readpst trial, review the `-e -j 0` output first. Do not use overwrite (`-w`), attachment filtering (`-a`), RTF attachment omission (`-b`), deletion recovery (`-D`) or type filtering as shortcuts to successful reconciliation. Exit code zero and an output-file count are insufficient: compare the known source inventory and attachments, prove empty hierarchy retention, exercise interruption/corruption, and run the resulting EMLs through the existing quarantined import/reconciliation path. Tool-generated names need explicit mapping; the new portable collection inventory does not automatically certify a PST converter's hierarchy.
 
 Until those fixture tests and a pinned sandboxed build pass, `ImportSpec` continues to reject PST/OST. No converter adapter or production dependency was added. The current completed capability is native portable collection/draft/message round-trip, not PST conversion or Outlook compatibility.
+
+## Synthetic fixture feasibility follow-up
+
+Reviewed Microsoft's current `outlook-pst-rs` source at
+[`cfb721daee538acc50d2bad6faac5ce724f6037d`](https://github.com/microsoft/outlook-pst-rs/tree/cfb721daee538acc50d2bad6faac5ce724f6037d).
+Its [PST crate README](https://github.com/microsoft/outlook-pst-rs/blob/cfb721daee538acc50d2bad6faac5ce724f6037d/crates/pst/README.md)
+explicitly excludes full file modification; crash recovery/AMap rebuilding is not
+a message writer. The source tree includes `examples/Empty.pst`, but no reviewed
+creation recipe proving a nonempty synthetic mailbox and its complete fields.
+The filename alone is insufficient provenance; that binary was not imported or
+used as a conversion pass. No Outlook/Windows mailbox writer is available in this
+Linux environment. No arbitrary sample mailbox was downloaded and no unsupported
+converter was installed.
+
+Result: a provenance-verifiable populated PST fixture was **not obtained**. The
+remaining practical route is an existing licensed offline Outlook environment or
+a separately reviewed writer that creates a fresh store solely from the committed
+synthetic MIME fixture, accompanied by its creation script/version, hashes, item
+inventory and folder/recipient/attachment expectations. No account connection,
+real mailbox, send, paid licence or converter support claim is inferred. Native
+EML/MIME, JSON, TAR/ZIP and MBOXrd coverage remains separate from unverified PST/OST.

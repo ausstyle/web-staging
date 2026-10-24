@@ -140,4 +140,54 @@ Source `733bb820ff95fcb8bfefa2543f06c18fc4c88462` passed **112 race-checked Go t
 
 [Retained round-trip](evidence/hierarchy-roundtrip.json) and [post-process readback](evidence/hierarchy-after-exit.json) identify import job `bb90b982-df27-40e3-9af5-d4c6a4c02e3c`: seven verified collections, three parent edges, two verified archive records and zero exceptions. Exactly one collection restore receipt `84233c1e-d540-458e-941a-b54434d44cf8` survived interrupted acknowledgement. The independent process re-read every source item, original MIME, attachment and reconciliation object by hash; it was still run by the implementing agent, so independent acceptance remains false. Retained objects are at `/workspace/sandy-mail-evidence/hierarchy-roundtrip-objects`, with local database port 55442; none are Cloud SQL/GCS acceptance.
 
-Scope reconciliation: native draft JSON round-trip is verified, but §6.1 also requires an interoperable RFC822/MIME representation for locally composed drafts. That output adapter remains an independent source task; native-v2/v3 success is not full provider-exit or Outlook/PST acceptance.
+Scope reconciliation: native draft JSON round-trip is verified, but §6.1 also requires an interoperable RFC822/MIME representation for locally composed drafts. The subsequent v4 increment below implements that adapter; native-v2/v3 success alone was not full provider-exit or Outlook/PST acceptance.
+
+
+## Interoperable unsent draft MIME
+
+Portable v4 and migration 0009 retain byte-exact rich MIME and generate an explicit
+MIME representation for composed text. Per-record accounting identifies preserved
+originals versus generated headers/encoding/date and absent sender/Message-ID.
+Original MIME recipients, folded/repeated headers, ISO-8859-1 quoted-printable,
+UTF-8 HTML and binary attachment bytes are exercised with authored `.invalid`
+fixtures. Draft restoration remains separate from received mail and sending.
+The [format/rollback contract](../../services/sandy-mail/EXPORTS.md#portable-v4-draft-mime)
+records exact limits and legacy compatibility. Source/local acceptance remains
+separate from Cloud SQL/GCS execution and independent acceptance.
+
+Source `10cb2afbc12655fadb0705631c35de2d9504c7ff` passed **122 race-checked Go
+test/subtest cases**, vet and five release-runner tests. The [full test log](evidence/mime-final-tests.txt)
+covers migration replay/checksums, three MIME-save interruption boundaries, four
+MIME-import boundaries, frozen resumable export, legacy JSON restoration, tenant
+isolation, tampering and old-writer refusal. The [populated clone upgrade](evidence/mime-upgrade.json)
+preserved 50 drafts, 224 collections, 298 import items, 420 inbound receipts and
+preexisting draft-content/edit-receipt checksums while applying 0009 twice safely.
+
+[Retained round-trip](evidence/mime-roundtrip.json) identifies import job
+`342e63b9-5cad-4428-8107-939cf3c871d3`, draft
+`064e2dd2-b2d8-42bc-ab93-92ea3460ec07` and restore receipt
+`1b9c0f91-54fc-40d8-bd19-392fe62563f8`: one verified record, zero exceptions,
+1304 original bytes. A [separate Python/psql readback](evidence/mime-after-exit.json)
+verified original/current MIME, the immutable reconciliation object, exactly one
+restore receipt and zero received messages after the test process exited. Python's
+standard-library MIME parser also decoded all six recipient fields, repeated
+headers, the ISO-8859-1 text, UTF-8 attachment filename, 14 binary attachment bytes
+and generated mixed-line-ending text. The later customer edit and original both
+survived. This is cross-implementation local evidence, not independent human or
+Outlook/provider acceptance. Objects remain under
+`/workspace/sandy-mail-evidence/mime-roundtrip-objects`, PostgreSQL on loopback
+55444. The Google canary binary remains SHA256
+`a796e5406ab16a26f9226b43fad6f4a4784aa6a284a0b28ad854cb37bea57700`.
+
+Follow-up test source `6d577a9` passed the targeted race suite after reconciling
+main: [MIME loss/recovery log](evidence/mime-loss-tests.txt). A missing original
+produces one explicit excluded draft and `COMPLETED_WITH_EXCEPTIONS`; a transient
+read outage resumes the same frozen snapshot and retains a resolved exception.
+No source object was deleted to simulate these failures.
+
+Final source review caught the MBOX visitor's old JSON-only draft discriminator.
+Source `07b4204` now refuses both JSON and MIME draft records before conversion;
+a rich-MIME regression checks the exact error and zero emitted bytes. The
+[reviewed full race suite](evidence/mime-reviewed-tests.txt) passed **123 Go
+test/subtest cases**. Earlier retained round-trip evidence still describes its
+original source pin; neither its objects nor the Google canary were rewritten.

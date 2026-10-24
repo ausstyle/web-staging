@@ -294,7 +294,7 @@ func exerciseEdits(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Contex
 		}
 		var archive bytes.Buffer
 		manifest, err := s.ExportMailbox(ctx, scope, &archive, 100)
-		if err != nil || manifest.Version != 3 || archive.Len() == 0 {
+		if err != nil || manifest.Version != 4 || archive.Len() == 0 {
 			t.Fatal("draft silently omitted from complete export")
 		}
 		c, err := s.connection(ctx)

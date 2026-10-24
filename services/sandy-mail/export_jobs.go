@@ -148,7 +148,7 @@ func (s *Service) CreateExport(ctx context.Context, scope Scope, spec ExportSpec
 	if err = tx.QueryRow(ctx, "SELECT (SELECT count(*) FROM core.messages),(SELECT count(*) FROM core.ingestions WHERE state='pending')").Scan(&job.Expected, &job.PendingIngestions); err != nil {
 		return job, err
 	}
-	drafts, err := snapshotDrafts(ctx, tx)
+	drafts, err := s.snapshotDrafts(ctx, tx, scope)
 	if err != nil {
 		return job, err
 	}
@@ -321,6 +321,9 @@ func (e *exportSession) readOriginal(ctx context.Context, item ExportItem) ([]by
 		}
 		return raw, nil
 	}
+	if item.DraftMIME != nil {
+		return e.service.readDraftExport(ctx, e.scope, item)
+	}
 	if item.Draft != nil {
 		raw := encoded(item.Draft)
 		if !validPortableDraft(*item.Draft) || item.Path != "drafts/"+item.Draft.DraftID+".draft.json" || digest(raw) != item.Raw.SHA256 || int64(len(raw)) != item.Raw.Size {
@@ -406,12 +409,20 @@ func (e *exportSession) build(ctx context.Context) error {
 		if _, err = tw.Write(raw); err != nil {
 			return err
 		}
-		if entry.item.Draft != nil && manifest.Version < 2 {
-			manifest.Version = 2
-			manifest.CounterUnit = "archive_records_including_drafts"
+		if entry.item.Draft != nil {
+			if entry.item.DraftMIME != nil {
+				manifest.Version = 4
+			} else if manifest.Version < 2 {
+				manifest.Version = 2
+			}
+			if e.job.ExpectedCollections == 0 {
+				manifest.CounterUnit = "archive_records_including_drafts"
+			}
 		}
 		if entry.item.Collections != nil {
-			manifest.Version = 3
+			if manifest.Version < 3 {
+				manifest.Version = 3
+			}
 			manifest.CounterUnit = "archive_records_including_collection_inventory"
 		}
 		manifest.Messages = append(manifest.Messages, entry.item)

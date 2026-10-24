@@ -31,8 +31,8 @@ func validPortableDraft(d Draft) bool {
 	}
 	return true
 }
-func snapshotDrafts(ctx context.Context, tx pgx.Tx) ([]ExportItem, error) {
-	rows, err := tx.Query(ctx, `SELECT draft_id::text,revision,subject,recipients,body_text,updated_at,created_at FROM core.mail_drafts ORDER BY draft_id LIMIT 1001`)
+func (s *Service) snapshotDrafts(ctx context.Context, tx pgx.Tx, scope Scope) ([]ExportItem, error) {
+	rows, err := tx.Query(ctx, `SELECT draft_id::text,revision,subject,recipients,body_text,updated_at,created_at,mime_original FROM core.mail_drafts ORDER BY draft_id LIMIT 1001`)
 	if err != nil {
 		return nil, err
 	}
@@ -40,14 +40,17 @@ func snapshotDrafts(ctx context.Context, tx pgx.Tx) ([]ExportItem, error) {
 	out := []ExportItem{}
 	for rows.Next() {
 		var d Draft
-		if err = rows.Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.Text, &d.UpdatedAt, &d.CreatedAt); err != nil {
+		if err = rows.Scan(&d.DraftID, &d.Version, &d.Subject, &d.To, &d.Text, &d.UpdatedAt, &d.CreatedAt, &d.MIME); err != nil {
 			return nil, err
 		}
 		if !validPortableDraft(d) {
 			return nil, ErrIntegrity
 		}
-		raw := encoded(d)
-		out = append(out, ExportItem{Draft: &d, MessageID: d.DraftID, Subject: d.Subject, Path: "drafts/" + d.DraftID + ".draft.json", ReceivedAt: d.UpdatedAt, Raw: Object{SHA256: digest(raw), Size: int64(len(raw))}})
+		item, err := draftMIMESnapshot(scope, d)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, item)
 	}
 	if len(out) > 1000 {
 		return nil, ErrEditLimit
@@ -63,9 +66,9 @@ func (i *importSession) importDraft(ctx context.Context, item importItem, count 
 	if err != nil {
 		return err
 	}
-	var d Draft
-	if json.Unmarshal(raw, &d) != nil || !validPortableDraft(d) {
-		return ErrIntegrity
+	d, err := i.portableDraft(item, raw)
+	if err != nil {
+		return err
 	}
 	dest := portableID("draft:" + i.job.ID + ":" + item.Path)
 	receipt, err := i.service.applyEdit(ctx, i.scope, EditIdentity{"import:" + i.job.ID, portableID("draft-receipt:" + item.Path)}, "mail.drafts.restore", d, func(tx pgx.Tx) (string, int64, error) {
@@ -79,7 +82,7 @@ func (i *importSession) importDraft(ctx context.Context, item importItem, count 
 		if n >= 1000 {
 			return "", 0, ErrEditLimit
 		}
-		_, err := tx.Exec(ctx, `INSERT INTO core.mail_drafts(tenant_id,account_id,mailbox_id,draft_id,subject,recipients,body_text,revision,created_at,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, i.scope.Tenant, i.scope.Account, i.scope.Mailbox, dest, d.Subject, d.To, d.Text, d.Version, d.CreatedAt, d.UpdatedAt)
+		_, err := tx.Exec(ctx, `INSERT INTO core.mail_drafts(tenant_id,account_id,mailbox_id,draft_id,subject,recipients,body_text,revision,created_at,updated_at,mime_original) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, i.scope.Tenant, i.scope.Account, i.scope.Mailbox, dest, d.Subject, d.To, d.Text, d.Version, d.CreatedAt, d.UpdatedAt, d.MIME)
 		return dest, d.Version, err
 	})
 	if err != nil {
@@ -103,9 +106,9 @@ func (i *importSession) verifyDraft(ctx context.Context, item importItem) error 
 	if err != nil {
 		return err
 	}
-	var source Draft
-	if json.Unmarshal(raw, &source) != nil || !validPortableDraft(source) {
-		return ErrIntegrity
+	source, err := i.portableDraft(item, raw)
+	if err != nil {
+		return err
 	}
 	dest, err := i.service.GetDraft(ctx, i.scope, item.DraftID)
 	if err != nil {

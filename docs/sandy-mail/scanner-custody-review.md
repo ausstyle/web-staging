@@ -1,8 +1,8 @@
 # Mail review of Runtime scanner/custody proposal
 
-Reviewed PR #303 at `ab2cfa4fb29fc5ba72a72fb77c0665fd1181ae55` against Mail v1.0 §§3–6 and the current Mail Go/PostgreSQL/GCS implementation. This is a compatibility review, not installed trust, a release approval or a provider acceptance claim. The Google canary at `a135eb6` is unchanged and does not depend on this proposal.
+Reviewed PR #303 at `cd6f6cf659e924bd0c9090445a7794ae122746ab` against Mail v1.0 §§3–6 and the current Mail Go/PostgreSQL/GCS implementation. This is a compatibility review, not installed trust, a release approval or a provider acceptance claim. The Google canary at `a135eb6` is unchanged and does not depend on this proposal.
 
-The proposal's signed generation-bound receipts, terminal claims, current-authority checks and unknown-commit reconciliation are useful shared foundations. Mail should consume the canonical authority instead of introducing another scanner key store or claim journal. The reviewed `README.md`, `attestation.ts`, `journal.ts`, `schema.sql` and seven source tests remain on Runtime's draft branch; Mail does not import or deploy them.
+The proposal's signed generation-bound receipts, terminal claims, current-authority checks and unknown-commit reconciliation are useful shared foundations. Mail should consume the canonical authority instead of introducing another scanner key store or claim journal. The reviewed `README.md`, `attestation.ts`, `journal.ts`, `schema.sql` plus complete lock-plan/reference adapters and tests remain on Runtime's draft branch; Mail does not import or deploy them.
 
 | Integration requirement | Exact issue at the reviewed source | Owner / needed deliverable |
 | --- | --- | --- |
@@ -13,6 +13,17 @@ The proposal's signed generation-bound receipts, terminal claims, current-author
 | Size and lease limits | The proposed API path retains 8 MiB, 1 MiB chunks and a 30-second claim; scan validity is at most 15 minutes. Mail allows 25 MiB MIME and bounded 100 MiB archive parts. Import/export jobs outlive either lease. | API/Cloud: approved bounded per-part effects and fresh admissions/receipts; explicit oversize refusal until supported. No silent truncation, claim renewal/reset or lease reuse across consumers. |
 | Scanner identity and verdict | An attestation binds issuer/release/trust revision, file/generation/size/hash, actor/customer/admission/artifact/context and validity. No actual trusted Mail scanning workload or release is established. | Runtime/security owner: existing scanner workload and protected trust lifecycle. Installing keys/trust or new access remains an exact security action; local test keys are never sufficient. |
 | Recovery | `acquire` is INSERT-only; claimed/abandoned identities are not available for retry. Commit-unknown uses `reconcile`, and post-expiry status requires separate current authorization and returns no handle/proof. | API/Runtime: real existing status route/authority and consumer receipts. Mail must preserve ambiguous state and reconcile; never restream/reseal automatically. |
-| Acceptance | PGlite serializes the proposal tests; no real scanner, immutable provider read, multi-session revocation race or Mail delivery effect is proven. | Joint staging tests with approved identities/targets after compatibility resolution. |
+| Acceptance | Runtime now reports seven isolated tests and five real PostgreSQL multi-connection scenarios (claim/lost acknowledgement, revocation, file upgrades, deadlock and canonical reference binding). Those are Runtime SQL evidence; no real Mail scanner, provider read or Mail delivery effect is proven. | Joint staging tests with approved identities/targets after compatibility resolution. |
 
 Current behavior remains fail-closed: imported originals and attachments stay quarantined, the local reader renders text only and attachment downloads are unavailable. A future clean scan must not mutate original bytes, replace an ingestion receipt, confer general mailbox access or imply external delivery. No shared schema, trust entry, key, grant, credential, network route or live security flag was changed during this review.
+
+At this pin, `lockCustodyPlan` requires the complete globally ordered resource set
+before row locks; late expansion and concurrent initialization fail. Every real
+session/company/scanner revoker must participate, then canonical rows are re-read.
+The new `CloudScanReferenceOwner.lock` loader checks the actual stored Cloud intent
+and Cloud-owned digest in one pinned transaction, with an immutable shared reference
+and default-deny reads. This closes the earlier *Cloud reference-loader source*
+gap; it does not establish Mail universal-file identities or make Cloud SQL and
+internal Supabase one transaction. Mail must receive a reviewed cross-service
+commit/revocation/reconciliation contract from API/Runtime before activation.
+No Mail copy of the scanner trust journal, keys or lock authority was added.

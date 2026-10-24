@@ -19,15 +19,17 @@ const MaxArchiveBytes int64 = 100 << 20
 const MaxArchiveEntries = 1001 // 1,000 records plus the portable manifest
 
 type ArchiveItem struct {
-	Collections   *CollectionInventory `json:"collections,omitempty"`
-	Draft         *Draft               `json:"draft,omitempty"`
-	Path          string               `json:"path"`
-	Folder        string               `json:"folder"`
-	Size          int64                `json:"size"`
-	SHA256        string               `json:"sha256"`
-	SourceTime    time.Time            `json:"source_time"`
-	Flags         []string             `json:"flags"`
-	UnmappedFlags string               `json:"unmapped_flags,omitempty"`
+	MIMEDraft      bool `json:"mime_draft,omitempty"`
+	mimeProjection *Draft
+	Collections    *CollectionInventory `json:"collections,omitempty"`
+	Draft          *Draft               `json:"draft,omitempty"`
+	Path           string               `json:"path"`
+	Folder         string               `json:"folder"`
+	Size           int64                `json:"size"`
+	SHA256         string               `json:"sha256"`
+	SourceTime     time.Time            `json:"source_time"`
+	Flags          []string             `json:"flags"`
+	UnmappedFlags  string               `json:"unmapped_flags,omitempty"`
 }
 type ArchiveException struct {
 	Path string `json:"path"`
@@ -93,7 +95,7 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 	}
 	if name == "manifest.json" {
 		var manifest ExportManifest
-		if err = json.Unmarshal(raw, &manifest); err != nil || (manifest.Version != 1 && manifest.Version != 2 && manifest.Version != 3) {
+		if err = json.Unmarshal(raw, &manifest); err != nil || (manifest.Version != 1 && manifest.Version != 2 && manifest.Version != 3 && manifest.Version != 4) {
 			a.exception(name, "invalid_portable_manifest")
 			return nil
 		}
@@ -123,11 +125,28 @@ func (a *archiveInspector) entry(name string, size int64, modified time.Time, di
 	}
 	if strings.HasPrefix(name, "drafts/") && strings.HasSuffix(name, ".draft.json") {
 		var d Draft
-		if json.Unmarshal(raw, &d) != nil || !validPortableDraft(d) || name != "drafts/"+d.DraftID+".draft.json" || string(encoded(d)) != string(raw) {
+		if json.Unmarshal(raw, &d) != nil || !validPortableDraft(d) || d.MIME != nil || name != "drafts/"+d.DraftID+".draft.json" || string(encoded(d)) != string(raw) {
 			a.exception(name, "invalid_portable_draft")
 			return nil
 		}
 		item.Draft = &d
+		a.preview.Items = append(a.preview.Items, item)
+		if a.visit != nil {
+			if err = a.visit(item, raw); err != nil {
+				return fmt.Errorf("archive_visitor_failed")
+			}
+		}
+		return nil
+	}
+	if strings.HasPrefix(name, "drafts/") && strings.HasSuffix(name, ".draft.eml") {
+		id := strings.TrimSuffix(strings.TrimPrefix(name, "drafts/"), ".draft.eml")
+		projection, err := mimeDraftProjection(raw)
+		if err != nil || !idPattern.MatchString(id) {
+			a.exception(name, "invalid_portable_draft")
+			return nil
+		}
+		item.MIMEDraft = true
+		item.mimeProjection = &projection
 		a.preview.Items = append(a.preview.Items, item)
 		if a.visit != nil {
 			if err = a.visit(item, raw); err != nil {
@@ -191,7 +210,34 @@ func (a *archiveInspector) finish(err error) (ArchivePreview, error) {
 		matched := map[string]bool{}
 		for _, i := range m.Messages {
 			found, ok := actual[i.Path]
-			if !ok || matched[i.Path] || found.SHA256 != i.Raw.SHA256 || found.Size != i.Raw.Size || (found.Collections != nil) != (i.Collections != nil) || (i.Collections != nil && (m.Version != 3 || string(encoded(found.Collections)) != string(encoded(i.Collections)))) || (found.Draft != nil) != (i.Draft != nil) || (i.Draft != nil && (m.Version < 2 || string(encoded(found.Draft)) != string(encoded(i.Draft)))) {
+			if found.MIMEDraft {
+				valid := m.Version == 4 && i.Draft != nil && i.DraftMIME != nil
+				if valid {
+					d := *i.Draft
+					p := found.mimeProjection
+					valid = validPortableDraft(d) && i.Path == "drafts/"+d.DraftID+".draft.eml" && p != nil && p.Subject == d.Subject && p.Text == d.Text && string(encoded(p.To)) == string(encoded(d.To)) && string(encoded(i.DraftMIME)) == string(encoded(draftAccounting(d)))
+					if valid && d.MIME == nil {
+						raw, e := GenerateDraftMIME(d)
+						valid = e == nil && digest(raw) == found.SHA256 && int64(len(raw)) == found.Size
+					}
+					if valid && d.MIME != nil {
+						valid = d.MIME.SHA256 == found.SHA256 && d.MIME.Size == found.Size
+					}
+				}
+				if !valid {
+					a.exception(i.Path, "portable_manifest_draft_mime_mismatch")
+				} else {
+					found.Draft = i.Draft
+					for n := range a.preview.Items {
+						if a.preview.Items[n].Path == i.Path {
+							a.preview.Items[n].Draft = i.Draft
+						}
+					}
+				}
+			} else if i.DraftMIME != nil {
+				a.exception(i.Path, "portable_manifest_draft_mime_mismatch")
+			}
+			if !ok || matched[i.Path] || found.SHA256 != i.Raw.SHA256 || found.Size != i.Raw.Size || (found.Collections != nil) != (i.Collections != nil) || (i.Collections != nil && (m.Version < 3 || string(encoded(found.Collections)) != string(encoded(i.Collections)))) || (found.Draft != nil) != (i.Draft != nil) || (i.Draft != nil && (m.Version < 2 || string(encoded(found.Draft)) != string(encoded(i.Draft)))) {
 				a.exception(i.Path, "portable_manifest_integrity_mismatch")
 			}
 			matched[i.Path] = true
@@ -205,7 +251,7 @@ func (a *archiveInspector) finish(err error) (ArchivePreview, error) {
 	}
 	if a.preview.PortableMetadata == nil {
 		for _, item := range a.preview.Items {
-			if item.Draft != nil || item.Collections != nil {
+			if item.Draft != nil || item.Collections != nil || item.MIMEDraft {
 				a.exception(item.Path, "portable_manifest_required_for_draft")
 			}
 		}

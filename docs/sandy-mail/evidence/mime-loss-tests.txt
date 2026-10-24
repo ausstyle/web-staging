@@ -1,0 +1,25 @@
+=== RUN   TestPostgresIntegration
+    ingest_test.go:167: first-email receipt=0d7780b4-d8ba-4793-a6fe-369396fd0ec9 message=dc1be38d-7f31-4ed4-89aa-e4dd891cb088 sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244 bytes=1101
+=== RUN   TestPostgresIntegration/draft_mime_portability
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_save_atomicity_recovery_and_isolation
+=== RUN   TestPostgresIntegration/draft_mime_portability/draft_mime_manifest_loss_accounting_and_tamper
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_before_commit
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_after_commit
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_after_draft_restore
+=== RUN   TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_before_item_commit
+=== RUN   TestPostgresIntegration/draft_mime_portability/missing_mime_original_is_accounted_and_transient_reads_resume
+=== RUN   TestPostgresIntegration/draft_mime_portability/legacy_json_drafts_remain_importable
+=== RUN   TestPostgresIntegration/draft_mime_portability/resumable_mime_export_frozen_generation
+--- PASS: TestPostgresIntegration (2.03s)
+    --- PASS: TestPostgresIntegration/draft_mime_portability (1.94s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_save_atomicity_recovery_and_isolation (0.06s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/draft_mime_manifest_loss_accounting_and_tamper (0.01s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_before_commit (0.28s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_edit_after_commit (0.29s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_after_draft_restore (0.30s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/mime_roundtrip_recovery_import_before_item_commit (0.25s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/missing_mime_original_is_accounted_and_transient_reads_resume (0.35s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/legacy_json_drafts_remain_importable (0.19s)
+        --- PASS: TestPostgresIntegration/draft_mime_portability/resumable_mime_export_frozen_generation (0.17s)
+PASS
+ok  	github.com/ausstyle/web-staging/services/sandy-mail	3.059s

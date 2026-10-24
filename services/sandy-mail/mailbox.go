@@ -83,6 +83,7 @@ func (s *Service) ListOrganized(ctx context.Context, scope Scope, query string, 
 }
 
 type ExportItem struct {
+	DraftMIME         *DraftMIMEAccounting  `json:"draft_mime,omitempty"`
 	Collections       *CollectionInventory  `json:"collections,omitempty"`
 	Draft             *Draft                `json:"draft,omitempty"`
 	MessageID         string                `json:"message_id"`
@@ -184,7 +185,7 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 	if err != nil {
 		return manifest, err
 	}
-	drafts, err := snapshotDrafts(ctx, tx)
+	drafts, err := s.snapshotDrafts(ctx, tx, scope)
 	if err != nil {
 		return manifest, err
 	}
@@ -205,12 +206,21 @@ func (s *Service) ExportMailbox(ctx context.Context, scope Scope, output io.Writ
 		manifest.Version = 3
 		manifest.CounterUnit = "archive_records_including_collection_inventory"
 	}
+	if len(drafts) > 0 {
+		manifest.Version = 4
+	}
 	tw := tar.NewWriter(output)
 	// Do not close a partial TAR on error: no final manifest/success is emitted.
 	for i := range manifest.Messages {
 		item := &manifest.Messages[i]
 		if item.Draft != nil || item.Collections != nil {
 			raw := encoded(item.Draft)
+			if item.DraftMIME != nil {
+				raw, err = s.readDraftExport(ctx, scope, *item)
+				if err != nil {
+					return manifest, err
+				}
+			}
 			if item.Collections != nil {
 				raw = encoded(item.Collections)
 			}

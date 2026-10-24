@@ -301,7 +301,7 @@ func validateManifestCollections(m *ExportManifest, items []ArchiveItem) error {
 	var inventory *CollectionInventory
 	for n, item := range items {
 		if item.Collections != nil {
-			if n != 0 || inventory != nil || m.Version != 3 {
+			if n != 0 || inventory != nil || m.Version < 3 {
 				return ErrIntegrity
 			}
 			inventory = item.Collections

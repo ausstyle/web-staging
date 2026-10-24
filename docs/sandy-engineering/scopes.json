@@ -168,7 +168,7 @@
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0015-sandy-mail.md",
-      "source_version": "1.4",
+      "source_version": "1.5",
       "status": "IMPLEMENTING",
       "priority": "P2"
     }

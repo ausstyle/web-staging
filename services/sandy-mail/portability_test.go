@@ -40,7 +40,7 @@ func exercisePortability(t *testing.T, s *Service, admin *pgx.Conn, ctx context.
 	manifest, err := s.ExportMailbox(ctx, source, &archive, 100)
 	must(err)
 	t.Run("draft_only_archive_exact_and_mbox_explicit_rejection", func(t *testing.T) {
-		if manifest.Version != 2 || len(manifest.Messages) != 1 || manifest.Messages[0].Draft == nil {
+		if manifest.Version != 4 || len(manifest.Messages) != 1 || manifest.Messages[0].Draft == nil {
 			t.Fatal("draft not explicit")
 		}
 		p, err := InspectTAR(bytes.NewReader(archive.Bytes()), nil)
