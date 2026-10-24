@@ -207,6 +207,39 @@
       "github.actions.artifacts.download.capture",
       "provider.artifacts.read_private",
       "github.actions.artifacts.delete"
+    ],
+    "121": [
+      "github.issues.add_labels",
+      "github.issues.list_labels_for_milestone",
+      "github.issues.list_labels_on_issue",
+      "github.issues.remove_all_labels",
+      "github.issues.remove_label",
+      "github.issues.set_labels",
+      "github.labels.create",
+      "github.labels.delete",
+      "github.labels.get",
+      "github.labels.list",
+      "github.labels.update"
+    ],
+    "122": [
+      "github.issues.get",
+      "github.issues.list_labels_for_milestone",
+      "github.issues.update",
+      "github.milestones.create",
+      "github.milestones.delete",
+      "github.milestones.get",
+      "github.milestones.list",
+      "github.milestones.update"
+    ],
+    "124": [
+      "github.git.create_tag",
+      "github.git.get_tag",
+      "github.refs.create",
+      "github.refs.delete",
+      "github.refs.get",
+      "github.refs.list",
+      "github.refs.update",
+      "github.tags.list"
     ]
   },
   "supporting_diagnostic_families": {
@@ -492,13 +525,34 @@
       "code_status": "implemented_for_reviewed_authorized_targets",
       "awaiting_real_family_acceptance": true,
       "basis": "Typed operation contracts and installed shared executor source at 18035e8854708bd04909bcc716b3be49ff34bae9; not registry flags or successful provider acceptance. Scope is the existing configured provider resources; authorization and verification gates remain in force."
+    },
+    "121": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-label-milestone-tag-review-20261024.json; descriptor review does not prove authorized lifecycle execution or settlement."
+    },
+    "122": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-label-milestone-tag-review-20261024.json; descriptor review does not prove authorized lifecycle execution or settlement."
+    },
+    "124": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-label-milestone-tag-review-20261024.json; descriptor review does not prove authorized lifecycle execution or settlement."
     }
   },
   "explicit_semantic_mappings": {
     "119": "Closing an existing PR is pull_requests.update with body.state=closed; this is not a separate transport or extra registry entry.",
     "125": "Publishing an existing draft release is releases.update with body.draft=false.",
     "28": "set_machine_type implements the reviewed machine-type change. Live resize constraints, stop prerequisites and guest effects remain acceptance obligations.",
-    "34": "Compute operation polling covers zone, region and global resources; unrelated Cloud Run/DNS operations are optional candidates for this explicit family."
+    "34": "Compute operation polling covers zone, region and global resources; unrelated Cloud Run/DNS operations are optional candidates for this explicit family.",
+    "121": "Labels wildcard includes repository label CRUD plus issue/PR label attachment/removal and milestone-label reads through existing issues.* handlers. These are shared canonical constituents, not aliases to repository label deletion.",
+    "122": "Milestone close/reopen uses milestones.update body.state; assigning/removing a milestone on an issue uses issues.update and remains a cross-family120 lifecycle obligation. list_labels_for_milestone is required read coverage.",
+    "124": "Annotated tag objects use git.create_tag/get_tag; they do not publish refs/tags. Lightweight/annotated publication, resolution, movement and deletion use shared refs handlers. Existing engineering-branch authority does not authorize tag namespaces. No fictitious tag delete endpoint or redundant alias is added."
   },
   "external_dependencies": [
     {
@@ -629,6 +683,9 @@
     "118": "Detached commits and engineering refs create/update have independently verified receipts. Atomic source-tree publication has exact Git source readback; blob/tree operation-level durable effect settlement and protected/destructive ref lifecycle remain incomplete.",
     "119": "PR list/get contracts exist and authenticated listing works. Routine draft-creation class is implemented but creation, owned PR lifecycle and reviewed merge/recovery are not accepted.",
     "130": "Actions workflow, artifact, run and check metadata reads work through the shared engine; nullable-array projection is repaired. Workflow mutation, protected delivery and complete Actions constituent acceptance remain outstanding.",
-    "134": "Repository Actions-secrets metadata listing reaches GitHub through normal MCP authorization but GitHub returns HTTP 403. No secret values were retrieved and no permission was expanded. Trusted ciphertext write/rotation and full constituent execution remain unaccepted."
+    "134": "Repository Actions-secrets metadata listing reaches GitHub through normal MCP authorization but GitHub returns HTTP 403. No secret values were retrieved and no permission was expanded. Trusted ciphertext write/rotation and full constituent execution remain unaccepted.",
+    "121": "Labels wildcard includes repository label CRUD plus issue/PR label attachment/removal and milestone-label reads through existing issues.* handlers. These are shared canonical constituents, not aliases to repository label deletion. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete.",
+    "122": "Milestone close/reopen uses milestones.update body.state; assigning/removing a milestone on an issue uses issues.update and remains a cross-family120 lifecycle obligation. list_labels_for_milestone is required read coverage. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete.",
+    "124": "Annotated tag objects use git.create_tag/get_tag; they do not publish refs/tags. Lightweight/annotated publication, resolution, movement and deletion use shared refs handlers. Existing engineering-branch authority does not authorize tag namespaces. No fictitious tag delete endpoint or redundant alias is added. Current-contract authorized lifecycle outcomes, immutable/durable effect settlement, isolation, duplicate/idempotency/recovery and independent acceptance remain incomplete."
   }
 }
