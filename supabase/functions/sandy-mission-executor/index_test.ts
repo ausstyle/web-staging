@@ -14,10 +14,10 @@ class Db {
   waitingReason: string | null = null; claimLost = false; finalFailure = false; finalResponseLost = false; contextChanged = false;
   context: Obj = structuredClone(context); provisional = true;
   from(table: string) {
-    assert.equal(table, "sandy_mission_runs"); const filters: ((row: Obj) => boolean)[] = [];
+    assert.ok(["sandy_mission_runs","sandy_mission_work_product_audit"].includes(table)); const filters: ((row: Obj) => boolean)[] = [];
     let max = Infinity, update: Obj | null = null, columns: string[] | null = null;
     const run = (single: boolean) => {
-      const selected = this.runs.filter(row => filters.every(filter => filter(row))).slice(0, max);
+      const selected = (table === "sandy_mission_runs" ? this.runs : this.audits).filter(row => filters.every(filter => filter(row))).slice(0, max);
       if (update) for (const row of selected) Object.assign(row, update);
       const data = selected.map(row => columns ? Object.fromEntries(columns.map(key => [key, row[key]])) : structuredClone(row)); return { data: single ? data[0] || null : data, error: null };
     };
@@ -32,7 +32,7 @@ class Db {
       if (this.audits.some(a => a.run_id !== args.p_run_id && ["started", "unknown"].includes(a.state))) return { data: null, error: { code: "P0001", message: "mission_milestone_outcome_requires_reconciliation" } };
       if (!run || run.state !== "queued" || run.stage !== "execute" || run.customer_id !== args.p_customer_id || run.mission_task_id !== args.p_mission_id || args.p_source_sha256 !== missionExecutorSource.sourceSha256) return { data: null, error: { code: "P0001" } };
       const id = `a4000000-0000-4000-8000-${String(++this.serial).padStart(12, "0")}`;
-      this.audits.push({ id, run_id: run.id, state: "started", waiting_reason: this.waitingReason }); run.state = "running";
+      this.audits.push({ id, customer_id:run.customer_id, mission_task_id:run.mission_task_id, source_sha256:args.p_source_sha256, run_id: run.id, state: "started", waiting_reason: this.waitingReason }); run.state = "running";
       return this.claimLost ? { data: null, error: { code: "fixture_claim_lost" } } : { data: { id, waiting_reason: this.waitingReason, context: this.context, provisional_plan: this.provisional }, error: null };
     }
     assert.equal(name, "sandy_finish_mission_work_product");
@@ -44,7 +44,7 @@ class Db {
     const draft = JSON.parse(args.p_draft_canonical); assert.ok(args.p_provider_response_id); assert.match(args.p_response_sha256, /^[a-f0-9]{64}$/);
     const product = { id: `a5000000-0000-4000-8000-${String(this.serial).padStart(12, "0")}`, run_id: run.id, customer_id: run.customer_id, state: "pending_review", ...draft };
     this.products.push(product); this.reviews.push({ customer_id: run.customer_id, work_product_id: product.id, assigned_to: "client", external_actions_performed: 0 });
-    audit.state = "succeeded"; run.state = "completed";
+    Object.assign(audit,{state:"succeeded",provider_response_id:args.p_provider_response_id,response_sha256:args.p_response_sha256,draft_sha256:Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256",new TextEncoder().encode(args.p_draft_canonical)))).map(v=>v.toString(16).padStart(2,"0")).join(""),work_product_id:product.id,review_task_id:"a6000000-0000-4000-8000-000000000001",finished_at:new Date().toISOString()}); run.state = "completed";
     return this.finalResponseLost ? { data: null, error: { code: "fixture_committed_final_response_lost" } } : { data: { ok: true, work_product_id: product.id }, error: null };
   }
 }
@@ -115,7 +115,7 @@ Deno.test("unknown model outcomes, invalid draft and incomplete provider envelop
 Deno.test("lost admission or atomic final receipt and concurrent context changes never duplicate paid work or review records", async () => {
   for (const mode of ["claimLost", "finalFailure", "finalResponseLost", "contextChanged"] as const) {
     const { db, job } = await setup(); db[mode] = true; let calls = 0; const service = deps(db, (async () => { calls++; return envelope(); }) as typeof fetch);
-    const result = await executeMissionWorkProduct(job, {}, service); assert.equal(result.status, mode === "claimLost" ? 503 : 502); assert.equal(calls, mode === "claimLost" ? 0 : 1);
+    const result = await executeMissionWorkProduct(job, {}, service); assert.equal(result.status, mode === "claimLost" ? 503 : mode === "finalResponseLost" ? 200 : 502); assert.equal(calls, mode === "claimLost" ? 0 : 1);
     assert.equal(db.products.length, mode === "finalResponseLost" ? 1 : 0); assert.equal(db.reviews.length, mode === "finalResponseLost" ? 1 : 0);
     assert.equal((await executeMissionWorkProduct(job, {}, service)).status, 409); assert.equal(calls, mode === "claimLost" ? 0 : 1);
   }
