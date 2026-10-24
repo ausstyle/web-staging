@@ -1,0 +1,30 @@
+From: Synthetic Sender <sender@example.invalid>
+To: Synthetic Mailbox <first-ingest@example.invalid>
+Date: Sat, 24 Oct 2026 00:00:00 +0000
+Message-ID: <sandy-synthetic-first-001@example.invalid>
+Subject: =?UTF-8?Q?Sandy_Mail_synthetic_first_ingest_=E2=9C=93?=
+X-Sandy-Synthetic: true
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="synthetic-mixed"
+
+--synthetic-mixed
+Content-Type: multipart/alternative; boundary="synthetic-alt"
+
+--synthetic-alt
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+Synthetic fixture only. No private mail. No external delivery.
+Receipt test =E2=9C=93
+--synthetic-alt
+Content-Type: text/html; charset=UTF-8
+
+<html><body><p>Synthetic fixture only.</p><script>alert('untrusted')</script><img src="https://example.invalid/tracker"></body></html>
+--synthetic-alt--
+--synthetic-mixed
+Content-Type: text/plain; name="synthetic-note.txt"
+Content-Disposition: attachment; filename="synthetic-note.txt"
+Content-Transfer-Encoding: base64
+
+U2FuZHkgTWFpbCBzeW50aGV0aWMgYXR0YWNobWVudC4K
+--synthetic-mixed--

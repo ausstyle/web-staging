@@ -1,0 +1,46 @@
+name: Sandy Mail database and synthetic ingestion
+on:
+  pull_request:
+    paths:
+      - 'services/sandy-mail/**'
+      - '.github/workflows/sandy-mail-check.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-postgres:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: synthetic-local-only
+          POSTGRES_DB: sandy_mail_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
+    defaults:
+      run:
+        working-directory: services/sandy-mail
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: services/sandy-mail/go.sum
+      - name: Migrations, RLS, concurrency, crash recovery and object contracts
+        env:
+          MAIL_TEST_ADMIN_DSN: postgres://postgres:synthetic-local-only@127.0.0.1:5432/sandy_mail_test?sslmode=disable
+          MAIL_TEST_EVIDENCE: ${{ runner.temp }}/mail-first-email.json
+        run: |
+          go test -race -count=1 -v ./...
+          go vet ./...
+          go build ./cmd/mail-fixture
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-postgresql-synthetic-mail-evidence
+          path: ${{ runner.temp }}/mail-first-email.json
+          retention-days: 7
+# Test-only workflow. No cloud credentials, production environment or deployment.
