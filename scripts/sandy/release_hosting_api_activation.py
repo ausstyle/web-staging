@@ -8,6 +8,9 @@ from release_web_canary import ROOT,original_sources,Blocked
 from release_hosting_accounts import store_recovery
 TARGET='sandy-operation-api'
 COMPONENTS=(TARGET,'sandy-operation-registry:hosting-accounts')
+def input_uuid(value, field):
+ try:return str(uuid.UUID(value.strip()))
+ except (ValueError,AttributeError,TypeError):raise Blocked('invalid_'+field+'_uuid') from None
 def owner(r,change):
  rows=r.sql(f"""SELECT EXISTS(SELECT 1 FROM public.sandy_engineering_changes c
  JOIN public.sandy_engineering_change_events e ON e.change_id=c.id
@@ -23,7 +26,7 @@ def owner(r,change):
  require(rows==[{'admitted':True}],'exact_authenticated_Owner_activation_required')
 def protected():
  require(os.environ.get('GITHUB_ACTIONS')=='true' and os.environ.get('GITHUB_REF')=='refs/heads/main' and os.environ.get('GITHUB_REPOSITORY')=='ausstyle/web-staging','protected_main_required')
- head=os.environ.get('GITHUB_SHA','')
+ head=os.environ.get('RELEASE_SOURCE_SHA') or os.environ.get('GITHUB_SHA','')
  require(subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip()==head,'checkout_drift')
  subprocess.check_call(['git','diff','--exit-code','HEAD'],cwd=ROOT,stdout=subprocess.DEVNULL)
  from release_hosting_read import verify_ci
@@ -46,8 +49,14 @@ def upload(r,files):
 def run(r,mode,change,artifact=None):
  m=load()
  if mode=='reconcile':return observe(r,m)
+ if mode=='auto':
+  require(change=='2ed107d8-07b3-4458-a4f7-e03739214b6c','fixed_auto_owner_required')
+  # A prior intent means completed, partial or uncertain: never replay it.
+  prior=r.sql("SELECT count(*)::int n FROM public.sandy_engineering_change_events WHERE change_id='2ed107d8-07b3-4458-a4f7-e03739214b6c' AND event_type='hosting_api_intent'",True)
+  if prior!=[{'n':0}]:return {'automatic_dispatch_skipped':True,'reason':'prior_intent_reconcile_only','mutations':0}
+  mode='deploy'
  if mode=='preflight':inspect(r,m);return {'preflight_passed':True,'mutations':0,'manifest_sha256':PIN}
- change=str(uuid.UUID(change));protected();owner(r,change)
+ change=input_uuid(change,'owner_change_id');protected();owner(r,change)
  for component in COMPONENTS:
   r.sql(f"""DO $$ BEGIN INSERT INTO public.sandy_engineering_component_leases(component,holder,change_id,expected_source_sha256,expires_at)
  VALUES({quote(component)},{quote(r.holder)},'{change}','{PIN}',clock_timestamp()+interval '15 minutes')
@@ -68,7 +77,7 @@ def run(r,mode,change,artifact=None):
    inspect(r,m)
   else:
    state=observe(r,m);require(state['source']=='candidate' and state['registry'] in ('active','inactive'),'rollback_foreign_state')
-   rows=r.sql(f"SELECT metadata FROM public.sandy_engineering_artifacts WHERE id='{str(uuid.UUID(artifact))}' AND change_id='{change}' AND target='{TARGET}'",True)
+   rows=r.sql(f"SELECT metadata FROM public.sandy_engineering_artifacts WHERE id='{input_uuid(artifact,'artifact')}' AND change_id='{change}' AND target='{TARGET}'",True)
    require(len(rows)==1,'rollback_artifact_missing');v=rows[0]['metadata']
    require(v.get('manifest_sha256')==PIN and v.get('bundle_transfer_state')=='complete','rollback_artifact_incomplete')
    packed=base64.b64decode(v['bundle_gzip_base64'],validate=True);require(sha(packed)==v['compressed_sha256'],'rollback_digest')
@@ -93,6 +102,6 @@ def run(r,mode,change,artifact=None):
  finally:
   if not dispatched or finished:r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE holder={quote(r.holder)} AND change_id='{change}' AND component IN ({','.join(quote(c) for c in COMPONENTS)})")
 if __name__=='__main__':
- p=argparse.ArgumentParser();p.add_argument('--mode',choices=['preflight','deploy','reconcile','rollback'],default='preflight');p.add_argument('--owner-change-id');p.add_argument('--artifact');a=p.parse_args()
+ p=argparse.ArgumentParser();p.add_argument('--mode',choices=['preflight','deploy','reconcile','rollback','auto'],default='preflight');p.add_argument('--owner-change-id');p.add_argument('--artifact');a=p.parse_args()
  try:print(json.dumps(run(Installer(Path('/tmp')),a.mode,a.owner_change_id,a.artifact)))
  except Exception as e:print(json.dumps({'ok':False,'error':str(e) if isinstance(e,Blocked) else 'failed_or_unknown_reconcile_no_retry','automatic_retry':False}));raise SystemExit(1)

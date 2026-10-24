@@ -58,3 +58,31 @@ class ReleaseTests(unittest.TestCase):
    self.assertEqual(upload.call_count,1)
   self.assertFalse(any('SET api_exposed' in q for q in r.events))
   self.assertFalse(any('DELETE FROM' in q for q in r.events))
+
+class InputTests(unittest.TestCase):
+ def test_pasted_owner_and_artifact_uuid_whitespace(self):
+  from release_hosting_api_activation import input_uuid
+  value='2ed107d8-07b3-4458-a4f7-e03739214b6c'
+  self.assertEqual(input_uuid('    '+value+'\n','owner_change_id'),value)
+  self.assertEqual(input_uuid(' '+value+' ','artifact'),value)
+ def test_bad_uuid_reports_input_error_before_effects(self):
+  from release_hosting_api_activation import input_uuid
+  for value in [None,'','bad','2ed107d8-07b3- 4458-a4f7-e03739214b6c']:
+   with self.assertRaisesRegex(Blocked,'invalid_owner_change_id_uuid'):input_uuid(value,'owner_change_id')
+
+class AutomaticTests(unittest.TestCase):
+ def test_prior_intent_never_replays_partial_or_finished_release(self):
+  from release_hosting_api_activation import run
+  class Fake:
+   def sql(self,q,read_only=False):
+    assert read_only and 'hosting_api_intent' in q
+    return [{'n':1}]
+  result=run(Fake(),'auto','2ed107d8-07b3-4458-a4f7-e03739214b6c')
+  self.assertTrue(result['automatic_dispatch_skipped']);self.assertEqual(result['mutations'],0)
+ def test_automatic_owner_cannot_be_substituted(self):
+  from release_hosting_api_activation import run
+  with self.assertRaisesRegex(Blocked,'fixed_auto_owner_required'):run(None,'auto','other')
+ def test_trigger_preserves_successful_exact_revision_and_environment(self):
+  from release_web_canary import ROOT
+  s=(ROOT/'.github/workflows/sandy-hosting-api-activation.yml').read_text()
+  for marker in ['workflow_run:','Sandy engineering regression checks',"conclusion == 'success'",'head_repository.full_name','head_sha || github.sha','environment: sandy-production','cancel-in-progress: false','2ed107d8-07b3-4458-a4f7-e03739214b6c']:self.assertIn(marker,s)
