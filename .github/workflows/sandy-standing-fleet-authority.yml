@@ -1,0 +1,29 @@
+name: Sandy standing fleet authority checks
+on:
+  pull_request:
+    paths:
+      - 'services/sandy-engineering-mcp/src/standing-fleet-authority*'
+      - 'docs/sandy-engineering/standing-fleet-authority.md'
+      - '.github/workflows/sandy-standing-fleet-authority.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'services/sandy-engineering-mcp/src/standing-fleet-authority*'
+      - 'docs/sandy-engineering/standing-fleet-authority.md'
+      - '.github/workflows/sandy-standing-fleet-authority.yml'
+permissions:
+  contents: read
+jobs:
+  policy-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify standing managed fleet authorization is bounded and revocable
+        run: |
+          set -euo pipefail
+          node --check services/sandy-engineering-mcp/src/standing-fleet-authority.mjs
+          node --test services/sandy-engineering-mcp/src/standing-fleet-authority.test.mjs
