@@ -215,7 +215,21 @@ function renderOverview(node){
  right.append(q);root.append(left,right);node.append(root);
 }
 async function refresh(){
- try{const had=state.matter?.id;const tab=state.tab;const [m,c]=await Promise.all([api("list"),api("companies")]);state.matters=m.matters||[];state.companies=c.companies||[];if(had)await openMatter(had,tab);else renderList()}catch(e){loading("Legal workspace unavailable. "+(e.message||"Please sign in."));const s=$("screen");s.append(B("Open Sandy sign-in →",()=>location.assign("../app/"),"primary"));notify(e.message||"Unable to load",true)}
+ try{
+  const had=state.matter?.id,tab=state.tab;
+  const [m,c]=await Promise.all([api("list"),api("companies")]);
+  state.matters=m.matters||[];state.companies=c.companies||[];
+  if(had)await openMatter(had,tab);else renderList();
+ }catch(e){
+  const message=String(e?.message||"Unable to load the legal register.");
+  const needsSignIn=/sign[ _-]?in|invalid.session|not.authori[sz]ed|authentication|required.sandy.sign/i.test(message);
+  loading(needsSignIn?"Your Sandy sign-in needs to be renewed.":"The legal register could not be loaded. Your session remains signed in.");
+  const s=$("screen");
+  s.append(E("p","notice",message));
+  s.append(needsSignIn?B("Open Sandy sign-in →",()=>location.assign("../app/"),"primary"):B("↻ Retry legal register",refresh,"primary"));
+  if(!needsSignIn)s.append(B("← Back to Client Admin",()=>location.assign("../app/"),"small"));
+  notify(message,true);
+ }
 }
 $("refresh").onclick=refresh;
 const {data}=await sb.auth.getSession();
