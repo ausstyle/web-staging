@@ -4,7 +4,7 @@ on:
     paths:
       - 'sandy/hosting/**'
       - 'supabase/functions/_shared/sandy-hosting/management_contracts*'
-      - 'scripts/sandy/test_hosting_ui_browser.py'
+      - 'scripts/sandy/check_hosting_ui_browser.py'
       - '.github/workflows/sandy-hosting-management-check.yml'
 permissions:
   contents: read
@@ -32,4 +32,4 @@ jobs:
           python -m pip install playwright==1.62.0
           python -m playwright install --with-deps chromium
       - name: Test synthetic desktop and mobile journeys
-        run: python scripts/sandy/test_hosting_ui_browser.py
+        run: python scripts/sandy/check_hosting_ui_browser.py
