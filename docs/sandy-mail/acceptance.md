@@ -184,3 +184,10 @@ main: [MIME loss/recovery log](evidence/mime-loss-tests.txt). A missing original
 produces one explicit excluded draft and `COMPLETED_WITH_EXCEPTIONS`; a transient
 read outage resumes the same frozen snapshot and retains a resolved exception.
 No source object was deleted to simulate these failures.
+
+Final source review caught the MBOX visitor's old JSON-only draft discriminator.
+Source `07b4204` now refuses both JSON and MIME draft records before conversion;
+a rich-MIME regression checks the exact error and zero emitted bytes. The
+[reviewed full race suite](evidence/mime-reviewed-tests.txt) passed **123 Go
+test/subtest cases**. Earlier retained round-trip evidence still describes its
+original source pin; neither its objects nor the Google canary were rewritten.
