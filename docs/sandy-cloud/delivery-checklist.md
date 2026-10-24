@@ -257,3 +257,19 @@ coordinates canonical identity/file-writer bindings. Production PostgreSQL tree
 mapping, provider execution, native clients and full mandatory acceptance remain
 pending. No shared gateway, live schema, IAM/resource or artifact-download action
 was attempted. Full scope stays open.
+
+## Canonical binding source continuation
+
+Cloud consumes API PR270 `cbfe165` without editing API-owned source. Added explicit
+Runtime fact validation plus canonical portal row locking, exact private-custody
+binding/unknown-outcome reconciliation rules, and writer-assigned universal-file
+projection with atomic immutable audit. The candidate projection audit schema is
+not installed. Eight new PostgreSQL integration scenarios and three custody tests
+cover the real API/Cloud interfaces using synthetic authority fixtures. Existing
+PR245/266/267 evidence remains preserved. See the updated production handoff for
+exact Runtime relation/lock/custody and file-reader compatibility dependencies.
+
+PR270's reported ready-transition denial is respected. Dependent Cloud source is
+prepared on a stacked draft only; no merge into the API branch, live schema,
+credentials, grants, customer relation, provider routing or deployment is enabled.
+All mandatory production acceptance remains pending; full scope stays open.
