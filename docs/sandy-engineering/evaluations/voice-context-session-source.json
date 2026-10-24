@@ -67,5 +67,6 @@
         "JWT_preserved": true
       }
     ]
-  }
+  },
+  "historical_source_commit": "9ca456d2705c649388d6a12a714a648e6ebea472"
 }
