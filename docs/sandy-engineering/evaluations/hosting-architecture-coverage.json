@@ -274,7 +274,8 @@
       "text": "1. Customer creates a site with region, runtime/template, resource caps and entitlement.",
       "text_sha256": "b382aa01bc7a6cf1822dee01c709a419968610ceef9181af4f878acb815220ae",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -283,7 +284,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-02",
@@ -296,7 +297,8 @@
       "text": "2. Control plane persists request and idempotency key, validates payment/quotas and reserves capacity.",
       "text_sha256": "58a3e17faf2535f30b95c480c312b5371d3aecbb3e1960ead8c2a1c3cf8be964",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -305,7 +307,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-03",
@@ -318,7 +320,8 @@
       "text": "3. Build uploads/imports Git source or an approved artifact; isolates build; runs malware/dependency scanning, SBOM/provenance checks and secrets detection; stores immutable artifact digest in Artifact Registry/Cloud Storage.",
       "text_sha256": "a03877e21a7cd710d5d9aa859655ca00c1d4170f8e829bbbef1dc9e96df881bc",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -327,7 +330,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-04",
@@ -340,7 +343,8 @@
       "text": "4. Provisioning worker creates/updates Cloud Run service using an immutable digest, service-specific identity, constrained CPU/memory/concurrency, request timeout, autoscaling max instances and egress policy. Reject privileged containers and unapproved container capability.",
       "text_sha256": "08d8e619ba6ee29556568b2cc4affec187323b332284f85625ac6d42c2c604a1",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -349,7 +353,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-05",
@@ -362,7 +366,8 @@
       "text": "5. Worker observes Google Cloud service revision, health checks, traffic split, logs and metrics before reporting VERIFIED_SUCCESS.",
       "text_sha256": "0a50d835dd27e858c7006b6c22630b7d3c41ac8f8e2cfa65576401647e2f29a6",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -371,7 +376,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-06",
@@ -384,7 +389,8 @@
       "text": "6. Customer obtains a default Sandy subdomain on a controlled parent zone; custom-domain flow described below.",
       "text_sha256": "a66e1fc1b73273943780cea583645eb1305a0f68d474db47b27e014833009723",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -393,7 +399,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-07",
@@ -406,7 +412,8 @@
       "text": "7. Rollouts use staged revisions, optional traffic-split canary and forward rollback to last-known-good digest, with readback and receipts. Never silently replay uncertain cloud writes.",
       "text_sha256": "31ec92730089ea4c46661d494fd0bd773e16fa02b2edf8dead491f4d96705788",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -415,7 +422,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S4-08",
@@ -428,7 +435,8 @@
       "text": "Support static sites via a minimal immutable web container or a dedicated static-serving strategy evaluated for cost; do not force every static asset through expensive always-on instances.",
       "text_sha256": "c2f550072ee8e3d00156e015f3fab7ddb3161b2db10c3290726854bd312353ac",
       "implementation_sources": [
-        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf"
+        "PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf",
+        "supabase/functions/_shared/sandy-hosting/cloud_run_plan.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -437,7 +445,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending."
+      "remaining": "Local marketing preview and non-executable bounded service proposal only; authoritative inventory, verified build evidence, budget/quota reservation, service identity/egress, cloud deploy and live canary pending."
     },
     {
       "id": "HOST-S5-01",
@@ -488,7 +496,8 @@
       "text": "1. Sandy-managed public Google Cloud DNS zone: create managed zone for a customer-owned domain only after ownership verification; return the **actual four allocated Google Cloud NS hostnames** and instruct registrar delegation.",
       "text_sha256": "806d20012af71c29355f12979ff1a685287cfb511b8e188c0170484f25a4c783",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -497,7 +506,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S6-02",
@@ -510,7 +519,8 @@
       "text": "2. External DNS provider: generate required records, or execute via customer-authorized registrar/DNS integration with scoped token, confirmation and reconciliation; do not demand nameserver transfer.",
       "text_sha256": "92fe3e6c7daf027fa36adc4a91d14df085edb81f4ea999af21973cc48ef7fa54",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -519,7 +529,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S6-03",
@@ -532,7 +542,8 @@
       "text": "3. Sandy default subdomains: assign under a separately controlled zone and avoid collisions, stale CNAME takeover and claim races.",
       "text_sha256": "6e0abb30ff3fb53be398b1be66aa757a7a5dbffd960f2b49bbae9c25be6b638b",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -541,7 +552,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S6-04",
@@ -554,7 +565,8 @@
       "text": "**Vanity nameservers:** `ns1.sandy.chat` CNAME aliases to Google-assigned NS are **not** an acceptable delegation design. Branded NS require a supported white-label authoritative DNS arrangement or Sandy-operated authoritative nameservers and separate evaluation. Do not advertise branded NS at launch.",
       "text_sha256": "48502c6c0b15b01620f85a1a85a726f40c6d577861519c46bcc4f68d200e22d2",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -563,7 +575,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S6-05",
@@ -576,7 +588,8 @@
       "text": "Ownership challenge (TXT/appropriate provider verification) \u2192 read and snapshot existing RRsets/NS/SOA/DNSSEC state \u2192 show full diff (especially MX/SPF/DKIM/DMARC and CAA) \u2192 authorised change with expected version and idempotency \u2192 provider operation \u2192 authoritative DNS readback \u2192 delegation checks against parent zone and multiple resolvers \u2192 observe propagation/TTL \u2192 report verified, partial or pending. Distinguish provider acceptance from global resolver propagation. Preserve email routing during zone migration and never overwrite unrelated records.",
       "text_sha256": "91e4e92d5615ed1e16b6416841a69ec37c446b3eba51550dc90f30c9a440fe46",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -585,7 +598,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S6-06",
@@ -598,7 +611,8 @@
       "text": "Support A, AAAA, CNAME, TXT, MX, CAA, SRV, NS where supported, TTL editing, DNSSEC lifecycle and safe record deletions; validate apex CNAME constraints, CNAME coexistence, MX targets, SPF consistency, duplicate/challenge conflicts and customer-specific domain bindings. Record every old value and rollback conditions. For DNSSEC, follow DS delegation order and prevent stale-DS outages.",
       "text_sha256": "e3ce3516dfb1ed1db940a746bbb6ae3439337a38d832f42fe3219b441f2275db",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -607,7 +621,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S6-07",
@@ -620,7 +634,8 @@
       "text": "Prefer global external Application Load Balancer with serverless NEGs for Cloud Run, host-based routing and Cloud Armor protections as warranted, paired with Google Certificate Manager (managed DNS authorisation or supported load-balancer validation). Confirm quota and certificate map limits; use sharding/multi-LB topology when supported limits demand it. Do not report HTTPS live until actual handshake, hostname, SAN, expiry and serving backend pass verification. Support apex and www routing with explicit redirects; preflight CAA, ownership and conflicting bindings.",
       "text_sha256": "8d404605743f22d53caa234e6fa911d49809f40845cdf9a307924d719feb9764",
       "implementation_sources": [
-        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs"
+        "supabase/functions/_shared/sandy-hosting/dns_plan.mjs",
+        "supabase/functions/_shared/sandy-hosting/domain_challenge.mjs"
       ],
       "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
@@ -629,7 +644,7 @@
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
+      "remaining": "Offline RRset diff/rollback and expiring domain challenge evidence only; durable claim uniqueness, public-suffix validation, actual authority, provider writes, zones, DNSSEC, TLS and delegation pending."
     },
     {
       "id": "HOST-S7-01",
