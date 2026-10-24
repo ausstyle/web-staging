@@ -1,0 +1,27 @@
+{
+  "environment": "separate-local-postgresql-17-clone",
+  "source_database_untouched": true,
+  "before": {
+    "drafts": 51,
+    "collections": 31,
+    "import_items": 187,
+    "receipt_hash": "348f43f69b2f7f67c8b927172c480118",
+    "last_migration": "0007_portable_drafts.sql",
+    "inbound_receipts": 307,
+    "draft_content_hash": "cf5dfe6a15765d8f909837bac53e1238",
+    "collection_content_hash": "4a019bb72bcbf94929eecffb91358681"
+  },
+  "after": {
+    "drafts": 51,
+    "collections": 31,
+    "import_items": 187,
+    "receipt_hash": "348f43f69b2f7f67c8b927172c480118",
+    "last_migration": "0008_collection_hierarchy.sql",
+    "inbound_receipts": 307,
+    "draft_content_hash": "cf5dfe6a15765d8f909837bac53e1238",
+    "collection_content_hash": "4a019bb72bcbf94929eecffb91358681"
+  },
+  "provider_deployed": false,
+  "independent_acceptance": false,
+  "migration_sha256": "7f9cf24277d82d0bd1999f84e828c217b3f897566a3304b1d181b87e17fe4c4b"
+}

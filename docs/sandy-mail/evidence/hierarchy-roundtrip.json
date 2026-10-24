@@ -1,0 +1,291 @@
+{
+  "destination_scope": {
+    "Tenant": "4338654f-0a93-4ea6-90f6-c525a13b18e8",
+    "Account": "302f58ad-842c-43f8-8cf1-df1045e71de3",
+    "Mailbox": "39d5fe47-3351-45dc-8831-30daf39b27a9"
+  },
+  "import_job": {
+    "job_id": "bb90b982-df27-40e3-9af5-d4c6a4c02e3c",
+    "state": "COMPLETE",
+    "inventory_complete": true,
+    "spec": {
+      "restore_collections": true,
+      "key": "d6ca6d03-8401-40e8-90da-e5a2fb479741",
+      "format": "eml-tar",
+      "source_sha256": "ef5f5c91fcddbc7e861618f59f43064b19b3469310979273a3c570ea912577d8",
+      "source_size": 10240,
+      "folder": "Portable",
+      "cutoff": "2026-10-24T03:17:14.168426027Z",
+      "admission_ref": "synthetic-hierarchy"
+    }
+  },
+  "independent_acceptance": false,
+  "provider_deployed": false,
+  "report": {
+    "expected_collections": 7,
+    "verified_collections": 7,
+    "unverified_collections": 0,
+    "version": 3,
+    "job_id": "bb90b982-df27-40e3-9af5-d4c6a4c02e3c",
+    "scope": {
+      "Tenant": "4338654f-0a93-4ea6-90f6-c525a13b18e8",
+      "Account": "302f58ad-842c-43f8-8cf1-df1045e71de3",
+      "Mailbox": "39d5fe47-3351-45dc-8831-30daf39b27a9"
+    },
+    "source_sha256": "ef5f5c91fcddbc7e861618f59f43064b19b3469310979273a3c570ea912577d8",
+    "source_size": 10240,
+    "expected": 2,
+    "verified": 2,
+    "exceptions": 0,
+    "pending": 0,
+    "verified_bytes": 1918,
+    "item_chain_sha256": "3410eecdc0384ef4572fc8c0123b60a35ca0f8fa9eb1e11133fc073fdacba878",
+    "state": "COMPLETE",
+    "independent_acceptance": false
+  },
+  "restored_export": {
+    "counter_unit": "archive_records_including_collection_inventory",
+    "version": 3,
+    "scope": {
+      "Tenant": "4338654f-0a93-4ea6-90f6-c525a13b18e8",
+      "Account": "302f58ad-842c-43f8-8cf1-df1045e71de3",
+      "Mailbox": "39d5fe47-3351-45dc-8831-30daf39b27a9"
+    },
+    "mailbox_name": "Synthetic hierarchy",
+    "snapshot_at": "2026-10-24T03:17:14.560416Z",
+    "pending_ingestions": 0,
+    "complete": true,
+    "messages": [
+      {
+        "collections": {
+          "version": 1,
+          "collections": [
+            {
+              "collection_id": "1d37cf39-8a6c-41cf-a3aa-a45bd16ee3a0",
+              "kind": "label",
+              "name": "Unused label"
+            },
+            {
+              "collection_id": "61678cf1-c8db-4fe4-a0a6-ace238263622",
+              "kind": "folder",
+              "name": "Projects"
+            },
+            {
+              "parent_id": "61678cf1-c8db-4fe4-a0a6-ace238263622",
+              "collection_id": "71d406cb-8c97-479d-ae12-60a1e082e921",
+              "kind": "folder",
+              "name": "2026"
+            },
+            {
+              "collection_id": "73de9d95-fac9-4607-a1e7-c315b64640fd",
+              "kind": "label",
+              "name": "Review"
+            },
+            {
+              "collection_id": "79e4726b-aa0b-4540-a2e6-ab445d67c70f",
+              "kind": "folder",
+              "name": "Archive"
+            },
+            {
+              "parent_id": "71d406cb-8c97-479d-ae12-60a1e082e921",
+              "collection_id": "b1c52971-97cf-4c85-ae7d-833af65574d2",
+              "kind": "folder",
+              "name": "Empty 日本語"
+            },
+            {
+              "parent_id": "79e4726b-aa0b-4540-a2e6-ab445d67c70f",
+              "collection_id": "f8380629-b6a3-48ab-a793-e94d4188426f",
+              "kind": "folder",
+              "name": "2026"
+            }
+          ]
+        },
+        "message_id": "",
+        "internet_message_id": "",
+        "subject": "",
+        "path": "collections.json",
+        "received_at": "0001-01-01T00:00:00Z",
+        "sent_at": null,
+        "flags": null,
+        "security_state": "",
+        "headers": null,
+        "envelope": null,
+        "raw": {
+          "key": "",
+          "generation": 0,
+          "sha256": "69cb2fcfd12b9654a3399d81d0c72be777ed5ade38b76444946b77849967c66d",
+          "size": 817
+        },
+        "attachments": null
+      },
+      {
+        "message_id": "ca7a8531-1123-4596-8fa4-fc8cefa92236",
+        "internet_message_id": "\u003csandy-synthetic-first-001@example.invalid\u003e",
+        "subject": "Sandy Mail synthetic first ingest ✓",
+        "path": "messages/ca7a8531-1123-4596-8fa4-fc8cefa92236.eml",
+        "received_at": "2026-10-24T03:17:13.35197Z",
+        "sent_at": "2026-10-24T00:00:00Z",
+        "flags": [],
+        "security_state": "quarantined",
+        "headers": {
+          "To": [
+            "Synthetic Mailbox \u003cfirst-ingest@example.invalid\u003e"
+          ],
+          "Date": [
+            "Sat, 24 Oct 2026 00:00:00 +0000"
+          ],
+          "From": [
+            "Synthetic Sender \u003csender@example.invalid\u003e"
+          ],
+          "Subject": [
+            "=?UTF-8?Q?Sandy_Mail_synthetic_first_ingest_=E2=9C=93?="
+          ],
+          "Message-Id": [
+            "\u003csandy-synthetic-first-001@example.invalid\u003e"
+          ],
+          "Content-Type": [
+            "multipart/mixed; boundary=\"synthetic-mixed\""
+          ],
+          "Mime-Version": [
+            "1.0"
+          ],
+          "X-Sandy-Synthetic": [
+            "true"
+          ]
+        },
+        "envelope": {
+          "from": "sender@example.invalid",
+          "to": [
+            "receiver@example.invalid"
+          ]
+        },
+        "raw": {
+          "key": "mail/v1/4338654f-0a93-4ea6-90f6-c525a13b18e8/302f58ad-842c-43f8-8cf1-df1045e71de3/39d5fe47-3351-45dc-8831-30daf39b27a9/02ac05940c2f9ea40f4060d3e2866a1b23c7ca7dda9903b09c831ecb21b176ad/original.eml",
+          "generation": 1,
+          "sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+          "size": 1101
+        },
+        "attachments": [
+          {
+            "key": "mail/v1/4338654f-0a93-4ea6-90f6-c525a13b18e8/302f58ad-842c-43f8-8cf1-df1045e71de3/39d5fe47-3351-45dc-8831-30daf39b27a9/02ac05940c2f9ea40f4060d3e2866a1b23c7ca7dda9903b09c831ecb21b176ad/parts/0",
+            "generation": 1,
+            "sha256": "78c696a93e4fcb4a88f4e9581262e928ab70aefc303d38983b6c51d6fc02bbff",
+            "size": 33
+          }
+        ],
+        "organization": {
+          "version": 1,
+          "folder": {
+            "parent_id": "61678cf1-c8db-4fe4-a0a6-ace238263622",
+            "collection_id": "71d406cb-8c97-479d-ae12-60a1e082e921",
+            "kind": "folder",
+            "name": "2026"
+          },
+          "labels": [
+            {
+              "collection_id": "73de9d95-fac9-4607-a1e7-c315b64640fd",
+              "kind": "label",
+              "name": "Review"
+            }
+          ]
+        },
+        "import_origins": [
+          {
+            "flags": [],
+            "format": "eml-tar",
+            "job_id": "bb90b982-df27-40e3-9af5-d4c6a4c02e3c",
+            "properties": {
+              "conversion": "byte-exact-eml",
+              "source_time": "2026-10-24T03:17:13Z",
+              "unmapped_flags": "",
+              "portable_metadata": {
+                "raw": {
+                  "key": "mail/v1/6cab89f1-ed6a-43bb-8f21-9278856a0bec/1471893e-d431-4c0d-b389-5b058b708c91/b2656f47-3cc1-4561-9b88-54998a114656/540cb9afd064bb23a4bd8285a5a3a46825d744facefba928bd11df84a0905da6/original.eml",
+                  "size": 1101,
+                  "sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+                  "generation": 1
+                },
+                "path": "messages/3c8c860c-a8bf-42ad-abed-0cfb157eecfe.eml",
+                "flags": [],
+                "headers": {
+                  "To": [
+                    "Synthetic Mailbox \u003cfirst-ingest@example.invalid\u003e"
+                  ],
+                  "Date": [
+                    "Sat, 24 Oct 2026 00:00:00 +0000"
+                  ],
+                  "From": [
+                    "Synthetic Sender \u003csender@example.invalid\u003e"
+                  ],
+                  "Subject": [
+                    "=?UTF-8?Q?Sandy_Mail_synthetic_first_ingest_=E2=9C=93?="
+                  ],
+                  "Message-Id": [
+                    "\u003csandy-synthetic-first-001@example.invalid\u003e"
+                  ],
+                  "Content-Type": [
+                    "multipart/mixed; boundary=\"synthetic-mixed\""
+                  ],
+                  "Mime-Version": [
+                    "1.0"
+                  ],
+                  "X-Sandy-Synthetic": [
+                    "true"
+                  ]
+                },
+                "sent_at": "2026-10-24T00:00:00Z",
+                "subject": "Sandy Mail synthetic first ingest ✓",
+                "envelope": {
+                  "to": [
+                    "receiver@example.invalid"
+                  ],
+                  "from": "sender@example.invalid"
+                },
+                "message_id": "3c8c860c-a8bf-42ad-abed-0cfb157eecfe",
+                "attachments": [
+                  {
+                    "key": "mail/v1/6cab89f1-ed6a-43bb-8f21-9278856a0bec/1471893e-d431-4c0d-b389-5b058b708c91/b2656f47-3cc1-4561-9b88-54998a114656/540cb9afd064bb23a4bd8285a5a3a46825d744facefba928bd11df84a0905da6/parts/0",
+                    "size": 33,
+                    "sha256": "78c696a93e4fcb4a88f4e9581262e928ab70aefc303d38983b6c51d6fc02bbff",
+                    "generation": 1
+                  }
+                ],
+                "received_at": "2026-10-24T03:17:13.35197Z",
+                "organization": {
+                  "folder": {
+                    "kind": "folder",
+                    "name": "2026",
+                    "parent_id": "a4cdd7a7-a8fe-43ca-a0fc-7516ea6f2a37",
+                    "collection_id": "4236d502-31a4-4df6-b71f-a1d91c2f69ff"
+                  },
+                  "labels": [
+                    {
+                      "kind": "label",
+                      "name": "Review",
+                      "collection_id": "d5737d9b-9888-4691-9f1d-286ec025853e"
+                    }
+                  ],
+                  "version": 1
+                },
+                "security_state": "quarantined",
+                "internet_message_id": "\u003csandy-synthetic-first-001@example.invalid\u003e"
+              },
+              "received_time_source": "archive_time_or_explicit_cutoff"
+            },
+            "source_path": "messages/3c8c860c-a8bf-42ad-abed-0cfb157eecfe.eml",
+            "source_size": 10240,
+            "source_folder": "messages",
+            "source_sha256": "ef5f5c91fcddbc7e861618f59f43064b19b3469310979273a3c570ea912577d8"
+          }
+        ]
+      }
+    ],
+    "prototype_message_limit": 100
+  },
+  "source_revision": "733bb820ff95fcb8bfefa2543f06c18fc4c88462",
+  "source_scope": {
+    "Tenant": "6cab89f1-ed6a-43bb-8f21-9278856a0bec",
+    "Account": "1471893e-d431-4c0d-b389-5b058b708c91",
+    "Mailbox": "b2656f47-3cc1-4561-9b88-54998a114656"
+  }
+}
