@@ -604,6 +604,12 @@ Deno.serve(async(req:Request)=>{
     let selectionAudit:any={};
     let dynamicCandidates:any[]=[];
     let latestDesignRunKey:string|null=null;
+    // A count oracle cannot assess a general conversation-memory prompt.
+    // Reject a generated/refilled mismatch before charging a QA execution.
+    const webHistoryCountIntent=(question:string)=>
+      /\b(?:how many|number of|count|total)\b/i.test(question)&&
+      /\bweb(?:\s+chat)?\b/i.test(question)&&
+      /\b(?:messages?|turns?|chats?)\b/i.test(question);
     if(executionPolicy?.mode==="enabled"){
       const {data:design,error:designError}=await db.from("sandy_examiner_design_runs")
         .select("run_key,proposals").eq("status","generated")
@@ -613,6 +619,7 @@ Deno.serve(async(req:Request)=>{
       const disallow=/(password|secret|token|api key|transfer money|purchase|payment|sign in|log in)/i;
       const actionRequest=/\b(?:please|can you|could you|would you)\s+(?:send|delete|create|book|invite|make changes|archive|complete a task)\b/i;
       const explicitlyReadOnly=/\b(?:do not|don't|without|only inspect|read.only|no changes|not asking you to|just check)\b/i;
+
       dynamicCandidates=(design||[]).flatMap((run:any)=>(Array.isArray(run.proposals)?run.proposals:[]).map((x:any)=>({...x,design_run_key:run.run_key}))).filter((x:any)=>
         safeOracles.has(x?.oracle_key)&&typeof x.question==="string"&&x.question.length>=14&&x.question.length<=250&&
         !(disallow.test(x.question)||(actionRequest.test(x.question)&&!explicitlyReadOnly.test(x.question)))&&x.execution_status==="shadow_not_executed"&&
@@ -637,6 +644,7 @@ Deno.serve(async(req:Request)=>{
       dynamicCandidates=dynamicCandidates.filter((x:any)=>{
         const k=canonical(String(x.question||"")),oracle=String(x.oracle_key||"");
         if(!k)return reject("invalid_question",x);
+        if(oracle==="web_history"&&!webHistoryCountIntent(String(x.question||"")))return reject("oracle_question_mismatch",x);
         if(seen.has(k))return reject("previously_executed",x);
         if((selectedOracles.get(oracle)||0)>=2)return reject("oracle_limit_per_batch",x);
         if(priorPasses.some((old:string)=>similarity(k,old)>=0.94))return reject("similar_to_prior_pass",x);
@@ -714,6 +722,7 @@ Deno.serve(async(req:Request)=>{
             refillAudit.proposed++;
             const oracle=String(v.oracle_key||""),question=String(v.question||"").trim(),c=canonicalRefill(question);
             if(!permitted.includes(oracle)||question.length<14||question.length>220||prohibited.test(question)||(actionRequest.test(question)&&!readOnly.test(question))){reason("invalid_or_unsafe");continue;}
+            if(oracle==="web_history"&&!webHistoryCountIntent(question)){reason("oracle_question_mismatch");continue;}
             if((oracleCounts.get(oracle)||0)>=2){reason("oracle_diversity_limit");continue;}
             if(selectedQuestions.has(c)||priorQuestions.includes(c)){reason("exact_duplicate");continue;}
             if(priorQuestions.some((old:string)=>similar(c,old))||[...selectedQuestions].some(old=>similar(c,old))){reason("near_duplicate");continue;}
