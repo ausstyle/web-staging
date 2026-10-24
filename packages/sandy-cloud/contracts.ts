@@ -20,6 +20,12 @@ const c = (
 export const contracts: Record<string, Contract> = {
   "workspaces.list": c(),
   "nodes.list": c({ parentId: "nullable-string", trash: "boolean" }),
+  "nodes.page": c({
+    parentId: "nullable-string",
+    trash: "boolean",
+    limit: "integer",
+    cursor: "string",
+  }),
   "nodes.folder": c(
     { name: "string", parentId: "nullable-string" },
     ["name"],

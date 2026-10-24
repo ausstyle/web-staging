@@ -141,3 +141,21 @@ The final production transport must validate API admission, object/bucket
 binding, policy/lease state, deadline and budget on every request, persist each
 session transition and independently reconcile a lost start-session
 acknowledgement.
+
+## Bounded folder browsing
+
+The Drive browser uses `nodes.page`: 100 rows per UI page, maximum 500 via the
+fixture API, with signed context-bound continuation tokens. A short-lived
+metadata listing snapshot keeps traversal stable through concurrent changes;
+refresh starts a new listing. Current membership and policy epoch are checked
+for every page. Snapshot expiry or server restart requires refresh. Listing
+projections expire in five minutes and are cleaned on subsequent paging
+requests, with a four-per-actor, sixteen-global and 100,000-entry-per-snapshot
+cap. Small one-page folders allocate no snapshot. These are ephemeral listing
+projections, not retained backups.
+
+The 100,000-node test uses synthetic local SQLite metadata and an indexed
+position seek. It does not prove PostgreSQL throughput or production
+authorization. The signing codec is separate from identity; production key
+lifecycle and pagination storage must be bound by the canonical owners before
+deployment.

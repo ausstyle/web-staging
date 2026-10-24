@@ -200,3 +200,60 @@ binding; (4) a shared API identity/contract release slot preserving current owne
 (5) signed macOS/Windows delivery identities and real two-device test hosts.
 No standing approval removal, IAM expansion, new cloud credentials or additional
 provider call was attempted. GitHub branch-protection inspection was not retried.
+
+## Production integration continuation — 24 October 2026
+
+PR245 was merged at `9f8ec7f8307ffd4906a10540c8eff77749b7bcdb`; its 37 local
+Deno tests and Chromium evidence remain the accepted source baseline. Further
+work is isolated on `sandy-cloud/production-integration-0012` from updated main.
+
+SC-02/08/09/12 now have an additional PostgreSQL commit adapter and candidate
+private additive schema: exact persisted intent/scan checks; canonical-owner
+admission/projection hooks on one transaction; immutable versions; quota/usage,
+outbox and receipt atomicity; authorized acknowledgement reconciliation. Thirteen
+new embedded PostgreSQL scenarios passed, including outbox/projection rollback,
+non-empty reservation settlement and forced-RLS denial after accidental grants.
+The production schema is NOT installed; owner hooks in the tests are synthetic.
+No company membership mapping, canonical gateway route or workload role is guessed.
+
+A committed-source release packager emits a hash manifest and review archive,
+excluding the local fixture issuer/server. The package is explicitly not yet
+installable. [Owner handoff](production-integration-handoff.md) lists the precise
+canonical identity, file writer, database role/release, provider and Mission
+bindings required for live integration. Inventory, USD10 provisioning/region/IAM
+and native signing gates remain pending through the parent. No gates were removed,
+no denied operation was retried and no existing files were copied or changed.
+
+This closes part of the production transaction source gap, not all WP-1 or any
+provider acceptance. Remaining independent source work includes production tree,
+share and device operations, pagination, transfer admission/expiry, rich parsing,
+backup/restore worker integration and native clients. Their implementation must
+use the owner contracts above; local tests alone do not establish those contracts.
+All deployment and AC-01–13 acceptance cells remain unchanged (pending).
+
+## Stable folder pagination continuation — 24 October 2026
+
+SC-01/03 and the architecture's 100,000-node pagination requirement now have a
+working local domain/API/UI path. `nodes.page` returns at most 500 rows (the Drive
+UI requests 100) with HMAC-authenticated cursors bound to current actor, tenant,
+workspace, parent, trash filter, page size and policy epoch. Every page rechecks
+membership. Five-minute immutable metadata listing projections prevent concurrent
+rename/insert/trash operations from causing duplicates or missing rows. They are
+not backup snapshots or authorization grants. Token keys are process-local;
+restart requires a fresh listing. Snapshot creation is bounded to 100,000 entries,
+four active projections per actor and sixteen globally. Existing unpaged methods
+remain for compatibility; the browser now uses the bounded path.
+
+Five new tests passed: cursor tamper/expiry/key rotation, mutation-stable traversal,
+current admission/query binding, cache bounds/expiry/restart and a 100,000-node
+indexed enumeration. The local 100k traversal took about 0.5 seconds in one test
+run; this is not a production latency SLO. All 42 Deno tests passed. Real Chromium
+also passed a 101-entry folder across a 100-row first page and one-row final page,
+alongside existing upload/download/restore/isolation checks. PR245 evidence files
+were preserved; these are new source checks, not a replacement acceptance record.
+
+This is meaningful independent product behavior implemented while the parent
+coordinates canonical identity/file-writer bindings. Production PostgreSQL tree
+mapping, provider execution, native clients and full mandatory acceptance remain
+pending. No shared gateway, live schema, IAM/resource or artifact-download action
+was attempted. Full scope stays open.

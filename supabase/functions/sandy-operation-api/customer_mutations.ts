@@ -565,9 +565,11 @@ export function buildCustomerMutationReceiptRequest(
     origin.protocol !== "https:" || origin.username || origin.password ||
     origin.pathname !== "/" || origin.search || origin.hash
   ) return null;
-  const certification = operation === "memory.fact_correct"
+  const certification = (operation === "memory.fact_correct" || operation === "tasks.update")
     ? dependencies.memoryCertification
     : undefined;
+  if (certification && operation === "tasks.update" &&
+    (args.status !== "cancelled" || Object.keys(args).sort().join(",") !== "id,idempotency_key,status")) return null;
   if (
     certification &&
     (!uuid(certification.id) ||
@@ -643,7 +645,7 @@ async function executeMutationReceipt(
   if (
     object(result) && result.ok === false && typeof result.error === "string" &&
     Number.isInteger(result.http_status) &&
-    [400, 401, 403, 404, 409, 424, 503].includes(Number(result.http_status))
+    [400, 401, 403, 404, 409, 424, 429, 503].includes(Number(result.http_status))
   ) {
     return failure(
       Number(result.http_status),

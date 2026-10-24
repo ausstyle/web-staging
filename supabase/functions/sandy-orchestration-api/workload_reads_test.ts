@@ -4,7 +4,7 @@ import {argumentDigest} from '../_shared/sandy_api_protocol.ts';
 const job='10000000-0000-4000-8000-000000000001',worker='10000000-0000-4000-8000-000000000002',lease='10000000-0000-4000-8000-000000000003',actor='10000000-0000-4000-8000-000000000004',dispatch='10000000-0000-4000-8000-000000000005',admission='10000000-0000-4000-8000-000000000006';
 const claim={job_id:job,lease_token:lease,worker_id:worker,principal_kind:'engineering_workload'};
 const credential='fixture-private-bootstrap-'.repeat(3);
-async function fixture(options:{deny?:boolean;badDigest?:boolean;finishLost?:boolean;fetchThrow?:boolean;providerDeny?:boolean;runtimeUnavailable?:boolean}={}){
+async function fixture(options:{deny?:boolean;badDigest?:boolean;finishLost?:boolean;fetchThrow?:boolean;providerDeny?:boolean;runtimeUnavailable?:boolean;apiProjection?:boolean;wrongProjection?:boolean;wrongRequest?:boolean;wrongAdmission?:boolean;wrongContract?:boolean}={}){
  const calls:any[]=[],requests:any[]=[];
  const db={rpc:async(name:string,args:any)=>{calls.push({name,args});
  if(name==='sandy_orch_resolve_workload_dispatch')return{data:options.deny?{ok:false,error:'workload_authorization_or_contract_changed'}:{ok:true,job_id:job,identity_user_id:actor,dispatch_id:dispatch,operation:'github.repos.get',arguments:{},input_sha256:options.badDigest?'a'.repeat(64):await argumentDigest({}),registry_revision:'b'.repeat(64)},error:null};
@@ -14,7 +14,8 @@ async function fixture(options:{deny?:boolean;badDigest?:boolean;finishLost?:boo
  const request=async(url:any,init:any)=>{requests.push({url:String(url),init});if(options.fetchThrow)throw Error(credential);
  if(options.runtimeUnavailable)return Response.json({error:'engineering_session_unavailable',executed:false,automatic_retry:false},{status:503});
  const body=options.providerDeny?{ok:false,error:'engineering_policy_blocked',executed:false}:{ok:true,operation:'github.repos.get',executed:true,request_state:'observed',provider_http_status:200,admission_id:admission,provider_request_id:'fixture-provider-observation',result:{id:123}};
- return Response.json({jsonrpc:'2.0',id:dispatch,result:{content:[{type:'text',text:JSON.stringify({status:options.providerDeny?403:200,result:body})}],isError:!!options.providerDeny}});};
+ const wrapped=options.apiProjection!==false&&!options.providerDeny?{ok:true,operation:'github.repos.get',executed:true,request_id:options.wrongRequest?job:dispatch,admission_id:options.wrongAdmission?job:admission,result:{...body,operation:options.wrongProjection?'github.other.get':'github.repos.get',contract_version:options.wrongContract?'0.0.0':'1.0.0'}}:body;
+ return Response.json({jsonrpc:'2.0',id:dispatch,result:{content:[{type:'text',text:JSON.stringify({status:options.providerDeny?403:200,result:wrapped})}],isError:!!options.providerDeny}});};
  const result=await runWorkloadRead({db,base:'https://zmqlyygzqoidkcwdysok.supabase.co',anon:'fixture-anon',fetch:request},claim,worker);return{result,calls,requests};
 }
 Deno.test('durable workload read uses normal renewable runtime and stable dispatch identity, records actual admission',async()=>{
@@ -37,4 +38,19 @@ Deno.test('lost transport never redispatches and lost persistence never claims c
 
 Deno.test('explicit pre-dispatch renewable authentication failure is persisted without automatic retry',async()=>{
  const {result,calls,requests}=await fixture({runtimeUnavailable:true});assert.equal(requests.length,1);assert.equal(result.state,'failed');const finish=calls.find(x=>x.name==='sandy_orch_finish').args;assert.equal(finish.p_outcome,'failed');assert.equal(finish.p_error_code,'engineering_session_unavailable');assert.equal(finish.p_execution_admission_id,null);
+});
+
+Deno.test('real Sandy API public projection persists the inner provider receipt without classifying success as failure',async()=>{
+ const {result,calls}=await fixture({apiProjection:true});
+ assert.equal(result.state,'succeeded');assert.equal(result.persisted,true);
+ const finished=calls.find(x=>x.name==='sandy_orch_finish').args;
+ assert.equal(finished.p_outcome,'succeeded');assert.equal(finished.p_execution_admission_id,admission);
+ assert.deepEqual(finished.p_result.result,{id:123});assert.equal(finished.p_result.contract_version,'1.0.0');
+});
+Deno.test('unbound, conflicting or unprojected provider claims cannot establish durable success',async()=>{
+ for(const options of [{wrongProjection:true},{wrongRequest:true},{wrongAdmission:true},{wrongContract:true},{apiProjection:false}]){
+  const {result,calls}=await fixture(options),finish=calls.find(x=>x.name==='sandy_orch_finish').args;
+  assert.notEqual(result.state,'succeeded');assert.equal(finish.p_outcome,'unknown');
+  assert.equal(finish.p_execution_admission_id,null);assert.equal(finish.p_error_code,'provider_receipt_contract_mismatch');
+ }
 });

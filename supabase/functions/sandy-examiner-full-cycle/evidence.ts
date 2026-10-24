@@ -30,9 +30,13 @@ export function pilotExecutionEvidence(edgeStatus: number, taskStatus: unknown, 
     }
     if (object(entry.deadline_evidence)) {
       const deadlines: Obj = {};
-      for (const key of ["total_overdue", "total_tasks", "total_outstanding"])
+      for (const key of ["total_overdue", "total_tasks", "total_outstanding", "assessed_records", "unknown_deadlines", "overdue_in_returned_records"])
         if (count(entry.deadline_evidence[key])) deadlines[key] = entry.deadline_evidence[key];
       if (typeof entry.deadline_evidence.complete === "boolean") deadlines.complete = entry.deadline_evidence.complete;
+      if (typeof entry.deadline_evidence.coverage === "string" && ["complete", "partial", "unavailable"].includes(entry.deadline_evidence.coverage)) deadlines.coverage = entry.deadline_evidence.coverage;
+      const asOf=entry.deadline_evidence.as_of;
+      if (typeof asOf === "string" && /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(asOf) &&
+          Number.isFinite(Date.parse(asOf)) && new Date(asOf).toISOString() === asOf) deadlines.as_of = asOf;
       if (Object.keys(deadlines).length) tool.deadline_evidence = deadlines;
     }
     tools.push(tool);
