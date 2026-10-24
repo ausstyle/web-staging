@@ -39,6 +39,7 @@
   },
   "replacements": {
     "_shared/sandy-agent-operations/runtime_conversation.ts": "bd32557109af7548df276d942263c6d4dea8ca3083cfeefd7d47156f4cdc786f",
-    "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f"
+    "_shared/sandy-agent-operations/runtime_model_metrics.ts": "f323b27e8802e9a48cb46482cf1169cdd5a1dc08f9fd732a68108a01fec4f11f",
+    "_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts": "797762604861477be1c8e2f7d7b15cbd30d094f995d19be983fc1635e4fbe0fd"
   }
 }

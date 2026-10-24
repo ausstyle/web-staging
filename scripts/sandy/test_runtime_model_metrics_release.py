@@ -1,4 +1,4 @@
-import copy,json,unittest
+import copy,hashlib,json,re,unittest
 from unittest.mock import patch
 from pathlib import Path
 import release_runtime_model_metrics as schema
@@ -14,11 +14,15 @@ class MetricsReleaseTests(unittest.TestCase):
   self.assertEqual(after.count("'finished_at','model_metrics']"),2)
   self.assertIn('runtime_conversation_receipt_scope_immutable',after)
   with self.assertRaises(Blocked):schema.expected_definition(source.replace("'finished_at'","'changed_at'"))
- def test_manifest_only_preserves_existing_live_bundle_plus_two_modules(self):
+ def test_manifest_preserves_existing_live_bundle_and_entrypoint_provenance(self):
   m=json.loads(schema.MANIFEST.read_bytes());validate(m)
   self.assertEqual(m['version'],35)
-  self.assertEqual(set(m['replacements']),{'_shared/sandy-agent-operations/runtime_conversation.ts','_shared/sandy-agent-operations/runtime_model_metrics.ts'})
+  self.assertEqual(set(m['replacements']),{'_shared/sandy-agent-operations/runtime_conversation.ts','_shared/sandy-agent-operations/runtime_model_metrics.ts','_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts'})
   self.assertEqual(len(m['before_files']),31)
+  entry=hashlib.sha256(Path('supabase/functions/sandy-agent-runtime-v4/index.ts').read_bytes()).hexdigest()
+  transport=Path('supabase/functions/_shared/sandy-agent-operations/runtime_conversation_v4_transport.ts').read_text()
+  self.assertEqual(re.findall(r'sourceSha256: "([a-f0-9]{64})"',transport),[entry])
+  self.assertEqual(entry,m['before_files']['sandy-agent-runtime-v4/index.ts'])
   forged=copy.deepcopy(m);forged['replacements']['unrestricted.ts']='a'*64
   with self.assertRaises(Blocked):validate(forged)
  def test_installed_schema_reconcile_requires_exact_history(self):
