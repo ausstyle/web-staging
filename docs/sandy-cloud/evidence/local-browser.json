@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "environment": "loopback fixture / real Chromium",
+  "checks": [
+    "upload",
+    "exact downloaded bytes",
+    "snapshot",
+    "trash",
+    "restore into new folder",
+    "restored downloaded bytes",
+    "second tenant sees no files",
+    "reader write denied"
+  ],
+  "provider_acceptance": false
+}

@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Sandy Cloud · Local fixture</title>
+    <style>
+    :root {
+      font: 15px system-ui,sans-serif;
+      color: #18333c;
+      background: #f4f7f7;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+    }
+    header {
+      background: #163c47;
+      color: white;
+      padding: 22px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    h1 {
+      font-size: 24px;
+      margin: 0;
+    }
+    header small {
+      color: #bce0d7;
+    }
+    .notice {
+      padding: 12px 32px;
+      background: #fff0cc;
+      color: #604715;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: 80vh;
+    }
+    aside {
+      padding: 24px;
+      background: white;
+      border-right: 1px solid #dce4e5;
+    }
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+      border: 1px solid #b7c8cd;
+      border-radius: 7px;
+      padding: 9px 12px;
+    }
+    button {
+      cursor: pointer;
+      background: white;
+      color: #163c47;
+    }
+    button:hover {
+      background: #e1eeea;
+    }
+    button:disabled {
+      opacity: .5;
+      cursor: default;
+    }
+    .primary {
+      background: #176b57;
+      color: white;
+    }
+    .primary:hover {
+      background: #125b49;
+    }
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      outline: 3px solid #da9a15;
+      outline-offset: 2px;
+    }
+    aside button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      margin: 7px 0;
+    }
+    .active {
+      background: #dcefe8;
+    }
+    section {
+      padding: 28px;
+      max-width: 1200px;
+    }
+    h2 {
+      margin-top: 0;
+      font-size: 25px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      border-radius: 10px;
+    }
+    th,
+    td {
+      text-align: left;
+      padding: 15px;
+      border-bottom: 1px solid #e4ebed;
+    }
+    th {
+      color: #577079;
+      font-size: 13px;
+    }
+    td button {
+      padding: 5px 8px;
+      margin: 2px;
+    }
+    #status {
+      min-height: 28px;
+      color: #306c59;
+    }
+    #status.error {
+      color: #aa2b25;
+    }
+    .muted {
+      color: #627983;
+    }
+    .empty {
+      padding: 60px;
+      text-align: center;
+      background: white;
+      border: 1px dashed #b7c8cd;
+      border-radius: 10px;
+    }
+    dialog {
+      border: 1px solid #b7c8cd;
+      border-radius: 14px;
+      max-width: 620px;
+      width: 94%;
+      padding: 26px;
+    }
+    dialog::backdrop {
+      background: #12343b80;
+    }
+    label {
+      display: block;
+      margin: 12px 0;
+    }
+    label input,
+    label textarea,
+    label select {
+      width: 100%;
+      margin-top: 6px;
+    }
+    textarea {
+      min-height: 150px;
+    }
+    .row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    #crumb {
+      margin: 0 0 20px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 12px;
+      padding: 3px 7px;
+      background: #e7f1ed;
+      border-radius: 4px;
+    }
+    progress {
+      width: 100%;
+      height: 14px;
+    }
+    #detail {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    @media (max-width:700px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        display: flex;
+        gap: 8px;
+        padding: 10px;
+        flex-wrap: wrap;
+      }
+      aside button {
+        width: auto;
+      }
+      section {
+        padding: 16px;
+      }
+      header {
+        padding: 18px;
+        flex-wrap: wrap;
+      }
+      th:nth-child(3),
+      td:nth-child(3) {
+        display: none;
+      }
+      .notice {
+        padding: 10px 18px;
+      }
+    }
+    </style>
+  </head>
+  <body>
+    <header><div><h1>Sandy Cloud</h1><small>Your files, with a recoverable history</small></div><label style="margin:0;margin-left:auto">Test identity <select id="identity" aria-label="Synthetic test identity"></select></label></header>
+    <div
+      class="notice"><strong>Local synthetic fixture</strong> — no live accounts, GCS storage, malware scanning or signed desktop clients. Snapshot retention here is a local test, not a verified backup service.</div>
+    <main>
+      <aside>
+        <div><strong>Workspaces</strong><div id="workspaces"></div><hr><button id="filesTab">Files</button><button id="trashTab">Trash</button><button id="backupTab">Recovery points</button><p id="quota" class="muted"></p></div>
+      </aside>
+      <section><h2 id="title">Files</h2><div id="crumb"></div><div class="toolbar"><button id="newFolder">New folder</button><button id="upload" class="primary">Upload synthetic file</button><button id="snapshot">Create recovery point</button><button id="refresh">Refresh</button><button id="search">Search</button><button id="consent">Text indexing consent</button></div><div id="status" role="status" aria-live="polite"></div><progress id="progress" hidden max="100"></progress><div id="content"></div></section>
+    </main>
+    <dialog id="dialog">
+      <form id="form">
+        <h2 id="dialogTitle"></h2>
+        <div id="fields"></div>
+        <div
+          class="row"><button type="button" id="cancel">Cancel</button><button class="primary" id="submit">Save</button></div>
+      </form>
+    </dialog>
+    <script>
+    "use strict";
+    const $ = (id) => document.getElementById(id);
+    let fixtures = [],
+      actor = null,
+      workspace = null,
+      view = "files",
+      parents = [],
+      nodes = [],
+      busy = false;
+    const text = (tag, value, cls) => {
+      const e = document.createElement(tag);
+      e.textContent = value;
+      if (cls) e.className = cls;
+      return e;
+    };
+    function status(message, error = false) {
+      $("status").textContent = message;
+      $("status").className = error ? "error" : "";
+    }
+    async function api(
+      operation,
+      args = {},
+      key = crypto.randomUUID(),
+      raw = false,
+    ) {
+      const response = await fetch("/api", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "authorization": "Bearer " + actor.token,
+        },
+        body: JSON.stringify({
+          operation,
+          workspaceId: workspace?.id,
+          idempotencyKey: key,
+          args,
+        }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw Error(error.error || "Request failed");
+      }
+      return raw ? response : (await response.json()).result;
+    }
+    async function act(fn) {
+      if (busy) return;
+      busy = true;
+      try {
+        await fn();
+      } catch (e) {
+        status(e.message, true);
+      } finally {
+        busy = false;
+      }
+    }
+    function button(label, fn) {
+      const b = text("button", label);
+      b.onclick = () => act(fn);
+      return b;
+    }
+    function dialog(title, fields, onSubmit) {
+      $("dialogTitle").textContent = title;
+      $("fields").replaceChildren();
+      for (const f of fields) {
+        const label = text("label", f.label),
+          input = document.createElement(
+            f.type === "textarea" ? "textarea" : "input",
+          );
+        input.name = f.name;
+        input.value = f.value || "";
+        input.required = f.required !== false;
+        label.append(input);
+        $("fields").append(label);
+      }
+      $("form").onsubmit = async (e) => {
+        e.preventDefault();
+        $("submit").disabled = true;
+        try {
+          await onSubmit(Object.fromEntries(new FormData(e.target)));
+          $("dialog").close();
+        } catch (err) {
+          status(err.message, true);
+        } finally {
+          $("submit").disabled = false;
+        }
+      };
+      $("dialog").showModal();
+    }
+    $("cancel").onclick = () => $("dialog").close();
+    async function switchActor() {
+      actor = fixtures.find((f) => f.id === $("identity").value);
+      parents = [];
+      workspace = null;
+      await loadWorkspaces();
+    }
+    async function loadWorkspaces() {
+      const spaces = await api("workspaces.list");
+      if (!workspace || !spaces.some((s) => s.id === workspace.id)) {
+        workspace = spaces[0];
+      } else workspace = spaces.find((s) => s.id === workspace.id);
+      $("workspaces").replaceChildren(...spaces.map((s) => {
+        const b = button(s.name, async () => {
+          workspace = s;
+          parents = [];
+          view = "files";
+          await refresh();
+        });
+        if (s.id === workspace.id) b.classList.add("active");
+        return b;
+      }));
+      await refresh();
+    }
+    function breadcrumbs() {
+      $("crumb").replaceChildren(
+        button(workspace?.name || "Workspace", async () => {
+          parents = [];
+          await refresh();
+        }),
+      );
+      parents.forEach((n, i) => {
+        $("crumb").append(
+          text("span", "/"),
+          button(n.name, async () => {
+            parents = parents.slice(0, i + 1);
+            await refresh();
+          }),
+        );
+      });
+    }
+    async function refresh() {
+      if (!workspace) return;
+      status("");
+      $("title").textContent = view === "backups"
+        ? "Recovery points"
+        : view === "trash"
+        ? "Trash"
+        : "Files";
+      breadcrumbs();
+      $("quota").textContent = (workspace.used_bytes / 1048576).toFixed(1) + " / " +
+        (workspace.quota_bytes / 1048576).toFixed(0) + " MiB committed";
+      $("newFolder").disabled = view !== "files";
+      $("upload").disabled = view !== "files";
+      if (view === "backups") {
+        const snapshots = await api("snapshots.list");
+        render(
+          snapshots,
+          ["Created", "Snapshot", "Status", "Actions"],
+          (s) => [
+            new Date(s.created_at).toLocaleString(),
+            s.id.slice(0, 8),
+            "Local · not provider-verified",
+            [button(
+              "Restore to new folder",
+              async () =>
+                dialog("Restore recovery point", [{
+                  name: "name",
+                  label: "New destination folder",
+                  value: "Recovered " + new Date().toISOString().slice(0, 10),
+                }], async (v) => {
+                  await api("snapshots.restore", { id: s.id, name: v.name });
+                  view = "files";
+                  parents = [];
+                  await refresh();
+                  status(
+                    "Restored references and verified source bytes. Independent clean-target proof is a separate check.",
+                  );
+                }),
+            )],
+          ],
+        );
+        return;
+      }
+      nodes = await api("nodes.list", {
+        parentId: parents.at(-1)?.id ?? null,
+        trash: view === "trash",
+      });
+      render(nodes, ["Name", "Type", "Revision", "Actions"], (n) => {
+        const name = n.kind === "directory"
+          ? button("▸ " + n.name, async () => {
+            parents.push(n);
+            await refresh();
+          })
+          : text("span", n.name);
+        const actions = [];
+        if (view === "trash") {
+          actions.push(button("Restore from trash", async () => {
+            await api("nodes.change", {
+              id: n.id,
+              revision: n.revision,
+              patch: { trashed: false },
+            });
+            await refresh();
+          }));
+        } else {
+          if (n.kind === "file") {
+            actions.push(
+              button("Download", () => download(n.current_version_id, n.name)),
+              button("Versions", () => history(n)),
+              button("Index text", async () => {
+                await api("documents.index", { versionId: n.current_version_id });
+                status(
+                  "Indexed synthetic plain text with source version. No AI actions were executed.",
+                );
+              }),
+              button(
+                "Share",
+                async () =>
+                  dialog("Share exact version", [{
+                    name: "recipientId",
+                    label: "Existing fixture recipient ID",
+                    value: "reader",
+                  }], async (v) => {
+                    const result = await api("shares.create", {
+                      versionId: n.current_version_id,
+                      recipientId: v.recipientId,
+                      expiresAt: Date.now() + 3600000,
+                    });
+                    status(
+                      "One-time share token: " + result.token + " · share ID: " +
+                        result.id +
+                        " · expires in one hour. Recipient must already have workspace access.",
+                    );
+                  }),
+              ),
+              button(
+                "Edit fixture",
+                async () =>
+                  dialog("Save a new immutable version", [{
+                    name: "content",
+                    label: "Synthetic text only",
+                    type: "textarea",
+                    value: "A new synthetic revision.",
+                  }], (v) => uploadText(n.name, v.content, n)),
+              ),
+            );
+          }
+          actions.push(
+            button("Rename", async () =>
+              dialog(
+                "Rename",
+                [{ name: "name", label: "Name", value: n.name }],
+                async (v) => {
+                  await api("nodes.change", {
+                    id: n.id,
+                    revision: n.revision,
+                    patch: { name: v.name },
+                  });
+                  await refresh();
+                },
+              )),
+            button("Move", async () =>
+              dialog("Move within this workspace", [{
+                name: "parentId",
+                label: "Destination folder ID (blank for root)",
+                required: false,
+              }], async (v) => {
+                await api("nodes.change", {
+                  id: n.id,
+                  revision: n.revision,
+                  patch: { parentId: v.parentId || null },
+                });
+                await refresh();
+              })),
+            button("Trash", async () => {
+              await api("nodes.change", {
+                id: n.id,
+                revision: n.revision,
+                patch: { trashed: true },
+              });
+              await refresh();
+            }),
+          );
+        }
+        return [
+          name,
+          n.kind === "directory" ? "Folder" : "File",
+          String(n.revision),
+          actions,
+        ];
+      });
+    }
+    function render(items, headers, row) {
+      $("content").replaceChildren();
+      if (!items.length) {
+        $("content").append(
+          text(
+            "div",
+            view === "backups"
+              ? "No recovery points yet. Create one before testing deletion."
+              : "Nothing here yet. Add a folder or upload a synthetic file.",
+            "empty",
+          ),
+        );
+        return;
+      }
+      const table = document.createElement("table"),
+        head = document.createElement("thead"),
+        tr = document.createElement("tr");
+      headers.forEach((h) => tr.append(text("th", h)));
+      head.append(tr);
+      table.append(head);
+      const body = document.createElement("tbody");
+      items.forEach((item) => {
+        const tr = document.createElement("tr");
+        row(item).forEach((value) => {
+          const td = document.createElement("td");
+          if (Array.isArray(value)) td.append(...value);
+          else if (value instanceof Node) td.append(value);
+          else td.textContent = value;
+          tr.append(td);
+        });
+        body.append(tr);
+      });
+      table.append(body);
+      $("content").append(table);
+    }
+    async function download(id, name) {
+      const response = await api("versions.download", { id }, undefined, true),
+        blob = await response.blob(),
+        url = URL.createObjectURL(blob),
+        a = document.createElement("a");
+      a.href = url;
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      status("Downloaded exact immutable version.");
+    }
+    async function history(n) {
+      const versions = await api("versions.list", { nodeId: n.id });
+      $("dialogTitle").textContent = "Version history · " + n.name;
+      $("fields").replaceChildren(...versions.map((v) => {
+        const line = text(
+          "div",
+          new Date(v.created_at).toLocaleString() + " · " + v.size + " bytes · " +
+            v.sha256.slice(0, 12) + " ",
+        );
+        line.append(button("Download", () => download(v.id, n.name)));
+        return line;
+      }));
+      $("submit").hidden = true;
+      $("dialog").showModal();
+      $("dialog").addEventListener("close", () => {
+        $("submit").hidden = false;
+      }, { once: true });
+    }
+    async function uploadText(name, content, node) {
+      const bytes = new TextEncoder().encode(content),
+        sha = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map(
+          (x) => x.toString(16).padStart(2, "0"),
+        ).join("");
+      const u = await api("uploads.start", {
+        name,
+        size: bytes.length,
+        sha256: sha,
+        parentId: parents.at(-1)?.id,
+        nodeId: node?.id,
+        expectedRevision: node?.revision || 0,
+      });
+      $("progress").hidden = false;
+      try {
+        for (let offset = 0; offset < bytes.length; offset += 65536) {
+          const chunk = bytes.subarray(offset, offset + 65536);
+          let binary = "";
+          chunk.forEach((b) => binary += String.fromCharCode(b));
+          await api("uploads.chunk", { id: u.id, offset, base64: btoa(binary) });
+          $("progress").value = (offset + chunk.length) / bytes.length * 100;
+        }
+        await api("uploads.complete", { id: u.id });
+        await loadWorkspaces();
+        status("Committed after independent byte/hash verification.");
+      } finally {
+        $("progress").hidden = true;
+      }
+    }
+    $("identity").onchange = () => act(switchActor);
+    $("filesTab").onclick = () =>
+      act(async () => {
+        view = "files";
+        parents = [];
+        await refresh();
+      });
+    $("trashTab").onclick = () =>
+      act(async () => {
+        view = "trash";
+        parents = [];
+        await refresh();
+      });
+    $("backupTab").onclick = () =>
+      act(async () => {
+        view = "backups";
+        parents = [];
+        await refresh();
+      });
+    $("refresh").onclick = () => act(loadWorkspaces);
+    $("newFolder").onclick = () =>
+      dialog("New folder", [{ name: "name", label: "Folder name" }], async (v) => {
+        await api("nodes.folder", { name: v.name, parentId: parents.at(-1)?.id });
+        await refresh();
+      });
+    $("upload").onclick = () =>
+      dialog("Upload synthetic file", [{
+        name: "name",
+        label: "Filename",
+        value: "hello.txt",
+      }, {
+        name: "content",
+        label: "Synthetic content",
+        type: "textarea",
+        value: "Hello from Sandy Cloud. This is synthetic test content.",
+      }], (v) => uploadText(v.name, v.content));
+    $("consent").onclick = () =>
+      dialog("Text indexing consent", [{
+        name: "enabled",
+        label: "Type enable or disable (workspace owner only)",
+        value: "disable",
+      }], async (v) => {
+        if (!["enable", "disable"].includes(v.enabled)) {
+          throw Error("Type enable or disable");
+        }
+        await api("documents.consent", { enabled: v.enabled === "enable" });
+        status(
+          "Text indexing " + v.enabled +
+            "d. Derived text is removed when disabled.",
+        );
+      });
+    $("search").onclick = () =>
+      dialog("Search current workspace", [{
+        name: "query",
+        label: "Name or consented plain text",
+      }], async (v) => {
+        const results = await api("documents.search", { query: v.query });
+        render(
+          results,
+          ["Name", "Source version", "Match", "Actions"],
+          (r) => [
+            r.name,
+            r.versionId?.slice(0, 8) || "folder",
+            r.excerpt || "Filename match",
+            r.versionId
+              ? [button("Download", () => download(r.versionId, r.name))]
+              : [],
+          ],
+        );
+        status(
+          "Permission-filtered lexical results; document excerpts are untrusted data.",
+        );
+      });
+    $("snapshot").onclick = () =>
+      act(async () => {
+        await api("snapshots.create");
+        view = "backups";
+        parents = [];
+        await refresh();
+        status(
+          "Local recovery point recorded; provider retention is not certified.",
+        );
+      });
+    (async () => {
+      fixtures = await (await fetch("/fixtures")).json();
+      $("identity").replaceChildren(...fixtures.map((f) => {
+        const o = text("option", f.name);
+        o.value = f.id;
+        return o;
+      }));
+      await switchActor();
+    })().catch((e) => status(e.message, true));
+    </script>
+  </body>
+</html>
