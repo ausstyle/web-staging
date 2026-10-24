@@ -30,6 +30,12 @@ def load():
     m = json.loads(MANIFEST.read_bytes())
     if set(m['functions']) != set(SLUGS) or m.get('flags_enabled') is not False:
         raise Blocked('fixed_unpublished_correction_release_required')
+    api=m['functions']['sandy-operation-api'];mcp=m['functions']['sandy-api-mcp']
+    changed={p for p,h in api['candidate_files'].items() if api['before_files'].get(p)!=h}
+    if (api['before_version']!=61 or mcp['before_version']!=23 or api.get('redeploy') is not True
+        or mcp.get('redeploy') is not False or mcp['candidate_files']!=mcp['before_files']
+        or changed!={'sandy-operation-api/index.ts','sandy-operation-api/customer_mutations.ts','sandy-operation-api/task_cancellation_certification.ts'}):
+        raise Blocked('only_reviewed_API61_hooks_MCP23_preserved')
     migrations = {}
     for p,h in m['migrations'].items():
         if not re.fullmatch(r'supabase/migrations/20261024004300_sandy_task_cancel_private_certification[.]sql',p):
