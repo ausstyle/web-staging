@@ -74,10 +74,44 @@ Deno.test('delegated read jobs reuse original durable queue without Owner substi
  });
  await t.step('different idempotency keys share an actor admission lock and cannot exceed the queue quota',async()=>{
   const migration=await Deno.readTextFile('supabase/migrations/20261024003200_sandy_delegated_durable_reads.sql');assert.ok(migration.includes("hashtextextended(actor::text||':workload-read-admission',0)"));assert.ok(!migration.includes("':workload-read:'||p_idempotency_key"));
-  await db.exec("SELECT set_config('fixture.role','authenticated',false);UPDATE public.sandy_engineering_standing_delegations SET policy=jsonb_set(policy,'{requests_per_minute}','30')");
+  await db.exec("BEGIN;SELECT set_config('fixture.role','authenticated',false);UPDATE public.sandy_engineering_standing_delegations SET policy=jsonb_set(policy,'{requests_per_minute}','30')");
   for(let i=0;i<20;i++)assert.equal((await admit('fixture-durable-quota-'+String(i).padStart(3,'0'))).ok,true);
   assert.equal((await admit('fixture-durable-quota-overflow')).error,'durable_workload_budget_exhausted');
   assert.equal(await value("SELECT count(*)::integer v FROM public.sandy_orch_jobs WHERE actor_id=$1 AND principal_kind='engineering_workload' AND state IN('queued','leased','running')",[actor]),20);
+  await db.exec('ROLLBACK');
+ });
+ await t.step('expired read with an independently bound canonical success is reconciled without replay or invented output',async()=>{
+  await db.exec("SELECT set_config('fixture.role','authenticated',false);UPDATE public.sandy_engineering_standing_delegations SET policy=jsonb_set(policy,'{requests_per_minute}','30');UPDATE public.sandy_orch_jobs SET state='cancelled' WHERE state='queued';ALTER TABLE public.sandy_api_execution_admissions ADD COLUMN provider_http_status integer,ADD COLUMN result_sha256 text");
+  await db.exec(await Deno.readTextFile('supabase/migrations/20261024005300_sandy_known_read_receipt_recovery.sql'));
+  const prepare=async(key:string,patch:{state?:string;status?:number;hash?:string;input?:string}={})=>{
+   const created=await admit(key);assert.equal(created.ok,true);const lease=(await claim()).claims.find((x:any)=>x.job_id===created.job_id);
+   assert.ok(lease);
+   const dispatch=await value('SELECT public.sandy_orch_resolve_workload_dispatch($1,$2,$3) v',[created.job_id,lease.lease_token,worker]);assert.equal(dispatch.ok,true);
+   const authorization=crypto.randomUUID(),admission=crypto.randomUUID();
+   await db.query(`INSERT INTO public.sandy_engineering_execution_authorizations VALUES($1,$2,'github.repos.get',$3,$4,6,$5,$6,repeat('a',64),repeat('c',64))`,[actor,dispatch.dispatch_id,dispatch.input_sha256,delegation,authorization,owner]);
+   await db.query(`INSERT INTO public.sandy_api_execution_admissions VALUES($1,$2,$3,$4,'github.repos.get',$5,repeat('a',64),repeat('c',64),NULL,NULL,NULL,repeat('d',64),$6,$7,$8)`,[admission,authorization,owner,dispatch.dispatch_id,patch.input??dispatch.input_sha256,patch.state??'succeeded',patch.status??200,patch.hash??'e'.repeat(64)]);
+   await db.query("UPDATE public.sandy_orch_outbox SET lease_until=clock_timestamp()-interval '1 second' WHERE job_id=$1",[created.job_id]);
+   return{created,admission};
+  };
+  const known=await prepare('fixture-expired-known-success');
+  const independent=await admit('fixture-independent-after-known');
+  const next=await claim();assert.equal(next.claims.length,1);assert.equal(next.claims[0].job_id,independent.job_id);
+  assert.equal(await value('SELECT state v FROM public.sandy_orch_jobs WHERE id=$1',[known.created.job_id]),'needs_reconciliation');
+  assert.equal(await value('SELECT attempts v FROM public.sandy_orch_jobs WHERE id=$1',[known.created.job_id]),1);
+  assert.equal(await value('SELECT result v FROM public.sandy_orch_jobs WHERE id=$1',[known.created.job_id]),null);
+  assert.equal(await value('SELECT execution_admission_id v FROM public.sandy_orch_attempts WHERE job_id=$1',[known.created.job_id]),known.admission);
+  assert.equal(await value("SELECT count(*)::integer v FROM public.sandy_orch_events WHERE job_id=$1 AND event_type='expired_read_canonical_receipt_observed'",[known.created.job_id]),1);
+  assert.equal((await value('SELECT public.sandy_orch_workload_job($1,true) v',[independent.job_id])).state,'cancelled');
+  assert.equal((await claim()).claims.length,0);
+  for(const role of ['anon','authenticated','service_role'])assert.equal(await value(`SELECT has_function_privilege('${role}','public.sandy_orch_known_expired_workload_read(uuid)','EXECUTE') v`),false);
+  for(const [name,patch] of [['unknown',{state:'unknown'}],['failed',{state:'failed'}],['wrong-input',{input:'f'.repeat(64)}],['no-success-status',{status:500}],['bad-result-digest',{hash:'not-a-digest'}]] as const){
+   const unproven=await prepare('fixture-expired-'+name,patch);
+   assert.equal((await claim()).claims.length,0);
+   assert.equal(await value('SELECT state v FROM public.sandy_orch_jobs WHERE id=$1',[unproven.created.job_id]),'queued');
+   assert.equal(await value('SELECT attempts v FROM public.sandy_orch_jobs WHERE id=$1',[unproven.created.job_id]),1);
+   assert.equal(await value('SELECT error_code v FROM public.sandy_orch_jobs WHERE id=$1',[unproven.created.job_id]),'lease_expired_outcome_unknown');
+   await value('SELECT public.sandy_orch_workload_job($1,true) v',[unproven.created.job_id]);
+  }
  });
  }finally{await db.close();}
 });
