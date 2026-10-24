@@ -1,3 +1,4 @@
+import { fixtureScanner, fixtureScanSchema } from "./fixture_scan.mts";
 // Isolated PostgreSQL engine, synthetic data only. No Supabase connection.
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -74,7 +75,7 @@ const connection: SqlDatabase = {
     return result;
   },
 };
-const boundary = new PostgresCommitBoundary(connection, owners);
+const boundary = new PostgresCommitBoundary(connection, owners, fixtureScanner);
 let passed = 0;
 async function check(name: string, fn: () => Promise<void>) {
   await fn();
@@ -153,6 +154,7 @@ try {
   await db.exec(
     await readFile(new URL("./schema.sql", import.meta.url), "utf8"),
   );
+  await db.exec(fixtureScanSchema);
   await check(
     "candidate schema has no PUBLIC access, FORCE RLS denies accidental grants",
     async () => {

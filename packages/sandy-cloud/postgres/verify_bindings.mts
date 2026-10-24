@@ -1,3 +1,4 @@
+import { fixtureScanner, fixtureScanSchema } from "./fixture_scan.mts";
 // Isolated PostgreSQL fixtures; actual API admission hook + Cloud commit adapter.
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
@@ -128,7 +129,7 @@ const projection = canonicalFileProjection({
 const boundary = new PostgresCommitBoundary(connection, {
   lockAdmission: admission,
   projectVersion: projection,
-});
+}, fixtureScanner);
 let passed = 0;
 async function check(name: string, fn: () => Promise<void>) {
   await fn();
@@ -154,6 +155,7 @@ try {
   await db.exec(
     await readFile(new URL("./schema.sql", import.meta.url), "utf8"),
   );
+  await db.exec(fixtureScanSchema);
   await db.exec(
     await readFile(new URL("./projection.sql", import.meta.url), "utf8"),
   );

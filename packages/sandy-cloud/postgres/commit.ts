@@ -2,6 +2,7 @@
  * The canonical API owner supplies admission and canonical-file projection hooks;
  * both run on the SAME transaction, never via an independent REST write.
  */
+import type { ScanCommitOwner } from "./shared_scan.ts";
 import { createHash, randomUUID } from "node:crypto";
 import {
   type CommitBoundary,
@@ -91,6 +92,7 @@ export class PostgresCommitBoundary implements CommitBoundary {
   constructor(
     private readonly db: SqlDatabase,
     private readonly owners: ProductionOwners,
+    private readonly scanner: ScanCommitOwner,
   ) {}
 
   private async admitted(tx: SqlTransaction, i: Readonly<UploadIntent>) {
@@ -141,15 +143,6 @@ export class PostgresCommitBoundary implements CommitBoundary {
     );
     return (rows[0]?.receipt as VersionReceipt | undefined) ?? null;
   }
-  private async scan(tx: SqlTransaction, i: Readonly<UploadIntent>) {
-    const { rows } = await tx.query(
-      `SELECT verdict FROM sandy_cloud.scan_receipts
-      WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3
-      AND ref=$4::jsonb AND valid_until > clock_timestamp() FOR SHARE`,
-      [...scope(i), i.id, JSON.stringify(i.ref)],
-    );
-    if (rows[0]?.verdict !== "CLEAN") fail("SCAN_NOT_CLEAN");
-  }
   private proof(i: Readonly<UploadIntent>, p: IntegrityReceipt) {
     validateRef(i.ref, {
       tenantId: i.ref.tenantId,
@@ -183,9 +176,15 @@ export class PostgresCommitBoundary implements CommitBoundary {
   ): Promise<void> {
     this.proof(i, p);
     await this.db.transaction(async (tx) => {
-      await this.admitted(tx, i);
-      await this.stored(tx, i);
-      await this.scan(tx, i);
+      const { admitted } = await this.admitted(tx, i);
+      const row = await this.stored(tx, i);
+      if (!this.scanner) fail("SHARED_SCAN_OWNER_REQUIRED");
+      await this.scanner.verifyInTransaction(tx, {
+        intent: i,
+        fileId: row.file_id,
+        admission: admitted,
+        proof: p,
+      });
     });
   }
   async commit(i: Readonly<UploadIntent>, p: IntegrityReceipt): Promise<void> {
@@ -201,7 +200,17 @@ export class PostgresCommitBoundary implements CommitBoundary {
       if (Number(row.policy_epoch) !== admitted.policyEpoch) {
         fail("POLICY_CHANGED");
       }
-      await this.scan(tx, i);
+      if (!this.scanner) fail("SHARED_SCAN_OWNER_REQUIRED");
+      const scan = await this.scanner.verifyInTransaction(tx, {
+        intent: i,
+        fileId: row.file_id,
+        admission: admitted,
+        proof: p,
+      });
+      if (
+        !scan || !Number.isSafeInteger(scan.expiresAt) ||
+        scan.expiresAt <= Date.now()
+      ) fail("SCAN_NOT_CLEAN");
       if (
         Number(workspace.reserved_bytes) < i.ref.size ||
         Number(workspace.used_bytes) + Number(workspace.reserved_bytes) >
@@ -236,6 +245,11 @@ export class PostgresCommitBoundary implements CommitBoundary {
           JSON.stringify(i.ref),
         ],
       );
+      await tx.query(
+        `INSERT INTO sandy_cloud.version_scans
+        (tenant_id,workspace_id,version_id,receipt_id,evidence) VALUES($1,$2,$3,$4,$5::jsonb)`,
+        [...scope(i), receipt.versionId, scan.receiptId, JSON.stringify(scan)],
+      );
       await this.owners.projectVersion(tx, {
         customerId: admitted.customerId,
         fileId: row.file_id,
@@ -267,6 +281,7 @@ export class PostgresCommitBoundary implements CommitBoundary {
             kind: "cloud.version.committed",
             fileId: row.file_id,
             receipt,
+            scanReceiptId: scan.receiptId,
           }),
         ],
       );
@@ -274,11 +289,16 @@ export class PostgresCommitBoundary implements CommitBoundary {
         `INSERT INTO sandy_cloud.commit_receipts VALUES ($1,$2,$3,$4::jsonb)`,
         [...scope(i), i.id, JSON.stringify(receipt)],
       );
-      await tx.query(
+      const settled = await tx.query(
         `UPDATE sandy_cloud.upload_intents SET state='COMMITTED'
-        WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3`,
-        [...scope(i), i.id],
+        WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3
+        AND expires_at>clock_timestamp() AND to_timestamp($4/1000.0)>clock_timestamp()
+        RETURNING intent_id`,
+        [...scope(i), i.id, scan.expiresAt],
       );
+      if (settled.rows.length !== 1) {
+        fail("SCAN_OR_INTENT_EXPIRED_BEFORE_COMMIT");
+      }
     });
   }
 }

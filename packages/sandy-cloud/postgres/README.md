@@ -65,3 +65,20 @@ Production tree/share/device/backup schema, admission installation, gateway
 registration, rich-document scanner, provider execution, native signed clients
 and mandatory acceptance remain unfinished. Do not interpret these tests or the
 source bundle as a production-ready storage/backup release.
+
+## Shared scanner dependency (supersedes the earlier scan-row seam)
+
+`PostgresCommitBoundary` requires a third argument implementing
+`ScanCommitOwner`. Use `sharedScanOwner` with Runtime PR303 `ab2cfa4`'s
+supplied-transaction verifier and a canonical server-owned reference loader. No
+clean-verdict table or fallback scanner is part of the production candidate
+schema. `version_scans` stores only immutable shared receipt references; Runtime
+remains the receipt/trust authority. `fixture_scan.mts` is test-only, excluded
+from the release package. Final database settlement checks scan/intent expiry
+again and rolls back late completion.
+
+`verify_runtime_scan.mts` runs the actual pinned Runtime journal with an
+ephemeral PostgreSQL database and ephemeral synthetic signing material. CI
+fetches only pinned source; it does not merge or deploy Runtime. See the Cloud
+alignment review for exact reference-loader, global lock-order, scanner trust
+and release gates.

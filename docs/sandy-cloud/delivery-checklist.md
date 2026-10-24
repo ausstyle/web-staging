@@ -273,3 +273,14 @@ PR270's reported ready-transition denial is respected. Dependent Cloud source is
 prepared on a stacked draft only; no merge into the API branch, live schema,
 credentials, grants, customer relation, provider routing or deployment is enabled.
 All mandatory production acceptance remains pending; full scope stays open.
+
+## Runtime shared scan continuation
+
+Runtime PR303 `ab2cfa4` now composes with Cloud's existing transaction. The production
+candidate no longer accepts a separate Cloud clean-verdict table: a required shared
+verifier binds signed Runtime evidence to the exact upload and stores an immutable
+receipt reference atomically. Final expiry and unknown-acknowledgement recovery
+remain fail closed. Six actual pinned Runtime/Cloud PostgreSQL composition scenarios
+and four new binding scenarios pass; no production trust or provider is exercised.
+[Detailed review and remaining owner work](runtime-scan-alignment-20261024.md).
+SC-02/08/12 source integration advanced; no mandatory live acceptance changed.

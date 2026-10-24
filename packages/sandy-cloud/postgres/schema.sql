@@ -47,17 +47,6 @@ CREATE TABLE sandy_cloud.upload_intents (
   UNIQUE (tenant_id, workspace_id, actor_id, idempotency_key),
   FOREIGN KEY (tenant_id, workspace_id, file_id) REFERENCES sandy_cloud.file_heads
 );
-CREATE TABLE sandy_cloud.scan_receipts (
-  tenant_id text NOT NULL,
-  workspace_id text NOT NULL,
-  intent_id text NOT NULL,
-  ref jsonb NOT NULL,
-  scanner_release text NOT NULL CHECK (length(scanner_release) > 0),
-  verdict text NOT NULL CHECK (verdict IN ('CLEAN', 'REJECTED')),
-  valid_until timestamptz NOT NULL,
-  PRIMARY KEY (tenant_id, workspace_id, intent_id),
-  FOREIGN KEY (tenant_id, workspace_id, intent_id) REFERENCES sandy_cloud.upload_intents
-);
 CREATE TABLE sandy_cloud.versions (
   tenant_id text NOT NULL,
   workspace_id text NOT NULL,
@@ -103,6 +92,13 @@ CREATE TABLE sandy_cloud.usage_events (
   PRIMARY KEY (tenant_id, workspace_id, version_id),
   FOREIGN KEY (tenant_id, workspace_id, version_id) REFERENCES sandy_cloud.versions
 );
+-- References only. Runtime owns signed scan receipts and scanner trust.
+CREATE TABLE sandy_cloud.version_scans (
+ tenant_id text NOT NULL, workspace_id text NOT NULL, version_id uuid NOT NULL,
+ receipt_id uuid NOT NULL, evidence jsonb NOT NULL,
+ PRIMARY KEY(tenant_id,workspace_id,version_id),
+ FOREIGN KEY(tenant_id,workspace_id,version_id) REFERENCES sandy_cloud.versions
+);
 CREATE INDEX open_intent_expiry ON sandy_cloud.upload_intents (expires_at)
   WHERE state = 'OPEN';
 CREATE FUNCTION sandy_cloud.reject_mutation() RETURNS trigger
@@ -114,10 +110,12 @@ CREATE TRIGGER immutable_receipt BEFORE UPDATE OR DELETE ON sandy_cloud.commit_r
   FOR EACH ROW EXECUTE FUNCTION sandy_cloud.reject_mutation();
 CREATE TRIGGER immutable_usage BEFORE UPDATE OR DELETE ON sandy_cloud.usage_events
   FOR EACH ROW EXECUTE FUNCTION sandy_cloud.reject_mutation();
+CREATE TRIGGER immutable_scan_reference BEFORE UPDATE OR DELETE ON sandy_cloud.version_scans
+  FOR EACH ROW EXECUTE FUNCTION sandy_cloud.reject_mutation();
 -- Fail closed even for an accidentally granted non-BYPASSRLS role. Production
 -- policies/role selection are a separate reviewed integration, not a TODO grant.
 DO $$ DECLARE t text; BEGIN
-  FOREACH t IN ARRAY ARRAY['workspaces','file_heads','upload_intents','scan_receipts',
+  FOREACH t IN ARRAY ARRAY['workspaces','file_heads','upload_intents','version_scans',
     'versions','commit_receipts','outbox','usage_events'] LOOP
     EXECUTE format('ALTER TABLE sandy_cloud.%I ENABLE ROW LEVEL SECURITY', t);
     EXECUTE format('ALTER TABLE sandy_cloud.%I FORCE ROW LEVEL SECURITY', t);
