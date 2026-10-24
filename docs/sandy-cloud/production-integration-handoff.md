@@ -51,3 +51,70 @@ all new versions/receipts/outbox and provider bytes, restore prior source and
 per-tenant routing, then reconcile unknown outcomes. Never drop extension tables
 or delete objects as an automated rollback. Forward repair must retain stable
 universal file IDs and historical generations.
+
+## PR270 contract consumption — Cloud-owned source continuation
+
+Dependency: API PR270 head `cbfe1653798e25e2b88f93196b34947406a946f1`.
+Its ready transition was reported denied; this work neither retries that action
+nor releases the dependent API code. Cloud's branch is stacked on that exact head
+and its draft PR targets the API branch solely to show the Cloud-only diff. Do
+not merge this draft into the API-owned branch. After the parent resolves PR270's
+release gate, rebase/retarget the Cloud changes onto accepted main before release.
+
+Implemented source:
+
+- `postgres/authority.ts` implements `CloudAuthorityOwner`. Runtime supplies
+  explicit locked admission, session, tenant/customer, device and company facts.
+  Cloud validates every binding/status/expiry and locks the known canonical
+  `sandy_memory_portal_accounts` row with `FOR SHARE` on the supplied transaction.
+  It never equates tenant and customer IDs or infers a missing company grant.
+- `postgres/transfer_custody.ts` validates Runtime-owned private custody against
+  the exact server intent and current API session/device. Unknown outcomes allow
+  status reconciliation only; chunk retry is denied. Foreign session URLs and
+  incomplete generation readbacks are refused. No worker, provider fetch, grant,
+  session persistence or offset update is created; those stay with Runtime.
+- `postgres/projection.ts` requires a locked explicit file-writer assignment,
+  scoped current head and canonical customer ownership. It projects generation,
+  bucket/key, size/digest and version metadata atomically, preserving unrelated
+  metadata, display name, description and library state. It creates an immutable
+  version-projection audit event on the same transaction as the commit boundary.
+  Missing/foreign/revoked assignments fail closed; this code creates none.
+
+Metadata-only live inspection confirmed the portal columns and that
+`sandy_file_lifecycle_events` contains only id/customer/file/from_state/to_state/at.
+A version update is not a library-state transition. Therefore `projection.sql`
+adds a **candidate private** `projection_events` table, rather than inventing a
+state transition in that live table. It is uninstalled and grants no access.
+
+### Runtime/file-owner decisions required before activation
+
+1. Identify the actual canonical tenant/customer relation and the rows/owners
+   for session, admission, company/device revocation. Supply `RuntimeAuthorityRows`
+   on the existing pinned DB connection. Proposed conflict order is admission,
+   session, tenant/customer, device, company, portal, Cloud workspace, intent,
+   file head, writer assignment, universal file. All revokers must be reconciled
+   against this order; no real multi-session locking claim has been established.
+2. Supply `RuntimeTransferCustody` with existing durable intent/session ownership,
+   dispatch claim and offset CAS, unknown-outcome persistence and reconciliation.
+   The returned scope is internal only. API admission remains required immediately
+   before each provider dispatch; loading a scope is not an execution grant.
+3. Identify the existing canonical file-writer assignment source. Return only
+   explicit Cloud ownership and the current locked revision; do not auto-assign
+   legacy files. The candidate projection represents GCS generation in
+   `provider_file_id` and the full immutable reference in
+   `metadata.sandy_cloud_version`. File/API owners must review this mapping and
+   upgrade or route compatible readers before enabling it. Deployed `sandy-files`
+   v25 is untouched; it must not be assumed to support this GCS mapping.
+4. Review `projection.sql` together with the uninstalled private schema and exact
+   role/RLS plan. Production activation still requires approved resources and
+   protected source-preserving rollout. No credentials or permissions requested
+   by this source package.
+
+Eight embedded PostgreSQL scenarios compose the actual PR270 admission hook and
+Cloud commit boundary with synthetic Runtime/writer facts and real fixture portal
+rows. They cover explicit distinct tenant/customer mapping, negative grants,
+portal revoke/rebind, revoke between admission/commit, writer denial, audit rollback,
+canonical metadata preservation and revoked receipt replay. Three further Deno
+scenarios validate custody substitutions, unknown-outcome status through the real
+API transport/protocol and foreign sessions/incomplete generation denial. These
+are source tests, not actual customer mapping, multi-session or provider acceptance.
