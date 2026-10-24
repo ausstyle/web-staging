@@ -971,6 +971,7 @@ Deno.test("blob settlement uses one POST then immutable GET; failed settlement n
                   `https://api.github.com/repos/ausstyle/web-staging/git/blobs/${sha}`,
               }
               : { sha, size: 5, encoding: "base64", content: btoa("hello") },
+            { status: init?.method === "POST" ? 201 : 200 },
           ),
         );
       },
