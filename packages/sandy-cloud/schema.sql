@@ -88,3 +88,16 @@ CREATE TABLE IF NOT EXISTS backup_snapshots (
 );
 CREATE TRIGGER IF NOT EXISTS immutable_backup_snapshot_update BEFORE UPDATE ON backup_snapshots BEGIN SELECT RAISE(ABORT,'IMMUTABLE_BACKUP_SNAPSHOT'); END;
 CREATE TRIGGER IF NOT EXISTS immutable_backup_snapshot_delete BEFORE DELETE ON backup_snapshots BEGIN SELECT RAISE(ABORT,'IMMUTABLE_BACKUP_SNAPSHOT'); END;
+-- Short-lived server-side listing snapshots, not backup snapshots. No bytes.
+CREATE INDEX IF NOT EXISTS paged_siblings ON nodes(workspace_id,parent_id,trashed,kind,name_key,id);
+CREATE TABLE IF NOT EXISTS list_snapshots (
+ id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL REFERENCES workspaces(id),
+ actor_id TEXT NOT NULL, context_hash TEXT NOT NULL, expires_at INTEGER NOT NULL,
+ sequence INTEGER NOT NULL, total INTEGER NOT NULL CHECK(total BETWEEN 0 AND 100000)
+);
+CREATE INDEX IF NOT EXISTS list_snapshot_expiry ON list_snapshots(expires_at);
+CREATE TABLE IF NOT EXISTS list_snapshot_rows (
+ snapshot_id TEXT NOT NULL REFERENCES list_snapshots(id) ON DELETE CASCADE,
+ position INTEGER NOT NULL, node_json TEXT NOT NULL,
+ PRIMARY KEY(snapshot_id,position)
+);

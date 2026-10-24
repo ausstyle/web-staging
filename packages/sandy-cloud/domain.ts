@@ -2,7 +2,8 @@
  * identity/provider adapter. Bytes live in a separate immutable object directory.
  */
 import { DatabaseSync } from "node:sqlite";
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
+import { PageCursor } from "./page_cursor.ts";
 import { portablePath, validateManifest } from "./restore.ts";
 export class CloudError extends Error {
   constructor(readonly code: string, readonly status = 400) {
@@ -46,6 +47,7 @@ function canonical(value: any): string {
 }
 export class CloudDomain {
   readonly db: DatabaseSync;
+  private readonly pageCursor = new PageCursor(randomBytes(32));
   constructor(readonly root: string, schema: string) {
     Deno.mkdirSync(root, { recursive: true, mode: 0o700 });
     Deno.mkdirSync(root + "/objects", { recursive: true, mode: 0o700 });
@@ -219,6 +221,136 @@ export class CloudDomain {
       parentId,
       trash ? 1 : 0,
     );
+  }
+  /** Stable bounded folder enumeration. Current authorization is checked on every
+   * page. Snapshot positions use an indexed seek, never OFFSET or a growing scan.
+   * Restart intentionally invalidates tokens; callers refresh from page one.
+   */
+  listPage(actor: Actor, w: string, options: {
+    parentId?: string | null;
+    trash?: boolean;
+    limit?: number;
+    cursor?: string;
+  } = {}) {
+    const { parentId = null, trash = false, limit = 100, cursor } = options;
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > 500) {
+      fail("INVALID_PAGE_SIZE");
+    }
+    return this.transaction(() => {
+      const ws = this.authorize(actor, w);
+      if (!trash) this.parent(w, parentId);
+      const context = digest(JSON.stringify([
+        actor.tenantId,
+        actor.id,
+        w,
+        parentId,
+        trash,
+        ws.policy_epoch,
+        limit,
+      ]));
+      const now = Date.now();
+      // Delete only expired ephemeral listing projections, never user data.
+      this.run("DELETE FROM list_snapshots WHERE expires_at<=?", now);
+      let id: string, after = 0;
+      if (cursor !== undefined) {
+        let position;
+        try {
+          position = this.pageCursor.verify(cursor, context, now);
+        } catch {
+          return fail("CURSOR_INVALID_OR_EXPIRED", 409);
+        }
+        id = position.snapshot;
+        after = position.after;
+      } else {
+        const first = this.all(
+          "SELECT * FROM nodes WHERE workspace_id=? AND parent_id IS ? AND trashed=? ORDER BY kind,name_key,id LIMIT ?",
+          w,
+          parentId,
+          trash ? 1 : 0,
+          limit + 1,
+        );
+        if (first.length <= limit) {
+          return {
+            items: first,
+            nextCursor: null,
+            total: first.length,
+            sequence: ws.sequence,
+            expiresAt: now + 300000,
+          };
+        }
+        // Bounds both per-principal and aggregate snapshot amplification.
+        const active = this.one(
+          "SELECT count(*) total, coalesce(sum(actor_id=?),0) own FROM list_snapshots",
+          actor.id,
+        )!;
+        if (active.own >= 4 || active.total >= 16) {
+          fail("LIST_SNAPSHOT_LIMIT", 429);
+        }
+        const total = this.one(
+          "SELECT count(*) n FROM (SELECT id FROM nodes WHERE workspace_id=? AND parent_id IS ? AND trashed=? LIMIT 100001)",
+          w,
+          parentId,
+          trash ? 1 : 0,
+        )!.n;
+        if (total > 100000) fail("LIST_SNAPSHOT_TOO_LARGE", 413);
+        id = randomUUID();
+        this.run(
+          "INSERT INTO list_snapshots VALUES(?,?,?,?,?,?,?)",
+          id,
+          w,
+          actor.id,
+          context,
+          now + 300000,
+          ws.sequence,
+          total,
+        );
+        // Materialize in the same SQLite transaction; no metadata is loaded into
+        // a 100k-element JS array and mutations cannot shift subsequent pages.
+        this.run(
+          `INSERT INTO list_snapshot_rows(snapshot_id,position,node_json)
+          SELECT ?,row_number() OVER (ORDER BY kind,name_key,id),
+          json_object('id',id,'workspace_id',workspace_id,'parent_id',parent_id,
+            'name',name,'name_key',name_key,'kind',kind,'revision',revision,
+            'trashed',trashed,'current_version_id',current_version_id)
+          FROM nodes WHERE workspace_id=? AND parent_id IS ? AND trashed=?`,
+          id,
+          w,
+          parentId,
+          trash ? 1 : 0,
+        );
+      }
+      const snapshot = this.one(
+        "SELECT * FROM list_snapshots WHERE id=? AND workspace_id=? AND actor_id=? AND context_hash=?",
+        id,
+        w,
+        actor.id,
+        context,
+      );
+      if (!snapshot || after >= snapshot.total) {
+        return fail("CURSOR_INVALID_OR_EXPIRED", 409);
+      }
+      const rows = this.all(
+        "SELECT position,node_json FROM list_snapshot_rows WHERE snapshot_id=? AND position>? ORDER BY position LIMIT ?",
+        id,
+        after,
+        limit,
+      );
+      const last = rows.at(-1)?.position ?? after;
+      return {
+        items: rows.map((row) => JSON.parse(row.node_json)),
+        nextCursor: last < snapshot.total
+          ? this.pageCursor.sign({
+            snapshot: id,
+            after: last,
+            context,
+            expiresAt: snapshot.expires_at,
+          })
+          : null,
+        total: snapshot.total,
+        sequence: snapshot.sequence,
+        expiresAt: snapshot.expires_at,
+      };
+    });
   }
   folder(
     actor: Actor,

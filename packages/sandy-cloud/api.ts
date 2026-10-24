@@ -21,6 +21,8 @@ export function dispatch(
   switch (operation) {
     case "nodes.list":
       return domain.list(actor, w, args.parentId ?? null, args.trash === true);
+    case "nodes.page":
+      return domain.listPage(actor, w, args);
     case "nodes.folder":
       return domain.folder(actor, w, key, args.name, args.parentId ?? null);
     case "nodes.change":
