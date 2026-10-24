@@ -23,7 +23,8 @@ class MissionTruthAcceptance(RuntimeMemoryAcceptance):
         self.mission_id = None
         self.report.update(kind='normal_customer_durable_mission_truth_acceptance',
             acceptance_scope='one actual internal plan and draft pending customer review',
-            model_request_budget=5, external_actions_authorized=False,
+            model_request_budget=5, model_turn_budget=5,
+            model_or_connected_provider_work_requested=True, external_actions_authorized=False,
             worker_invocation='existing_cron_only', mission_fully_completed=False)
 
     def read_state(self):
