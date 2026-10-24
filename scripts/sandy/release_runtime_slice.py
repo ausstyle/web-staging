@@ -17,11 +17,14 @@ from release_web_canary import Blocked, ROOT, original_sources, private_write
 
 # Reviewed components only. A manifest cannot select arbitrary targets/modules.
 MODULES = {
+    'sandy-orchestration-api': {'sandy-orchestration-api/workload_reads.ts'},
     'sandy-agent-runtime-v4': {
         'sandy-agent-runtime-v4/index.ts',
         '_shared/sandy-agent-operations/runtime_records.ts',
         '_shared/sandy-agent-operations/runtime_memory.ts',
         '_shared/sandy-agent-operations/runtime_model_policy.ts',
+        '_shared/sandy-agent-operations/runtime_snapshot.ts',
+        '_shared/sandy-agent-operations/runtime_operational.ts',
         '_shared/sandy-agent-operations/identity.ts',
         '_shared/sandy-agent-operations/runtime_conversation.ts',
         '_shared/sandy-agent-operations/runtime_model_metrics.ts',
@@ -41,6 +44,7 @@ MODULES = {
         'sandy-vm-protocol-api/ssh.ts',
         'sandy-vm-protocol-api/winrm.ts',
     },
+    'sandy-computer-worker': {'sandy-computer-worker/index.ts'},
     'sandy-master-computer': {
         'sandy-master-computer/index.ts',
         '_shared/sandy-agent-operations/worker_computer_identity.ts',

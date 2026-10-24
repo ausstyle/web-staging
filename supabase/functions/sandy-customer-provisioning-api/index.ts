@@ -1,3 +1,4 @@
+import hostingAccounts from "./hosting_accounts.json" with { type: "json" };
 import { provisioningOperations } from "./provisioning_operations.ts";
 /** Existing Sandy API application service: normal customer Auth -> scoped RPC.
  * No service-role credential, caller-selected tenant, provider URL or SQL. */
@@ -103,7 +104,9 @@ export function createOnboardingHandler(deps: Dependencies) {
     try {
       const response = await deps.fetch(
         deps.base + "/rest/v1/rpc/" +
-          (Object.hasOwn(provisioningOperations, body.operation)
+          (Object.hasOwn(hostingAccounts, body.operation)
+            ? "sandy_hosting_account_execute"
+            : Object.hasOwn(provisioningOperations, body.operation)
             ? "sandy_customer_provisioning_execute"
             : "sandy_customer_onboarding_execute"),
         {
@@ -136,6 +139,9 @@ export function createOnboardingHandler(deps: Dependencies) {
           "primary_channel_verification_required",
           "identity_link_conflict",
           "onboarding_required",
+          "invalid_hosting_arguments",
+          "hosting_account_plan_conflict",
+          "hosting_account_not_found",
           "identity_already_bound",
           "onboarding_version_conflict",
           "verified_customer_access_required",

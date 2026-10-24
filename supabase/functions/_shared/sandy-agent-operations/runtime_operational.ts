@@ -33,7 +33,7 @@ export async function runtimeOperationalOperation(principal: AgentPrincipal, ope
     ? { ok: true, ...structuredClone(facts.communicationFacts) }
     : { error: "communication_activity_unavailable", reason: "authoritative_channel_metrics_not_available" };
   if (operation === "agent.runtime.operational.connections") return facts.connectionError ? { error: "customer_connections_unavailable" }
-    : { ok: true, source: "sandy_composio_connections", services: structuredClone(facts.services), note: "Recorded active connections are not independent evidence of executable permissions." };
+    : { ok: true, source: "sandy_composio_connections", services: structuredClone(facts.services), note: "This operation reads locally stored connection records only. It makes no request to Gmail or any other external service. Success verifies only this local read. chat_actions describes configured behavior, not an executed action; use the separate provider-action receipt before claiming external access or execution." };
   if (operation === "agent.runtime.operational.environment") return { ok: true, source: "server_clock_and_request_context", time: facts.clock, timezone: facts.timezone,
     physical_location: "not_available", precision: "none", note: "A timezone is not proof of current physical location. Do not imply geolocation access." };
   if (operation === "agent.runtime.operational.capabilities") {

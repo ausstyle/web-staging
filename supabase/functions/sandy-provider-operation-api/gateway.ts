@@ -1,3 +1,4 @@
+import { cloudRunReadScope } from "./cloud_run_read_region.ts";
 /** Compact gateway catalogue. Provider transport and full schemas stay in the executor. */
 import rawManifest from "./gateway_manifest.json" with { type: "json" };
 import { machineScope } from "../_shared/sandy_machine_identity.ts";
@@ -45,6 +46,7 @@ export type ProviderConfig = {
 export function providerExecutionScope(
   operation: string,
   config: ProviderConfig = {},
+  args: JsonObject = {},
 ): JsonObject {
   const op = providerOperations[operation];
   if (!op) throw new Error("operation_not_implemented");
@@ -79,5 +81,6 @@ export function providerExecutionScope(
     zone: catalogue.gcp_zone,
     service_account: machineScope.service_account,
     ...(Object.keys(bindings).length ? { configured_bindings: bindings } : {}),
+    ...cloudRunReadScope(operation, args, config.verifiedBindings),
   };
 }

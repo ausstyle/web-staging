@@ -1,3 +1,4 @@
+import { customerMutationContracts } from "./customer_mutations.ts";
 import { memoryCorrectionContractSha256, memoryCorrectionMutationContract } from "./customer_mutations.ts";
 import { createHandler as createMcpHandler } from "../sandy-api-mcp/index.ts";
 import {
@@ -3639,8 +3640,8 @@ Deno.test("tenant lifecycle backend consumes and finishes the gateway owner gran
   assert.equal(h.rpcCalls.length, 1);
   assert.equal(h.calls.length, 1);
 });
-Deno.test("all 571 service extensions are installed with their exact contracts and truthful readiness", async () => {
-  assert.equal(Object.keys(extensionContracts).length, 571);
+Deno.test("all 573 service extensions are installed with their exact contracts and truthful readiness", async () => {
+  assert.equal(Object.keys(extensionContracts).length, 573);
   assert.equal(
     new Set(installedOperationIds).size,
     installedOperationIds.length,
@@ -5179,7 +5180,7 @@ async function expansionRow(operation: string, verified = false): Promise<Row> {
 Deno.test("all 1143 additive provider IDs are installed without replacing baseline handlers or exposing unverified execution", async () => {
   assert.equal(Object.keys(providerOperations).length, 595);
   assert.equal(Object.keys(providerExpansionOperations).length, 1143);
-  assert.equal(installedOperationIds.length, 2560);
+  assert.equal(installedOperationIds.length, 2562);
   const installed = new Set(installedOperationIds);
   for (const operation of Object.keys(providerExpansionOperations)) {
     assert.ok(installed.has(operation), operation);
@@ -7275,9 +7276,31 @@ Deno.test("private readiness invokes the existing closed correction through norm
  const mcp=createMcpHandler(async(token,body,_key,metadata)=>{const r=await h.request(body,"Bearer "+token,metadata?.certificationId?{"x-sandy-certification-id":metadata.certificationId}:{});return{status:r.status,result:await r.json()};});
  const call=(certificationId?:string)=>mcp(new Request("https://mcp.test.invalid",{method:"POST",headers:{authorization:"Bearer normal.fixture.jwt","content-type":"application/json",...(certificationId?{"x-sandy-certification-id":certificationId}:{})},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"tools/call",params:{name:"memory.fact_correct",arguments:args}})}));
  const closed=await(await call()).json();assert.equal(closed.result.isError,true);assert.equal(mutations,0);
- const result=await(await call(readiness)).json();assert.equal(result.result.isError,false);assert.equal(result.result.structuredContent.mutation_id,"60000000-0000-4000-8000-000000000001");assert.equal(mutations,1);
+ const result=await(await call(readiness)).json();assert.equal(result.result.isError,false,JSON.stringify(result));assert.equal(result.result.structuredContent.mutation_id,"60000000-0000-4000-8000-000000000001");assert.equal(mutations,1);
  assert.deepEqual((await(await h.request({action:"list"},"Bearer normal.fixture.jwt")).json()).operations,[]);
  assert.equal(entry.api_exposed,false);assert.equal(entry.ai_exposed,false);assert.equal(entry.verified,false);
+ deny=true;const revoked=await(await call(readiness)).json();assert.equal(revoked.result.isError,true);assert.equal(mutations,1);
+ const wrong=await h.request({action:"execute",operation:"memory.overview",arguments:{}},"Bearer normal.fixture.jwt",{"x-sandy-certification-id":readiness});assert.equal(wrong.status,403);assert.equal(mutations,1);
+});
+
+Deno.test("private readiness invokes the existing cancellation through normal authenticated MCP without expanding write access or fabricating verification",async()=>{
+ const actor="10000000-0000-4000-8000-000000000001",customer="20000000-0000-4000-8000-000000000001",original="30000000-0000-4000-8000-000000000001",corrected="40000000-0000-4000-8000-000000000001",readiness="50000000-0000-4000-8000-000000000001",deployment="zmqlyygzqoidkcwdysok_6e50ff35-5878-42e2-982c-c205df6cac2e_61";
+ const args={id:original,status:"cancelled",idempotency_key:"task_cancel_cert_12345678901234567890123456789012:one"};
+ const c=customerMutationContracts["tasks.update"];
+ const entry={operation:"tasks.update",handler:c.handler,permission_scope:c.permission_scope,is_mutation:true,input_schema:c.input_schema,output_schema:c.output_schema,api_exposed:true,ai_exposed:true,verified:false,error_contract:{}};
+ let deny=false,mutations=0;
+ const h=harness({base:"https://zmqlyygzqoidkcwdysok.supabase.co",memoryCertificationDeploymentId:deployment,role:null,actorId:actor,tenant:customer,memoryTenant:customer,rows:[entry],backend:(url,init)=>{
+  const headers=new Headers(init?.headers);assert.equal(headers.get("authorization"),"Bearer normal.fixture.jwt");
+  if(url.endsWith("/rpc/sandy_api_task_cancel_private_readiness"))return Response.json(deny?{ok:false,error:"private_readiness_denied",http_status:403}:{ok:true,readiness_id:readiness,customer_id:customer,expires_at:new Date(Date.now()+60000).toISOString()});
+  assert.ok(url.endsWith("/rpc/sandy_api_customer_mutation"));assert.equal(headers.get("x-sandy-certification-id"),readiness);assert.equal(headers.get("x-sandy-api-deployment-id"),deployment);mutations++;
+  return Response.json({ok:true,contract_version:"1.0.0",operation:"tasks.update",mutation_id:"60000000-0000-4000-8000-000000000001",reused:false,item:{id:original,customer_id:customer,status:"cancelled",priority:"normal",title:"synthetic fixture",version:2}});
+ }});
+ const mcp=createMcpHandler(async(token,body,_key,metadata)=>{const r=await h.request(body,"Bearer "+token,metadata?.certificationId?{"x-sandy-certification-id":metadata.certificationId}:{});return{status:r.status,result:await r.json()};});
+ const call=(certificationId?:string)=>mcp(new Request("https://mcp.test.invalid",{method:"POST",headers:{authorization:"Bearer normal.fixture.jwt","content-type":"application/json",...(certificationId?{"x-sandy-certification-id":certificationId}:{})},body:JSON.stringify({jsonrpc:"2.0",id:1,method:"tools/call",params:{name:"tasks.update",arguments:args}})}));
+ const closed=await(await call()).json();assert.equal(closed.result.isError,true);assert.equal(mutations,0);
+ const result=await(await call(readiness)).json();assert.equal(result.result.isError,false,JSON.stringify(result));assert.equal(result.result.structuredContent.mutation_id,"60000000-0000-4000-8000-000000000001");assert.equal(mutations,1);
+
+ assert.equal(entry.api_exposed,true);assert.equal(entry.ai_exposed,true);assert.equal(entry.verified,false);
  deny=true;const revoked=await(await call(readiness)).json();assert.equal(revoked.result.isError,true);assert.equal(mutations,1);
  const wrong=await h.request({action:"execute",operation:"memory.overview",arguments:{}},"Bearer normal.fixture.jwt",{"x-sandy-certification-id":readiness});assert.equal(wrong.status,403);assert.equal(mutations,1);
 });

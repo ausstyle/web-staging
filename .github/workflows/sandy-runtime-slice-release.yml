@@ -18,7 +18,7 @@ on:
         description: Reviewed component to install once (no IAM, grants or traffic changes)
         required: true
         type: choice
-        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native]
+        options: [runtime-programme, runtime, graphical, channels, acceptance-bridge, missions, native, computer-truth, durable-receipts, grounding]
 permissions:
   contents: read
 concurrency:
@@ -39,7 +39,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
           PYTHONPATH: scripts/sandy
         run: |
-          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
+          python3 -m unittest scripts/sandy/test_runtime_slice_release.py scripts/sandy/test_runtime_grounding_release.py scripts/sandy/test_runtime_slice_workflow.py scripts/sandy/test_runtime_web_memory_acceptance.py scripts/sandy/test_verify_examiner_receipt_context.py scripts/sandy/test_durable_dispatch_release.py scripts/sandy/test_prepare_channel_activation.py scripts/sandy/test_email_shadow_acceptance.py scripts/sandy/test_mission_truth_acceptance.py -v
           python3 - <<'PY'
           import json
           from pathlib import Path
@@ -58,10 +58,12 @@ jobs:
           deno test supabase/functions/sandy-examiner-full-cycle/evidence_test.ts supabase/functions/sandy-examiner-full-cycle/judge_test.ts supabase/functions/sandy-examiner-full-cycle/selection_test.ts
           deno check supabase/functions/sandy-agent-runtime-v4/index.ts supabase/functions/sandy-examiner-full-cycle/index.ts
           deno test supabase/functions/sandy-master-computer/index_test.ts
+          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/objective_truth_test.ts
           deno test --allow-read --allow-env --import-map=scripts/sandy/testing/voice_import_map.json scripts/sandy/voice_context_handler_test.ts
           deno test supabase/functions/sandy-email-runtime-canary/history_test.ts supabase/functions/sandy-email-runtime-canary/outcome_test.ts supabase/functions/sandy-voice-account-context/executive_test.ts
           deno check supabase/functions/sandy-email-runtime-canary/index.ts supabase/functions/sandy-voice-account-context/index.ts
           deno test --allow-read --import-map=scripts/sandy/testing/fallback_import_map.json supabase/functions/_shared/sandy-agent-operations/worker_model_result_test.ts supabase/functions/sandy-mission-executor/index_test.ts supabase/functions/sandy-mission-runner/index_test.ts
+          deno test supabase/functions/sandy-orchestration-api/workload_reads_test.ts
           deno test supabase/functions/sandy-engineering-oidc-ingest/examiner_scope_test.ts
           deno test supabase/functions/sandy-engineering-oidc-ingest/email_fixture_test.ts supabase/functions/sandy-engineering-oidc-ingest/worker_transport_test.ts supabase/functions/_shared/sandy-executive/email_shadow_fixture_test.ts
           deno check supabase/functions/sandy-engineering-oidc-ingest/index.ts
@@ -96,12 +98,14 @@ jobs:
         run: |
           python3 - <<'PY'
           import os, subprocess, sys
-          options={'runtime':'sandy-agent-runtime-v4'}
-          # The installed Examiner slice is not a deployment choice. Native's
-          # next release has an independently captured v3 preimage guard.
+          options={'runtime':'sandy-agent-runtime-v4','durable-receipts':'sandy-orchestration-api'}
+          # Grounding selects only the two independently captured source slices;
+          # native and other components retain their separate preimage guards.
           extra={'graphical':['sandy-master-computer'],'channels':['sandy-email-runtime-canary','sandy-voice-account-context'],'acceptance-bridge':['sandy-engineering-oidc-ingest']}
           extra['missions']=['sandy-mission-runner','sandy-mission-executor']
           extra['native']=['sandy-vm-protocol-api']
+          extra['grounding']=['sandy-agent-runtime-v4','sandy-examiner-full-cycle']
+          extra['computer-truth']=['sandy-computer-worker']
           extra['runtime-programme']=['sandy-agent-runtime-v4','sandy-email-runtime-canary','sandy-voice-account-context','sandy-master-computer','sandy-engineering-oidc-ingest']
           selected=extra[os.environ['COMPONENT']] if os.environ['COMPONENT'] in extra else [options[os.environ['COMPONENT']]]
           # Check every preimage before the first provider mutation.
@@ -114,7 +118,7 @@ jobs:
               subprocess.run([sys.executable,'scripts/sandy/release_runtime_slice.py',manifest,'--verify-installed','--evidence-dir',out+'-readback'],check=True)
           PY
       - name: Verify Examiner sources; actual acceptance uses the protected OIDC workflow
-        if: inputs.component == 'runtime-programme'
+        if: inputs.component == 'runtime-programme' || inputs.component == 'grounding'
         env:
           SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
           PYTHONDONTWRITEBYTECODE: '1'

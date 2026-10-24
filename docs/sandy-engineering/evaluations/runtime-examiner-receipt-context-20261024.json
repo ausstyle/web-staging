@@ -1,23 +1,28 @@
 {
-  "scope": "SANDY-ENG-0001/0003 Examiner receipt-context activation",
+  "scope": "SANDY-ENG-0001/0003 bounded grounding receipt-context follow-up",
   "function": "sandy-examiner-full-cycle",
-  "expected_prior_version": 20,
-  "prior_bundle_sha256": "ff1b86cd7f515fccf1bb54f503a7377b9261d22ee0928c9ad9f816494ec41c8f",
+  "expected_prior_version": 21,
+  "prior_bundle_sha256": "79878004ce3faa82c2870dfe6a606fc1d93e299bf6050e30761e4d64ba928f6c",
   "verify_jwt": false,
   "before_files": {
-    "sandy-examiner-full-cycle/judge.ts": "d55a98d0e3c3050f0a0390ce50abf999360cd36a3957bf8bf49378b5b76b349f",
-    "sandy-examiner-full-cycle/index.ts": "813a7212032c2b9433f02f9aca35b60b07d17288dde14e82994478838620d49f",
-    "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26"
-  },
-  "replacement_files": {
+    "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26",
+    "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
+    "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
+    "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+    "sandy-examiner-full-cycle/evidence.ts": "3a0022cf9bf9a9ae6151d56b139f3310fb6c6318f6fa75d1d1bbbdc43e73b453",
     "sandy-examiner-full-cycle/index.ts": "e7f9436fe842f253cc82c4051b502f584b2d076d53d004276b86d14cda76e563",
     "sandy-examiner-full-cycle/judge.ts": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab",
-    "sandy-examiner-full-cycle/evidence.ts": "3a0022cf9bf9a9ae6151d56b139f3310fb6c6318f6fa75d1d1bbbdc43e73b453",
-    "sandy-examiner-full-cycle/selection.ts": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc",
+    "sandy-examiner-full-cycle/selection.ts": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc"
+  },
+  "replacement_files": {
     "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26",
-    "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+    "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
     "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
-    "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781"
+    "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
+    "sandy-examiner-full-cycle/evidence.ts": "a7b70d8039bdd399bef1a87e9c5df9f678bfd0d730f70b2badea09d575b11dc0",
+    "sandy-examiner-full-cycle/index.ts": "e7f9436fe842f253cc82c4051b502f584b2d076d53d004276b86d14cda76e563",
+    "sandy-examiner-full-cycle/judge.ts": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab",
+    "sandy-examiner-full-cycle/selection.ts": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc"
   },
   "acceptance": {
     "kind": "focused_regression_v1",
@@ -26,10 +31,11 @@
       "task_overview",
       "tool_evidence"
     ],
-    "historical_passing_cases_repeated": false,
+    "historical_passing_cases_repeated": true,
     "customer_thread_scans": false,
     "full_master_acceptance_claimed": false,
-    "assessment_transport": "Existing read-only assessment envelope; old incompatible runtimes fail before request dispatch"
+    "assessment_transport": "Existing read-only assessment envelope; old incompatible runtimes fail before request dispatch",
+    "repeat_reason": "Changed shared deadline evidence and recorded-connection semantics justify the same fixed regression trio; no full-suite or customer-thread scan."
   },
-  "rollback": "Restore exact captured original3modules with fresh source/version guard; preserve all judgments and tasks."
+  "rollback": "Restore the exact captured prior8module bundle only after current full-module and JWT readback matches this reviewed candidate; preserve all judgments/tasks/receipts."
 }

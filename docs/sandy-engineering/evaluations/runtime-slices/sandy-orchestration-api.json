@@ -1,0 +1,15 @@
+{
+  "kind": "reviewed-runtime-slice-v1",
+  "function": "sandy-orchestration-api",
+  "version": 16,
+  "verify_jwt": true,
+  "body_sha256": "37233fa20b499cfea31b0cb338a5ec639910a8f0ab0cdbb1089199c911f3e05f",
+  "before_files": {
+    "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+    "sandy-orchestration-api/index.ts": "6ef8bec78d3ed822d00bc52e440d0231e23a32210f721982a5fd145d918f846c",
+    "sandy-orchestration-api/workload_reads.ts": "a16aeac498160a1a56f1076cc87767e8f148e84bcab3cf11cc607e3b15171bf3"
+  },
+  "replacements": {
+    "sandy-orchestration-api/workload_reads.ts": "388e9d9f86fe9f99d4ad1b20428f6f3e7a624346ab4eab6f5bd31374b91a08e1"
+  }
+}

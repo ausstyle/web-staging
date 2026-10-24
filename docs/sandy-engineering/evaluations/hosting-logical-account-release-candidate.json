@@ -1,0 +1,42 @@
+{
+  "billing_effects": false,
+  "function": {
+    "after_files": {
+      "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+      "sandy-customer-provisioning-api/contracts.json": "f5b5eb8b93fe719a2d194dfdac66edca5ed9cc92abc51ac042397e8d79ae1021",
+      "sandy-customer-provisioning-api/gateway.ts": "9aae07d2a03d686b2c3fb858414f0ed12a601fce96e2c497c12c138616785c66",
+      "sandy-customer-provisioning-api/hosting_accounts.json": "1169aaef75fdf15fa149df76d5ec731557deb3c1beece11c235b6e1f796071b5",
+      "sandy-customer-provisioning-api/index.ts": "8539ba8ff72456d120e421bc0cab256a8258d66c8f7d02e920bcd0ddccb5281e",
+      "sandy-customer-provisioning-api/provisioning_manifest.json": "1068dd94ac6d82bf6fd4db3a2a677e3aaa2ddd8e7fa03be4d6008909de2e574c",
+      "sandy-customer-provisioning-api/provisioning_operations.ts": "76218ddaf4be4aa5a3f1022905ba5a94a2b55de5344a46e923ac0e5e5f3acbf7"
+    },
+    "before_files": {
+      "_shared/sandy_api_protocol.ts": "c34abd69fcd244c21f307149468eff436ad653ca26a8d5b1e2f60d9d6d4f43a8",
+      "sandy-customer-provisioning-api/contracts.json": "f5b5eb8b93fe719a2d194dfdac66edca5ed9cc92abc51ac042397e8d79ae1021",
+      "sandy-customer-provisioning-api/gateway.ts": "9941224d3323879a394f99b8c475a5eab3056a9e009338edb244833c478dff82",
+      "sandy-customer-provisioning-api/index.ts": "f3828119f92faa14902a7f2787bd6aa8c7170dfd01f8ddf34f6a027f2ec6b971",
+      "sandy-customer-provisioning-api/provisioning_manifest.json": "1068dd94ac6d82bf6fd4db3a2a677e3aaa2ddd8e7fa03be4d6008909de2e574c",
+      "sandy-customer-provisioning-api/provisioning_operations.ts": "76218ddaf4be4aa5a3f1022905ba5a94a2b55de5344a46e923ac0e5e5f3acbf7"
+    },
+    "expected_prior_version": 10,
+    "prior_bundle_sha256": "da928eeabca32420e5c50a9363f7746ec618f364ad0a6236fb3504732cfa6284",
+    "replacement_files": [
+      "sandy-customer-provisioning-api/index.ts",
+      "sandy-customer-provisioning-api/gateway.ts",
+      "sandy-customer-provisioning-api/hosting_accounts.json"
+    ],
+    "slug": "sandy-customer-provisioning-api",
+    "verify_jwt": true
+  },
+  "gateway_release": false,
+  "kind": "hosting-logical-account-release-candidate-v1",
+  "migrations": {
+    "supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql": "4b4e5311228b7b350cefec3fbc89f1196a51fbb8e2d917d8936c6fe0e6221033",
+    "supabase/migrations/20261024010010_sandy_hosting_account_contracts.sql": "a3b4cf506fef625563d6a981e82fb0074c72a8a71e821c9ac73bee5565ae5b77"
+  },
+  "operation_exposure": false,
+  "project_ref": "zmqlyygzqoidkcwdysok",
+  "provider_effects": false,
+  "rollback": "Restore captured prior function only if current files match this candidate. Keep additive schema and all customer/account/audit data; leave operation registry exposure disabled.",
+  "source_commit": "1dee65da7b68f12d147d11e3f02befae06416ef2"
+}

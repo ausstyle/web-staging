@@ -1,0 +1,29 @@
+{
+  "id": "04fab547-3177-4eb4-ac23-23831152b420",
+  "title": "Release logical hosting accounts without provider provisioning",
+  "problem": "The existing hosting DNS rollout record 20a92691-558e-4939-8b61-6d777375c765 covers provider/DNS/Certificate Manager work, not the customer provisioning handler and additive account migrations. These reviewed operations are not deployed.",
+  "expected_behavior": "Release source 1dee65da7b68f12d147d11e3f02befae06416ef2 with exact manifest SHA256 66393dac73a71bc1619c1ecf8350ac902abc1e96acf827cd6dca48ab619e4d37 from docs/sandy-engineering/evaluations/hosting-logical-account-release-candidate.json. Target sandy-customer-provisioning-api v10, preserve verify_jwt=true and all unchanged deployed module bytes; add migrations 20261024010000 and 20261024010010. Keep registry exposure disabled. No gateway/provider/runtime deployment, no billable resources, DNS/traffic/IAM changes or customer impersonation. Source CI passed all eight checks. Execution requires an appropriately reviewed protected release path; registration is not approval or deployment.",
+  "change_purpose": "Bounded logical-account release under PR238 and the authoritative hosting scope; separate from the existing DNS/provider rollout because that record does not name the account handler or these migrations.",
+  "feature_improvement": "Allow a normally authenticated verified customer to create/get one logical hosting account with tenant-bound idempotency and atomic audit, without paid provisioning.",
+  "scope": [
+    "supabase:sandy-customer-provisioning-api",
+    "supabase:migration:20261024010000",
+    "supabase:migration:20261024010010"
+  ],
+  "risk": "high",
+  "idempotency_key": "hosting-logical-account-release-1dee65da-66393dac",
+  "acceptance_criteria": [
+    "Verify exact reviewed source, manifest and existing deployment preimage under protected release controls",
+    "Apply additive schema and inactive contracts with migration history and preserve JWT verification",
+    "Create/get sandy.chat logical account through its real verified customer session; verify idempotency and tenant isolation",
+    "Capture rollback artifacts and actual deployment receipts; do not claim live provider or DNS acceptance"
+  ],
+  "regression_rules": [
+    "Preserve existing customer data and all unchanged deployed modules",
+    "Keep shared gateway, provider and runtime services unchanged",
+    "Rollback function through protected controls; retain additive account/audit/receipt data",
+    "Never substitute management credentials or fabricated claims for a real customer session",
+    "Do not create or expand IAM, credentials, standing policy or paid infrastructure"
+  ],
+  "status": "proposed"
+}

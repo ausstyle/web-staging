@@ -1,0 +1,35 @@
+name: Sandy hosting management checks
+on:
+  pull_request:
+    paths:
+      - 'sandy/hosting/**'
+      - 'supabase/functions/_shared/sandy-hosting/management_contracts*'
+      - 'scripts/sandy/check_hosting_ui_browser.py'
+      - '.github/workflows/sandy-hosting-management-check.yml'
+permissions:
+  contents: read
+jobs:
+  management:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - name: Test fixed read boundary and source-only cost/recovery contracts
+        run: |
+          node --test sandy/hosting/read-client.test.mjs
+          deno test --allow-read --allow-env supabase/functions/_shared/sandy-hosting/management_contracts_test.ts
+      - name: Install isolated browser test dependencies
+        run: |
+          python -m pip install playwright==1.62.0
+          python -m playwright install --with-deps chromium
+      - name: Test synthetic desktop and mobile journeys
+        run: python scripts/sandy/check_hosting_ui_browser.py

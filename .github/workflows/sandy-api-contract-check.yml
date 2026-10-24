@@ -108,6 +108,8 @@ jobs:
           deno test supabase/functions/_shared/sandy_github_blob_readback_test.ts supabase/functions/_shared/sandy_github_readback_test.ts
           npm install --prefix "$RUNNER_TEMP/sandy-blob-pg" --ignore-scripts --no-audit --no-fund @electric-sql/pglite@0.3.14
           node scripts/sandy/test_github_blob_settlement_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
+          node scripts/sandy/test_cloud_run_region_postgres.mjs "$RUNNER_TEMP/sandy-blob-pg/node_modules/@electric-sql/pglite/dist/index.js"
+          PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_cloud_run_region_contracts.py
   supabase-gap-contract-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -207,7 +209,7 @@ jobs:
           deno test scripts/sandy/verify_iap_closed_candidate_test.ts
           deno check scripts/sandy/submit_iap_repair_proposal.ts
           deno check supabase/functions/sandy-computer-worker/eligibility.ts
-          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts
+          deno test --no-check --allow-read=supabase/functions/sandy-computer-worker/index.ts supabase/functions/sandy-computer-worker/eligibility_test.ts supabase/functions/sandy-computer-worker/objective_truth_test.ts
           deno test supabase/functions/_shared/sandy-agent-operations/worker_computer_lifecycle_test.ts
           deno test supabase/functions/sandy-master-computer/index_test.ts
       - name: Test native protocols against isolated loopback fixtures
