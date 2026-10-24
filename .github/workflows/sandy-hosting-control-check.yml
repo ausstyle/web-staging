@@ -7,6 +7,11 @@ on:
       - 'supabase/migrations/202610240100*.sql'
       - 'scripts/sandy/test_hosting_accounts*'
       - 'scripts/sandy/*hosting_release_candidate.py'
+      - 'scripts/sandy/release_hosting_accounts.py'
+      - 'scripts/sandy/test_hosting_protected_release.py'
+      - 'scripts/sandy/test_hosting_owner_route.mjs'
+      - 'scripts/sandy/fixtures/hosting-owner-approval-v54.js'
+      - '.github/workflows/sandy-hosting-account-release.yml'
       - 'docs/sandy-engineering/evaluations/hosting-logical-account-release-candidate.json'
       - 'scripts/sandy/build_hosting_scope_coverage.py'
       - 'docs/sandy-cloud-hosting-architecture-engineering-scope-v1.md'
@@ -29,7 +34,9 @@ jobs:
         with:
           node-version: '22'
       - name: Verify bounded release candidate without deployment
-        run: PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_hosting_release_candidate.py -v
+        run: PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_hosting_release_candidate.py scripts/sandy/test_hosting_protected_release.py -v
+      - name: Test deployed Owner approval route
+        run: node --test scripts/sandy/test_hosting_owner_route.mjs
       - name: Verify source scope coverage
         run: |
           python scripts/sandy/build_hosting_scope_coverage.py

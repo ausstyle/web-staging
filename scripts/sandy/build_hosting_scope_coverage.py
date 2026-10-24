@@ -27,6 +27,8 @@ def build():
                               'supabase/migrations/20261024010000_sandy_hosting_logical_accounts.sql']
         if section == '4':
             implementation = ['PR #233: sandy/Dockerfile, cloudbuild.yaml, cloud-run-nginx.conf']
+        if section == '14':
+            implementation = ['scripts/sandy/release_hosting_accounts.py', '.github/workflows/sandy-hosting-account-release.yml']
         if section == '6':
             implementation = ['supabase/functions/_shared/sandy-hosting/dns_plan.mjs']
         rows.append({'id': 'HOST-S' + section + '-' + str(sum(r['section'] == section for r in rows) + 1).zfill(2),
@@ -39,6 +41,7 @@ def build():
                      'remaining': ('Logical create/get only; no paid provisioning, role expansion or lifecycle.' if section in ('2', '3', '7', '8') else
                                    'Local marketing preview only; cloud deploy, scan, SBOM, service identity and live canary pending.' if section == '4' else
                                    'Offline standard RRset diff/rollback subset only; actual authority, provider writes, zones, DNSSEC, TLS and delegation pending.' if section == '6' else
+                                   'Bounded account executor source only; genuine Owner admission, deployment, customer canary and rollback exercise pending.' if section == '14' else
                                    'Implement and independently verify this scope block; do not infer completion from source or registry metadata.')})
         pending.clear()
 

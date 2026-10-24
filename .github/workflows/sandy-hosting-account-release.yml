@@ -1,0 +1,39 @@
+name: Release exact Owner-approved hosting logical accounts
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [preflight, deploy, reconcile, rollback]
+        default: preflight
+      recovery_artifact:
+        description: Private recovery artifact ID, required for rollback
+        required: false
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: sandy-customer-provisioning-api-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.ref == 'refs/heads/main'
+    environment: sandy-production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Test exact source and protected boundaries
+        run: |
+          PYTHONPATH=scripts/sandy python -m unittest scripts/sandy/test_hosting_release_candidate.py scripts/sandy/test_hosting_protected_release.py -v
+          node --test scripts/sandy/test_hosting_owner_route.mjs
+      - name: Execute bounded approved release
+        env:
+          SANDY_SUPABASE_MANAGEMENT_TOKEN: ${{ secrets.SANDY_SUPABASE_MANAGEMENT_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          RECOVERY_ARTIFACT: ${{ inputs.recovery_artifact }}
+          RELEASE_MODE: ${{ inputs.mode }}
+        run: python scripts/sandy/release_hosting_accounts.py --mode "$RELEASE_MODE" --recovery-artifact "$RECOVERY_ARTIFACT"
+      # Recovery bundles stay in private Sandy artifacts, never public CI artifacts.

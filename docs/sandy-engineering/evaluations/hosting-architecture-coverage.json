@@ -1812,14 +1812,17 @@
       ],
       "text": "Build from reviewed source under `ausstyle/web-staging`. Require automated lint/typecheck/unit/security and integration tests; real provider canary with bounded test domain/project; approved exact release manifest with source digest, function/deployment target and rollback; protected CI environment/one-use authorization; source-to-production and post-release provider readback. Use existing Sandy protected release control, not ad-hoc mutation via MCP registry or unreviewed Supabase function publication. Production DNS delegation or nameserver change always needs customer domain authority and planned safety checks.",
       "text_sha256": "5b73e9f4151d7f2e4bf6d84f42732dbc377b59e7ee87b1575a9c471dc1783b07",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "scripts/sandy/release_hosting_accounts.py",
+        ".github/workflows/sandy-hosting-account-release.yml"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "F"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Bounded account executor source only; genuine Owner admission, deployment, customer canary and rollback exercise pending."
     },
     {
       "id": "HOST-S14-02",
@@ -1831,14 +1834,17 @@
       ],
       "text": "Do not claim deployment when a PR is merged, operation registered, job queued or policy approved. Verify output and retain reproducible receipts. If release authority is unavailable, leave implementation staged and report exact missing approval.",
       "text_sha256": "5a88a220fdcd2fdd9c45763e01315ef241b9be7649123c08f3b72ef42e3b15a3",
-      "implementation_sources": [],
-      "implementation_status": "not_yet_mapped_to_accepted_implementation",
+      "implementation_sources": [
+        "scripts/sandy/release_hosting_accounts.py",
+        ".github/workflows/sandy-hosting-account-release.yml"
+      ],
+      "implementation_status": "partial_source_only",
       "live_acceptance_categories": [
         "F"
       ],
       "live_acceptance_status": "not_verified",
       "provider_receipts": [],
-      "remaining": "Implement and independently verify this scope block; do not infer completion from source or registry metadata."
+      "remaining": "Bounded account executor source only; genuine Owner admission, deployment, customer canary and rollback exercise pending."
     },
     {
       "id": "HOST-S15-01",
