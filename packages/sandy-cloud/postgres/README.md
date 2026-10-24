@@ -94,7 +94,8 @@ Production assembly must never use the no-op preparation in the isolated legacy
 fixtures. Both combined Runtime suites exercise the real preparation and loader.
 
 Runtime's reference schema follows both base schemas. All live revokers must
-participate in the complete gate protocol, including devices through actor gates.
-See `docs/sandy-cloud/runtime-combined-acceptance-20261024.md` for evidence and
-`docs/sandy-cloud/minimal-activation-proposal-20261024.md` for the single finite
-activation dependency list. The packaged bundle remains non-installable source.
+participate in the complete gate protocol, including devices through actor
+gates. See `docs/sandy-cloud/runtime-combined-acceptance-20261024.md` for
+evidence and `docs/sandy-cloud/minimal-activation-proposal-20261024.md` for the
+single finite activation dependency list. The packaged bundle remains
+non-installable source.
