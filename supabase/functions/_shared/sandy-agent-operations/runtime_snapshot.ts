@@ -98,7 +98,7 @@ export async function collectRuntimeSnapshot(
  }
  const v2Services=v2Connections.filter((x:any)=>String(x.status).toUpperCase()==="ACTIVE").map((x:any)=>({
     service:x.toolkit_slug, workspace:x.company_id?(v2WorkspaceNames.get(x.company_id)||"Unknown company"):"Personal",
-    chat_actions:x.toolkit_slug==="gmail"?"gmail_search_and_confirmed_send":"not_verified_executable_in_this_chat",
+    chat_actions:x.toolkit_slug==="gmail"?"configured_only_gmail_search_and_confirmed_send_not_executed_by_this_read":"not_verified_executable_in_this_chat",
     state:"locally_recorded_active_not_provider_verified"
  }));
  return {v2Mode,v2ModelMode,v2Connections,v2ConnectionError,v2WorkspaceNames,activityFacts,communicationFacts,v2Services};

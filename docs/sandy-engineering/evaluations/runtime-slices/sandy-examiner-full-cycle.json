@@ -1,15 +1,11 @@
 {
   "kind": "reviewed-runtime-slice-v1",
   "function": "sandy-examiner-full-cycle",
-  "version": 20,
+  "version": 21,
   "verify_jwt": false,
-  "body_sha256": "ff1b86cd7f515fccf1bb54f503a7377b9261d22ee0928c9ad9f816494ec41c8f",
+  "body_sha256": "79878004ce3faa82c2870dfe6a606fc1d93e299bf6050e30761e4d64ba928f6c",
   "before_files": {
     "_shared/sandy-agent-operations/examiner_gateway_transport.ts": "f6f8386c782e85ad3226b58c2022c9d8c5058b4154e87fe21878fa1ca6389c26",
-    "sandy-examiner-full-cycle/index.ts": "813a7212032c2b9433f02f9aca35b60b07d17288dde14e82994478838620d49f",
-    "sandy-examiner-full-cycle/judge.ts": "d55a98d0e3c3050f0a0390ce50abf999360cd36a3957bf8bf49378b5b76b349f"
-  },
-  "replacements": {
     "_shared/sandy-executive/assessment.ts": "051c16aa85d56097e71bfc63202cc053fba495fc3f52714e73c785b713df9781",
     "_shared/sandy-executive/outcome.ts": "8bc0d1b64ec0169a1b6015ab5f6c12a3ff8158bb6667286b1a1871326d3f0bc2",
     "_shared/sandy-executive/receipt.ts": "5df64c36e5daf1053d1386cc428c9519c4351a1004ff0b05366977323f311b6b",
@@ -17,5 +13,8 @@
     "sandy-examiner-full-cycle/index.ts": "e7f9436fe842f253cc82c4051b502f584b2d076d53d004276b86d14cda76e563",
     "sandy-examiner-full-cycle/judge.ts": "0e4c855d1f4097f726ac223281fc67eea14cc780fb9d3a11f6d3f02cdecd43ab",
     "sandy-examiner-full-cycle/selection.ts": "e5d3d4ed7572db720d1c5b6aebeaf1cc035ac520957c9b4eb524ce528fe2cbbc"
+  },
+  "replacements": {
+    "sandy-examiner-full-cycle/evidence.ts": "a7b70d8039bdd399bef1a87e9c5df9f678bfd0d730f70b2badea09d575b11dc0"
   }
 }
