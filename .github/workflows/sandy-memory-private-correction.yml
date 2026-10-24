@@ -5,7 +5,7 @@ on:
       - 'supabase/functions/sandy-operation-api/**'
       - 'supabase/functions/sandy-api-mcp/**'
       - 'supabase/functions/_shared/sandy_mcp_transport.mjs'
-      - 'supabase/migrations/20261024004[12]00*.sql'
+      - 'supabase/migrations/20261024004*.sql'
       - 'scripts/sandy/*memory*'
       - 'docs/sandy-engineering/evaluations/memory-correction-adapter-release.json'
       - '.github/workflows/sandy-memory-private-correction.yml'
@@ -15,7 +15,7 @@ on:
         type: choice
         required: true
         description: Install once, or acceptance-only on the already installed exact sources
-        options: [preflight, install-and-certify, acceptance-only]
+        options: [preflight, install-and-certify, repair-readiness-and-certify, acceptance-only]
 permissions:
   contents: read
 concurrency:
@@ -66,10 +66,14 @@ jobs:
           RELEASE_ACTION: ${{ inputs.action }}
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
-          args=()
-          if [ "$RELEASE_ACTION" = install-and-certify ]; then args+=(--deploy); fi
-          if [ "$RELEASE_ACTION" = acceptance-only ]; then args+=(--verify-installed); fi
-          python3 scripts/sandy/release_memory_private_correction.py "${args[@]}" --evidence-dir "$RUNNER_TEMP/memory-correction/release"
+          if [ "$RELEASE_ACTION" = repair-readiness-and-certify ]; then
+            python3 scripts/sandy/repair_memory_readiness_custody.py --apply --evidence-dir "$RUNNER_TEMP/memory-correction/readiness-forward-repair"
+          else
+            args=()
+            if [ "$RELEASE_ACTION" = install-and-certify ]; then args+=(--deploy); fi
+            if [ "$RELEASE_ACTION" = acceptance-only ]; then args+=(--verify-installed); fi
+            python3 scripts/sandy/release_memory_private_correction.py "${args[@]}" --evidence-dir "$RUNNER_TEMP/memory-correction/release"
+          fi
       - name: Independent source readback before normal customer MCP certification
         if: inputs.action != 'preflight'
         env:
@@ -77,6 +81,7 @@ jobs:
           PYTHONDONTWRITEBYTECODE: '1'
         run: |
           python3 scripts/sandy/release_memory_private_correction.py --verify-installed --evidence-dir "$RUNNER_TEMP/memory-correction/readback"
+          python3 scripts/sandy/repair_memory_readiness_custody.py --verify-installed --evidence-dir "$RUNNER_TEMP/memory-correction/readiness-readback"
           python3 scripts/sandy/verify_memory_private_mcp.py --output "$RUNNER_TEMP/memory-correction/normal-customer-MCP.json"
       - uses: actions/upload-artifact@v4
         if: always()

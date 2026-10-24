@@ -11,6 +11,7 @@ from customer_service_acceptance import Acceptance,passing_read
 from engineering_runtime import BASE
 from release_gcp_admin_read import Installer
 from release_web_canary import ROOT,original_sources
+from release_memory_private_correction import schema
 
 MANIFEST=ROOT/'docs/sandy-engineering/evaluations/memory-correction-adapter-release.json'
 def digest(value):return hashlib.sha256(value).hexdigest()
@@ -26,6 +27,8 @@ class PrivateMemoryAcceptance(Acceptance):
    meta=json.loads(admin.api('GET','/functions/'+slug));body=admin.api('GET','/functions/'+slug+'/body');files=original_sources(body)
    self.check(slug+'_actual_candidate_source',meta.get('status')=='ACTIVE' and meta.get('verify_jwt') is expected['verify_jwt'] and {n:digest(v) for n,v in files.items()}==expected['candidate_files'])
    observed[slug]={'deployment_id':'zmqlyygzqoidkcwdysok_'+meta['id']+'_'+str(meta['version']),'bundle_sha256':digest(body),'version':meta['version']}
+  schema(admin,manifest,True)
+  self.check('classification_repair_independently_installed',admin.sql("SELECT version FROM supabase_migrations.schema_migrations WHERE version='20261024004210'",True)==[{'version':'20261024004210'}])
   self.report['installed_source']=observed;self.save();return manifest,observed
  def prepare(self):
   if os.environ.get('GITHUB_ACTIONS')!='true' or os.environ.get('GITHUB_REF')!='refs/heads/main':raise RuntimeError('protected_main_project_release_required')
@@ -37,13 +40,13 @@ class PrivateMemoryAcceptance(Acceptance):
   for i,fact in enumerate(self.facts):
    self.r._sql('INSERT INTO public.email_ai_profile_facts(id,customer_id,category,fact_key,fact_value,confidence,status,last_observed_at) VALUES('+','.join(q(v) for v in [fact,fixture['customer'],'other','private_certification:'+self.nonce+':'+str(i),'old fixture '+str(i),'explicit','active'])+',clock_timestamp())')
   self.readiness=str(uuid.uuid4());expires=(datetime.datetime.now(datetime.timezone.utc)+datetime.timedelta(minutes=15)).isoformat()
-  metadata={'schema_version':1,'operation':'memory.fact_correct','fixture_user_id':fixture['user'],'fixture_customer_id':fixture['customer'],'release_commit':sha,'api_bundle_sha256':source['sandy-operation-api']['bundle_sha256'],'api_deployment_id':source['sandy-operation-api']['deployment_id'],'contract_sha256':manifest['private_readiness']['contract_sha256'],'idempotency_prefix':self.prefix,'fact_ids':self.facts,'max_mutations':3,'budget_units':0,'expires_at':expires}
+  metadata={'kind':'runtime_private_certification','schema_version':1,'operation':'memory.fact_correct','fixture_user_id':fixture['user'],'fixture_customer_id':fixture['customer'],'release_commit':sha,'api_bundle_sha256':source['sandy-operation-api']['bundle_sha256'],'api_deployment_id':source['sandy-operation-api']['deployment_id'],'contract_sha256':manifest['private_readiness']['contract_sha256'],'idempotency_prefix':self.prefix,'fact_ids':self.facts,'max_mutations':3,'budget_units':0,'expires_at':expires}
   # Proposed engineering tracking is not an Owner approval or delegation. The
   # independent protected project release supplies only rollout-quality custody.
   rows=self.r._sql("INSERT INTO public.sandy_engineering_changes(title,problem,expected_behavior,change_purpose,feature_improvement,scope,regression_rules,acceptance_criteria,risk,requested_by,idempotency_key,status) SELECT 'Certify existing private memory correction','Global unverified operation must stay unpublished during certification','Exact fresh fixture only, normal Auth and original customer rights remain mandatory','SANDY-ENG-0006 protected certification','Actual MCP transaction and independent DB readback','[\"sandy-operation-api\",\"sandy-api-mcp\"]','[\"No global flags or Owner/standing grant changes\"]','[\"Positive, rejected, replayed and revoked normal-customer MCP requests\"]','normal',i.user_id,'memory-private-'||gen_random_uuid()::text,'proposed' FROM public.sandy_engineering_test_identities i JOIN auth.users u ON u.id=i.user_id WHERE u.email='sandy-engineering-test@sandy-ai.internal' AND i.enabled AND i.revoked_at IS NULL RETURNING id")
   if len(rows)!=1:raise RuntimeError('source_tracking_identity_unavailable')
   self.change=str(uuid.UUID(rows[0]['id']))
-  rows=self.r._sql('BEGIN;INSERT INTO public.sandy_engineering_artifacts(id,change_id,artifact_type,target,before_ref,after_ref,rollback_strategy,rollback_notes,metadata) VALUES('+','.join(q(v) for v in [self.readiness,self.change,'runtime_private_certification','memory.fact_correct',manifest['functions']['sandy-operation-api']['before_bundle_sha256'],source['sandy-operation-api']['bundle_sha256'],'revoke_readiness_only','Retire this quality allowance; preserve Auth, normal record ownership and independent audit.'])+','+q(json.dumps(metadata))+'::jsonb);'
+  rows=self.r._sql('BEGIN;INSERT INTO public.sandy_engineering_artifacts(id,change_id,artifact_type,target,before_ref,after_ref,rollback_strategy,rollback_notes,metadata) VALUES('+','.join(q(v) for v in [self.readiness,self.change,'configuration','memory.fact_correct',manifest['functions']['sandy-operation-api']['before_bundle_sha256'],source['sandy-operation-api']['bundle_sha256'],'manual_review','Retire this quality allowance; preserve Auth, normal record ownership and independent audit.'])+','+q(json.dumps(metadata))+'::jsonb);'
    +"INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) SELECT change_id,'memory_private_readiness_installed',NULL,jsonb_build_object('artifact_id',id,'artifact_sha256',encode(sha256(convert_to(to_jsonb(a)::text,'UTF8')),'hex'),'release_commit',metadata->>'release_commit','api_bundle_sha256',metadata->>'api_bundle_sha256','api_deployment_id',metadata->>'api_deployment_id','contract_sha256',metadata->>'contract_sha256') FROM public.sandy_engineering_artifacts a WHERE id="+q(self.readiness)+" RETURNING id;COMMIT;")
   self.report.update(readiness_id=self.readiness,readiness_audit_ids=[x['id'] for x in rows if 'id' in x],readiness_expires_at=expires)
   self.check('protected_readiness_independent_source_event',len(self.r._sql("SELECT e.id FROM public.sandy_engineering_change_events e JOIN public.sandy_engineering_artifacts a ON a.id=(e.detail->>'artifact_id')::uuid WHERE a.id="+q(self.readiness)+" AND e.actor IS NULL AND e.event_type='memory_private_readiness_installed' AND e.detail->>'artifact_sha256'=encode(sha256(convert_to(to_jsonb(a)::text,'UTF8')),'hex')",True))==1)
@@ -62,6 +65,9 @@ class PrivateMemoryAcceptance(Acceptance):
  def retire(self):
   if not self.readiness or not self.change or self.retired:return
   q=self.r._quote
+  installed=self.r._sql("SELECT id FROM public.sandy_engineering_change_events WHERE event_type='memory_private_readiness_installed' AND detail->>'artifact_id'="+q(self.readiness),True)
+  if not installed:
+   self.retired=True;self.report['readiness_never_installed']=True;self.save();return
   self.r._sql("INSERT INTO public.sandy_engineering_change_events(change_id,event_type,actor,detail) VALUES("+q(self.change)+",'memory_private_readiness_revoked',NULL,jsonb_build_object('artifact_id',"+q(self.readiness)+",'reason','Private fixture certification finished or interrupted'))")
   self.retired=True;self.report['readiness_retired']=True;self.save()
  def exercise(self):
@@ -85,22 +91,26 @@ class PrivateMemoryAcceptance(Acceptance):
   flags=self.r._sql("SELECT api_exposed,ai_exposed,verified FROM public.sandy_operation_registry WHERE operation='memory.fact_correct'",True)
   self.check('catalogue_stays_globally_closed_and_unverified',flags==[{'api_exposed':False,'ai_exposed':False,'verified':False}])
  def cleanup(self):
-  self.retire();q=self.r._quote
+  retirement_error=None
+  try:self.retire()
+  except Exception as error:retirement_error=type(error).__name__;self.report['cleanup']['readiness_retirement_error']=retirement_error
+  q=self.r._quote
   for fixture in self.fixtures:
-   if fixture.get('token'):
-    status,_=self.r._http('POST',BASE+'/auth/v1/logout?scope=global',fixture['token'],{},self.keys['anon']);self.report['cleanup'].setdefault('logout_statuses',[]).append(status)
    if fixture.get('customer'):
     customer=q(fixture['customer']);owned=self.r._sql('SELECT display_name,google_drive_folder_status FROM public.email_customers WHERE id='+customer,True)
     if owned!=[{'display_name':'Isolated Sandy API service acceptance','google_drive_folder_status':'excluded'}]:raise RuntimeError('fixture_cleanup_ownership_not_proved')
-    self.r._sql('BEGIN;UPDATE public.sandy_memory_settings SET enabled=false,learning_enabled=false,proactive_enabled=false,updated_at=clock_timestamp() WHERE customer_id='+customer+';DELETE FROM public.email_ai_profile_facts WHERE customer_id='+customer+';DELETE FROM public.sandy_task_pins WHERE customer_id='+customer+';DELETE FROM public.sandy_tasks WHERE customer_id='+customer+';DELETE FROM public.sandy_calendar_events WHERE customer_id='+customer+';DELETE FROM public.sandy_timezone_profiles WHERE customer_id='+customer+';DELETE FROM public.sandy_agenda_access WHERE customer_id='+customer+';DELETE FROM public.sandy_memory_portal_accounts WHERE auth_user_id='+q(fixture['user'])+';COMMIT;')
+    self.r._auth_admin('PUT','users/'+fixture['user'],{'ban_duration':'876000h'})
+    self.r._sql('BEGIN;DELETE FROM auth.refresh_tokens WHERE user_id='+q(fixture['user'])+';DELETE FROM auth.sessions WHERE user_id='+q(fixture['user'])+';UPDATE public.sandy_memory_settings SET enabled=false,learning_enabled=false,proactive_enabled=false,updated_at=clock_timestamp() WHERE customer_id='+customer+';DELETE FROM public.email_ai_profile_facts WHERE customer_id='+customer+';DELETE FROM public.sandy_task_pins WHERE customer_id='+customer+';DELETE FROM public.sandy_tasks WHERE customer_id='+customer+';DELETE FROM public.sandy_calendar_events WHERE customer_id='+customer+';DELETE FROM public.sandy_timezone_profiles WHERE customer_id='+customer+';DELETE FROM public.sandy_agenda_access WHERE customer_id='+customer+';DELETE FROM public.sandy_memory_portal_accounts WHERE auth_user_id='+q(fixture['user'])+';COMMIT;')
    # Retain and ban only these newly created fixture Auth records because the
    # original immutable mutation ledger has an Auth FK with ON DELETE CASCADE.
    # Deleting Auth would erase the actual execution receipt. No password saved.
-   self.r._auth_admin('PUT','users/'+fixture['user'],{'ban_duration':'876000h'})
+   elif fixture.get('user'):
+    self.r._auth_admin('PUT','users/'+fixture['user'],{'ban_duration':'876000h'})
+    self.r._sql('BEGIN;DELETE FROM auth.refresh_tokens WHERE user_id='+q(fixture['user'])+';DELETE FROM auth.sessions WHERE user_id='+q(fixture['user'])+';COMMIT;')
   if self.fixtures:
    ids=','.join(q(f['user']) for f in self.fixtures)
    rows=self.r._sql('SELECT (SELECT count(*) FROM auth.sessions WHERE user_id IN('+ids+')) sessions,(SELECT count(*) FROM public.sandy_memory_portal_accounts WHERE auth_user_id IN('+ids+')) portal_accounts,(SELECT count(*) FROM auth.users WHERE id IN('+ids+') AND banned_until>clock_timestamp()) banned_fixtures',True)[0]
-   self.report['cleanup'].update(rows,complete=rows=={'sessions':0,'portal_accounts':0,'banned_fixtures':len(self.fixtures)},immutable_receipts_and_audit_preserved=True,synthetic_Auth_and_customer_rows_retained_for_receipt_FKs=True)
+   self.report['cleanup'].update(rows,complete=not retirement_error and rows=={'sessions':0,'portal_accounts':0,'banned_fixtures':len(self.fixtures)},immutable_receipts_and_audit_preserved=True,synthetic_Auth_and_customer_rows_retained_for_receipt_FKs=True)
   self.save()
  def run(self):
   try:self.prepare();self.exercise()
