@@ -1,0 +1,18 @@
+{
+  "source_revision": "a0f7a37e62c96baf6301ad18feedaf34db9ace6a",
+  "environment": "local-postgresql-filesystem-after-browser-exit",
+  "draft_id": "62530703-ebe4-4373-ad8d-867328143c27",
+  "saved_revision": 3,
+  "draft_body_sha256": "355bfc03eaf13fa175853b69036f0e0bca044fa9e68ddd3cf091c02b211511bf",
+  "distinct_committed_save_receipts": 3,
+  "lost_response_replay_receipt_matches": true,
+  "original_messages_and_hashes_unchanged": 4,
+  "original_local_inbox_receipts_unchanged": 4,
+  "messages_restored_to_inbox": true,
+  "active_test_labels_remaining": 0,
+  "first_canary_receipt_preserved": true,
+  "verification": "separate Python/psql process; same implementing agent",
+  "cloud_deployed": false,
+  "independent_acceptance": false,
+  "external_messages_sent": 0
+}

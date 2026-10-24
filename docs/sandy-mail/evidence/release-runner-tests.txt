@@ -1,0 +1,10 @@
+test_fixed_sequence_and_credential_separation (test_run_canary.CanaryReleaseTests.test_fixed_sequence_and_credential_separation) ... ok
+test_rejects_receipt_corruption (test_run_canary.CanaryReleaseTests.test_rejects_receipt_corruption) ... ok
+test_rejects_target_drift_and_security_preconditions (test_run_canary.CanaryReleaseTests.test_rejects_target_drift_and_security_preconditions) ... ok
+test_unknown_writes_stop_without_retry_or_secret_log (test_run_canary.CanaryReleaseTests.test_unknown_writes_stop_without_retry_or_secret_log) ... ok
+test_validation_never_claims_authority (test_run_canary.CanaryReleaseTests.test_validation_never_claims_authority) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.005s
+
+OK

@@ -1,0 +1,37 @@
+{
+  "environment": "local-postgresql-17-filesystem",
+  "tests_and_subtests": 25,
+  "race_detector": "passed",
+  "go_vet": "passed",
+  "scope_extensions": [
+    "scoped keyword FTS",
+    "keyset pagination",
+    "bounded EML/TAR manifest export"
+  ],
+  "source_file_sha256": {
+    "services/sandy-mail/README.md": "5d2271203b6c6c891577de2e56be23557f406a66093087c1d71393e548ae55a8",
+    "services/sandy-mail/cmd/mail-fixture/main.go": "e353ba5561f2fb3cf698e4b6c9ba3d211215191811a19098ebd00ef96ecc2f56",
+    "services/sandy-mail/fixture.go": "ab00628a8d036ec7958bbc312386eaba5ed656c1e57db9c84a18adac5af28381",
+    "services/sandy-mail/go.mod": "93d9c07cb1ace8b801e26568b70dd6d41be333a4fe1b36a6868da80d47131899",
+    "services/sandy-mail/go.sum": "2efeccac3d22dafcbc39863b684a80f6cb4fca9beb9da83a2b5e0d9b623820c0",
+    "services/sandy-mail/ingest.go": "ccb7aee1b53a74645ebd4e34b3f11a5f1b79319f92e4331595a03bc36077dafc",
+    "services/sandy-mail/ingest_test.go": "7136b145402f71e2be8826928e175c98e62a3d8127c208ab2cf89a555fab538a",
+    "services/sandy-mail/mailbox.go": "a149ca26fb0b52806008e1eabb2033a63153e32666e75136059f8e416607a8f4",
+    "services/sandy-mail/migrate.go": "4cc3edd0c1b4f5456f5873790c93a076013dc07bd3626c27574f8fd1cb85c864",
+    "services/sandy-mail/migrations/0001_mail_core.sql": "fe3d6684696204bdc4f41d68322f0da5f30f19315dddee85910ed2188cfd95c2",
+    "services/sandy-mail/migrations/0002_recovery_ledger_and_recipients.sql": "03de8fe66f96a9cc550a32398202600b5ee6c0843bde689dd27119855969d11e",
+    "services/sandy-mail/migrations/0003_mailbox_search.sql": "6c6b2a98b9da6d106528f34492728f2b19712445fbbd7882dc86092108a01e02",
+    "services/sandy-mail/objects.go": "19bc2f789e6d1897b76ff7758cb3232cbc70674dd62ead1ce9f26ed9e547fa95",
+    "services/sandy-mail/objects_test.go": "17225d1d36e701028bf5fecd3c5f7301fcf8ddea9f7a4fe3e8231659406fd652",
+    "services/sandy-mail/parse.go": "e726113871bebb231ecfd9108f0b0c363e389fb90504dab8aebfd6a951e6341e",
+    "services/sandy-mail/testdata/first-email.eml": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244"
+  },
+  "not_completed": [
+    "self-service auth and MFA",
+    "durable resumable export jobs",
+    "MBOX/CSV and direct IMAP exit",
+    "large-corpus benchmarks",
+    "Cloud SQL/GCS deployment",
+    "independent customer/provider acceptance"
+  ]
+}

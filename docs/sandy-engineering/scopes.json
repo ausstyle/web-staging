@@ -161,6 +161,16 @@
       "source_version": "1.0",
       "status": "IMPLEMENTING",
       "priority": "P2"
+    },
+    {
+      "scope_id": "SANDY-ENG-0015",
+      "title": "Sandy Mail Implementation and Acceptance",
+      "scope_kind": "task",
+      "parent_scope_id": "SANDY-MASTER-1",
+      "path": "docs/sandy-engineering/tasks/SANDY-ENG-0015-sandy-mail.md",
+      "source_version": "1.3",
+      "status": "IMPLEMENTING",
+      "priority": "P2"
     }
   ]
 }

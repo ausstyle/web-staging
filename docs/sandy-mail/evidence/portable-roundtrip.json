@@ -1,0 +1,253 @@
+{
+  "environment": "local-postgresql-17-filesystem",
+  "import_job": {
+    "job_id": "078b5db1-c1de-4b50-876c-9d078cf8a462",
+    "state": "COMPLETE",
+    "inventory_complete": true,
+    "spec": {
+      "collection_map": {
+        "310b252a-0d16-48d5-ae65-d7780f1a2c9f": "98f864b0-b009-43e2-bec2-5601c6daf8dc",
+        "5fa362d1-3abd-4faf-be3c-f4bd8f0b11a3": "2b7ccfaf-5a49-4405-a243-6a7a59ec122c"
+      },
+      "key": "1cddc481-1747-42d4-9b08-277098a314a7",
+      "format": "eml-tar",
+      "source_sha256": "b88e934e0161c9257d085b8fa1a6acfa1614ddcb55c840be3cd0c58aa33b5cf3",
+      "source_size": 8704,
+      "folder": "Portable",
+      "cutoff": "2026-10-24T02:53:04.961597771Z",
+      "admission_ref": "synthetic-local-portable"
+    }
+  },
+  "independent_acceptance": false,
+  "provider_deployed": false,
+  "reconciliation": {
+    "version": 1,
+    "job_id": "078b5db1-c1de-4b50-876c-9d078cf8a462",
+    "scope": {
+      "Tenant": "510db226-9e90-46ed-9f42-c6499d4065bd",
+      "Account": "0fa5dd72-326f-4ed2-b454-71a1930868d8",
+      "Mailbox": "8d4d2df3-8372-4d15-b02a-d04697b818c6"
+    },
+    "source_sha256": "b88e934e0161c9257d085b8fa1a6acfa1614ddcb55c840be3cd0c58aa33b5cf3",
+    "source_size": 8704,
+    "expected": 2,
+    "verified": 2,
+    "exceptions": 0,
+    "pending": 0,
+    "verified_bytes": 1378,
+    "item_chain_sha256": "bf974b55565e37a86acb3d7ff5550df898efca4701feac03235eb19548a72c15",
+    "state": "COMPLETE",
+    "independent_acceptance": false
+  },
+  "roundtrip_manifest": {
+    "counter_unit": "archive_records_including_drafts",
+    "version": 2,
+    "scope": {
+      "Tenant": "510db226-9e90-46ed-9f42-c6499d4065bd",
+      "Account": "0fa5dd72-326f-4ed2-b454-71a1930868d8",
+      "Mailbox": "8d4d2df3-8372-4d15-b02a-d04697b818c6"
+    },
+    "mailbox_name": "Synthetic portable",
+    "snapshot_at": "2026-10-24T02:53:05.315408Z",
+    "pending_ingestions": 0,
+    "complete": true,
+    "messages": [
+      {
+        "message_id": "332852af-8bc1-4b76-a466-216375ee3535",
+        "internet_message_id": "<sandy-synthetic-first-001@example.invalid>",
+        "subject": "Sandy Mail synthetic first ingest \u2713",
+        "path": "messages/332852af-8bc1-4b76-a466-216375ee3535.eml",
+        "received_at": "2026-10-24T02:53:04.928007Z",
+        "sent_at": "2026-10-24T00:00:00Z",
+        "flags": [],
+        "security_state": "quarantined",
+        "headers": {
+          "To": [
+            "Synthetic Mailbox <first-ingest@example.invalid>"
+          ],
+          "Date": [
+            "Sat, 24 Oct 2026 00:00:00 +0000"
+          ],
+          "From": [
+            "Synthetic Sender <sender@example.invalid>"
+          ],
+          "Subject": [
+            "=?UTF-8?Q?Sandy_Mail_synthetic_first_ingest_=E2=9C=93?="
+          ],
+          "Message-Id": [
+            "<sandy-synthetic-first-001@example.invalid>"
+          ],
+          "Content-Type": [
+            "multipart/mixed; boundary=\"synthetic-mixed\""
+          ],
+          "Mime-Version": [
+            "1.0"
+          ],
+          "X-Sandy-Synthetic": [
+            "true"
+          ]
+        },
+        "envelope": {
+          "from": "sender@example.invalid",
+          "to": [
+            "receiver@example.invalid"
+          ]
+        },
+        "raw": {
+          "key": "mail/v1/510db226-9e90-46ed-9f42-c6499d4065bd/0fa5dd72-326f-4ed2-b454-71a1930868d8/8d4d2df3-8372-4d15-b02a-d04697b818c6/944384b2c54a0ceba21f83c65671d50527c082350bf05582c67fc7c4e74f6d98/original.eml",
+          "generation": 1,
+          "sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+          "size": 1101
+        },
+        "attachments": [
+          {
+            "key": "mail/v1/510db226-9e90-46ed-9f42-c6499d4065bd/0fa5dd72-326f-4ed2-b454-71a1930868d8/8d4d2df3-8372-4d15-b02a-d04697b818c6/944384b2c54a0ceba21f83c65671d50527c082350bf05582c67fc7c4e74f6d98/parts/0",
+            "generation": 1,
+            "sha256": "78c696a93e4fcb4a88f4e9581262e928ab70aefc303d38983b6c51d6fc02bbff",
+            "size": 33
+          }
+        ],
+        "organization": {
+          "version": 1,
+          "folder": {
+            "collection_id": "98f864b0-b009-43e2-bec2-5601c6daf8dc",
+            "kind": "folder",
+            "name": "Projects"
+          },
+          "labels": [
+            {
+              "collection_id": "2b7ccfaf-5a49-4405-a243-6a7a59ec122c",
+              "kind": "label",
+              "name": "Needs reply"
+            }
+          ]
+        },
+        "import_origins": [
+          {
+            "flags": [],
+            "format": "eml-tar",
+            "job_id": "078b5db1-c1de-4b50-876c-9d078cf8a462",
+            "properties": {
+              "conversion": "byte-exact-eml",
+              "source_time": "2026-10-24T02:53:05Z",
+              "unmapped_flags": "",
+              "portable_metadata": {
+                "raw": {
+                  "key": "mail/v1/c51103d0-99a1-4371-9c3d-ac35479a57d2/a23af194-b1a8-4736-86f6-c25e5eed9eaa/bb5f74d6-1d90-43d9-9b24-66fa302e4870/ba7e42a0751b2098c3e3ce32842051102219fb3c5c254a946f4659a4e2bb29ea/original.eml",
+                  "size": 1101,
+                  "sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+                  "generation": 1
+                },
+                "path": "messages/b84d7426-7448-40d8-a08a-beabe29c11d2.eml",
+                "flags": [],
+                "headers": {
+                  "To": [
+                    "Synthetic Mailbox <first-ingest@example.invalid>"
+                  ],
+                  "Date": [
+                    "Sat, 24 Oct 2026 00:00:00 +0000"
+                  ],
+                  "From": [
+                    "Synthetic Sender <sender@example.invalid>"
+                  ],
+                  "Subject": [
+                    "=?UTF-8?Q?Sandy_Mail_synthetic_first_ingest_=E2=9C=93?="
+                  ],
+                  "Message-Id": [
+                    "<sandy-synthetic-first-001@example.invalid>"
+                  ],
+                  "Content-Type": [
+                    "multipart/mixed; boundary=\"synthetic-mixed\""
+                  ],
+                  "Mime-Version": [
+                    "1.0"
+                  ],
+                  "X-Sandy-Synthetic": [
+                    "true"
+                  ]
+                },
+                "sent_at": "2026-10-24T00:00:00Z",
+                "subject": "Sandy Mail synthetic first ingest \u2713",
+                "envelope": {
+                  "to": [
+                    "receiver@example.invalid"
+                  ],
+                  "from": "sender@example.invalid"
+                },
+                "message_id": "b84d7426-7448-40d8-a08a-beabe29c11d2",
+                "attachments": [
+                  {
+                    "key": "mail/v1/c51103d0-99a1-4371-9c3d-ac35479a57d2/a23af194-b1a8-4736-86f6-c25e5eed9eaa/bb5f74d6-1d90-43d9-9b24-66fa302e4870/ba7e42a0751b2098c3e3ce32842051102219fb3c5c254a946f4659a4e2bb29ea/parts/0",
+                    "size": 33,
+                    "sha256": "78c696a93e4fcb4a88f4e9581262e928ab70aefc303d38983b6c51d6fc02bbff",
+                    "generation": 1
+                  }
+                ],
+                "received_at": "2026-10-24T02:53:04.928007Z",
+                "organization": {
+                  "folder": {
+                    "kind": "folder",
+                    "name": "Projects",
+                    "collection_id": "310b252a-0d16-48d5-ae65-d7780f1a2c9f"
+                  },
+                  "labels": [
+                    {
+                      "kind": "label",
+                      "name": "Needs reply",
+                      "collection_id": "5fa362d1-3abd-4faf-be3c-f4bd8f0b11a3"
+                    }
+                  ],
+                  "version": 1
+                },
+                "security_state": "quarantined",
+                "internet_message_id": "<sandy-synthetic-first-001@example.invalid>"
+              },
+              "received_time_source": "archive_time_or_explicit_cutoff"
+            },
+            "source_path": "messages/b84d7426-7448-40d8-a08a-beabe29c11d2.eml",
+            "source_size": 8704,
+            "source_folder": "messages",
+            "source_sha256": "b88e934e0161c9257d085b8fa1a6acfa1614ddcb55c840be3cd0c58aa33b5cf3"
+          }
+        ]
+      },
+      {
+        "draft": {
+          "draft_id": "f9a3f6e0-2d63-4aa7-a985-86f39777ce98",
+          "version": 2,
+          "subject": "Synthetic unsent \u65e5\u672c\u8a9e",
+          "to": [
+            "\"Synthetic\" <draft@example.invalid>"
+          ],
+          "text": "Changed AFTER snapshot",
+          "updated_at": "2026-10-24T02:53:02.747916Z",
+          "created_at": "2026-10-24T02:53:02.647175Z"
+        },
+        "message_id": "f9a3f6e0-2d63-4aa7-a985-86f39777ce98",
+        "internet_message_id": "",
+        "subject": "Synthetic unsent \u65e5\u672c\u8a9e",
+        "path": "drafts/f9a3f6e0-2d63-4aa7-a985-86f39777ce98.draft.json",
+        "received_at": "2026-10-24T02:53:02.747916Z",
+        "sent_at": null,
+        "flags": null,
+        "security_state": "",
+        "headers": null,
+        "envelope": null,
+        "raw": {
+          "key": "",
+          "generation": 0,
+          "sha256": "924566530dc7fed05f55c0ec68e9d232b5b499c18e2c3bd4d2d09140e43ab416",
+          "size": 277
+        },
+        "attachments": null
+      }
+    ],
+    "prototype_message_limit": 100
+  },
+  "scope": {
+    "Tenant": "510db226-9e90-46ed-9f42-c6499d4065bd",
+    "Account": "0fa5dd72-326f-4ed2-b454-71a1930868d8",
+    "Mailbox": "8d4d2df3-8372-4d15-b02a-d04697b818c6"
+  },
+  "source_revision": "50335e624b19ad46074e1ce5f3d8bfa146d23e71"
+}

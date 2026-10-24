@@ -1,0 +1,37 @@
+{
+  "environment": "local-postgresql-17-filesystem-not-cloudsql-gcs",
+  "source_commit": "10ae99536f1742783d503a52900fb77229ea25c7",
+  "job_id": "4f452ddc-7959-4b77-87f9-5dd3c541519a",
+  "state": "COMPLETE",
+  "master_bytes": 1155000,
+  "master_sha256": "1d25bb6ad3b3046460ef685a3bf24080b9dc998323adcad227d20fdf9503aa7e",
+  "master_chunks": 2,
+  "messages_retrieved_after_test_process_exit": 1000,
+  "distinct_receipts": 1000,
+  "outboxes": 1000,
+  "raw_byte_equal": true,
+  "parsed_subjects_checked": 1000,
+  "decoded_attachment_hashes_checked": 1000,
+  "reconciliation": {
+    "version": 1,
+    "job_id": "4f452ddc-7959-4b77-87f9-5dd3c541519a",
+    "scope": {
+      "Tenant": "c2dd0ca5-25f0-47fe-a6b5-e732c453a286",
+      "Account": "17c3203f-56b2-4cee-be03-2d6694a4fe0c",
+      "Mailbox": "dc4880ef-54aa-4eb5-89df-8888a89700fc"
+    },
+    "source_sha256": "1d25bb6ad3b3046460ef685a3bf24080b9dc998323adcad227d20fdf9503aa7e",
+    "source_size": 1155000,
+    "expected": 1000,
+    "verified": 1000,
+    "exceptions": 0,
+    "pending": 0,
+    "verified_bytes": 1101000,
+    "item_chain_sha256": "51d9466a3d7436a74b10e53d667280aaee88c19efa9d22f47d1d4854d444c6ac",
+    "state": "COMPLETE",
+    "independent_acceptance": false
+  },
+  "verification_path": "separate Python and psql process; same executing agent",
+  "independent_acceptance": false,
+  "cloud_deployed": false
+}

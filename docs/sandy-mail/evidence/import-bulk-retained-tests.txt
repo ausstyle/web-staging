@@ -1,0 +1,11 @@
+=== RUN   TestPostgresIntegration
+    ingest_test.go:159: first-email receipt=d695d98e-38c9-4578-ab4d-f62e9c9b1846 message=66528158-b66e-460f-bc71-bd73bbfe5a4b sha256=c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244 bytes=1101
+=== RUN   TestPostgresIntegration/offline_import_jobs
+=== RUN   TestPostgresIntegration/offline_import_jobs/bulk_mbox_checkpoint_reconciliation
+    import_jobs_test.go:417: LOCAL_ONLY_BULK job=4f452ddc-7959-4b77-87f9-5dd3c541519a messages=1000 bytes=1155000 elapsed_seconds=39.336 messages_per_second=25.42 source_sha256=1d25bb6ad3b3046460ef685a3bf24080b9dc998323adcad227d20fdf9503aa7e
+--- PASS: TestPostgresIntegration (39.81s)
+    --- PASS: TestPostgresIntegration/offline_import_jobs (39.70s)
+        --- PASS: TestPostgresIntegration/offline_import_jobs/bulk_mbox_checkpoint_reconciliation (39.70s)
+PASS
+ok  	github.com/ausstyle/web-staging/services/sandy-mail	40.832s
+?   	github.com/ausstyle/web-staging/services/sandy-mail/cmd/mail-fixture	[no test files]

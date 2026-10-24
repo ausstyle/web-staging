@@ -1,0 +1,34 @@
+{
+  "source_commit": "31065a116cfc8862e80904370d600d3d174e9b71",
+  "scope_head": "b1d499f8dd946b6fda11e0cfcaa1f508ec435a08",
+  "main_reconciled": "77e3891",
+  "go_version": "go1.27.3",
+  "local_postgres_image": "postgres:17@sha256:b8faeff7712663c2773a190181e1246e37e364b887611c04658c28b44e2408fe",
+  "files": {
+    "services/sandy-mail/README.md": "7ea4035e4a65deff92518f51829cff42ddef441d9f506d2244141b4ff92ed32c",
+    "services/sandy-mail/cmd/mail-fixture/main.go": "e353ba5561f2fb3cf698e4b6c9ba3d211215191811a19098ebd00ef96ecc2f56",
+    "services/sandy-mail/fixture.go": "ab00628a8d036ec7958bbc312386eaba5ed656c1e57db9c84a18adac5af28381",
+    "services/sandy-mail/go.mod": "93d9c07cb1ace8b801e26568b70dd6d41be333a4fe1b36a6868da80d47131899",
+    "services/sandy-mail/go.sum": "2efeccac3d22dafcbc39863b684a80f6cb4fca9beb9da83a2b5e0d9b623820c0",
+    "services/sandy-mail/ingest.go": "ccb7aee1b53a74645ebd4e34b3f11a5f1b79319f92e4331595a03bc36077dafc",
+    "services/sandy-mail/ingest_test.go": "c45420ab35d2b5bfc42da01b381c9e3c53bb6e714a6672f0c59a6732c13c777b",
+    "services/sandy-mail/migrate.go": "4cc3edd0c1b4f5456f5873790c93a076013dc07bd3626c27574f8fd1cb85c864",
+    "services/sandy-mail/migrations/0001_mail_core.sql": "fe3d6684696204bdc4f41d68322f0da5f30f19315dddee85910ed2188cfd95c2",
+    "services/sandy-mail/migrations/0002_recovery_ledger_and_recipients.sql": "03de8fe66f96a9cc550a32398202600b5ee6c0843bde689dd27119855969d11e",
+    "services/sandy-mail/objects.go": "19bc2f789e6d1897b76ff7758cb3232cbc70674dd62ead1ce9f26ed9e547fa95",
+    "services/sandy-mail/objects_test.go": "17225d1d36e701028bf5fecd3c5f7301fcf8ddea9f7a4fe3e8231659406fd652",
+    "services/sandy-mail/parse.go": "e726113871bebb231ecfd9108f0b0c363e389fb90504dab8aebfd6a951e6341e",
+    "services/sandy-mail/testdata/first-email.eml": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244"
+  },
+  "binary_sha256": "e3ef1a6a0f00b9280c532fbbbe873e7d5ee3c1b73aba8d5b97bd0aa754fe8bcf",
+  "tests": {
+    "fresh_postgresql_integration_and_unit_cases": 23,
+    "race_detector": "passed",
+    "go_vet": "passed",
+    "go_mod_verify": "passed",
+    "govulncheck": "blocked: vuln.go.dev HTTP 403"
+  },
+  "deployment": "not_executed",
+  "independent_provider_acceptance": "not_performed",
+  "independent_readback_note": "Different verification code (psql/Python) by implementing agent, not independent reviewer signoff."
+}

@@ -1,0 +1,25 @@
+{
+  "source_revision": "f0174f9f405a34a5c0c8b00fbb71d38a7dd82fbc",
+  "environment": "local-postgresql-17-filesystem-chromium",
+  "go_test_and_subtest_pass_count": 78,
+  "go_race": true,
+  "go_vet": true,
+  "release_runner_test_count": 5,
+  "real_browser_checks": 8,
+  "seed_messages": 4,
+  "replayed_seed_receipts_identical": true,
+  "receipt_ids": [
+    "98a1b28f-c872-4267-8626-df2b50fafdc0",
+    "46e25ee6-c977-4c6b-ac0d-f615101c2db0",
+    "a828722c-fac0-4f8b-a3cb-a594fbc349b3",
+    "b97c3349-1565-4f52-ba0b-320ba5fd8280"
+  ],
+  "mail_local_binary_sha256": "24a49dea80cf8f512920207e127afb61b1377d321232ce060e47387606316af8",
+  "source_clean_at_build": true,
+  "first_email_canary_source_unchanged": "a135eb69bdcf16d66b9e7e3edf27f9e85c868a33",
+  "first_email_canary_binary_sha256": "a796e5406ab16a26f9226b43fad6f4a4784aa6a284a0b28ad854cb37bea57700",
+  "cloud_deployed": false,
+  "canonical_customer_authentication": false,
+  "independent_acceptance": false,
+  "external_messages_sent": 0
+}

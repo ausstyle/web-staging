@@ -1,0 +1,28 @@
+{
+  "source_revision": "50335e624b19ad46074e1ce5f3d8bfa146d23e71",
+  "environment": "local-postgresql-17-filesystem",
+  "verified_after_test_process_exit": true,
+  "import_job_id": "078b5db1-c1de-4b50-876c-9d078cf8a462",
+  "scope": {
+    "Tenant": "510db226-9e90-46ed-9f42-c6499d4065bd",
+    "Account": "0fa5dd72-326f-4ed2-b454-71a1930868d8",
+    "Mailbox": "8d4d2df3-8372-4d15-b02a-d04697b818c6"
+  },
+  "counts": {
+    "drafts": 1,
+    "messages": 1,
+    "active_labels": 1,
+    "folder_assignments": 1,
+    "draft_restore_receipts": 1
+  },
+  "draft_id": "f9a3f6e0-2d63-4aa7-a985-86f39777ce98",
+  "draft_receipt_id": "50644af5-6239-4f82-a55d-58998d750b57",
+  "raw_sha256": "c93407efbafd6a3193d6331b8358ff71d8ae0e0dde72f238d1717b562b921244",
+  "raw_bytes": 1101,
+  "attachments_verified": 1,
+  "draft_content_timestamps_revision_equal": true,
+  "source_item_objects_verified": 2,
+  "durable_reconciliation_sha256": "84ec18fae3183c8b396935c53875a4f5e40f5ee21b7dba0f506916d56299db8e",
+  "provider_deployed": false,
+  "independent_acceptance": false
+}
