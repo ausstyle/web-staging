@@ -14,7 +14,7 @@
     },
     {
       "scope_id": "SANDY-API-161",
-      "title": "Sandy API Scope \u2014 161 Requirement Families",
+      "title": "Sandy API Scope — 161 Requirement Families",
       "scope_kind": "api",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-api/api-scope-161.md",
@@ -144,7 +144,7 @@
     },
     {
       "scope_id": "SANDY-ENG-0013",
-      "title": "Sandy Accounting \u2014 Australian Accounting, Payroll and Sandy Intelligence",
+      "title": "Sandy Accounting — Australian Accounting, Payroll and Sandy Intelligence",
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0013-sandy-accounting.md",
@@ -154,7 +154,7 @@
     },
     {
       "scope_id": "SANDY-ENG-0014",
-      "title": "My Voices \u2014 Consent-based Personal Voice Cloning",
+      "title": "My Voices — Consent-based Personal Voice Cloning",
       "scope_kind": "task",
       "parent_scope_id": "SANDY-MASTER-1",
       "path": "docs/sandy-engineering/tasks/SANDY-ENG-0014-my-voices.md",
