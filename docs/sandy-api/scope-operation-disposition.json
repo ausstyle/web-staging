@@ -1755,6 +1755,279 @@
       "gcp.backups.vaults.iam_permissions.test",
       "gcp.backups.vaults.list",
       "gcp.backups.vaults.patch"
+    ],
+    "77": [
+      "supabase.project.config.auth.get",
+      "supabase.project.config.auth.set",
+      "supabase.project.config.postgrest.get",
+      "supabase.project.config.postgrest.set",
+      "supabase.project.config.realtime.get",
+      "supabase.project.config.realtime.set",
+      "supabase.project.config.storage.get",
+      "supabase.project.config.storage.set"
+    ],
+    "78": [
+      "supabase.network.bans.delete",
+      "supabase.network.bans.list",
+      "supabase.network.restrictions.apply",
+      "supabase.network.restrictions.get",
+      "supabase.network.restrictions.set",
+      "supabase.network.ssl.get",
+      "supabase.network.ssl.set",
+      "supabase.v1_list_all_network_bans_enriched"
+    ],
+    "80": [
+      "supabase.branches.create",
+      "supabase.branches.delete.bound",
+      "supabase.branches.get",
+      "supabase.branches.list",
+      "supabase.branches.merge.bound"
+    ],
+    "81": [
+      "supabase.db.diff"
+    ],
+    "87": [
+      "supabase.backups.list",
+      "supabase.backups.restore",
+      "supabase.backups.restore_pitr"
+    ],
+    "91": [
+      "supabase.schema.materialized_views.create",
+      "supabase.schema.materialized_views.drop",
+      "supabase.schema.materialized_views.list",
+      "supabase.schema.materialized_views.refresh",
+      "supabase.schema.tables.add_column",
+      "supabase.schema.tables.alter_column",
+      "supabase.schema.tables.create",
+      "supabase.schema.tables.drop",
+      "supabase.schema.tables.drop_column",
+      "supabase.schema.tables.list",
+      "supabase.schema.tables.rename",
+      "supabase.schema.views.create",
+      "supabase.schema.views.drop",
+      "supabase.schema.views.list",
+      "supabase.schema.views.replace"
+    ],
+    "92": [
+      "supabase.schema.functions.create",
+      "supabase.schema.functions.drop",
+      "supabase.schema.functions.get",
+      "supabase.schema.functions.list",
+      "supabase.schema.functions.replace",
+      "supabase.schema.procedures.create",
+      "supabase.schema.procedures.drop",
+      "supabase.schema.procedures.replace",
+      "supabase.schema.triggers.create",
+      "supabase.schema.triggers.disable",
+      "supabase.schema.triggers.drop",
+      "supabase.schema.triggers.enable",
+      "supabase.schema.triggers.list"
+    ],
+    "93": [
+      "supabase.schema.constraints.add",
+      "supabase.schema.constraints.drop",
+      "supabase.schema.constraints.list",
+      "supabase.schema.constraints.validate",
+      "supabase.schema.extensions.create",
+      "supabase.schema.extensions.drop",
+      "supabase.schema.extensions.list",
+      "supabase.schema.extensions.update",
+      "supabase.schema.indexes.create",
+      "supabase.schema.indexes.drop",
+      "supabase.schema.indexes.list",
+      "supabase.schema.types.create",
+      "supabase.schema.types.drop",
+      "supabase.schema.types.enum.add_value",
+      "supabase.schema.types.enum.rename_value",
+      "supabase.schema.types.list"
+    ],
+    "94": [
+      "supabase.database.default_privileges.grant",
+      "supabase.database.default_privileges.list",
+      "supabase.database.default_privileges.revoke",
+      "supabase.database.grants.grant",
+      "supabase.database.grants.list",
+      "supabase.database.grants.revoke",
+      "supabase.database.roles.alter",
+      "supabase.database.roles.create",
+      "supabase.database.roles.drop",
+      "supabase.database.roles.list"
+    ],
+    "95": [
+      "supabase.database.rls.disable",
+      "supabase.database.rls.enable",
+      "supabase.database.rls.policies.alter",
+      "supabase.database.rls.policies.create",
+      "supabase.database.rls.policies.drop",
+      "supabase.database.rls.policies.list"
+    ],
+    "96": [
+      "supabase.database.replication.publications.alter",
+      "supabase.database.replication.publications.create",
+      "supabase.database.replication.publications.drop",
+      "supabase.database.replication.publications.list"
+    ],
+    "97": [
+      "supabase.data.bulk_export",
+      "supabase.data.bulk_import",
+      "supabase.data.delete",
+      "supabase.data.insert",
+      "supabase.data.update",
+      "supabase.data.upsert"
+    ],
+    "98": [
+      "supabase.database.analyze",
+      "supabase.database.disk.utilization.get",
+      "supabase.database.explain",
+      "supabase.database.inspect",
+      "supabase.database.maintenance.receipt.get",
+      "supabase.database.readonly.get",
+      "supabase.database.reindex",
+      "supabase.database.vacuum"
+    ],
+    "99": [
+      "supabase.database.connections.cancel",
+      "supabase.database.connections.list",
+      "supabase.database.connections.terminate",
+      "supabase.database.locks.list",
+      "supabase.database.pooler.config.get",
+      "supabase.database.pooler.config.set",
+      "supabase.database.postgres.config.get",
+      "supabase.database.slow_queries.list",
+      "supabase.v1_get_pooler_config"
+    ],
+    "100": [
+      "supabase.backups.list",
+      "supabase.backups.restore",
+      "supabase.backups.restore_point.create",
+      "supabase.backups.restore_point.get"
+    ],
+    "101": [
+      "supabase.database.cron.jobs.create",
+      "supabase.database.cron.jobs.delete",
+      "supabase.database.cron.jobs.list",
+      "supabase.database.cron.jobs.update"
+    ],
+    "102": [
+      "supabase.database.webhooks.enable",
+      "supabase.database.webhooks.list"
+    ],
+    "104": [
+      "supabase.auth.mfa.factors.delete",
+      "supabase.auth.mfa.factors.list",
+      "supabase.auth.sessions.list",
+      "supabase.project.config.auth.get",
+      "supabase.project.config.auth.set",
+      "supabase.v1_create_a_sso_provider",
+      "supabase.v1_create_legacy_signing_key",
+      "supabase.v1_create_project_signing_key",
+      "supabase.v1_create_project_tpa_integration",
+      "supabase.v1_delete_a_sso_provider",
+      "supabase.v1_delete_project_tpa_integration",
+      "supabase.v1_get_a_sso_provider",
+      "supabase.v1_get_legacy_signing_key",
+      "supabase.v1_get_project_signing_key",
+      "supabase.v1_get_project_signing_keys",
+      "supabase.v1_get_project_tpa_integration",
+      "supabase.v1_list_all_sso_provider",
+      "supabase.v1_list_project_tpa_integrations",
+      "supabase.v1_remove_project_signing_key",
+      "supabase.v1_update_a_sso_provider",
+      "supabase.v1_update_project_signing_key"
+    ],
+    "105": [
+      "supabase.storage.buckets.create",
+      "supabase.storage.buckets.delete",
+      "supabase.storage.buckets.empty",
+      "supabase.storage.buckets.get",
+      "supabase.storage.buckets.list",
+      "supabase.storage.buckets.metadata.list",
+      "supabase.storage.buckets.update"
+    ],
+    "106": [
+      "supabase.storage.objects.copy",
+      "supabase.storage.objects.delete",
+      "supabase.storage.objects.download",
+      "supabase.storage.objects.exists",
+      "supabase.storage.objects.get",
+      "supabase.storage.objects.list",
+      "supabase.storage.objects.move",
+      "supabase.storage.objects.update",
+      "supabase.storage.objects.upload"
+    ],
+    "107": [
+      "supabase.storage.policies.create",
+      "supabase.storage.policies.delete",
+      "supabase.storage.policies.list",
+      "supabase.storage.policies.update"
+    ],
+    "108": [
+      "supabase.database.replication.publications.alter",
+      "supabase.database.replication.publications.create",
+      "supabase.database.replication.publications.drop",
+      "supabase.database.replication.publications.list",
+      "supabase.realtime.channels.create",
+      "supabase.realtime.channels.delete",
+      "supabase.realtime.channels.get",
+      "supabase.realtime.channels.list",
+      "supabase.realtime.channels.subscribe",
+      "supabase.realtime.channels.update",
+      "supabase.realtime.permissions.create",
+      "supabase.realtime.permissions.delete",
+      "supabase.realtime.permissions.list",
+      "supabase.realtime.permissions.update"
+    ],
+    "109": [
+      "supabase.vault.secrets.create_version",
+      "supabase.vault.secrets.delete",
+      "supabase.vault.secrets.managed.create",
+      "supabase.vault.secrets.managed.delete",
+      "supabase.vault.secrets.managed.get",
+      "supabase.vault.secrets.managed.list",
+      "supabase.vault.secrets.managed.update",
+      "system.credentials.provider.activate",
+      "system.credentials.provider.adopt",
+      "system.credentials.provider.reconcile",
+      "system.credentials.provider.rollback",
+      "system.credentials.provider.verify"
+    ],
+    "111": [
+      "supabase.tenant.consent.get",
+      "supabase.tenant.consent.set",
+      "supabase.tenant.content.export",
+      "supabase.tenant.content.exports.available",
+      "supabase.tenant.content.exports.download",
+      "supabase.tenant.content.exports.get",
+      "supabase.tenant.content.exports.purge",
+      "supabase.tenant.erase",
+      "supabase.tenant.export",
+      "supabase.tenant.exports.download",
+      "supabase.tenant.exports.get",
+      "supabase.tenant.exports.purge",
+      "supabase.tenant.financial.export",
+      "supabase.tenant.financial.exports.available",
+      "supabase.tenant.financial.exports.download",
+      "supabase.tenant.financial.exports.get",
+      "supabase.tenant.financial.exports.purge",
+      "supabase.tenant.manifests.erase",
+      "supabase.tenant.manifests.export",
+      "supabase.tenant.manifests.exports.get",
+      "supabase.tenant.manifests.exports.purge",
+      "supabase.tenant.manifests.restore",
+      "supabase.tenant.protected_resources.inventory",
+      "supabase.tenant.restore",
+      "supabase.tenant.support.erase",
+      "supabase.tenant.support.restore",
+      "supabase.tenant.support.snapshot",
+      "supabase.tenant.support.snapshots.get",
+      "supabase.tenant.support.snapshots.purge"
+    ],
+    "112": [
+      "supabase.compliance.audit",
+      "supabase.compliance.hold.create",
+      "supabase.compliance.retention.extend",
+      "supabase.tenant.consent.get",
+      "supabase.tenant.consent.set"
     ]
   },
   "supporting_diagnostic_families": {
@@ -2472,6 +2745,156 @@
       "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
       "awaiting_real_family_acceptance": true,
       "basis": "docs/sandy-api/canonical-gcp-review-20261024.json; provider/guest/custody distinctions and unresolved capabilities remain."
+    },
+    "77": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "78": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "80": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "81": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "87": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "91": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "92": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "93": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "94": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "95": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "96": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "97": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "98": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "99": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "100": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "101": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "102": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "104": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "105": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "106": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "107": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "108": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "109": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "111": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
+    },
+    "112": {
+      "reviewed_explicit_constituents": true,
+      "code_status": "constituents_reviewed_lifecycle_settlement_incomplete",
+      "awaiting_real_family_acceptance": true,
+      "basis": "docs/sandy-api/canonical-supabase-review-20261024.json; concrete reads and missing lifecycle requirements retained."
     }
   },
   "explicit_semantic_mappings": {
@@ -2550,7 +2973,32 @@
     "70": "Pub/Sub topics/subscriptions, schemas and snapshots/seek are distinct. Publish/pull/ack/redelivery and ordering/deduplication are functional requirements; resource metadata does not prove message delivery.",
     "71": "Queues and tasks include creation, dispatch/pause/purge/run and lease/acknowledgement. Task acceptance is not target success; retries, deadlines and identity must preserve effect idempotency. Purge is destructive.",
     "73": "KMS key rings/keys/versions/import jobs/EKM and cryptographic capture operations retain separate scope and custody. Rotation changes active primary/version use; disabling/destroying material requires exact authorization and cannot be an acceptance shortcut.",
-    "74": "Backup vaults/plans/associations/data sources/backups/management servers and long-running operations are distinct. Internal finalize/abandon/access-token bindings cannot be substituted for a restore. Integrity and actual isolated restore are required."
+    "74": "Backup vaults/plans/associations/data sources/backups/management servers and long-running operations are distinct. Internal finalize/abandon/access-token bindings cannot be substituted for a restore. Integrity and actual isolated restore are required.",
+    "77": "Auth/PostgREST/Realtime/Storage configuration get/set are distinct service resources. Disk/autoscale/shutdown helpers are supporting administrative actions, not configuration aliases. Current settings and working exposure must be preserved.",
+    "78": "Network bans, restrictions and SSL settings are distinct; restrictions.set/apply must be compared by concrete request behavior rather than name. Preserve current connectivity and exact allowlist/SSL preimages; enriched ban reads are supporting diagnostics.",
+    "80": "Branch create/list/get and bound merge/delete retain parent-project/branch identity. Diff/push/reset/restore/config operations are supporting branch lifecycle variants, not alternate merge outcomes. Merge requires actual schema/data/readiness evidence.",
+    "81": "db.diff is a bounded database comparison contract, not arbitrary SQL execution or migration apply. Source/target schema identity, supported object coverage and drift must be checked independently.",
+    "87": "Backup listing and restore/PITR use existing project backup resources and entitlements. Schedule changes/undo are supporting operations. A restore request is not a restored, healthy database; destructive impact and rollback require exact decision.",
+    "91": "Table/view/materialized-view creation/alter/drop/refresh use typed database contracts and scoped migration custody. Existing provider-read catalogue lists remain required even though absent from the source-contract-only inventory. OpenAPI paths are supporting, not full schema inspection.",
+    "92": "Functions/procedures/triggers have distinct create/replace/drop/enable/disable semantics. Catalogue reads and dependency/privilege verification remain required; generic SQL capability does not establish every concrete lifecycle.",
+    "93": "Indexes/constraints/types/extensions have distinct validation, enum changes and supported-extension upgrade behavior. List/introspection comes from existing provider-read contracts and cannot be dropped by source-only inventory filtering.",
+    "94": "Roles/grants/default privileges are security-sensitive and scoped to supported customer roles. Existing default privileges affect future objects, not current grants. Privilege inheritance, membership and tenant separation need actual least-privilege verification.",
+    "95": "RLS table enable/disable and policy create/alter/drop/list are distinct. Policy DDL success is insufficient: authenticated/anon/foreign-tenant SQL must establish isolation. No live RLS disable is authorized here.",
+    "96": "Publication CRUD/list is only part of logical replication/CDC. Slots/subscriptions, replica identity, WAL retention and delivery/recovery must be accounted for; publication metadata does not establish data replication.",
+    "97": "Insert/upsert/update/delete and bounded bulk import/export retain typed table/tenant/filter and custody constraints. Uniqueness/conflict handling, transactionality, large transfers and exact row effects require real evidence.",
+    "98": "Inspect/explain/analyze/vacuum/reindex and maintenance receipts differ. EXPLAIN ANALYZE may execute work; maintenance outside a transaction needs durable completion. Configuration changes are supporting, not generic maintenance aliases.",
+    "99": "Connections/locks/slow queries and pooler/postgres configuration are separate. Cancel versus terminate has different session effects; SQL text and connections can contain private data. Legacy pooler get is not assumed equivalent without projection review.",
+    "100": "Restore-point create/get is metadata and WAL positioning, not a full physical/logical backup artifact, restore or integrity verification. Shared backups.list/restore provide prerequisites only; isolated recovery remains required.",
+    "101": "Cron job create/update/delete/list is schedule metadata; exact execution identity, run history, failure/retry and side-effect idempotency remain requirements. No scheduling of live side effects is authorized by this review.",
+    "102": "Database webhooks enable/list does not cover complete receiver configuration, update/delete or authenticated event delivery. Extension availability and durable transaction/event behavior remain explicit gaps.",
+    "104": "Provider/SSO/signing-key/third-party integrations, sessions and MFA are different resources. Shared auth configuration handles provider/hook settings; token/session revocation and functional MFA/hook behavior remain requirements beyond listing/deleting factors.",
+    "105": "Bucket CRUD/empty and metadata listing have different provider effects. Scoped tenant bucket ownership, retention, public/private settings and purge must be tested; empty/delete is not authorized as a metadata read.",
+    "106": "Object metadata get/exists/list is not byte download. Upload/update/copy/move/delete/download must prove exact bytes, version/preconditions, cross-tenant denial and recovery; signed delivery and large/resumable transfer remain distinct obligations.",
+    "107": "Storage policies are tenant-bound SQL access rules, not bucket configuration. Create/update/delete/list must be tested with actual authorized and foreign object requests, preserving normal application access.",
+    "108": "Realtime channel definitions, private permissions and a bounded subscribe probe are not global live-client inventory. Shared publication operations are required; broadcasts, reconnect/resume and tenant isolation need functional delivery evidence.",
+    "109": "Managed vault versions and provider credential adopt/activate/verify/reconcile/rollback are separate private lifecycle states. Do not expose secret values or count a metadata version row as deployed rotation. Delete/revoke preserve dependency/retention checks.",
+    "111": "Tenant export/erase/restore includes content, scalar, financial, support, protected-resource and manifest boundaries. A manifest export is not full content export; restore must not synthesize missing identity/file-writer bindings. Legal hold, consent and exact tenant/resource isolation remain enforced.",
+    "112": "Compliance audit, consent, hold and retention extension preserve evidence and legal constraints. Extending retention is not releasing a hold or proving deletion compliance; normal-caller audit access and independent integrity remain required."
   },
   "external_dependencies": [
     {
@@ -2740,7 +3188,32 @@
     "70": "Pub/Sub topics/subscriptions, schemas and snapshots/seek are distinct. Publish/pull/ack/redelivery and ordering/deduplication are functional requirements; resource metadata does not prove message delivery. Current-contract authorized lifecycle, negative/idempotency/recovery and independent functional outcome evidence for the reviewed constituents.",
     "71": "Queues and tasks include creation, dispatch/pause/purge/run and lease/acknowledgement. Task acceptance is not target success; retries, deadlines and identity must preserve effect idempotency. Purge is destructive. Current-contract authorized lifecycle, negative/idempotency/recovery and independent functional outcome evidence for the reviewed constituents.",
     "73": "KMS key rings/keys/versions/import jobs/EKM and cryptographic capture operations retain separate scope and custody. Rotation changes active primary/version use; disabling/destroying material requires exact authorization and cannot be an acceptance shortcut. Current-contract authorized lifecycle, negative/idempotency/recovery and independent functional outcome evidence for the reviewed constituents.",
-    "74": "Backup vaults/plans/associations/data sources/backups/management servers and long-running operations are distinct. Internal finalize/abandon/access-token bindings cannot be substituted for a restore. Integrity and actual isolated restore are required. Current-contract authorized lifecycle, negative/idempotency/recovery and independent functional outcome evidence for the reviewed constituents."
+    "74": "Backup vaults/plans/associations/data sources/backups/management servers and long-running operations are distinct. Internal finalize/abandon/access-token bindings cannot be substituted for a restore. Integrity and actual isolated restore are required. Current-contract authorized lifecycle, negative/idempotency/recovery and independent functional outcome evidence for the reviewed constituents.",
+    "77": "Auth/PostgREST/Realtime/Storage configuration get/set are distinct service resources. Disk/autoscale/shutdown helpers are supporting administrative actions, not configuration aliases. Current settings and working exposure must be preserved. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "78": "Network bans, restrictions and SSL settings are distinct; restrictions.set/apply must be compared by concrete request behavior rather than name. Preserve current connectivity and exact allowlist/SSL preimages; enriched ban reads are supporting diagnostics. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "80": "Branch create/list/get and bound merge/delete retain parent-project/branch identity. Diff/push/reset/restore/config operations are supporting branch lifecycle variants, not alternate merge outcomes. Merge requires actual schema/data/readiness evidence. Actual authorized branch merge and parent/child schema/data/readiness verification; bound metadata does not prove merge.",
+    "81": "db.diff is a bounded database comparison contract, not arbitrary SQL execution or migration apply. Source/target schema identity, supported object coverage and drift must be checked independently. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "87": "Backup listing and restore/PITR use existing project backup resources and entitlements. Schedule changes/undo are supporting operations. A restore request is not a restored, healthy database; destructive impact and rollback require exact decision. Exact reviewed existing backup/PITR target and independent restore/health/integrity evidence.",
+    "91": "Table/view/materialized-view creation/alter/drop/refresh use typed database contracts and scoped migration custody. Existing provider-read catalogue lists remain required even though absent from the source-contract-only inventory. OpenAPI paths are supporting, not full schema inspection. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "92": "Functions/procedures/triggers have distinct create/replace/drop/enable/disable semantics. Catalogue reads and dependency/privilege verification remain required; generic SQL capability does not establish every concrete lifecycle. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "93": "Indexes/constraints/types/extensions have distinct validation, enum changes and supported-extension upgrade behavior. List/introspection comes from existing provider-read contracts and cannot be dropped by source-only inventory filtering. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "94": "Roles/grants/default privileges are security-sensitive and scoped to supported customer roles. Existing default privileges affect future objects, not current grants. Privilege inheritance, membership and tenant separation need actual least-privilege verification. Security-reviewed role/membership/grant/default-privilege lifecycle across supported tenant roles, with nonowner behavior tests.",
+    "95": "RLS table enable/disable and policy create/alter/drop/list are distinct. Policy DDL success is insufficient: authenticated/anon/foreign-tenant SQL must establish isolation. No live RLS disable is authorized here. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "96": "Publication CRUD/list is only part of logical replication/CDC. Slots/subscriptions, replica identity, WAL retention and delivery/recovery must be accounted for; publication metadata does not establish data replication. Logical replication/CDC slot/subscription and actual delivery/recovery coverage beyond publication DDL.",
+    "97": "Insert/upsert/update/delete and bounded bulk import/export retain typed table/tenant/filter and custody constraints. Uniqueness/conflict handling, transactionality, large transfers and exact row effects require real evidence. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "98": "Inspect/explain/analyze/vacuum/reindex and maintenance receipts differ. EXPLAIN ANALYZE may execute work; maintenance outside a transaction needs durable completion. Configuration changes are supporting, not generic maintenance aliases. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "99": "Connections/locks/slow queries and pooler/postgres configuration are separate. Cancel versus terminate has different session effects; SQL text and connections can contain private data. Legacy pooler get is not assumed equivalent without projection review. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "100": "Restore-point create/get is metadata and WAL positioning, not a full physical/logical backup artifact, restore or integrity verification. Shared backups.list/restore provide prerequisites only; isolated recovery remains required. Real backup artifact/snapshot custody, isolated restore and integrity verification beyond restore-point metadata.",
+    "101": "Cron job create/update/delete/list is schedule metadata; exact execution identity, run history, failure/retry and side-effect idempotency remain requirements. No scheduling of live side effects is authorized by this review. Actual authorized cron execution/run-history and retry/idempotency evidence.",
+    "102": "Database webhooks enable/list does not cover complete receiver configuration, update/delete or authenticated event delivery. Extension availability and durable transaction/event behavior remain explicit gaps. Concrete webhook create/update/delete/configuration and authenticated event delivery/recovery contracts beyond enable/list.",
+    "104": "Provider/SSO/signing-key/third-party integrations, sessions and MFA are different resources. Shared auth configuration handles provider/hook settings; token/session revocation and functional MFA/hook behavior remain requirements beyond listing/deleting factors. Explicit current session/token revocation and complete MFA/provider/hook lifecycle with functional authentication evidence.",
+    "105": "Bucket CRUD/empty and metadata listing have different provider effects. Scoped tenant bucket ownership, retention, public/private settings and purge must be tested; empty/delete is not authorized as a metadata read. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "106": "Object metadata get/exists/list is not byte download. Upload/update/copy/move/delete/download must prove exact bytes, version/preconditions, cross-tenant denial and recovery; signed delivery and large/resumable transfer remain distinct obligations. Signed/large/resumable object transfer and exact byte/generation/scanner custody evidence.",
+    "107": "Storage policies are tenant-bound SQL access rules, not bucket configuration. Create/update/delete/list must be tested with actual authorized and foreign object requests, preserving normal application access. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "108": "Realtime channel definitions, private permissions and a bounded subscribe probe are not global live-client inventory. Shared publication operations are required; broadcasts, reconnect/resume and tenant isolation need functional delivery evidence. Publication integration, actual broadcast/subscription delivery and reconnect/resume isolation.",
+    "109": "Managed vault versions and provider credential adopt/activate/verify/reconcile/rollback are separate private lifecycle states. Do not expose secret values or count a metadata version row as deployed rotation. Delete/revoke preserve dependency/retention checks. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence.",
+    "111": "Tenant export/erase/restore includes content, scalar, financial, support, protected-resource and manifest boundaries. A manifest export is not full content export; restore must not synthesize missing identity/file-writer bindings. Legal hold, consent and exact tenant/resource isolation remain enforced. Canonical Runtime identity/revocation and file-writer/custody bindings for real protected content restore, plus consent/hold-aware end-to-end evidence.",
+    "112": "Compliance audit, consent, hold and retention extension preserve evidence and legal constraints. Extending retention is not releasing a hold or proving deletion compliance; normal-caller audit access and independent integrity remain required. Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
   },
   "unresolved_family_capabilities": {
     "114": [
@@ -2919,6 +3392,81 @@
     ],
     "74": [
       "Current-contract authorized lifecycle, negative/idempotency/recovery and independent functional outcome evidence for the reviewed constituents."
+    ],
+    "77": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "78": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "80": [
+      "Actual authorized branch merge and parent/child schema/data/readiness verification; bound metadata does not prove merge."
+    ],
+    "81": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "87": [
+      "Exact reviewed existing backup/PITR target and independent restore/health/integrity evidence."
+    ],
+    "91": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "92": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "93": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "94": [
+      "Security-reviewed role/membership/grant/default-privilege lifecycle across supported tenant roles, with nonowner behavior tests."
+    ],
+    "95": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "96": [
+      "Logical replication/CDC slot/subscription and actual delivery/recovery coverage beyond publication DDL."
+    ],
+    "97": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "98": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "99": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "100": [
+      "Real backup artifact/snapshot custody, isolated restore and integrity verification beyond restore-point metadata."
+    ],
+    "101": [
+      "Actual authorized cron execution/run-history and retry/idempotency evidence."
+    ],
+    "102": [
+      "Concrete webhook create/update/delete/configuration and authenticated event delivery/recovery contracts beyond enable/list."
+    ],
+    "104": [
+      "Explicit current session/token revocation and complete MFA/provider/hook lifecycle with functional authentication evidence."
+    ],
+    "105": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "106": [
+      "Signed/large/resumable object transfer and exact byte/generation/scanner custody evidence."
+    ],
+    "107": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "108": [
+      "Publication integration, actual broadcast/subscription delivery and reconnect/resume isolation."
+    ],
+    "109": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
+    ],
+    "111": [
+      "Canonical Runtime identity/revocation and file-writer/custody bindings for real protected content restore, plus consent/hold-aware end-to-end evidence."
+    ],
+    "112": [
+      "Current-contract authorized lifecycle, tenant/authorization negatives, duplicate/idempotency/recovery and independent provider/functional evidence."
     ]
   }
 }
