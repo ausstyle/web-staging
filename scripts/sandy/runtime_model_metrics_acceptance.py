@@ -21,7 +21,7 @@ class ModelMetricsAcceptance(RuntimeMemoryAcceptance):
   for r in rounds:
    m=r.get('model_metrics') or {};u=m.get('usage') or {}
    self.check('actual_provider_receipt',r['state']=='succeeded' and r['source_runtime']=='sandy-agent-runtime-v4' and bool(r['provider_response_id']) and bool(r['response_sha256']))
-   self.check('received_usage_and_duration',m.get('source')=='received_provider_envelope' and isinstance(m.get('model_returned'),str) and isinstance(m.get('request_duration_ms'),int) and m['request_duration_ms']>=0 and isinstance(u.get('input_tokens'),int) and u['input_tokens']>0 and isinstance(u.get('output_tokens'),int) and u['output_tokens']>0 and m.get('provider_effect_verified') is False)
+   self.check('received_usage_and_duration',m.get('source')=='received_provider_envelope' and isinstance(m.get('model_returned'),str) and type(m.get('request_duration_ms')) is int and m['request_duration_ms']>=0 and type(u.get('input_tokens')) is int and u['input_tokens']>0 and type(u.get('output_tokens')) is int and u['output_tokens']>0 and m.get('provider_effect_verified') is False)
    if m.get('cost_basis')=='estimated_exact_model_verified_rate':
     rates=self.r._sql('SELECT model_name,input_usd_per_million,cached_input_usd_per_million,output_usd_per_million,verified_at FROM public.email_ai_model_rates WHERE model_name='+q(m['model_returned']),True)
     self.check('exact_returned_model_rate',len(rates)==1 and rates[0]['model_name']==m['model_returned'] and m.get('rate_verified_at') is not None)

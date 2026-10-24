@@ -23,7 +23,7 @@ class AcceptanceTests(unittest.TestCase):
   with tempfile.TemporaryDirectory() as d:
    h=Harness(Path(d)/'report.json',self.metrics());h.exercise();self.assertEqual(h.calls,1);self.assertTrue(all(c['passed'] for c in h.report['checks']))
  def test_received_usage_is_required_and_unknown_price_cannot_be_zero(self):
-  for patch in [{'usage':None},{'estimated_cost_usd':0},{'provider_effect_verified':True}]:
+  for patch in [{'usage':None},{'estimated_cost_usd':0},{'provider_effect_verified':True},{'request_duration_ms':True},{'usage':{**self.metrics()['usage'],'input_tokens':True}}]:
    with tempfile.TemporaryDirectory() as d:
     h=Harness(Path(d)/'report.json',{**self.metrics(),**patch})
     with self.assertRaises(RuntimeError):h.exercise()
