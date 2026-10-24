@@ -231,6 +231,11 @@ func exerciseDraftMIME(t *testing.T, s *Service, admin *pgx.Conn, ctx context.Co
 		if manifest.Version != 4 || len(manifest.Messages) != 1 || !manifest.Messages[0].DraftMIME.OriginalBytesPreserved || len(manifest.Messages[0].DraftMIME.Changes) != 0 {
 			t.Fatal("missing MIME accounting")
 		}
+		var mbox bytes.Buffer
+		_, err := s.ExportMailboxMBOXRD(ctx, source, &mbox, 100)
+		if err == nil || err.Error() != "drafts_require_portable_archive_not_mbox" || mbox.Len() != 0 {
+			t.Fatal("MIME draft became an MBOX message", err, mbox.Len())
+		}
 		preview, err := InspectTAR(bytes.NewReader(archive.Bytes()), nil)
 		must(err)
 		if preview.State != "READY" {

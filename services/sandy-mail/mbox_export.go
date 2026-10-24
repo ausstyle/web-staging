@@ -46,7 +46,7 @@ func (s *Service) ExportMailboxMBOXRD(ctx context.Context, scope Scope, out io.W
 		if item.Collections != nil {
 			return nil
 		} // inventory remains in companion metadata
-		if item.Draft != nil {
+		if item.Draft != nil || item.MIMEDraft {
 			conversionError = fmt.Errorf("drafts_require_portable_archive_not_mbox")
 			return conversionError
 		}
