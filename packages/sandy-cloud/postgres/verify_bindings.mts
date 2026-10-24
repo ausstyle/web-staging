@@ -29,7 +29,7 @@ const context = {
   sessionId: "session",
   deviceId: "device",
   companyId: "company",
-  admissionId: "admission",
+  admissionId: "60000000-0000-4000-8000-000000000001",
 };
 const expiration = Date.now() + 3600000;
 const grant = { rowId: "synthetic-row", revoked: false, expiresAt: expiration };
@@ -138,6 +138,13 @@ async function check(name: string, fn: () => Promise<void>) {
   console.log("PASS " + name);
 }
 try {
+  await db.exec(
+    "CREATE TABLE public.sandy_api_execution_admissions(id uuid,actor_id text,tenant_id text,state text,expires_at timestamptz)",
+  );
+  await db.query(
+    "INSERT INTO public.sandy_api_execution_admissions VALUES($1,$2,$3,'consumed',$4)",
+    [context.admissionId, actor, context.apiTenantId, new Date(expiration)],
+  );
   await db.exec(
     `CREATE TABLE public.sandy_memory_portal_accounts(auth_user_id uuid PRIMARY KEY,customer_id uuid NOT NULL,revoked_at timestamptz);
  CREATE TABLE public.sandy_universal_files(id uuid PRIMARY KEY,owner_customer_id uuid NOT NULL,sha256 text,byte_size bigint,

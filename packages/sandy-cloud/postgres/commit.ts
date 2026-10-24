@@ -27,6 +27,8 @@ export interface SqlDatabase {
 export interface CanonicalAdmission {
   customerId: string;
   policyEpoch: number;
+  admissionId: string;
+  expiresAt: number;
 }
 export interface ProductionOwners {
   /** Non-authorizing discovery, complete Runtime gates, then discovery recheck.
@@ -56,7 +58,7 @@ export interface ProductionOwners {
       expectedRevision: number;
       receipt: VersionReceipt;
     },
-  ): Promise<void>;
+  ): Promise<Readonly<{ expiresAt: number }>>;
 }
 const fail = (code: string): never => {
   throw new IntegrityError(code);
@@ -113,13 +115,32 @@ export class PostgresCommitBoundary implements CommitBoundary {
     await this.owners.prepareTransaction(tx, i);
     // Full Runtime gates precede authority and domain row locks.
     const resolved = await this.owners.lockAdmission(tx, i);
-    const admitted = resolved && Object.freeze({ ...resolved });
+    let admitted = resolved && Object.freeze({ ...resolved });
     if (
       !admitted || !Number.isSafeInteger(admitted.policyEpoch) ||
-      admitted.policyEpoch < 1 || typeof admitted.customerId !== "string"
+      admitted.policyEpoch < 1 || typeof admitted.customerId !== "string" ||
+      !admitted.admissionId || !Number.isSafeInteger(admitted.expiresAt) ||
+      admitted.expiresAt <= 0
     ) {
       fail("NOT_FOUND");
     }
+    // Pin the actual API admission deadline, independently of resolver facts.
+    const api = await tx.query(
+      `SELECT floor(extract(epoch from expires_at)*1000)::bigint expires_ms
+      FROM public.sandy_api_execution_admissions WHERE id=$1::uuid AND actor_id::text=$2
+      AND tenant_id::text=$3 AND state='consumed' FOR SHARE`,
+      [admitted.admissionId, i.actorId, i.ref.tenantId],
+    );
+    const apiExpiry = Number(api.rows[0]?.expires_ms);
+    if (
+      api.rows.length !== 1 || !Number.isSafeInteger(apiExpiry) ||
+      apiExpiry <= 0
+    ) fail("API_ADMISSION_DEADLINE_REQUIRED");
+    admitted = Object.freeze({
+      ...admitted,
+      expiresAt: Math.min(admitted.expiresAt, apiExpiry),
+    });
+    await this.authorityLive(tx, admitted);
     const { rows } = await tx.query(
       `SELECT customer_id, policy_epoch,
       used_bytes, reserved_bytes, quota_bytes FROM sandy_cloud.workspaces
@@ -132,6 +153,13 @@ export class PostgresCommitBoundary implements CommitBoundary {
       Number(w.policy_epoch) !== admitted.policyEpoch
     ) fail("NOT_FOUND");
     return { admitted, workspace: w };
+  }
+  private async authorityLive(tx: SqlTransaction, a: CanonicalAdmission) {
+    const { rows } = await tx.query(
+      "SELECT to_timestamp($1/1000.0)>clock_timestamp() AS live",
+      [a.expiresAt],
+    );
+    if (rows[0]?.live !== true) fail("AUTHORITY_EXPIRED");
   }
   private async stored(tx: SqlTransaction, i: Readonly<UploadIntent>) {
     const { rows } = await tx.query<IntentRow>(
@@ -176,16 +204,20 @@ export class PostgresCommitBoundary implements CommitBoundary {
   async authorize(i: Readonly<UploadIntent>): Promise<void> {
     i = frozenIntent(i);
     await this.db.transaction(async (tx) => {
-      await this.admitted(tx, i);
+      const { admitted } = await this.admitted(tx, i);
       await this.stored(tx, i);
+      await this.authorityLive(tx, admitted);
     });
   }
   async lookup(i: Readonly<UploadIntent>): Promise<VersionReceipt | null> {
     i = frozenIntent(i);
     return await this.db.transaction(async (tx) => {
-      await this.admitted(tx, i);
+      const { admitted } = await this.admitted(tx, i);
       await this.stored(tx, i);
-      return await this.receipt(tx, i);
+      await this.authorityLive(tx, admitted);
+      const receipt = await this.receipt(tx, i);
+      await this.authorityLive(tx, admitted);
+      return receipt;
     });
   }
   async assertScanClean(
@@ -205,6 +237,7 @@ export class PostgresCommitBoundary implements CommitBoundary {
         admission: admitted,
         proof: p,
       });
+      await this.authorityLive(tx, admitted);
     });
   }
   async commit(i: Readonly<UploadIntent>, p: IntegrityReceipt): Promise<void> {
@@ -215,7 +248,10 @@ export class PostgresCommitBoundary implements CommitBoundary {
       const { admitted, workspace } = await this.admitted(tx, i);
       const row = await this.stored(tx, i);
       const existing = await this.receipt(tx, i);
-      if (existing) return; // current admission is still required on replay
+      if (existing) {
+        await this.authorityLive(tx, admitted);
+        return;
+      } // current authority on replay
       if (row.state !== "OPEN" || !row.unexpired || Date.now() >= i.expiresAt) {
         fail("INTENT_EXPIRED");
       }
@@ -274,12 +310,16 @@ export class PostgresCommitBoundary implements CommitBoundary {
         (tenant_id,workspace_id,version_id,receipt_id,evidence) VALUES($1,$2,$3,$4,$5::jsonb)`,
         [...scope(i), receipt.versionId, scan.receiptId, JSON.stringify(scan)],
       );
-      await this.owners.projectVersion(tx, {
+      const projected = await this.owners.projectVersion(tx, {
         customerId: admitted.customerId,
         fileId: row.file_id,
         expectedRevision: i.expectedRevision,
         receipt,
       });
+      const writerExpiresAt = projected?.expiresAt;
+      if (!Number.isSafeInteger(writerExpiresAt) || writerExpiresAt <= 0) {
+        fail("WRITER_DEADLINE_REQUIRED");
+      }
       await tx.query(
         `UPDATE sandy_cloud.file_heads SET revision=$4,current_version_id=$5
         WHERE tenant_id=$1 AND workspace_id=$2 AND file_id=$3`,
@@ -317,11 +357,18 @@ export class PostgresCommitBoundary implements CommitBoundary {
         `UPDATE sandy_cloud.upload_intents SET state='COMMITTED'
         WHERE tenant_id=$1 AND workspace_id=$2 AND intent_id=$3
         AND expires_at>clock_timestamp() AND to_timestamp($4/1000.0)>clock_timestamp()
+        AND to_timestamp($5/1000.0)>clock_timestamp() AND to_timestamp($6/1000.0)>clock_timestamp()
         RETURNING intent_id`,
-        [...scope(i), i.id, scan.expiresAt],
+        [
+          ...scope(i),
+          i.id,
+          scan.expiresAt,
+          admitted.expiresAt,
+          writerExpiresAt,
+        ],
       );
       if (settled.rows.length !== 1) {
-        fail("SCAN_OR_INTENT_EXPIRED_BEFORE_COMMIT");
+        fail("COMMIT_DEADLINE_EXPIRED");
       }
     });
   }

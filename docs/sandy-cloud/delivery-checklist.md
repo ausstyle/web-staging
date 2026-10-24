@@ -343,3 +343,13 @@ used. Source merge is not live schema or product deployment.
   read-only filesystem. Author inspection and passing CI are not a substitute.
 - [ ] Exact live installation identities, revoker participation and protected
   activation approval remain pending; USD10 option remains unapproved.
+
+### Independent P1 deadline repair (2026-10-24)
+
+- [x] Preserve immutable authority and writer deadlines, including the actual API
+  execution-admission expiry; enforce all at final database-clock settlement.
+- [x] Replace simplified callbacks in the real PostgreSQL suite with canonical
+  admission/authority/projection hooks and Runtime custody; 22 cases pass,
+  including delayed settlement, real writer row-lock waits and receipt replay.
+- [ ] Parent's independent re-review of repaired head; live activation stays
+  unattempted and all exact installation/approval dependencies remain applicable.

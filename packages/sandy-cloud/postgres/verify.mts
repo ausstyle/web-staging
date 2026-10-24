@@ -50,7 +50,12 @@ const owners: ProductionOwners = {
     ) {
       throw Error("NOT_FOUND");
     }
-    return { customerId: customer, policyEpoch: 1 };
+    return {
+      customerId: customer,
+      policyEpoch: 1,
+      admissionId: "60000000-0000-4000-8000-000000000001",
+      expiresAt: i.expiresAt,
+    };
   },
   async projectVersion(tx, input) {
     await tx.query(
@@ -64,6 +69,7 @@ const owners: ProductionOwners = {
       ],
     );
     if (failProjection) throw Error("PROJECTION_FAILED");
+    return { expiresAt: i.expiresAt };
   },
 };
 const connection: SqlDatabase = {
@@ -145,6 +151,9 @@ const empty = {
   digest: null,
 };
 try {
+  await db.exec(
+    "CREATE TABLE public.sandy_api_execution_admissions(id uuid,actor_id text,tenant_id text,state text,expires_at timestamptz); INSERT INTO public.sandy_api_execution_admissions VALUES('60000000-0000-4000-8000-000000000001','actor-a','tenant-a','consumed',clock_timestamp()+interval '1 hour')",
+  );
   await db.exec(`CREATE TABLE public.sandy_universal_files(id uuid PRIMARY KEY,
     owner_customer_id uuid NOT NULL,sha256 text,metadata jsonb NOT NULL DEFAULT '{}');
     CREATE ROLE fixture_unprivileged;`);

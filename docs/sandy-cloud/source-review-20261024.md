@@ -67,3 +67,51 @@ operation was retried. No release, IAM, credentials, trust or paid resource was
 activated. The single activation decision list remains
 `minimal-activation-proposal-20261024.md`; this inventory narrows evidence but
 cannot supply the missing installation identities or approval receipts.
+
+## Parent-delivered independent review and P1 deadline remediation
+
+The parent subsequently completed an independent read-only review of exact head
+`5afd1ffc66dea627b27f83ff247f0dfe9ba3997b`, with Runtime pinned to
+`cd6f6cf659e924bd0c9090445a7794ae122746ab`. It reported one P1 and no additional
+verified findings. Its synthetic SQL-adapter reproduction showed authority expiry
+1010, settlement 1020, and a successful commit; that reproduction was **not** real
+PostgreSQL. The original failed local review-runner invocation above remains
+historical evidence, not the status of the parent's completed review.
+
+The P1 was loss of canonical authority deadlines: the API hook discarded the
+computed authority expiry, projection checked writer expiry only before awaited
+SQL, and final settlement checked only intent/scan expiry. The repair:
+
+- Carries immutable `admissionId` and the minimum canonical authority `expiresAt`
+  through the API hook and Cloud boundary. The digest encoding remains unchanged.
+- Locks the actual `public.sandy_api_execution_admissions` row on the same
+  transaction, matching actor, tenant and consumed state; independently caps the
+  authority deadline with its database expiry. No inferred admission deadline.
+- Snapshots the locked writer facts before awaited row acquisition and returns
+  its deadline from canonical projection. Missing/nonfinite/noninteger deadlines
+  fail closed; a void-returning projection is no longer a valid installation.
+- Caps scan evidence by authority expiry, and checks intent, scan, authority and
+  writer deadlines against PostgreSQL `clock_timestamp()` in the final settlement
+  UPDATE. Failure throws and rolls back all effects. Authorize, lookup, preflight
+  and committed receipt replay also check current authority after their awaits.
+
+The real PostgreSQL suite now composes the actual `cloudAdmissionHook`,
+`canonicalCloudAuthority`, `canonicalFileProjection`, Runtime complete gates,
+Runtime reference recorder/loader and Runtime journal. Only installation-specific
+identity rows, writer assignments, scanner keys and provider bytes are fixtures;
+no live relation or trust is claimed.
+
+**22 real PostgreSQL 17.6 cases passed, using three backend PIDs.** Added coverage
+includes delayed settlement for resolver admission, session, tenant/customer,
+device, company, writer and actual API admission expiry; writer expiry while
+blocked on an actual file row lock; delayed committed-receipt replay; invalid or
+missing deadlines; and expiry during authorize/lookup/preflight. Delayed projection
+cases assert zero versions, scan references, projection audits, usage, outbox and
+commit receipts, unchanged canonical hash, and restored quota reservations.
+Existing rollback/backend-loss/revocation/RLS cases still pass.
+
+Also passed: 15 isolated PostgreSQL cases, 8 canonical bindings cases, 8 Runtime
+composition cases, and 64 Deno tests (52 Cloud plus 12 API integration). The local
+PostgreSQL fixture was removed afterward. No live schema, revoker, credential,
+trust or paid resource was changed. This repair requires independent re-review
+at its new commit; it is not a production-readiness or release approval.

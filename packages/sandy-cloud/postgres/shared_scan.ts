@@ -100,7 +100,11 @@ const deny = (): never => {
  * Scanner ingress and Cloud reference owner must use this exact source contract.
  */
 export function cloudScanBindingDigest(
-  input: Omit<ScanCommitInput, "proof">,
+  input: {
+    intent: Readonly<UploadIntent>;
+    fileId: string;
+    admission: Pick<CanonicalAdmission, "customerId" | "policyEpoch">;
+  },
   b: Omit<ScanBinding, "bindingSha256">,
 ): string {
   return createHash("sha256").update(
@@ -168,6 +172,8 @@ export function sharedScanOwner(
       const a = v?.record, time = now();
       if (
         !Number.isSafeInteger(time) || time < 0 || !a ||
+        !Number.isSafeInteger(frozen.admission.expiresAt) ||
+        frozen.admission.expiresAt <= time ||
         v.customerId !== frozen.admission.customerId ||
         v.tenantId !== i.ref.tenantId || !opaque(v.authorityRevision) ||
         a.version !== 1 ||
@@ -193,7 +199,11 @@ export function sharedScanOwner(
         scannerVersion: a.release,
         trustRevision: a.trustRevision,
         authorityRevision: v.authorityRevision,
-        expiresAt: Math.min(a.expiresAt, i.expiresAt),
+        expiresAt: Math.min(
+          a.expiresAt,
+          i.expiresAt,
+          frozen.admission.expiresAt,
+        ),
       };
     },
   };

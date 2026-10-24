@@ -12,7 +12,9 @@ Read-only inventory on 2026-10-24 confirmed the existing project is healthy in
 installed. Portal/admission columns match the source assumptions. The limited
 public-table grant inventory does not select an authorized Cloud transaction
 principal. See `source-review-20261024.md` for exact observations and limits;
-independent source review is still pending because its runner could not start.
+the parent completed an independent review of `5afd1ff` and found one P1
+authority-expiry defect. The deadline repair and complete-hook PostgreSQL evidence
+are recorded there; independent re-review of the repair remains pending.
 
 ## Exact existing target and source changes
 

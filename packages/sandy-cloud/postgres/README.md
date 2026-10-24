@@ -99,3 +99,11 @@ gates. See `docs/sandy-cloud/runtime-combined-acceptance-20261024.md` for
 evidence and `docs/sandy-cloud/minimal-activation-proposal-20261024.md` for the
 single finite activation dependency list. The packaged bundle remains
 non-installable source.
+
+The admission result must include the immutable canonical `admissionId` and
+minimum authority `expiresAt`. The boundary independently locks/caps against the
+actual API admission's database expiry. Projection must return the locked
+writer's `expiresAt`; missing deadlines fail closed. Final settlement uses
+database time to enforce intent, scan, authority and writer deadlines, and rolls
+back all effects on expiry. Installation callbacks returning the old void
+projection result must be updated before any activation.

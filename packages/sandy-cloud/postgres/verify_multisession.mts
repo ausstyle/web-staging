@@ -1,3 +1,6 @@
+import { cloudAdmissionHook } from "../../sandy-api/cloud/admission.ts";
+import { canonicalCloudAuthority } from "./authority.ts";
+import { canonicalFileProjection } from "./projection.ts";
 import { integrateRuntimeCustody } from "./runtime_integration.ts";
 /** Real PostgreSQL sessions. LOCAL SYNTHETIC DATABASE ONLY; no production target. */
 import assert from "node:assert/strict";
@@ -64,7 +67,12 @@ const intent = {
 const fileId = id(5),
   customerId = id(6),
   receiptId = id(9),
-  admission = { customerId, policyEpoch: 1 };
+  admission = {
+    customerId,
+    policyEpoch: 1,
+    admissionId: id(8),
+    expiresAt: expiry,
+  };
 const proof = {
   state: "BYTES_VERIFIED" as const,
   ref: intent.ref,
@@ -166,37 +174,107 @@ const discoverWriter = async (tx: SqlTransaction) =>
       fileId,
     ])).rows[0]?.assignment ?? "",
   );
+const deadlines = {
+  admission: expiry,
+  session: expiry,
+  tenantCustomer: expiry,
+  device: expiry,
+  company: expiry,
+  writer: expiry,
+};
+const canonicalAdmission = cloudAdmissionHook(
+  context,
+  canonicalCloudAuthority({
+    lock: async (tx) => {
+      await resolve(tx);
+      const grant = (kind: keyof typeof deadlines) => ({
+        rowId: "fixture-" + kind,
+        revoked: false,
+        expiresAt: deadlines[kind],
+      });
+      return {
+        admission: {
+          ...context,
+          ...grant("admission"),
+          workspaceId: intent.ref.workspaceId,
+          uploadAllowed: true,
+          policyEpoch: 1,
+        },
+        session: {
+          ...grant("session"),
+          sessionId: context.sessionId,
+          actorId: context.actorId,
+        },
+        tenantCustomer: {
+          ...grant("tenantCustomer"),
+          apiTenantId: context.apiTenantId,
+          customerId,
+        },
+        device: {
+          ...grant("device"),
+          deviceId: context.deviceId,
+          actorId: context.actorId,
+          workspaceId: intent.ref.workspaceId,
+          allowed: true,
+        },
+        company: {
+          ...grant("company"),
+          companyId: context.companyId,
+          actorId: context.actorId,
+          customerId,
+          workspaceId: intent.ref.workspaceId,
+          allowed: true,
+        },
+      };
+    },
+  }),
+);
+const canonicalProjection = canonicalFileProjection({
+  lock: async (tx) => {
+    const row = (await tx.query(
+      "SELECT assignment FROM fixture_writer WHERE file_id=$1 FOR SHARE",
+      [fileId],
+    )).rows[0];
+    return row
+      ? {
+        assignmentId: String(row.assignment),
+        writer: "sandy-cloud",
+        fileId,
+        customerId,
+        tenantId: context.apiTenantId,
+        workspaceId: intent.ref.workspaceId,
+        revision: 0,
+        revoked: false,
+        expiresAt: deadlines.writer,
+      }
+      : null;
+  },
+});
 const composition = integrateRuntimeCustody({
   context,
   runtime: { lockCustodyPlan, canonicalCloudReferences, journal },
   writer: { discover: discoverWriter },
   contract: { operation: binding.operation, sha256: binding.contractSha256 },
-  lockAdmission: async (tx) => {
-    await resolve(tx);
-    return admission;
-  },
-  projectVersion: async () => {},
+  lockAdmission: canonicalAdmission,
+  projectVersion: canonicalProjection,
 });
 const scanner = composition.scanner;
 function boundary(
   onProjection: (tx: SqlTransaction) => Promise<void> = async () => {},
   database: SqlDatabase = connection,
+  afterProjection: (tx: SqlTransaction) => Promise<void> = async () => {},
 ) {
   return new PostgresCommitBoundary(database, {
     ...composition.owners,
-    lockAdmission: async (tx) => {
-      await resolve(tx);
-      return admission;
-    },
-    projectVersion: async (tx, { receipt }) => {
+    projectVersion: async (tx, input) => {
       await onProjection(tx);
-      await tx.query("UPDATE sandy_universal_files SET sha256=$1 WHERE id=$2", [
-        receipt.ref.sha256,
-        fileId,
-      ]);
+      const result = await canonicalProjection(tx, input);
+      await afterProjection(tx);
+      return result;
     },
   }, scanner);
 }
+
 function gate() {
   let open!: () => void;
   const promise = new Promise<void>((r) => open = r);
@@ -215,6 +293,7 @@ async function blocked(pid: number, blocker: number) {
 }
 async function counts() {
   return (await db.query(`SELECT
+ (SELECT count(*)::int FROM sandy_cloud.projection_events) projections,
  (SELECT count(*)::int FROM sandy_cloud.versions) versions,
  (SELECT count(*)::int FROM sandy_cloud.version_scans) scans,
  (SELECT count(*)::int FROM sandy_cloud.commit_receipts) receipts,
@@ -223,6 +302,7 @@ async function counts() {
  (SELECT count(*)::int FROM sandy_artifact_custody.claims) claims`)).rows[0];
 }
 const zero = {
+    projections: 0,
     versions: 0,
     scans: 0,
     receipts: 0,
@@ -230,8 +310,22 @@ const zero = {
     outbox: 0,
     claims: 0,
   },
-  one = { versions: 1, scans: 1, receipts: 1, usage: 1, outbox: 1, claims: 0 };
+  one = {
+    projections: 1,
+    versions: 1,
+    scans: 1,
+    receipts: 1,
+    usage: 1,
+    outbox: 1,
+    claims: 0,
+  };
 async function seed() {
+  for (const key of Object.keys(deadlines) as (keyof typeof deadlines)[]) {
+    deadlines[key] = expiry;
+  }
+  await db.query("UPDATE sandy_api_execution_admissions SET expires_at=$1", [
+    new Date(expiry),
+  ]);
   // Fixture resets only; runner accepts no remote host/URL/database argument.
   await db.exec(
     "TRUNCATE sandy_cloud.workspaces CASCADE; UPDATE sandy_universal_files SET sha256=NULL; UPDATE fixture_authority SET enabled=true,revision=1; UPDATE fixture_writer SET assignment='fixture-writer-assignment'",
@@ -289,13 +383,18 @@ try {
     "fresh fixture database required",
   );
   await db.exec(
-    `CREATE TABLE sandy_universal_files(id uuid PRIMARY KEY,owner_customer_id uuid NOT NULL,sha256 text);
+    `CREATE TABLE sandy_universal_files(id uuid PRIMARY KEY,owner_customer_id uuid NOT NULL,sha256 text,byte_size bigint,storage_bucket text,storage_path text,provider text,provider_file_id text,metadata jsonb NOT NULL DEFAULT '{}',updated_at timestamptz);
+ CREATE TABLE sandy_memory_portal_accounts(auth_user_id uuid PRIMARY KEY,customer_id uuid,revoked_at timestamptz);
  CREATE TABLE sandy_api_execution_admissions(id uuid PRIMARY KEY,actor_id uuid,tenant_id uuid,operation text,input_sha256 text,contract_sha256 text,
  scope_sha256 text,state text,expires_at timestamptz);
  CREATE TABLE fixture_authority(actor uuid PRIMARY KEY,enabled boolean,revision integer);
  CREATE TABLE fixture_writer(file_id uuid PRIMARY KEY,assignment text NOT NULL);
  CREATE ROLE fixture_reader; CREATE ROLE fixture_table_owner;
  ALTER DEFAULT PRIVILEGES GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO fixture_reader;`,
+  );
+  await db.query(
+    "INSERT INTO sandy_memory_portal_accounts VALUES($1,$2,NULL)",
+    [context.actorId, customerId],
   );
   await db.query("INSERT INTO fixture_writer VALUES($1,$2)", [
     fileId,
@@ -304,10 +403,13 @@ try {
   await db.query("INSERT INTO fixture_authority VALUES($1,true,1)", [
     intent.actorId,
   ]);
-  await db.query("INSERT INTO sandy_universal_files VALUES($1,$2,NULL)", [
-    fileId,
-    customerId,
-  ]);
+  await db.query(
+    "INSERT INTO sandy_universal_files(id,owner_customer_id,sha256) VALUES($1,$2,NULL)",
+    [
+      fileId,
+      customerId,
+    ],
+  );
   await db.query(
     "INSERT INTO sandy_api_execution_admissions VALUES($1,$2,$3,$4,$5,$6,$7,'consumed',$8)",
     [
@@ -511,7 +613,7 @@ try {
           await resolve(tx);
           return admission;
         },
-        projectVersion: async () => {},
+        projectVersion: async () => ({ expiresAt: expiry }),
       }, scanner).commit(intent, proof);
       const refused = assert.rejects(pending, /FIXTURE_AUTHORITY_REVOKED/);
       while (!commitPid) await new Promise((r) => setTimeout(r, 5));
@@ -662,6 +764,7 @@ try {
         lockAdmission: composition.owners.lockAdmission,
         projectVersion: async () => {
           projected = true;
+          return { expiresAt: expiry };
         },
       });
       const pending = new PostgresCommitBoundary(
@@ -691,6 +794,187 @@ try {
       assert.deepEqual(await counts(), zero);
     },
   );
+  await check(
+    "writer expires while canonical projection waits for a real file row lock",
+    async () => {
+      deadlines.writer = Date.now() + 500;
+      const reader = await pool.connect();
+      await reader.query("BEGIN");
+      const readerPid =
+        (await reader.query("SELECT pg_backend_pid() pid")).rows[0].pid;
+      await reader.query(
+        "SELECT id FROM sandy_universal_files WHERE id=$1 FOR SHARE",
+        [fileId],
+      );
+      let writerPid = 0;
+      const entered = gate();
+      const pending = boundary(async (tx) => {
+        writerPid = Number(
+          (await tx.query("SELECT pg_backend_pid() pid")).rows[0].pid,
+        );
+        entered.open();
+      }).commit(intent, proof);
+      const refused = assert.rejects(pending, /COMMIT_DEADLINE_EXPIRED/);
+      await entered.promise;
+      try {
+        await blocked(writerPid, readerPid);
+        await reader.query("SELECT pg_sleep(0.6)");
+      } finally {
+        await reader.query("ROLLBACK");
+        reader.release();
+      }
+      await refused;
+      assert.deepEqual(await counts(), zero);
+      assert.equal(
+        (await db.query("SELECT sha256 FROM sandy_universal_files")).rows[0]
+          .sha256,
+        null,
+      );
+    },
+  );
+  await check(
+    "receipt replay rechecks database-clock authority after awaited receipt lookup",
+    async () => {
+      await boundary().commit(intent, proof);
+      deadlines.session = Date.now() + 500;
+      const delayed: SqlDatabase = {
+        transaction: (fn) =>
+          connection.transaction(async (tx) => {
+            const original = tx.query.bind(tx);
+            tx.query = async (sql, args) => {
+              const result = await original(sql, args);
+              if (sql.includes("FROM sandy_cloud.commit_receipts")) {
+                await original("SELECT pg_sleep(0.6)");
+              }
+              return result;
+            };
+            try {
+              return await fn(tx);
+            } finally {
+              tx.query = original;
+            }
+          }),
+      };
+      await assert.rejects(
+        boundary(undefined, delayed).commit(intent, proof),
+        /AUTHORITY_EXPIRED/,
+      );
+      assert.deepEqual(await counts(), one);
+    },
+  );
+  for (
+    const kind of [
+      "admission",
+      "session",
+      "tenantCustomer",
+      "device",
+      "company",
+      "writer",
+      "apiAdmission",
+    ] as const
+  ) {
+    await check(
+      `real canonical ${kind} expiry during delayed projection rolls back all effects`,
+      async () => {
+        const deadline = Date.now() + 500;
+        if (kind === "apiAdmission") {
+          await db.query(
+            "UPDATE sandy_api_execution_admissions SET expires_at=$1",
+            [new Date(deadline)],
+          );
+        } else deadlines[kind] = deadline;
+        let projected = false;
+        await assert.rejects(
+          boundary(undefined, connection, async (tx) => {
+            projected = true;
+            await tx.query(
+              "SELECT pg_sleep(GREATEST(0,($1-extract(epoch from clock_timestamp())*1000)/1000)+0.05)",
+              [deadline],
+            );
+          }).commit(intent, proof),
+          /COMMIT_DEADLINE_EXPIRED/,
+        );
+        assert.equal(projected, true);
+        assert.deepEqual(await counts(), zero);
+        assert.equal(
+          (await db.query("SELECT sha256 FROM sandy_universal_files")).rows[0]
+            .sha256,
+          null,
+        );
+        assert.deepEqual(
+          (await db.query(
+            "SELECT used_bytes::int used,reserved_bytes::int reserved FROM sandy_cloud.workspaces",
+          )).rows[0],
+          { used: 0, reserved: 3 },
+        );
+      },
+    );
+  }
+  await check(
+    "missing and invalid authority/writer deadlines fail closed",
+    async () => {
+      for (const expiresAt of [undefined, NaN, Infinity, 0, -1, 1.5]) {
+        const bad = new PostgresCommitBoundary(connection, {
+          ...composition.owners,
+          lockAdmission: async (tx, i) => ({
+            ...await canonicalAdmission(tx, i),
+            expiresAt: expiresAt as number,
+          }),
+        }, scanner);
+        await assert.rejects(bad.commit(intent, proof));
+        assert.deepEqual(await counts(), zero);
+        const writer = new PostgresCommitBoundary(connection, {
+          ...composition.owners,
+          projectVersion: async (tx, input) => {
+            await canonicalProjection(tx, input);
+            return { expiresAt: expiresAt as number };
+          },
+        }, scanner);
+        await assert.rejects(
+          writer.commit(intent, proof),
+          /WRITER_DEADLINE_REQUIRED/,
+        );
+        assert.deepEqual(await counts(), zero);
+      }
+    },
+  );
+  for (const method of ["authorize", "lookup", "assertScanClean"] as const) {
+    await check(
+      `authority expiry during ${method} refuses completion`,
+      async () => {
+        deadlines.session = Date.now() + 500;
+        // Keep Runtime's transaction-object identity stable: wrap only stored-row SQL
+        // on the actual pinned client, then restore it at callback completion.
+        const pinnedDelay: SqlDatabase = {
+          transaction: (fn) =>
+            connection.transaction(async (tx) => {
+              const original = tx.query.bind(tx);
+              tx.query = async (sql, args) => {
+                const result = await original(sql, args);
+                if (
+                  sql.includes("FROM sandy_cloud.upload_intents") &&
+                  sql.includes("FOR UPDATE")
+                ) await original("SELECT pg_sleep(0.6)");
+                return result;
+              };
+              try {
+                return await fn(tx);
+              } finally {
+                tx.query = original;
+              }
+            }),
+        };
+        const b = boundary(undefined, pinnedDelay);
+        await assert.rejects(
+          method === "assertScanClean"
+            ? b[method](intent, proof)
+            : b[method](intent),
+          /AUTHORITY_EXPIRED|SHARED_SCAN_BINDING_REFUSED/,
+        );
+        assert.deepEqual(await counts(), zero);
+      },
+    );
+  }
   await check(
     "scanner withdrawal waits on the complete gate and refuses subsequent scan validation",
     async () => {

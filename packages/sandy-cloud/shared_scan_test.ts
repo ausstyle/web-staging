@@ -28,7 +28,12 @@ const input: ScanCommitInput = {
     ref,
   },
   fileId: id(5),
-  admission: { customerId: id(6), policyEpoch: 7 },
+  admission: {
+    customerId: id(6),
+    policyEpoch: 7,
+    admissionId: id(8),
+    expiresAt: 2000,
+  },
   proof: { state: "BYTES_VERIFIED", ref, bytesRead: 3, sha256: ref.sha256 },
 };
 const binding: ScanBinding = {

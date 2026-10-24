@@ -52,7 +52,12 @@ const intent = {
 const fileId = id(5),
   customerId = id(6),
   receiptId = id(9),
-  admission = { customerId, policyEpoch: 1 };
+  admission = {
+    customerId,
+    policyEpoch: 1,
+    admissionId: id(8),
+    expiresAt: expiresAt,
+  };
 const proof = {
   state: "BYTES_VERIFIED" as const,
   ref: intent.ref,
@@ -140,7 +145,7 @@ const composition = integrateRuntimeCustody({
     assert.equal(tx, pinned);
     return admission;
   },
-  projectVersion: async () => {},
+  projectVersion: async () => ({ expiresAt: expiresAt }),
 });
 const scanner = composition.scanner;
 const owners: ProductionOwners = {
@@ -152,6 +157,7 @@ const owners: ProductionOwners = {
       receipt.ref.sha256,
     ]);
     if (failProjection) throw Error("PROJECTION_FAILED");
+    return { expiresAt };
   },
 };
 const boundary = new PostgresCommitBoundary(connection, owners, scanner);
@@ -338,6 +344,7 @@ try {
         },
         projectVersion: async () => {
           projected = true;
+          return { expiresAt };
         },
       });
       await assert.rejects(
@@ -395,9 +402,10 @@ try {
       const late = new PostgresCommitBoundary(connection, {
         ...owners,
         projectVersion: async (tx, input) => {
-          await owners.projectVersion(tx, input);
+          const result = await owners.projectVersion(tx, input);
           projected = true;
           await tx.query("SELECT pg_sleep(0.3)");
+          return result;
         },
       }, {
         verifyInTransaction: async (tx, input) => ({
@@ -407,7 +415,7 @@ try {
       });
       await assert.rejects(
         late.commit(intent, proof),
-        /SCAN_OR_INTENT_EXPIRED_BEFORE_COMMIT/,
+        /COMMIT_DEADLINE_EXPIRED/,
       );
       assert.equal(projected, true);
       assert.deepEqual(await counts(), empty);
