@@ -66,17 +66,28 @@ def logs():
     'method':method if method in ['GET','HEAD'] else 'OTHER'})
   return {'available':True,'health_requests':selected}
  except Blocked as e:return {'available':False,'error':str(e),'attempted_operation':'logging.entries.list'}
+def phase(original,output,final=False):
+ output.mkdir(parents=True,exist_ok=True)
+ if final:proof,actual,rev=readback(original)
+ else:proof,actual,rev=verify(Installer(output/'management-readback'),original)
+ private_write(output,'iap-final-provider-readback.json' if final else 'iap-runtime-binding.json',json.dumps(proof,indent=2).encode())
+ private_write(output,'final-service.json' if final else 'existing-service.json',json.dumps(actual,indent=2).encode())
+ private_write(output,'final-revision.json' if final else 'existing-revision.json',json.dumps(rev,indent=2).encode())
+ diagnostic=logs()
+ private_write(output,'final-health-request-logs.json' if final else 'initial-health-request-logs.json',json.dumps(diagnostic,indent=2).encode())
+ notice('Final existing IAP candidate readback' if final else 'Existing IAP candidate reconciliation',proof)
+ notice('Bounded Cloud Run health request diagnostics',diagnostic)
+ return proof
+
+def failure(output,final,error):
+ name=type(error).__name__
+ kind=name if name in ['FileExistsError','FileNotFoundError','JSONDecodeError','KeyError','TypeError','ValueError','OSError'] else 'UnexpectedError'
+ report={'passed':False,'error':str(error) if isinstance(error,Blocked) else 'read_only_reconciliation_failed','exception_class':'Blocked' if isinstance(error,Blocked) else kind,'IAM_changes':0,'automatic_retry':False}
+ private_write(output,'final-readback-failure.json' if final else 'existing-readback-failure.json',json.dumps(report).encode())
+ notice('Final readback failure' if final else 'Existing candidate reconciliation failure',report)
+ return report
+
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--original-dir',required=True,type=Path);p.add_argument('--output-dir',required=True,type=Path);p.add_argument('--final',action='store_true');a=p.parse_args();a.output_dir.mkdir(parents=True,exist_ok=True)
- try:
-  if a.final:proof,actual,rev=readback(a.original_dir)
-  else:proof,actual,rev=verify(Installer(a.output_dir/'management-readback'),a.original_dir)
-  private_write(a.output_dir,'iap-final-provider-readback.json' if a.final else 'iap-runtime-binding.json',json.dumps(proof,indent=2).encode())
-  private_write(a.output_dir,'final-service.json' if a.final else 'existing-service.json',json.dumps(actual,indent=2).encode())
-  private_write(a.output_dir,'final-revision.json' if a.final else 'existing-revision.json',json.dumps(rev,indent=2).encode())
-  diagnostic=logs()
-  private_write(a.output_dir,'health-request-logs.json',json.dumps(diagnostic,indent=2).encode())
-  notice('Final existing IAP candidate readback' if a.final else 'Existing IAP candidate reconciliation',proof)
-  notice('Bounded Cloud Run health request diagnostics',diagnostic)
- except Blocked as e:
-  private_write(a.output_dir,'final-readback-failure.json' if a.final else 'existing-readback-failure.json',json.dumps({'passed':False,'error':str(e),'IAM_changes':0,'automatic_retry':False}).encode());print('::error::'+str(e));raise SystemExit(1)
+ try:phase(a.original_dir,a.output_dir,a.final)
+ except Exception as e:failure(a.output_dir,a.final,e);raise SystemExit(1)
