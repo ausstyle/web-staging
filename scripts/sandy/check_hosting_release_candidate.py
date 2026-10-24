@@ -7,14 +7,14 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / 'docs/sandy-engineering/evaluations/hosting-logical-account-release-candidate.json'
 SOURCE = '1dee65da7b68f12d147d11e3f02befae06416ef2'
-PIN = '66393dac73a71bc1619c1ecf8350ac902abc1e96acf827cd6dca48ab619e4d37'
+PIN = 'ebef1ee3c0e2084a3b449fd4b9071c410d62a7f121b9e5671c96999f9ecaed10'
 REPLACEMENTS = {'sandy-customer-provisioning-api/index.ts', 'sandy-customer-provisioning-api/gateway.ts', 'sandy-customer-provisioning-api/hosting_accounts.json'}
 def sha(b): return hashlib.sha256(b).hexdigest()
 def verify(raw, read):
     if sha(raw) != PIN:
         raise ValueError('reviewed_manifest_changed')
     m = json.loads(raw); f = m['function']
-    if m['source_commit'] != SOURCE or m['project_ref'] != 'zmqlyygzqoidkcwdysok' or f['slug'] != 'sandy-customer-provisioning-api' or f['expected_prior_version'] != 10 or f['verify_jwt'] is not True:
+    if m['source_commit'] != SOURCE or m['project_ref'] != 'zmqlyygzqoidkcwdysok' or f['slug'] != 'sandy-customer-provisioning-api' or f['expected_prior_version'] != 12 or f['verify_jwt'] is not True:
         raise ValueError('bounded_target_required')
     if any(m[k] is not False for k in ['operation_exposure', 'gateway_release', 'provider_effects', 'billing_effects']):
         raise ValueError('logical_only_release_required')

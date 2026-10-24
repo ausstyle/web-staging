@@ -18,7 +18,7 @@
       "sandy-customer-provisioning-api/provisioning_manifest.json": "1068dd94ac6d82bf6fd4db3a2a677e3aaa2ddd8e7fa03be4d6008909de2e574c",
       "sandy-customer-provisioning-api/provisioning_operations.ts": "76218ddaf4be4aa5a3f1022905ba5a94a2b55de5344a46e923ac0e5e5f3acbf7"
     },
-    "expected_prior_version": 10,
+    "expected_prior_version": 12,
     "prior_bundle_sha256": "da928eeabca32420e5c50a9363f7746ec618f364ad0a6236fb3504732cfa6284",
     "replacement_files": [
       "sandy-customer-provisioning-api/index.ts",

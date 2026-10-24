@@ -72,7 +72,7 @@ h1{font-size:clamp(29px,3.5vw,43px);letter-spacing:-.055em;margin:30px 0 1px}h2{
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.105.0";
 import {createControllerTransport} from "./session-transport.mjs";
 import {showAutonomousPolicyControls} from "./autonomous-policy.mjs";
-import {showHostingAccountApproval,RELEASE as hostingAccountRelease} from "./hosting-account-approval.mjs";
+import {showHostingAccountApproval,PREVIOUS_CHANGE as previousHostingChange,isHostingAccountReview} from "./hosting-account-approval.mjs";
 import {showRegionalReadApproval} from "./regional-read-approval.mjs";
 import {showProviderResponseApproval} from "./provider-response-approval.mjs";
 import {showAmendmentBApproval} from "./amendment-b-approval.mjs?v=2";
@@ -209,7 +209,7 @@ async function engineeringRequest(action,fields={}){
  return controllerTransport.engineering({action,...fields});
 }
 async function refreshEngineeringChanges(){
- if(new URLSearchParams(location.search).get("change")===hostingAccountRelease.change)return;
+ if(isHostingAccountReview(location.search))return;
  if(data?.role!=="owner")return;
  engineeringChangesBusy=true;engineeringChangesError="";render();
  try{const result=await engineeringRequest("list");engineeringChanges=result.changes||[];engineeringChangesLoaded=true}
@@ -224,7 +224,7 @@ function showEngineeringChanges(c){
  }
  if(data?.role==="owner"){
   showHostingAccountApproval(c,controllerTransport);
-  if(new URLSearchParams(location.search).get("change")===hostingAccountRelease.change)return;
+  if(isHostingAccountReview(location.search))return;
  }
  if(data?.role==="owner")showProviderResponseApproval(c,controllerTransport);
  if(data?.role==="owner")showAmendmentBApproval(c,controllerTransport);
@@ -249,7 +249,8 @@ function showEngineeringChanges(c){
     const pre=el("pre","",details);pre.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere;background:#f7f7f7;padding:12px;border-radius:10px;font-size:12px";card.append(pre);
    }catch(e){alert("Unable to load change: "+e.message)}
   };buttons.append(inspect);
-  if(item.status==="proposed"&&["high","critical"].includes(item.risk)){
+  if(item.id===previousHostingChange)txt(card,"Superseded hosting proposal. Use the refreshed hosting review above; no approval is requested for this stale candidate.","small muted");
+  if(item.id!==previousHostingChange&&item.status==="proposed"&&["high","critical"].includes(item.risk)){
    const details=el("div");details.style.cssText="margin-top:10px;display:none";
    const note=el("textarea");note.rows=3;note.placeholder="Approval reason, including pinned source and manifest";note.style.cssText="width:100%;padding:10px;border:1px solid #ccc;border-radius:10px;font:inherit";
    const status=el("p","small muted","");
@@ -491,6 +492,6 @@ document.querySelectorAll(".nav[data-view]").forEach(n=>n.onclick=()=>{view=n.da
 $("refresh").onclick=load;$("signout").onclick=async()=>{await sb.auth.signOut();location.reload()};
 $("switchAccount").onclick=async()=>{await sb.auth.signOut();location.href="../app/?return="+encodeURIComponent(location.pathname)};
 $("signin").onclick=async()=>{const s=(await sb.auth.getSession()).data.session;if(s){await load();return}location.href="../app/"};
-view=new URLSearchParams(location.search).get("release")==="regional-read"?"changes":new URLSearchParams(location.search).get("change")===hostingAccountRelease.change?"changes":location.hash.slice(1)==="roadmap"?"qa":headings[location.hash.slice(1)]?location.hash.slice(1):"overview";
+view=new URLSearchParams(location.search).get("release")==="regional-read"?"changes":isHostingAccountReview(location.search)?"changes":location.hash.slice(1)==="roadmap"?"qa":headings[location.hash.slice(1)]?location.hash.slice(1):"overview";
 load().then(()=>{if(view==="engineering"||view==="changes")refreshEngineeringChanges();if(view==="activity")loadActivity(true);if(view==="examiner"){loadExaminerProductionAccount();loadExaminerRuns();loadExaminerProduction()}});
 </script></body></html>

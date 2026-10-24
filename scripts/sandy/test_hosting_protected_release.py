@@ -29,6 +29,17 @@ class BoundaryTests(unittest.TestCase):
         with patch.object(r,'api',side_effect=h.Blocked('unknown')) as api:
             with self.assertRaises(h.Blocked):h.upload(r,{})
             self.assertEqual(api.call_count,1)
+class LiveVersionTests(unittest.TestCase):
+    def test_only_exact_v12_before_and_v13_after_are_accepted(self):
+        body=b'synthetic';m={'function':{'expected_prior_version':12,'before_files':{},'after_files':{},'prior_bundle_sha256':h.sha(body)}}
+        for version,after,allowed in [(10,False,False),(12,False,True),(13,False,False),(12,True,False),(13,True,True),(14,True,False)]:
+            r=Fake([])
+            r.api=lambda method,path: json.dumps({'status':'ACTIVE','verify_jwt':True,'version':version}).encode() if not path.endswith('/body') else body
+            with patch.object(h,'original_sources',return_value={}):
+                if allowed:self.assertEqual(h.inspect(r,m,after)[0]['version'],version)
+                else:
+                    with self.assertRaises(h.Blocked):h.inspect(r,m,after)
+
 class RecoveryTests(unittest.TestCase):
     def test_missing_recovery_cannot_write(self):
         r=Fake([])
@@ -56,7 +67,7 @@ class ExecutionTests(unittest.TestCase):
         def upload(*a):
             order.append('UPLOAD')
             if upload_error:raise h.Blocked('unknown upload')
-        with patch.object(h,'admission'),patch.object(h,'inspect',return_value=({'version':11},b'body',{})),patch.object(h,'empty_schema'),patch.object(h,'protected'),patch.object(h,'verify_ci'),patch.object(h.subprocess,'check_call'),patch.object(h,'store_recovery',side_effect=lambda *a:order.append('BACKUP') or 'fixture-backup'),patch.object(h,'migrations',side_effect=lambda *a:order.append('MIGRATIONS')),patch.object(h,'upload',side_effect=upload):
+        with patch.object(h,'admission'),patch.object(h,'inspect',return_value=({'version':13},b'body',{})),patch.object(h,'empty_schema'),patch.object(h,'protected'),patch.object(h,'verify_ci'),patch.object(h.subprocess,'check_call'),patch.object(h,'store_recovery',side_effect=lambda *a:order.append('BACKUP') or 'fixture-backup'),patch.object(h,'migrations',side_effect=lambda *a:order.append('MIGRATIONS')),patch.object(h,'upload',side_effect=upload):
             try:result=h.run(r,'deploy')
             except h.Blocked as e:result=str(e)
         return result,order

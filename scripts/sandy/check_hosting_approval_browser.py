@@ -12,7 +12,7 @@ threading.Thread(target=server.serve_forever,daemon=True).start()
 try:
  with sync_playwright() as p:
   browser=p.chromium.launch(headless=True,**({'executable_path':os.environ['CHROMIUM_PATH']} if os.environ.get('CHROMIUM_PATH') else {}))
-  for role in ['owner','operator']:
+  for role,link_id in [('owner',record['id']),('owner','04fab547-3177-4eb4-ac23-23831152b420'),('operator',record['id'])]:
    context=browser.new_context(viewport={'width':390,'height':900});page=context.new_page();calls=[];events=[];state=dict(record);errors=[]
    page.on('pageerror',lambda e:errors.append(str(e)))
    def route(request):
@@ -31,7 +31,7 @@ try:
       assert role=='owner';state['status']='approved';events.append({'change_id':record['id'],'actor':'synthetic-owner','event_type':'status_changed','detail':{'to':'approved','reason':body['reason']}});request.fulfill(json={'change':state});return
     request.abort()
    page.route('**/*',route)
-   page.goto(f'http://127.0.0.1:{server.server_port}/sandy/controller/?change={record["id"]}#changes')
+   page.goto(f'http://127.0.0.1:{server.server_port}/sandy/controller/?change={link_id}#changes')
    if role=='owner':
     button=page.get_by_role('button',name='Approve logical hosting account release',exact=True)
     button.wait_for();page.wait_for_function("!document.querySelector('#hosting-account-release button').disabled")

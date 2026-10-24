@@ -1,10 +1,11 @@
+export const PREVIOUS_CHANGE='04fab547-3177-4eb4-ac23-23831152b420';
 // One pending exception; approval uses only the existing signed-in Owner session.
 // This page never creates a grant, executes a release or exports authentication.
 export const RELEASE = Object.freeze({
-  change: '04fab547-3177-4eb4-ac23-23831152b420',
+  change: '6b60ac54-9308-414c-bf39-f0b7ca6abc25',
   source: '1dee65da7b68f12d147d11e3f02befae06416ef2',
-  manifest: '66393dac73a71bc1619c1ecf8350ac902abc1e96acf827cd6dca48ab619e4d37',
-  request: 'e71dc494a6527276a3d4e502f17bcdac2ecb7f57dee5a9dc8aabc63bb46d5371',
+  manifest: 'ebef1ee3c0e2084a3b449fd4b9071c410d62a7f121b9e5671c96999f9ecaed10',
+  request: '37d79fc20a74328516d236708b65390889f300a228fee13cfb3454e22b0ea905',
   target: 'sandy-customer-provisioning-api',
 });
 const fields = ['title', 'problem', 'expected_behavior', 'change_purpose', 'feature_improvement',
@@ -92,3 +93,5 @@ export function showHostingAccountApproval(host, transport) {
   };
   read();
 }
+
+export const isHostingAccountReview=search=>[RELEASE.change,PREVIOUS_CHANGE].includes(new URLSearchParams(search).get('change'));

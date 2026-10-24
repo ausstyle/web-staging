@@ -5,7 +5,7 @@ from pathlib import Path
 from check_hosting_release_candidate import MANIFEST, SOURCE, PIN, ROOT, sha, verify
 from release_gcp_admin_read import Installer, quote
 from release_web_canary import Blocked, original_sources
-CHANGE='04fab547-3177-4eb4-ac23-23831152b420'
+CHANGE='6b60ac54-9308-414c-bf39-f0b7ca6abc25'
 TARGET='sandy-customer-provisioning-api'
 CHECKS={'offline-control','api-contract-tests','provider-response-contract-tests','supabase-gap-contract-tests','vm-protocol-contract-tests','examiner-evidence-tests','offline-contract-tests','sandy-runtime-release-checks'}
 def source(p): return subprocess.check_output(['git','show',SOURCE+':'+p],cwd=ROOT)
@@ -150,8 +150,8 @@ def rollback(r,artifact):
         event(r,'hosting_rollback_intent',{'recovery_artifact_id':artifact,'source_commit':SOURCE,'manifest_sha256':PIN})
         upload(r,files)
         meta=json.loads(r.api('GET','/functions/'+TARGET));restored=original_sources(r.api('GET','/functions/'+TARGET+'/body'))
-        if meta.get('version')!=12 or meta.get('verify_jwt') is not True or meta.get('status')!='ACTIVE' or restored!=files:raise Blocked('rollback_outcome_unknown_no_retry')
-        result={'rolled_back':True,'version':12,'account_data_preserved':True,'customer_acceptance_passed':False}
+        if meta.get('version')!=m['function']['expected_prior_version']+2 or meta.get('verify_jwt') is not True or meta.get('status')!='ACTIVE' or restored!=files:raise Blocked('rollback_outcome_unknown_no_retry')
+        result={'rolled_back':True,'version':meta['version'],'account_data_preserved':True,'customer_acceptance_passed':False}
         event(r,'hosting_rollback_source_verified',result);return result
     finally:
         r.sql(f"DELETE FROM public.sandy_engineering_component_leases WHERE component='{TARGET}' AND holder={quote(r.holder)} AND change_id='{CHANGE}'")
