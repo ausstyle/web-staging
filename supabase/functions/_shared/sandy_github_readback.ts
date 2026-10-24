@@ -1,5 +1,6 @@
 /** Immutable GitHub readback. Fixed provider/repository, GET only, bounded data;
  * this neither authorizes an operation nor retries a mutation. */
+import { verifyGitTree } from "./sandy_github_tree_readback.ts";
 import { argumentDigest } from "./sandy_api_protocol.ts";
 import type { GithubReadbackReason } from "./sandy_execution_receipt_transport.ts";
 import { githubMutationSemantics } from "./sandy_github_mutation_semantics.ts";
@@ -158,6 +159,16 @@ export async function verifyGithubReadback(
     body.parents === undefined
   ) body.parents = [];
   try {
+    if (githubMutationSemantics[operation] === "tree") {
+      return {
+        verified: true,
+        proof: await verifyGitTree(
+          args,
+          raw,
+          (url) => readGithubObservation(request, url, token, 2 * 1024 * 1024),
+        ),
+      };
+    }
     if (githubMutationSemantics[operation] === "blob") {
       if (
         typeof body.content !== "string" || body.content.length > 100000 ||
