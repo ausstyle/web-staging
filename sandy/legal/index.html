@@ -242,7 +242,7 @@ function financeCard(x){
   content.append(E("p","small muted","Original document inside archived ZIP: "+x.source_attachment_name));
  }
  const actions=E("div","actions");
- const link=financeSource(x.source_document_url,x.source_provider==="drive"&&x.source_message_url!==x.source_document_url?"Open source archive ↗":"View source ↗");if(link){link.className="btn small";actions.append(link);}
+ const link=financeSource(x.source_document_url,x.source_provider==="drive"?"Open archived source ↗":"View source ↗");if(link){link.className="btn small";actions.append(link);}
  if(!["disputed","closed"].includes(x.status))actions.append(B("Dispute",async()=>{if(!confirm("Flag this financial record as disputed? This does not notify the law firm."))return;try{await financeApi("update",{id:x.id,expected_updated_at:x.updated_at,status:"disputed"});await openMatter(state.matter.id,state.tab);notify("Marked as disputed.")}catch(e){notify(e.message,true)}},"small"));
  box.append(content,actions);return box;
 }
